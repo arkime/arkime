@@ -71,3 +71,9 @@ if (session.cert)
             |,
           moloch-session-field.detail-field(:expr="'cert.alt'", :value='"'+alt+'"', :field="fields['cert.alt']", :pull-left="true")
         |]
+      - if (cert.publicAlgorithm)
+        strong.medium.ml-1 Public Algorithm
+        moloch-session-field.detail-field(:expr="'cert.publicAlgorithm'", :value='"'+cert.publicAlgorithm+'"', :field="fields['cert.publicAlgorithm']", :pull-left="true")
+      - if (cert.curve)
+        strong.medium.ml-1 Curve
+        moloch-session-field.detail-field(:expr="'cert.curve'", :value='"'+cert.curve+'"', :field="fields['cert.curve']", :pull-left="true")

@@ -13,7 +13,9 @@ const store = new Vuex.Store({
       startTime: undefined,
       stopTime: undefined
     },
+    stickyViz: false,
     showMaps: true,
+    showToolBars: true,
     mapSrc: true,
     mapDst: true,
     xffGeo: false,
@@ -35,7 +37,8 @@ const store = new Vuex.Store({
       availableCluster: undefined,
       selectedCluster: undefined
     },
-    multiEsEnabled: false
+    multiEsEnabled: false,
+    stickySessionsBtn: false
   },
   getters: {
     sessionsTableState (state) {
@@ -80,8 +83,14 @@ const store = new Vuex.Store({
     clearExpression (state) {
       state.expression = undefined;
     },
+    toggleStickyViz (state, value) {
+      state.stickyViz = value;
+    },
     toggleMaps (state, value) {
       state.showMaps = value;
+    },
+    toggleToolBars (state) {
+      state.showToolBars = !state.showToolBars;
     },
     toggleMapSrc (state, value) {
       state.mapSrc = value;
@@ -133,6 +142,23 @@ const store = new Vuex.Store({
     setViews (state, value) {
       state.views = value;
     },
+    addViews (state, value) {
+      state.views[value.name] = value;
+    },
+    deleteViews (state, value) {
+      state.views[value] = null;
+      delete state.views[value];
+    },
+    updateViews (state, value) {
+      // if name of view changes in update
+      if (value.name !== value.key) {
+        state.views[value.key] = null;
+        delete state.views[value.key];
+      }
+      delete value.key;
+
+      state.views[value.name] = value;
+    },
     setLoadingData (state, value) {
       state.loadingData = value;
     },
@@ -162,6 +188,9 @@ const store = new Vuex.Store({
     },
     setMultiEsStatus (state, value) {
       state.multiEsEnabled = value;
+    },
+    setStickySessionsBtn (state, value) {
+      state.stickySessionsBtn = value;
     }
   }
 });

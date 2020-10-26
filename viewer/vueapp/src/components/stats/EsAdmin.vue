@@ -72,6 +72,13 @@
             class="btn btn-theme-tertiary">
             Unflood
           </button>
+          <button type="button"
+            @click="clearCache"
+            v-b-tooltip.hover
+            title="Try and clear the cache for all indices"
+            class="btn btn-theme-quaternary">
+            Clear Cache
+          </button>
         </span>
       </h3>
 
@@ -195,6 +202,15 @@ export default {
           }
         }, (error) => {
           this.$set(setting, 'error', error.text || error);
+        });
+    },
+    clearCache: function () {
+      this.$http.post('esadmin/clearCache')
+        .then((response) => {
+          this.interactionSuccess = response.data.text;
+        })
+        .catch((error) => {
+          this.interactionError = error;
         });
     },
     unflood: function () {

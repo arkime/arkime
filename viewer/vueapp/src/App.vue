@@ -42,7 +42,8 @@ export default {
   },
   data: function () {
     return {
-      compatibleBrowser: true
+      compatibleBrowser: true,
+      inputs: ['input', 'select', 'textarea']
     };
   },
   computed: {
@@ -89,8 +90,6 @@ export default {
         this.user = { settings: { timezone: 'local' } };
       });
 
-    const inputs = ['input', 'select', 'textarea'];
-
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:
     // $store.state.shiftKeyHold, focusSearch, and focusTimeRange
@@ -108,7 +107,7 @@ export default {
       }
 
       // quit if the user is in an input or not holding the shift key
-      if (!this.shiftKeyHold || (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
+      if (!this.shiftKeyHold || (activeElement && this.inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1)) {
         return;
       }
 
@@ -171,7 +170,7 @@ export default {
     window.addEventListener('keydown', (event) => {
       const activeElement = document.activeElement;
       // quit if the user is in an input or not holding the shift key
-      if (activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
+      if (activeElement && this.inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
         return;
       }
       if (event.keyCode === 16) { // shift
@@ -247,6 +246,11 @@ body {
 .text-theme-tertiary  { color: var(--color-tertiary); }
 .text-theme-quaternary{ color: var(--color-quaternary); }
 .text-muted-more      { color: var(--color-gray); }
+.text-theme-white     { color: var(--color-white); }
+
+.text-theme-gray-hover:hover {
+  color: var(--color-gray-light);
+}
 
 /* font sizes */
 .medium { font-size: 95%; }
@@ -260,6 +264,17 @@ body {
 
 /* displaying */
 .display-inline { display: inline; }
+.fixed-header {
+  z-index: 5;
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--color-quaternary-lightest);
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
 
 /* overflow */
 .no-overflow    { overflow: hidden; }
@@ -611,5 +626,23 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 /* apply theme foreground to tables */
 table.table {
   color: var(--color-foreground, #555);
+}
+
+/* remove lastpass icons from all inputs
+   could also use 'data-lpignore="true"' on each individual input
+   that we want to exclude */
+div[id^=__lpform_] {
+  display: none;
+}
+input {
+  background-image: none !important;
+  background-attachment: none !important;
+}
+
+/* badge remove button */
+.badge > button.close {
+  line-height: 0.4;
+  font-size: 1.2rem;
+  margin-left: 0.3rem;
 }
 </style>

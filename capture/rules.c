@@ -297,7 +297,13 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
             loading.fieldsTree6[pos] = New_Patricia(128);
         }
 
-        if (strchr(key, '.') != 0) {
+        if (strcmp(key, "ipv4") == 0) {
+            make_and_lookup(rule->tree4[pos], "0.0.0.0/0");
+            node = make_and_lookup(loading.fieldsTree4[pos], "0.0.0.0/0");
+        } else if (strcmp(key, "ipv6") == 0) {
+            make_and_lookup(rule->tree6[pos], "::/0");
+            node = make_and_lookup(loading.fieldsTree6[pos], "::/0");
+        } else if (strchr(key, '.') != 0) {
             make_and_lookup(rule->tree4[pos], key);
             node = make_and_lookup(loading.fieldsTree4[pos], key);
         } else {
@@ -328,6 +334,9 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
             g_hash_table_insert(loading.fieldsHash[pos], g_strdup(key), rules);
         }
         g_ptr_array_add(rules, rule);
+        break;
+    case MOLOCH_FIELD_TYPE_CERTSINFO:
+        // Unsupported
         break;
     }
 }
@@ -710,7 +719,7 @@ void moloch_rules_recompile()
     if (deadPcap)
         pcap_close(deadPcap);
 
-    deadPcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
     MolochRule_t *rule;
     for (t = 0; t < MOLOCH_RULE_TYPE_NUM; t++) {
         for (r = 0; (rule = current.rules[t][r]); r++) {
@@ -718,7 +727,7 @@ void moloch_rules_recompile()
                 continue;
 
             pcap_freecode(&rule->bpfp);
-            if (pcapFileHeader.linktype != 239) {
+            if (pcapFileHeader.dlt != DLT_NFLOG) {
                 if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
                     LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
@@ -777,6 +786,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
     GHashTable            *ghash;
     GHashTableIter         iter;
     gpointer               ikey;
+    char                  *communityId = NULL;
     int                    i;
     int                    f;
     int                    good = 1;
@@ -834,6 +844,17 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->databytes[1]);
                 break;
+            case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+                if (session->ses == SESSION_ICMP) {
+                    good = 0;
+                    break;
+                }
+                // Only caculate once since several rules for session could use it
+                if (!communityId)
+                    communityId = moloch_db_community_id(session);
+
+                good = g_hash_table_contains(rule->hash[p], communityId);
+                break;
             default:
                 good = 0;
             }
@@ -879,6 +900,9 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             case MOLOCH_FIELD_TYPE_STR_HASH:
                 shash = session->fields[cp]->shash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *shash));
+                break;
+            case MOLOCH_FIELD_TYPE_CERTSINFO:
+                // Unsupported
                 break;
             } /* switch */
             continue;
@@ -939,7 +963,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             good = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
 
-                if (g_hash_table_contains(rule->hash[p], ikey) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], ikey)) ||
                     moloch_rules_check_match(rule->match[p], ikey)) {
 
                     good = 1;
@@ -948,13 +972,13 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             }
             break;
         case MOLOCH_FIELD_TYPE_STR:
-            good = g_hash_table_contains(rule->hash[p], session->fields[p]->str) ||
+            good = (rule->hash[p] && g_hash_table_contains(rule->hash[p], session->fields[p]->str)) ||
                    moloch_rules_check_match(rule->match[p], session->fields[p]->str);
             break;
         case MOLOCH_FIELD_TYPE_STR_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
-                if (g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i)) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], g_ptr_array_index(session->fields[p]->sarray, i))) ||
                     moloch_rules_check_match(rule->match[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
 
                     good = 1;
@@ -966,13 +990,16 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
             shash = session->fields[p]->shash;
             good = 0;
             HASH_FORALL(s_, *shash, hstring,
-                if (g_hash_table_contains(rule->hash[p], (gpointer)hstring->str) ||
+                if ((rule->hash[p] && g_hash_table_contains(rule->hash[p], (gpointer)hstring->str)) ||
                     moloch_rules_check_match(rule->match[p], (gpointer)hstring->str)) {
 
                     good = 1;
                     break;
                 }
             );
+            break;
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            // Unsupported
             break;
         } /* switch */
 #ifdef RULES_DEBUG
@@ -990,6 +1017,8 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t *session, MolochRule_t
         LOG("%s %s didn't matched", rule->filename, rule->name);
 #endif
     }
+
+    g_free(communityId);
 }
 /******************************************************************************/
 void moloch_rules_run_field_set_rules(MolochSession_t *session, int pos, GPtrArray *rules)
@@ -1111,7 +1140,7 @@ void moloch_rules_run_before_save(MolochSession_t *session, int final)
 /******************************************************************************/
 void moloch_rules_session_create(MolochSession_t *session)
 {
-    switch (session->protocol) {
+    switch (session->ipProtocol) {
     case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:

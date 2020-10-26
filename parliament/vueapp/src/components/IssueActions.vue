@@ -109,8 +109,7 @@ export default {
     removeIssue: function () {
       ParliamentService.removeIssue(this.groupId, this.clusterId, this.issue)
         .then((data) => {
-          this.issue = undefined;
-          this.updateIssue(true, 'Issue removed', this.issue);
+          this.updateIssue(true, 'Issue removed', undefined);
         })
         .catch((error) => {
           this.updateIssue(false, error.text || 'Unable to remove this issue');

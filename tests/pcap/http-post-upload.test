@@ -31,8 +31,8 @@
                ],
                "cookieKeyCnt" : 1,
                "cookieValue" : [
-                  "969AC5FBD069EE6218EB10513726B244",
-                  "400CC78DF5784F303702CC7F02C6122C"
+                  "400CC78DF5784F303702CC7F02C6122C",
+                  "969AC5FBD069EE6218EB10513726B244"
                ],
                "cookieValueCnt" : 2,
                "host" : [
@@ -42,115 +42,118 @@
                "hostCnt" : 2,
                "md5" : [
                   "2b8cd757ab5ffba85acac26c008a1ffc",
-                  "550be33bf0ac01b6f7ac175bb8f4522a",
-                  "3fa07f3ec9f9fefed96e9886f80760bb"
+                  "3fa07f3ec9f9fefed96e9886f80760bb",
+                  "550be33bf0ac01b6f7ac175bb8f4522a"
                ],
                "md5Cnt" : 3,
                "method" : [
-                  "POST",
-                  "GET"
+                  "GET",
+                  "POST"
                ],
                "methodCnt" : 2,
                "path" : [
-                  "/fileupload/servlet/UploadHandleServlet",
-                  "/fileupload/"
+                  "/fileupload/",
+                  "/fileupload/servlet/UploadHandleServlet"
                ],
                "pathCnt" : 2,
                "request-referer" : [
                   "http://192.168.57.14:8080/fileupload/"
                ],
                "request-refererCnt" : 1,
+               "requestBody" : [
+                  "------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"123.doc(5).exe\"\r\nContent-Type: application/x-msdownload\r\n\r\n123456\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"file2\"; filename=\"\"\r\nContent-Type: application/octet-stream\r\n\r\n\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO--\r\n"
+               ],
                "requestHeader" : [
-                  "origin",
-                  "content-type",
                   "accept",
-                  "user-agent",
-                  "referer",
-                  "cache-control",
                   "accept-encoding",
-                  "content-length",
+                  "accept-language",
+                  "cache-control",
                   "connection",
-                  "host",
+                  "content-length",
+                  "content-type",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "origin",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 12,
                "requestHeaderField" : [
-                  "connection",
+                  "accept",
+                  "accept",
                   "accept",
                   "accept-encoding",
-                  "accept-language",
-                  "cookie",
-                  "connection",
-                  "accept",
+                  "accept-encoding",
                   "accept-encoding",
                   "accept-language",
-                  "cookie",
+                  "accept-language",
+                  "accept-language",
+                  "cache-control",
+                  "connection",
+                  "connection",
                   "connection",
                   "content-length",
-                  "cache-control",
-                  "accept",
-                  "origin",
                   "content-type",
-                  "accept-encoding",
-                  "accept-language",
-                  "cookie"
+                  "cookie",
+                  "cookie",
+                  "cookie",
+                  "origin"
                ],
                "requestHeaderValue" : [
-                  "keep-alive",
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                  "gzip,deflate,sdch",
-                  "zh-cn,zh;q=0.8",
-                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
-                  "keep-alive",
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                  "gzip,deflate,sdch",
-                  "zh-cn,zh;q=0.8",
-                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
-                  "keep-alive",
                   "449",
-                  "max-age=0",
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                  "http://192.168.57.14:8080",
-                  "multipart/form-data; boundary=----webkitformboundaryae47vgj7ybae6rwo",
                   "gzip,deflate,sdch",
+                  "gzip,deflate,sdch",
+                  "gzip,deflate,sdch",
+                  "http://192.168.57.14:8080",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
+                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c",
+                  "keep-alive",
+                  "keep-alive",
+                  "keep-alive",
+                  "max-age=0",
+                  "multipart/form-data; boundary=----webkitformboundaryae47vgj7ybae6rwo",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                   "zh-cn,zh;q=0.8",
-                  "jsessionid=969ac5fbd069ee6218eb10513726b244; jsessionid=400cc78df5784f303702cc7f02c6122c"
+                  "zh-cn,zh;q=0.8",
+                  "zh-cn,zh;q=0.8"
                ],
                "requestHeaderValueCnt" : 19,
                "responseHeader" : [
-                  "content-type",
                   "content-length",
+                  "content-type",
                   "date",
                   "server"
                ],
                "responseHeaderCnt" : 4,
                "responseHeaderField" : [
-                  "server",
-                  "content-type",
                   "content-length",
+                  "content-length",
+                  "content-length",
+                  "content-type",
+                  "content-type",
+                  "content-type",
+                  "date",
+                  "date",
                   "date",
                   "server",
-                  "content-type",
-                  "content-length",
-                  "date",
                   "server",
-                  "content-type",
-                  "content-length",
-                  "date"
+                  "server"
                ],
                "responseHeaderValue" : [
-                  "apache-coyote/1.1",
-                  "text/html;charset=utf-8",
-                  "468",
-                  "thu, 28 mar 2019 08:13:33 gmt",
-                  "apache-coyote/1.1",
-                  "text/html;charset=utf-8",
-                  "468",
-                  "thu, 28 mar 2019 08:13:33 gmt",
-                  "apache-coyote/1.1",
-                  "text/html;charset=utf-8",
                   "144",
+                  "468",
+                  "468",
+                  "apache-coyote/1.1",
+                  "apache-coyote/1.1",
+                  "apache-coyote/1.1",
+                  "text/html;charset=utf-8",
+                  "text/html;charset=utf-8",
+                  "text/html;charset=utf-8",
+                  "thu, 28 mar 2019 08:13:33 gmt",
+                  "thu, 28 mar 2019 08:13:33 gmt",
                   "thu, 28 mar 2019 08:13:37 gmt"
                ],
                "responseHeaderValueCnt" : 12,
@@ -159,8 +162,8 @@
                ],
                "serverVersionCnt" : 1,
                "sha256" : [
-                  "22195633c931aec184e0e71f6fa277d9290d5e7ec3896be53a860472b6503791",
                   "14e3eded5dd1fc782b8062d20ee805c71ceb00029674e6d59c67ef053417f314",
+                  "22195633c931aec184e0e71f6fa277d9290d5e7ec3896be53a860472b6503791",
                   "f6f3ed08d2b46dbf2bd6664b213b8c227c667ade0a2301d55b1e2ec7224f767a"
                ],
                "sha256Cnt" : 3,
@@ -169,8 +172,8 @@
                ],
                "statuscodeCnt" : 1,
                "uri" : [
-                  "192.168.57.14:8080/fileupload/servlet/UploadHandleServlet",
-                  "192.168.57.14:8080/fileupload/"
+                  "192.168.57.14:8080/fileupload/",
+                  "192.168.57.14:8080/fileupload/servlet/UploadHandleServlet"
                ],
                "uriCnt" : 2,
                "useragent" : [

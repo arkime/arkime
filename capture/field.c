@@ -46,7 +46,7 @@ void moloch_field_by_exp_add_special(char *exp, int pos)
     HASH_ADD(e_, fieldsByExp, info->expression, info);
 }
 /******************************************************************************/
-void moloch_field_by_exp_add_special_type(char *exp, int pos, int type)
+void moloch_field_by_exp_add_special_type(char *exp, int pos, MolochFieldType type)
 {
     MolochFieldInfo_t *info = MOLOCH_TYPE_ALLOC0(MolochFieldInfo_t);
     info->expression   = g_strdup(exp);
@@ -208,7 +208,8 @@ int moloch_field_define_text_full(char *field, char *text, int *shortcut)
     if (!help)
         help = field;
 
-    int type, flags = 0;
+    MolochFieldType type;
+    int flags = 0;
     if (strcmp(kind, "integer") == 0 ||
         strcmp(kind, "seconds") == 0)
         type = MOLOCH_FIELD_TYPE_INT_GHASH;
@@ -247,7 +248,7 @@ int moloch_field_define_text(char *text, int *shortcut)
     va_end(args);
 }*/
 /******************************************************************************/
-int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int type, int flags, ...)
+int moloch_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, MolochFieldType type, int flags, ...)
 {
     char dbField2[100];
     char expression2[1000];
@@ -626,11 +627,13 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
         host = g_hostname_to_unicode(string);
         string[len] = ch;
     }
-
-    // If g_hostname_to_unicode fails, just use the input
-    if (!host) {
-        host = g_strndup(string, len);
-        moloch_session_add_tag(session, "bad-punycode");
+    if (!host || g_utf8_validate(host, -1, NULL) == 0) {
+        if (len > 4 && moloch_memstr((const char *)string, len, "xn--", 4)) {
+            moloch_session_add_tag(session, "bad-punycode");
+        } else {
+            moloch_session_add_tag(session, "bad-hostname");
+        }
+        return FALSE;
     }
 
     if (!moloch_field_string_add(pos, session, host, -1, FALSE)) {
@@ -797,6 +800,7 @@ gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2)
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+SUPPRESS_SIGNED_INTEGER_OVERFLOW
 guint moloch_field_ip_hash (gconstpointer v)
 {
   const signed char *p;
@@ -891,7 +895,7 @@ added:
     return TRUE;
 }
 /******************************************************************************/
-gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, int i)
+gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
 {
     MolochField_t        *field;
 
@@ -997,7 +1001,9 @@ added:
     return TRUE;
 }
 /******************************************************************************/
+SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
+SUPPRESS_INT_CONVERSION
 uint32_t moloch_field_certsinfo_hash(const void *key)
 {
     MolochCertsInfo_t *ci = (MolochCertsInfo_t *)key;
@@ -1309,27 +1315,31 @@ void moloch_field_ops_run(MolochSession_t *session, MolochFieldOps_t *ops)
             case MOLOCH_FIELD_EXSPECIAL_PACKETS_DST:
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC:
             case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
+            case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
                 break;
             }
             continue;
         }
 
         switch (config.fields[op->fieldPos]->type) {
-        case  MOLOCH_FIELD_TYPE_INT_HASH:
-        case  MOLOCH_FIELD_TYPE_INT_GHASH:
-        case  MOLOCH_FIELD_TYPE_INT:
-        case  MOLOCH_FIELD_TYPE_INT_ARRAY:
+        case MOLOCH_FIELD_TYPE_INT_HASH:
+        case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case MOLOCH_FIELD_TYPE_INT:
+        case MOLOCH_FIELD_TYPE_INT_ARRAY:
             moloch_field_int_add(op->fieldPos, session, op->strLenOrInt);
             break;
-        case  MOLOCH_FIELD_TYPE_IP:
-        case  MOLOCH_FIELD_TYPE_IP_GHASH:
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
             moloch_field_ip_add_str(op->fieldPos, session, op->str);
             break;
-        case  MOLOCH_FIELD_TYPE_STR:
-        case  MOLOCH_FIELD_TYPE_STR_ARRAY:
-        case  MOLOCH_FIELD_TYPE_STR_HASH:
-        case  MOLOCH_FIELD_TYPE_STR_GHASH:
+        case MOLOCH_FIELD_TYPE_STR:
+        case MOLOCH_FIELD_TYPE_STR_ARRAY:
+        case MOLOCH_FIELD_TYPE_STR_HASH:
+        case MOLOCH_FIELD_TYPE_STR_GHASH:
             moloch_field_string_add(op->fieldPos, session, op->str, op->strLenOrInt, TRUE);
+            break;
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            // Unsupported
             break;
         }
     }
@@ -1415,6 +1425,9 @@ void moloch_field_ops_add(MolochFieldOps_t *ops, int fieldPos, char *value, int 
         case MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST:
             LOG("Warning - not allow to set databytes: %s", op->str);
             break;
+        case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+            LOG("Warning - not allow to set communityId: %s", op->str);
+            break;
         }
     } else {
         switch (config.fields[fieldPos]->type) {
@@ -1476,6 +1489,7 @@ void moloch_field_init()
     moloch_field_by_exp_add_special_type("packets.dst", MOLOCH_FIELD_EXSPECIAL_PACKETS_DST, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("databytes.src", MOLOCH_FIELD_EXSPECIAL_DATABYTES_SRC, MOLOCH_FIELD_TYPE_INT);
     moloch_field_by_exp_add_special_type("databytes.dst", MOLOCH_FIELD_EXSPECIAL_DATABYTES_DST, MOLOCH_FIELD_TYPE_INT);
+    moloch_field_by_exp_add_special_type("communityId", MOLOCH_FIELD_EXSPECIAL_COMMUNITYID, MOLOCH_FIELD_TYPE_STR);
 }
 /******************************************************************************/
 void moloch_field_exit()

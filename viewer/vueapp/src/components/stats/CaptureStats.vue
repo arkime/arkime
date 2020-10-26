@@ -21,7 +21,7 @@
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
-        length-default=100>
+        length-default=200>
       </moloch-paging>
 
       <moloch-table
@@ -50,7 +50,7 @@
 
 <script>
 import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.js';
+import cubism from '../../../../public/cubism.v1.min.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
@@ -91,7 +91,7 @@ export default {
       showNodeStats: true,
       expandedNodeStats: {},
       query: {
-        length: parseInt(this.$route.query.length) || 100,
+        length: parseInt(this.$route.query.length) || 200,
         start: 0,
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
@@ -110,11 +110,11 @@ export default {
         { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.diskQueue); } },
         { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.esQueue); } },
         { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaPackets); } },
-        { id: 'deltaBytes', name: 'Bytes/s', sort: 'deltaBytes', width: 80, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
+        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytes', width: 80, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
         { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessions', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaSessions); } },
         { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDropped); } },
         // all the rest of the available stats
-        { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaBitsPerSec); } },
+        { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBits(item.deltaBitsPerSec); } },
         { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaWrittenBytesPerSec); } },
         { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaUnwrittenBytesPerSec); } },
         { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.tcpSessions); } },
@@ -133,7 +133,9 @@ export default {
         { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaOverloadDropped); } },
         { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDropped', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaESDropped); } },
         { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sessionSizePerSec); } },
-        { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } }
+        { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } },
+        { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
+        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } }
       ]
     };
   },

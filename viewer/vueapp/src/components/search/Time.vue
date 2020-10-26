@@ -166,7 +166,7 @@
         </span>
         <b-tooltip
           v-if="isEndOfDay(time.stopTime)"
-          target="prevStartTime">
+          target="nextStopTime">
           End of next day
         </b-tooltip>
         <b-tooltip
@@ -508,23 +508,31 @@ export default {
      * @param {string} startOrStop whether to update the start time or stop time
      */
     prevTime: function (startOrStop) {
-      if (startOrStop === 'start') {
-        let newTime = this.findTimeInTimezone(this.time.startTime * 1000).startOf('day');
-        if (this.isStartOfDay(this.time.startTime)) {
-          // it's the beginning of the day, so go to the beginning of the PREV day
-          newTime = newTime.subtract(1, 'days');
-        }
-        this.localStartTime = newTime;
-        this.time.startTime = Math.floor(this.localStartTime.valueOf() / 1000);
-      } else {
-        // stop time always goes to end of day of the previous day
-        let newTime = this.findTimeInTimezone(this.time.stopTime * 1000).endOf('day');
+      let newTime = (startOrStop === 'start')
+        ? this.findTimeInTimezone(this.time.startTime * 1000).startOf('day')
+        : this.findTimeInTimezone(this.time.stopTime * 1000).endOf('day');
+
+      // start time goes to beginning of PREV day when when its at the beginning
+      // stop time always goes to end of day of the previous day
+      if ((startOrStop === 'start' && this.isStartOfDay(this.time.startTime)) ||
+        (startOrStop === 'stop')) {
         newTime = newTime.subtract(1, 'days');
-        this.localStopTime = newTime;
-        this.time.stopTime = Math.floor(this.localStopTime.valueOf() / 1000);
       }
-      this.timeRange = '0';
-      this.validateDate();
+
+      let secondsPastEpoch = Math.floor(newTime.valueOf() / 1000);
+      // If range value falls above epoch time, update existing time data
+      if (secondsPastEpoch >= 0) {
+        if (startOrStop === 'start') {
+          this.localStartTime = newTime;
+          this.time.startTime = secondsPastEpoch;
+        } else {
+          this.localStopTime = newTime;
+          this.time.stopTime = secondsPastEpoch;
+        }
+
+        this.timeRange = '0';
+        this.validateDate();
+      }
     },
     /**
      * Fired when clicking the next time button on a time input

@@ -329,7 +329,7 @@ my ($url, $token, $debug) = @_;
 }
 ################################################################################
 sub waitFor {
-my ($host, $port) = @_;
+my ($host, $port, $extraSleep) = @_;
     print "Connecting $host:$port\n" if ($main::debug);
     while (1) {
         my $sock = IO::Socket::INET->new(
@@ -344,6 +344,7 @@ my ($host, $port) = @_;
         };
         sleep 1;
     }
+    sleep ($extraSleep) if (defined $extraSleep);
 }
 
 return 1;

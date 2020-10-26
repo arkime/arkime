@@ -22,6 +22,7 @@
 extern MolochConfig_t        config;
 extern uint32_t              pluginsCbs;
 extern time_t                lastPacketSecs[MOLOCH_MAX_PACKET_THREADS];
+extern MolochProtocol_t      mProtocols[0x100];
 
 /******************************************************************************/
 
@@ -57,7 +58,7 @@ LOCAL MolochSesCmdHead_t   sessionCmds[MOLOCH_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
-void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+void moloch_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     buf[0] = 13;
     if (addr1 < addr2) {
@@ -83,7 +84,7 @@ void moloch_session_id (char *buf, uint32_t addr1, uint16_t port1, uint32_t addr
     }
 }
 /******************************************************************************/
-void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
+void moloch_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
 {
     buf[0] = 37;
     int cmp = memcmp(addr1, addr2, 16);
@@ -110,10 +111,10 @@ void moloch_session_id6 (char *buf, uint8_t *addr1, uint16_t port1, uint8_t *add
     }
 }
 /******************************************************************************/
-char *moloch_session_id_string (char *sessionId, char *buf)
+char *moloch_session_id_string (uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
-    return moloch_sprint_hex_string(buf, (uint8_t *)sessionId, sessionId[0]);
+    return moloch_sprint_hex_string(buf, sessionId, sessionId[0]);
 }
 #ifndef NEWHASH
 /******************************************************************************/
@@ -216,8 +217,11 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
     moloch_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/
-void moloch_session_mark_for_close (MolochSession_t *session, int ses)
+void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
+    if (session->closingQ)
+        return;
+
     session->closingQ = 1;
     session->saveTime = session->lastPacket.tv_sec + 5;
     DLL_REMOVE(q_, &sessionsQ[session->thread][ses], session);
@@ -256,7 +260,8 @@ LOCAL void moloch_session_free (MolochSession_t *session)
         MOLOCH_SIZE_FREE(pluginData, session->pluginData);
     moloch_field_free(session);
 
-    moloch_packet_tcp_free(session);
+    if (mProtocols[session->mProtocol].sFree)
+        mProtocols[session->mProtocol].sFree(session);
 
     if (session->pq)
         moloch_pq_free(session);
@@ -275,7 +280,8 @@ LOCAL void moloch_session_save(MolochSession_t *session)
     } else
         DLL_REMOVE(q_, &sessionsQ[session->thread][session->ses], session);
 
-    moloch_packet_tcp_free(session);
+    if (mProtocols[session->mProtocol].sFree)
+        mProtocols[session->mProtocol].sFree(session);
 
     if (session->parserInfo) {
         int i;
@@ -398,7 +404,7 @@ int moloch_session_need_save_outstanding()
     return count;
 }
 /******************************************************************************/
-MolochSession_t *moloch_session_find(int ses, char *sessionId)
+MolochSession_t *moloch_session_find(int ses, uint8_t *sessionId)
 {
     MolochSession_t *session;
 
@@ -410,7 +416,7 @@ MolochSession_t *moloch_session_find(int ses, char *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *sessionId, int *isNew)
+MolochSession_t *moloch_session_find_or_create(int mProtocol, uint32_t hash, uint8_t *sessionId, int *isNew)
 {
     MolochSession_t *session;
 
@@ -418,7 +424,8 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
         hash = moloch_session_hash(sessionId);
     }
 
-    int      thread = hash % config.packetThreads;
+    int          thread = hash % config.packetThreads;
+    SessionTypes ses = mProtocols[mProtocol].ses;
 
     HASH_FIND_HASH(h_, sessions[thread][ses], hash, sessionId, session);
 
@@ -433,6 +440,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     session = MOLOCH_TYPE_ALLOC0(MolochSession_t);
     session->ses = ses;
+    session->mProtocol = mProtocol;
     session->stopSaving = 0xffff;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);
@@ -442,7 +450,7 @@ MolochSession_t *moloch_session_find_or_create(int ses, uint32_t hash, char *ses
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
         char buf[100];
-        LOG("ERROR - Large number of chains: %s %u %u %d %u %u - might want to increase maxStreams see https://molo.ch/settings#maxstreams", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size);
+        LOG("ERROR - Large number of chains: %s %u %u %d %d %d - might want to increase maxStreams see https://molo.ch/settings#maxstreams", moloch_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size);
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
@@ -535,7 +543,7 @@ void moloch_session_process_commands(int thread)
 }
 
 /******************************************************************************/
-int moloch_session_watch_count(int ses)
+int moloch_session_watch_count(SessionTypes ses)
 {
     int count = 0;
     int t;
@@ -547,7 +555,7 @@ int moloch_session_watch_count(int ses)
 }
 
 /******************************************************************************/
-int moloch_session_idle_seconds(int ses)
+int moloch_session_idle_seconds(SessionTypes ses)
 {
     int idle = 0;
     int tmp;
@@ -598,7 +606,7 @@ void moloch_session_init()
     }
 
     if (config.debug)
-        LOG("session hash size %d %d %d %d %d", primes[SESSION_ICMP], primes[SESSION_UDP], primes[SESSION_TCP], primes[SESSION_SCTP], primes[SESSION_ESP]);
+        LOG("session hash size %d %d %d %d %d %d", primes[SESSION_ICMP], primes[SESSION_UDP], primes[SESSION_TCP], primes[SESSION_SCTP], primes[SESSION_ESP], primes[SESSION_OTHER]);
 
     int t;
     for (t = 0; t < config.packetThreads; t++) {
@@ -646,7 +654,7 @@ void moloch_session_flush()
 /******************************************************************************/
 void moloch_session_exit()
 {
-    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0};
+    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0, 0, 0};
 
     int t, s;
 
@@ -657,13 +665,14 @@ void moloch_session_exit()
     }
 
     if (!config.pcapReadOffline || config.debug)
-        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u",
+        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u other: %u",
             moloch_session_monitoring(),
             counts[SESSION_TCP],
             counts[SESSION_UDP],
             counts[SESSION_ICMP],
             counts[SESSION_SCTP],
-            counts[SESSION_ESP]
+            counts[SESSION_ESP],
+            counts[SESSION_OTHER]
             );
 
     moloch_session_flush();

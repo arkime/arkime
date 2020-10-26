@@ -21,7 +21,7 @@
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         v-on:changePaging="changePaging"
-        length-default=100>
+        length-default=200>
       </moloch-paging>
 
       <div id="statsGraph" style="width:1440px;"></div>
@@ -34,7 +34,7 @@
 
 <script>
 import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.js';
+import cubism from '../../../../public/cubism.v1.min.js';
 import '../../../../public/highlight.min.js';
 
 import '../../cubismoverrides.css';
@@ -64,7 +64,7 @@ export default {
       context: null,
       stats: null,
       query: {
-        length: parseInt(this.$route.query.length) || 100,
+        length: parseInt(this.$route.query.length) || 200,
         start: 0,
         filter: this.searchTerm || undefined,
         desc: this.graphSort === 'desc',

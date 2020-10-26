@@ -27,7 +27,7 @@
       </div>
     </div> <!-- /segments select input -->
 
-    <div class="col-md-7">
+    <div class="col-md-5">
 
       <!-- tags input -->
       <div class="input-group input-group-sm">
@@ -42,40 +42,6 @@
           class="form-control"
           placeholder="Enter a comma separated list of tags"
         />
-        <div class="input-group-append">
-          <button class="btn btn-theme-tertiary"
-            v-if="add"
-            @click="apply(true)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-plus-circle">
-              </span>&nbsp;
-              Add Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Adding Tags
-            </span>
-          </button>
-          <button class="btn btn-danger"
-            v-else
-            @click="apply(false)"
-            :class="{'disabled':loading}"
-            type="button">
-            <span v-if="!loading">
-              <span class="fa fa-trash-o">
-              </span>&nbsp;
-              Remove Tags
-            </span>
-            <span v-else>
-              <span class="fa fa-spinner fa-spin">
-              </span>&nbsp;
-              Removing Tags
-            </span>
-          </button>
-        </div>
       </div> <!-- /tags input -->
 
       <!-- error -->
@@ -88,17 +54,51 @@
 
     </div>
 
-    <!-- cancel button -->
-    <div class="col-md-1">
-      <button class="btn btn-sm btn-warning pull-right"
-        v-b-tooltip.hover
-        title="cancel"
-        @click="done(null)"
-        type="button">
-        <span class="fa fa-ban">
-        </span>
-      </button>
-    </div> <!-- /cancel button -->
+    <!-- buttons -->
+    <div class="col-md-3">
+      <div class="pull-right">
+        <button class="btn btn-sm btn-theme-tertiary"
+          v-if="add"
+          @click="apply(true)"
+          :class="{'disabled':loading}"
+          type="button">
+          <span v-if="!loading">
+            <span class="fa fa-plus-circle">
+            </span>&nbsp;
+            Add Tags
+          </span>
+          <span v-else>
+            <span class="fa fa-spinner fa-spin">
+            </span>&nbsp;
+            Adding Tags
+          </span>
+        </button>
+        <button class="btn btn-sm btn-danger"
+          v-else
+          @click="apply(false)"
+          :class="{'disabled':loading}"
+          type="button">
+          <span v-if="!loading">
+            <span class="fa fa-trash-o">
+            </span>&nbsp;
+            Remove Tags
+          </span>
+          <span v-else>
+            <span class="fa fa-spinner fa-spin">
+            </span>&nbsp;
+            Removing Tags
+          </span>
+        </button>
+        <button class="btn btn-sm btn-warning"
+          v-b-tooltip.hover
+          title="cancel"
+          @click="done(null)"
+          type="button">
+          <span class="fa fa-ban">
+          </span>
+        </button>
+      </div>
+    </div> <!-- /buttons -->
 
   </div> <!-- /tag sessions form -->
 

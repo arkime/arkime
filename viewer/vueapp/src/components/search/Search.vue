@@ -1,10 +1,10 @@
 <template>
 
-  <form>
-    <div class="mr-1 ml-1 mt-1 mb-1">
+  <form class="position-relative">
+    <div class="pr-1 pl-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
-      <b-dropdown v-if="!hideActions"
+      <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
         right
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
@@ -70,7 +70,7 @@
             <span class="sr-only">Views</span>
           </div>
         </template>
-        <b-dropdown-item @click="createView">
+        <b-dropdown-item @click="modView()">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
         </b-dropdown-item>
@@ -88,12 +88,41 @@
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
+          <!-- view action buttons -->
+          <button class="btn btn-xs btn-danger pull-right ml-1"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Delete this view."
+            @click.stop.prevent="deleteView(value, key)">
+            <span class="fa fa-trash-o">
+            </span>
+          </button>
+          <button class="btn btn-xs btn-warning pull-right ml-1"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Edit this view."
+            @click.stop.prevent="modView(views[key])">
+            <span class="fa fa-edit">
+            </span>
+          </button>
+          <button class="btn btn-xs btn-theme-secondary pull-right ml-1"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Put this view's search expression into the search input. Note: this does not issue a search."
+            @click.stop.prevent="applyView(value)">
+            <span class="fa fa-share fa-flip-horizontal">
+            </span>
+          </button>
+          <button v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+            class="btn btn-xs btn-theme-tertiary pull-right"
+            type="button"
+            v-b-tooltip.hover.top
+            title="Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns"
+            @click.stop.prevent="applyColumns(value)">
+            <span class="fa fa-columns">
+            </span>
+          </button> <!-- /view action buttons -->
           {{ key }}&nbsp;
-          <span v-if="value.sessionsColConfig"
-            class="fa fa-columns cursor-help"
-            v-b-tooltip.hover
-            title="This view has a sessions table column configuration and sort order associated with it. Applying this view will also update the sessions table.">
-          </span>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
@@ -115,6 +144,7 @@
 
       <!-- search box typeahead -->
       <expression-typeahead
+        @modView="modView"
         @applyExpression="applyParams"
         @changeExpression="changeExpression">
       </expression-typeahead> <!-- /search box typeahead -->
@@ -167,10 +197,12 @@
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <moloch-create-view v-if="actionForm === 'create:view'"
+            <moloch-modify-view v-if="actionForm === 'modify:view'"
               :done="actionFormDone"
-              @newView="newView">
-            </moloch-create-view>
+              :editView="editableView"
+              :initialExpression="expression"
+              @setView="setView">
+            </moloch-modify-view>
             <moloch-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
@@ -233,7 +265,7 @@ import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
-import MolochCreateView from '../sessions/CreateView';
+import MolochModifyView from '../sessions/ModifyView';
 import MolochTagSessions from '../sessions/Tags';
 import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
@@ -247,7 +279,7 @@ export default {
     ExpressionTypeahead,
     MolochTime,
     MolochToast,
-    MolochCreateView,
+    MolochModifyView,
     MolochTagSessions,
     MolochRemoveData,
     MolochSendSessions,
@@ -280,7 +312,8 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false
+      updateTime: false,
+      editableView: undefined // Not necessarily active view
     };
   },
   computed: {
@@ -323,6 +356,9 @@ export default {
     },
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.applyParams(); }
+    },
+    actionForm: function () {
+      this.$parent.$emit('recalc-collapse');
     }
   },
   created: function () {
@@ -334,8 +370,9 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
+      this.$parent.$emit('recalc-collapse');
     },
-    applyExpression: function () {
+    applyExpression: function (expression) {
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -376,8 +413,9 @@ export default {
       this.actionForm = 'send:session';
       this.showApplyButtons = true;
     },
-    createView: function () {
-      this.actionForm = 'create:view';
+    modView: function (view) {
+      this.editableView = view;
+      this.actionForm = 'modify:view';
       this.showApplyButtons = false;
     },
     viewIntersection: function () {
@@ -385,17 +423,36 @@ export default {
       this.showApplyButtons = false;
     },
     actionFormDone: function (message, success) {
+      // If a view was being edited, remove selection name
+      this.editableView = undefined;
       this.actionForm = undefined;
+
       if (message) {
         this.message = message;
         this.messageType = success ? 'success' : 'warning';
       }
     },
-    /* updates the views list with the included new view */
-    newView: function (view, viewName) {
-      if (view && viewName && this.views) {
-        this.views[viewName] = view;
+    deleteView: function (view, name) {
+      // check if deleting current view
+      if (this.view === name) {
+        this.setView(undefined);
       }
+
+      UserService.deleteView(view, this.user.userId)
+        .then((response) => {
+          // remove the view from the view list
+          this.$store.commit('deleteViews', name);
+          this.getViews();
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          console.log(error);
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
     },
     setView: function (view) {
       this.view = view;
@@ -409,6 +466,18 @@ export default {
           view: view
         }
       });
+
+      this.$emit('setView');
+    },
+    applyView: function (view) {
+      this.expression = view.expression;
+      this.$store.commit('setFocusSearch', true);
+      setTimeout(() => { // unfocus input for further re-focusing
+        this.$store.commit('setFocusSearch', false);
+      }, 1000);
+    },
+    applyColumns: function (view) {
+      this.$emit('setColumns', view.sessionsColConfig);
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
@@ -482,15 +551,12 @@ export default {
 
 <style>
 .view-menu-dropdown .dropdown-menu {
-  width: 200px;
+  width: 300px;
 }
 </style>
 
 <style scoped>
 form {
-  position: fixed;
-  right: 0;
-  left: 0;
   border: none;
   z-index: 5;
   background-color: var(--color-secondary-lightest);

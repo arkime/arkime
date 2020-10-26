@@ -27,15 +27,43 @@ LOCAL uint32_t    pqEntries;
 
 
 /******************************************************************************/
+typedef struct molochpqitem {
+    struct molochpqitem *pql_next, *pql_prev;
+    struct molochpqitem *pqh_next, *pqh_prev;
+
+    MolochSession_t     *session;
+    void                *uw;
+    time_t               expire;
+    uint32_t             pqh_hash;
+    uint32_t             pqh_bucket;
+} MolochPQItem_t;
+
+typedef struct {
+    struct molochpqitem *pql_next, *pql_prev;
+    struct molochpqitem *pqh_next, *pqh_prev;
+    int                  pql_count;
+    int                  pqh_count;
+} MolochPQHead_t;
+
+typedef HASH_VAR(s_, MolochPQHash_t, MolochPQHead_t, 51);
+
+struct MolochPQ_t {
+    MolochPQHead_t     *buckets[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQHash_t      keys[MOLOCH_MAX_PACKET_THREADS];
+    MolochPQ_cb         cb;
+    time_t              bucket0[MOLOCH_MAX_PACKET_THREADS];
+    int                 maxSeconds;
+};
+
+/******************************************************************************/
 LOCAL int moloch_pq_cmp(const void *keyv, const MolochPQItem_t *item)
 {
     return memcmp(keyv, item->session->sessionId, MIN(((uint8_t *)keyv)[0], item->session->sessionId[0])) == 0;
 }
 /******************************************************************************/
-void moloch_pq_init(MolochPQ_t *pq, int maxSeconds, MolochPQ_cb cb)
+MolochPQ_t *moloch_pq_alloc(int maxSeconds, MolochPQ_cb cb)
 {
-    if (maxSeconds > 30)
-        maxSeconds = 30;
+    MolochPQ_t *pq = MOLOCH_TYPE_ALLOC0(MolochPQ_t);
 
     pq->maxSeconds = maxSeconds;
     int t, i;
@@ -49,6 +77,8 @@ void moloch_pq_init(MolochPQ_t *pq, int maxSeconds, MolochPQ_cb cb)
     pq->cb = cb;
     pqs[numPQs] = pq;
     numPQs++;
+
+    return pq;
 }
 /******************************************************************************/
 LOCAL void moloch_pq_shift(MolochPQ_t *pq, int thread)

@@ -14,7 +14,7 @@
         />
         <label class="form-check-label"
           for="pcap">
-          Delete PCAP
+          Scrub PCAP
         </label>
       </div>
       <div class="form-check form-check-inline"
@@ -62,36 +62,36 @@
       </p> <!-- /delete error -->
     </div> <!-- /segments select input -->
 
-    <!-- delete button -->
-    <div class="col-md-3">
-      <button class="btn btn-danger btn-sm pull-right"
-        @click="deleteSessions"
-        :class="{'disabled':loading}"
-        type="button">
-        <span v-if="!loading">
-          <span class="fa fa-trash-o">
-          </span>&nbsp;
-          Remove Data
-        </span>
-        <span v-else>
-          <span class="fa fa-spinner fa-spin">
-          </span>&nbsp;
-          Remove Data
-        </span>
-      </button>
-    </div> <!-- /delete button -->
-
-    <!-- cancel button -->
-    <div class="col-md-1">
-      <button class="btn btn-sm btn-warning pull-right"
-        v-b-tooltip.hover
-        title="cancel"
-        @click="done(null)"
-        type="button">
-        <span class="fa fa-ban">
-        </span>
-      </button>
-    </div> <!-- /cancel button -->
+    <!-- buttons -->
+    <div class="col-md-4">
+      <div class="pull-right">
+        <!-- delete button -->
+        <button class="btn btn-danger btn-sm"
+          @click="deleteSessions"
+          :class="{'disabled':loading}"
+          type="button">
+          <span v-if="!loading">
+            <span class="fa fa-trash-o">
+            </span>&nbsp;
+            Remove Data
+          </span>
+          <span v-else>
+            <span class="fa fa-spinner fa-spin">
+            </span>&nbsp;
+            Remove Data
+          </span>
+        </button> <!-- /delete button -->
+        <!-- cancel button -->
+        <button class="btn btn-sm btn-warning"
+          v-b-tooltip.hover
+          title="cancel"
+          @click="done(null)"
+          type="button">
+          <span class="fa fa-ban">
+          </span>
+        </button> <!-- /cancel button -->
+      </div>
+    </div> <!-- /buttons -->
 
   </div> <!-- /delete sessions form -->
 

@@ -1,172 +1,224 @@
 <template>
 
   <div class="spigraph-page">
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :num-matching-sessions="filtered"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-    <!-- search navbar -->
-    <moloch-search
-      :num-matching-sessions="filtered"
-      :timezone="user.settings.timezone"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
+        <!-- spigraph sub navbar -->
+        <form class="spigraph-form"
+          @submit.prevent>
+          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+            <!-- field select -->
+            <div class="form-group"
+              v-if="fields && fields.length && fieldTypeahead">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend cursor-help"
+                  v-b-tooltip.hover
+                  title="SPI Graph Field">
+                  <span class="input-group-text">
+                    SPI Graph:
+                  </span>
+                </span>
+                <moloch-field-typeahead
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="fieldTypeahead"
+                  @fieldSelected="changeField"
+                  page="Spigraph">
+                </moloch-field-typeahead>
+              </div>
+            </div> <!-- /field select -->
 
-    <!-- spigraph sub navbar -->
-    <form class="spigraph-form"
-      @submit.prevent>
-      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
-        <!-- field select -->
-        <div class="form-group"
-          v-if="fields && fields.length && fieldTypeahead">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="SPI Graph Field">
-              <span class="input-group-text">
-                SPI Graph:
-              </span>
-            </span>
-            <moloch-field-typeahead
-              :fields="fields"
-              query-param="field"
-              :initial-value="fieldTypeahead"
-              @fieldSelected="changeField"
-              page="Spigraph">
-            </moloch-field-typeahead>
+            <!-- maxElements select -->
+            <div class="form-group ml-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend cursor-help"
+                  v-b-tooltip.hover
+                  title="Max Elements Shown">
+                  <span class="input-group-text">
+                    Max Elements:
+                  </span>
+                </span>
+                <select class="form-control"
+                  v-model="query.size"
+                  @change="changeMaxElements">
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                  <option value="500">500</option>
+                </select>
+              </div>
+            </div> <!-- /maxElements select -->
+
+            <!-- main graph type select -->
+            <div class="form-group ml-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend cursor-help"
+                  v-b-tooltip.hover
+                  title="Chosen SPIGraph Type">
+                  <span class="input-group-text">
+                    Graph Type:
+                  </span>
+                </span>
+                <select class="form-control"
+                  v-model="spiGraphType"
+                  @change="changeSpiGraphType">
+                  <option value="default">timeline/map</option>
+                  <option value="pie">pie</option>
+                  <option value="table">table</option>
+                  <option value="treemap">treemap</option>
+                </select>
+              </div>
+            </div> <!-- /main graph type select -->
+
+            <!-- sort select (not shown for the pie graph) -->
+            <div class="form-group ml-1"
+              v-if="spiGraphType === 'default'">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend cursor-help"
+                  v-b-tooltip.hover
+                  title="Sort results by">
+                  <span class="input-group-text">
+                    Sort by:
+                  </span>
+                </span>
+                <select class="form-control"
+                  v-model="sortBy"
+                  @change="changeSortBy">
+                  <option value="name">alphabetically</option>
+                  <option value="graph">count</option>
+                </select>
+              </div>
+            </div> <!-- /sort select -->
+
+            <!-- refresh input (not shown for pie) -->
+            <div class="form-group ml-1"
+              v-if="spiGraphType === 'default'">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend cursor-help"
+                  v-b-tooltip.hover
+                  title="Refresh page every X seconds">
+                  <span class="input-group-text">
+                    Refresh every:
+                  </span>
+                </span>
+                <select class="form-control"
+                  v-model="refresh"
+                  @change="changeRefreshInterval">
+                  <option value="0">0</option>
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                  <option value="60">60</option>
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text">
+                    seconds
+                  </span>
+                </span>
+              </div>
+            </div> <!-- /refresh input-->
+
+            <div v-if="spiGraphType === 'default'"
+              class="ml-1 records-display">
+              <strong class="text-theme-accent"
+                v-if="!error && recordsFiltered !== undefined">
+                Showing {{ recordsFiltered | commaString }} entries filtered from
+                {{ recordsTotal | commaString }} total entries
+              </strong>
+            </div>
           </div>
-        </div> <!-- /field select -->
+        </form>
+      </span>
+    </MolochCollapsible>
 
-        <!-- maxElements select -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Max Elements Shown">
-              <span class="input-group-text">
-                Max Elements:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="query.size"
-              @change="changeMaxElements">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="500">500</option>
-            </select>
-          </div>
-        </div> <!-- /maxElements select -->
-
-        <!-- sort select -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Sort results by">
-              <span class="input-group-text">
-                Sort by:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="sortBy"
-              @change="changeSortBy">
-              <option value="name">name</option>
-              <option value="graph">graph</option>
-            </select>
-          </div>
-        </div> <!-- /sort select -->
-
-        <!-- refresh input -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend cursor-help"
-              v-b-tooltip.hover
-              title="Refresh page every X seconds">
-              <span class="input-group-text">
-                Refresh every:
-              </span>
-            </span>
-            <select class="form-control"
-              v-model="refresh"
-              @change="changeRefreshInterval">
-              <option value="0">0</option>
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-              <option value="30">30</option>
-              <option value="45">45</option>
-              <option value="60">60</option>
-            </select>
-            <span class="input-group-append">
-              <span class="input-group-text">
-                seconds
-              </span>
-            </span>
-          </div>
-        </div> <!-- /refresh input-->
-
-        <div class="ml-1 records-display">
-          <strong class="text-theme-accent"
-            v-if="!error && recordsFiltered !== undefined">
-            Showing {{ recordsFiltered | commaString }} entries filtered from
-            {{ recordsTotal | commaString }} total entries
-          </strong>
-        </div>
-      </div>
-    </form>
+    <!-- main visualization -->
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length">
+      <moloch-visualizations
+        id="primary"
+        :graph-data="graphData"
+        :map-data="mapData"
+        :primary="true"
+        :cap-start-times="capStartTimes"
+        :timezone="user.settings.timezone"
+        :timelineDataFilters="timelineDataFilters"
+        @fetchMapData="cancelAndLoad(true)">
+      </moloch-visualizations>
+    </div> <!-- /main visualization -->
 
     <div class="spigraph-content">
 
-      <!-- main visualization -->
-      <div v-if="mapData && graphData"
-        class="well well-sm mb-3 ml-2 mr-2">
-        <moloch-visualizations
-          id="primary"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="user.settings.timezone"
-          @fetchMapData="cancelAndLoad(true)">
-        </moloch-visualizations>
-      </div> <!-- /main visualization -->
+      <!-- pie graph type -->
+      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
 
-      <!-- values -->
-      <template v-if="fieldObj">
-        <div v-for="(item, index) in items"
-          :key="item.name"
-          class="spi-graph-item pl-3 pr-3 pt-1">
-          <!-- field value -->
-          <div class="row">
-            <div class="col-md-12">
-              <div class="spi-bucket">
-                <strong>
-                  <moloch-session-field
-                    :field="fieldObj"
-                    :value="item.name"
-                    :expr="fieldObj.exp"
-                    :parse="true"
-                    :pull-left="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </strong>
-                <sup>({{ item.count | commaString }})</sup>
+        <moloch-pie v-if="items && items.length"
+          :base-field="baseField"
+          :graph-data="items"
+          :fields="fields"
+          :query="query"
+          :spiGraphType="spiGraphType"
+          @toggleLoad="toggleLoad"
+          @toggleError="toggleError">
+        </moloch-pie>
+
+      </div> <!-- /pie graph type -->
+
+      <!-- default graph type -->
+      <div v-else>
+
+        <!-- values -->
+        <template v-if="fieldObj">
+          <div v-for="(item, index) in items"
+            :key="item.name"
+            class="spi-graph-item pl-3 pr-3 pt-1">
+            <!-- field value -->
+            <div class="row">
+              <div class="col-md-12">
+                <div class="spi-bucket">
+                  <strong>
+                    <moloch-session-field
+                      :field="fieldObj"
+                      :value="item.name"
+                      :expr="fieldObj.exp"
+                      :parse="true"
+                      :pull-left="true"
+                      :session-btn="true">
+                    </moloch-session-field>
+                  </strong>
+                  <sup>({{ item[graphType] | commaString }})</sup>
+                </div>
               </div>
-            </div>
-          </div> <!-- /field value -->
-          <!-- field visualization -->
-          <div class="row">
-            <div class="col-md-12">
-              <moloch-visualizations
-                :id="index.toString()"
-                :graph-data="item.graph"
-                :map-data="item.map"
-                :primary="false"
-                :timezone="user.settings.timezone">
-              </moloch-visualizations>
-            </div>
-          </div> <!-- /field visualization -->
-        </div>
-      </template> <!-- /values -->
+            </div> <!-- /field value -->
+            <!-- field visualization -->
+            <div class="row">
+              <div class="col-md-12">
+                <moloch-visualizations
+                  :id="index.toString()"
+                  :graph-data="item.graph"
+                  :map-data="item.map"
+                  :primary="false"
+                  :timelineDataFilters="timelineDataFilters"
+                  :timezone="user.settings.timezone">
+                </moloch-visualizations>
+              </div>
+            </div> <!-- /field visualization -->
+          </div>
+        </template> <!-- /values -->
+
+      </div> <!-- /default graph type -->
 
       <!-- loading overlay -->
       <moloch-loading
@@ -203,13 +255,15 @@ import Vue from 'vue';
 import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
-// import external
+// import internal
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import MolochVisualizations from '../visualizations/Visualizations';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
+import MolochPie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
 
@@ -226,7 +280,9 @@ export default {
     MolochLoading,
     MolochNoResults,
     MolochFieldTypeahead,
-    MolochVisualizations
+    MolochVisualizations,
+    MolochCollapsible,
+    MolochPie
   },
   data: function () {
     return {
@@ -236,18 +292,25 @@ export default {
       filtered: 0,
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       refresh: 0,
       recordsTotal: 0,
       recordsFiltered: 0,
       items: [],
       showDropdown: false,
       fieldTypeahead: 'node',
-      sortBy: this.$route.query.sort || 'graph'
+      baseField: this.$route.query.field || 'node',
+      sortBy: this.$route.query.sort || 'graph',
+      spiGraphType: this.$route.query.spiGraphType || 'default'
     };
   },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    timelineDataFilters: function () {
+      let filters = this.$store.state.user.settings.timelineDataFilters;
+      return filters.map(i => this.fields.find(f => f.dbField === i));
     },
     graphType: function () {
       return this.$store.state.graphType;
@@ -255,7 +318,7 @@ export default {
     query: function () {
       let sort = 'name';
       if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
-        sort = this.$route.query.graphType || 'lpHisto';
+        sort = this.$route.query.graphType || this.$store.state.graphType || 'sessionsHisto';
       }
       return {
         sort: sort,
@@ -292,6 +355,9 @@ export default {
     '$route.query.field': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.spiGraphType': function (newVal, oldVal) {
+      this.spiGraphType = newVal;
+    },
     // watch graph type and update sort
     'graphType': function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
@@ -307,6 +373,8 @@ export default {
       this.changeRefreshInterval();
     });
 
+    this.getCaptureStats();
+
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
@@ -321,6 +389,7 @@ export default {
           if (field.dbField === this.query.exp ||
             field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
+            this.baseField = field.exp;
           }
         }
       }).catch((error) => {
@@ -383,24 +452,51 @@ export default {
       if (refreshInterval) { clearInterval(refreshInterval); }
 
       if (this.refresh && this.refresh > 0) {
-        this.cancelAndLoad(true);
+        this.$store.commit('setIssueSearch', true);
         refreshInterval = setInterval(() => {
           if (respondedAt && Date.now() - respondedAt >= parseInt(this.refresh * 1000)) {
-            this.cancelAndLoad(true);
+            this.$store.commit('setIssueSearch', true);
           }
         }, 500);
       }
+    },
+    changeSpiGraphType: function () {
+      if (this.spiGraphType === 'pie' ||
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
+        if (!this.$route.query.size) {
+          this.query.size = 5; // set default size to 5
+        }
+        this.sortBy = 'graph'; // set default sort to count (graph)
+        this.query.sort = this.graphType;
+        this.refresh = 0;
+        this.changeRefreshInterval();
+      }
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          size: this.query.size,
+          sort: this.sortBy,
+          spiGraphType: this.spiGraphType
+        }
+      });
     },
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
       this.query.exp = field.dbField;
+      this.baseField = field.exp;
       this.$router.push({
         query: {
           ...this.$route.query,
           field: this.query.exp
         }
       });
+    },
+    toggleLoad: function (loading) {
+      this.loading = loading;
+    },
+    toggleError: function (message) {
+      this.error = message;
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
@@ -428,8 +524,9 @@ export default {
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
-        this.items = []; // clear items
-        this.processData(response.data);
+        this.items = response.data.items;
+        this.mapData = response.data.map;
+        this.graphData = response.data.graph;
         this.recordsTotal = response.data.recordsTotal;
         this.recordsFiltered = response.data.recordsFiltered;
       }).catch((error) => {
@@ -439,27 +536,23 @@ export default {
         this.error = error.text || error;
       });
     },
-    processData: function (json) {
-      this.mapData = json.map;
-      this.graphData = json.graph;
-
-      let finfo = this.db2Field(this.filed);
-
-      for (let i = 0, len = json.items.length; i < len; i++) {
-        json.items[i].type = finfo.type;
-      }
-
-      this.items = json.items;
-    },
-    db2Field: function (dbField) {
-      for (let k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k];
-        }
-      }
-
-      return undefined;
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     }
   },
   beforeDestroy: function () {
@@ -472,21 +565,10 @@ export default {
 </script>
 
 <style scoped>
-/* spigraph page and navbar styles ---------- */
-.spigraph-page {
-  margin-top: 36px;
-}
+
 .spigraph-page form.spigraph-form {
   z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 .spigraph-page form.spigraph-form .form-inline {
   flex-flow: row nowrap;
@@ -508,7 +590,7 @@ export default {
 
 /* spigraph content styles ------------------- */
 .spigraph-page .spigraph-content {
-  padding-top: 120px;
+  padding-top: 10px;
 }
 
 .spigraph-page .spi-graph-item .spi-bucket sup {

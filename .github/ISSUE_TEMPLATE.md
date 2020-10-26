@@ -1,4 +1,4 @@
-<!-- For support questions use Slack (sign up at http://slackinvite.molo.ch/) instead of opening an issue -->
+<!-- For support questions use Slack (sign up at https://slackinvite.molo.ch/) instead of opening an issue. We use Github for bug reports and feature requests. -->
 
 <!-- For bugs please provide -->
 **Elasticsearch version**:

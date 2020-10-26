@@ -67,6 +67,9 @@ interface=MOLOCH_INTERFACE
 # Log viewer access requests to a different log file
 #accessLogFile = MOLOCH_INSTALL_DIR/logs/access.log
 
+# Control the log format for access requests. This uses URI % encoding.
+#accessLogFormat = :date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms
+
 # The directory to save raw pcap files to
 pcapDir = MOLOCH_INSTALL_DIR/raw
 
@@ -116,13 +119,10 @@ viewPort = 8005
 # By default the viewer process is https://hostname:<viewPort> for each node.
 #viewUrl = https://HOSTNAME:8005
 
-# Path of the maxmind geoip country file.  Download free version from:
-#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country
-geoLite2Country = MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
-
-# Path of the maxmind geoip ASN file.  Download free version from:
-#  https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN
-geoLite2ASN = MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
+# NOTE: A MaxMind account is now required, we will try and use the old files or new files on the system. See
+# https://molo.ch/faq#maxmind
+geoLite2Country = /usr/share/GeoIP/GeoLite2-Country.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-Country.mmdb
+geoLite2ASN = /usr/share/GeoIP/GeoLite2-ASN.mmdb;MOLOCH_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
 # Path of the rir assignments file
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
@@ -151,6 +151,34 @@ dropGroup=daemon
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
 # RequestHeader set MOLOCH_USER %{ENV_RU}e
 #userNameHeader=moloch_user
+
+#
+# Headers to use to determine if user from `userNameHeader` is
+# authorized to use the system, and if so create a new user
+# in the Moloch user database.  This implementation expects that
+# the users LDAP/AD groups (or similar) are populated into an 
+# HTTP header by the Apache (or similar) referenced above.
+# The JSON in userAutoCreateTmpl is used to insert the new
+# user into the moloch database (if not already present)
+# and additional HTTP headers can be sourced from the request
+# to populate various fields.  
+#
+# The example below pulls verifies that an HTTP header called `UserGroup`
+# is present, and contains the value "MOLOCH_ACCESS".  If this authorization
+# check passes, the user database is inspected for the user in `userNameHeader` 
+# and if it is not present it is created.  The system uses the
+# `moloch_user` and `http_auth_mail` headers from the
+# request and uses them to populate `userId` and `userName`
+# fields for the new user record. 
+#
+# Once the user record is created, this functionaity
+# neither updates nor deletes the data, though if the user is no longer
+# reported to be in the group, access is denied regardless of the status
+# in the moloch database.
+#
+#requiredAuthHeader="UserGroup"
+#requiredAuthHeaderVal="MOLOCH_ACCESS"
+#userAutoCreateTmpl={"userId": "${this.moloch_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
 # Should we parse extra smtp traffic info
 parseSMTP=true

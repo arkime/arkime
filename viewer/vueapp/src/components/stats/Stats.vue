@@ -1,320 +1,323 @@
 <template>
 
   <div class="stats-content">
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <!-- stats sub navbar -->
+        <form class="stats-form">
+          <div class="form-inline mr-1 ml-1 mt-1 mb-1">
 
-    <!-- stats sub navbar -->
-    <form class="stats-form">
-      <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+            <div v-if="tabIndex === 7">&nbsp;</div>
 
-        <div v-if="tabIndex === 7">&nbsp;</div>
-
-        <!-- graph type select -->
-        <div class="input-group input-group-sm"
-          v-if="tabIndex === 0">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="The type of graph data to display">
-            <span class="input-group-text">
-              Graph Type
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="statsType"
-            v-on:change="statsTypeChange">
-            <option value="deltaPacketsPerSec">Packets/Sec</option>
-            <option value="deltaBytesPerSec">Bytes/Sec</option>
-            <option value="deltaBitsPerSec">Bits/Sec</option>
-            <option value="deltaSessionsPerSec">Sessions/Sec</option>
-            <option value="deltaDroppedPerSec">Input Dropped/Sec</option>
-            <option value="monitoring">Active Sessions</option>
-            <option value="tcpSessions">Active TCP Sessions</option>
-            <option value="udpSessions">Active UDP Sessions</option>
-            <option value="icmpSessions">Active ICMP Sessions</option>
-            <option value="sctpSessions">Active SCTP Sessions</option>
-            <option value="espSessions">Active ESP Sessions</option>
-            <option value="usedSpaceM">Used Space MB</option>
-            <option value="freeSpaceM">Free Space MB</option>
-            <option value="freeSpaceP">Free Space %</option>
-            <option value="memory">Memory</option>
-            <option value="memoryP">Memory %</option>
-            <option value="cpu">CPU</option>
-            <option value="diskQueue">Disk Queue</option>
-            <option value="esQueue">ES Queue</option>
-            <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
-            <option value="esHealthMS">ES Health Response MS</option>
-            <option value="packetQueue">Packet Queue</option>
-            <option value="closeQueue">Closing Queue</option>
-            <option value="needSave">Waiting Queue</option>
-            <option value="frags">Active Fragments</option>
-            <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
-            <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
-            <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
-            <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
-            <option value="sessionSizePerSec">ES Session Size/Sec</option>
-            <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
-            <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
-          </select>
-        </div> <!-- /graph type select -->
-
-        <!-- graph interval select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 0">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Graph data bins and graph data refresh interval">
-            <span class="input-group-text">
-              Graph Interval
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="graphInterval"
-            v-on:change="graphIntervalChange">
-            <option value="5">Seconds</option>
-            <option value="60">Minutes</option>
-            <option value="600">10 Minutes</option>
-          </select>
-        </div> <!-- /graph interval select -->
-
-        <!-- graph hide select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 0 || tabIndex === 1">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Hide rows">
-           <span class="input-group-text">
-             Hide
-           </span>
-         </div>
-          <select class="form-control input-sm"
-            v-model="graphHide"
-            v-on:change="graphHideChange">
-            <option value="none">None</option>
-            <option value="old">Out of date</option>
-            <option value="nosession">No sessions</option>
-            <option value="both">Both</option>
-          </select>
-        </div> <!-- /graph hide select -->
-
-        <!-- graph sort select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 0">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Sort">
-           <span class="input-group-text">
-             Sort
-           </span>
-         </div>
-          <select class="form-control input-sm"
-            v-model="graphSort">
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div> <!-- /graph hide select -->
-
-        <!-- page size select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 4">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              Page Size
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="pageSize"
-            v-on:change="pageSizeChange">
-            <option value="100">100 per page</option>
-            <option value="200">200 per page</option>
-            <option value="500">500 per page</option>
-            <option value="1000">1,000 per page</option>
-            <option value="5000">5,000 per page</option>
-            <option value="10000">10,000 per page (careful)</option>
-          </select>
-        </div> <!-- /page size select -->
-
-        <!-- table data interval select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex !== 0 && tabIndex !== 7">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Data refresh interval for Node and Elasticsearch stats">
-            <span class="input-group-text">
-              Refresh Data Every
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="dataInterval"
-            v-on:change="dataIntervalChange">
-            <option value="5000">5 seconds</option>
-            <option value="15000">15 seconds</option>
-            <option value="30000">30 seconds</option>
-            <option value="60000">1 minute</option>
-            <option value="600000">10 minutes</option>
-            <option value="0">None</option>
-          </select>
-        </div> <!-- /table data interval select -->
-
-        <!-- shards show select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 5">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Hide shards">
-           <span class="input-group-text">
-             Show
-           </span>
-         </div>
-          <select class="form-control input-sm"
-            v-model="shardsShow"
-            v-on:change="shardsShowChange">
-            <option value="all">All</option>
-            <option value="UNASSIGNED">Unassigned</option>
-            <option value="RELOCATING">Relocating</option>
-            <option value="INITIALIZING">Initializing</option>
-            <option value="notstarted">Not Started</option>
-          </select>
-        </div> <!-- /graph hide select -->
-
-        <!-- recovery show select -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex === 6">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Hide rows">
-           <span class="input-group-text">
-             Show
-           </span>
-         </div>
-          <select class="form-control input-sm"
-            v-model="recoveryShow"
-            v-on:change="recoveryShowChange">
-            <option value="all">All</option>
-            <option value="notdone">Not Done</option>
-          </select>
-        </div> <!-- /graph hide select -->
-
-        <!-- refresh button -->
-        <div class="input-group input-group-sm ml-1"
-          v-if="tabIndex !== 0 && tabIndex !== 7">
-          <button type="button"
-            class="btn btn-theme-tertiary btn-sm refresh-btn"
-            @click="loadData">
-            <span v-if="!shiftKeyHold">
-              Refresh
-            </span>
-            <span v-else
-              class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg">
-              </span>
-              <div class="enter-arm">
+            <!-- graph type select -->
+            <div class="input-group input-group-sm"
+              v-if="tabIndex === 0">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="The type of graph data to display">
+                <span class="input-group-text">
+                  Graph Type
+                </span>
               </div>
-            </span>
-          </button>
-        </div> <!-- /refresh button -->
+              <select class="form-control input-sm"
+                v-model="statsType"
+                v-on:change="statsTypeChange">
+                <option value="deltaPacketsPerSec">Packets/Sec</option>
+                <option value="deltaBytesPerSec">Bytes/Sec</option>
+                <option value="deltaBitsPerSec">Bits/Sec</option>
+                <option value="deltaSessionsPerSec">Sessions/Sec</option>
+                <option value="deltaDroppedPerSec">Input Dropped/Sec</option>
+                <option value="monitoring">Active Sessions</option>
+                <option value="tcpSessions">Active TCP Sessions</option>
+                <option value="udpSessions">Active UDP Sessions</option>
+                <option value="icmpSessions">Active ICMP Sessions</option>
+                <option value="sctpSessions">Active SCTP Sessions</option>
+                <option value="espSessions">Active ESP Sessions</option>
+                <option value="usedSpaceM">Used Space MB</option>
+                <option value="freeSpaceM">Free Space MB</option>
+                <option value="freeSpaceP">Free Space %</option>
+                <option value="memory">Memory</option>
+                <option value="memoryP">Memory %</option>
+                <option value="cpu">CPU</option>
+                <option value="diskQueue">Disk Queue</option>
+                <option value="esQueue">ES Queue</option>
+                <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
+                <option value="esHealthMS">ES Health Response MS</option>
+                <option value="packetQueue">Packet Queue</option>
+                <option value="closeQueue">Closing Queue</option>
+                <option value="needSave">Waiting Queue</option>
+                <option value="frags">Active Fragments</option>
+                <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
+                <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
+                <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
+                <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
+                <option value="sessionSizePerSec">ES Session Size/Sec</option>
+                <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
+                <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
+              </select>
+            </div> <!-- /graph type select -->
 
-        <!-- confirm button -->
-        <transition name="buttons">
-          <button v-if="confirmMessage"
-            type="button"
-            class="btn btn-sm btn-danger ml-2"
-            @click="confirmed">
-            <span class="fa fa-check">
-            </span>&nbsp;
-            {{ confirmMessage }}
-          </button>
-        </transition> <!-- /confirm button -->
+            <!-- graph interval select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 0">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Graph data bins and graph data refresh interval">
+                <span class="input-group-text">
+                  Graph Interval
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="graphInterval"
+                v-on:change="graphIntervalChange">
+                <option value="5">Seconds</option>
+                <option value="60">Minutes</option>
+                <option value="600">10 Minutes</option>
+              </select>
+            </div> <!-- /graph interval select -->
 
-        <!-- cancel confirm button -->
-        <transition name="buttons">
-          <button v-if="confirmMessage"
-            type="button"
-            class="btn btn-sm btn-warning ml-2"
-            @click="cancelConfirm">
-            <span class="fa fa-ban">
-            </span>&nbsp;
-            Cancel
-          </button>
-        </transition> <!-- /cancel confirm button -->
+            <!-- graph hide select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 0 || tabIndex === 1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Hide rows">
+               <span class="input-group-text">
+                 Hide
+               </span>
+             </div>
+              <select class="form-control input-sm"
+                v-model="graphHide"
+                v-on:change="graphHideChange">
+                <option value="none">None</option>
+                <option value="old">Out of date</option>
+                <option value="nosession">No sessions</option>
+                <option value="both">Both</option>
+              </select>
+            </div> <!-- /graph hide select -->
 
-        <!-- error (from child component) -->
-        <div v-if="childError"
-          role="alert"
-          class="alert alert-sm alert-danger alert-dismissible fade show ml-2">
-          {{ childError }}
-          <button type="button"
-            class="close"
-            @click="childError = ''">
-            <span>&times;</span>
-          </button>
-        </div> <!-- /error (from child component) -->
+            <!-- graph sort select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 0">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Sort">
+               <span class="input-group-text">
+                 Sort
+               </span>
+             </div>
+              <select class="form-control input-sm"
+                v-model="graphSort">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+            </div> <!-- /graph hide select -->
 
-        <!-- shrink index -->
-        <div v-if="shrinkIndex"
-          class="ml-4 form-inline">
-          <strong>
-            Shrink {{ shrinkIndex.index }}
-          </strong>
-          <!-- new # shards -->
-          <div class="input-group input-group-sm ml-2">
-            <div class="input-group-prepend">
-              <span class="input-group-text">
-                # Shards
-              </span>
+            <!-- page size select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 4">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  Page Size
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="pageSize"
+                v-on:change="pageSizeChange">
+                <option value="100">100 per page</option>
+                <option value="200">200 per page</option>
+                <option value="500">500 per page</option>
+                <option value="1000">1,000 per page</option>
+                <option value="5000">5,000 per page</option>
+                <option value="10000">10,000 per page (careful)</option>
+              </select>
+            </div> <!-- /page size select -->
+
+            <!-- table data interval select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex !== 0 && tabIndex !== 7">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Data refresh interval for Node and Elasticsearch stats">
+                <span class="input-group-text">
+                  Refresh Data Every
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="dataInterval"
+                v-on:change="dataIntervalChange">
+                <option value="5000">5 seconds</option>
+                <option value="15000">15 seconds</option>
+                <option value="30000">30 seconds</option>
+                <option value="60000">1 minute</option>
+                <option value="600000">10 minutes</option>
+                <option value="0">None</option>
+              </select>
+            </div> <!-- /table data interval select -->
+
+            <!-- shards show select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 5">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Hide shards">
+               <span class="input-group-text">
+                 Show
+               </span>
+             </div>
+              <select class="form-control input-sm"
+                v-model="shardsShow"
+                v-on:change="shardsShowChange">
+                <option value="all">All</option>
+                <option value="UNASSIGNED">Unassigned</option>
+                <option value="RELOCATING">Relocating</option>
+                <option value="INITIALIZING">Initializing</option>
+                <option value="notstarted">Not Started</option>
+              </select>
+            </div> <!-- /graph hide select -->
+
+            <!-- recovery show select -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex === 6">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Hide rows">
+               <span class="input-group-text">
+                 Show
+               </span>
+             </div>
+              <select class="form-control input-sm"
+                v-model="recoveryShow"
+                v-on:change="recoveryShowChange">
+                <option value="all">All</option>
+                <option value="notdone">Active</option>
+              </select>
+            </div> <!-- /graph hide select -->
+
+            <!-- refresh button -->
+            <div class="input-group input-group-sm ml-1"
+              v-if="tabIndex !== 0 && tabIndex !== 7">
+              <button type="button"
+                class="btn btn-theme-tertiary btn-sm refresh-btn"
+                @click="loadData">
+                <span v-if="!shiftKeyHold">
+                  Refresh
+                </span>
+                <span v-else
+                  class="enter-icon">
+                  <span class="fa fa-long-arrow-left fa-lg">
+                  </span>
+                  <div class="enter-arm">
+                  </div>
+                </span>
+              </button>
+            </div> <!-- /refresh button -->
+
+            <!-- confirm button -->
+            <transition name="buttons">
+              <button v-if="confirmMessage"
+                type="button"
+                class="btn btn-sm btn-danger ml-2"
+                @click="confirmed">
+                <span class="fa fa-check">
+                </span>&nbsp;
+                {{ confirmMessage }}
+              </button>
+            </transition> <!-- /confirm button -->
+
+            <!-- cancel confirm button -->
+            <transition name="buttons">
+              <button v-if="confirmMessage"
+                type="button"
+                class="btn btn-sm btn-warning ml-2"
+                @click="cancelConfirm">
+                <span class="fa fa-ban">
+                </span>&nbsp;
+                Cancel
+              </button>
+            </transition> <!-- /cancel confirm button -->
+
+            <!-- error (from child component) -->
+            <div v-if="childError"
+              role="alert"
+              class="alert alert-sm alert-danger alert-dismissible fade show ml-2">
+              {{ childError }}
+              <button type="button"
+                class="close"
+                @click="childError = ''">
+                <span>&times;</span>
+              </button>
+            </div> <!-- /error (from child component) -->
+
+            <!-- shrink index -->
+            <div v-if="shrinkIndex"
+              class="ml-4 form-inline">
+              <strong>
+                Shrink {{ shrinkIndex.index }}
+              </strong>
+              <!-- new # shards -->
+              <div class="input-group input-group-sm ml-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    # Shards
+                  </span>
+                </div>
+                <select v-model="shrinkFactor"
+                  class="form-control"
+                  style="-webkit-appearance:none;">
+                  <option v-for="factor in shrinkFactors"
+                    :key="factor"
+                    :value="factor">
+                    {{ factor }}
+                  </option>
+                </select>
+              </div> <!-- /new # shards -->
+              <!-- temporary node -->
+              <div v-if="nodes && temporaryNode"
+                class="input-group input-group-sm ml-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    Temporary Node
+                  </span>
+                </div>
+                <select v-model="temporaryNode"
+                  class="form-control"
+                  style="-webkit-appearance:none;">
+                  <option v-for="node in nodes"
+                    :key="node.name"
+                    :value="node.name">
+                    {{ node.name }}
+                  </option>
+                </select>
+              </div> <!-- /new shards input -->
+              <!-- ok button -->
+              <button class="btn btn-sm btn-success pull-right ml-2"
+                v-b-tooltip.hover
+                title="shrink"
+                @click="executeShrink(shrinkIndex)"
+                type="button">
+                <span class="fa fa-check">
+                </span>
+              </button> <!-- /ok button -->
+              <!-- cancel button -->
+              <button class="btn btn-sm btn-warning pull-right ml-2"
+                v-b-tooltip.hover
+                title="cancel"
+                @click="cancelShrink"
+                type="button">
+                <span class="fa fa-ban">
+                </span>
+              </button> <!-- /cancel button -->
             </div>
-            <select v-model="shrinkFactor"
-              class="form-control"
-              style="-webkit-appearance:none;">
-              <option v-for="factor in shrinkFactors"
-                :key="factor"
-                :value="factor">
-                {{ factor }}
-              </option>
-            </select>
-          </div> <!-- /new # shards -->
-          <!-- temporary node -->
-          <div v-if="nodes && temporaryNode"
-            class="input-group input-group-sm ml-2">
-            <div class="input-group-prepend">
-              <span class="input-group-text">
-                Temporary Node
-              </span>
-            </div>
-            <select v-model="temporaryNode"
-              class="form-control"
-              style="-webkit-appearance:none;">
-              <option v-for="node in nodes"
-                :key="node.name"
-                :value="node.name">
-                {{ node.name }}
-              </option>
-            </select>
-          </div> <!-- /new shards input -->
-          <!-- ok button -->
-          <button class="btn btn-sm btn-success pull-right ml-2"
-            v-b-tooltip.hover
-            title="shrink"
-            @click="executeShrink(shrinkIndex)"
-            type="button">
-            <span class="fa fa-check">
-            </span>
-          </button> <!-- /ok button -->
-          <!-- cancel button -->
-          <button class="btn btn-sm btn-warning pull-right ml-2"
-            v-b-tooltip.hover
-            title="cancel"
-            @click="cancelShrink"
-            type="button">
-            <span class="fa fa-ban">
-            </span>
-          </button> <!-- /cancel button -->
-        </div>
-        <span v-if="shrinkIndex && shrinkError"
-          class="text-danger ml-2">
-          {{ shrinkError }}
-        </span> <!-- /shrink index -->
+            <span v-if="shrinkIndex && shrinkError"
+              class="text-danger ml-2">
+              {{ shrinkError }}
+            </span> <!-- /shrink index -->
 
-      </div>
-    </form> <!-- /stats sub navbar -->
+          </div>
+        </form> <!-- /stats sub navbar -->
+      </span>
+    </MolochCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
@@ -456,6 +459,7 @@ import EsAdmin from './EsAdmin';
 import CaptureGraphs from './CaptureGraphs';
 import CaptureStats from './CaptureStats';
 import FocusInput from '../utils/FocusInput';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import utils from '../utils/utils';
 
 let searchInputTimeout;
@@ -470,7 +474,8 @@ export default {
     EsIndices,
     EsTasks,
     EsRecovery,
-    EsAdmin
+    EsAdmin,
+    MolochCollapsible
   },
   directives: { FocusInput },
   data: function () {
@@ -589,13 +594,13 @@ export default {
     onOffFocus: function () {
       this.focusInput = false;
     },
-    debounceSearchInput () {
+    debounceSearchInput: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
         this.loadData();
-      }, 400);
+      }, 800);
     },
     loadData: function () {
       this.refreshData = true;
@@ -682,21 +687,11 @@ table .btn-group.row-actions-btn > .btn-sm {
 </style>
 
 <style scoped>
-.stats-content {
-  padding-top: 36px;
-}
 
 /* apply theme colors to subnavbar */
 form.stats-form {
-  position: fixed;
-  left: 0;
-  right: 0;
   z-index : 6;
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
-     -moz-box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
-          box-shadow: var(--px-none) var(--px-none) var(--px-xxlg) -8px #333;
 }
 
 /* remove browser styles on select box (mostly for border-radius) */
@@ -704,9 +699,6 @@ select {
   -webkit-appearance: none;
 }
 
-.stats-tabs {
-  margin-top: 35px;
-}
 .stats-tabs .input-group {
   max-width: 333px;
   position: fixed;

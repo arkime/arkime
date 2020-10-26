@@ -39,7 +39,7 @@ LOCAL GRegex     *slashslashRegex;
 typedef struct suricataitem_t SuricataItem_t;
 struct suricataitem_t {
     SuricataItem_t *items_next;
-    char            sessionId[MOLOCH_SESSIONID_LEN];
+    uint8_t         sessionId[MOLOCH_SESSIONID_LEN];
     time_t          timestamp;
     char           *flow_id;
     char           *action;
@@ -54,7 +54,7 @@ struct suricataitem_t {
     uint16_t        action_len;
     uint16_t        signature_len;
     uint16_t        category_len;
-    char            ses;
+    SessionTypes    ses;
 };
 
 #define SURICATA_HASH_SIZE 7919

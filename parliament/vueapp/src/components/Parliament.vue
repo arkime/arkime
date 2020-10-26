@@ -364,8 +364,9 @@
             <div class="card">
               <div class="card-body">
                 <!-- cluster title -->
-                <span v-if="cluster.type !== 'disabled'"
-                  class="badge badge-pill badge-secondary cursor-help pull-right"
+                <a v-if="cluster.type !== 'disabled'"
+                  class="badge badge-pill badge-secondary cursor-pointer pull-right"
+                  :href="`${cluster.url}/stats?statsTab=2`"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
                   v-b-tooltip.hover.top
                   :title="`Moloch ES Status: ${cluster.healthError || cluster.status}`">
@@ -378,7 +379,7 @@
                   <span v-if="!cluster.status && !cluster.healthError">
                     ????
                   </span>
-                </span>
+                </a>
                 <h6>
                   <span v-if="loggedIn && !searchTerm && editMode"
                     class="cluster-handle">
@@ -445,10 +446,10 @@
                           @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
                         />
                         <strong class="d-inline-block">
-                          {{ cluster.deltaBPS | commaString }}
+                          {{ cluster.deltaBPS | humanReadableBits }}
                         </strong>
                         <small class="d-inline-block">
-                          Bytes/Sec
+                          Bits/Sec
                         </small>
                       </label>
                     </div>

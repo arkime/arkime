@@ -19,44 +19,57 @@
         <th v-if="actionColumn"
           class="ignore-element text-left"
           style="min-width:50px;">
-          <!-- column visibility button -->
-          <b-dropdown
-            size="sm"
-            no-flip
-            no-caret
-            class="col-vis-menu pull-left"
-            variant="theme-primary">
-            <template slot="button-content">
-              <span class="fa fa-th"
+          <div class="d-flex align-items-center">
+            <!-- column visibility button -->
+            <b-dropdown
+              size="sm"
+              no-flip
+              no-caret
+              class="col-vis-menu pull-left"
+              variant="theme-primary">
+              <template slot="button-content">
+                <span class="fa fa-th"
+                  v-b-tooltip.hover
+                  title="Toggle visible columns">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <input type="text"
+                  v-model="colQuery"
+                  class="form-control form-control-sm dropdown-typeahead"
+                  placeholder="Search for columns..."
+                />
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                @click="resetDefault">
+                Reset default columns
+              </b-dropdown-item>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                v-for="column in filteredColumns"
+                :key="column.id"
+                v-b-tooltip.hover.top
+                :title="column.help"
+                :class="{'active':isVisible(column.id) >= 0}"
+                @click.stop.prevent="toggleVisibility(column)">
+                {{ column.name }}
+              </b-dropdown-item>
+            </b-dropdown> <!-- /column visibility button -->
+            <!-- ESNode data node only toggle -->
+            <div class="ml-3">
+              <b-form-checkbox
+                v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
                 v-b-tooltip.hover
-                title="Toggle visible columns">
-              </span>
-            </template>
-            <b-dropdown-header>
-              <input type="text"
-                v-model="colQuery"
-                class="form-control form-control-sm dropdown-typeahead"
-                placeholder="Search for columns..."
-              />
-            </b-dropdown-header>
-            <b-dropdown-divider>
-            </b-dropdown-divider>
-            <b-dropdown-item
-              @click="resetDefault">
-              Reset default columns
-            </b-dropdown-item>
-            <b-dropdown-divider>
-            </b-dropdown-divider>
-            <b-dropdown-item
-              v-for="column in filteredColumns"
-              :key="column.id"
-              v-b-tooltip.hover.top
-              :title="column.help"
-              :class="{'active':isVisible(column.id) >= 0}"
-              @click.stop.prevent="toggleVisibility(column)">
-              {{ column.name }}
-            </b-dropdown-item>
-          </b-dropdown> <!-- /column visibility button -->
+                :title="`Only show data nodes`"
+                @change="$emit('toggle-data-node-only')"
+                name="only-data-nodes-checkbox"
+              >
+              </b-form-checkbox>
+            </div><!-- ESNode data node only toggle -->
+          </div>
         </th>
         <th v-for="column in computedColumns"
           :key="column.name"
@@ -193,7 +206,6 @@ import UserService from '../users/UserService';
 import ToggleBtn from '../utils/ToggleBtn';
 
 let tableDestroyed;
-let draggableColumns;
 
 /**
  * IMPORTANT! This component kicks off the loading of the
@@ -304,7 +316,7 @@ export default {
     }
   },
   // watch for data to change to set opened rows
-  // and to recalucate the average and total rows
+  // and to recalculate the average and total rows
   watch: {
     data: function () {
       if (Object.keys(this.openedRows).length) {
@@ -525,7 +537,7 @@ export default {
     /* helper functions ------------------------------------------ */
     initializeColDragDrop: function () {
       setTimeout(() => { // wait for columns to render
-        draggableColumns = Sortable.create(this.$refs.draggableColumns, {
+        Sortable.create(this.$refs.draggableColumns, {
           animation: 100,
           filter: '.ignore-element',
           preventOnFilter: false, // allow clicks within the ignored element
@@ -703,7 +715,6 @@ export default {
   },
   beforeDestroy: function () {
     tableDestroyed = true;
-    if (draggableColumns) { draggableColumns.destroy(); }
   }
 };
 </script>

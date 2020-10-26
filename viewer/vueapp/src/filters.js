@@ -80,11 +80,38 @@ Vue.filter('extractIPv6String', (ipv6) => {
  * @returns {string}          The human understandable protocol string
  */
 Vue.filter('protocol', (protocolCode) => {
-  let lookup = { 1: 'icmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 132: 'sctp' };
+  let lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
   let result = lookup[protocolCode];
   if (!result) { result = protocolCode; }
   return result;
+});
+
+/**
+ * Modifies a number to display the <=4 char human readable version of bits
+ * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+ *
+ * @example
+ * '{{ 1524680821 | humanReadableBits }}'
+ * this.$options.filters.humanReadableBits(1524680821);
+ *
+ * @param {int} fileSizeInBits The number to make human readable
+ * @returns {string}           The <=4 char human readable number
+ */
+Vue.filter('humanReadableBits', (fileSizeInBits) => {
+  fileSizeInBits = parseInt(fileSizeInBits);
+  let i = 0;
+  let bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  while (fileSizeInBits >= 1024) {
+    fileSizeInBits = fileSizeInBits / 1024;
+    i++;
+  }
+
+  if (i === 0 || fileSizeInBits >= 10) {
+    return fileSizeInBits.toFixed(0) + bitUnits[i];
+  } else {
+    return fileSizeInBits.toFixed(1) + bitUnits[i];
+  }
 });
 
 /**
@@ -310,8 +337,8 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
 Vue.filter('buildExpression', function (field, value, op) {
   // for values required to be strings in the search expression
   /* eslint-disable no-useless-escape */
-  const needQuotes = value !== 'EXISTS!' && !value.startsWith('[') &&
-    /[^-+a-zA-Z0-9_.@:*?/,\[\]]+/.test(value);
+  const needQuotes = value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
+    /[^-+a-zA-Z0-9_.@:*?/,]+/.test(value);
 
   // escape unescaped quotes
   value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');

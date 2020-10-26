@@ -1,261 +1,301 @@
 <template>
 
   <div class="connections-page">
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :start="query.start"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)">
+        </moloch-search> <!-- /search navbar -->
 
-    <!-- search navbar -->
-    <moloch-search
-      :start="query.start"
-      :timezone="user.settings.timezone"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
+        <!-- connections sub navbar -->
+        <form class="connections-form">
+          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
 
-    <!-- connections sub navbar -->
-    <form class="connections-form">
-      <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+            <!-- query size select -->
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Query Size">
+                <span class="input-group-text">
+                  Query Size
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.length"
+                @change="changeLength">
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+                <option value="5000">5,000</option>
+                <option value="10000">10,000</option>
+                <option value="50000">50,000</option>
+                <option value="100000">100,000</option>
+              </select>
+            </div> <!-- /query size select -->
 
-        <!-- query size select -->
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Query Size">
-            <span class="input-group-text">
-              Query Size
-            </span>
+            <!-- src select -->
+            <div class="form-group ml-1"
+              v-if="fields && fields.length && srcFieldTypeahead">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="Select a field for the source nodes">
+                  <span class="input-group-text"
+                    :style="{'background-color': primaryColor + '!important'}">
+                    Src:
+                  </span>
+                </span>
+                <moloch-field-typeahead
+                  :fields="fields"
+                  query-param="srcField"
+                  :initial-value="srcFieldTypeahead"
+                  @fieldSelected="changeSrcField"
+                  page="ConnectionsSrc">
+                </moloch-field-typeahead>
+              </div>
+            </div> <!-- /src select -->
+
+            <!-- dst select -->
+            <div class="form-group ml-1"
+              v-if="fields && dstFieldTypeahead">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="Select a field for the destination nodes">
+                  <span class="input-group-text"
+                    :style="{'background-color': tertiaryColor + '!important'}">
+                    Dst:
+                  </span>
+                </span>
+                <moloch-field-typeahead
+                  :fields="fields"
+                  query-param="dstField"
+                  :initial-value="dstFieldTypeahead"
+                  @fieldSelected="changeDstField"
+                  page="ConnectionsDst">
+                </moloch-field-typeahead>
+              </div>
+            </div> <!-- /dst select -->
+
+            <!-- src & dst color -->
+            <div class="form-group ml-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-prepend legend cursor-help"
+                  v-b-tooltip.hover
+                  title="This is the color of a node that is both a source and destination node">
+                  <span class="input-group-text"
+                    style="border-radius: 4px"
+                    :style="{'background-color': secondaryColor + '!important'}">
+                    Src & Dst
+                  </span>
+                </span>
+              </div>
+            </div> <!-- /src & dst color -->
+
+            <!-- min connections select -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Minimum number of sessions between nodes">
+                <span class="input-group-text">
+                  Min. Connections
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.minConn"
+                @change="changeMinConn">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div> <!-- /min connections select -->
+
+            <!-- weight select -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Change the field that calculates the radius of nodes and the width links">
+                <span class="input-group-text">
+                  Node/Link Weight
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="weight"
+                @change="changeWeight">
+                <option value="sessions">Sessions</option>
+                <option value="totPackets">Packets</option>
+                <option value="totBytes">Total Raw Bytes</option>
+                <option value="totDataBytes">Total Data Bytes</option>
+                <option value="">None</option>
+              </select>
+            </div> <!-- /weight select -->
+
+            <!-- node fields button -->
+            <b-dropdown
+              size="sm"
+              no-flip
+              no-caret
+              toggle-class="rounded"
+              class="field-vis-menu ml-1"
+              variant="theme-primary"
+              v-if="fields && groupedFields && nodeFields">
+              <template slot="button-content">
+                <span class="fa fa-circle-o"
+                  v-b-tooltip.hover
+                  title="Toggle visible fields in the node popups">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <input type="text"
+                  v-model="fieldQuery"
+                  class="form-control form-control-sm dropdown-typeahead"
+                  placeholder="Search for fields..."
+                />
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <template v-for="(group, key) in filteredFields">
+                <b-dropdown-header
+                  :key="key"
+                  v-if="group.length"
+                  class="group-header">
+                  {{ key }}
+                </b-dropdown-header>
+                <template v-for="(field, k) in group">
+                  <b-dropdown-item
+                    :id="key + k + 'itemnode'"
+                    :key="key + k + 'itemnode'"
+                    :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+                    @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                    {{ field.friendlyName }}
+                    <small>({{ field.exp }})</small>
+                  </b-dropdown-item>
+                  <b-tooltip v-if="field.help"
+                    :key="key + k + 'tooltipnode'"
+                    :target="key + k + 'itemnode'"
+                    placement="left"
+                    boundary="window">
+                    {{ field.help }}
+                  </b-tooltip>
+                </template>
+              </template>
+            </b-dropdown> <!-- /node fields button -->
+
+            <!-- link fields button -->
+            <b-dropdown
+              size="sm"
+              no-flip
+              no-caret
+              toggle-class="rounded"
+              class="field-vis-menu ml-1"
+              variant="theme-primary"
+              v-if="fields && groupedFields && linkFields">
+              <template slot="button-content">
+                <span class="fa fa-link"
+                  v-b-tooltip.hover
+                  title="Toggle visible fields in the link popups">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <input type="text"
+                  v-model="fieldQuery"
+                  class="form-control form-control-sm dropdown-typeahead"
+                  placeholder="Search for fields..."
+                />
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <template v-for="(group, key) in filteredFields">
+                <b-dropdown-header
+                  :key="key"
+                  v-if="group.length"
+                  class="group-header">
+                  {{ key }}
+                </b-dropdown-header>
+                <template v-for="(field, k) in group">
+                  <b-dropdown-item
+                    :id="key + k + 'itemlink'"
+                    :key="key + k + 'itemlink'"
+                    :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+                    @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                    {{ field.friendlyName }}
+                    <small>({{ field.exp }})</small>
+                  </b-dropdown-item>
+                  <b-tooltip v-if="field.help"
+                    :key="key + k + 'tooltiplink'"
+                    :target="key + k + 'itemlink'"
+                    placement="left"
+                    boundary="window">
+                    {{ field.help }}
+                  </b-tooltip>
+                </template>
+              </template>
+            </b-dropdown> <!-- /link fields button -->
+
+            <!-- network baseline time range -->
+            <div class="input-group input-group-sm ml-1">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Time range for baseline (preceding query time range)">
+                <span class="input-group-text">
+                  Baseline
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-model="query.baselineDate"
+                @change="changeBaselineDate">
+                <option value="0">disabled</option>
+                <option value="1x">1 × query range</option>
+                <option value="2x">2 × query range</option>
+                <option value="4x">4 × query range</option>
+                <option value="6x">6 × query range</option>
+                <option value="8x">8 × query range</option>
+                <option value="10x">10 × query range</option>
+                <option value="1">1 hour</option>
+                <option value="6">6 hours</option>
+                <option value="24">24 hours</option>
+                <option value="48">48 hours</option>
+                <option value="72">72 hours</option>
+                <option value="168">1 week</option>
+                <option value="336">2 weeks</option>
+                <option value="720">1 month</option>
+                <option value="1440">2 months</option>
+                <option value="4380">6 months</option>
+                <option value="8760">1 year</option>
+              </select>
+            </div> <!-- /network baseline time range -->
+
+            <!-- network baseline node visibility -->
+            <div class="input-group input-group-sm ml-1"
+              v-show="query.baselineDate !== '0'">
+              <div class="input-group-prepend help-cursor"
+                v-b-tooltip.hover
+                title="Toggle node visibility based on baseline result set membership">
+                <span class="input-group-text">
+                  Baseline Visibility
+                </span>
+              </div>
+              <select class="form-control input-sm"
+                v-bind:disabled="query.baselineDate === '0'"
+                v-model="query.baselineVis"
+                @change="changeBaselineVis">
+                <option value="all">All</option>
+                <option value="actual">Actual</option>
+                <option value="actualold">Baseline</option>
+                <option value="new">New only</option>
+                <option value="old">Baseline only</option>
+              </select>
+            </div> <!-- /network baseline node visibility -->
+
           </div>
-          <select class="form-control input-sm"
-            v-model="query.length"
-            @change="changeLength">
-            <option value="100">100</option>
-            <option value="500">500</option>
-            <option value="1000">1,000</option>
-            <option value="5000">5,000</option>
-            <option value="10000">10,000</option>
-            <option value="50000">50,000</option>
-            <option value="100000">100,000</option>
-          </select>
-        </div> <!-- /query size select -->
-
-        <!-- src select -->
-        <div class="form-group ml-1"
-          v-if="fields && fields.length && srcFieldTypeahead">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend legend cursor-help"
-              v-b-tooltip.hover
-              title="Select a field for the source nodes">
-              <span class="input-group-text"
-                :style="{'background-color': primaryColor + '!important'}">
-                Src:
-              </span>
-            </span>
-            <moloch-field-typeahead
-              :fields="fields"
-              query-param="srcField"
-              :initial-value="srcFieldTypeahead"
-              @fieldSelected="changeSrcField"
-              page="ConnectionsSrc">
-            </moloch-field-typeahead>
-          </div>
-        </div> <!-- /src select -->
-
-        <!-- dst select -->
-        <div class="form-group ml-1"
-          v-if="fields && dstFieldTypeahead">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend legend cursor-help"
-              v-b-tooltip.hover
-              title="Select a field for the destination nodes">
-              <span class="input-group-text"
-                :style="{'background-color': tertiaryColor + '!important'}">
-                Dst:
-              </span>
-            </span>
-            <moloch-field-typeahead
-              :fields="fields"
-              query-param="dstField"
-              :initial-value="dstFieldTypeahead"
-              @fieldSelected="changeDstField"
-              page="ConnectionsDst">
-            </moloch-field-typeahead>
-          </div>
-        </div> <!-- /dst select -->
-
-        <!-- src & dst color -->
-        <div class="form-group ml-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-prepend legend cursor-help"
-              v-b-tooltip.hover
-              title="This is the color of a node that is both a source and destination node">
-              <span class="input-group-text"
-                style="border-radius: 4px"
-                :style="{'background-color': secondaryColor + '!important'}">
-                Src & Dst
-              </span>
-            </span>
-          </div>
-        </div> <!-- /src & dst color -->
-
-        <!-- min connections select -->
-        <div class="input-group input-group-sm ml-1">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Minimum number of sessions between nodes">
-            <span class="input-group-text">
-              Min. Connections
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="query.minConn"
-            @change="changeMinConn">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-        </div> <!-- /min connections select -->
-
-        <!-- weight select -->
-        <div class="input-group input-group-sm ml-1">
-          <div class="input-group-prepend help-cursor"
-            v-b-tooltip.hover
-            title="Change the field that calculates the radius of nodes and the width links">
-            <span class="input-group-text">
-              Node/Link Weight
-            </span>
-          </div>
-          <select class="form-control input-sm"
-            v-model="weight"
-            @change="changeWeight">
-            <option value="sessions">Sessions</option>
-            <option value="totPackets">Packets</option>
-            <option value="totBytes">Total Raw Bytes</option>
-            <option value="totDataBytes">Total Data Bytes</option>
-            <option value="">None</option>
-          </select>
-        </div> <!-- /weight select -->
-
-        <!-- unlock button-->
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Unlock any nodes that you have set into place"
-          @click.stop.prevent="unlock">
-          <span class="fa fa-unlock"></span>&nbsp;
-          Unlock
-        </button> <!-- /unlock button-->
-
-        <!-- export button-->
-        <button class="btn btn-default btn-sm ml-1"
-          v-b-tooltip.hover
-          title="Export this graph as a png"
-          @click.stop.prevent="exportPng">
-          <span class="fa fa-download"></span>&nbsp;
-          Export
-        </button> <!-- /export button-->
-
-        <!-- node fields button -->
-        <b-dropdown
-          size="sm"
-          no-flip
-          no-caret
-          toggle-class="rounded"
-          class="field-vis-menu ml-1"
-          variant="theme-primary"
-          v-if="fields && groupedFields && nodeFields">
-          <template slot="button-content">
-            <span class="fa fa-circle-o"
-              v-b-tooltip.hover
-              title="Toggle visible fields in the node popups">
-            </span>
-          </template>
-          <b-dropdown-header>
-            <input type="text"
-              v-model="fieldQuery"
-              class="form-control form-control-sm dropdown-typeahead"
-              placeholder="Search for fields..."
-            />
-          </b-dropdown-header>
-          <b-dropdown-divider>
-          </b-dropdown-divider>
-          <template v-for="(group, key) in filteredFields">
-            <b-dropdown-header
-              :key="key"
-              v-if="group.length"
-              class="group-header">
-              {{ key }}
-            </b-dropdown-header>
-            <template v-for="(field, k) in group">
-              <b-dropdown-item
-                :id="key + k + 'itemnode'"
-                :key="key + k + 'itemnode'"
-                :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                {{ field.friendlyName }}
-                <small>({{ field.exp }})</small>
-              </b-dropdown-item>
-              <b-tooltip v-if="field.help"
-                :key="key + k + 'tooltipnode'"
-                :target="key + k + 'itemnode'"
-                placement="left"
-                boundary="window">
-                {{ field.help }}
-              </b-tooltip>
-            </template>
-          </template>
-        </b-dropdown> <!-- /node fields button -->
-
-        <!-- link fields button -->
-        <b-dropdown
-          size="sm"
-          no-flip
-          no-caret
-          toggle-class="rounded"
-          class="field-vis-menu ml-1"
-          variant="theme-primary"
-          v-if="fields && groupedFields && linkFields">
-          <template slot="button-content">
-            <span class="fa fa-link"
-              v-b-tooltip.hover
-              title="Toggle visible fields in the link popups">
-            </span>
-          </template>
-          <b-dropdown-header>
-            <input type="text"
-              v-model="fieldQuery"
-              class="form-control form-control-sm dropdown-typeahead"
-              placeholder="Search for fields..."
-            />
-          </b-dropdown-header>
-          <b-dropdown-divider>
-          </b-dropdown-divider>
-          <template v-for="(group, key) in filteredFields">
-            <b-dropdown-header
-              :key="key"
-              v-if="group.length"
-              class="group-header">
-              {{ key }}
-            </b-dropdown-header>
-            <template v-for="(field, k) in group">
-              <b-dropdown-item
-                :id="key + k + 'itemlink'"
-                :key="key + k + 'itemlink'"
-                :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                {{ field.friendlyName }}
-                <small>({{ field.exp }})</small>
-              </b-dropdown-item>
-              <b-tooltip v-if="field.help"
-                :key="key + k + 'tooltiplink'"
-                :target="key + k + 'itemlink'"
-                placement="left"
-                boundary="window">
-                {{ field.help }}
-              </b-tooltip>
-            </template>
-          </template>
-        </b-dropdown> <!-- /link fields button -->
-
-      </div>
-    </form> <!-- /connections sub navbar -->
+        </form> <!-- /connections sub navbar -->
+      </span>
+    </MolochCollapsible>
 
     <div class="connections-content">
 
@@ -291,86 +331,110 @@
         </div>
       </div> <!-- /popup area -->
 
-      <!-- zoom in/out -->
-      <div class="btn-group-vertical zoom-btns overlay-btns">
-        <span title="Zoom in"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':zoomLevel >= 4}"
-            @click="zoomConnections(2)">
-            <span class="fa fa-lg fa-search-plus">
-            </span>
-          </button>
-        </span>
-        <span title="Zoom out"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':zoomLevel <= 0.0625}"
-            @click="zoomConnections(0.5)">
-            <span class="fa fa-lg fa-search-minus">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /zoom in/out -->
+      <!-- Button group -->
+      <span class="connections-buttons" :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
+        <div class="btn-group-vertical unlock-btn overlay-btns">
+          <!-- unlock button-->
+          <span class="unlock-btn">
+            <button class="btn btn-default btn-sm ml-1"
+              v-b-tooltip.hover
+              title="Unlock any nodes that you have set into place"
+              @click.stop.prevent="unlock">
+              <span class="fa fa-unlock"></span>
+            </button>
+          </span> <!-- /unlock button-->
 
-      <!-- text size increase/decrease -->
-      <div class="btn-group-vertical text-size-btns overlay-btns">
-        <span v-b-tooltip.hover.lefttop
-          title="Increase text size (you might also want to update the node distance using the buttons just to the left)">
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':fontSize >= 1}"
-            @click="updateTextSize(0.1)">
-            <span class="fa fa-long-arrow-up">
-            </span>
-            <span class="fa fa-font">
-            </span>
-          </button>
-        </span>
-        <span v-b-tooltip.hover.lefttop
-          title="Decrease text size (you might also want to update the node distance using the buttons just to the left)">
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':fontSize <= 0.2}"
-            @click="updateTextSize(-0.1)">
-            <span class="fa fa-long-arrow-down">
-            </span>
-            <span class="fa fa-font">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /text size increase/decrease -->
+          <!-- export button-->
+          <span class="export-btn">
+            <button class="btn btn-default btn-sm ml-1"
+              v-b-tooltip.hover
+              title="Export this graph as a PNG"
+              @click.stop.prevent="exportPng">
+              <span class="fa fa-download"></span>
+            </button>
+          </span> <!-- /export button-->
+        </div>
 
-      <!-- node distance -->
-      <div class="btn-group-vertical node-distance-btns overlay-btns">
-        <span title="Increase node distance"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':query.nodeDist >= 200}"
-            @click="changeNodeDist(10)">
-            <span class="fa fa-plus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
-          </button>
-        </span>
-        <span title="Decrease node distance"
-          v-b-tooltip.hover.lefttop>
-          <button type="button"
-            class="btn btn-default btn-sm"
-            :class="{'disabled':query.nodeDist <= 10}"
-            @click="changeNodeDist(-10)">
-            <span class="fa fa-minus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
-          </button>
-        </span>
-      </div> <!-- /node distance -->
+        <!-- node distance -->
+        <div class="btn-group-vertical node-distance-btns overlay-btns">
+          <span title="Increase node distance"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':query.nodeDist >= 200}"
+              @click="changeNodeDist(10)">
+              <span class="fa fa-plus">
+              </span>
+              <span class="fa fa-arrows-v">
+              </span>
+            </button>
+          </span>
+          <span title="Decrease node distance"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':query.nodeDist <= 10}"
+              @click="changeNodeDist(-10)">
+              <span class="fa fa-minus">
+              </span>
+              <span class="fa fa-arrows-v">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /node distance -->
 
+        <!-- text size increase/decrease -->
+        <div class="btn-group-vertical text-size-btns overlay-btns">
+          <span v-b-tooltip.hover.lefttop
+            title="Increase text size (you might also want to update the node distance using the buttons just to the left)">
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':fontSize >= 1}"
+              @click="updateTextSize(0.1)">
+              <span class="fa fa-long-arrow-up">
+              </span>
+              <span class="fa fa-font">
+              </span>
+            </button>
+          </span>
+          <span v-b-tooltip.hover.lefttop
+            title="Decrease text size (you might also want to update the node distance using the buttons just to the left)">
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':fontSize <= 0.2}"
+              @click="updateTextSize(-0.1)">
+              <span class="fa fa-long-arrow-down">
+              </span>
+              <span class="fa fa-font">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /text size increase/decrease -->
+
+        <!-- zoom in/out -->
+        <div class="btn-group-vertical zoom-btns overlay-btns">
+          <span title="Zoom in"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':zoomLevel >= 4}"
+              @click="zoomConnections(2)">
+              <span class="fa fa-lg fa-search-plus">
+              </span>
+            </button>
+          </span>
+          <span title="Zoom out"
+            v-b-tooltip.hover.lefttop>
+            <button type="button"
+              class="btn btn-default btn-sm"
+              :class="{'disabled':zoomLevel <= 0.0625}"
+              @click="zoomConnections(0.5)">
+              <span class="fa fa-lg fa-search-minus">
+              </span>
+            </button>
+          </span>
+        </div> <!-- /zoom in/out -->
+      </span> <!-- /Button group -->
     </div>
 
   </div>
@@ -383,6 +447,7 @@ import MolochSearch from '../search/Search';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 // import services
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import FieldService from '../search/FieldService';
@@ -398,7 +463,7 @@ import { mixin as clickaway } from 'vue-clickaway';
 import Utils from '../utils/utils';
 
 // d3 force directed graph vars/functions ---------------------------------- */
-let colors, foregroundColor;
+let nodeFillColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
 let popupTimer, popupVue;
@@ -468,9 +533,10 @@ function unfocus () {
 }
 
 // simulation resize helper
-function resize () {
+function resize (toolbarDown = true) {
   const width = $(window).width() - 10;
-  const height = $(window).height() - 171;
+  // 36px for navbar + 25px for footer = 61px.
+  const height = $(window).height() - (toolbarDown ? 171 : 61);
 
   // set the width and height of the canvas
   svg.attr('width', width).attr('height', height);
@@ -504,6 +570,7 @@ export default {
     MolochError,
     MolochLoading,
     MolochNoResults,
+    MolochCollapsible,
     MolochFieldTypeahead
   },
   data: function () {
@@ -518,9 +585,13 @@ export default {
       srcFieldTypeahead: undefined,
       dstFieldTypeahead: undefined,
       groupedFields: undefined,
+      foregroundColor: undefined,
       primaryColor: undefined,
       secondaryColor: undefined,
       tertiaryColor: undefined,
+      highlightPrimaryColor: undefined,
+      highlightSecondaryColor: undefined,
+      highlightTertiaryColor: undefined,
       closePopups: closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
@@ -540,6 +611,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
+        baselineDate: this.$route.query.baselineDate || '0',
+        baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
@@ -548,6 +621,10 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    // Boolean in the store will remember chosen toggle state for all pages
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     },
     filteredFields: function () {
       let filteredGroupedFields = {};
@@ -572,6 +649,9 @@ export default {
     '$route.query.length': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.baselineDate': function (newVal, oldVal) {
+      this.cancelAndLoad(true);
+    },
     '$route.query.minConn': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
@@ -593,15 +673,25 @@ export default {
     },
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
+    },
+
+    // Resize svg height after toggle is updated and mounted()
+    showToolBars: function () {
+      this.$nextTick(() => {
+        resize(this.showToolBars);
+      });
     }
   },
   mounted: function () {
     let styles = window.getComputedStyle(document.body);
+    this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
     this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
-    foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    colors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+    this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+    this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+    nodeFillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
 
     this.cancelAndLoad(true);
 
@@ -645,6 +735,36 @@ export default {
         query: {
           ...this.$route.query,
           length: this.query.length
+        }
+      });
+    },
+    changeBaselineDate: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baselineDate: this.query.baselineDate
+        }
+      });
+    },
+    changeBaselineVis: function () {
+      svg.selectAll('.node')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      // TODO: is there a way to get each label's/link's associated node(s)
+      // and just get its visibility rather than re-runing
+      // calculateNodeBaselineVisibility/calculateLinkBaselineVisibility
+      // for all of them?
+
+      svg.selectAll('.node-label')
+        .attr('visibility', this.calculateNodeBaselineVisibility);
+
+      svg.selectAll('.link')
+        .attr('visibility', this.calculateLinkBaselineVisibility);
+
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          baselineVis: this.query.baselineVis
         }
       });
     },
@@ -840,6 +960,7 @@ export default {
           friendlyName: 'Dst IP:Dst Port'
         };
         this.fields.push(ipDstPortField);
+        this.fieldsMap['ip.dst:port'] = ipDstPortField;
         this.groupedFields.general.push(ipDstPortField);
       }
     },
@@ -892,7 +1013,8 @@ export default {
 
       // calculate the width and height of the canvas
       const width = $(window).width() - 10;
-      const height = $(window).height() - 171;
+      // 36px for navbar + 25px for footer = 61px.
+      const height = $(window).height() - (this.toolbarDown ? 171 : 61);
 
       // get the node and link data
       links = data.links.map(d => Object.create(d));
@@ -943,13 +1065,14 @@ export default {
 
       // add links
       link = container.append('g')
-        .attr('stroke', foregroundColor)
+        .attr('stroke', this.foregroundColor)
         .attr('stroke-opacity', 0.4)
         .selectAll('line')
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .attr('stroke-width', this.calculateLinkWeight);
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('visibility', this.calculateLinkBaselineVisibility);
 
       // add link mouse listeners for showing popups
       link.on('mouseover', (l) => {
@@ -964,8 +1087,6 @@ export default {
 
       // add nodes
       node = container.append('g')
-        .attr('stroke', foregroundColor)
-        .attr('stroke-width', 0.5)
         .selectAll('circle')
         .data(nodes)
         .enter()
@@ -975,9 +1096,12 @@ export default {
           return 'id' + d.id.replace(idRegex, '_');
         })
         .attr('fill', (d) => {
-          return colors[d.type];
+          return nodeFillColors[d.type];
         })
         .attr('r', this.calculateNodeWeight)
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
@@ -1010,8 +1134,11 @@ export default {
         .attr('dy', '2px')
         .attr('class', 'node-label')
         .style('font-size', this.fontSize + 'em')
+        .style('font-weight', this.calculateNodeLabelWeight)
+        .style('font-style', this.calculateNodeLabelStyle)
+        .attr('visibility', this.calculateNodeBaselineVisibility)
         .style('pointer-events', 'none') // to prevent mouseover/drag capture
-        .text((d) => { return d.id; });
+        .text((d) => { return d.id + this.calculateNodeLabelSuffix(d); });
 
       // listen on each tick of the simulation's internal timer
       simulation.on('tick', () => {
@@ -1086,6 +1213,76 @@ export default {
       let val = this.calculateNodeWeight(nl);
       return 2 + val;
     },
+    calculateNodeLabelWeight: function (n) {
+      let val = 'normal';
+      if (this.query.baselineDate !== '0') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = 'lighter';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = 'bold';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeLabelStyle: function (n) {
+      // italicize "old" nodes (in baseline, not in actual result set)
+      return ((this.query.baselineDate !== '0') && (n.inresult === 2)) ? 'italic' : 'normal';
+    },
+    calculateNodeLabelSuffix: function (n) {
+      let val = '';
+      if (this.query.baselineDate !== '0') {
+        switch (n.inresult) {
+          case 2:
+            // "old" (in baseline, not in actual result set)
+            val = ' 🚫';
+            break;
+          case 1:
+            // "new" (in actual, not in baseline result set)
+            val = ' ✨';
+            break;
+        }
+      }
+      return val;
+    },
+    calculateNodeBaselineVisibility: function (n) {
+      let val = 'visible';
+
+      if (this.query.baselineDate !== '0') {
+        let inActualSet = ((n.inresult & 0x1) !== 0);
+        let inBaselineSet = ((n.inresult & 0x2) !== 0);
+        switch (this.query.baselineVis) {
+          case 'actual':
+            val = inActualSet ? 'visible' : 'hidden';
+            break;
+          case 'actualold':
+            val = inBaselineSet ? 'visible' : 'hidden';
+            break;
+          case 'new':
+            val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
+            break;
+          case 'old':
+            val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
+            break;
+        }
+      }
+
+      return val;
+    },
+    calculateLinkBaselineVisibility: function (l) {
+      let val = 'visible';
+
+      if (this.query.baselineDate !== '0') {
+        let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
+        val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
+      }
+
+      return val;
+    },
     calculateCollisionRadius: function (n) {
       let val = this.calculateNodeWeight(n);
       return 2 * val;
@@ -1112,8 +1309,10 @@ export default {
     },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
+        dataNode.dbField = this.query.dstField;
         dataNode.exp = this.dbField2Exp(this.query.dstField);
       } else {
+        dataNode.dbField = this.query.srcField;
         dataNode.exp = this.dbField2Exp(this.query.srcField);
       }
 
@@ -1123,7 +1322,15 @@ export default {
           template: `
             <div class="connections-popup">
               <div class="mb-2">
-                <strong>{{dataNode.id}}</strong>
+                <strong>
+                  <moloch-session-field
+                    :value="dataNode.id"
+                    :session="dataNode"
+                    :expr="dataNode.exp"
+                    :field="fields[dataNode.dbField]"
+                    :pull-left="true">
+                  </moloch-session-field>
+                </strong>
                 <a class="pull-right cursor-pointer no-decoration"
                   @click="closePopup">
                   <span class="fa fa-close"></span>
@@ -1140,8 +1347,8 @@ export default {
 
                 <span v-for="field in nodeFields"
                   :key="field">
-                  <dt :title="fields[field].friendlyName">
-                    {{ fields[field].exp }}
+                  <dt>
+                    {{ fields[field].friendlyName }}
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(dataNode[field])">
@@ -1166,19 +1373,10 @@ export default {
                   </dd>
                 </span>
 
-                <dt>Expressions</dt>
-                <dd>
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click.stop.prevent="addExpression('&&')">
-                    AND
-                  </a>&nbsp;
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click.stop.prevent="addExpression('||')">
-                    OR
-                  </a>
-                </dd>
+                <div v-if="baselineDate !== '0'">
+                  <dt>Result Set</dt>
+                  <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
+                </div>
               </dl>
 
               <a class="cursor-pointer no-decoration"
@@ -1194,7 +1392,8 @@ export default {
           data: {
             dataNode: dataNode,
             nodeFields: this.nodeFields,
-            fields: this.fieldsMap
+            fields: this.fieldsMap,
+            baselineDate: this.query.baselineDate
           },
           methods: {
             hideNode: function () {
@@ -1224,6 +1423,8 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
+      linkData.dstDbField = this.query.dstField;
+      linkData.srcDbField = this.query.srcField;
       linkData.dstExp = this.dbField2Exp(this.query.dstField);
       linkData.srcExp = this.dbField2Exp(this.query.srcField);
 
@@ -1239,9 +1440,23 @@ export default {
                   <span class="fa fa-close"></span>
                 </a>
               </div>
-              <div>{{linkData.source.id}}</div>
+              <div>
+                <moloch-session-field
+                  :value="linkData.source.id"
+                  :session="linkData"
+                  :expr="linkData.srcExp"
+                  :field="fields[linkData.srcDbField]"
+                  :pull-left="true">
+                </moloch-session-field>
+              </div>
               <div class="mb-2">
-                {{linkData.target.id}}
+                <moloch-session-field
+                  :value="linkData.target.id"
+                  :session="linkData"
+                  :expr="linkData.dstExp"
+                  :field="fields[linkData.dstDbField]"
+                  :pull-left="true">
+                </moloch-session-field>
               </div>
 
               <dl class="dl-horizontal">
@@ -1250,8 +1465,8 @@ export default {
 
                 <span v-for="field in linkFields"
                   :key="field">
-                  <dt :title="fields[field].friendlyName">
-                    {{ fields[field].exp }}
+                  <dt>
+                    {{ fields[field].friendlyName }}
                   </dt>
                   <dd>
                     <span v-if="!Array.isArray(linkData[field])">
@@ -1275,16 +1490,6 @@ export default {
                     </span>&nbsp;
                   </dd>
                 </span>
-
-                <dt>Expressions</dt>
-                <dd>
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click="addExpression('&&')">AND</a>&nbsp;
-                  <a class="cursor-pointer no-decoration"
-                    href="javascript:void(0)"
-                    @click="addExpression('||')">OR</a>
-                </dd>
               </dl>
 
               <a class="cursor-pointer no-decoration"
@@ -1363,28 +1568,25 @@ export default {
     $('.connections-popup').remove();
     if (popupVue) { popupVue.$destroy(); }
 
-    // clean up global vars
-    svg = undefined;
-    zoom = undefined;
-    node = undefined;
-    link = undefined;
-    colors = undefined;
-    popupVue = undefined;
-    container = undefined;
-    nodeLabel = undefined;
-    popupTimer = undefined;
-    simulation = undefined;
-    draggingNode = undefined;
-    foregroundColor = undefined;
+    setTimeout(() => {
+      // clean up global vars
+      svg = undefined;
+      zoom = undefined;
+      node = undefined;
+      link = undefined;
+      nodeFillColors = undefined;
+      popupVue = undefined;
+      container = undefined;
+      nodeLabel = undefined;
+      popupTimer = undefined;
+      simulation = undefined;
+      draggingNode = undefined;
+    });
   }
 };
 </script>
 
 <style scoped>
-.connections-page {
-  /* account for main navbar height */
-  margin-top: 36px;
-}
 
 .connections-graph {
   /* don't allow selecting text */
@@ -1395,10 +1597,6 @@ export default {
 
 /* position the subnavbar */
 .connections-page form.connections-form {
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 
@@ -1410,11 +1608,6 @@ export default {
 /* remove select box styles */
 .connections-page form.connections-form select {
   -webkit-appearance: none;
-}
-
-/* accommodate top navbars */
-.connections-page .connections-content {
-  padding-top: 110px;
 }
 
 /* make the color for legend areas white */
@@ -1430,19 +1623,24 @@ export default {
 
 /* zoom/font size/node distance buttons overlaying the graph */
 .connections-content .zoom-btns {
-  position: fixed;
-  top: 160px;
-  right: 10px;
 }
 .connections-content .text-size-btns {
-  position: fixed;
-  top: 160px;
-  right: 47px;
+
 }
 .connections-content .node-distance-btns {
-  position: fixed;
-  top: 160px;
-  right: 90px;
+
+}
+.connections-content .unlock-btn {
+
+}
+.connections-content .unlock-btn > button {
+  height: 29px;
+}
+.connections-content .export-btn {
+
+}
+.connections-content .export-btn > button {
+  height: 29px;
 }
 
 .connections-content .overlay-btns > span:first-child > button {
@@ -1451,6 +1649,10 @@ export default {
 }
 .connections-content .overlay-btns > span:last-child > button {
   border-radius: 0 0 4px 4px;
+}
+.connections-buttons {
+  position: fixed;
+  right: 10px;
 }
 </style>
 
@@ -1488,7 +1690,7 @@ export default {
 
 .field-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 .field-vis-menu .dropdown-menu input {
   width: 100%;

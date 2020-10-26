@@ -1,4 +1,4 @@
-use Test::More tests => 41;
+use Test::More tests => 40;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -8,6 +8,18 @@ use Data::Dumper;
 use strict;
 
 my $pwd = "*/pcap";
+
+
+sub get {
+my ($url) = @_;
+
+    my $json = viewerGet($url);
+    my $mjson = multiGet($url);
+
+    eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
+
+    return $json
+}
 
     my $token = getTokenCookie();
     my $otherToken = getTokenCookie('historytest1');
@@ -47,20 +59,11 @@ my $pwd = "*/pcap";
     $json->{data}->[0]->{index} = $index;
 
 # Make sure another user doesn't see our history
-    $json = viewerGet("/history/list?molochRegressionUser=historytest2");
+    $json = get("/history/list?molochRegressionUser=historytest2");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
-# Check Multi
-    $mjson = multiGet("/history/list?molochRegressionUser=historytest2");
-    eq_or_diff($mjson, $json, "multi Test2", { context => 3 });
-
 # Make sure can't request someone elses
-    $json = viewerGet("/history/list?molochRegressionUser=historytest2&userId=historytest1");
-    eq_or_diff($json, from_json('{"success": false, "text": "Need admin privileges"}', {relaxed => 1}), "historytest2 requesting historytest1", { context => 3 });
-
-# Check Multi
-    $mjson = viewerGet("/history/list?molochRegressionUser=historytest2&userId=historytest1");
-    eq_or_diff($mjson, $json, "multi historytest2 requesting historytest1", { context => 3 });
+    $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest1");
 
 # An admin user should see everything, find it
     $json = viewerGet("/history/list");
@@ -107,12 +110,8 @@ my $pwd = "*/pcap";
     esGet("/_refresh");
 
 # Make sure gone
-    $json = viewerGet("/history/list?molochRegressionUser=historytest1");
+    $json = get("/history/list?molochRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 0, "Should be no items");
-
-# Check Multi
-    $mjson = viewerGet("/history/list?molochRegressionUser=historytest1");
-    is ($mjson->{recordsFiltered}, 0, "multi Should be no items");
 
 # An admin user should see forced expressions for users
     # create a user with a forced expression

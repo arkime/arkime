@@ -1,6 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
   * Moloch >= 1.0.0  supports ES >= 5.5.0, 6.x (not prod tested, only for new installs), not 7.x or later
@@ -8,6 +9,7 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
   * Moloch >= 1.0.0 requires NodeJS 8.x
@@ -16,7 +18,196 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.2.0 2019/01/xx
+2.4.2 2020/10/xx
+  - NOTE - this is the last version to support ES 6
+  - viewer - support utf8 chars in content-disposition
+  - viewer - add capture process restart to timeline graphs
+  - viewer - add "bookmarks"
+             apply a view's expression to the search input without issuing a query
+  - viewer - fix anonymous users settings not being saved
+  - viewer - share hunts between users
+  - capture - QUIC version 5x detection
+
+2.4.1 2020/09/28
+  - NOTICE - db.pl upgrade is required
+  - NOTICE - the elasticsearch and usersElasticsearch variables must start with http:// or https://
+  - release - node 12.18.4
+  - viewer - fixed export pcap from actions menu not working
+  - viewer - capture stats/graph now uses regex instead of wildcard
+  - viewer - support -reindex indices
+  - viewer - log more info when can't open a file
+  - viewer - lastpass boxes removed
+  - viewer - can now edit ILM values from ES Admin tab if ./db.pl ilm has been used previously
+  - viewer - handle hunts with bad regex better
+  - viewer - change capture stats default length to 200
+  - viewer - fix password change with aes256Encryption turned on
+  - viewer - handle hunts when nodes are down better
+  - wise - UI improvements
+  - wise - theatstream mode sqlite3 no longer copies the db, use sqlite3-copy for old behaviour
+  - parliament - show bits instead of bytes
+  - db - new reindex command
+  - capture - http2 header fields were not always indexed correctly
+  - capture - fix g_hash_table_contains warning
+  - capture - rules can use special ip values ipv4 and ipv6 now
+  - moloch_update_geo.sh - fix possible security issue
+
+
+2.4.0 2020/08/25
+  - NOTE - RHEL/Centos 6 is no longer supported, Node 12 required
+  - NOTE - New encoding of packetPos, set gapPacketPos=false for old encoding
+  - NOTE - 2.4.x will be the last versions to support ES 6
+  - release - node 12.18.2, glib 2.64.5, curl 7.72.0
+  - release - Ubuntu 20 support
+  - viewer - aes256Encryption now defaults to true
+  - viewer - added a clear cache button to ES Admin tab
+  - viewer - quote expressions with [ or ] in them
+  - viewer - add button to only show data nodes on ES Nodes tab
+  - viewer - files tab can now show the packet pos encoding
+  - viewer - ES Indices tab can now show the avg doc size per index
+  - viewer - ES Nodes tab can now show shards and segments per node
+  - capture - http2 decoding for PRI * h2 sessions
+  - capture - set http2 protocol when alpn is h2
+  - capture - upgrade h2c http2 decoding
+  - capture - no longer use internal libpcap function
+  - capture - simple writer supports maxFileTimeM (PR #1506)
+  - capture - new packetPos encoding saves 10%-20% overall ES space
+  - capture - remove old disk writer methods, use simple or simple-nodirect now
+  - wise - simple UI
+  - wise - support json file format config files
+
+2.3.2 2020/06/29
+  - NOTE - 2.3.x will be the last version to support RHEL/Centos 6
+  - release - node 10.21.0
+  - capture - minor tcp dns parsing performance improvement
+  - capture - refactor some code to be more type safe
+  - capture - deal with bad utf8/puny in dns and altnames
+  - viewer - warn at starting about missing ./vueapp/dist/index.html
+  - viewer - can now use db:<dbFieldName> in expressions (PR #1463)
+  - viewer - if esAdminUsers isn't set, ES Admin tab now shows up for admins
+  - viewer - ES Nodes can display molochzone attribute now
+  - viewer - fixed some Users tab issues
+  - viewer - fix percentage sorting on ES Recovery tab
+  - viewer - "right click" actions can how show text in menu with fetch actionType
+  - viewer - "Reverse DNS" menu option on ips
+
+2.3.1 2020/05/27
+  - all - Lots of changes to support node 12 in the future (thanks rnbwdsh)
+  - viewer - fix bug where the next query after an empty query might hang the UI
+  - viewer - use the same eslint as the UI & parliament, lots of lines changed
+  - viewer - can now modify or delete a view from the popup
+  - viewer - fixed so non admins can cancel their searches again
+  - viewer - fixed columns not always loading with views
+  - viewer - when user creates a view it will auto switch
+  - viewer - does basic ip validation in queries
+  - viewer - fixed users tab header being hidden
+  - capture - fixed out of bounds read in smtp parsing
+  - capture - Lowered the default number of ES retries to 2, added new
+              esMaxRetries setting
+  - wise - upgraded sqlite version and changed from hashtable to Map (thanks rnbwdsh)
+  - db.pl - The info command will now display estimate for how many days can be stored
+
+2.3.0 2020/05/06
+  - release - CyberChef 9.16.2, node 10.20.1, daq 2.0.7
+  - viewer - set content-type for cyberchef files
+  - viewer - add support for caTrustFile to addUser and multies
+  - viewer - can now select to show any integer field in graphs, set on the settings page
+  - viewer - graph/header can now be pinned to not scroll off page
+  - viewer - most navbars can be collapsed and hidden
+  - viewer - mouse over in graphs now show total values too
+  - viewer - fixed left/right keys not working in search bar after visiting stats page
+  - viewer - support cancel for multies
+  - viewer - cleaned up some of the Help docs
+  - capture - new parsers arp, bgp, igmp, isis, lldp, ospf, pim,
+  - capture - protocol parsing code has been refactored, can now write parsers
+              of ethernet and other ip protocols
+  - capture - new disableParsers, default of arp.so
+  - capture - new unkEthernet, unkIpProtocol protocols
+  - capture - support QUIC version 46
+  - capture - new esBulkQuery setting to override the /bulk call
+  - capture - added some more lua examples (thanks Antipokemon)
+  - wise - threatstream fixes to be nicer to the sql database
+  - all - switch most ES apis to typeless format
+
+2.2.3 2020/03/09
+  - viewer - Experimental treemap view in spigraph
+  - viewer - Hunts now retry talking to failed remote nodes
+  - viewer - Completed Hunts have a repeat button
+  - viewer - Fix some Hunt stat and display issues
+  - viewer - Fixed Hunts/Tags working with ILM
+  - viewer - Fixed notifier issues and issue #1365
+  - viewer - Increase navbar contrast
+  - viewer - Spiview should be faster loading data
+  - viewer - Debug now prints out config vars like capture
+  - release - Fix lua.so not being included with builds
+  - capture - Fix "-r -" not working
+  - parliament - Ignored issues should remain unless deleted
+  - db - Can set sessions refresh interval
+
+2.2.2 2020/02/18
+  - release - node 10.19.0
+  - capture - fix SYN retrans handling
+  - capture - New tcphealthcheck plugin (thanks fj604)
+  - capture - support communityId field in rules/wise
+  - capture - fixed drop stats for long running systems
+  - viewer - Fix decode crash (thanks mammo0)
+  - viewer - experimental pie chart in spigraph
+  - viewer - experimental table view in spigraph
+  - viewer - fix viewer crash when hunting fake sessions (issue #1374)
+  - viewer - fix capture stats sort
+  - viewer - new accessLogFormat, accessLogSuppressPaths settings to
+             better control logging (issue #1375)
+  - viewer - do a better job decoding http 100 continue msgs
+  - decryptPcap.js - can now decrypt Moloch encrypted pcap files to stdout
+  - s3 - Fixes the problem where the s3 token expires during a capture (issue #1370)
+  - s3 - more logging on errors
+  - s3 - new s3Host setting (thank jc2k)
+  - all - debug can be set in config file, used if no command line debug args
+
+2.2.1 2020/01/21
+  - capture - fix --skip not working with ES 7.x
+  - capture - update TLS ciphers
+  - capture - increaase offlineDispatchAfter default to 2500
+  - capture - cert decode publicAlgorithm and curve
+  - db - optimize-admin doesn't wait for other optimizations to finish
+  - lua - save/pre_save callbacks, can now get most fields
+  - viewer - fix viewer notifiers (issue #1361)
+
+
+2.2.0 2020/01/13
+  - NOTE - Elasticsearch 6.7.x is no longer supported
+  - NOTE - MaxMind now requires an account, set up your geoipupdate script
+           https://molo.ch/faq#maxmind
+
+  - release - node 10.18.1, yara 3.11.0, curl 7.68.0
+  - release - Configure now installs elasticsearch 7.5.1
+  - viewer - New aes256Encryption option to upgrade encryption, all
+             viewers must be on 2.2.0 or later before upgrading
+  - viewer - shrink operation deletes old index now
+  - viewer - Querying was sometimes limited to 20000 items (or less)
+  - viewer - Sending sessions between clusters didn't allow pcap to be viewed
+             on receiving side
+  - viewer - Intersection export allows editing of fields
+  - viewer - Panning graph left/right allows selection of how much
+  - viewer - Refresh interval on spigraph page increments time (if it's a date range)
+  - capture - geoLite2ASN and geoLite2Country are now semicolon separated
+              lists.  The first one that exists will be used or warning
+              printed.  To disable warning set to blank.
+  - capture - disable the 100-Continue feature of curl to reduce bulk errors
+  - capture - smtp parse now maps a few encodings to standards glib understands
+  - s3 - support maxFileTimeM
+  - db - support creating ILM policys and assigning them for sessions2 and history
+  - db - new optimize-admin that only optimizes admin indices
+  - parliament - Click on ES health goes to ES Nodes tab
+
+2.1.2 2019/12/16
+  - capture - no longer check in configure scripts, use autoreconf (thanks martinpaljak)
+  - capture - new http header raw callback for plugins (thanks pjsg)
+  - lua - Improvements and new sample script (thanks pjsg)
+  - viewer - more cyberchef fixes
+  - viewer - increased timeout on indexing
+  - viewer - show menu/protocol column on sessions page even if there are no
+             visible columns (issue #1337)
+  - parliament - make sure good config before writing (issue #1181)
 
 2.1.1 2019/12/09
   - release - cyberchef 9.11.7
@@ -1063,7 +1254,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Mouse over view names shows expression (issue #220)
   - Display SPI Data even if node is unavailabe (issue #219)
   - Netflow plugin timestamp fixes (issue #241)
-  - Comma seperate list of elasticsearch hosts (issue #176)
+  - Comma separate list of elasticsearch hosts (issue #176)
   - New includes directive (issue #144)
   - Initial bigendian support in viewer (issue #259)
   - List queries can now have wildcard and regex items.
@@ -1115,7 +1306,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - New email.hasheader
   - New packets.(src|dst), bytes.(src|dst), databytes.(src|dst) (issue #206)
   - New payload8.(src|dst), payload.(hex|utf8), payload.(src|dst).(hex|utf8) (issue #209)
-  - pcapDir can now be a semicolon seperated list of directories, currently just
+  - pcapDir can now be a semicolon separated list of directories, currently just
     round robin is supported
   - UI: Fix Search/Actions showing up on second line on page load
   - capture now does memlock and max schedule priority on startup (issue #199)

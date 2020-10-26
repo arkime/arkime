@@ -17,7 +17,7 @@ First, checkout the main [Moloch README](README.md) for information on how to bu
 
 **Then, get some test data!**
 
-* Make sure node 8 is in your path
+* Make sure node 10 is in your path
 * Install and Start Elasticsearch
 * Use `easybutton-build.sh` or `configure` and `make` to build everything
 * Run `make check` from the top level directory, this will
@@ -84,9 +84,23 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Clearly describe the problem and solution
 * Include the relevant issue number(s) if applicable
 * If changes are made to the capture component, verify all tests in the tests direction pass by running `./tests.pl`
-* If changes are mode to the viewer or parlimant components, run `npm run lint` from the viewer or parliament directory (whichever you are making changes to) and correct any errors
+* Run `npm run lint` from the top level directory and correct any errors
 * Additionally, for any viewer or parliament changes, verify that all UI tests pass by runnning `./tests.pl --viewer`
 * The README file in the tests directory provides additional information on the test cases
+
+---
+
+### Upgrading Cyberchef
+1. Update the CyberChef version ("CYBERCHEFVERSION") in `viewer/viewer.js `
+2. Update the CyberChef version in `viewer/Makefile.in` (there are two version numbers on line 23)
+3. Run `make` in viewer or download the new version of the CyberChef zip file manually to the `viewer/public` directory
+5. Unzip and copy `CyberChef_v*.html` to `viewer/public/CyberChef_v*.html`
+6. Add `<base href="./cyberchef/" />` in the `<head>` of `viewer/public/CyberChef_v*.html`
+7. Add the script section from the previous `viewer/public/cyberchef.html` file before the end `</body></html>` tags at the end of `viewer/public/CyberChef_v*.html`
+8. Add `<meta name="referrer" content="no-referrer">` to `viewer/public/CyberChef_v*.html`
+9. Delete the old CyberChef zip file
+10. Delete the old CyberChef html file
+11. Rename `viewer/public/CyberChef_v*.html` file to `viewer/public/cyberchef.html`
 
 ---
 

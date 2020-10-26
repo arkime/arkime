@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1779463436000,
                   "notBefore" : 1464103436000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "02",
                   "subjectCN" : [
@@ -70,9 +71,9 @@
                1084
             ],
             "protocol" : [
-               "tls",
                "mysql",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,

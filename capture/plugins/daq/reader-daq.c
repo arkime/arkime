@@ -91,7 +91,7 @@ void reader_daq_start() {
     int err;
 
     //ALW - Bug: assumes all linktypes are the same
-    moloch_packet_set_linksnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
+    moloch_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {

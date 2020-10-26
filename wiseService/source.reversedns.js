@@ -17,63 +17,63 @@
  */
 'use strict';
 
-var Dns            = require('dns')
-  , iptrie         = require('iptrie')
-  , wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
-  ;
-var resolver       = Dns;
-//////////////////////////////////////////////////////////////////////////////////
-function removeArray(arr, value) {
+var Dns = require('dns');
+var iptrie = require('iptrie');
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+var resolver = Dns;
+
+// ----------------------------------------------------------------------------
+function removeArray (arr, value) {
   var pos = 0;
   while ((pos = arr.indexOf(value, pos)) !== -1) {
     arr.splice(pos, 1);
   }
   return arr;
 }
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function ReverseDNSSource (api, section) {
   ReverseDNSSource.super_.call(this, api, section);
-  this.field        = api.getConfig("reversedns", "field");
-  this.ips          = api.getConfig("reversedns", "ips");
-  this.servers      = api.getConfig("reversedns", "servers");
+  this.field = api.getConfig('reversedns', 'field');
+  this.ips = api.getConfig('reversedns', 'ips');
+  this.servers = api.getConfig('reversedns', 'servers');
   if (this.servers !== undefined) {
     resolver = new Dns();
-    resolver.setServers(this.servers.split(";"));
+    resolver.setServers(this.servers.split(';'));
   }
-  this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";").map(item => item.trim()), "");
+  this.stripDomains = removeArray(api.getConfig('reversedns', 'stripDomains', '').split(';').map(item => item.trim()), '');
 
   if (this.field === undefined) {
-    console.log(this.section, "- No field defined");
+    console.log(this.section, '- No field defined');
     return;
   }
 
   if (this.ips === undefined) {
-    console.log(this.section, "- No ips defined");
+    console.log(this.section, '- No ips defined');
     return;
   }
 
   this.theField = this.api.addField(`field:${this.field}`);
   this.trie = new iptrie.IPTrie();
-  this.ips.split(";").forEach((item) => {
-    if (item === "") {
+  this.ips.split(';').forEach((item) => {
+    if (item === '') {
       return;
     }
-    var parts = item.split("/");
-    this.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
+    var parts = item.split('/');
+    this.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
   });
 
-  this.api.addSource("reversedns", this);
+  this.api.addSource('reversedns', this);
 }
 util.inherits(ReverseDNSSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-ReverseDNSSource.prototype.getIp = function(ip, cb) {
+// ----------------------------------------------------------------------------
+ReverseDNSSource.prototype.getIp = function (ip, cb) {
   if (!this.trie.find(ip)) {
     return cb(null, undefined);
   }
 
   resolver.reverse(ip, (err, domains) => {
-    //console.log("answer", ip, err, domains);
+    // console.log("answer", ip, err, domains);
     if (err || domains.length === 0) {
       return cb(null, wiseSource.emptyResult);
     }
@@ -81,7 +81,7 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
     for (var i = 0; i < domains.length; i++) {
       var domain = domains[i];
       if (this.stripDomains.length === 0) {
-        var parts = domain.split(".");
+        var parts = domain.split('.');
         args.push(this.theField, parts[0].toLowerCase());
       } else {
         for (var j = 0; j < this.stripDomains.length; j++) {
@@ -92,12 +92,12 @@ ReverseDNSSource.prototype.getIp = function(ip, cb) {
         }
       }
     }
-    var wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
+    var wiseResult = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
     cb(null, wiseResult);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  return new ReverseDNSSource(api, "reversedns");
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  return new ReverseDNSSource(api, 'reversedns');
 };
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

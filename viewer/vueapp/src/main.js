@@ -9,7 +9,7 @@ import VueAxios from 'vue-axios';
 import VueMoment from 'vue-moment';
 import moment from 'moment-timezone';
 import VueClipboard from 'vue-clipboard2';
-import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
+import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
@@ -62,7 +62,8 @@ new Vue({
       MOLOCH_PATH: MOLOCH_PATH,
       MOLOCH_MULTIVIEWER: MOLOCH_MULTIVIEWER,
       MOLOCH_HUNTWARN: MOLOCH_HUNTWARN,
-      MOLOCH_HUNTLIMIT: MOLOCH_HUNTLIMIT
+      MOLOCH_HUNTLIMIT: MOLOCH_HUNTLIMIT,
+      MOLOCH_ANONYMOUS_MODE: MOLOCH_ANONYMOUS_MODE
     };
   }
 });

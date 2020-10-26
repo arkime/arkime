@@ -1,0 +1,2965 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "communityId" : "1:+xR7TJBjmXTZjrc2xnXTenLtr7U=",
+            "dstASN" : "AS8075",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "20.0.1.100",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 514,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1571662508236,
+            "ipProtocol" : 17,
+            "lastPacket" : 1571662508236,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               182
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "syslog",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000",
+            "srcBytes" : 166,
+            "srcDataBytes" : 124,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "08:00:27:1f:08:22"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "3c38353e4f637420",
+            "srcPort" : 46503,
+            "tags" : [
+               "srcip"
+            ],
+            "tagsCnt" : 1,
+            "test" : {
+               "ASN" : [
+                  "AS0000"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  1677787156
+               ],
+               "string.snow" : [
+                  "16777226:46503,1677787156:514"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 166,
+            "totDataBytes" : 124,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "224.0.0.13",
+            "dstMac" : [
+               "01:00:5e:00:00:0d"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662508569,
+            "ipProtocol" : 103,
+            "lastPacket" : 1571662612317,
+            "length" : 103749,
+            "node" : "test",
+            "packetLen" : [
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84,
+               84
+            ],
+            "packetPos" : [
+               206,
+               290,
+               2100,
+               2184,
+               2268,
+               2352,
+               2436,
+               2520,
+               4496,
+               4580,
+               6194,
+               6278,
+               7892,
+               7976,
+               8328,
+               8412,
+               8496,
+               10110,
+               10194,
+               10278,
+               10460,
+               10544,
+               10726,
+               12340,
+               12424,
+               12508,
+               14204,
+               14484,
+               16098,
+               16182,
+               16266,
+               16350,
+               16434,
+               18048,
+               18132,
+               18363,
+               18447,
+               18531,
+               20145,
+               20229,
+               20411,
+               20593,
+               20677,
+               24017,
+               24101,
+               24185,
+               24269,
+               25883,
+               25967,
+               26051,
+               26135,
+               26219,
+               27833,
+               27917,
+               28001,
+               28085,
+               28169,
+               31313,
+               31397,
+               31661,
+               32039,
+               32123,
+               32207,
+               33821,
+               33905,
+               34155,
+               34239,
+               34323,
+               35937,
+               36021,
+               36105,
+               36189,
+               36273,
+               37887,
+               37971,
+               38055,
+               38139,
+               40132,
+               40216,
+               42026,
+               42110,
+               42194,
+               42461,
+               42545,
+               44159,
+               44243,
+               44327,
+               44411,
+               44495,
+               46109,
+               46193,
+               46277,
+               46361,
+               46693,
+               46777,
+               50218,
+               50302,
+               50386,
+               50470,
+               50750,
+               52364,
+               52448,
+               52532,
+               52616,
+               52700,
+               54314,
+               54398,
+               54482,
+               54566,
+               54846,
+               56460,
+               58074,
+               58158,
+               58242,
+               58326,
+               62620,
+               62704,
+               62788,
+               62970,
+               63152,
+               63236,
+               64850,
+               64934,
+               65018,
+               65102,
+               66312,
+               66396,
+               68010,
+               68094,
+               70008,
+               70092,
+               71974,
+               72058,
+               73214,
+               73298,
+               73382,
+               73466,
+               75397,
+               75481,
+               77360,
+               77444,
+               77528,
+               77612,
+               79308,
+               79392,
+               79476,
+               81090,
+               82704,
+               83264,
+               83348,
+               83432,
+               83516,
+               83600,
+               85361,
+               85445,
+               85725,
+               85809,
+               89339,
+               89423,
+               89507,
+               89591,
+               91339,
+               92953,
+               93037,
+               93121,
+               93205,
+               93289,
+               93849,
+               95463,
+               95613,
+               95697,
+               95781,
+               95865,
+               97675,
+               97759,
+               97919,
+               98085,
+               98365,
+               101603,
+               101687,
+               101771,
+               101855,
+               102105,
+               103719,
+               103803,
+               103887,
+               104210,
+               105824,
+               105908,
+               105992,
+               106076,
+               106440,
+               106524,
+               108138,
+               109935,
+               110019,
+               110201,
+               111913,
+               111997,
+               112264,
+               112348,
+               112432,
+               114334
+            ],
+            "protocol" : [
+               "pim"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001",
+            "srcBytes" : 13804,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "08:00:27:1f:08:22",
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 203,
+            "srcPort" : 0,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip"
+            ],
+            "tagsCnt" : 1,
+            "timestamp" : "SET",
+            "totBytes" : 13804,
+            "totDataBytes" : 0,
+            "totPackets" : 203
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "224.0.0.5",
+            "dstMac" : [
+               "01:00:5e:00:00:05"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662508795,
+            "ipProtocol" : 89,
+            "lastPacket" : 1571662609191,
+            "length" : 100397,
+            "node" : "test",
+            "packetLen" : [
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               98,
+               94,
+               98,
+               82,
+               122,
+               86,
+               138,
+               122,
+               86,
+               82,
+               94,
+               126,
+               94,
+               150,
+               138,
+               138,
+               94,
+               150,
+               94,
+               94,
+               98,
+               82,
+               122,
+               86,
+               138,
+               122,
+               86,
+               82,
+               94,
+               126,
+               94,
+               150,
+               138,
+               138,
+               94,
+               150,
+               94,
+               98,
+               98,
+               98,
+               98
+            ],
+            "packetPos" : [
+               374,
+               472,
+               10362,
+               10628,
+               20313,
+               20495,
+               31563,
+               31941,
+               41830,
+               41928,
+               50554,
+               50652,
+               62872,
+               63054,
+               75080,
+               75565,
+               75663,
+               75745,
+               75867,
+               75953,
+               76091,
+               76213,
+               76299,
+               76381,
+               76475,
+               76782,
+               76876,
+               77026,
+               82788,
+               82926,
+               83020,
+               83170,
+               87423,
+               87740,
+               87838,
+               87920,
+               88042,
+               88128,
+               88266,
+               88388,
+               88474,
+               88556,
+               88650,
+               88957,
+               89051,
+               89201,
+               93373,
+               93511,
+               93605,
+               93755,
+               98169,
+               98267,
+               110103,
+               110285
+            ],
+            "protocol" : [
+               "ospf"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0001",
+            "srcBytes" : 4876,
+            "srcDataBytes" : 0,
+            "srcGEO" : "CA",
+            "srcIp" : "10.0.0.2",
+            "srcMac" : [
+               "08:00:27:1f:08:22",
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 54,
+            "srcPort" : 0,
+            "srcRIR" : "TEST",
+            "tags" : [
+               "dstip"
+            ],
+            "tagsCnt" : 1,
+            "timestamp" : "SET",
+            "totBytes" : 4876,
+            "totDataBytes" : 0,
+            "totPackets" : 54
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstMac" : [
+               "01:80:c2:00:00:15"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662509461,
+            "ipProtocol" : 0,
+            "isis" : {
+               "msgType" : [
+                  "l2-csnp",
+                  "l2-lsp",
+                  "lan-l2-hello"
+               ]
+            },
+            "lastPacket" : 1571662612261,
+            "length" : 102800,
+            "node" : "test",
+            "packetLen" : [
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               196,
+               1530,
+               1530,
+               1530,
+               1530,
+               239,
+               1530,
+               196,
+               84,
+               1530,
+               1530,
+               1530,
+               1530,
+               288
+            ],
+            "packetPos" : [
+               570,
+               2604,
+               4300,
+               4664,
+               6362,
+               8580,
+               10810,
+               12592,
+               14288,
+               14568,
+               16518,
+               18615,
+               20761,
+               22291,
+               23821,
+               24353,
+               26303,
+               28253,
+               29783,
+               31745,
+               32291,
+               34407,
+               36357,
+               38223,
+               39753,
+               40300,
+               42629,
+               44579,
+               46861,
+               48391,
+               48688,
+               50834,
+               52784,
+               54650,
+               54930,
+               56544,
+               61090,
+               63320,
+               65548,
+               66480,
+               68478,
+               70176,
+               73550,
+               77164,
+               77696,
+               79560,
+               81174,
+               83831,
+               85529,
+               85893,
+               89809,
+               91423,
+               93933,
+               95949,
+               96145,
+               98449,
+               100073,
+               102189,
+               103971,
+               104294,
+               106160,
+               106356,
+               106608,
+               108222,
+               110383,
+               112516,
+               114046
+            ],
+            "protocol" : [
+               "isis"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 81451,
+            "srcDataBytes" : 0,
+            "srcMac" : [
+               "08:00:27:1f:08:22",
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 67,
+            "totBytes" : 81451,
+            "totDataBytes" : 0,
+            "totPackets" : 67
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstMac" : [
+               "01:80:c2:00:00:0e"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662511903,
+            "ipProtocol" : 0,
+            "lastPacket" : 1571662601886,
+            "length" : 89983,
+            "node" : "test",
+            "packetLen" : [
+               166,
+               147,
+               166,
+               147,
+               166,
+               147,
+               166
+            ],
+            "packetPos" : [
+               4134,
+               18216,
+               33989,
+               46546,
+               65186,
+               83684,
+               101939
+            ],
+            "protocol" : [
+               "lldp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 993,
+            "srcDataBytes" : 0,
+            "srcMac" : [
+               "08:00:27:12:62:b0",
+               "08:00:27:d8:5d:87"
+            ],
+            "srcMacCnt" : 2,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "totBytes" : 993,
+            "totDataBytes" : 0,
+            "totPackets" : 7
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:6LM13JzmBiKxzgoT5iVJSORTXx4=",
+            "dstASN" : "AS15169",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2607:f8b0:400f:0801:0000:0000:0000:200e",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662515683,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662515683,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               8060
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 34808,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "SE",
+            "dstIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "dstMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662515687,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  1
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1571662576902,
+            "length" : 61215,
+            "node" : "test",
+            "packetLen" : [
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               158,
+               174,
+               158,
+               174,
+               158,
+               158,
+               158,
+               158,
+               158
+            ],
+            "packetPos" : [
+               8170,
+               58520,
+               58788,
+               59056,
+               59324,
+               59592,
+               59860,
+               60128,
+               60396,
+               60664,
+               60932,
+               65870,
+               66154,
+               68304,
+               71816,
+               72252,
+               72520,
+               72788,
+               73056
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 2730,
+            "srcDataBytes" : 1704,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0000:0000:0000:0002",
+            "srcMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 19,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 2730,
+            "totDataBytes" : 1704,
+            "totPackets" : 19
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:JIBYd0nkQ+UkLGn+xWIqRaO7GJE=",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "172.16.0.2",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 35069,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1571662521545,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662581526,
+            "length" : 59982,
+            "node" : "test",
+            "packetLen" : [
+               82,
+               101,
+               82
+            ],
+            "packetPos" : [
+               14122,
+               48587,
+               79226
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 217,
+            "srcDataBytes" : 0,
+            "srcIp" : "172.16.0.3",
+            "srcMac" : [
+               "08:00:27:1f:08:22"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPort" : 179,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 217,
+            "totDataBytes" : 0,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:dKsI1tGUA4VrhlTRxJK45S2SfEs=",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "172.16.0.4",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 33771,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1571662538526,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662598506,
+            "length" : 59981,
+            "node" : "test",
+            "packetLen" : [
+               82,
+               101,
+               82
+            ],
+            "packetPos" : [
+               31481,
+               46445,
+               98003
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 217,
+            "srcDataBytes" : 0,
+            "srcIp" : "172.16.0.1",
+            "srcMac" : [
+               "08:00:27:1f:08:22"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPort" : 179,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 1,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 217,
+            "totDataBytes" : 0,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:tqiALxHxk3fn9otJ1Y+Kp9SkxtI=",
+            "dstBytes" : 302,
+            "dstDataBytes" : 0,
+            "dstIp" : "172.16.0.1",
+            "dstMac" : [
+               "08:00:27:1f:08:22"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 4,
+            "dstPort" : 179,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1571662548073,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662610443,
+            "length" : 62369,
+            "node" : "test",
+            "packetLen" : [
+               101,
+               82,
+               101,
+               82,
+               101,
+               82,
+               101,
+               82
+            ],
+            "packetPos" : [
+               39949,
+               40050,
+               42278,
+               42379,
+               109752,
+               109853,
+               112081,
+               112182
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 302,
+            "srcDataBytes" : 0,
+            "srcIp" : "172.16.0.2",
+            "srcMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 4,
+            "srcPort" : 33359,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 4,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 4,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 0,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 604,
+            "totDataBytes" : 0,
+            "totPackets" : 8
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:zS/jLwl2n/kHIiVi3kXC214Ycik=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0400:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567185,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567185,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               58410
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 51532,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:ZAOeNMLUwJNJXfCXghxBO0/oq7k=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0600:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567189,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567189,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               58678
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 42834,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:HqHv6VsSqKUcfCCgRzntY1oMT4M=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0000:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567192,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567192,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               58946
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 54958,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:PlvU1YCSX4Pugs0RnJMcqfUxm3c=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0200:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567195,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567195,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               59214
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 44110,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:bLKnRk376Bs3Ke5URY5Zz9GlhHY=",
+            "dstASN" : "AS26101",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:0058:1836:0000:0000:0000:0010",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567263,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567263,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               59482
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 52112,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:c0vM0WrbY8zp6ddCOj5oLuxUL+Q=",
+            "dstASN" : "AS36646",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:0044:041d:0000:0000:0000:0003",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567268,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567268,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               59750
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 32802,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:us3PFR4rOxhEfjBei+RbJEzWC6Y=",
+            "dstASN" : "AS36646",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:0044:041d:0000:0000:0000:0004",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567273,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567273,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               60018
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 44002,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:l7RM5nY0gEwr+HSf4iyA9Q+D7zI=",
+            "dstASN" : "AS36647",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:000c:1023:0000:0000:0000:0005",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567276,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567276,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               60286
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 39392,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:31nXcG+ZBCFxYAqEOPuAzkRSXX4=",
+            "dstASN" : "AS36647",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:000c:1023:0000:0000:0000:0004",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567279,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567279,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               60554
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 53518,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:05Mic6R09gwS/lrcHgiR//+gvlk=",
+            "dstASN" : "AS26101",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:4998:0058:1836:0000:0000:0000:0011",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662567282,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662567282,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               60822
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 44256,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 78,
+            "dstDataBytes" : 24,
+            "dstIp" : "fe80:0000:0000:0000:0a00:27ff:fe76:e369",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 1,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662572190,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  135,
+                  136
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1571662572192,
+            "length" : 2,
+            "node" : "test",
+            "packetLen" : [
+               102,
+               94
+            ],
+            "packetPos" : [
+               65352,
+               65454
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 86,
+            "srcDataBytes" : 32,
+            "srcIp" : "fe80:0000:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 164,
+            "totDataBytes" : 56,
+            "totPackets" : 2
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:DZD6E9KdK+44O1XIWrJTIdbYdyQ=",
+            "dstASN" : "AS2914",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2001:0418:8405:4002:0000:0000:0000:0003",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 123,
+            "fileId" : [],
+            "firstPacket" : 1571662572491,
+            "ipProtocol" : 17,
+            "lastPacket" : 1571662572491,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               126
+            ],
+            "packetPos" : [
+               65744
+            ],
+            "protocol" : [
+               "ntp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 110,
+            "srcDataBytes" : 48,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "e30006e800000000",
+            "srcPort" : 123,
+            "timestamp" : "SET",
+            "totBytes" : 110,
+            "totDataBytes" : 48,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:EGKOofHS2mtrMUR7IOTcJWZ3j6c=",
+            "dstASN" : "AS15169",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2607:f8b0:400f:0805:0000:0000:0000:200e",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662572665,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662572665,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               66044
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 52338,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:YBoCole5RzOqgxi8Mc/b53cN8Gk=",
+            "dstASN" : "AS41231",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "GB",
+            "dstIp" : "2001:067c:1560:8003:0000:0000:0000:00c8",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 123,
+            "fileId" : [],
+            "firstPacket" : 1571662574339,
+            "ipProtocol" : 17,
+            "lastPacket" : 1571662574339,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               126
+            ],
+            "packetPos" : [
+               68178
+            ],
+            "protocol" : [
+               "ntp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 110,
+            "srcDataBytes" : 48,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPayload8" : "e30006e800000000",
+            "srcPort" : 123,
+            "timestamp" : "SET",
+            "totBytes" : 110,
+            "totDataBytes" : 48,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:DgLdDq3rJ18VK25ZnwWu8rJ93Rw=",
+            "dstASN" : "AS15169",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "2607:f8b0:400f:0805:0000:0000:0000:200e",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662575795,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662575795,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               71706
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 52342,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:HbDlBFMCOih0nNd6FFxk9pY5jFY=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0400:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662576891,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662576891,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               72142
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 51566,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:MJCCMCXgjaemk5kxIQErRTlfXyg=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0600:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662576896,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662576896,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               72410
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 42868,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:2XcH7dd4VLbZtA7Mh2fuPXV5bCM=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0200:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662576898,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662576898,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               72678
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 44142,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:ouqnukYPdci4WdDBalLeYiFn0tc=",
+            "dstASN" : "AS54113",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "2a04:4e42:0000:0000:0000:0000:0000:0323",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 80,
+            "fileId" : [],
+            "firstPacket" : 1571662576901,
+            "ipProtocol" : 6,
+            "lastPacket" : 1571662576901,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               110
+            ],
+            "packetPos" : [
+               72946
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 94,
+            "srcDataBytes" : 0,
+            "srcGEO" : "SE",
+            "srcIp" : "2001:0bef:0000:0000:0a00:27ff:fe0d:5c3c",
+            "srcMac" : [
+               "08:00:27:0d:5c:3c"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 54994,
+            "tcpflags" : {
+               "ack" : 0,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 0,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 0,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "totBytes" : 94,
+            "totDataBytes" : 0,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "communityId" : "1:Km2EZr/8JdHGPCTll+t+I3veupM=",
+            "dstASN" : "AS8075",
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstGEO" : "US",
+            "dstIp" : "20.0.1.100",
+            "dstMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 514,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1571662578777,
+            "ipProtocol" : 17,
+            "lastPacket" : 1571662589211,
+            "length" : 10434,
+            "node" : "test",
+            "packetLen" : [
+               223,
+               181,
+               223,
+               181
+            ],
+            "packetPos" : [
+               75174,
+               76601,
+               87517,
+               88776
+            ],
+            "protocol" : [
+               "syslog",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000",
+            "srcBytes" : 744,
+            "srcDataBytes" : 576,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "08:00:27:1f:08:22"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 4,
+            "srcPayload8" : "3c33363e4f637420",
+            "srcPort" : 42521,
+            "tags" : [
+               "srcip"
+            ],
+            "tagsCnt" : 1,
+            "test" : {
+               "ASN" : [
+                  "AS0000"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  1677787156
+               ],
+               "string.snow" : [
+                  "16777226:42521,1677787156:514"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 744,
+            "totDataBytes" : 576,
+            "totPackets" : 4
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0001",
+            "dstMac" : [
+               "33:33:00:00:00:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662591197,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  134
+               ]
+            },
+            "ipProtocol" : 58,
+            "lastPacket" : 1571662591197,
+            "length" : 0,
+            "node" : "test",
+            "packetLen" : [
+               134
+            ],
+            "packetPos" : [
+               89675
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 118,
+            "srcDataBytes" : 64,
+            "srcIp" : "fe80:0000:0000:0000:0a00:27ff:fe76:e369",
+            "srcMac" : [
+               "08:00:27:76:e3:69"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 1,
+            "srcPort" : 0,
+            "timestamp" : "SET",
+            "totBytes" : 118,
+            "totDataBytes" : 64,
+            "totPackets" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      },
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstIp" : "224.0.0.1",
+            "dstMac" : [
+               "01:00:5e:00:00:01",
+               "01:00:5e:00:00:16"
+            ],
+            "dstMacCnt" : 2,
+            "dstPackets" : 0,
+            "dstPort" : 0,
+            "fileId" : [],
+            "firstPacket" : 1571662595101,
+            "ipProtocol" : 2,
+            "lastPacket" : 1571662599715,
+            "length" : 4613,
+            "node" : "test",
+            "packetLen" : [
+               66,
+               76,
+               94
+            ],
+            "packetPos" : [
+               95547,
+               97843,
+               99979
+            ],
+            "protocol" : [
+               "igmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcASN" : "AS0000",
+            "srcBytes" : 188,
+            "srcDataBytes" : 0,
+            "srcGEO" : "RU",
+            "srcIp" : "10.0.0.1",
+            "srcMac" : [
+               "08:00:27:1f:08:22",
+               "08:00:27:76:e3:69",
+               "0a:00:27:00:00:02"
+            ],
+            "srcMacCnt" : 3,
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 3,
+            "srcPort" : 0,
+            "tags" : [
+               "srcip"
+            ],
+            "tagsCnt" : 1,
+            "test" : {
+               "ASN" : [
+                  "AS0000"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  16777440
+               ],
+               "string.snow" : [
+                  "16777226:0,16777440:0"
+               ]
+            },
+            "timestamp" : "SET",
+            "totBytes" : 188,
+            "totDataBytes" : 0,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-191021",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

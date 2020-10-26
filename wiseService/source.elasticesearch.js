@@ -17,29 +17,27 @@
  */
 'use strict';
 
-var wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
-  , elasticsearch  = require('elasticsearch')
-  ;
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+var elasticsearch = require('elasticsearch');
 
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 function ElasticsearchSource (api, section) {
   ElasticsearchSource.super_.call(this, api, section);
 
-  this.esIndex          = api.getConfig(section, "esIndex");
-  this.esTimestampField = api.getConfig(section, "esTimestampField");
-  this.esQueryField     = api.getConfig(section, "esQueryField");
-  this.esResultField    = api.getConfig(section, "esResultField", 0);
-  this.esMaxTimeMS      = api.getConfig(section, "esMaxTimeMS", 60*60*1000);
-  this.elasticsearch    = api.getConfig(section, "elasticsearch");
+  this.esIndex = api.getConfig(section, 'esIndex');
+  this.esTimestampField = api.getConfig(section, 'esTimestampField');
+  this.esQueryField = api.getConfig(section, 'esQueryField');
+  this.esResultField = api.getConfig(section, 'esResultField', 0);
+  this.esMaxTimeMS = api.getConfig(section, 'esMaxTimeMS', 60 * 60 * 1000);
+  this.elasticsearch = api.getConfig(section, 'elasticsearch');
 
   this.typeSetting();
   this.tagsSetting();
 
-  ["esIndex", "esTimestampField", "esQueryField", "esResultField", "elasticsearch"].forEach((item) => {
+  ['esIndex', 'esTimestampField', 'esQueryField', 'esResultField', 'elasticsearch'].forEach((item) => {
     if (this[item] === undefined) {
       console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
-      return;
     }
   });
 
@@ -50,10 +48,11 @@ function ElasticsearchSource (api, section) {
   this[this.api.funcName(this.type)] = this.sendResult;
 
   this.client = new elasticsearch.Client({
-                      host: this.elasticsearch.split(","),
+                      host: this.elasticsearch.split(','),
                       keepAlive: true,
                       minSockets: 5,
-                      maxSockets: 51
+                      maxSockets: 51,
+                      apiVersion: '6.8'
                     });
 
   api.addSource(section, this);
@@ -66,30 +65,30 @@ function ElasticsearchSource (api, section) {
   }
 }
 util.inherits(ElasticsearchSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-ElasticsearchSource.prototype.sendResult = function(key, cb) {
+// ----------------------------------------------------------------------------
+ElasticsearchSource.prototype.sendResult = function (key, cb) {
   var query = {
     query: {
       bool: {
         filter: [
-          { "range": { }},
-          { "exists": {field: this.esResultField}},
-          { "term":  { }}
+          { 'range': { } },
+          { 'exists': { field: this.esResultField } },
+          { 'term': { } }
         ]
       }
     },
     sort: {},
-    _source: this.sourceFields  // ALW: Need to change to docs_values for ES 5
+    _source: this.sourceFields // ALW: Need to change to docs_values for ES 5
   };
 
-  query.query.bool.filter[0].range[this.esTimestampField] = {gte: new Date() - this.esMaxTimeMS};
+  query.query.bool.filter[0].range[this.esTimestampField] = { gte: new Date() - this.esMaxTimeMS };
   query.query.bool.filter[2].term[this.esQueryField] = key;
-  query.sort[this.esTimestampField] = {order: "desc"};
+  query.sort[this.esTimestampField] = { order: 'desc' };
 
   // TODO: Should be option to do search vs get
   // TODO: Should be an option to add more then most recent
 
-  this.client.search({index: this.esIndex, body: query}, (err, result) => {
+  this.client.search({ index: this.esIndex, body: query }, (err, result) => {
     if (err || result.error || !result.hits || result.hits.hits.length === 0) {
       return cb(null, undefined);
     }
@@ -104,21 +103,19 @@ ElasticsearchSource.prototype.sendResult = function(key, cb) {
         args.push(this.shortcuts[k]);
         if (Array.isArray(json[k])) {
           args.push(json[k][0]);
-        }
-        else {
+        } else {
           args.push(json[k]);
         }
       }
     }
-    var newresult = {num: args.length/2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer])};
+    var newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
     return cb(null, newresult);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter((e) => {return e.match(/^elasticsearch:/);});
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  var sections = api.getConfigSections().filter((e) => { return e.match(/^elasticsearch:/); });
   sections.forEach((section) => {
     return new ElasticsearchSource(api, section);
   });
 };
-

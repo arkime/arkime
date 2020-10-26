@@ -1,0 +1,60 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "dstBytes" : 0,
+            "dstDataBytes" : 0,
+            "dstMac" : [
+               "01:80:c2:00:00:0e"
+            ],
+            "dstMacCnt" : 1,
+            "dstPackets" : 0,
+            "fileId" : [],
+            "firstPacket" : 1121119005000,
+            "ipProtocol" : 0,
+            "lastPacket" : 1136862144460,
+            "length" : 2858237572,
+            "node" : "test",
+            "packetLen" : [
+               80,
+               279,
+               284
+            ],
+            "packetPos" : [
+               24,
+               104,
+               383
+            ],
+            "protocol" : [
+               "lldp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "srcBytes" : 595,
+            "srcDataBytes" : 0,
+            "srcMac" : [
+               "00:01:30:f9:ad:a0",
+               "00:04:96:1f:a7:26",
+               "00:13:21:57:ca:7f"
+            ],
+            "srcMacCnt" : 3,
+            "srcOui" : [
+               "Extreme Networks, Inc.",
+               "Hewlett Packard"
+            ],
+            "srcOuiCnt" : 2,
+            "srcPackets" : 3,
+            "totBytes" : 595,
+            "totDataBytes" : 0,
+            "totPackets" : 3
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-060110",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

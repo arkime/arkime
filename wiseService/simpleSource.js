@@ -18,40 +18,38 @@
 
 'use strict';
 
-var util           = require('util')
-  , wiseSource     = require('./wiseSource.js')
-  , iptrie         = require('iptrie')
-  , HashTable      = require('hashtable')
-  ;
+var util = require('util');
+var wiseSource = require('./wiseSource.js');
+var iptrie = require('iptrie');
 
 function SimpleSource (api, section) {
   SimpleSource.super_.call(this, api, section);
-  this.column  = +api.getConfig(section, "column", 0);
-  this.keyColumn  = api.getConfig(section, "keyColumn", 0);
+  this.column = +api.getConfig(section, 'column', 0);
+  this.keyColumn = api.getConfig(section, 'keyColumn', 0);
 
   this.typeSetting();
 
-  if (this.type === "ip") {
-    this.cache = {items: new HashTable(), trie: new iptrie.IPTrie()};
+  if (this.type === 'ip') {
+    this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
   } else {
-    this.cache = new HashTable();
+    this.cache = new Map();
   }
 }
 util.inherits(SimpleSource, wiseSource);
 module.exports = SimpleSource;
-//////////////////////////////////////////////////////////////////////////////////
-SimpleSource.prototype.dump = function(res) {
-  var cache = this.type === "ip"?this.cache.items:this.cache;
-  cache.forEach((key, value) => {
+// ----------------------------------------------------------------------------
+SimpleSource.prototype.dump = function (res) {
+  var cache = this.type === 'ip' ? this.cache.items : this.cache;
+  cache.forEach((value, key) => {
     var str = `{key: "${key}", ops:\n` +
-      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + "},\n";
+      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
     res.write(str);
   });
   res.end();
 };
-//////////////////////////////////////////////////////////////////////////////////
-SimpleSource.prototype.sendResult = function(key, cb) {
-  var result = this.type === "ip"?this.cache.trie.find(key):this.cache.get(key);
+// ----------------------------------------------------------------------------
+SimpleSource.prototype.sendResult = function (key, cb) {
+  var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
   // Not found, or found but no extra values to add
   if (!result) {
@@ -62,13 +60,13 @@ SimpleSource.prototype.sendResult = function(key, cb) {
   }
 
   // Found, so combine the two results (per item, and per source)
-  var newresult = {num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer])};
+  var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
   return cb(null, newresult);
 };
-//////////////////////////////////////////////////////////////////////////////////
-SimpleSource.prototype.initSimple = function() {
+// ----------------------------------------------------------------------------
+SimpleSource.prototype.initSimple = function () {
   if (!this.type) {
-    console.log(this.section, "- ERROR not loading since no type specified in config file");
+    console.log(this.section, '- ERROR not loading since no type specified in config file');
     return false;
   }
 
@@ -77,13 +75,12 @@ SimpleSource.prototype.initSimple = function() {
     return false;
   }
 
-
   if (this.type === 'domain') {
-    this.getDomain = function(domain, cb) {
+    this.getDomain = function (domain, cb) {
       if (this.cache.get(domain)) {
         return this.sendResult(domain, cb);
       }
-      domain = domain.substring(domain.indexOf(".")+1);
+      domain = domain.substring(domain.indexOf('.') + 1);
       return this.sendResult(domain, cb);
     };
   } else {
@@ -93,49 +90,52 @@ SimpleSource.prototype.initSimple = function() {
   this.api.addSource(this.section, this);
   return true;
 };
-//////////////////////////////////////////////////////////////////////////////////
-SimpleSource.prototype.load = function() {
+// ----------------------------------------------------------------------------
+SimpleSource.prototype.getTypes = function () {
+  return [this.type];
+};
+// ----------------------------------------------------------------------------
+SimpleSource.prototype.load = function () {
   var setFunc;
   var newCache;
   var count = 0;
-  if (this.type === "ip") {
-    newCache = {items: new HashTable(), trie: new iptrie.IPTrie()};
-    setFunc  = (key, value) => {
-      key.split(",").forEach((cidr) => {
-        var parts = cidr.split("/");
+  if (this.type === 'ip') {
+    newCache = { items: new Map(), trie: new iptrie.IPTrie() };
+    setFunc = (key, value) => {
+      key.split(',').forEach((cidr) => {
+        var parts = cidr.split('/');
         try {
-          newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), value);
+          newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), value);
         } catch (e) {
-          console.log("ERROR adding", this.section, cidr, e);
+          console.log('ERROR adding', this.section, cidr, e);
         }
-        newCache.items.put(cidr, value);
+        newCache.items.set(cidr, value);
         count++;
       });
     };
   } else {
-    newCache = new HashTable();
-    if (this.type === "url") {
+    newCache = new Map();
+    if (this.type === 'url') {
       setFunc = (key, value) => {
-        if (key.lastIndexOf("http://", 0) === 0) {
+        if (key.lastIndexOf('http://', 0) === 0) {
           key = key.substring(7);
         }
-        newCache.put(key, value);
+        newCache.set(key, value);
         count++;
       };
     } else {
-      setFunc = function(key, value) {
-        newCache.put(key, value);
+      setFunc = function (key, value) {
+        newCache.set(key, value);
         count++;
       };
     }
   }
   this.simpleSourceLoad(setFunc, (err) => {
     if (err) {
-      console.log("ERROR loading", this.section, err);
+      console.log('ERROR loading', this.section, err);
       return;
     }
     this.cache = newCache;
-    console.log(this.section, "- Done Loading", count, "elements");
+    console.log(this.section, '- Done Loading', count, 'elements');
   });
 };
-

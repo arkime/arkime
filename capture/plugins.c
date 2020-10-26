@@ -88,8 +88,9 @@ void moloch_plugins_load(char **plugins) {
 
         int d;
         GModule *plugin = 0;
+        gchar   *path;
         for (d = 0; config.pluginsDir[d]; d++) {
-            gchar   *path = g_build_filename (config.pluginsDir[d], name, NULL);
+            path = g_build_filename (config.pluginsDir[d], name, NULL);
 
             if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
                 g_free (path);
@@ -103,8 +104,6 @@ void moloch_plugins_load(char **plugins) {
                 g_free (path);
                 continue;
             }
-
-            g_free (path);
             break;
         }
 
@@ -121,6 +120,11 @@ void moloch_plugins_load(char **plugins) {
         }
 
         plugin_init();
+
+        if (config.debug)
+            LOG("Loaded %s", path);
+
+        g_free (path);
     }
 }
 /******************************************************************************/
@@ -343,23 +347,23 @@ void moloch_plugins_cb_new(MolochSession_t *session)
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_tcp(MolochSession_t *session, unsigned char *data, int len)
+void moloch_plugins_cb_tcp(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     MolochPlugin_t *plugin;
 
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->tcpFunc)
-            plugin->tcpFunc(session, data, len);
+            plugin->tcpFunc(session, data, len, which);
     );
 }
 /******************************************************************************/
-void moloch_plugins_cb_udp(MolochSession_t *session, struct udphdr *udphdr, unsigned char *data, int len)
+void moloch_plugins_cb_udp(MolochSession_t *session, const unsigned char *data, int len, int which)
 {
     MolochPlugin_t *plugin;
 
     HASH_FORALL(p_, plugins, plugin,
         if (plugin->udpFunc)
-            plugin->udpFunc(session, udphdr, data, len);
+            plugin->udpFunc(session, data, len, which);
     );
 }
 /******************************************************************************/

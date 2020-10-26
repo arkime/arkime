@@ -150,7 +150,7 @@ LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 LOCAL void wise_print_stats()
 {
     for (int i = 0; i < numTypes; i++) {
-        LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7d",
+        LOG("%8s lookups:%7d cache:%7d requests:%7d inprogress:%7d fail:%7d hash:%7d list:%7u",
             types[i].name,
             stats[i][0],
             stats[i][1],
@@ -654,19 +654,50 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
     for (type = 0; type < numTypes; type++) {
         for (i = 0; i < types[type].fieldsLen; i++) {
             int pos = types[type].fields[i];
-            if (!session->fields[pos])
+
+            if (pos >= MOLOCH_FIELD_EXSPECIAL_START) {
+                switch (pos) {
+                case MOLOCH_FIELD_EXSPECIAL_COMMUNITYID:
+                    // Currently don't do communityId for ICMP because it requires magic
+                    if (session->ses != SESSION_ICMP) {
+                        char *communityId = moloch_db_community_id(session);
+                        wise_lookup(session, iRequest, communityId, type);
+                        g_free(communityId);
+                    }
+                    break;
+                }
+                continue;
+            }
+
+            // This session doesn't have this many fields or field isnt set
+            if (pos < 0 || pos > session->maxFields || !session->fields[pos])
                 continue;
 
             MolochStringHashStd_t *shash;
             gpointer               ikey;
             GHashTable            *ghash;
             GHashTableIter         iter;
+            MolochIntHashStd_t    *ihash;
+            MolochInt_t           *hint;
             char                   buf[20];
 
             switch(config.fields[pos]->type) {
             case MOLOCH_FIELD_TYPE_INT:
                 snprintf(buf, sizeof(buf), "%d", session->fields[pos]->i);
                 wise_lookup(session, iRequest, buf, type);
+                break;
+            case MOLOCH_FIELD_TYPE_INT_ARRAY:
+                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
+                    snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
+                    wise_lookup(session, iRequest, buf, type);
+                }
+                break;
+            case MOLOCH_FIELD_TYPE_INT_HASH:
+                ihash = session->fields[pos]->ihash;
+                HASH_FORALL(i_, *ihash, hint,
+                    snprintf(buf, sizeof(buf), "%u", hint->i_hash);
+                    wise_lookup(session, iRequest, buf, type);
+                );
                 break;
             case MOLOCH_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[pos]->ghash;
@@ -691,6 +722,14 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                     wise_lookup_domain(session, iRequest, session->fields[pos]->str);
                 else
                     wise_lookup(session, iRequest, session->fields[pos]->str, type);
+                break;
+            case MOLOCH_FIELD_TYPE_STR_ARRAY:
+                for(i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
+                    if (type == INTEL_TYPE_DOMAIN)
+                        wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i));
+                    else
+                        wise_lookup(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), type);
+                }
                 break;
             case MOLOCH_FIELD_TYPE_STR_HASH:
                 shash = session->fields[pos]->shash;
@@ -719,6 +758,9 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                     else
                         wise_lookup(session, iRequest, ikey, type);
                 }
+            case MOLOCH_FIELD_TYPE_CERTSINFO:
+                // Unsupported
+                break;
             } /* switch */
         }
     }
@@ -909,6 +951,9 @@ void moloch_plugin_init()
         snprintf(hoststr, sizeof(hoststr), "http://%s:%d", wiseHost, wisePort);
         wiseService = moloch_http_create_server(hoststr, maxConns, maxRequests, 0);
     }
+
+    static char *headers[] = {"Expect:", NULL};
+    moloch_http_set_headers(wiseService, headers);
     moloch_http_set_retries(wiseService, 1);
 
     moloch_plugins_register("wise", FALSE);

@@ -18,40 +18,36 @@
  * limitations under the License.
  */
 
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
 'use strict';
-var Config = require("./config.js");
-var Db = require ("./db.js");
+var Config = require('./config.js');
+var Db = require('./db.js');
 var crypto = require('crypto');
 
-var escInfo = Config.getArray("elasticsearch", ',', "http://localhost:9200");
-function help() {
-  console.log("addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]");
-  console.log("");
-  console.log("Options:");
-  console.log("  --admin               Has admin privileges");
-  console.log("  --apionly             Can only use api, not web pages");
-  console.log("  --email               Can do email searches");
-  console.log("  --expression  <expr>  Forced user expression");
-  console.log("  --remove              Can remove data (scrub, delete tags)");
-  console.log("  --webauth             Can auth using the web auth header or password");
-  console.log("  --webauthonly         Can auth using the web auth header only, password ignored");
-  console.log("  --packetSearch        Can create a packet search job (hunt)");
-  console.log("");
-  console.log("Config Options:");
-  console.log("  -c <config file>      Config file to use");
-  console.log("  -n <node name>        Node name section to use in config file");
-  console.log("  --insecure            Allow insecure HTTPS");
+var escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+function help () {
+  console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
+  console.log('');
+  console.log('Options:');
+  console.log('  --admin               Has admin privileges');
+  console.log('  --apionly             Can only use api, not web pages');
+  console.log('  --email               Can do email searches');
+  console.log('  --expression  <expr>  Forced user expression');
+  console.log('  --remove              Can remove data (scrub, delete tags)');
+  console.log('  --webauth             Can auth using the web auth header or password');
+  console.log('  --webauthonly         Can auth using the web auth header only, password ignored');
+  console.log('  --packetSearch        Can create a packet search job (hunt)');
+  console.log('');
+  console.log('Config Options:');
+  console.log('  -c <config file>      Config file to use');
+  console.log('  -n <node name>        Node name section to use in config file');
+  console.log('  --insecure            Allow insecure HTTPS');
 
   process.exit(0);
 }
 
-function main() {
-
+function main () {
   if (process.argv[2].length < 2) {
-    console.log("userId must be set");
+    console.log('userId must be set');
     process.exit(0);
   }
 
@@ -72,58 +68,60 @@ function main() {
 
   var i;
   for (i = 5; i < process.argv.length; i++) {
-    switch(process.argv[i]) {
-    case "--admin":
-    case "-admin":
-      nuser.createEnabled = true;
-      break;
+    switch (process.argv[i]) {
+      case '--admin':
+      case '-admin':
+        nuser.createEnabled = true;
+        break;
 
-    case "--remove":
-    case "-remove":
-      nuser.removeEnabled = true;
-      break;
+      case '--remove':
+      case '-remove':
+        nuser.removeEnabled = true;
+        break;
 
-    case "--noweb":
-    case "-noweb":
-    case "--apionly":
-      nuser.webEnabled = false;
-      break;
+      case '--noweb':
+      case '-noweb':
+      case '--apionly':
+        nuser.webEnabled = false;
+        break;
 
-    case "--webauthonly":
-    case "-webauthonly":
-      nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
-    case "--webauth":
-    case "-webauth":
-      nuser.headerAuthEnabled = true;
-      break;
+      case '--webauthonly':
+      case '-webauthonly':
+        nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
+        break;
 
-    case "--email":
-    case "-email":
-      nuser.emailSearch = true;
-      break;
+      case '--webauth':
+      case '-webauth':
+        nuser.headerAuthEnabled = true;
+        break;
 
-    case "--expression":
-    case "-expression":
-      nuser.expression = process.argv[i+1];
-      i++;
-      break;
+      case '--email':
+      case '-email':
+        nuser.emailSearch = true;
+        break;
 
-    case "--packetSearch":
-    case "-packetSearch":
-      nuser.packetSearch = true;
-      break;
+      case '--expression':
+      case '-expression':
+        nuser.expression = process.argv[i + 1];
+        i++;
+        break;
 
-    default:
-      console.log("Unknown option", process.argv[i]);
-      help();
+      case '--packetSearch':
+      case '-packetSearch':
+        nuser.packetSearch = true;
+        break;
+
+      default:
+        console.log('Unknown option', process.argv[i]);
+        help();
     }
   }
 
   Db.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
-      console.log("Elastic search error", err);
+      console.log('Elastic search error', err);
     } else {
-      console.log("Added");
+      console.log('Added');
     }
     Db.close();
   });
@@ -133,11 +131,12 @@ if (process.argv.length < 5) {
   help();
 }
 
-Db.initialize({host : escInfo,
-               prefix: Config.get("prefix", ""),
-               esClientKey: Config.get("esClientKey", null),
-               esClientCert: Config.get("esClientCert", null),
-               esClientKeyPass: Config.get("esClientKeyPass", null),
-               insecure: Config.insecure,
-               usersHost: Config.get("usersElasticsearch"),
-               usersPrefix: Config.get("usersPrefix")}, main);
+Db.initialize({ host: escInfo,
+  prefix: Config.get('prefix', ''),
+  esClientKey: Config.get('esClientKey', null),
+  esClientCert: Config.get('esClientCert', null),
+  esClientKeyPass: Config.get('esClientKeyPass', null),
+  insecure: Config.insecure,
+  ca: Config.getCaTrustCerts(Config.nodeName()),
+  usersHost: Config.get('usersElasticsearch'),
+  usersPrefix: Config.get('usersPrefix') }, main);

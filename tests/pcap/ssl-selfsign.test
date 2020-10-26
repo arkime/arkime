@@ -10,6 +10,7 @@
                   ],
                   "notAfter" : 1521991598000,
                   "notBefore" : 1519399598000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "00b27e45d092b4dddf",
                   "subjectCN" : [
@@ -79,8 +80,8 @@
                8131
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

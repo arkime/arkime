@@ -1,4 +1,4 @@
-use Test::More tests => 626;
+use Test::More tests => 659;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -104,6 +104,7 @@ my $pwd = "*/pcap";
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0/24"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=[10.0.0/24]"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10.0.0"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=10"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst=0"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.dst!=0"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-tcp.pcap&&test.ip=10.0.0.1"));
@@ -158,6 +159,30 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/ip-boundaries.pcap&&ip.dst=[0.0.0.0:3207]"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/ip-boundaries.pcap&&ip.dst=0.0.0/24:3207"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/ip-boundaries.pcap&&ip.dst=:3207"));
+
+# ip error tests
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=a1"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1a.2.3.4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=a.2.3.4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=a1.2.3.4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/10a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/a10"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4:8a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4:a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4:a8"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/10:8a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/10:a"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1.2.3.4/10:a8"));
+
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1g::4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=g::4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=g1::4"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1::4.8g"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1::4.g"));
+    errTest("date=-1&expression=" . uri_escape("ip.dst=1::4.g8"));
 
 # ip.protocol
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/bt-udp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=1"));
@@ -396,3 +421,11 @@ if (0) {
 
 # communityId
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&communityId=\"1:eMRxQSkNuVRbgi0elxmjkFvRujg=\""));
+
+# query DB field names by using db: prefix (#1461)
+    errTest("date=-1&expression=" . uri_escape("db:noSuchField=10.0.0.2"));
+    errTest("date=-1&expression=" . uri_escape("srcIp=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp=10.0.0.2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp>=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&db:dstOui=Juniper*"));
+    countTest(24, "date=-1&expression=" . uri_escape("file=$pwd/wireshark-esp.pcap&&db:protocol=esp"));

@@ -20,7 +20,8 @@
                   ],
                   "notAfter" : 1590753600000,
                   "notBefore" : 1495670400000,
-                  "remainingDays" : 1,
+                  "publicAlgorithm" : "rsaEncryption",
+                  "remainingDays" : -1,
                   "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
                   "subjectCN" : [
                      "lfoup01-b.cloudsink.net"
@@ -40,6 +41,7 @@
                   ],
                   "notAfter" : 1855828800000,
                   "notBefore" : 1382443200000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "04e1e7a4dc5cf2f36dc02b42b85d159f",
                   "subjectCN" : [
@@ -138,8 +140,8 @@
             ],
             "protocol" : [
                "http",
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,

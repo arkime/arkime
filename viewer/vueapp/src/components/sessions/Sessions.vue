@@ -1,41 +1,50 @@
 <template>
 
-  <div class="sessions-page">
+  <div class="sessions-page"
+    :class="{'hide-tool-bars': !showToolBars}">
 
-    <!-- search navbar -->
-    <moloch-search
-      :fields="headers"
-      :open-sessions="stickySessions"
-      :num-visible-sessions="query.length"
-      :num-matching-sessions="sessions.recordsFiltered"
-      :start="query.start"
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :fields="headers"
+          :open-sessions="stickySessions"
+          :num-visible-sessions="query.length"
+          :num-matching-sessions="sessions.recordsFiltered"
+          :start="query.start"
+          :timezone="user.settings.timezone"
+          @changeSearch="cancelAndLoad(true)"
+          @setView="loadNewView"
+          @setColumns="loadColumns">
+        </moloch-search> <!-- /search navbar -->
+
+        <!-- paging navbar -->
+        <form class="sessions-paging">
+          <div class="form-inline">
+            <moloch-paging
+              class="mt-1 ml-1"
+              :records-total="sessions.recordsTotal"
+              :records-filtered="sessions.recordsFiltered"
+              @changePaging="changePaging">
+            </moloch-paging>
+          </div>
+        </form> <!-- /paging navbar -->
+      </span>
+    </MolochCollapsible>
+
+    <!-- visualizations -->
+    <moloch-visualizations
+      v-if="mapData && graphData && capStartTimes.length"
+      :graph-data="graphData"
+      :map-data="mapData"
+      :primary="true"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
-      @changeSearch="cancelAndLoad(true)">
-    </moloch-search> <!-- /search navbar -->
-
-    <!-- paging navbar -->
-    <form class="sessions-paging">
-      <div class="form-inline">
-        <moloch-paging
-          class="mt-1 ml-1"
-          :records-total="sessions.recordsTotal"
-          :records-filtered="sessions.recordsFiltered"
-          @changePaging="changePaging">
-        </moloch-paging>
-      </div>
-    </form> <!-- /paging navbar -->
+      :timelineDataFilters="timelineDataFilters"
+      @fetchMapData="cancelAndLoad(true)">
+    </moloch-visualizations> <!-- /visualizations -->
 
     <div class="sessions-content ml-2 mr-2">
-
-      <!-- session visualizations -->
-      <moloch-visualizations
-        v-if="mapData && graphData"
-        :graph-data="graphData"
-        :map-data="mapData"
-        :primary="true"
-        :timezone="user.settings.timezone"
-        @fetchMapData="cancelAndLoad(true)">
-      </moloch-visualizations> <!-- /session visualizations -->
 
       <!-- sticky (opened) sessions -->
       <transition name="leave">
@@ -52,9 +61,22 @@
 
       <!-- sessions results -->
       <table class="table-striped sessions-table"
+        :class="{'sticky-header':stickyHeader}"
         :style="tableStyle"
         id="sessionsTable">
-        <thead>
+        <thead ref="tableHeader">
+          <!-- table fit button -->
+          <div class="fit-btn-container">
+            <button type="button"
+              v-if="showFitButton && !loading"
+              class="btn btn-xs btn-theme-quaternary fit-btn"
+              @click="fitTable"
+              v-b-tooltip.hover
+              title="Fit the table to the current window size">
+              <span class="fa fa-arrows-h">
+              </span>
+            </button>
+          </div> <!-- /table fit button -->
           <tr ref="draggableColumns">
             <!-- table options -->
             <th class="ignore-element"
@@ -64,13 +86,14 @@
                 size="sm"
                 no-flip
                 no-caret
-                class="col-vis-menu"
+                boundary="viewport"
+                class="col-vis-menu col-dropdown"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
                 <template slot="button-content">
                   <span class="fa fa-th"
-                    v-b-tooltip.hover
+                    v-b-tooltip.hover.right
                     title="Toggle visible columns">
                   </span>
                 </template>
@@ -116,11 +139,11 @@
                 size="sm"
                 no-flip
                 no-caret
-                class="col-config-menu"
+                class="col-config-menu col-dropdown"
                 variant="theme-secondary">
                 <template slot="button-content">
                   <span class="fa fa-columns"
-                    v-b-tooltip.hover
+                    v-b-tooltip.hover.right
                     title="Save or load custom column configuration">
                   </span>
                 </template>
@@ -195,7 +218,7 @@
               <th v-for="header of headers"
                 :key="header.dbField"
                 class="moloch-col-header"
-                :style="{'width': header.width + 'px'}"
+                :style="{'width': `${header.width}px`}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
                 <!-- non-sortable column -->
                 <span v-if="header.dbField === 'info'"
@@ -207,13 +230,13 @@
                     no-flip
                     no-caret
                     right
-                    class="col-vis-menu info-vis-menu pull-right"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
                     <template slot="button-content">
                       <span class="fa fa-th-list"
-                        v-b-tooltip.hover
+                        v-b-tooltip.hover.left
                         title="Toggle visible fields">
                       </span>
                     </template>
@@ -274,7 +297,7 @@
                   right
                   no-flip
                   size="sm"
-                  class="pull-right">
+                  class="pull-right col-dropdown">
                   <b-dropdown-item
                     @click="toggleColVis(header.dbField, header.sortBy)">
                     Hide Column
@@ -377,30 +400,29 @@
                   </div>
                 </span> <!-- /sortable column -->
               </th> <!-- /table headers -->
-              <button type="button"
-                v-if="showFitButton && !loading"
-                class="btn btn-xs btn-theme-quaternary fit-btn"
-                @click="fitTable"
-                v-b-tooltip.hover
-                title="Fit the table to the current window size">
-                <span class="fa fa-arrows-h">
-                </span>
-              </button>
             </template>
           </tr>
         </thead>
+
         <tbody class="small">
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
             <tr :key="session.id"
-              :id="'session'+session.id">
+              class="sessions-scroll-margin"
+              :class="{'no-table-header-overflow':!tableHeaderOverflow}"
+              :ref="`tableRow${index}`"
+              :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
-              <td style="width: 85px;">
+              <td width="85"
+                style="white-space: nowrap; width: 85px !important;">
                 <toggle-btn class="mt-1"
                   :opened="session.expanded"
                   @toggle="toggleSessionDetail(session)">
                 </toggle-btn>
-                <moloch-session-field
+                <span v-if="session.ipProtocol === 0">
+                  notip
+                </span>
+                <moloch-session-field v-else
                   :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
                   :session="session"
                   :expr="'ip.protocol'"
@@ -413,7 +435,7 @@
               <!-- field values -->
               <td v-for="col in headers"
                 :key="col.dbField"
-                :style="{'width': col.width + 'px'}">
+                :style="{'width': `${col.width}px`}">
                 <!-- field value is an array -->
                 <span v-if="Array.isArray(session[col.dbField])">
                   <span v-for="value in session[col.dbField]"
@@ -505,6 +527,7 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';
 import MolochSessionDetail from './SessionDetail';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochStickySessions from './StickySessions';
 // import external
@@ -519,7 +542,6 @@ let timeout;
 
 let colResizeInitialized;
 let colDragDropInitialized;
-let draggableColumns;
 let tableDestroyed;
 
 // window/table resize variables
@@ -552,7 +574,8 @@ export default {
     MolochNoResults,
     MolochSessionDetail,
     MolochVisualizations,
-    MolochStickySessions
+    MolochStickySessions,
+    MolochCollapsible
   },
   data: function () {
     return {
@@ -565,17 +588,23 @@ export default {
       colConfigError: '',
       colConfigSuccess: '',
       headers: [],
+      fields: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
       infoFields: customCols.info.children,
       colVisMenuOpen: false,
-      infoFieldVisMenuOpen: false
+      infoFieldVisMenuOpen: false,
+      stickyHeader: false,
+      tableHeaderOverflow: undefined,
+      showFitButton: false
     };
   },
   created: function () {
+    this.getCaptureStats();
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
@@ -591,6 +620,8 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
+    this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
   },
   computed: {
     query: function () {
@@ -619,6 +650,9 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    timelineDataFilters: function () {
+      return this.$store.state.user.settings.timelineDataFilters.map(i => this.getField(i));
+    },
     filteredFields: function () {
       return this.filterFields(false, true, false);
     },
@@ -629,22 +663,53 @@ export default {
       return this.$store.state.views;
     },
     tableStyle: function () {
-      let style = { width: this.tableWidth + 'px' };
-      // pad the bottom of the table so that opening a field
-      // dropdowns at the bottom doesn't make the table scrolly
-      if (this.sessions && this.sessions.data &&
-        this.sessions.data.length) {
-        style['margin-bottom'] = '300px';
+      let style = {};
+      if (this.tableHeaderOverflow < 0) {
+        style.width = `${this.tableWidth}px`;
       }
       return style;
+    },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   watch: {
-    'query.view': function (newView, oldView) {
-      this.viewChanged = true;
+    '$store.state.stickyViz': function () {
+      this.stickyHeader = this.$store.state.stickyViz;
+      this.toggleStickyHeader();
     }
   },
   methods: {
+    loadNewView: function () {
+      this.viewChanged = true;
+      this.$nextTick(() => {
+        this.loadData(true);
+      });
+    },
+    loadColumns: function (colConfig) {
+      this.tableState = colConfig;
+      this.loadData(true);
+    },
+    /* show the overflow when a dropdown in a column header is shown. otherwise,
+     * the dropdown is cut off and scrolls vertically in the column header */
+    dropdownShowListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'visible');
+      $('thead > tr').css('overflow-x', 'visible');
+    },
+    /* when the column header dropdown is hidden, go back to the default scroll
+     * behavior so that the table can overflow the window width */
+    dropdownHideListener: function (bvEvent) {
+      if (!this.stickyHeader) { return; }
+      let target = $(bvEvent.target);
+      if (!target) { return; }
+      if (!target.parent().hasClass('col-dropdown')) { return; }
+      $('thead').css('overflow-x', 'scroll');
+      $('thead > tr').css('overflow-x', 'scroll');
+    },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
     /**
@@ -691,6 +756,8 @@ export default {
         let index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
+
+      this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
     /**
      * Closes the session detail for a session
@@ -703,6 +770,7 @@ export default {
         if (session.id === sessionId) {
           session.expanded = false;
           this.stickySessions.splice(i, 1);
+          this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
           return;
         }
       }
@@ -948,7 +1016,7 @@ export default {
 
       if (index === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
-        this.tableState.order = Utils.getDefaultTableState().order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -958,7 +1026,7 @@ export default {
         }
       } else {
         this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
-        this.tableState.order = this.colConfigs[index].order.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
       }
 
       this.sorts = this.tableState.order;
@@ -991,7 +1059,7 @@ export default {
       let data = {
         name: name,
         columns: this.tableState.visibleHeaders.slice(),
-        order: this.tableState.order.slice()
+        order: JSON.parse(JSON.stringify(this.tableState.order))
       };
 
       UserService.updateColumnConfig(data)
@@ -1118,7 +1186,10 @@ export default {
 
       this.saveColumnWidths();
 
-      setTimeout(() => { this.initializeColResizable(); });
+      this.$nextTick(() => {
+        this.initializeColResizable();
+        this.toggleStickyHeader();
+      });
     },
     /**
      * Opens the spi graph page in a new browser tab
@@ -1300,8 +1371,6 @@ export default {
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
-        this.mapHeadersToFields();
-
         for (let view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
@@ -1309,6 +1378,8 @@ export default {
             this.saveTableState();
           }
         }
+
+        this.mapHeadersToFields();
 
         this.updateTable = true;
         this.viewChanged = false;
@@ -1383,6 +1454,24 @@ export default {
         this.error = error.text || error;
         this.loading = false;
       });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     },
     /**
      * Saves the table state
@@ -1462,7 +1551,6 @@ export default {
     mapHeadersToFields: function () {
       this.headers = [];
       this.sumOfColWidths = 85;
-
       if (!this.colWidths) { this.colWidths = {}; }
 
       for (let headerId of this.tableState.visibleHeaders) {
@@ -1484,6 +1572,7 @@ export default {
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
       this.calculateInfoColumnWidth(defaultColWidths['info']);
+      this.toggleStickyHeader();
     },
     /* Opens up to 10 session details in the table */
     openAll: function () {
@@ -1511,7 +1600,7 @@ export default {
       if (!this.$refs.draggableColumns) { return; }
 
       colDragDropInitialized = true;
-      draggableColumns = Sortable.create(this.$refs.draggableColumns, {
+      Sortable.create(this.$refs.draggableColumns, {
         animation: 100,
         filter: '.ignore-element',
         preventOnFilter: false, // allow clicks within the ignored element
@@ -1610,6 +1699,41 @@ export default {
         }
       }
     },
+    /* Toggles the sticky table header */
+    toggleStickyHeader: function () {
+      let firstTableRow = this.$refs.tableRow0;
+      if (this.stickyHeader) {
+        // calculate the height of the header row
+        const height = this.$refs.draggableColumns.clientHeight + 2;
+        const windowWidth = window.innerWidth;
+        // calculate how much the header row is under or overflowing the window
+        const tableHeaderOverflow = windowWidth - this.tableWidth;
+        if (tableHeaderOverflow !== 0) { // if it's overflowing the window
+          this.tableHeaderOverflow = tableHeaderOverflow;
+          // set the right style to the amount of the overflow
+          if (tableHeaderOverflow < 0) {
+            this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
+            this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
+          }
+        } else { // otherwise unset it (default = auto, see css)
+          this.tableHeaderOverflow = undefined;
+          this.$refs.tableHeader.style = undefined;
+          this.$refs.draggableColumns.style = undefined;
+        }
+        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
+          // set the margin top to the height of the header so it renders below it
+          firstTableRow[0].style.marginTop = `${height}px`;
+        }
+      } else { // if the header is not sticky
+        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
+          // unset the top margin because the table header won't overlay it
+          firstTableRow[0].style = undefined;
+        }
+        // set the overflow to visible so that the dropdowns overflow the header
+        $('thead').css('overflow-x', 'visible');
+        $('thead > tr').css('overflow-x', 'visible');
+      }
+    },
     /* event handlers ------------------------------------------------------ */
     /**
      * Fired when paging changes (from utils/Pagination)
@@ -1618,7 +1742,7 @@ export default {
     changePaging: function (args) {
       this.query.start = args.start;
       this.query.length = args.length;
-      this.cancelAndLoad(true);
+      if (args.issueQuery) { this.cancelAndLoad(true); }
     }
   },
   beforeDestroy: function () {
@@ -1637,9 +1761,9 @@ export default {
 
     $('#sessionsTable').colResizable({ disable: true });
 
-    if (draggableColumns) { draggableColumns.destroy(); }
-
     window.removeEventListener('resize', windowResizeEvent);
+    this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
+    this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>
@@ -1679,31 +1803,20 @@ export default {
   visibility: hidden;
   margin-left: -25px;
 }
+
+/* clear the box shadow above the sticky column headers */
+.sessions-page .sticky-viz .viz-container {
+  box-shadow: none !important;
+}
 </style>
 
 <style scoped>
-/* sessions page, navbar, and content styles - */
-.sessions-page {
-  margin-top: 36px;
-}
-
 form.sessions-paging {
-  z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 40px;
-  background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .sessions-content {
-  padding-top: 115px;
-  overflow-y: auto;
+  padding-top: 10px;
 }
 
 /* sessions table -------------------------- */
@@ -1753,6 +1866,42 @@ table.sessions-table tbody tr td {
 /*!* table.sessions-table column reorder *!*/
 .JColResizer > tbody > tr > td, .JColResizer > tbody > tr > th {
   overflow: visible !important; /* show overflow for clickable fields */
+}
+
+/* sticky table header ----------------------- */
+table.sessions-table.sticky-header > thead {
+  left: 0;
+  z-index: 3;
+  /* need to unset right because sometimes the header overflows the window */
+  right: auto;
+  position: fixed;
+  margin-top: -12px;
+  padding-top: 12px;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  padding-left: 0.5rem;
+  box-shadow: 0 6px 9px -6px black;
+  background-color: var(--color-background, white);
+}
+table.sessions-table.sticky-header > thead > tr {
+  display: table;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  table-layout: fixed;
+}
+table.sessions-table.sticky-header > thead > tr > th {
+  border-bottom: none; /* shadow works as bottom border */
+  border-top: 1px solid rgb(238, 238, 238);
+}
+/* need this to make sure that the body cells are the correct width */
+table.sessions-table.sticky-header > tbody > tr {
+  display: table;
+  table-layout: fixed;
+}
+/* need full width for body rows to be able to take up the entire window when
+resizing but the table doesn't overflow the window */
+table.sessions-table.sticky-header > tbody > tr.no-table-header-overflow {
+  width: 100%;
 }
 
 /* table column headers -------------------- */
@@ -1807,10 +1956,13 @@ table.sessions-table tbody tr td {
 }
 
 /* table fit button -------------------------- */
-button.fit-btn {
+div.fit-btn-container {
+  top: -18px;
+  z-index: 3;
+  position: relative;
+}
+div.fit-btn-container > button.fit-btn {
   position: absolute;
-  top: 290px;
-  left: 10px;
 }
 
 /* animate sticky sessions enter/leave */
@@ -1829,5 +1981,14 @@ button.fit-btn {
 .leave-leave-to {
   transform: translateY(1000px);
   opacity: 0;
+}
+
+/* set scroll margin offset for scrolling to sessions */
+.sessions-scroll-margin {
+  scroll-margin: 115px;
+}
+/* if there are no toolbars, there is no offset */
+.hide-tool-bars .sessions-scroll-margin {
+  scroll-margin: 0px;
 }
 </style>

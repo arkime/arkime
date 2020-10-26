@@ -452,26 +452,31 @@ LOCAL int dns_tcp_parser(MolochSession_t *session, void *uw, const unsigned char
                 return 0;
             }
 
-            if (info->size[which] == 0) {
-                info->size[which] = MAX(1024,dnslength);
-                info->data[which] = malloc(info->size[which]);
-            } else if (info->size[which] < dnslength) {
-                free(info->data[which]);
-                info->data[which] = malloc(dnslength);
-                info->size[which] = dnslength;
-            }
-
             // Have all the data in this first packet, just parse it
             if (dnslength <= len-2) {
                 dns_parser(session, 0, data+2, dnslength);
                 data += 2 + dnslength;
                 len -= 2 + dnslength;
-            } else {
-                memcpy(info->data[which], data+2, len-2);
-                info->len[which] = dnslength;
-                info->pos[which] = len-2;
-                return 0;
+                continue;
             }
+            // Don't have all the data, will need to save off
+
+            if (info->size[which] == 0) {
+                info->size[which] = MAX(1024, dnslength);
+                info->data[which] = malloc(info->size[which]);
+            } else if (info->size[which] < dnslength) {
+                info->data[which] = realloc(info->data[which], dnslength);
+                if (!info->data[which]) {
+                    moloch_parsers_unregister(session, uw);
+                    return 0;
+                }
+                info->size[which] = dnslength;
+            }
+
+            memcpy(info->data[which], data+2, len-2);
+            info->len[which] = dnslength;
+            info->pos[which] = len-2;
+            return 0;
         } else {
             int rem = info->len[which] - info->pos[which];
             if (rem <= len) {

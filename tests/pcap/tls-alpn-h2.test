@@ -1,0 +1,170 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "cert" : [
+               {
+                  "alt" : [
+                     "cloudflare.com",
+                     "www.cloudflare.com"
+                  ],
+                  "altCnt" : 2,
+                  "curve" : "prime256v1",
+                  "hash" : "6a:4c:b2:49:b7:1b:66:59:da:bb:96:01:15:fd:7a:01:bf:c9:96:8c",
+                  "issuerCN" : [
+                     "digicert ecc extended validation server ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "notAfter" : 1604404800000,
+                  "notBefore" : 1540857600000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : 1,
+                  "serial" : "0a68bb984a507399f4716e809a44a7b0",
+                  "subjectCN" : [
+                     "cloudflare.com"
+                  ],
+                  "subjectON" : [
+                     "Cloudflare, Inc."
+                  ],
+                  "validDays" : 735
+               },
+               {
+                  "curve" : "secp384r1",
+                  "hash" : "fc:20:b6:0c:ad:ac:38:d1:ff:40:cf:1b:6e:ef:29:0f:10:b5:7a:bd",
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "notAfter" : 1939812867000,
+                  "notBefore" : 1466513667000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : 1,
+                  "serial" : "029707560cd4a9ebbfe272f1e096d882",
+                  "subjectCN" : [
+                     "digicert ecc extended validation server ca"
+                  ],
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
+                  "validDays" : 5478
+               }
+            ],
+            "certCnt" : 2,
+            "communityId" : "1:/wxqZ626SZRx3CanjPRZ6tl4iH8=",
+            "dstASN" : "AS13335",
+            "dstBytes" : 3142,
+            "dstDataBytes" : 2810,
+            "dstGEO" : "US",
+            "dstIp" : "2606:4700:0000:0000:0000:0000:6811:d209",
+            "dstPackets" : 5,
+            "dstPayload8" : "1603030064020000",
+            "dstPort" : 443,
+            "fileId" : [],
+            "firstPacket" : 1593980608621,
+            "http" : {
+               "host" : [
+                  "www.cloudflare.com"
+               ],
+               "hostCnt" : 1
+            },
+            "initRTT" : 18,
+            "ipProtocol" : 6,
+            "lastPacket" : 1593980608696,
+            "length" : 75,
+            "node" : "test",
+            "packetLen" : [
+               104,
+               92,
+               80,
+               317,
+               80,
+               1426,
+               1426,
+               80,
+               198
+            ],
+            "packetPos" : [
+               24,
+               128,
+               220,
+               300,
+               617,
+               697,
+               2123,
+               3549,
+               3629
+            ],
+            "protocol" : [
+               "http2",
+               "tcp",
+               "tls"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "srcASN" : "AS10310",
+            "srcBytes" : 517,
+            "srcDataBytes" : 237,
+            "srcGEO" : "US",
+            "srcIp" : "2001:4998:ef83:0014:8000:0000:0000:100d",
+            "srcPackets" : 4,
+            "srcPayload8" : "16030100e8010000",
+            "srcPort" : 64034,
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "b89ff1ab695278c69b8a73f76242ef755e0b13dc6d459aaaa784fec9c2dfce34"
+               ],
+               "ja3" : [
+                  "3faa4ad39f690c4ef1c3160caa375465"
+               ],
+               "ja3Cnt" : 1,
+               "ja3s" : [
+                  "7f76f3e952a1bc7d407366fafe1db7ed"
+               ],
+               "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "771,52393,0-65281-11-16"
+               ],
+               "ja3sstringCnt" : 1,
+               "ja3string" : [
+                  "771,49200-49196-49192-49188-49172-49162-159-107-57-52393-52392-52394-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255,0-11-10-13-16,29-23-24,0"
+               ],
+               "ja3stringCnt" : 1,
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 3659,
+            "totDataBytes" : 3047,
+            "totPackets" : 9
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-200705",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

@@ -8,13 +8,21 @@ ul.nav.nav-pills.mb-3
       a.nav-link(href=session.node + '/entirePcap/' + session.rootId + '.pcap', target="_blank") Download Entire Pcap
   else
     li.nav-item
-      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank", v-has-permission="'!disablePcapDownload'") Download Pcap
+      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover="true", title="Download the PCAP file for this session.")
+        span.fa.fa-download
+        | &nbsp;Download PCAP
   li.nav-item
-    a.nav-link(href=session.node + '/raw/' + session.id + '?type=src', target="_blank") Source Raw
+    a.nav-link(href=session.node + '/raw/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover="true", title="Download the raw source packets for this session.")
+      span.fa.fa-arrow-circle-up
+      | &nbsp;Source Raw
   li.nav-item
-    a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank") Destination Raw
+    a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover="true", title="Download the raw destination packets for this session.")
+      span.fa.fa-arrow-circle-down
+      | &nbsp;Destination Raw
   li.nav-item
-    a.nav-link.cursor-pointer(@click="openPermalink") Permalink
+    a.nav-link.cursor-pointer(@click="openPermalink", v-b-tooltip.hover="true", title="Navigate to the sessions page containing just this session. You can use this link to share this session with other users.")
+      span.fa.fa-link
+      | &nbsp;Link
   b-dropdown.nav-item(text="Actions", size="sm")
     b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
       | Export PCAP
@@ -396,7 +404,7 @@ dl
           | Export Unique Socks Country with counts
         b-dropdown-item(@click="openSpiGraph('country.socks')")
           | Open Socks Country SPI Graph
-        b-dropdown-item(@click="fieldExists('country.socks, '==')")
+        b-dropdown-item(@click="fieldExists('country.socks', '==')")
           | Add Socks Country EXISTS! to query
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('socks.ip', 0)")

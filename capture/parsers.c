@@ -335,14 +335,14 @@ const char *moloch_parsers_magic(MolochSession_t *session, int field, const char
     case MOLOCH_MAGICMODE_LIBMAGIC:
         m = magic_buffer(cookie[session->thread], data, MIN(len,50));
         if (m) {
-            int len;
+            int mlen;
             char *semi = strchr(m, ';');
             if (semi) {
-                len = semi - m;
+                mlen = semi - m;
             } else {
-                len = strlen(m);
+                mlen = strlen(m);
             }
-            return moloch_field_string_add(field, session, m, len, TRUE);
+            return moloch_field_string_add(field, session, m, mlen, TRUE);
         }
         return NULL;
     case MOLOCH_MAGICMODE_NONE:
@@ -361,27 +361,6 @@ void moloch_parsers_initial_tag(MolochSession_t *session)
         for (i = 0; config.extraTags[i]; i++) {
             moloch_session_add_tag(session, config.extraTags[i]);
         }
-    }
-
-    switch(session->protocol) {
-    case IPPROTO_TCP:
-        moloch_session_add_protocol(session, "tcp");
-        break;
-    case IPPROTO_UDP:
-        moloch_session_add_protocol(session, "udp");
-        break;
-    case IPPROTO_ICMP:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_ICMPV6:
-        moloch_session_add_protocol(session, "icmp");
-        break;
-    case IPPROTO_SCTP:
-        moloch_session_add_protocol(session, "sctp");
-        break;
-    case IPPROTO_ESP:
-        moloch_session_add_protocol(session, "esp");
-        break;
     }
 
     moloch_field_ops_run(session, &config.ops);
@@ -525,7 +504,6 @@ void moloch_parsers_asn_decode_oid(char *buf, int bufsz, unsigned char *oid, int
 uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsigned char* value, int len)
 {
     int        offset = 0;
-    int        pos = 0;
     struct tm  tm;
     time_t     val;
 
@@ -556,12 +534,13 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
     }
     //GeneralizedTime
     else if (tag == 24 && len >= 10) {
+        int pos;
         memset(&tm, 0, sizeof(tm));
         tm.tm_year = str4num(value+0) - 1900;
         tm.tm_mon  = str2num(value+4) - 1;
         tm.tm_mday = str2num(value+6);
         tm.tm_hour = str2num(value+8);
-        if (len < 10 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
+        if (value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }
@@ -684,6 +663,28 @@ void moloch_parsers_init()
     MolochString_t *hstring;
     int d;
 
+    char **disableParsers = moloch_config_str_list(NULL, "disableParsers", "arp.so");
+    for (d = 0; disableParsers[d]; d++) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = disableParsers[d];
+        hstring->len = strlen(disableParsers[d]);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMTP) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smtp.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    if (!config.parseSMB) {
+        hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
+        hstring->str = g_strdup("smb.so");
+        hstring->len = strlen(hstring->str);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
     for (d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
@@ -734,6 +735,7 @@ void moloch_parsers_init()
 
             if (!parser) {
                 LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
+                g_free(filenames[i]);
                 g_free (path);
                 continue;
             }
@@ -743,6 +745,7 @@ void moloch_parsers_init()
             if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
                 LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
                 g_free(filenames[i]);
+                g_free (path);
                 continue;
             }
 
@@ -750,22 +753,30 @@ void moloch_parsers_init()
                 LOG("Loaded %s", path);
             }
 
-            g_free (path);
-
             parser_init();
 
             hstring = MOLOCH_TYPE_ALLOC0(MolochString_t);
             hstring->str = filenames[i];
             hstring->len = strlen(filenames[i]);
             HASH_ADD(s_, loaded, hstring->str, hstring);
+
+            if (config.debug)
+                LOG("Loaded %s", path);
+
+            g_free (path);
         }
         g_dir_close(dir);
+    }
+
+    if (loaded.count == 0) {
+        LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
 
     HASH_FORALL_POP_HEAD(s_, loaded, hstring,
         g_free(hstring->str);
         MOLOCH_TYPE_FREE(MolochString_t, hstring);
     );
+    g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins
     config.tagsStringField = moloch_field_define("general", "termfield",
@@ -872,15 +883,12 @@ void  moloch_parsers_unregister(MolochSession_t *session, void *uw)
 {
     int i;
     for (i = 0; i < session->parserNum; i++) {
-        if (session->parserInfo[i].uw == uw) {
+        if (session->parserInfo[i].uw == uw && session->parserInfo[i].parserFunc != 0) {
             if (session->parserInfo[i].parserFreeFunc) {
                 session->parserInfo[i].parserFreeFunc(session, uw);
-                session->parserInfo[i].parserFreeFunc = 0;
             }
 
-            session->parserInfo[i].parserSaveFunc = 0;
-            session->parserInfo[i].parserFunc = 0;
-            session->parserInfo[i].uw = 0;
+            memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
             break;
         }
     }
@@ -990,7 +998,7 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
         LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
-    if (!match)
+    if (!match && matchlen != 0)
         LOGEXIT("Can't have a null match for %s", name);
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
@@ -1105,11 +1113,11 @@ void moloch_parsers_classify_tcp(MolochSession_t *session, const unsigned char *
         return;
 
     for (i = 0; i < classifersTcpPortSrc[session->port1].cnt; i++) {
-        classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]);
+        classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]->uw);
     }
 
     for (i = 0; i < classifersTcpPortDst[session->port2].cnt; i++) {
-        classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]);
+        classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]->uw);
     }
 
     for (i = 0; i < classifersTcp0.cnt; i++) {

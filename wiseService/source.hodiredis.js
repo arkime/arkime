@@ -17,75 +17,74 @@
  */
 'use strict';
 
-var wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
-  , redis          = require('ioredis')
-  ;
-//////////////////////////////////////////////////////////////////////////////////
+var wiseSource = require('./wiseSource.js');
+var util = require('util');
+var redis = require('ioredis');
+
+// ----------------------------------------------------------------------------
 function HODIRedisSource (api, section) {
   HODIRedisSource.super_.call(this, api, section);
 
   this.contentTypes = {};
-  var contentTypes = this.api.getConfig(section, "contentTypes",
-          "application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar").split(",").map(item => item.trim());
+  var contentTypes = this.api.getConfig(section, 'contentTypes',
+          'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
 
-  contentTypes.forEach((type) => { this.contentTypes[type] = 1;});
-  this.url      = api.getConfig(section, "url");
+  contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
+  this.url = api.getConfig(section, 'url');
   if (this.url === undefined) {
-    console.log(this.section, "- ERROR not loading since no url specified in config file");
+    console.log(this.section, '- ERROR not loading since no url specified in config file');
     return;
   }
 
   this.fullQuery = true;
-  this.client = redis.createClient({url: this.url});
+  this.client = redis.createClient({ url: this.url });
   this.api.addSource(section, this);
   this.cacheTimeout = -1;
 
-  var tagsField = this.api.addField("field:tags");
-  this.tagsDomain = {num: 1, buffer: wiseSource.encode(tagsField, "nbs-domain")};
-  this.tagsMd5 = {num: 1, buffer: wiseSource.encode(tagsField, "nbs-md5")};
-  this.tagsEmail = {num: 1, buffer: wiseSource.encode(tagsField, "nbs-email")};
-  this.tagsIp = {num: 1, buffer: wiseSource.encode(tagsField, "nbs-ip")};
+  var tagsField = this.api.addField('field:tags');
+  this.tagsDomain = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-domain') };
+  this.tagsMd5 = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-md5') };
+  this.tagsEmail = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-email') };
+  this.tagsIp = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-ip') };
 }
 util.inherits(HODIRedisSource, wiseSource);
 
-//////////////////////////////////////////////////////////////////////////////////
-HODIRedisSource.prototype.process = function(key, tag, cb) {
+// ----------------------------------------------------------------------------
+HODIRedisSource.prototype.process = function (key, tag, cb) {
   var date = new Date();
 
-  this.client.hsetnx(key, "first", date.getTime(), (err, result) => {
+  this.client.hsetnx(key, 'first', date.getTime(), (err, result) => {
     if (result === 1) {
       return cb(null, tag);
     } else {
       return cb(null, undefined);
     }
   });
-  this.client.hset(key, "last", date.getTime());
-  this.client.hincrby(key, "count", 1);
-  this.client.hincrby(key, `count:${date.getFullYear()}:${date.getMonth()+1}`, 1);
-
+  this.client.hset(key, 'last', date.getTime());
+  this.client.hincrby(key, 'count', 1);
+  this.client.hincrby(key, `count:${date.getFullYear()}:${date.getMonth() + 1}`, 1);
 };
-//////////////////////////////////////////////////////////////////////////////////
-HODIRedisSource.prototype.getDomain = function(query, cb) {
+// ----------------------------------------------------------------------------
+HODIRedisSource.prototype.getDomain = function (query, cb) {
   return this.process(`d:${query.value}`, this.tagsDomain, cb);
 };
-//////////////////////////////////////////////////////////////////////////////////
-HODIRedisSource.prototype.getMd5 = function(query, cb) {
+// ----------------------------------------------------------------------------
+HODIRedisSource.prototype.getMd5 = function (query, cb) {
   if (query.contentType === undefined || this.contentTypes[query.contentType] !== 1) {
-    return cb (null, undefined);
+    return cb(null, undefined);
   }
 
   return this.process(`h:${query.value}`, this.tagsMd5, cb);
 };
-//////////////////////////////////////////////////////////////////////////////////
-HODIRedisSource.prototype.getEmail = function(query, cb) {
+// ----------------------------------------------------------------------------
+HODIRedisSource.prototype.getEmail = function (query, cb) {
   return this.process(`e:${query.value}`, this.tagsEmail, cb);
 };
-//////////////////////////////////////////////////////////////////////////////////
-HODIRedisSource.prototype.getIp = function(query, cb) {
+// ----------------------------------------------------------------------------
+HODIRedisSource.prototype.getIp = function (query, cb) {
   return this.process(`a:${query.value}`, this.tagsIp, cb);
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  return new HODIRedisSource(api, "hodiredis");
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  return new HODIRedisSource(api, 'hodiredis');
 };

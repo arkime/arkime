@@ -59,6 +59,8 @@
 # 62 - hunt error timestamp and node
 # 63 - Upgrade for ES 7.x: sequence_v3, fields_v3, queries_v3, files_v6, users_v7, dstats_v4, stats_v4, hunts_v2
 # 64 - lock shortcuts
+# 65 - hunt unrunnable and failedSessionIds
+# 66 - share hunts
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -68,7 +70,7 @@ use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use strict;
 
-my $VERSION = 64;
+my $VERSION = 66;
 my $verbose = 0;
 my $PREFIX = "";
 my $SECURE = 1;
@@ -79,6 +81,7 @@ my $SHARDS = -1;
 my $REPLICAS = -1;
 my $HISTORY = 13;
 my $SEGMENTS = 1;
+my $SEGMENTSMIN = -1;
 my $NOOPTIMIZE = 0;
 my $FULL = 0;
 my $REVERSE = 0;
@@ -86,6 +89,7 @@ my $SHARDSPERNODE = 1;
 my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
+my $DOILM = 0;
 my $WARMAFTER = -1;
 my $WARMKIND = "daily";
 my $OPTIMIZEWARM = 0;
@@ -94,6 +98,7 @@ my $SHARED = 0;
 my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
+my $REFRESH = 60;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -135,27 +140,33 @@ sub showHelp($)
     print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
+    print "    --ilm                      - Use ilm to manage\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
     print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
+    print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
+    print "    --ilm                      - Use ilm to manage\n";
     print "  expire <type> <num> [<opts>] - Perform daily ES maintenance and optimize all indices in ES\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
-    print "       num                     - number of indexes to keep\n";
+    print "       num                     - Number of indexes to keep\n";
     print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
     print "    --nooptimize               - Do not optimize session indexes during this operation\n";
     print "    --history <num>            - Number of weeks of history to keep, default 13\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "    --segmentsmin <num>        - Only optimize indices with at least <num> segments, default is <segments> \n";
     print "    --reverse                  - Optimize from most recent to oldest\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
     print "    --optmizewarm              - Only optimize warm green indices\n";
-    print "  optimize                     - Optimize all indices in ES\n";
+    print "  optimize                     - Optimize all moloch indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "  optimize-admin               - Optimize only admin indices in ES, use with ILM\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
     print "  set-shortcut <name> <userid> <file> [<opts>]\n";
@@ -171,6 +182,15 @@ sub showHelp($)
     print "      node                     - The node to temporarily use for shrinking\n";
     print "      num                      - Number of shards to shrink to\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default 1\n";
+    print "  ilm <force> <delete>         - Create ILM profile\n";
+    print "      force                    - Time in hours/days before (moving to warm) and force merge (number followed by h or d)\n";
+    print "      delete                   - Time in hours/days before deleting index (number followed by h or d)\n";
+    print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
+    print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
+    print "    --replicas <num>           - Number of replicas for older sessions indices, default 0\n";
+    print "    --history <num>            - Number of weeks of history to keep, default 13\n";
+    print "  reindex <src> [<dst>]        - Reindex ES indices\n";
+    print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
@@ -190,8 +210,8 @@ sub showHelp($)
     print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "\n";
     print "Field Commands:\n";
-    print "  field disable <exp>          - disable a field from being indexed\n";
-    print "  field enable <exp>           - enable a field from being indexed\n";
+    print "  field disable <exp>          - Disable a field from being indexed\n";
+    print "  field enable <exp>           - Enable a field from being indexed\n";
     print "\n";
     print "Node Commands:\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
@@ -201,7 +221,7 @@ sub showHelp($)
     print "\n";
     print "ES maintenance\n";
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
-    print "  set-shards-per-node <pat> <num>       - Set the number of replicas for index pattern\n";
+    print "  set-shards-per-node <pat> <num>       - Set the number of shards per node for index pattern\n";
     print "  set-allocation-enable <mode>          - Set the allocation mode (all, primaries, new_primaries, none, null)\n";
     print "  allocate-empty <node> <index> <shard> - Allocate a empty shard on a node, DATA LOSS!\n";
     print "  unflood-stage <pat>                   - Mark index pattern as no longer flooded\n";
@@ -218,6 +238,19 @@ sub waitFor
         chomp $answer;
         last if ($answer eq $str);
         print "You didn't type \"$str\", for some reason you typed \"$answer\"\n";
+    }
+}
+################################################################################
+sub waitForRE
+{
+    my ($re, $help) = @_;
+
+    print "$help\n";
+    while (1) {
+        my $answer = <STDIN>;
+        chomp $answer;
+        return $answer if ($answer =~ $re);
+        print "$help\n";
     }
 }
 
@@ -407,10 +440,10 @@ sub esWaitForNoTask
 ################################################################################
 sub esForceMerge
 {
-    my ($index, $segments) = @_;
-    esWaitForNoTask("forcemerge");
+    my ($index, $segments, $dowait) = @_;
+    esWaitForNoTask("forcemerge") if ($dowait);
     esPost("/$index/_forcemerge?max_num_segments=$segments", "", 2);
-    esWaitForNoTask("forcemerge");
+    esWaitForNoTask("forcemerge") if ($dowait);
 }
 
 ################################################################################
@@ -1205,6 +1238,13 @@ sub sessions2Update
       "assetCnt" : {
         "type" : "long"
       },
+      "bgp" : {
+        "properties" : {
+          "type" : {
+            "type" : "keyword"
+          }
+        }
+      },
       "cert" : {
         "properties" : {
           "alt" : {
@@ -1212,6 +1252,9 @@ sub sessions2Update
           },
           "altCnt" : {
             "type" : "long"
+          },
+          "curve" : {
+            "type" : "keyword"
           },
           "hash" : {
             "type" : "keyword"
@@ -1227,6 +1270,9 @@ sub sessions2Update
           },
           "notBefore" : {
             "type" : "date"
+          },
+          "publicAlgorithm" : {
+            "type" : "keyword"
           },
           "remainingDays" : {
             "type" : "long"
@@ -1511,6 +1557,21 @@ sub sessions2Update
       },
       "firstPacket" : {
         "type" : "date"
+      },
+      "greASN" : {
+	"type" : "keyword"
+      },
+      "greGEO" : {
+	"type" : "keyword"
+      },
+      "greIp" : {
+	"type" : "ip"
+      },
+      "greIpCnt" : {
+	"type" : "long"
+      },
+      "greRIR" : {
+	"type" : "keyword"
       },
       "http" : {
         "properties" : {
@@ -2175,10 +2236,15 @@ $REPLICAS = 0 if ($REPLICAS < 0);
 my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
 $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
 
-my $hotwarm = '';
+my $settings = '';
 if ($DOHOTWARM) {
-  $hotwarm = ',
+  $settings .= ',
       "routing.allocation.require.molochtype": "hot"';
+}
+
+if ($DOILM) {
+  $settings .= qq/,
+      "lifecycle.name": "${PREFIX}molochsessions"/;
 }
 
     my $template = '
@@ -2186,8 +2252,8 @@ if ($DOHOTWARM) {
   "index_patterns": "' . $PREFIX . 'sessions2-*",
   "settings": {
     "index": {
-      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $hotwarm . ',
-      "refresh_interval": "60s",
+      "routing.allocation.total_shards_per_node": ' . $shardsPerNode . $settings . ',
+      "refresh_interval": "' . $REFRESH . 's",
       "number_of_shards": ' . $SHARDS . ',
       "number_of_replicas": ' . $REPLICAS . ',
       "analysis": {
@@ -2280,26 +2346,35 @@ sub historyUpdate
   }
 }';
 
- my $template = '
+my $settings = '';
+if ($DOILM) {
+  $settings .= qq/"lifecycle.name": "${PREFIX}molochhistory",
+/;
+}
+
+ my $template = qq/
 {
-  "index_patterns": "' . $PREFIX . 'history_v1-*",
+  "index_patterns": "${PREFIX}history_v1-*",
   "settings": {
+      ${settings}
       "number_of_shards": 1,
       "number_of_replicas": 0,
       "auto_expand_replicas": "0-1"
     },
-  "mappings":' . $mapping . '
-}';
+  "mappings": ${mapping}
+}/;
 
 logmsg "Creating history template\n" if ($verbose > 0);
 esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
-logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-foreach my $i (keys %{$indices}) {
-    progress("$i ");
-    esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
+if ($UPGRADEALLSESSIONS) {
+    logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+    foreach my $i (keys %{$indices}) {
+        progress("$i ");
+        esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
+    }
 }
 
 logmsg "\n";
@@ -2399,6 +2474,15 @@ sub huntsUpdate
         }
       },
       "notifier": {
+        "type": "keyword"
+      },
+      "unrunnable": {
+        "type": "boolean"
+      },
+      "failedSessionIds": {
+        "type": "keyword"
+      },
+      "users": {
         "type": "keyword"
       }
     }
@@ -2790,9 +2874,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 60700 || ($main::esVersion >= 70000 && $main::esVersion < 70100)) {
+    if ($main::esVersion < 60800 || ($main::esVersion >= 70000 && $main::esVersion < 70100)) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 6.7.0 is not supported\n",
+              "* < 6.8.0 is not supported\n",
               "* 7.0.x is not supported\n",
               "\n",
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
@@ -2801,8 +2885,8 @@ sub dbCheck {
         exit (1)
     }
 
-    if ($main::esVersion < 60800) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.x is recommended\n");
+    if ($main::esVersion < 60805) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.5 or newer is recommended\n");
     }
 
     my $error = 0;
@@ -2906,7 +2990,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2", 1);
+    esForceMerge("${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}lookups_v1", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -2920,12 +3004,18 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--refresh") {
+            $pos++;
+            $REFRESH = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--history") {
             $pos++;
             $HISTORY = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--segments") {
             $pos++;
             $SEGMENTS = int($ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--segmentsmin") {
+            $pos++;
+            $SEGMENTSMIN = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--nooptimize") {
             $NOOPTIMIZE = 1;
         } elsif ($ARGV[$pos] eq "--full") {
@@ -2943,6 +3033,8 @@ sub parseArgs {
             }
         } elsif ($ARGV[$pos] eq "--hotwarm") {
             $DOHOTWARM = 1;
+        } elsif ($ARGV[$pos] eq "--ilm") {
+            $DOILM = 1;
         } elsif ($ARGV[$pos] eq "--warmafter") {
             $pos++;
             $WARMAFTER = int($ARGV[$pos]);
@@ -3000,17 +3092,17 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage)$/);
-showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|reindex)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex)$/);
+showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
 parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
-parseArgs(3) if ($ARGV[1] =~ /^(restore)$/);
+parseArgs(3) if ($ARGV[1] =~ /^(restore|backup)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 if ($CLIENTCERT ne "") {
@@ -3058,8 +3150,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     close($fh);
     exit 0;
 } elsif ($ARGV[1] =~ /^backup$/) {
-    parseArgs(3);
-
     sub bopen {
         my ($index) = @_;
         if ($GZ) {
@@ -3137,6 +3227,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
 
+    $SEGMENTSMIN = $SEGMENTS if ($SEGMENTSMIN == -1);
+
     # First handle sessions expire
     my $indicesa = esGet("/_cat/indices/${PREFIX}sessions2*?format=json", 1);
     my %indices = map { $_->{index} => $_ } @{$indicesa};
@@ -3187,7 +3279,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $shards = esGet("/_cat/shards/${PREFIX}sessions2*?h=i,sc&format=json");
     for my $i (@{$shards}) {
         # Not expiring and too many segments
-        if (exists $indices{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} & int($i->{sc}) > $SEGMENTS) {
+        if (exists $indices{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} && int($i->{sc}) > $SEGMENTSMIN) {
             # Either not only optimizing warm or make sure we are green warm
             if (!$OPTIMIZEWARM ||
                 ($settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} eq "warm" && $indices{$i->{i}}->{health} eq "green")) {
@@ -3207,7 +3299,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
             # 1 is set if it shouldn't be expired, > 1 means it needs to be optimized
             if ($indices{$i}->{OPTIMIZEIT} > 1) {
-                esForceMerge($i, $SEGMENTS) unless $NOOPTIMIZE;
+                esForceMerge($i, $SEGMENTS, 1) unless $NOOPTIMIZE;
             }
 
             if ($REPLICAS != -1) {
@@ -3259,7 +3351,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
     }
-    esForceMerge("${PREFIX}history_*", 1) unless $NOOPTIMIZE;
+    esForceMerge("${PREFIX}history_*", 1, 1) unless $NOOPTIMIZE;
     esPost("/_flush/synced", "", 1);
 
     # Give the cluster a kick to rebalance
@@ -3275,10 +3367,18 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg sprintf "Optimizing %s Session Indices\n", commify(scalar(keys %{$indices}));
     foreach my $i (sort (keys %{$indices})) {
         progress("$i ");
-        esForceMerge($i, $SEGMENTS);
+        esForceMerge($i, $SEGMENTS, 1);
     }
     esPost("/_flush/synced", "", 1);
+    logmsg "Optimizing History\n";
+    esForceMerge("${PREFIX}history_v1-*", 1, 1);
     logmsg "\n";
+    exit 0;
+} elsif ($ARGV[1] eq "optimize-admin") {
+    $main::userAgent->timeout(7200);
+    esPost("/_flush/synced", "", 1);
+    optimizeOther();
+    esForceMerge("${PREFIX}history_*", 1, 0);
     exit 0;
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
@@ -3402,19 +3502,52 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         logmsg("Doc counts don't match, not deleting old index\n");
     }
     exit 0;
+} elsif ($ARGV[1] eq "recreate-users") {
+    waitFor("USERS", "This will delete and recreate the users index");
+    esDelete("/${PREFIX}users_*", 1);
+    esDelete("/${PREFIX}users", 1);
+    usersCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-stats") {
+    waitFor("STATS", "This will delete and recreate the stats index, make sure no captures are running");
+    esDelete("/${PREFIX}stats_*", 1);
+    esDelete("/${PREFIX}stats", 1);
+    statsCreate();
+    exit 0;
+} elsif ($ARGV[1] eq "recreate-dstats") {
+    waitFor("DSTATS", "This will delete and recreate the dstats index, make sure no captures are running");
+    esDelete("/${PREFIX}dstats_*", 1);
+    esDelete("/${PREFIX}dstats", 1);
+    dstatsCreate();
+    exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
     my $esversion = dbESVersion();
-    my $nodes = esGet("/_nodes");
+    my $catNodes = esGet("/_cat/nodes?format=json&bytes=b&h=name,diskTotal,role");
     my $status = esGet("/_stats/docs,store", 1);
+    my $minMax = esPost("/${PREFIX}sessions2-*/_search?size=0", '{"aggs":{ "min" : { "min" : { "field" : "lastPacket" } }, "max" : { "max" : { "field" : "lastPacket" } } } }', 1);
+    my $ilm = esGet("/_ilm/policy/${PREFIX}molochsessions", 1);
 
     my $sessions = 0;
     my $sessionsBytes = 0;
+    my $sessionsTotalBytes = 0;
+
     my @sessions = grep /^${PREFIX}sessions2-/, keys %{$status->{indices}};
     foreach my $index (@sessions) {
-        next if ($index !~ /^${PREFIX}sessions2-/);
         $sessions += $status->{indices}->{$index}->{primaries}->{docs}->{count};
-        $sessionsBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
+        $sessionsBytes += int($status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes});
+        $sessionsTotalBytes += int($status->{indices}->{$index}->{total}->{store}->{size_in_bytes});
+    }
+
+    my $diskTotal = 0;
+    my $dataNodes = 0;
+    my $totalNodes = 0;
+    foreach my $node (@{$catNodes}) {
+        $totalNodes++;
+        if ($node->{role} =~ /d/) {
+            $diskTotal += $node->{diskTotal};
+            $dataNodes++;
+        }
     }
 
     my $historys = 0;
@@ -3436,18 +3569,27 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printf "Cluster Name:        %17s\n", $esversion->{cluster_name};
     printf "ES Version:          %17s\n", $esversion->{version}->{number};
     printf "DB Version:          %17s\n", $main::versionNumber;
-    printf "ES Nodes:            %17s/%s\n", commify(dataNodes($nodes->{nodes})), commify(scalar(keys %{$nodes->{nodes}}));
-    printf "Session Indices:     %17s\n", commify(scalar(@sessions));
-    printf "Sessions2:           %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
+    printf "ES Data Nodes:       %17s/%s\n", commify($dataNodes), commify($totalNodes);
+    printf "Sessions2 Indices:   %17s\n", commify(scalar(@sessions));
+    printf "Sessions:            %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0) {
-        printf "Session Density:     %17s (%s bytes)\n", commify(int($sessions/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions)))),
-                                                       commify(int($sessionsBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@sessions))));
+        printf "Sessions Density:    %17s (%s bytes)\n", commify(int($sessions/($dataNodes*scalar(@sessions)))),
+                                                       commify(int($sessionsBytes/($dataNodes*scalar(@sessions))));
+        my $days =  (int($minMax->{aggregations}->{max}->{value}) - int($minMax->{aggregations}->{min}->{value}))/(24*60*60*1000);
+
+        printf "MB per Day:          %17s\n", commify(int($sessionsTotalBytes/($days*1000*1000)));
+        printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
+        printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days);
+
+        if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
+            printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
+        }
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
     printf "Histories:           %17s (%s bytes)\n", commify($historys), commify($historysBytes);
     if (scalar(@historys) > 0) {
-        printf "History Density:     %17s (%s bytes)\n", commify(int($historys/(scalar(keys %{$nodes->{nodes}})*scalar(@historys)))),
-                                                       commify(int($historysBytes/(scalar(keys %{$nodes->{nodes}})*scalar(@historys))));
+        printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
+                                                       commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
     printIndex($status, "stats_v4");
     printIndex($status, "stats_v3");
@@ -3647,6 +3789,181 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^unflood-?stage$/) {
     esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.blocks.read_only_allow_delete\" : null}");
+    exit 0;
+} elsif ($ARGV[1] =~ /^ilm$/) {
+    parseArgs(4);
+    my $forceTime = $ARGV[2];
+    die "force time must be num followed by h or d" if ($forceTime !~ /^\d+[hd]/);
+    my $deleteTime = $ARGV[3];
+    die "delete time must be num followed by h or d" if ($deleteTime !~ /^\d+[hd]/);
+    $REPLICAS = 0 if ($REPLICAS == -1);
+    $HISTORY = $HISTORY * 7;
+
+    print "Creating history ilm policy '${PREFIX}molochhistory' with: deleteTime ${HISTORY}d\n";
+    print "Creating sessions ilm policy '${PREFIX}molochsessions' with: forceTime: $forceTime deleteTime: $deleteTime segments: $SEGMENTS replicas: $REPLICAS\n";
+    print "You will need to run db.pl upgrade with --ilm to update the templates the first time you turn ilm on.\n";
+    sleep 5;
+    my $hpolicy =
+qq/ {
+  "policy": {
+    "phases": {
+      "delete": {
+        "min_age": "${HISTORY}d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}/;
+    esPut("/_ilm/policy/${PREFIX}molochhistory?master_timeout=${ESTIMEOUT}s", $hpolicy);
+    esPut("/${PREFIX}history_v*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochhistory"}}/, 1);
+    print "History Policy:\n$hpolicy\n" if ($verbose > 1);
+    sleep 5;
+
+    my $policy;
+    if ($DOHOTWARM) {
+        $policy =
+qq/ {
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "set_priority": {
+            "priority": 95
+          }
+        }
+      },
+      "warm": {
+        "min_age": "$forceTime",
+        "actions": {
+          "allocate": {
+            "number_of_replicas": $REPLICAS,
+            "require": {
+              "molochtype": "warm"
+            }
+          },
+          "forcemerge": {
+            "max_num_segments": $SEGMENTS
+          },
+          "set_priority": {
+            "priority": 10
+          }
+        }
+      },
+      "delete": {
+        "min_age": "$deleteTime",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}/;
+    } else {
+        $policy =
+qq/ {
+  "policy": {
+    "phases": {
+      "warm": {
+        "min_age": "$forceTime",
+        "actions": {
+          "allocate": {
+            "number_of_replicas": $REPLICAS
+          },
+          "forcemerge": {
+            "max_num_segments": $SEGMENTS
+          },
+          "set_priority": {
+            "priority": 10
+          }
+        }
+      },
+      "delete": {
+        "min_age": "$deleteTime",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}/;
+    }
+    esPut("/_ilm/policy/${PREFIX}molochsessions?master_timeout=${ESTIMEOUT}s", $policy);
+    esPut("/${PREFIX}sessions2-*/_settings?master_timeout=${ESTIMEOUT}s", qq/{"settings": {"index.lifecycle.name": "${PREFIX}molochsessions"}}/, 1);
+    print "Policy:\n$policy\n" if ($verbose > 1);
+    exit 0;
+} elsif ($ARGV[1] =~ /^reindex$/) {
+    my ($src, $dst);
+
+    my $MODE = 0;
+    if ($ARGV[-1] eq "--nopcap") {
+        $MODE = 1;
+        pop @ARGV;
+    } elsif ($ARGV[-1] eq "--nopacketlen") {
+        $MODE = 2;
+        pop @ARGV;
+    }
+
+    if (scalar @ARGV == 3) {
+        $src = $ARGV[2];
+        if ($src =~ /\*/) {
+            showHelp("Can not have an * in src index name without supplying a dst index name");
+        }
+
+        if ($src =~ /-shrink/) {
+            $dst = $src =~ s/-shrink//rg
+        } elsif ($src =~ /-reindex/) {
+            $dst = $src =~ s/-reindex//rg
+        } else {
+            $dst = "$src-reindex";
+        }
+        print "src: $src dst: $dst\n";
+    } elsif (scalar @ARGV == 4) {
+        $src = $ARGV[2];
+        $dst = $ARGV[3];
+    } else {
+        showHelp("Invalid arguments");
+    }
+
+    my $query = {"source" => {"index" => $src}, "dest" => {"index" => $dst}, "conflicts" => "proceed"};
+    if ($MODE == 1) {
+        $query->{script} = {"source" => 'ctx._source.remove("packetPos");ctx._source.remove("packetLen");ctx._source.remove("fileId");'};
+    } elsif ($MODE == 2) {
+        $query->{script} = {"source" => 'ctx._source.remove("packetLen");'};
+    }
+
+    my $result = esPost("/_reindex?wait_for_completion=false&slices=auto", to_json($query));
+    die Dumper($result) if (! exists $result->{task});
+    my $task = $result->{task};
+    print "task: $task\n";
+    sleep 10;
+
+    my $srcCount = esGet("/$src/_count")->{count};
+    my $dstCount = esGet("/$dst/_count")->{count};
+
+    my $lastp = -1;
+    while (1) {
+        $result = esGet("/_tasks/$task");
+        $dstCount = esGet("/$dst/_count")->{count};
+        die Dumper($result->{error}) if (exists $result->{error});
+        my $p = int($dstCount * 100 / $srcCount);
+        if ($lastp != $p) {
+            print (scalar localtime() . " $p% ($dstCount/$srcCount)\n");
+            $lastp = $p;
+        }
+        last if ($result->{completed});
+        sleep 30;
+    }
+    esGet("/${dst}/_flush", 1);
+    esGet("/${dst}/_refresh", 1);
+    $srcCount = esGet("/$src/_count")->{count};
+    $dstCount = esGet("/$dst/_count")->{count};
+    die "Mismatch counts $srcCount != $dstCount" if ($srcCount != $dstCount);
+    die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
+    esDelete("/$src", 1);
+    print "Deleted $src\n";
     exit 0;
 }
 
@@ -3992,21 +4309,22 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 64) {
+    } elsif ($main::versionNumber <= 66) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
         historyUpdate();
         lookupsUpdate();
+        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*,${PREFIX}lookups_v1/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v4,${PREFIX}dstats_v4,${PREFIX}fields_v3,${PREFIX}files_v6,${PREFIX}sequence_v3,${PREFIX}users_v7,${PREFIX}queries_v3,${PREFIX}hunts_v2,${PREFIX}history*,${PREFIX}lookups_v1/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

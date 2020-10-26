@@ -1,6 +1,7 @@
 INCLUDE_PCAP  = @PCAP_CFLAGS@
 
 INCLUDE_OTHER = -I.. -I../thirdparty \
+	        @NGHTTP2_CFLAGS@ \
                 @GLIB2_CFLAGS@
 
 install_sh = @install_sh@
@@ -16,6 +17,9 @@ SOS=$(SRCS:.c=.so)
 
 all:$(SOS)
 
+sanitize:
+	$(MAKE) SANITIZE_FLAGS="-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability"
+
 install:
 	@mkdir -p "$(PARSERSDIR)"
 	$(INSTALL) *.so *.jade $(PARSERSDIR)
@@ -23,3 +27,5 @@ install:
 distclean realclean clean:
 	rm -f *.o *.so
 
+tlscipher:
+	curl http://www.iana.org/assignments/tls-parameters/tls-parameters-4.csv | ./tls-cipher.h.pl > tls-cipher.h

@@ -18,7 +18,7 @@
         page for more information,
         or click the owl on the top left.
         <br>
-        <a href="javascript:void(0)"
+        <a href="#"
           @click="dismissMsg"
           class="no-decoration pull-left"
           v-b-tooltip.hover
@@ -27,7 +27,7 @@
           </span>
           Dismiss
         </a>
-        <a href="javascript:void(0)"
+        <a href="#"
           @click="acknowledgeMsg"
           class="no-decoration pull-right"
           v-b-tooltip.hover
@@ -63,10 +63,11 @@ export default {
     }
   },
   methods: {
-    dismissMsg: function () {
+    dismissMsg: function (e) {
       this.dismissed = true;
+      e.preventDefault();
     },
-    acknowledgeMsg: function () {
+    acknowledgeMsg: function (e) {
       UserService.acknowledgeMsg(1, this.user.userId)
         .then((response) => {
           this.user.msgNum = 1;
@@ -75,6 +76,8 @@ export default {
         .catch((error) => {
           this.dismissed = true;
         });
+
+      e.preventDefault();
     },
     openHelp: function () {
       this.$router.push({

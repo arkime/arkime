@@ -13,6 +13,7 @@
                   ],
                   "notAfter" : 1636502400000,
                   "notBefore" : 1194609600000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 1,
                   "serial" : "0337b928347c60a6aec5adb1217f3860",
                   "subjectCN" : [
@@ -38,6 +39,7 @@
                   ],
                   "notAfter" : 1441195200000,
                   "notBefore" : 1370822400000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : -1,
                   "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
                   "subjectCN" : [
@@ -51,7 +53,7 @@
             ],
             "certCnt" : 2,
             "communityId" : "1:f4vOitD+00jrDP6RcE/AYEBZAAQ=",
-            "dstASN" : "AS36459 GitHub, Inc.",
+            "dstASN" : "AS36459",
             "dstBytes" : 4806,
             "dstDataBytes" : 4204,
             "dstGEO" : "US",
@@ -128,8 +130,8 @@
                6641
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

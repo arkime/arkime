@@ -14,6 +14,7 @@
  */
 #include "moloch.h"
 #include "tls-cipher.h"
+#include "openssl/objects.h"
 
 extern MolochConfig_t        config;
 LOCAL  int                   certsField;
@@ -78,6 +79,46 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
     }
 }
 /******************************************************************************/
+LOCAL void tls_certinfo_process_publickey(MolochCertsInfo_t *certs, unsigned char *data, uint32_t len)
+{
+    BSB bsb, tbsb;
+    BSB_INIT(bsb, data, len);
+    char oid[1000];
+
+    uint32_t apc, atag, alen;
+    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+
+    BSB_INIT(tbsb, value, alen);
+    value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+    if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(tbsb) || !value) {
+        certs->publicAlgorithm = "corrupt";
+        return;
+    }
+    oid[0] = 0;
+    moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+
+    int nid = OBJ_txt2nid(oid);
+    if (nid == 0)
+        certs->publicAlgorithm = "unknown";
+    else
+        certs->publicAlgorithm = OBJ_nid2sn(nid);
+
+    if (nid == NID_X9_62_id_ecPublicKey) {
+        value = moloch_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
+        if (BSB_IS_ERROR(tbsb) || !value || alen > 12)
+            certs->curve = "corrupt";
+        else {
+            oid[0] = 0;
+            moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+            nid = OBJ_txt2nid(oid);
+            if (nid == 0)
+                certs->curve = "unknown";
+            else
+                certs->curve = OBJ_nid2sn(nid);
+        }
+    }
+}
+/******************************************************************************/
 LOCAL void tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
 {
     uint32_t apc, atag, alen;
@@ -90,7 +131,7 @@ LOCAL void tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
 
@@ -103,7 +144,7 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
             if (certs->alt.s_count > 0) {
                 return;
             }
@@ -117,14 +158,19 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
         } else if (lastOid[0] && atag == 4) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
             return;
         } else if (lastOid[0] && atag == 2) {
             MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
-            element->str = g_ascii_strdown((char*)value, alen);
-            element->len = alen;
-            element->utf8 = 1;
-            DLL_PUSH_TAIL(s_, &certs->alt, element);
+
+            if (g_utf8_validate((char *)value, alen, NULL)) {
+                element->str = g_ascii_strdown((char *)value, alen);
+                element->len = alen;
+                element->utf8 = 1;
+                DLL_PUSH_TAIL(s_, &certs->alt, element);
+            } else {
+                moloch_session_add_tag(session, "bad-altname");
+            }
         }
     }
     lastOid[0] = 0;
@@ -185,7 +231,6 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if(BSB_IS_ERROR(bsb))
         return;
 
-    char str[100];
     int  add12Later = FALSE;
 
     // If ver is 0x303 that means there should be an extended header with actual version
@@ -220,6 +265,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if (cipherStr)
         moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
     else {
+        char str[100];
         snprintf(str, sizeof(str), "0x%04x", cipher);
         moloch_field_string_add(cipherField, session, str, 6, TRUE);
     }
@@ -262,6 +308,12 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
                 if (supported_version == 0x0304) {
                     tls_session_version(session, supported_version);
                     add12Later = FALSE;
+                }
+            }
+
+            if (etype == 0x10) { // etype 0x10 is alpn
+                if (elen == 5 && BSB_REMAINING(ebsb) >= 5 && memcmp(BSB_WORK_PTR(ebsb), "\x00\x03\x02\x68\x32", 5) == 0) {
+                    moloch_session_add_protocol(session, "http2");
                 }
             }
 
@@ -320,11 +372,11 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         BSB_INIT(bsb, cdata + 3, clen);
 
         guchar digest[20];
-        gsize  len = sizeof(digest);
+        gsize  dlen = sizeof(digest);
 
         g_checksum_update(checksum, cdata+3, clen);
-        g_checksum_get_digest(checksum, digest, &len);
-        if (len > 0) {
+        g_checksum_get_digest(checksum, digest, &dlen);
+        if (dlen > 0) {
             int i;
             for(i = 0; i < 20; i++) {
                 certs->hash[i*3] = moloch_char_to_hexstr[digest[i]][0];
@@ -390,6 +442,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
         /* subjectPublicKeyInfo */
         if (!(value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)))
             {badreason = 9; goto bad_cert;}
+        tls_certinfo_process_publickey(certs, value, alen);
 
         /* extensions */
         if (BSB_REMAINING(bsb)) {
@@ -398,7 +451,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
         }
 
         // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
@@ -577,15 +630,15 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                             BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
                             BSB_IMPORT_skip (ebsb, elen);
 
-                            uint16_t len = 0;
-                            BSB_IMPORT_u16(bsb, len); // list len
-                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
+                            uint16_t llen = 0;
+                            BSB_IMPORT_u16(bsb, llen); // list len
+                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                                 uint16_t c = 0;
                                 BSB_IMPORT_u16(bsb, c);
                                 if (!tls_is_grease_value(c)) {
                                     BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
                                 }
-                                len -= 2;
+                                llen -= 2;
                             }
                             BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                         } else if (etype == 0x000b) { // Elliptic Curves point formats
@@ -593,13 +646,13 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
                             BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
                             BSB_IMPORT_skip (ebsb, elen);
 
-                            uint16_t len = 0;
-                            BSB_IMPORT_u08(bsb, len); // list len
-                            while (len > 0 && !BSB_IS_ERROR(bsb)) {
+                            uint16_t llen = 0;
+                            BSB_IMPORT_u08(bsb, llen); // list len
+                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                                 uint8_t c = 0;
                                 BSB_IMPORT_u08(bsb, c);
                                 BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
-                                len -= 1;
+                                llen -= 1;
                             }
                             BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                         } else {
@@ -801,6 +854,18 @@ void moloch_parser_init()
     moloch_field_define("cert", "integer",
         "cert.remainingDays", "Days remaining", "cert.remainingDays",
         "Certificate is still valid for this many days",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("cert", "termfield",
+        "cert.curve", "Curve", "cert.curve",
+        "Curve Algorithm",
+        0, MOLOCH_FIELD_FLAG_FAKE,
+        (char *)NULL);
+
+    moloch_field_define("cert", "termfield",
+        "cert.publicAlgorithm", "Public Algorithm", "cert.publicAlgorithm",
+        "Public Key Algorithm",
         0, MOLOCH_FIELD_FLAG_FAKE,
         (char *)NULL);
 

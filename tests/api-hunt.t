@@ -1,4 +1,4 @@
-use Test::More tests => 256;
+use Test::More tests => 267;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -163,20 +163,69 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
+# hunt bad regex
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  my $id6 = $json->{hunt}->{id};
+
   viewerGet("/processHuntJobs");
 
   $hunts = viewerGet("/hunt/list?history=true");
-  my $viewHunt;
+  my ($viewHunt, $badHunt);
   foreach my $item (@{$hunts->{data}}) {
     if ($item->{id} eq $id5) {
       $viewHunt = $item;
-      last;
+    }
+    if ($item->{id} eq $id6) {
+      $badHunt = $item;
     }
   }
-  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
 
-  # cleanup
+# verify viewHunt and badHunt
+  is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
+  is($viewHunt->{unrunnable}, undef, "hunt should be runable");
+
+  is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
+
+# add a hunt that is shared with another user
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
+  my $id7 = $json->{hunt}->{id};
+
+# remove a user from a hunt
+  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  is (scalar @{$json->{users}}, 0, "hunt should have no users");
+
+# can't delete a user from an hunt with no users
+  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
+
+# add a user to a hunt
+  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"huntuser"}', $token);
+  is ($json->{users}->[0], "huntuser", "hunt should have a user added");
+
+# can't add an unknown user to a hunt
+  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
+  eq_or_diff($json, from_json('{"text": "Unable to validate user IDs provided", "success": false}'), "hunt should show error if no users are added");
+
+# hunt should not add and send back invalid users
+  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"huntuser,unknownuser"}', $token);
+  is (scalar @{$json->{users}}, 1, "hunt should not add an unknown user");
+  is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
+
+# can't add empty users
+  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
+  eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
+
+# can't delete an unknown user
+  $json = viewerDeleteToken("/hunt/$id7/users/unknownuser?molochRegressionUser=anonymous", $token);
+  eq_or_diff($json, from_json('{"text": "That user does not have access to this hunt", "success": false}'), "can't delete a user from an hunt with no users");
+
+
+# cleanup
   viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id6?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id7?molochRegressionUser=anonymous", $token);
   viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
   viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
 
@@ -309,8 +358,8 @@ my $hToken = getTokenCookie('huntuser');
   my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
   my $result = $RESULTS{$id};
   is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
-  is ($result->{searchedSessions}, 67, "raw-regex-both-(.*a){25}x searchedSessions check");
-  is ($result->{totalSessions}, 67, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{searchedSessions}, 68, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 68, "raw-regex-both-(.*a){25}x totalSessions check");
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup

@@ -1,0 +1,191 @@
+{
+   "sessions2" : [
+      {
+         "body" : {
+            "cert" : [
+               {
+                  "curve" : "corrupt",
+                  "hash" : "f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4",
+                  "issuerCN" : [
+                     "infigo"
+                  ],
+                  "issuerON" : [
+                     "INFIGO IS"
+                  ],
+                  "notAfter" : 1581775250000,
+                  "notBefore" : 1579183250000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : -1,
+                  "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
+                  "subjectCN" : [
+                     "infigo"
+                  ],
+                  "subjectON" : [
+                     "INFIGO IS"
+                  ],
+                  "validDays" : 30
+               },
+               {
+                  "alt" : [
+                     "bad.curveballtest.com"
+                  ],
+                  "altCnt" : 1,
+                  "curve" : "secp384r1",
+                  "hash" : "af:cc:00:61:95:f8:2b:59:cf:4a:d2:3b:34:d7:b8:a2:1a:b7:4d:af",
+                  "issuerCN" : [
+                     "infigo"
+                  ],
+                  "issuerON" : [
+                     "INFIGO IS"
+                  ],
+                  "notAfter" : 1584947742000,
+                  "notBefore" : 1521875742000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : -1,
+                  "serial" : "5ecb7cee8ca206bf9ec00728889ad99f4362cfd9",
+                  "subjectCN" : [
+                     "sans isc dshield test"
+                  ],
+                  "subjectON" : [
+                     "SANS Internet Storm Center"
+                  ],
+                  "validDays" : 730
+               }
+            ],
+            "certCnt" : 2,
+            "communityId" : "1:YzavRzM2u5v8TNEv4SuCDe3OgWg=",
+            "dstASN" : "AS14618",
+            "dstBytes" : 2134,
+            "dstDataBytes" : 1796,
+            "dstGEO" : "US",
+            "dstIp" : "54.226.182.138",
+            "dstMac" : [
+               "00:10:db:ff:10:01"
+            ],
+            "dstMacCnt" : 1,
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPackets" : 5,
+            "dstPayload8" : "1603030050020000",
+            "dstPort" : 443,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1579293816559,
+            "http" : {
+               "host" : [
+                  "bad.curveballtest.com"
+               ],
+               "hostCnt" : 1
+            },
+            "initRTT" : 2,
+            "ipProtocol" : 6,
+            "lastPacket" : 1579293816817,
+            "length" : 257,
+            "node" : "test",
+            "packetLen" : [
+               94,
+               90,
+               82,
+               599,
+               82,
+               1456,
+               504,
+               82,
+               89,
+               82,
+               82,
+               82
+            ],
+            "packetPos" : [
+               24,
+               118,
+               208,
+               290,
+               889,
+               971,
+               2427,
+               2931,
+               3013,
+               3102,
+               3184,
+               3266
+            ],
+            "protocol" : [
+               "tcp",
+               "tls"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "srcBytes" : 998,
+            "srcDataBytes" : 524,
+            "srcGEO" : "US",
+            "srcIp" : "172.130.128.76",
+            "srcMac" : [
+               "8c:85:90:65:85:8f"
+            ],
+            "srcMacCnt" : 1,
+            "srcOui" : [
+               "Apple, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPackets" : 7,
+            "srcPayload8" : "1603010200010001",
+            "srcPort" : 55318,
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 3,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "timestamp" : "SET",
+            "tls" : {
+               "cipher" : [
+                  "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+               ],
+               "cipherCnt" : 1,
+               "ja3" : [
+                  "66918128f1b9b03303d77c6f2eefd128"
+               ],
+               "ja3Cnt" : 1,
+               "ja3s" : [
+                  "2d1eb5817ece335c24904f516ad5da12"
+               ],
+               "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "771,49195,0-65281-11-35-16"
+               ],
+               "ja3sstringCnt" : 1,
+               "ja3string" : [
+                  "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53-10,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0"
+               ],
+               "ja3stringCnt" : 1,
+               "srcSessionId" : [
+                  "078a389ef1767da304d9e10cc7a9441a734513694d3a353ed9522ac47f9c8aa4"
+               ],
+               "version" : [
+                  "TLSv1.2"
+               ],
+               "versionCnt" : 1
+            },
+            "totBytes" : 3132,
+            "totDataBytes" : 2320,
+            "totPackets" : 12
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions2-200117",
+               "_type" : "session"
+            }
+         }
+      }
+   ]
+}
+

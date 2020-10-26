@@ -90,6 +90,15 @@ LOCAL void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
             session->fields[pos]->ghash = ghash;
             break;
         }
+        case MOLOCH_FIELD_TYPE_INT:
+        case MOLOCH_FIELD_TYPE_INT_ARRAY:
+        case MOLOCH_FIELD_TYPE_INT_HASH:
+        case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case MOLOCH_FIELD_TYPE_IP:
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+        case MOLOCH_FIELD_TYPE_CERTSINFO:
+            // Unsupported
+            break;
         } /* switch */
     }
 }

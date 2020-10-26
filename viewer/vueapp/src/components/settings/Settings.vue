@@ -124,7 +124,20 @@
           v-if="visibleTab === 'general'"
           id="general">
 
-          <h3>General</h3>
+          <h3>
+            General
+
+            <template class="form-group row justify-content-md-center">
+              <button type="button"
+                title="Reset settings to default"
+                @click="resetSettings()"
+                class="btn btn-theme-quaternary btn-sm pull-right ml-1">
+                <span class="fa fa-repeat">
+                </span>&nbsp;
+                Reset General Settings
+              </button>
+            </template>
+          </h3>
 
           <hr>
 
@@ -418,7 +431,7 @@
           </div> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div v-if="fields && settings.connDstField"
+          <div v-if="fieldsPlus && settings.connDstField"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-right font-weight-bold">
               Connections Dst
@@ -443,7 +456,35 @@
             </div>
           </div> <!-- /connections dst field -->
 
-        </form> <!-- / general settings -->
+          <div v-if="integerFields"
+            class="form-group row">
+            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+              Timeline Data Filters (max 4)
+            </label>
+
+            <div class="col-sm-6">
+              <moloch-field-typeahead
+                :dropup="true"
+                :fields="integerFields"
+                :initial-value="filtersTypeahead"
+                query-param="field"
+                @fieldSelected="timelineFilterSelected">
+              </moloch-field-typeahead>
+            </div>
+            <div class="col-sm-3">
+              <h4 v-if="timelineDataFilters.length > 0">
+                <label class="badge badge-info cursor-help small-badge"
+                  v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
+                  @click="timelineFilterSelected(filter)"
+                  v-b-tooltip.hover
+                  :title="filter.help">
+                  <span class="fa fa-times"></span>
+                  {{ filter.friendlyName || 'unknown field' }}
+                </label>
+              </h4>
+            </div>
+          </div>
+        </form>
 
         <!-- view settings -->
         <form v-if="visibleTab === 'views'"
@@ -532,7 +573,7 @@
                       v-b-tooltip.hover
                       title="Copy this views's expression"
                       class="btn btn-sm btn-theme-secondary"
-                      v-clipboard:copy="item.expression">
+                      @click="copyValue(item.expression)">
                       <span class="fa fa-clipboard fa-fw">
                       </span>
                     </button>
@@ -1094,7 +1135,7 @@
               <div class="theme-display">
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
-                    <img src="../../assets/logo.png"
+                    <img src="header_logo.png"
                       class="moloch-logo"
                       alt="hoot"
                     />
@@ -1264,7 +1305,7 @@
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
-                        <img src="../../assets/logo.png"
+                        <img src="header_logo.png"
                           class="moloch-logo"
                           alt="hoot"
                         />
@@ -1538,7 +1579,7 @@
                   <span class="input-group-append">
                     <button class="btn btn-theme-secondary"
                       type="button"
-                      v-clipboard:copy="themeString">
+                      @click="copyValue(themeString)">
                       <span class="fa fa-clipboard">
                       </span>&nbsp;
                       Copy
@@ -1770,7 +1811,7 @@
             v-if="notifiers">
             <div class="col-12 col-xl-6"
               v-for="(notifier, key) of notifiers"
-              :key="notifier.name">
+              :key="key">
               <div class="card mb-3">
                 <div class="card-body">
                   <!-- notifier title -->
@@ -1828,9 +1869,13 @@
                   <div class="row mt-3">
                     <div class="col-12">
                       <button type="button"
+                        :disabled="notifier.loading"
                         class="btn btn-sm btn-outline-warning cursor-pointer"
                         @click="testNotifier(notifier.name)">
-                        <span class="fa fa-bell">
+                        <span v-if="notifier.loading"
+                          class="fa fa-spinner fa-spin">
+                        </span>
+                        <span v-else class="fa fa-bell">
                         </span>&nbsp;
                         Test
                       </button>
@@ -1953,7 +1998,7 @@
                         v-b-tooltip.hover
                         title="Copy this shortcut's value"
                         class="btn btn-sm btn-theme-secondary"
-                        v-clipboard:copy="item.value">
+                        @click="copyValue(item.value)">
                         <span class="fa fa-clipboard fa-fw">
                         </span>
                       </button>
@@ -2199,6 +2244,7 @@ export default {
       fields: undefined,
       fieldsMap: undefined,
       fieldsPlus: undefined,
+      integerFields: undefined,
       columns: [],
       // general settings vars
       date: undefined,
@@ -2208,6 +2254,8 @@ export default {
       connSrcFieldTypeahead: undefined,
       connDstField: undefined,
       connDstFieldTypeahead: undefined,
+      timelineDataFilters: [],
+      filtersTypeahead: '',
       // view settings vars
       viewListError: '',
       viewFormError: '',
@@ -2362,6 +2410,10 @@ export default {
       });
   },
   methods: {
+    /* vue-clipboard2 directives are broken, use their internal method instead */
+    copyValue: function (val) {
+      this.$copyText(val);
+    },
     /* exposed page functions ---------------------------------------------- */
     /* opens a specific settings tab */
     openView: function (tabName) {
@@ -2396,6 +2448,21 @@ export default {
                               href="user.css?v${now}"
                               type="text/css" />`);
           }
+        })
+        .catch((error) => {
+          // display error message to user
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    resetSettings: function () {
+      // Chosing to skip reset of theme. UserService will save state to store
+      UserService.resetSettings(this.userId, this.settings.theme)
+        .then((response) => {
+          // display success message to user
+          this.msg = response.text;
+          this.msgType = 'success';
+          this.getSettings();
         })
         .catch((error) => {
           // display error message to user
@@ -2446,6 +2513,20 @@ export default {
       this.$set(this.settings, 'connDstField', field.dbField);
       this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
       this.update();
+    },
+    timelineFilterSelected: function (field) {
+      let index = this.settings.timelineDataFilters.indexOf(field.dbField);
+      this.$set(this, 'filtersTypeahead', field.friendlyName);
+
+      if (index >= 0) {
+        this.timelineDataFilters.splice(index, 1);
+        this.settings.timelineDataFilters.splice(index, 1);
+        this.update();
+      } else if (this.timelineDataFilters.length < 4) {
+        this.timelineDataFilters.push(field);
+        this.settings.timelineDataFilters.push(field.dbField);
+        this.update();
+      }
     },
     /* starts the clock for the timezone setting */
     startClock: function () {
@@ -2986,15 +3067,22 @@ export default {
     },
     /* tests a notifier */
     testNotifier: function (name) {
+      if (this.notifiers[name].loading) {
+        return;
+      }
+
+      this.$set(this.notifiers[name], 'loading', true);
       this.$http.post(`notifiers/${name}/test`, {})
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully issued alert.';
           this.msgType = 'success';
+          this.$set(this.notifiers[name], 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text || 'Error issuing alert.';
           this.msgType = 'danger';
+          this.$set(this.notifiers[name], 'loading', false);
         });
     },
     /* SHORTCUTS --------------------------------------- */
@@ -3227,6 +3315,18 @@ export default {
             friendlyName: 'Dst IP:Dst Port'
           });
 
+          this.integerFields = this.fields.filter(i => i.type === 'integer');
+
+          // attach the full field object to the component's timelineDataFilters from array of dbField
+          this.timelineDataFilters = [];
+          for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
+            let filter = this.settings.timelineDataFilters[i];
+            let fieldOBJ = this.integerFields.find(i => i.dbField === filter);
+            if (fieldOBJ) {
+              this.timelineDataFilters.push(fieldOBJ);
+            }
+          }
+
           // add custom columns to the fields array
           for (let key in customCols) {
             if (customCols.hasOwnProperty(key)) {
@@ -3251,6 +3351,7 @@ export default {
               this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
             }
           }
+          this.$set(this, 'filtersTypeahead', '');
 
           // build fields map for quick lookup by dbField
           this.fieldsMap = {};
@@ -3420,10 +3521,7 @@ export default {
 </script>
 
 <style>
-/* settings page, navbar, and content styles - */
-.settings-page {
-  margin-top: 36px;
-}
+
 .settings-content {
   margin-top: 90px;
   margin-left: 0;
@@ -3436,6 +3534,16 @@ export default {
 
 .settings-page .sub-navbar {
   z-index: 4;
+}
+
+.settings-page .small-badge {
+  font-size: 60%;
+  margin-right: 5px;
+}
+
+.settings-page .small-badge:hover {
+  background-color: #dc3545;
+  cursor: pointer;
 }
 
 /* fixed tab buttons */

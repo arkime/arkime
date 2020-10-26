@@ -192,6 +192,9 @@ LOCAL int reader_libpcapfile_process(char *filename)
     struct group *gr;
     struct passwd *pw;
 
+    if (strcmp(filename, "-") == 0) {
+        goto process;
+    }
 
     if (!realpath(filename, offlinePcapFilename)) {
         LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", filename, errno);
@@ -253,7 +256,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
       }
     }
 
-
+process:
     errbuf[0] = 0;
     LOG ("Processing %s", filename);
     pktsToRead = config.pktsToRead;
@@ -495,21 +498,21 @@ LOCAL gboolean reader_libpcapfile_read()
     // pause reading if too many waiting disk operations
     if (moloch_writer_queue_length() > 10) {
         if (config.debug)
-            LOG("Waiting to start next file, write q: %u", moloch_writer_queue_length());
+            LOG("Waiting to process more packets, write q: %u", moloch_writer_queue_length());
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many waiting ES operations
     if (moloch_http_queue_length(esServer) > 40) {
         if (config.debug)
-            LOG("Waiting to start next file, es q: %d", moloch_http_queue_length(esServer));
+            LOG("Waiting to process more packets, es q: %d", moloch_http_queue_length(esServer));
         return G_SOURCE_CONTINUE;
     }
 
     // pause reading if too many packets are waiting to be processed
     if (moloch_packet_outstanding() > 2048) {
         if (config.debug)
-            LOG("Waiting to start next file, packet q: %d", moloch_packet_outstanding());
+            LOG("Waiting to process more packets, packet q: %d", moloch_packet_outstanding());
         return G_SOURCE_CONTINUE;
     }
 
@@ -554,16 +557,27 @@ LOCAL gboolean reader_libpcapfile_read()
 /******************************************************************************/
 LOCAL void reader_libpcapfile_opened()
 {
-    int dlt_to_linktype(int dlt);
+    int moloch_db_can_quit();
 
-    if (config.flushBetween)
+    if (config.flushBetween) {
         moloch_session_flush();
+        int rc[5];
 
-    moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap), pcap_snapshot(pcap));
+        // Pause until all packets and commands are done
+        while ((rc[0] = moloch_session_cmd_outstanding()) + (rc[1] = moloch_session_close_outstanding()) + (rc[2] = moloch_packet_outstanding()) + (rc[3] = moloch_session_monitoring()) + (rc[4] = moloch_db_can_quit()) > 0) {
+            if (config.debug) {
+                LOG("Waiting next file %d %d %d %d %d", rc[0], rc[1], rc[2], rc[3], rc[4]);
+            }
+            usleep(50000);
+            g_main_context_iteration(NULL, TRUE);
+        }
+    }
+
+    moloch_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
 
     offlineFile = pcap_file(pcap);
 
-    if (config.bpf && pcapFileHeader.linktype != 239) {
+    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -686,7 +700,7 @@ LOCAL void reader_libpcapfile_start() {
 /******************************************************************************/
 void reader_libpcapfile_init(char *UNUSED(name))
 {
-    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 1000, 1, 0x7fff);
+    offlineDispatchAfter        = moloch_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 
     moloch_reader_start         = reader_libpcapfile_start;
     moloch_reader_stats         = reader_libpcapfile_stats;

@@ -5,24 +5,24 @@ const MIN_PARLIAMENT_VERSION = 3;
 
 /* dependencies ------------------------------------------------------------- */
 const express = require('express');
-const http    = require('http');
-const https   = require('https');
-const fs      = require('fs');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const favicon = require('serve-favicon');
-const rp      = require('request-promise');
-const bp      = require('body-parser');
-const logger  = require('morgan');
-const jwt     = require('jsonwebtoken');
-const bcrypt  = require('bcrypt');
-const glob    = require('glob');
-const os      = require('os');
-const helmet  = require('helmet');
-const uuid    = require('uuidv4').default;
+const rp = require('request-promise');
+const bp = require('body-parser');
+const logger = require('morgan');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const glob = require('glob');
+const os = require('os');
+const helmet = require('helmet');
+const uuid = require('uuidv4').default;
 const upgrade = require('./upgrade');
 
 /* app setup --------------------------------------------------------------- */
-const app     = express();
-const router  = express.Router();
+const app = express();
+const router = express.Router();
 
 const saltrounds = 13;
 
@@ -35,7 +35,7 @@ const issueTypes = {
 };
 
 const settingsDefault = {
-  general : {
+  general: {
     noPackets: 0,
     noPacketsLength: 10,
     outOfDate: 30,
@@ -286,8 +286,8 @@ router.use((req, res, next) => {
 app.use((err, req, res, next) => {
   console.log(err.stack);
   res.status(err.httpStatusCode || 500).json({
-    success : false,
-    text    : err.message || 'Error'
+    success: false,
+    text: err.message || 'Error'
   });
 });
 
@@ -297,8 +297,8 @@ function verifyToken (req, res, next) {
     errorText = errorText || 'Token Error!';
     res.status(403).json({
       tokenError: true,
-      success   : false,
-      text      : `Permission Denied: ${errorText}`
+      success: false,
+      text: `Permission Denied: ${errorText}`
     });
   }
 
@@ -479,7 +479,7 @@ function setIssue (cluster, newIssue) {
       if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
         // the ignore has expired, so alert!
         issue.ignoreUntil = undefined;
-        issue.alerted     = undefined;
+        issue.alerted = undefined;
       }
 
       issue.lastNoticed = Date.now();
@@ -545,9 +545,9 @@ function getHealth (cluster) {
         }
 
         if (health) {
-          cluster.status      = health.status;
-          cluster.totalNodes  = health.number_of_nodes;
-          cluster.dataNodes   = health.number_of_data_nodes;
+          cluster.status = health.status;
+          cluster.totalNodes = health.number_of_nodes;
+          cluster.dataNodes = health.number_of_data_nodes;
 
           if (cluster.status === 'red') { // alert on red es status
             setIssue(cluster, { type: 'esRed' });
@@ -636,9 +636,9 @@ function getStats (cluster) {
           // Look for issues
           if ((now - stat.currentTime) > outOfDate) {
             setIssue(cluster, {
-              type  : 'outOfDate',
-              node  : stat.nodeName,
-              value : stat.currentTime * 1000
+              type: 'outOfDate',
+              node: stat.nodeName,
+              value: stat.currentTime * 1000
             });
           }
 
@@ -664,9 +664,9 @@ function getStats (cluster) {
 
           if (stat.deltaESDroppedPerSec > 0) {
             setIssue(cluster, {
-              type  : 'esDropped',
-              node  : stat.nodeName,
-              value : stat.deltaESDroppedPerSec
+              type: 'esDropped',
+              node: stat.nodeName,
+              value: stat.deltaESDroppedPerSec
             });
           }
         }
@@ -880,24 +880,26 @@ function cleanUpIssues () {
     const removeIssuesAfter = getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
-    // remove issues that are provisional that haven't been seen since the last cycle
-    if (issue.provisional && timeSinceLastNoticed >= 10000) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+    if (!issue.ignoreUntil) { // don't clean up any ignored issues, wait for the ignore to expire
+      // remove issues that are provisional that haven't been seen since the last cycle
+      if (issue.provisional && timeSinceLastNoticed >= 10000) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // remove all issues that have not been seen again for the removeIssuesAfter time, and
-    // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
-    if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
-        (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
-      issuesRemoved = true;
-      issues.splice(len, 1);
-    }
+      // remove all issues that have not been seen again for the removeIssuesAfter time, and
+      // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
+      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
+          (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
+        issuesRemoved = true;
+        issues.splice(len, 1);
+      }
 
-    // if the issue was acknowledged but still persists, unacknowledge and alert again
-    if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
-      issue.alerted = undefined;
-      issue.acknowledged = undefined;
+      // if the issue was acknowledged but still persists, unacknowledge and alert again
+      if (issue.acknowledged && (Date.now() - issue.acknowledged) > removeAcknowledgedAfter) {
+        issue.alerted = undefined;
+        issue.acknowledged = undefined;
+      }
     }
   }
 
@@ -1062,16 +1064,16 @@ router.post('/auth', (req, res, next) => {
     return next(error);
   }
 
-  const payload = { admin:true };
+  const payload = { admin: true };
 
   let token = jwt.sign(payload, app.get('password'), {
     expiresIn: 60 * 60 * 24 // expires in 24 hours
   });
 
   res.json({ // return the information including token as JSON
-    success : true,
-    text    : 'Here\'s your token!',
-    token   : token
+    success: true,
+    text: 'Here\'s your token!',
+    token: token
   });
 });
 
@@ -1143,15 +1145,15 @@ router.put('/auth/update', (req, res, next) => {
 
     parliament.password = hash;
 
-    const payload = { admin:true };
+    const payload = { admin: true };
 
     let token = jwt.sign(payload, hash, {
       expiresIn: 60 * 60 * 24 // expires in 24 hours
     });
 
     // return the information including token as JSON
-    let successObj  = { success: true, text: 'Here\'s your new token!', token: token };
-    let errorText   = 'Unable to update your password.';
+    let successObj = { success: true, text: 'Here\'s your new token!', token: token };
+    let errorText = 'Unable to update your password.';
     writeParliament(req, res, next, successObj, errorText);
   });
 });
@@ -1191,8 +1193,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
     parliament.settings.general[s] = setting;
   }
 
-  let successObj  = { success: true, text: 'Successfully updated your settings.' };
-  let errorText   = 'Unable to update your settings.';
+  let successObj = { success: true, text: 'Successfully updated your settings.' };
+  let errorText = 'Unable to update your settings.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1303,8 +1305,8 @@ router.delete('/notifiers/:name', verifyToken, (req, res, next) => {
 
   parliament.settings.notifiers[req.params.name] = undefined;
 
-  let successObj  = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
-  let errorText   = `Cannot remove ${req.params.name} notifier`;
+  let successObj = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
+  let errorText = `Cannot remove ${req.params.name} notifier`;
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1376,7 +1378,7 @@ router.post('/notifiers', verifyToken, (req, res, next) => {
     name: req.body.notifier.name,
     text: `Successfully added ${req.body.notifier.name} notifier.`
   };
-  let errorText  = `Unable to add ${req.body.notifier.name} notifier.`;
+  let errorText = `Unable to add ${req.body.notifier.name} notifier.`;
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1461,8 +1463,8 @@ router.put('/parliament', verifyToken, (req, res, next) => {
   parliament.groups = req.body.reorderedParliament.groups;
   updateParliament();
 
-  let successObj  = { success: true, text: 'Successfully reordered items in your parliament.' };
-  let errorText   = 'Unable to update the order of items in your parliament.';
+  let successObj = { success: true, text: 'Successfully reordered items in your parliament.' };
+  let errorText = 'Unable to update the order of items in your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1474,13 +1476,13 @@ router.post('/groups', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let newGroup = { title:req.body.title, id:groupId++, clusters:[] };
+  let newGroup = { title: req.body.title, id: groupId++, clusters: [] };
   if (req.body.description) { newGroup.description = req.body.description; }
 
   parliament.groups.push(newGroup);
 
-  let successObj  = { success:true, group:newGroup, text: 'Successfully added new group.' };
-  let errorText   = 'Unable to add that group to your parliament.';
+  let successObj = { success: true, group: newGroup, text: 'Successfully added new group.' };
+  let errorText = 'Unable to add that group to your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1503,8 +1505,8 @@ router.delete('/groups/:id', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj  = { success:true, text:'Successfully removed the requested group.' };
-  let errorText   = 'Unable to remove that group from the parliament.';
+  let successObj = { success: true, text: 'Successfully removed the requested group.' };
+  let errorText = 'Unable to remove that group from the parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1534,8 +1536,8 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj  = { success:true, text:'Successfully updated the requested group.' };
-  let errorText   = 'Unable to update that group in the parliament.';
+  let successObj = { success: true, text: 'Successfully updated the requested group.' };
+  let errorText = 'Unable to update that group in the parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1555,12 +1557,12 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
   }
 
   let newCluster = {
-    title       : req.body.title,
-    description : req.body.description,
-    url         : req.body.url,
-    localUrl    : req.body.localUrl,
-    id          : clusterId++,
-    type        : req.body.type || undefined
+    title: req.body.title,
+    description: req.body.description,
+    url: req.body.url,
+    localUrl: req.body.localUrl,
+    id: clusterId++,
+    type: req.body.type || undefined
   };
 
   let foundGroup = false;
@@ -1578,13 +1580,13 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj  = {
-    success   : true,
-    cluster   : newCluster,
+  let successObj = {
+    success: true,
+    cluster: newCluster,
     parliament: parliament,
-    text      : 'Successfully added the requested cluster.'
+    text: 'Successfully added the requested cluster.'
   };
-  let errorText   = 'Unable to add that cluster to the parliament.';
+  let errorText = 'Unable to add that cluster to the parliament.';
   writeParliament(req, res, next, successObj, errorText, true);
 });
 
@@ -1611,8 +1613,8 @@ router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, ne
     return next(error);
   }
 
-  let successObj  = { success:true, text: 'Successfully removed the requested cluster.' };
-  let errorText   = 'Unable to remove that cluster from your parliament.';
+  let successObj = { success: true, text: 'Successfully removed the requested cluster.' };
+  let errorText = 'Unable to remove that cluster from your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1636,17 +1638,17 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
     if (group.id === parseInt(req.params.groupId)) {
       for (let cluster of group.clusters) {
         if (cluster.id === parseInt(req.params.clusterId)) {
-          cluster.url             = req.body.url;
-          cluster.title           = req.body.title;
-          cluster.localUrl        = req.body.localUrl;
-          cluster.description     = req.body.description;
-          cluster.hideDeltaBPS    = req.body.hideDeltaBPS;
-          cluster.hideDataNodes   = req.body.hideDataNodes;
-          cluster.hideDeltaTDPS   = req.body.hideDeltaTDPS;
-          cluster.hideTotalNodes  = req.body.hideTotalNodes;
-          cluster.hideMonitoring  = req.body.hideMonitoring;
+          cluster.url = req.body.url;
+          cluster.title = req.body.title;
+          cluster.localUrl = req.body.localUrl;
+          cluster.description = req.body.description;
+          cluster.hideDeltaBPS = req.body.hideDeltaBPS;
+          cluster.hideDataNodes = req.body.hideDataNodes;
+          cluster.hideDeltaTDPS = req.body.hideDeltaTDPS;
+          cluster.hideTotalNodes = req.body.hideTotalNodes;
+          cluster.hideMonitoring = req.body.hideMonitoring;
           cluster.hideMolochNodes = req.body.hideMolochNodes;
-          cluster.type            = req.body.type || undefined;
+          cluster.type = req.body.type || undefined;
 
           foundCluster = true;
           break;
@@ -1661,8 +1663,8 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
     return next(error);
   }
 
-  let successObj  = { success: true, text: 'Successfully updated the requested cluster.' };
-  let errorText   = 'Unable to update that cluster in your parliament.';
+  let successObj = { success: true, text: 'Successfully updated the requested cluster.' };
+  let errorText = 'Unable to update that cluster in your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1767,7 +1769,7 @@ router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success:true, text:successText, acknowledged:now };
+  let successObj = { success: true, text: successText, acknowledged: now };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1809,7 +1811,7 @@ router.put('/ignoreIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success:true, text:successText, ignoreUntil:ignoreUntil };
+  let successObj = { success: true, text: successText, ignoreUntil: ignoreUntil };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1828,7 +1830,7 @@ router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
     let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
     if (issue) {
       issue.ignoreUntil = undefined;
-      issue.alerted     = undefined; // reset alert time so it can alert again
+      issue.alerted = undefined; // reset alert time so it can alert again
       count++;
     }
   }
@@ -1848,7 +1850,7 @@ router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success:true, text:successText };
+  let successObj = { success: true, text: successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1869,8 +1871,8 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req
     return next(error);
   }
 
-  let successObj  = { success:true, text:'Successfully removed the requested issue.' };
-  let errorText   = 'Unable to remove that issue.';
+  let successObj = { success: true, text: 'Successfully removed the requested issue.' };
+  let errorText = 'Unable to remove that issue.';
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1893,8 +1895,8 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
     return next(error);
   }
 
-  let successObj  = { success:true, text:`Successfully removed ${count} acknowledged issues.` };
-  let errorText   = 'Unable to remove acknowledged issues.';
+  let successObj = { success: true, text: `Successfully removed ${count} acknowledged issues.` };
+  let errorText = 'Unable to remove acknowledged issues.';
   writeIssues(req, res, next, successObj, errorText, true);
 });
 
@@ -1949,7 +1951,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
     errorText += 's';
   }
 
-  let successObj = { success:true, text:successText };
+  let successObj = { success: true, text: successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1988,15 +1990,25 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
 
   internals.notifierTypes[notifier.type].sendAlert(
     config,
-    `Test alert from the ${notifier.name} notifier!`
-  );
+    `Test alert from the ${notifier.name} notifier!`,
+    null,
+    (response) => {
+      // there should only be one error here because only one
+      // notifier alert is sent at a time
+      if (response.errors) {
+        for (let e in response.errors) {
+          const error = new Error(response.errors[e]);
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+      }
 
-  let successObj = {
-    success: true,
-    text: `Successfully issued alert using the ${notifier.name} notifier.`
-  };
-  let errorText = `Unable to issue alert using the ${notifier.name} notifier.`;
-  writeParliament(req, res, next, successObj, errorText);
+      return res.json({
+        success: true,
+        text: `Successfully issued alert using the ${notifier.name} notifier.`
+      });
+    }
+  );
 });
 
 /* SIGNALS! ----------------------------------------------------------------- */
@@ -2015,7 +2027,7 @@ app.use((req, res, next) => {
 let server;
 if (app.get('keyFile') && app.get('certFile')) {
   const certOptions = {
-    key : fs.readFileSync(app.get('keyFile')),
+    key: fs.readFileSync(app.get('keyFile')),
     cert: fs.readFileSync(app.get('certFile'))
   };
   server = https.createServer(certOptions, app);

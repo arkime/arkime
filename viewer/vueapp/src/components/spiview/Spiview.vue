@@ -3,146 +3,150 @@
   <!-- TODO transitions for btn drawer, field toggles, field values, field config items -->
   <div class="spiview-page">
 
-    <!-- search navbar -->
-    <moloch-search
-      :num-matching-sessions="filtered"
-      :timezone="user.settings.timezone"
-      @changeSearch="changeSearch">
-    </moloch-search> <!-- /search navbar -->
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <!-- search navbar -->
+        <moloch-search
+          :num-matching-sessions="filtered"
+          :timezone="user.settings.timezone"
+          @changeSearch="changeSearch">
+        </moloch-search> <!-- /search navbar -->
 
-    <!-- info navbar -->
-    <form class="info-nav">
-      <div v-if="!dataLoading">
-        <!-- field config save button -->
-        <b-dropdown
-          size="sm"
-          no-caret
-          class="field-config-menu"
-          toggle-class="rounded"
-          variant="theme-secondary">
-          <template slot="button-content">
-            <span class="fa fa-columns"
-              v-b-tooltip.hover
-              title="Save or load custom visible field configurations">
-            </span>
-          </template>
-          <b-dropdown-header>
-            <div class="input-group input-group-sm">
-              <input type="text"
-                maxlength="30"
-                class="form-control"
-                v-model="newFieldConfigName"
-                placeholder="Enter new field configuration name"
-                @keydown.enter.stop.prevent="saveFieldConfiguration"
-              />
-              <div class="input-group-append">
-                <button type="button"
-                  class="btn btn-theme-secondary"
-                  :disabled="!newFieldConfigName"
-                  @click="saveFieldConfiguration"
+        <!-- info navbar -->
+        <form class="info-nav">
+          <div v-if="!dataLoading">
+            <!-- field config save button -->
+            <b-dropdown
+              size="sm"
+              no-caret
+              class="field-config-menu"
+              toggle-class="rounded"
+              variant="theme-secondary">
+              <template slot="button-content">
+                <span class="fa fa-columns"
                   v-b-tooltip.hover
-                  title="Save this custom spiview field configuration">
+                  title="Save or load custom visible field configurations">
+                </span>
+              </template>
+              <b-dropdown-header>
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                    maxlength="30"
+                    class="form-control"
+                    v-model="newFieldConfigName"
+                    placeholder="Enter new field configuration name"
+                    @keydown.enter.stop.prevent="saveFieldConfiguration"
+                  />
+                  <div class="input-group-append">
+                    <button type="button"
+                      class="btn btn-theme-secondary"
+                      :disabled="!newFieldConfigName"
+                      @click="saveFieldConfiguration"
+                      v-b-tooltip.hover
+                      title="Save this custom spiview field configuration">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                v-if="fieldConfigError"
+                class="text-danger">
+                {{ fieldConfigError }}
+              </b-dropdown-item>
+              <b-dropdown-item
+                v-if="fieldConfigSuccess"
+                class="text-success">
+                {{ fieldConfigSuccess }}
+              </b-dropdown-item>
+              <b-dropdown-item
+                v-b-tooltip.hover
+                @click.stop.prevent="loadFieldConfiguration(-1)"
+                title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+                Moloch Default
+              </b-dropdown-item>
+              <b-dropdown-item
+                v-for="(config, key) in fieldConfigs"
+                :key="key"
+                @click.self.stop.prevent="loadFieldConfiguration(key)">
+                <button class="btn btn-xs btn-danger pull-right ml-1"
+                  type="button"
+                  @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                  <span class="fa fa-trash-o">
+                  </span>
+                </button>
+                <button class="btn btn-xs btn-warning pull-right"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Update this field configuration with the currently visible fields"
+                  @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                   <span class="fa fa-save">
                   </span>
                 </button>
-              </div>
-            </div>
-          </b-dropdown-header>
-          <b-dropdown-divider>
-          </b-dropdown-divider>
-          <b-dropdown-item
-            v-if="fieldConfigError"
-            class="text-danger">
-            {{ fieldConfigError }}
-          </b-dropdown-item>
-          <b-dropdown-item
-            v-if="fieldConfigSuccess"
-            class="text-success">
-            {{ fieldConfigSuccess }}
-          </b-dropdown-item>
-          <b-dropdown-item
-            v-b-tooltip.hover
-            @click.stop.prevent="loadFieldConfiguration"
-            title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
-            Moloch Default
-          </b-dropdown-item>
-          <b-dropdown-item
-            v-for="(config, key) in fieldConfigs"
-            :key="key"
-            @click.self.stop.prevent="loadFieldConfiguration(key)">
-            <button class="btn btn-xs btn-danger pull-right ml-1"
-              type="button"
-              @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-              <span class="fa fa-trash-o">
-              </span>
+                {{ config.name }}
+              </b-dropdown-item>
+            </b-dropdown> <!-- /field config save button -->
+            <small>
+              <strong class="ml-2 text-theme-accent"
+                v-if="!error && filtered !== undefined">
+                Showing {{ filtered | commaString }} entries filtered from
+                {{ total | commaString }} total entries
+              </strong>
+            </small>
+          </div>
+          <div v-if="dataLoading"
+            class="info-nav-loading">
+            <span class="fa fa-spinner fa-lg fa-spin">
+            </span>&nbsp;
+            <em>
+              Loading SPI data
+            </em>
+            <button type="button"
+              class="btn btn-warning btn-sm pull-right"
+              @click="cancelLoading">
+              <span class="fa fa-ban">
+              </span>&nbsp;
+              cancel
             </button>
-            <button class="btn btn-xs btn-warning pull-right"
-              type="button"
-              v-b-tooltip.hover
-              title="Update this field configuration with the currently visible fields"
-              @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-              <span class="fa fa-save">
-              </span>
-            </button>
-            {{ config.name }}
-          </b-dropdown-item>
-        </b-dropdown> <!-- /field config save button -->
-        <small>
-          <strong class="ml-2 text-theme-accent"
-            v-if="!error && filtered !== undefined">
-            Showing {{ filtered | commaString }} entries filtered from
-            {{ total | commaString }} total entries
-          </strong>
-        </small>
-      </div>
-      <div v-if="dataLoading"
-        class="info-nav-loading">
-        <span class="fa fa-spinner fa-lg fa-spin">
-        </span>&nbsp;
-        <em>
-          Loading SPI data
-        </em>
-        <button type="button"
-          class="btn btn-warning btn-sm pull-right"
-          @click="cancelLoading">
-          <span class="fa fa-ban">
-          </span>&nbsp;
-          cancel
-        </button>
-      </div>
-    </form> <!-- /info navbar -->
+          </div>
+        </form> <!-- /info navbar -->
+      </span>
 
-    <!-- warning navbar -->
-    <form v-if="staleData && !dataLoading"
-      class="loading-nav">
-      <div class="form-inline text-theme-accent">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        <strong>Warning:</strong>
-        much of the data below does not match your query
-        because the request was canceled.
-        <em>
-          Click search to reissue your query.
-        </em>
-        <span class="fa fa-close pull-right cursor-pointer"
-          @click="staleData = false">
-        </span>
-      </div>
-    </form> <!-- /warning navbar -->
+      <!-- warning navbar -->
+      <form v-if="staleData && !dataLoading"
+        class="loading-nav">
+        <div class="form-inline text-theme-accent">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          <strong>Warning:</strong>
+          much of the data below does not match your query
+          because the request was canceled.
+          <em>
+            Click search to reissue your query.
+          </em>
+          <span class="fa fa-close pull-right cursor-pointer"
+            @click="staleData = false">
+          </span>
+        </div>
+      </form> <!-- /warning navbar -->
+    </MolochCollapsible>
+
+    <!-- visualizations -->
+    <moloch-visualizations
+      v-if="mapData && graphData && capStartTimes.length"
+      :graph-data="graphData"
+      :map-data="mapData"
+      :primary="true"
+      :cap-start-times="capStartTimes"
+      :timezone="user.settings.timezone"
+      :timelineDataFilters="timelineDataFilters"
+      @fetchMapData="fetchMapData">
+    </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
-
-      <!-- session visualizations -->
-      <div class="spiview-visualizations">
-        <moloch-visualizations
-          v-if="mapData && graphData"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timezone="user.settings.timezone"
-          @fetchMapData="fetchMapData">
-        </moloch-visualizations>
-      </div> <!-- /session visualizations -->
 
       <!-- page error -->
       <moloch-error
@@ -377,6 +381,7 @@ import UserService from '../users/UserService';
 import MolochError from '../utils/Error';
 import MolochSearch from '../search/Search';
 import MolochVisualizations from '../visualizations/Visualizations';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 
 const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
 
@@ -397,7 +402,8 @@ export default {
   components: {
     MolochError,
     MolochSearch,
-    MolochVisualizations
+    MolochVisualizations,
+    MolochCollapsible
   },
   data: function () {
     return {
@@ -411,6 +417,7 @@ export default {
       fieldConfigs: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       categoryList: [],
       categoryObjects: {},
       spiQuery: this.$route.query.spi,
@@ -436,9 +443,14 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    timelineDataFilters: function () {
+      let filters = this.$store.state.user.settings.timelineDataFilters;
+      return filters.map(i => this.fields.find(f => f.dbField === i));
     }
   },
   mounted: function () {
+    this.getCaptureStats();
     if (!this.spiQuery) {
       // get what's saved in the db
       UserService.getState('spiview')
@@ -722,10 +734,10 @@ export default {
      * @param {int} index The index in the array of the spiview fields configs to load
      */
     loadFieldConfiguration: function (index) {
-      if (!index && index !== 0) {
-        this.spiQuery = defaultSpi;
-      } else {
+      if (index !== -1) {
         this.spiQuery = this.fieldConfigs[index].fields;
+      } else {
+        this.spiQuery = defaultSpi;
       }
 
       this.saveFieldState();
@@ -787,6 +799,7 @@ export default {
       if (!field) { field = 'dstIp'; }
 
       let query = this.constructQuery(field, 100);
+      query.facets = 1; // Force facets for map data
 
       this.get(query).promise
         .then((response) => {
@@ -800,7 +813,7 @@ export default {
     /* helper functions ---------------------------------------------------- */
     constructQuery: function (dbField, count) {
       return {
-        facets: 1,
+        facets: newQuery ? '1' : '0', // Only get facets for initial query for performance
         spi: `${dbField}:${count}`,
         date: this.query.date,
         startTime: this.query.startTime,
@@ -1035,6 +1048,24 @@ export default {
           this.fieldConfigError = error.text;
         });
     },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
+    },
     /**
      * Chains sequential promises together
      * @param {object} tasks          List or map of tasks to complete
@@ -1074,8 +1105,7 @@ export default {
         if (this.categoryObjects.hasOwnProperty(key)) {
           let category = this.categoryObjects[key];
 
-          let fields = category.fields;
-          fields = this.sortFields(category.fields);
+          let fields = this.sortFields(category.fields);
           Vue.set(category, 'filteredFields', fields);
 
           if (localStorage && localStorage['spiview-collapsible']) {
@@ -1247,26 +1277,15 @@ export default {
 </style>
 
 <style scoped>
-/* spiview page, navbar, and content styles - */
 .spiview-page {
-  margin-top: 36px;
   overflow-x: hidden;
 }
 
 /* info navbar --------------------- */
 .spiview-page form.info-nav {
-  z-index: 4;
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
   height: 42px;
   padding: var(--px-md);
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 .spiview-page form.info-nav .field-config-menu .dropdown-header {
@@ -1275,7 +1294,7 @@ export default {
 
 /* spiview content ----------------- */
 .spiview-page > .spiview-content {
-  padding-top: 120px;
+  padding-top: 10px;
 }
 
 /* panels -------------------------- */

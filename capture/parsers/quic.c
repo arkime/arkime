@@ -30,6 +30,11 @@ typedef struct {
     int            pos;
 } FBZeroInfo_t;
 
+typedef struct {
+    int            packets;
+    int            which;
+} QUIC5xInfo_t;
+
 /******************************************************************************/
 LOCAL int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
 
@@ -83,7 +88,7 @@ LOCAL int quic_chlo_parser(MolochSession_t *session, BSB dbsb) {
     return 1;
 }
 /******************************************************************************/
-LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+LOCAL int quic_2445_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
 {
     int version = -1;
     int offset = 1;
@@ -116,8 +121,7 @@ LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
 
     // Unsupported version
     if (version < 24) {
-        moloch_parsers_unregister(session, uw);
-        return 0;
+        return MOLOCH_PARSER_UNREGISTER;
     }
 
     // Diversification only is from server to client, so we can ignore
@@ -176,17 +180,92 @@ LOCAL int quic_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsi
         BSB_IMPORT_skip(bsb, dataLen);
 
         quic_chlo_parser(session, dbsb);
-        moloch_parsers_unregister(session, uw);
-        return 0;
+        return MOLOCH_PARSER_UNREGISTER;
     }
 
     return 0;
 }
 /******************************************************************************/
-LOCAL void quic_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+// Couldn't figure out this document, brute force
+// https://docs.google.com/document/d/1FcpCJGTDEMblAs-Bm5TYuqhHyUqeWpqrItw2vkMFsdY/edit
+LOCAL int quic_4648_udp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
+{
+    int version = -1;
+    int offset = 5;
+
+    if (len < 20 || data[1] != 'Q' || (data[0] & 0xc0) != 0xc0) {
+        return MOLOCH_PARSER_UNREGISTER;
+    }
+
+    // Get version
+    version = (data[2] - '0') * 100 +
+              (data[3] - '0') * 10 +
+              (data[4] - '0');
+
+    if (version < 46 || version > 48) {
+        return MOLOCH_PARSER_UNREGISTER;
+    }
+    for (;offset < len - 20; offset++) {
+        if (data[offset] == 'C' && memcmp(data+offset, "CHLO", 4) == 0) {
+            BSB bsb;
+            BSB_INIT(bsb, data + offset, len - offset);
+            quic_chlo_parser(session, bsb);
+            return MOLOCH_PARSER_UNREGISTER;
+        }
+    }
+    return 0;
+}
+/******************************************************************************/
+// Headers are encrypted?
+LOCAL int quic_5x_udp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which)
+{
+    if (len < 20 || memcmp(data+1, "Q05", 3) != 0) {
+        return MOLOCH_PARSER_UNREGISTER;
+    }
+
+    QUIC5xInfo_t *info = (QUIC5xInfo_t *)uw;
+
+    info->which |= (1 << which);
+
+    if (info->which == 0x3) {
+        moloch_session_add_protocol(session, "quic");
+        return MOLOCH_PARSER_UNREGISTER;
+    }
+    info->packets++;
+    if (info->packets > 20)
+        return MOLOCH_PARSER_UNREGISTER;
+
+    return 0;
+}
+/******************************************************************************/
+LOCAL void quic_2445_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len > 100 && (data[0] & 0x83) == 0x01) {
-        moloch_parsers_register(session, quic_udp_parser, 0, 0);
+        moloch_parsers_register(session, quic_2445_udp_parser, 0, 0);
+    }
+}
+/******************************************************************************/
+LOCAL void quic_4648_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len > 100 && (data[0] & 0xc0) == 0xc0) {
+        moloch_parsers_register(session, quic_4648_udp_parser, 0, 0);
+    }
+}
+/******************************************************************************/
+LOCAL void quic_5x_free(MolochSession_t UNUSED(*session), void *uw)
+{
+    QUIC5xInfo_t            *info          = uw;
+
+    MOLOCH_TYPE_FREE(QUIC5xInfo_t, info);
+}
+/******************************************************************************/
+LOCAL void quic_5x_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len > 100 && (data[0] & 0xc0) == 0xc0) {
+        QUIC5xInfo_t *info = MOLOCH_TYPE_ALLOC(QUIC5xInfo_t);
+        info->packets = 0;
+        info->which = 1 << which;
+        moloch_parsers_register(session, quic_5x_udp_parser, info, quic_5x_free);
     }
 }
 /******************************************************************************/
@@ -226,8 +305,7 @@ LOCAL int quic_fb_tcp_parser(MolochSession_t *session, void *uw, const unsigned 
     if (quic_chlo_parser(session, dbsb))
         moloch_session_add_protocol(session, "fbzero");
 
-    moloch_parsers_unregister(session, uw);
-    return 0;
+    return MOLOCH_PARSER_UNREGISTER;
 }
 
 /******************************************************************************/
@@ -242,9 +320,11 @@ LOCAL void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *U
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q04", 3, quic_udp_classify);
-    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_udp_classify);
-    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_udp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"Q05", 3, quic_5x_udp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"Q04", 3, quic_4648_udp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q04", 3, quic_2445_udp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q03", 3, quic_2445_udp_classify);
+    moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_2445_udp_classify);
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"PRST", 4, quic_add);
 

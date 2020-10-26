@@ -4,35 +4,31 @@
 DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
 TIMEOUT=${WGET_TIMEOUT:-30}
 
-# Work on temp dir to not affect current working files
-cd /tmp
-
-wget -N -nv --timeout=${TIMEOUT} --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
-if (( $? == 0 ))
-then
-  cp ipv4-address-space.csv "${DEST_DIR}"
+# Check we have a number for timeout
+if ! [[ $TIMEOUT =~ ^[0-9]+$ ]] ; then
+    echo "WGET_TIMEOUT isn't a number '$TIMEOUT'"
+    exit 1;
 fi
 
-wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'
-if (( $? == 0 ))
-then
-  /bin/rm -f "${DEST_DIR}/GeoLite2-Country.mmdb"
-  zcat GeoLite2-Country.mmdb.gz > "${DEST_DIR}/GeoLite2-Country.mmdb"
+# Try and download ipv4-address-space.csv, only copy if it works
+FILENAME=$(mktemp)
+wget -nv --timeout=${TIMEOUT} --no-check-certificate -O "$FILENAME" https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+if (( $? == 0 )) ; then
+  chmod a+r "$FILENAME"
+  mv "$FILENAME" "${DEST_DIR}/ipv4-address-space.csv"
 fi
 
-
-wget -N -nv --timeout=${TIMEOUT} -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'
-if (( $? == 0 ))
-then
-  /bin/rm -f "${DEST_DIR}/GeoLite2-ASN.mmdb"
-  zcat GeoLite2-ASN.mmdb.gz > "${DEST_DIR}/GeoLite2-ASN.mmdb"
+# Try and download manuf, only copy if it works
+FILENAME=$(mktemp)
+wget -nv --timeout=${TIMEOUT} -O "$FILENAME" https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
+if (( $? == 0 )) ; then
+  chmod a+r "$FILENAME"
+  mv "$FILENAME" "${DEST_DIR}/oui.txt"
 fi
 
-
-wget -nv --timeout=${TIMEOUT} -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
-if (( $? == 0 ))
-then
-  cp oui.txt "${DEST_DIR}/oui.txt"
+# Call the maxind geoipupdate program if available. See
+# https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
+# https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
+if [ -x "/usr/bin/geoipupdate" ]; then
+    /usr/bin/geoipupdate
 fi
-
-

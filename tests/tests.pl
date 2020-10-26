@@ -24,24 +24,47 @@ $ENV{'TZ'} = 'US/Eastern';
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        # Certs are hard MKAY
-        system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("wget --no-check-certificate -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
-        system("wget -O GeoLite2-Country.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-Country'; gunzip GeoLite2-Country.mmdb.gz");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-Country.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("wget -O GeoLite2-ASN.mmdb.gz 'https://updates.maxmind.com/app/update_secure?edition_id=GeoLite2-ASN'; gunzip GeoLite2-ASN.mmdb.gz");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/moloch.h'))[9] > (stat('plugins/test.so'))[9]) {
         system("cd plugins ; make");
+    }
+}
+################################################################################
+sub doFuzz2Pcap {
+    my @files = @ARGV;
+    foreach my $file (@files) {
+        print "$file\n";;
+        open my $in, '<', "$file" or die "error opening $file: $!";
+        open my $out, '>', "$file.pcap" or die "error opening $file.pcap: $!";
+        binmode($in);
+        binmode($out);
+
+        my $buf;
+        read($in, $buf, 1000000);
+
+        my $len = length($buf);
+
+        syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000000000000"));
+        syswrite($out, pack('H*VV', "1234567800000000", $len, $len));
+
+        syswrite($out, $buf);
+
+        close($in);
+        close($out);
     }
 }
 ################################################################################
@@ -149,6 +172,9 @@ my ($json) = @_;
     foreach my $session (@{$json->{sessions2}}) {
         my $body = $session->{body};
 
+        # Keep as session for now
+        $session->{header}->{index}->{_type} = "session" if ($session->{header}->{index}->{_type} eq "_doc");
+
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {
             $body->{rootId} = "SET";
@@ -254,6 +280,7 @@ my ($cmd) = @_;
         if ($main::debug) {
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
@@ -261,12 +288,13 @@ my ($cmd) = @_;
         } else {
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
-        waitFor($MolochTest::host, 8081);
+        waitFor($MolochTest::host, 8081, 1);
         sleep (10000) if ($cmd eq "--viewerhang");
     } else {
         print ("Initializing ES\n");
@@ -295,8 +323,7 @@ my ($cmd) = @_;
             system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
         }
 
-        waitFor($MolochTest::host, 8081);
-        sleep 1;
+        waitFor($MolochTest::host, 8081, 1);
 
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
@@ -325,12 +352,14 @@ my ($cmd) = @_;
         print ("Starting viewer\n");
         if ($main::debug) {
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
@@ -342,7 +371,6 @@ my ($cmd) = @_;
     waitFor($MolochTest::host, 8124);
     waitFor($MolochTest::host, 8125);
     waitFor($MolochTest::host, 8008);
-    waitFor($MolochTest::host, 8200);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
@@ -383,7 +411,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap)$/) {
         $main::cmd = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^--/) {
@@ -406,6 +434,8 @@ if ($main::cmd eq "--fix") {
     my $cmd = "ASAN_OPTIONS=fast_unwind_on_malloc=0 G_SLICE=always-malloc ../capture/fuzzloch-capture -max_len=8196 -timeout=5 @ARGV";
     print "$cmd\n";
     system($cmd);
+} elsif ($main::cmd eq "--fuzz2pcap") {
+    doFuzz2Pcap();
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
@@ -418,9 +448,10 @@ if ($main::cmd eq "--fix") {
     print "  --reip file ip newip  Create file.tmp, replace ip with newip\n";
     print "  --viewer              viewer tests\n";
     print "                        This will init local ES, import data, start a viewer, run tests\n";
-    print "  --viewerstart         viewer tests without reloading pcap\n";
-    print "  --fuzz                Run fuzzloch\n";
-    print " [default]              Run each .pcap file thru ../capture/moloch-capture and compare to .test file\n";
+    print "  --viewerstart         Viewer tests without reloading pcap\n";
+    print "  --fuzz [fuzzoptions]  Run fuzzloch\n";
+    print "  --fuzz2pcap           Convert a fuzzloch crash file into a pcap file\n";
+    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/moloch-capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

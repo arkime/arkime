@@ -1,59 +1,61 @@
 <template>
 
-  <div>
-
-    <div class="users-search">
-      <div class="mr-1 ml-1 mt-1 mb-1">
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text input-group-text-fw">
-              <span v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw">
+  <div class="user-page">
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <div class="users-search">
+          <div class="p-1">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                class="form-control"
+                v-model="query.filter"
+                v-focus-input="focusInput"
+                @blur="onOffFocus"
+                @input="searchForUsers"
+                placeholder="Begin typing to search for users by name"
+              />
+              <span class="input-group-append">
+                <button type="button"
+                  @click="clear"
+                  :disabled="!query.filter"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
               </span>
-              <span v-else
-                class="query-shortcut">
-                Q
-              </span>
-            </span>
+            </div>
           </div>
-          <input type="text"
-            class="form-control"
-            v-model="query.filter"
-            v-focus-input="focusInput"
-            @blur="onOffFocus"
-            @input="searchForUsers"
-            placeholder="Begin typing to search for users by name"
-          />
-          <span class="input-group-append">
-            <button type="button"
-              @click="clear"
-              :disabled="!query.filter"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
         </div>
-      </div>
-    </div>
 
-    <div class="users-paging">
-      <div class="ml-1 mt-1 pull-right">
-        <moloch-toast
-          class="mr-1"
-          :message="msg"
-          :type="msgType"
-          :done="messageDone">
-        </moloch-toast>
-      </div>
-      <moloch-paging v-if="users"
-        class="mt-1 ml-1"
-        :records-total="users.recordsTotal"
-        :records-filtered="users.recordsFiltered"
-        v-on:changePaging="changePaging">
-      </moloch-paging>
-    </div>
-
+        <div class="users-paging">
+          <div class="ml-1 mt-1 pull-right">
+            <moloch-toast
+              class="mr-1"
+              :message="msg"
+              :type="msgType"
+              :done="messageDone">
+            </moloch-toast>
+          </div>
+          <moloch-paging v-if="users"
+            class="mt-1 ml-1"
+            :records-total="users.recordsTotal"
+            :records-filtered="users.recordsFiltered"
+            v-on:changePaging="changePaging">
+          </moloch-paging>
+        </div>
+      </span>
+    </MolochCollapsible>
     <div class="users-content">
 
       <moloch-error v-if="error"
@@ -127,49 +129,41 @@
                   <input v-model="listUser.userName"
                     class="form-control form-control-sm"
                     type="text"
-                    @input="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.enabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.createEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.webEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.headerAuthEnabled"
-                    @change="userChanged(listUser);"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.emailSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.removeEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.packetSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
@@ -184,7 +178,7 @@
                 </td>
                 <td class="no-wrap">
                   <span class="pull-right">
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-success"
                       @click="updateUser(listUser)"
@@ -193,10 +187,10 @@
                       <span class="fa fa-save">
                       </span>
                     </button>
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-warning"
-                      @click="loadData"
+                      @click="cancelEdits(listUser.userId)"
                       v-b-tooltip.hover
                       :title="`Cancel changed settings for ${listUser.userId}`">
                       <span class="fa fa-ban">
@@ -251,7 +245,6 @@
                             type="checkbox"
                             :id="listUser.id + 'stats'"
                             v-model="listUser[columns[12].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'stats'">
@@ -264,7 +257,6 @@
                             type="checkbox"
                             :id="listUser.id + 'files'"
                             v-model="listUser[columns[13].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'files'">
@@ -277,7 +269,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcap'"
                             v-model="listUser[columns[14].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcap'">
@@ -290,7 +281,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcapDownload'"
                             v-model="listUser[columns[15].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcapDownload'">
@@ -313,7 +303,6 @@
                         <input v-model="listUser[columns[10].sort]"
                           class="form-control form-control-sm"
                           type="text"
-                          @input="userChanged(listUser)"
                         />
                       </div>
                     </div>
@@ -353,9 +342,14 @@
           </transition-group>
         </table> <!-- /user table -->
 
+        <div v-if="createError"
+          class="alert alert-sm alert-danger p-3  mt-4 text-break">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          {{ createError }}
+        </div>
         <!-- new user form -->
-        <div class="row new-user-form mr-1 ml-1 mt-4">
-
+        <div class="row new-user-form mr-1 ml-1">
           <div class="col-sm-7">
             <div class="row mb-3">
               <div class="col-sm-9 offset-sm-3">
@@ -416,7 +410,8 @@
                 <div class="col-sm-9">
                   <select :id="columns[11].sort"
                     class="form-control form-control-sm"
-                    v-model="newuser[columns[11].sort]">
+                    v-model="newuser[columns[11].sort]"
+                    @change="changeTimeLimit(newuser)">
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
                     <option value="24">24 hours</option>
@@ -453,12 +448,6 @@
                   </span>&nbsp;
                   Create
                 </button>
-                <span v-if="createError"
-                  class="pull-right alert alert-sm alert-danger mr-3">
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  {{ createError }}
-                </span>
               </div>
             </form>
           </div>
@@ -616,6 +605,7 @@ import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochToast from '../utils/Toast';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
 import ToggleBtn from '../utils/ToggleBtn';
 
@@ -628,6 +618,7 @@ export default {
     MolochError,
     MolochLoading,
     MolochToast,
+    MolochCollapsible,
     ToggleBtn
   },
   directives: { FocusInput },
@@ -636,6 +627,7 @@ export default {
       error: '',
       loading: true,
       users: null,
+      dbUserList: null,
       createError: '',
       newuser: {
         enabled: true,
@@ -724,7 +716,7 @@ export default {
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
-      this.loadData();
+      this.reloadData();
     },
     /* remove the message when user is done with it or duration ends */
     messageDone: function () {
@@ -737,10 +729,20 @@ export default {
       } else {
         user.timeLimit = parseInt(user.timeLimit);
       }
-      this.userChanged(user);
     },
-    userChanged: function (user) {
-      this.$set(user, 'changed', true);
+    cancelEdits: function (userId) {
+      let canceledUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      Object.assign(canceledUser, oldUser);
+    },
+    userHasChanged: function (userId) {
+      let newUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
+
+      // Iterate over user keys that come from store.
+      // The newUser is populated with other values like "expanded" that we dont need to check for
+      return !Object.keys(oldUser).every(key => oldUser[key] === newUser[key]);
     },
     updateUser: function (user) {
       this.$set(user, 'expanded', undefined);
@@ -748,6 +750,7 @@ export default {
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.reloadData();
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
             // update all the fields
@@ -760,7 +763,6 @@ export default {
             // time limit is special because it can be undefined
             this.user.timeLimit = user.timeLimit || undefined;
           }
-          this.$set(user, 'changed', false);
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';
@@ -798,7 +800,7 @@ export default {
       this.$http.post('user/create', this.newuser)
         .then((response) => {
           this.newuser = { enabled: true, packetSearch: true };
-          this.loadData();
+          this.reloadData();
 
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -842,7 +844,30 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.users = response.data;
+          this.users = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
+        }, (error) => {
+          this.loading = false;
+          this.error = error.text;
+        });
+    },
+    reloadData: function () {
+      this.$http.post('user/list', this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          let userData = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
+
+          // Dont update users that have edits. Update dbUserList first to compare against
+          // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
+          this.users.data = userData.data.map(u => {
+            let matchedUser = this.users.data.find(item => item.userId === u.userId);
+            // If user already exists and is still being edited, keep user obj
+            return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
+          });
         }, (error) => {
           this.loading = false;
           this.error = error.text;
@@ -856,12 +881,9 @@ export default {
 /* search navbar */
 .users-search {
   z-index: 5;
-  position: fixed;
-  right: 0;
-  left: 0;
-  top: 36px;
   border: none;
   background-color: var(--color-secondary-lightest);
+  position: relative;
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -871,21 +893,13 @@ export default {
 /* paging/toast navbar */
 .users-paging {
   z-index: 4;
-  position: fixed;
-  top: 75px;
-  left: 0;
-  right: 0;
   height: 40px;
   background-color: var(--color-quaternary-lightest);
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 /* page content */
 .users-content {
-  margin-top: 125px;
+  margin-top: 10px;
 }
 
 .users-content form .form-group-sm .checkbox {

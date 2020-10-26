@@ -513,7 +513,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
 
         while (!done && BSB_REMAINING(bsb) > 0) {
 #ifdef SMBDEBUG
-            LOG(" S: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" S: bsbremaining: %u remaining: %d state: %d buflen: %d remlen: %u done: %d", (uint32_t)BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
             switch (*state) {
             case SMB_NETBIOS:
@@ -547,7 +547,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
             }
 
 #ifdef SMBDEBUG
-            LOG(" E: bsbremaining: %ld remaining: %d state: %d buflen: %d remlen: %u done: %d", BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
+            LOG(" E: bsbremaining: %u remaining: %d state: %d buflen: %d remlen: %u done: %d", (uint32_t)BSB_REMAINING(bsb), remaining, *state, *buflen, *remlen, done);
 #endif
         }
 
@@ -561,7 +561,7 @@ LOCAL int smb_parser(MolochSession_t *session, void *uw, const unsigned char *da
             //LOG("  Moving data %ld %s", BSB_REMAINING(bsb), moloch_session_id_string(session->protocol, session->addr1, session->port1, session->addr2, session->port2));
 #endif
             if (BSB_REMAINING(bsb) > MAX_SMB_BUFFER) {
-                LOG("ERROR - Not enough room for SMB packet %ld", BSB_REMAINING(bsb));
+                LOG("ERROR - Not enough room for SMB packet %u", (uint32_t)BSB_REMAINING(bsb));
                 moloch_parsers_unregister(session, smb);
                 return 0;
             }
@@ -648,7 +648,5 @@ void moloch_parser_init()
         "aliases", "[\"smb.host.tokens\"]",
         (char *)NULL);
 
-    if (config.parseSMB) {
-        moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
-    }
+    moloch_parsers_classifier_register_tcp("smb", NULL, 5, (unsigned char*)"SMB", 3, smb_classify);
 }

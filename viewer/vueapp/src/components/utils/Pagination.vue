@@ -18,7 +18,7 @@
         hide-ellipsis
         :per-page="length"
         :total-rows="recordsFiltered"
-        @input="notifyParent">
+        @input="notifyParent(true)">
       </b-pagination> <!-- paging -->
       <!-- page info -->
       <div class="pagination-info cursor-help"
@@ -55,13 +55,6 @@ export default {
     'lengthDefault',
     'infoOnly'
   ],
-  watch: {
-    length: function (newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.notifyParent();
-      }
-    }
-  },
   data: function () {
     return {
       start: 0,
@@ -76,7 +69,21 @@ export default {
       },
       set: function (newValue) {
         if (newValue !== this.length) {
-          this.$router.push({ query: { ...this.$route.query, length: newValue } });
+          let newQuery = {
+            ...this.$route.query,
+            length: newValue
+          };
+
+          let exprChanged = this.$store.state.expression !== this.$route.query.expression;
+          if (exprChanged) {
+            newQuery.expression = this.$store.state.expression;
+          }
+
+          this.$router.push({ query: newQuery });
+
+          // only issue a new query if the expression hasn't changed. if it
+          // has changed, a query will be issued by ExpressionTypeahead.vue
+          this.notifyParent(!exprChanged);
         }
       }
     },
@@ -117,12 +124,13 @@ export default {
     }
   },
   methods: {
-    notifyParent: function () {
+    notifyParent: function (issueQuery) {
       this.start = (this.currentPage - 1) * this.length;
 
       let pagingParams = {
         start: this.start,
-        length: this.length
+        length: this.length,
+        issueQuery: issueQuery
       };
 
       this.$emit('changePaging', pagingParams);

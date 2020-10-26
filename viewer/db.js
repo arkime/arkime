@@ -15,46 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*jshint
-  node: true, plusplus: false, curly: true, eqeqeq: true, immed: true, latedef: true, newcap: true, nonew: true, undef: true, strict: true, trailing: true
-*/
+
 'use strict';
 
-var ESC            = require('elasticsearch'),
-    os             = require('os'),
-    fs             = require('fs');
+var ESC = require('elasticsearch');
+var os = require('os');
+var fs = require('fs');
+const { Client } = require('@elastic/elasticsearch');
 
-var internals = {fileId2File: {},
-                 fileName2File: {},
-                 molochNodeStatsCache: {},
-                 healthCache: {},
-                 indicesCache: {},
-                 indicesSettingsCache: {},
-                 usersCache: {},
-                 lookupsCache: {},
-                 nodesStatsCache: {},
-                 nodesInfoCache: {},
-                 masterCache: {},
-                 qInProgress: 0,
-                 apiVersion: "6.7",
-                 q: []};
+var internals = { fileId2File: {},
+  fileName2File: {},
+  molochNodeStatsCache: {},
+  healthCache: {},
+  indicesCache: {},
+  indicesSettingsCache: {},
+  usersCache: {},
+  lookupsCache: {},
+  nodesStatsCache: {},
+  nodesInfoCache: {},
+  masterCache: {},
+  qInProgress: 0,
+  apiVersion: '6.8',
+  q: [] };
 
 exports.initialize = function (info, cb) {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
+  internals.getSessionBySearch = info.getSessionBySearch || false;
+
   delete info.multiES;
   delete info.debug;
 
   internals.info = info;
 
-  if (info.prefix && info.prefix.charAt(info.prefix.length-1) !== "_") {
-    internals.prefix = info.prefix + "_";
+  if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
+    internals.prefix = info.prefix + '_';
   } else {
-    internals.prefix = info.prefix || "";
+    internals.prefix = info.prefix || '';
   }
 
-  if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length-1) !== "_") {
-    internals.usersPrefix = info.usersPrefix + "_";
+  if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
+    internals.usersPrefix = info.usersPrefix + '_';
   } else {
     internals.usersPrefix = info.usersPrefix || internals.prefix;
   }
@@ -65,12 +66,12 @@ exports.initialize = function (info, cb) {
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
 
-  var esSSLOptions =  {rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca};
-  if(info.esClientKey) {
+  var esSSLOptions = { rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca };
+  if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);
-    if(info.esClientKeyPass) {
-       esSSLOptions.passphrase = info.esClientKeyPass;
+    if (info.esClientKeyPass) {
+      esSSLOptions.passphrase = info.esClientKeyPass;
     }
   }
 
@@ -84,21 +85,30 @@ exports.initialize = function (info, cb) {
     ssl: esSSLOptions
   });
 
-  internals.elasticSearchClient.info((err,data) => {
+  internals.elasticSearchClient.info((err, data) => {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(6.[0-6]|[0-5]|8)/)) {
-      console.log("ERROR - ES", data.version.number, "not supported, ES 6.7.x or later required.");
+    if (data.version.number.match(/^(6.[0-7]|[0-5]|8)/)) {
+      console.log('ERROR - ES', data.version.number, 'not supported, ES 6.8.x or later required.');
       process.exit();
-      throw new Error("Exiting");
+      throw new Error('Exiting');
+    }
+
+    if (data.version.number.match(/^(7)/)) {
+      internals.client7 = new Client({
+        node: internals.info.host,
+        maxRetries: 2,
+        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+        ssl: esSSLOptions
+      });
     }
 
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
         host: internals.info.usersHost,
         apiVersion: internals.apiVersion,
-        requestTimeout: info.requestTimeout*1000 || 300000,
+        requestTimeout: info.requestTimeout * 1000 || 300000,
         keepAlive: true,
         minSockets: 5,
         maxSockets: 6,
@@ -112,24 +122,24 @@ exports.initialize = function (info, cb) {
 
   // Replace tag implementation
   if (internals.multiES) {
-    exports.isLocalView = function(node, yesCB, noCB) {return noCB(); };
-    internals.prefix = "MULTIPREFIX_";
+    exports.isLocalView = function (node, yesCB, noCB) { return noCB(); };
+    internals.prefix = 'MULTIPREFIX_';
   }
 
-  // Update aliases cache so -shrink works
+  // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*', () => {});
-    setInterval(() => {exports.getAliasesCache('sessions2-*', () => {});}, 2*60*1000);
+    setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
   }
 };
 
-//////////////////////////////////////////////////////////////////////////////////
-//// Low level functions to convert from old style to new
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
+/// / Low level functions to convert from old style to new
+/// ///////////////////////////////////////////////////////////////////////////////
 //
 //
-function fixIndex(index) {
-  if (index === undefined) {return undefined;}
+function fixIndex (index) {
+  if (index === undefined || index === '_all') { return index; }
 
   if (Array.isArray(index)) {
     return index.map((val) => {
@@ -151,31 +161,86 @@ function fixIndex(index) {
     index += '-shrink';
   }
 
+  // If the index doesn't exist but the reindex version does exist, add -reindex
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
+    index += '-reindex';
+  }
+
   return index;
 }
 
-exports.merge = function(to, from) {
+exports.merge = function (to, from) {
   for (var key in from) {
     to[key] = from[key];
   }
 };
 
 exports.get = function (index, type, id, cb) {
-  return internals.elasticSearchClient.get({index: fixIndex(index), type: type, id: id}, cb);
+  return internals.elasticSearchClient.get({ index: fixIndex(index), type: '_doc', id: id }, cb);
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
-  var params = {index: fixIndex(index), type:type, id: id};
+  var params = { index: fixIndex(index), type: '_doc', id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.get(params, cb);
 };
 
+// Get a session from ES and decode packetPos if requested
+exports.getSession = function (id, options, cb) {
+  function fixPacketPos (session, fields) {
+    if (!fields.packetPos || fields.packetPos.length === 0) {
+      return cb(null, session);
+    }
+    exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+      if (fileInfo.packetPosEncoding === 'gap0') {
+        let last = 0;
+        let lastgap = 0;
+        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            last = 0;
+          } else {
+            if (fields.packetPos[i] === 0) {
+              fields.packetPos[i] = last + lastgap;
+            } else {
+              lastgap = fields.packetPos[i];
+              fields.packetPos[i] += last;
+            }
+            last = fields.packetPos[i];
+          }
+        }
+      }
+      return cb(null, session);
+    });
+  }
+
+  if (internals.getSessionBySearch) {
+    exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
+      if (err) { return cb(err); }
+      if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+      let session = results.hits.hits[0];
+      session.found = true;
+      if (options && options._source && !options._source.includes('packetPos')) {
+        return cb(null, session);
+      }
+      return fixPacketPos(session, session._source || session.fields);
+    });
+  } else {
+    exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options, (err, session) => {
+      if (err || (options && options._source && !options._source.includes('packetPos'))) {
+        return cb(err, session);
+      }
+      return fixPacketPos(session, session._source || session.fields);
+    });
+  }
+};
+
 exports.index = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex(index), type: '_doc', body: document, id: id }, cb);
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({index: fixIndex(index), type: type, body: document, id: id, refresh: true}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex(index), type: '_doc', body: document, id: id, refresh: true }, cb);
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -187,8 +252,8 @@ exports.search = function (index, type, query, options, cb) {
 
   let params = {
     index: fixIndex(index),
-    type: type,
-    body: query, rest_total_hits_as_int: true
+    body: query,
+    rest_total_hits_as_int: true
   };
 
   exports.merge(params, options);
@@ -196,8 +261,8 @@ exports.search = function (index, type, query, options, cb) {
   return internals.elasticSearchClient.search(params, cb);
 };
 
-exports.cancelByOpaqueId = function(cancelId, cb) {
-  internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"})
+exports.cancelByOpaqueId = function (cancelId, cb) {
+  internals.elasticSearchClient.tasks.list({ detailed: false, group_by: 'parents' })
     .then((results) => {
       let found = false;
 
@@ -221,7 +286,7 @@ exports.cancelByOpaqueId = function(cancelId, cb) {
     });
 };
 
-function searchScrollInternal(index, type, query, options, cb) {
+function searchScrollInternal (index, type, query, options, cb) {
   let from = +query.from || 0;
   let size = +query.size || 0;
 
@@ -229,18 +294,18 @@ function searchScrollInternal(index, type, query, options, cb) {
   delete query.from;
 
   var totalResults;
-  var params = {scroll: '5m'};
+  var params = { scroll: '5m' };
   exports.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
   exports.search(index, type, query, params,
-    function getMoreUntilDone(error, response) {
+    function getMoreUntilDone (error, response) {
       if (error) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
         if (response && response._scroll_id) {
-          exports.clearScroll({body:{scroll_id: response._scroll_id}});
+          exports.clearScroll({ body: { scroll_id: response._scroll_id } });
         }
         return cb(error, totalResults);
       }
@@ -255,14 +320,16 @@ function searchScrollInternal(index, type, query, options, cb) {
         exports.scroll({
           scroll: '5m',
           body: {
-            scroll_id: response._scroll_id,
+            scroll_id: response._scroll_id
           }
         }, getMoreUntilDone);
       } else {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
         }
-        exports.clearScroll({body:{scroll_id: response._scroll_id}});
+        if (response._scroll_id) {
+          exports.clearScroll({ body: { scroll_id: response._scroll_id } });
+        }
         return cb(null, totalResults);
       }
     });
@@ -305,12 +372,12 @@ exports.searchPrimary = function (index, type, query, options, cb) {
 exports.msearch = function (index, type, queries, options, cb) {
   var body = [];
 
-  for(var i = 0, ilen = queries.length; i < ilen; i++){
-    body.push({index: fixIndex(index), type: type});
+  for (var i = 0, ilen = queries.length; i < ilen; i++) {
+    body.push({ index: fixIndex(index) });
     body.push(queries[i]);
   }
 
-  let params = {body: body, rest_total_hits_as_int: true};
+  let params = { body: body, rest_total_hits_as_int: true };
 
   if (options && options.cancelId) {
     // set X-Opaque-Id header on the params so the task can be canceled
@@ -321,6 +388,7 @@ exports.msearch = function (index, type, queries, options, cb) {
 };
 
 exports.scroll = function (params, callback) {
+  params.rest_total_hits_as_int = true;
   return internals.elasticSearchClient.scroll(params, callback);
 };
 
@@ -333,7 +401,7 @@ exports.bulk = function (params, callback) {
 };
 
 exports.deleteByQuery = function (index, type, query, cb) {
-  return internals.elasticSearchClient.deleteByQuery({index: fixIndex(index), type: type, body: query}, cb);
+  return internals.elasticSearchClient.deleteByQuery({ index: fixIndex(index), type: type, body: query }, cb);
 };
 
 exports.deleteDocument = function (index, type, id, options, cb) {
@@ -341,7 +409,7 @@ exports.deleteDocument = function (index, type, id, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: fixIndex(index), type: type, id: id};
+  var params = { index: fixIndex(index), type: '_doc', id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.delete(params, cb);
 };
@@ -352,7 +420,7 @@ exports.deleteIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index};
+  var params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.delete(params, cb);
 };
@@ -363,7 +431,7 @@ exports.optimizeIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index, maxNumSegments: 1};
+  var params = { index: index, maxNumSegments: 1 };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.forcemerge(params, cb);
 };
@@ -374,7 +442,7 @@ exports.closeIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index};
+  var params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.close(params, cb);
 };
@@ -385,7 +453,7 @@ exports.openIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = {index: index};
+  var params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.open(params, cb);
 };
@@ -396,12 +464,12 @@ exports.shrinkIndex = function (index, options, cb) {
   return internals.elasticSearchClient.indices.shrink(params, cb);
 };
 
-exports.indexStats = function(index, cb) {
-  return internals.elasticSearchClient.indices.stats({index: fixIndex(index)}, cb);
+exports.indexStats = function (index, cb) {
+  return internals.elasticSearchClient.indices.stats({ index: fixIndex(index) }, cb);
 };
 
-exports.getAliases = function(index, cb) {
-  return internals.elasticSearchClient.indices.getAlias({index: fixIndex(index)}, cb);
+exports.getAliases = function (index, cb) {
+  return internals.elasticSearchClient.indices.getAlias({ index: fixIndex(index) }, cb);
 };
 
 exports.getAliasesCache = function (index, cb) {
@@ -421,8 +489,8 @@ exports.getAliasesCache = function (index, cb) {
   });
 };
 
-exports.health = function(cb) {
-  return internals.elasticSearchClient.info((err,data) => {
+exports.health = function (cb) {
+  return internals.elasticSearchClient.info((err, data) => {
     internals.elasticSearchClient.cluster.health({}, (err, result) => {
       if (data && result) {
         result.version = data.version.number;
@@ -432,12 +500,12 @@ exports.health = function(cb) {
   });
 };
 
-exports.indices = function(cb, index) {
-  return internals.elasticSearchClient.cat.indices({format: "json", index: fixIndex(index), bytes: "b", h: "health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal"}, cb);
+exports.indices = function (cb, index) {
+  return internals.elasticSearchClient.cat.indices({ format: 'json', index: fixIndex(index), bytes: 'b', h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal' }, cb);
 };
 
-exports.indicesSettings = function(cb, index) {
-  return internals.elasticSearchClient.indices.getSettings({flatSettings: true, index: fixIndex(index)}, cb);
+exports.indicesSettings = function (cb, index) {
+  return internals.elasticSearchClient.indices.getSettings({ flatSettings: true, index: fixIndex(index) }, cb);
 };
 
 exports.setIndexSettings = (index, options, cb) => {
@@ -455,33 +523,41 @@ exports.setIndexSettings = (index, options, cb) => {
   );
 };
 
-exports.shards = function(cb) {
-  return internals.elasticSearchClient.cat.shards({format: "json", bytes: "b", h: "index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm"}, cb);
+exports.clearCache = function (cb) {
+  return internals.elasticSearchClient.indices.clearCache({}, cb);
 };
 
-exports.recovery = function(sortField, cb) {
-  return internals.elasticSearchClient.cat.recovery({format: "json", bytes: "b", s: sortField}, cb);
+exports.shards = function (cb) {
+  return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
 };
 
-exports.master = function(cb) {
-  return internals.elasticSearchClient.cat.master({format: "json"}, cb);
+exports.allocation = function (cb) {
+  return internals.elasticSearchClient.cat.allocation({ format: 'json', bytes: 'b' }, cb);
 };
 
-exports.getClusterSettings = function(options, cb) {
+exports.recovery = function (sortField, activeOnly, cb) {
+  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField, active_only: activeOnly }, cb);
+};
+
+exports.master = function (cb) {
+  return internals.elasticSearchClient.cat.master({ format: 'json' }, cb);
+};
+
+exports.getClusterSettings = function (options, cb) {
   return internals.elasticSearchClient.cluster.getSettings(options, cb);
 };
 
-exports.putClusterSettings = function(options, cb) {
+exports.putClusterSettings = function (options, cb) {
   options.timeout = '10m';
   options.masterTimeout = '10m';
   return internals.elasticSearchClient.cluster.putSettings(options, cb);
 };
 
-exports.tasks = function(cb) {
-  return internals.elasticSearchClient.tasks.list({detailed: "false", group_by: "parents"}, cb);
+exports.tasks = function (cb) {
+  return internals.elasticSearchClient.tasks.list({ detailed: true, group_by: 'parents' }, cb);
 };
 
-exports.taskCancel = function(taskId, cb) {
+exports.taskCancel = function (taskId, cb) {
   let params = {};
   if (taskId) { params.taskId = taskId; }
   return internals.elasticSearchClient.tasks.cancel(params, cb);
@@ -501,9 +577,35 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = {index: fixIndex(index), type: type, body: document, id: id, timeout: '10m'};
+  var params = { index: fixIndex(index), type: '_doc', body: document, id: id, timeout: '10m' };
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
+};
+
+exports.updateSession = function (index, id, document, cb) {
+  let params = {
+    retry_on_conflict: 3,
+    index: fixIndex(index),
+    type: '_doc',
+    body: document,
+    id: id,
+    timeout: '10m'
+  };
+
+  internals.elasticSearchClient.update(params, (err, data) => {
+    // Did it fail with FORBIDDEN msg?
+    if (err && err.message && err.message.match('FORBIDDEN')) {
+      // Try clearing the index.blocks.write
+      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } }, (err, data) => {
+        // Try doing the update again
+        internals.elasticSearchClient.update(params, (err, data) => {
+          return cb(err, data);
+        });
+      });
+      return;
+    }
+    return cb(err, data);
+  });
 };
 
 exports.close = function () {
@@ -520,30 +622,22 @@ exports.reroute = function (cb) {
 
 exports.flush = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+    return internals.usersElasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.flush({index: fixIndex(index)}, cb);
+    return internals.elasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
   }
 };
 
 exports.refresh = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+    return internals.usersElasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.refresh({index: fixIndex(index)}, cb);
+    return internals.elasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
   }
 };
 
 exports.addTagsToSession = function (index, id, tags, escluster, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
-  let script = `
+    let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
         if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
@@ -557,7 +651,7 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -567,20 +661,11 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { params.body._cluster = escluster; }
-
-  return internals.elasticSearchClient.update(params, cb);
+  if (escluster) { body._cluster = escluster; }
+  exports.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
+exports.removeTagsFromSession = function (index, id, tags, node, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -595,7 +680,7 @@ exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -605,20 +690,12 @@ exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { params.body._cluster = escluster; }
+  if (escluster) { body._cluster = escluster; }
 
-  return internals.elasticSearchClient.update(params, cb);
+  exports.updateSession(index, id, body, cb);
 };
 
 exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
-  let params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    type: 'session',
-    id: id,
-    timeout: '10m'
-  };
-
   let script = `
     if (ctx._source.huntId != null) {
       ctx._source.huntId.add(params.huntId);
@@ -632,7 +709,7 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   `;
 
-  params.body = {
+  let body = {
     script: {
       inline: script,
       lang: 'painless',
@@ -643,12 +720,12 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  return internals.elasticSearchClient.update(params, cb);
+  exports.updateSession(index, id, body, cb);
 };
 
-//////////////////////////////////////////////////////////////////////////////////
-//// High level functions
-//////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////
+/// / High level functions
+/// ///////////////////////////////////////////////////////////////////////////////
 exports.flushCache = function () {
   internals.fileId2File = {};
   internals.fileName2File = {};
@@ -658,12 +735,12 @@ exports.flushCache = function () {
   internals.lookupsCache = {};
   delete internals.aliasesCache;
 };
-exports.searchUsers = function(query, cb) {
-  return internals.usersElasticSearchClient.search({index: internals.usersPrefix + 'users', type: 'user', body: query, rest_total_hits_as_int: true}, cb);
+exports.searchUsers = function (query, cb) {
+  return internals.usersElasticSearchClient.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true }, cb);
 };
 
 exports.getUser = function (name, cb) {
-  return internals.usersElasticSearchClient.get({index: internals.usersPrefix + 'users', type: 'user', id: name}, cb);
+  return internals.usersElasticSearchClient.get({ index: internals.usersPrefix + 'users', type: '_doc', id: name }, cb);
 };
 
 exports.getUserCache = function (name, cb) {
@@ -683,88 +760,91 @@ exports.getUserCache = function (name, cb) {
   });
 };
 
-exports.numberOfUsers = function(cb) {
-  return internals.usersElasticSearchClient.count({index: internals.usersPrefix + 'users', ignoreUnavailable:true}, cb);
+exports.numberOfUsers = function (cb) {
+  return internals.usersElasticSearchClient.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true }, cb);
 };
 
 exports.deleteUser = function (name, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.delete({index: internals.usersPrefix + 'users', type: 'user', id: name, refresh: true}, (err) => {
+  return internals.usersElasticSearchClient.delete({ index: internals.usersPrefix + 'users', type: '_doc', id: name, refresh: true }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
-exports.setUser = function(name, doc, cb) {
+exports.setUser = function (name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({index: internals.usersPrefix + 'users', type: 'user', body: doc, id: name, refresh: true}, (err) => {
+  return internals.usersElasticSearchClient.index({ index: internals.usersPrefix + 'users', type: '_doc', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
-exports.setLastUsed = function(name, now, cb) {
-  var params = {index: internals.usersPrefix + 'users', type: 'user', body: {doc: {lastUsed: now}}, id: name};
+exports.setLastUsed = function (name, now, cb) {
+  var params = { index: internals.usersPrefix + 'users', type: '_doc', body: { doc: { lastUsed: now } }, id: name };
 
   return internals.usersElasticSearchClient.update(params, cb);
 };
 
-function twoDigitString(value) {
-  return (value < 10) ? ("0" + value) : value.toString();
+function twoDigitString (value) {
+  return (value < 10) ? ('0' + value) : value.toString();
 }
 
-exports.historyIt = function(doc, cb) {
-  var d     = new Date(Date.now());
-  var jan   = new Date(d.getUTCFullYear(), 0, 0);
+exports.historyIt = function (doc, cb) {
+  var d = new Date(Date.now());
+  var jan = new Date(d.getUTCFullYear(), 0, 0);
   var iname = internals.prefix + 'history_v1-' +
-    twoDigitString(d.getUTCFullYear()%100) + 'w' +
+    twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return internals.elasticSearchClient.index({index:iname, type:'history', body:doc, refresh: true}, cb);
+  return internals.elasticSearchClient.index({ index: iname, type: '_doc', body: doc, refresh: true, timeout: '10m' }, cb);
 };
-exports.searchHistory = function(query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('history_v1-*'), type:"history", body:query, rest_total_hits_as_int: true}, cb);
+exports.searchHistory = function (query, cb) {
+  return internals.elasticSearchClient.search({ index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true }, cb);
 };
-exports.numberOfLogs = function(cb) {
-  return internals.elasticSearchClient.count({index:fixIndex('history_v1-*'), type:"history", ignoreUnavailable:true}, cb);
+exports.numberOfLogs = function (cb) {
+  return internals.elasticSearchClient.count({ index: fixIndex('history_v1-*'), type: '_doc', ignoreUnavailable: true }, cb);
 };
 exports.deleteHistoryItem = function (id, index, cb) {
-  return internals.elasticSearchClient.delete({index:index, type: 'history', id: id, refresh: true}, cb);
+  return internals.elasticSearchClient.delete({ index: index, type: '_doc', id: id, refresh: true }, cb);
 };
 
 exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type:'hunt', body:doc, refresh: "wait_for"}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), type: '_doc', body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
 };
 exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('hunts'), type:'hunt', body:query, rest_total_hits_as_int: true}, cb);
+  return internals.elasticSearchClient.search({ index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true }, cb);
 };
-exports.numberOfHunts = function(cb) {
-  return internals.elasticSearchClient.count({index:fixIndex('hunts'), type:'hunt'}, cb);
+exports.numberOfHunts = function (cb) {
+  return internals.elasticSearchClient.count({ index: fixIndex('hunts'), type: '_doc' }, cb);
 };
 exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({index:fixIndex('hunts'), type:'hunt', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({ index: fixIndex('hunts'), type: '_doc', id: id, refresh: true }, cb);
 };
 exports.setHunt = function (id, doc, cb) {
-  return internals.elasticSearchClient.index({index:fixIndex('hunts'), type: 'hunt', body:doc, id: id, refresh:true}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), type: '_doc', body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+};
+exports.getHunt = function (id, cb) {
+  return internals.usersElasticSearchClient.get({ index: fixIndex('hunts'), type: '_doc', id: id }, cb);
 };
 
 exports.searchLookups = function (query, cb) {
-  return internals.elasticSearchClient.search({index:fixIndex('lookups'), type:'lookup', body:query, rest_total_hits_as_int: true}, cb);
+  return internals.elasticSearchClient.search({ index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true }, cb);
 };
 exports.createLookup = function (doc, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type:'lookup', body:doc, refresh: "wait_for"}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), type: '_doc', body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
 };
 exports.deleteLookup = function (id, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.delete({index:fixIndex('lookups'), type:'lookup', id:id, refresh:true}, cb);
+  return internals.elasticSearchClient.delete({ index: fixIndex('lookups'), type: '_doc', id: id, refresh: true }, cb);
 };
 exports.setLookup = function (id, username, doc, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({index:fixIndex('lookups'), type: 'lookup', body:doc, id: id, refresh:true}, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), type: '_doc', body: doc, id: id, refresh: true, timeout: '10m' }, cb);
 };
 exports.getLookup = function (id, cb) {
-  return internals.elasticSearchClient.get({index:fixIndex('lookups'), type:'lookup', id:id}, cb);
+  return internals.elasticSearchClient.get({ index: fixIndex('lookups'), type: '_doc', id: id }, cb);
 };
 exports.getLookupsCache = function (name, cb) {
   if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
@@ -802,13 +882,12 @@ exports.getLookupsCache = function (name, cb) {
 exports.molochNodeStats = function (name, cb) {
   exports.get('stats', 'stat', name, (err, stat) => {
     if (err || !stat.found) {
-
       // Even if an error, if we have a cached value use it
       if (err && internals.molochNodeStatsCache[name]) {
         return cb(null, internals.molochNodeStatsCache[name]);
       }
 
-      cb(err || "Unknown node " + name, internals.molochNodeStatsCache[name]);
+      cb(err || 'Unknown node ' + name, internals.molochNodeStatsCache[name]);
     } else {
       internals.molochNodeStatsCache[name] = stat._source;
       internals.molochNodeStatsCache[name]._timeStamp = Date.now();
@@ -825,7 +904,6 @@ exports.molochNodeStatsCache = function (name, cb) {
 
   return exports.molochNodeStats(name, cb);
 };
-
 
 exports.healthCache = function (cb) {
   if (!cb) {
@@ -845,11 +923,11 @@ exports.healthCache = function (cb) {
       return cb(err, null);
     }
 
-    internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta", include_type_name: true}, (err, doc) => {
+    internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta', include_type_name: true }, (err, doc) => {
       if (err) {
         return cb(null, health);
       }
-      health.molochDbVersion = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
+      health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings.session._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
       cb(null, health);
@@ -858,7 +936,7 @@ exports.healthCache = function (cb) {
 };
 
 exports.healthCachePromise = function () {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     exports.healthCache((err, data) => {
       if (err) {
         reject(err);
@@ -871,7 +949,7 @@ exports.healthCachePromise = function () {
 
 exports.nodesInfoCache = function () {
   if (internals.nodesInfoCache._timeStamp !== undefined && internals.nodesInfoCache._timeStamp > Date.now() - 30000) {
-    return new Promise((resolve, reject) => {resolve(internals.nodesInfoCache);});
+    return new Promise((resolve, reject) => { resolve(internals.nodesInfoCache); });
   }
 
   return new Promise((resolve, reject) => {
@@ -889,7 +967,7 @@ exports.nodesInfoCache = function () {
 
 exports.masterCache = function () {
   if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
-    return new Promise((resolve, reject) => {resolve(internals.masterCache);});
+    return new Promise((resolve, reject) => { resolve(internals.masterCache); });
   }
 
   return new Promise((resolve, reject) => {
@@ -907,11 +985,11 @@ exports.masterCache = function () {
 
 exports.nodesStatsCache = function () {
   if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
-    return new Promise((resolve, reject) => {resolve(internals.nodesStatsCache);});
+    return new Promise((resolve, reject) => { resolve(internals.nodesStatsCache); });
   }
 
   return new Promise((resolve, reject) => {
-    exports.nodesStats({metric: 'jvm,process,fs,os,indices,thread_pool'}, (err, data) => {
+    exports.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, (err, data) => {
       if (err) {
         reject(err);
       } else {
@@ -968,11 +1046,11 @@ exports.indicesSettingsCache = function (cb) {
     internals.indicesSettingsCache = indicesSettings;
     internals.indicesSettingsCache._timeStamp = Date.now();
     cb(null, indicesSettings);
-  });
+  }, '_all');
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
-  var query = {query: {match: {hostname:hostname}}};
+  var query = { query: { match: { hostname: hostname } } };
   exports.search('stats', 'stat', query, (err, sdata) => {
     var nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
@@ -1009,10 +1087,10 @@ exports.fileIdToFile = function (node, num, cb) {
 
 exports.fileNameToFiles = function (name, cb) {
   var query;
-  if (name[0] === "/" && name[name.length - 1] === "/") {
-    query = {query: {regexp: {name: name.substring(1, name.length-1)}}, sort: [{num: {order: "desc"}}]};
-  } else if (name.indexOf("*") !== -1) {
-    query = {query: {wildcard: {name: name}}, sort: [{num: {order: "desc"}}]};
+  if (name[0] === '/' && name[name.length - 1] === '/') {
+    query = { query: { regexp: { name: name.substring(1, name.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
+  } else if (name.indexOf('*') !== -1) {
+    query = { query: { wildcard: { name: name } }, sort: [{ num: { order: 'desc' } }] };
   }
 
   // Not wildcard/regex check the cache
@@ -1020,7 +1098,7 @@ exports.fileNameToFiles = function (name, cb) {
     if (internals.fileName2File[name]) {
       return cb([internals.fileName2File[name]]);
     }
-    query = {size: 100, query: {term: {name: name}}, sort: [{num: {order: "desc"}}]};
+    query = { size: 100, query: { term: { name: name } }, sort: [{ num: { order: 'desc' } }] };
   }
 
   exports.search('files', 'file', query, (err, data) => {
@@ -1030,7 +1108,7 @@ exports.fileNameToFiles = function (name, cb) {
     }
     data.hits.hits.forEach((hit) => {
       var file = hit._source;
-      var key = file.node + "!" + file.num;
+      var key = file.node + '!' + file.num;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
       files.push(file);
@@ -1040,14 +1118,14 @@ exports.fileNameToFiles = function (name, cb) {
 };
 
 exports.getSequenceNumber = function (name, cb) {
-  exports.index("sequence", "sequence", name, {}, (err, sinfo) => {
+  exports.index('sequence', 'sequence', name, {}, (err, sinfo) => {
     cb(err, sinfo._version);
   });
 };
 
 exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
-  if (index !== "sessions2-*" || internals.multiES) {
+  if (index !== 'sessions2-*' || internals.multiES) {
     let params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     return internals.elasticSearchClient.count(params);
@@ -1062,41 +1140,41 @@ exports.numberOfDocuments = function (index, options) {
           count += parseInt(indices[i]['docs.count']);
         }
       }
-      resolve({count: count});
+      resolve({ count: count });
     });
   });
 };
 
 exports.updateFileSize = function (item, filesize) {
-  exports.update("files", "file", item.id, {doc: {filesize: filesize}});
+  exports.update('files', 'file', item.id, { doc: { filesize: filesize } });
 };
 
-exports.checkVersion = function(minVersion, checkUsers) {
+exports.checkVersion = function (minVersion, checkUsers) {
   var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
-  var version = parseInt(match[1], 10)*10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
+  var version = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (version < 81200) {
     console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
     process.exit(1);
-    throw new Error("Exiting");
+    throw new Error('Exiting');
   }
 
-  ["stats", "dstats", "sequence", "files"].forEach((index) => {
+  ['stats', 'dstats', 'sequence', 'files'].forEach((index) => {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);
-        throw new Error("Exiting");
+        throw new Error('Exiting');
       }
     });
   });
 
-  internals.elasticSearchClient.indices.getTemplate({name: fixIndex("sessions2_template"), filter_path: "**._meta", include_type_name: true}, (err, doc) => {
+  internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta', include_type_name: true }, (err, doc) => {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
     }
     try {
-      var version = doc[fixIndex("sessions2_template")].mappings.session._meta.molochDbVersion;
+      var version = doc[fixIndex('sessions2_template')].mappings.session._meta.molochDbVersion;
 
       if (version < minVersion) {
         console.log(`ERROR - Current database version (${version}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
@@ -1114,13 +1192,13 @@ exports.checkVersion = function(minVersion, checkUsers) {
   if (checkUsers) {
     exports.numberOfUsers((err, num) => {
       if (num === 0) {
-        console.log("WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret");
+        console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
       }
     });
   }
 };
 
-exports.isLocalView = function(node, yesCB, noCB) {
+exports.isLocalView = function (node, yesCB, noCB) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
@@ -1143,7 +1221,7 @@ exports.isLocalView = function(node, yesCB, noCB) {
   });
 };
 
-exports.deleteFile = function(node, id, path, cb) {
+exports.deleteFile = function (node, id, path, cb) {
   fs.unlink(path, () => {
     exports.deleteDocument('files', 'file', id, (err, data) => {
       cb(null);
@@ -1162,7 +1240,7 @@ exports.session2Sid = function (item) {
 exports.sid2Id = function (id) {
   let colon = id.indexOf(':');
   if (colon > 0) {
-    return id.substr(colon+1);
+    return id.substr(colon + 1);
   }
 
   return id;
@@ -1176,13 +1254,12 @@ exports.sid2Index = function (id) {
   return 'sessions2-' + id.substr(0, id.indexOf('-'));
 };
 
-exports.loadFields = function(cb) {
-  return exports.search("fields", "field", {size:1000}, cb);
+exports.loadFields = function (cb) {
+  return exports.search('fields', 'field', { size: 1000 }, cb);
 };
 
-exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
-  exports.getAliasesCache("sessions2-*", (err, aliases) => {
-
+exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
+  exports.getAliasesCache('sessions2-*', (err, aliases) => {
     if (err || aliases.error) {
       return cb('');
     }
@@ -1192,11 +1269,11 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
     // Guess how long hour indices we find are
     let hlength = 0;
     if (rotateIndex === 'hourly') {
-      hlength = 60*60;
+      hlength = 60 * 60;
     } else if (rotateIndex.startsWith('hourly')) {
-      hlength = +rotateIndex.substring(6)*60*60;
+      hlength = +rotateIndex.substring(6) * 60 * 60;
     } else {
-      hlength = 12*60*60; // Max hourly can be is 12 hours
+      hlength = 12 * 60 * 60; // Max hourly can be is 12 hours
     }
 
     // Go thru each index, convert to start/stop range and see if our time range overlaps
@@ -1204,41 +1281,57 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
     for (let iname in aliases) {
       let index = iname;
       if (index.endsWith('-shrink')) {
-        index = index.substring(0,index.length-7);
+        index = index.substring(0, index.length - 7);
+      }
+      if (index.endsWith('-reindex')) {
+        index = index.substring(0, index.length - 8);
       }
       index = index.substring(internals.prefix.length + 10);
-      let year, month, day = 0, hour = 0, length;
+      let year; let month; let day = 0; let hour = 0; let length;
 
       if (+index[0] >= 6) {
-        year = 1900 + (+index[0])*10 + (+index[1]);
+        year = 1900 + (+index[0]) * 10 + (+index[1]);
       } else {
-        year = 2000 + (+index[0])*10 + (+index[1]);
+        year = 2000 + (+index[0]) * 10 + (+index[1]);
       }
 
       if (index[2] === 'w') {
-        length = 7*24*60*60;
+        length = 7 * 24 * 60 * 60;
         month = 1;
-        day = (+index[3]*10 + (+index[4]))*7;
+        day = (+index[3] * 10 + (+index[4])) * 7;
       } else if (index[2] === 'm') {
-        month = (+index[3])*10 + (+index[4]);
+        month = (+index[3]) * 10 + (+index[4]);
         day = 1;
-        length = 31*24*60*60;
+        length = 31 * 24 * 60 * 60;
       } else if (index.length === 6) {
-        month = (+index[2])*10 + (+index[3]);
-        day = (+index[4])*10 + (+index[5]);
-        length = 24*60*60;
+        month = (+index[2]) * 10 + (+index[3]);
+        day = (+index[4]) * 10 + (+index[5]);
+        length = 24 * 60 * 60;
       } else {
-        month = (+index[2])*10 + (+index[3]);
-        day = (+index[4])*10 + (+index[5]);
-        hour = (+index[7])*10 + (+index[8]);
+        month = (+index[2]) * 10 + (+index[3]);
+        day = (+index[4]) * 10 + (+index[5]);
+        hour = (+index[7]) * 10 + (+index[8]);
         length = hlength;
       }
 
-      let start = Date.UTC(year, month-1, day, hour)/1000;
-      let stop = Date.UTC(year, month-1, day, hour)/1000+length;
+      let start = Date.UTC(year, month - 1, day, hour) / 1000;
+      let stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
 
-      if (stop >= startTime && start <= stopTime) {
-        indices.push(iname);
+      switch (bounding) {
+        default:
+        case 'last':
+          if (stop >= startTime && start <= stopTime) {
+            indices.push(iname);
+          }
+          break;
+        case 'first':
+        case 'both':
+        case 'either':
+        case 'database':
+          if (stop >= (startTime - length) && start <= (stopTime + length)) {
+            indices.push(iname);
+          }
+          break;
       }
     }
 
@@ -1250,10 +1343,48 @@ exports.getIndices = function(startTime, stopTime, rotateIndex, cb) {
   });
 };
 
-exports.getMinValue = function(index, field, cb) {
-  var params = {index: fixIndex(index), body: {size: 0, aggs: {min: {min: {field: field}}}}};
+exports.getMinValue = function (index, field, cb) {
+  var params = { index: fixIndex(index), body: { size: 0, aggs: { min: { min: { field: field } } } } };
   return internals.elasticSearchClient.search(params, (err, data) => {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
+  });
+};
+
+exports.getILMPolicy = function () {
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
+      if (err) {
+        resolve({});
+      } else {
+        resolve(data.body);
+      }
+    });
+  });
+};
+
+exports.setILMPolicy = function (name, policy) {
+  console.log('name', name, 'policy', policy);
+  if (!internals.client7) {
+    return new Promise((resolve, reject) => {
+      console.log('no client 7');
+      resolve({});
+    });
+  }
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
+      if (err) {
+        console.log('ERROR', err, 'data', data);
+        reject(err);
+      } else {
+        resolve(data.body);
+      }
+    });
   });
 };

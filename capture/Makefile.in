@@ -20,13 +20,14 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @MAXMINDDB_LIBS@ \
 	        @CURL_LIBS@ \
+	        @NGHTTP2_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c packet.c session.c rules.c drophash.c pq.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c packet.c session.c rules.c drophash.c pq.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
@@ -103,4 +104,4 @@ distclean realclean clean:
 	rm -f *.o moloch-capture */*.o */*.so
 
 cppcheck:
-	cppcheck --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c
+	cppcheck -q --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c
