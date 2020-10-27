@@ -62,7 +62,8 @@
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
     "viewer:dev": "nodemon viewer/viewer.js -c tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config viewer/vueapp/build/webpack.dev.conf.js",
-    "parliament:dev": "node parliament/parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config parliament/vueapp/build/webpack.dev.conf.js"
+    "parliament:dev": "node parliament/parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config parliament/vueapp/build/webpack.dev.conf.js",
+    "wise:dev": "nodemon wiseService/wiseService.js -c tests/config.test.ini & webpack -d --watch --progress --hide-modules --display-error-details --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
@@ -115,7 +116,7 @@
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^5.2.0"
   },
   "optionalDependencies": {}
 }
