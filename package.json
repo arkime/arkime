@@ -61,9 +61,9 @@
     "lint-fix-viewer": "eslint --fix --ext .js,.vue viewer",
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
-    "viewer:dev": "nodemon viewer/viewer.js -c tests/config.test.ini -n testuser & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
-    "parliament:dev": "node parliament/parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
-    "wise:dev": "nodemon wiseService/wiseService.js -c tests/config.test.ini & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
+    "viewer:dev": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "parliament:dev": "(cd parliament && nodemon --ignore *.json parliament.js --pass admin --port 8008 -c ./parliament.dev.json) & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "wise:dev": "(cd wiseService && nodemon  wiseService.js -c ../tests/config.test.ini) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

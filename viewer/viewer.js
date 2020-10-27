@@ -9721,8 +9721,8 @@ function processCronQueries () {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
-  if (!fs.existsSync('./viewer/vueapp/dist/index.html')) {
-    console.log('WARNING - ./viewer/vueapp/dist/index.html missing - The viewer app must be run from the top level');
+  if (!fs.existsSync('./vueapp/dist/index.html') && app.settings.env !== 'development') {
+    console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
