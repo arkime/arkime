@@ -68,4 +68,4 @@ Check out our [contributing guide](../CONTRIBUTING.md) for more information abou
 
 Before submitting a pull request with your contribution, please move to the top level Moloch directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `../.eslintrc.js` to view this project's rules.
 
-:octocat: Please use a fork to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
+:octocat: Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.

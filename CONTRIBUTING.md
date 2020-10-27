@@ -73,6 +73,7 @@ Feature requests include new features and minor improvements to existing functio
 
 Feature requests are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 **Please follow these guidelines when submitting a feature request:**
+* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 * Provide a clear and descriptive title
 * Describe the suggested feature in as much detail as possible
 * Use examples to help us understand the use case of the feature
