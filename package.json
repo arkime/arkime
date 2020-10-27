@@ -61,9 +61,9 @@
     "lint-fix-viewer": "eslint --fix --ext .js,.vue viewer",
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
-    "viewer:dev": "nodemon viewer/viewer.js -c tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config viewer/vueapp/build/webpack.dev.conf.js",
-    "parliament:dev": "node parliament/parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config parliament/vueapp/build/webpack.dev.conf.js",
-    "wise:dev": "nodemon wiseService/wiseService.js -c tests/config.test.ini & webpack -d --watch --progress --hide-modules --display-error-details --config wiseService/vueapp/build/webpack.dev.conf.js"
+    "viewer:dev": "nodemon viewer/viewer.js -c tests/config.test.ini -n testuser & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "parliament:dev": "node parliament/parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "wise:dev": "nodemon wiseService/wiseService.js -c tests/config.test.ini & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
@@ -83,7 +83,7 @@
     "chalk": "^4.1.0",
     "clean-webpack-plugin": "^2.0.2",
     "copy-webpack-plugin": "^6.2.1",
-    "css-loader": "^3.4.2",
+    "css-loader": "^3.6.0",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^12.0.0-alpha.0",
     "eslint-friendly-formatter": "^4.0.1",
@@ -110,11 +110,11 @@
     "shelljs": "^0.8.4",
     "terser-webpack-plugin": "^2.3.8",
     "url-loader": "^4.1.1",
-    "vue-loader": "^15.9.0",
+    "vue-loader": "^15.9.4",
     "vue-style-loader": "^4.1.2",
     "webpack": "^4.44.2",
     "webpack-bundle-analyzer": "^3.6.1",
-    "webpack-cli": "^3.3.11",
+    "webpack-cli": "^4.1.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.2.0"
   },
