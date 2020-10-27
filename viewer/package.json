@@ -39,32 +39,15 @@
     "lint": "cd .. ; npm run lint-viewer"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^6.0.3",
-    "css-loader": "^3.4.2",
     "d3": "^5.7.0",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "friendly-errors-webpack-plugin": "^1.6.1",
-    "html-webpack-plugin": "^3.2.0",
     "jquery": "^3.5.0",
-    "json-loader": "^0.5.7",
     "moment-timezone": "^0.5.31",
-    "nodemon": "^2.0.3",
-    "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "portfinder": "^1.0.13",
     "qs": "^6.5.1",
     "sanitize-html": "^1.18.2",
-    "terser-webpack-plugin": "^2.3.8",
     "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-clickaway": "^2.2.2",
     "vue-clipboard2": "^0.3.0",
-    "vue-color": "^2.4.6",
-    "vue-loader": "^15.9.0",
-    "vue-style-loader": "^4.1.2",
-    "webpack": "^4.43.0",
-    "webpack-bundle-analyzer": "^3.6.1",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^4.2.2"
+    "vue-color": "^2.4.6"
   },
   "engines": {
     "node": ">= 6.0.0",

@@ -9424,7 +9424,7 @@ app.use(cspHeader, setCookie, (req, res) => {
   }
 
   const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
+    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
 
   let theme = req.user.settings.theme || 'default-theme';
@@ -9721,8 +9721,8 @@ function processCronQueries () {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
-  if (!fs.existsSync('./vueapp/dist/index.html')) {
-    console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
+  if (!fs.existsSync('./viewer/vueapp/dist/index.html')) {
+    console.log('WARNING - ./viewer/vueapp/dist/index.html missing - The viewer app must be run from the top level');
   }
 
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
