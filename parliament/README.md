@@ -8,7 +8,7 @@ This project was generated with [Vue CLI][vuecli].
 
 The Parliament dashboard contains a grouped list of your Moloch clusters with links, ES health, and issues for each. You can search for Molochs in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
 
-The app can be run in three ways: 
+The app can be run in three ways:
 1. with a password
 2. read only mode (without a password, but it can be configured later)
 3. dashboard only mode (no password or ability to configure one)
@@ -19,7 +19,7 @@ _**If your Parliament has a password (via option 1 or 2), you can interact with 
 The main Parliament page allows a user to view and interact with the Molochs in your Parliament. Once logged in, a user can acknowledge and ignore issues for each cluster as well as update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
 
 #### Issues Page
-The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues. 
+The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues.
 
 Acknowledged issues will not show up on the main Parliament page, but will remain here (but grayed out) to be removed (via the trashcan button or waiting 15 minutes for them to be removed automatically).
 
@@ -63,7 +63,7 @@ The app uses a number of node.js tools for initialization. You must have node.js
 
 * We get dependencies via `npm`, the [node package manager][npm].
 
-In the app directory, execute:
+In the parliament app directory, execute:
 
 ```
 npm install
@@ -87,12 +87,10 @@ This command starts the app, passing in the password, port, config file location
 _**Important**: when using `npm start` the leading `--`, before the parameters is essential._
 
 You can also run the app by building then starting the app. Like so:
-```
-npm run build
-```
-```
-node server.js --pass somepassword --port 8765 -c ./absolute/path/to/parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to/certFile.pem
-```
+* Move to the top level Moloch directory
+* run `npm run parliament:build`
+* Move to the parliament directory
+* run ` node server.js --pass somepassword --port 8765 -c ./absolute/path/to parliament.json --key ./absolute/path/to/keyFile.pem --cert ./absolute/path/to certFile.pem`
 
 **The parameters are defined as follows:**
 
@@ -113,14 +111,13 @@ To login, use the password that you passed into the `npm start` command. If you 
 
 #### Development
 
-To start the app for development and testing, simply run:
-```
-npm run dev
-```
+To start the app for development and testing:
+* Move to the top level Moloch directory
+* run `npm run parliament:dev`
 
 This command starts the app with the necessary config options set (`--pass admin --port 8008 -c ./parliament.dev.json`) and bundles the unminified application files into into the `parliament/vueapp/dist` folder.
 
-`npm run dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
+`npm run parliament:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
 Now browse to the app at `http://localhost:8008`.
 
@@ -135,7 +132,7 @@ For a detailed explanation on how things work, check out the [vue webpack guide]
 
 Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Moloch.
 
-Before submitting a pull request with your contribution, please run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
+Before submitting a pull request with your contribution, please move to the top level Moloch directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 
 :octocat: Please use a fork to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
@@ -218,7 +215,7 @@ Before submitting a pull request with your contribution, please run `npm run lin
 
   // cluster local url for fetching health/stats data (string, defaults to url if not supplied)
   localUrl: 'https://localhost:port',
-  
+
   // which type of cluster this is. types include:
   // noAlerts - no alerts, stats, health, link to cluster
   // mutiviewer - no alerts, no stats, health, link to cluster

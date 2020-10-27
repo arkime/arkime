@@ -26,6 +26,7 @@ NOTICE: Restart wiseService before capture when upgrading
              apply a view's expression to the search input without issuing a query
   - viewer - fix anonymous users settings not being saved
   - viewer - share hunts between users
+  - viewer - move all common client bundling, scripts, and npm modules to top level
   - capture - QUIC version 5x detection
 
 2.4.1 2020/09/28

@@ -79,7 +79,7 @@
     "wise:build": "cd wiseService && node vueapp/build/build.js",
     "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
     "prewise:start": "npm run wise:build",
-    "wise:dev": "(cd wiseService && nodemon  wiseService.js -c ../tests/config.test.ini) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
+    "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.ini) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

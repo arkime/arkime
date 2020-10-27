@@ -6,7 +6,7 @@ Learn more about [Wise](https://molo.ch/wise).
 
 ### Install Dependencies
 
-The app uses dependencies that are all bundled and minified using [webpack][webpack] via `npm run build`. This compiles the application into an output directory, in this case `wise/vueapp/dist`. This is done automatically when starting the application with `npm start`.
+The app uses dependencies that are all bundled and minified using [webpack][webpack] via `npm run build`. This compiles the application into an output directory, in this case `wiseService/vueapp/dist`. This is done automatically when starting the application with `npm start`.
 
 The app uses a number of node.js tools for initialization. You must have node.js and its package manager (npm) installed. You can get them from [node](http://nodejs.org/).
 
@@ -27,17 +27,17 @@ You should find that you have a new folder:
 
 #### Production
 
-To start the app for production, simply run:
-```
-npm start
-```
-This command starts the app. It also bundles the application files into the `wise/vueapp/dist` folder.
+To start the app for production:
+* Move to the top level Moloch directory
+* run `npm run wise:start`
+
+This command starts the app. It assumes that you are using the config in `/tests/config.test.ini`. It also bundles the application files into the `wiseService/vueapp/dist` folder.
 
 You can also run the app by building then starting the app. Like so:
-```
-npm run build
-node wiseService.js -c ./absolute/path/to/wise.json
-```
+* Move to the top level Moloch directory
+* run `npm run wise:build`
+* Move to the wiseService directory
+* run `node wiseService.js -c ./absolute/path/to/wise.ini`
 
 **The parameters are defined as follows:**
 
@@ -52,14 +52,13 @@ Now browse to the app at `http://localhost:8081`, or whichever port you passed i
 
 #### Development
 
-To start the app for development and testing, simply run:
-```
-npm run dev
-```
+To start the app for development and testing:
+* Move to the top level Moloch directory
+* run `npm run wise:dev`
 
-This command starts the app with the necessary config options set (`-c ../tests/config.test.json`) and bundles the unminified application files into into the `wise/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../tests/config.test.ini`) and bundles the unminified application files into into the `wiseService/vueapp/dist` folder.
 
-`npm run dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
+`npm run wise:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
 Now browse to the app at `http://localhost:8081`.
 

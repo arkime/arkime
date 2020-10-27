@@ -83,7 +83,7 @@ let invalidTokens = {};
     switch (appArgs[i]) {
       case '-c':
       case '--config':
-        file = `${__dirname}/${appArgs[i + 1]}`
+        file = appArgs[i + 1];
         i++;
         break;
 
