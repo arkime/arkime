@@ -17,7 +17,7 @@
     "passport-http": "^0.3.0",
     "peek-stream": "^1.1.1",
     "pngjs": "^3.3.3",
-    "re2": "^1.11.0",
+    "re2": "^1.15.8",
     "save-svg-as-png": "^1.4.5",
     "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"
@@ -39,11 +39,11 @@
     "lint": "cd .. ; npm run lint-viewer"
   },
   "devDependencies": {
-    "d3": "^5.7.0",
-    "jquery": "^3.5.0",
+    "d3": "^5.16.0",
+    "jquery": "^3.5.1",
     "moment-timezone": "^0.5.31",
-    "qs": "^6.5.1",
-    "sanitize-html": "^1.18.2",
+    "qs": "^6.9.4",
+    "sanitize-html": "^1.27.5",
     "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-clickaway": "^2.2.2",
     "vue-clipboard2": "^0.3.0",
