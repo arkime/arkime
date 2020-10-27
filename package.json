@@ -61,8 +61,24 @@
     "lint-fix-viewer": "eslint --fix --ext .js,.vue viewer",
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
+    "viewer:addtestuser": "cd viewer && node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
+    "viewer:build": "cd viewer && node vueapp/build/build.js",
+    "viewer:start": "cd viewer && node viewer.js -c ../config.ini",
+    "previewer:start": "npm run viewer:build",
     "viewer:dev": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
-    "parliament:dev": "(cd parliament && nodemon --ignore *.json parliament.js --pass admin --port 8008 -c ./parliament.dev.json) & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "viewer:test": "(cd viewer && nodemon viewer.js --debug -c ../tests/config.test.ini -n test) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "viewer:testuserdebug": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser --debug) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "viewer:multiviewer": "cd viewer && node multies.js -c ../tests/config.test.ini -n all",
+    "viewer:testmultiviewer": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testmulties) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "parliament:build": "cd parliament && node vueapp/build/build.js",
+    "parliament:start": "cd parliament && node parliament.js",
+    "preparliament:start": "npm run parliament:build",
+    "parliament:dev": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json) & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "parliament:debug": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json --debug) & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "parliament:noauth": "(cd parliament && nodemon parliament.js --port 8008 -c ./parliament.dev.json) & webpack -d --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "wise:build": "cd wiseService && node vueapp/build/build.js",
+    "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
+    "prewise:start": "npm run wise:build",
     "wise:dev": "(cd wiseService && nodemon  wiseService.js -c ../tests/config.test.ini) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
@@ -117,6 +133,5 @@
     "webpack-cli": "^4.1.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.2.0"
-  },
-  "optionalDependencies": {}
+  }
 }

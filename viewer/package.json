@@ -22,22 +22,6 @@
     "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"
   },
-  "scripts": {
-    "addtestuser": "node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
-    "build": "npm run bundle:min",
-    "start": "node viewer.js -c ../config.ini",
-    "start:dev": "nodemon viewer.js -c config.dev.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:test": "nodemon viewer.js --debug -c ../tests/config.test.ini -n test & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:testuser": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "dev": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:testuserdebug": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:multiviewer": "node multies.js -c ../tests/config.test.ini -n all",
-    "start:testmultiviewer": "node viewer.js -c ../tests/config.test.ini -n testmulties & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle": "webpack --progress --hide-modules -d --display-error-details --bail --config vueapp/build/webpack.dev.conf.js",
-    "bundle:min": "node vueapp/build/build.js",
-    "prestart": "npm run bundle:min",
-    "lint": "cd .. ; npm run lint-viewer"
-  },
   "devDependencies": {
     "d3": "^5.16.0",
     "jquery": "^3.5.1",
@@ -52,6 +36,9 @@
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": ["node_modules/*"]
   },
   "browserslist": [
     "> 1%",

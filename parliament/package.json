@@ -6,18 +6,6 @@
     "type": "git",
     "url": "https://github.com/aol/moloch.git"
   },
-  "scripts": {
-    "build": "npm run bundle:min",
-    "start": "node parliament.js",
-    "prestart": "npm run bundle:min",
-    "dev": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "dev:debug": "node parliament.js --pass admin --port 8008 -c ./parliament.dev.json --debug & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "dev:noauth": "node parliament.js --port 8008 -c ./parliament.dev.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "dev:dashboard": "node parliament.js --port 8008 -c ./parliament.dev.json --dashboardOnly & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle:min": "node vueapp/build/build.js",
-    "lint": "cd .. ; npm run lint-parliament"
-  },
   "dependencies": {
     "bcrypt": "^5.0.0",
     "jsonwebtoken": "^8.3.0",
@@ -26,6 +14,9 @@
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": ["node_modules/*", "*.json"]
   },
   "browserslist": [
     "> 1%",
