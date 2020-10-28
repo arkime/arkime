@@ -9721,7 +9721,7 @@ function processCronQueries () {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
-  if (!fs.existsSync('./vueapp/dist/index.html') && app.settings.env !== 'development') {
+  if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
