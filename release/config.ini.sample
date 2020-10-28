@@ -254,8 +254,7 @@ packetThreads=2
 
 # Business Hours
 # If set, displays a colored background on the sessions timeline graph during business hours
-# Business hours are assumed to be on a daily basis Monday through Friday
-# Values are set in hours from midnight (default is off)
+# Values are set in hours from midnight UTC (default is off)
 #businessDayStart=9
 #businessDayEnd=17
 

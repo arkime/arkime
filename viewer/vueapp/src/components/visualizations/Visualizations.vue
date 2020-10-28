@@ -774,9 +774,15 @@ export default {
       }
 
       // add business hours to graph if they exist
+      if (this.$constants.MOLOCH_BUSINESS_DAY_START && this.$constants.MOLOCH_BUSINESS_DAY_END) {
+        this.addBusinessHours();
+      }
+    },
+    addBusinessHours () {
       if (!this.$constants.MOLOCH_BUSINESS_DAY_START || !this.$constants.MOLOCH_BUSINESS_DAY_END) {
         return;
       }
+
       let businessDays = this.$constants.MOLOCH_BUSINESS_DAYS.split(',');
       let startDate = moment(this.graphData.xmin); // the start of the graph
       let stopDate = moment(this.graphData.xmax); // the end of the graph
