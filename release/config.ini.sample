@@ -156,20 +156,20 @@ dropGroup=daemon
 # Headers to use to determine if user from `userNameHeader` is
 # authorized to use the system, and if so create a new user
 # in the Moloch user database.  This implementation expects that
-# the users LDAP/AD groups (or similar) are populated into an 
+# the users LDAP/AD groups (or similar) are populated into an
 # HTTP header by the Apache (or similar) referenced above.
 # The JSON in userAutoCreateTmpl is used to insert the new
 # user into the moloch database (if not already present)
 # and additional HTTP headers can be sourced from the request
-# to populate various fields.  
+# to populate various fields.
 #
 # The example below pulls verifies that an HTTP header called `UserGroup`
 # is present, and contains the value "MOLOCH_ACCESS".  If this authorization
-# check passes, the user database is inspected for the user in `userNameHeader` 
+# check passes, the user database is inspected for the user in `userNameHeader`
 # and if it is not present it is created.  The system uses the
 # `moloch_user` and `http_auth_mail` headers from the
 # request and uses them to populate `userId` and `userName`
-# fields for the new user record. 
+# fields for the new user record.
 #
 # Once the user record is created, this functionaity
 # neither updates nor deletes the data, though if the user is no longer
@@ -251,6 +251,20 @@ packetThreads=2
 # If set to true, adds a Strict-Transport-Security response header with a max age of a year
 # and includes subdomains (the app must be served over https)
 #hstsHeader=true
+
+# Business Hours
+# If set, displays a colored background on the sessions timeline graph during business hours
+# Values are set in hours from midnight UTC (default is off)
+#businessDayStart=9
+#businessDayEnd=17
+
+# Business Days
+# Comma separated list of days
+# If set, displays the business hours on only the days provided here
+# Business hours must be set for these to be of use
+# Values are the days of the week as numbers, the week starts at Sunday = 0 and ends on Saturday = 6
+# (default is Monday - Friday 1,2,3,4,5)
+#businessDays=1,2,3,4,5
 
 # ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
 # in order and can replace values set in this file or previous files.
