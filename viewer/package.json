@@ -33,6 +33,10 @@
     "vue-clipboard2": "^0.3.0",
     "vue-color": "^2.4.6"
   },
+  "scripts": {
+    "bundle": "cd ../ && npm run viewer:bundle",
+    "bundle:min": "cd ../ && npm run viewer:build"
+  },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"

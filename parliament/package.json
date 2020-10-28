@@ -11,6 +11,10 @@
     "jsonwebtoken": "^8.3.0",
     "serve-favicon": "^2.5.0"
   },
+  "scripts": {
+    "bundle": "cd ../ && npm run parliament:bundle",
+    "bundle:min": "cd ../ && npm run parliament:build"
+  },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"

@@ -9,6 +9,10 @@
     "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
     "serve-favicon": "^2.5.0"
   },
+  "scripts": {
+    "bundle": "cd ../ && npm run wise:bundle",
+    "bundle:min": "cd ../ && npm run wise:build"
+  },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
