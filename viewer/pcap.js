@@ -421,6 +421,9 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     case 0x86dd:
       this.ip6(buffer.slice(bpos), obj, pos + bpos);
       break;
+    case 0x6558:
+      this.ether(buffer.slice(bpos), obj, pos + bpos);
+      break;
     case 0x6559:
       this.framerelay(buffer.slice(bpos), obj, pos + bpos);
       break;
