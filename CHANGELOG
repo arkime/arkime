@@ -31,6 +31,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - fix multi mpls header decoding
   - viewer - fix viewer crashing when pcap file not available
   - viewer - new getSessionBySearch setting
+  - viewer - decode vxlan packets better
   - capture - QUIC version 5x detection
   - capture - smtp decoding handles clients that break utf8 section incorrectly
   - capture - fix a json parsing fail would cause next json parse to fail even if good

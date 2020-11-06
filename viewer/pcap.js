@@ -355,6 +355,9 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   };
 
   obj.udp.data = buffer.slice(8);
+  if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
+    this.ether(buffer.slice(16), obj, pos + 16);
+  }
 };
 
 Pcap.prototype.sctp = function (buffer, obj, pos) {
