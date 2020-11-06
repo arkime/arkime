@@ -569,7 +569,7 @@ Pcap.prototype.ppp = function (buffer, obj, pos) {
 Pcap.prototype.mpls = function (buffer, obj, pos) {
   let offset = 0;
   while (offset + 5 < buffer.length) {
-    let S = buffer[3] & 0x1;
+    let S = buffer[offset + 2] & 0x1;
     offset += 4;
     if (S) {
       switch (buffer[offset] >> 4) {
@@ -580,7 +580,7 @@ Pcap.prototype.mpls = function (buffer, obj, pos) {
           this.ip6(buffer.slice(offset), obj, pos + offset);
           return;
         default:
-          console.log('Unknown mpls.type', obj, offset);
+          console.log('Unknown mpls.type', buffer[offset] >> 4, obj, offset);
           return;
       }
     }
