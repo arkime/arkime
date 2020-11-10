@@ -1579,6 +1579,7 @@ void moloch_packet_init()
 
 
     moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_ETHER, moloch_packet_ether);
+    moloch_packet_set_ethernet_cb(0x6558, moloch_packet_ether); // ETH_P_TEB - Trans Ether Bridging
     moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);

@@ -355,6 +355,9 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   };
 
   obj.udp.data = buffer.slice(8);
+  if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
+    this.ether(buffer.slice(16), obj, pos + 16);
+  }
 };
 
 Pcap.prototype.sctp = function (buffer, obj, pos) {
@@ -420,6 +423,9 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
       break;
     case 0x86dd:
       this.ip6(buffer.slice(bpos), obj, pos + bpos);
+      break;
+    case 0x6558:
+      this.ether(buffer.slice(bpos), obj, pos + bpos);
       break;
     case 0x6559:
       this.framerelay(buffer.slice(bpos), obj, pos + bpos);
@@ -569,7 +575,7 @@ Pcap.prototype.ppp = function (buffer, obj, pos) {
 Pcap.prototype.mpls = function (buffer, obj, pos) {
   let offset = 0;
   while (offset + 5 < buffer.length) {
-    let S = buffer[3] & 0x1;
+    let S = buffer[offset + 2] & 0x1;
     offset += 4;
     if (S) {
       switch (buffer[offset] >> 4) {
@@ -580,7 +586,7 @@ Pcap.prototype.mpls = function (buffer, obj, pos) {
           this.ip6(buffer.slice(offset), obj, pos + offset);
           return;
         default:
-          console.log('Unknown mpls.type', obj, offset);
+          console.log('Unknown mpls.type', buffer[offset] >> 4, obj, offset);
           return;
       }
     }

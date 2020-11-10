@@ -193,7 +193,7 @@ exports.getSession = function (id, options, cb) {
     }
     exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
       // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-      if (fileInfo.packetPosEncoding === 'gap0') {
+      if (fileInfo && fileInfo.packetPosEncoding === 'gap0') {
         let last = 0;
         let lastgap = 0;
         for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {

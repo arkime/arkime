@@ -20,13 +20,24 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.4.2 2020/10/xx
   - NOTE - this is the last version to support ES 6
+  - release - node 12.19.0
   - viewer - support utf8 chars in content-disposition
   - viewer - add capture process restart to timeline graphs
   - viewer - add "bookmarks"
              apply a view's expression to the search input without issuing a query
   - viewer - fix anonymous users settings not being saved
   - viewer - share hunts between users
+  - viewer - display business hours on sessions timeline graph
+  - viewer - fix multi mpls header decoding
+  - viewer - fix viewer crashing when pcap file not available
+  - viewer - new getSessionBySearch setting
+  - viewer - decode vxlan packets better
   - capture - QUIC version 5x detection
+  - capture - smtp decoding handles clients that break utf8 section incorrectly
+  - capture - fix a json parsing fail would cause next json parse to fail even if good
+  - wise - threatstream improvements when using the sqlite db
+  - db - fix rm-node to delete over 10k items, and bad count display
+  - tests - use our oui/rir files
 
 2.4.1 2020/09/28
   - NOTICE - db.pl upgrade is required

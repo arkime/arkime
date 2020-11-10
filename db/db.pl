@@ -491,7 +491,7 @@ sub sequenceUpgrade
     $main::userAgent->timeout(7200);
     sequenceCreate();
     esAlias("remove", "sequence_v2", "sequence");
-    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000", 0);
+    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
 
     logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v2 to ${PREFIX}sequence_v3\n";
 
@@ -2841,9 +2841,9 @@ my ($loud) = @_;
 ################################################################################
 sub dbCheckForActivity {
     logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000");
+    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     sleep(6);
-    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000");
+    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
@@ -3650,16 +3650,31 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?node$/) {
-    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
+    esGet("/${PREFIX}files,${PREFIX}dstats,${PREFIX}stats/_refresh", 1);
+    my $results;
+
+    $results = esGet("/${PREFIX}files/_search?size=1000&q=node:$ARGV[2]&rest_total_hits_as_int=true");
     logmsg "Deleting ", $results->{hits}->{total}, " files\n";
-    foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+    while ($results->{hits}->{total} > 0) {
+        foreach my $hit (@{$results->{hits}->{hits}}) {
+            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+        }
+        esPost("/_flush/synced", "", 1);
+        esGet("/${PREFIX}files/_refresh", 1);
+        $results = esGet("/${PREFIX}files/_search?size=1000&q=node:$ARGV[2]&rest_total_hits_as_int=true");
     }
+
     esDelete("/${PREFIX}stats/stat/" . $ARGV[2], 1);
-    my $results = esGet("/${PREFIX}dstats/_search?size=10000&q=nodeName:$ARGV[2]");
+
+    $results = esGet("/${PREFIX}dstats/_search?size=1000&q=nodeName:$ARGV[2]&rest_total_hits_as_int=true");
     logmsg "Deleting ", $results->{hits}->{total}, " stats\n";
-    foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
+    while ($results->{hits}->{total} > 0) {
+        foreach my $hit (@{$results->{hits}->{hits}}) {
+            esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
+        }
+        esPost("/_flush/synced", "", 1);
+        esGet("/${PREFIX}dstats/_refresh", 1);
+        $results = esGet("/${PREFIX}dstats/_search?size=1000&q=nodeName:$ARGV[2]&rest_total_hits_as_int=true");
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^hide-?node$/) {

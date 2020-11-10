@@ -1899,7 +1899,7 @@ LOCAL void moloch_db_check()
 LOCAL void moloch_db_free_mmdb(MMDB_s *geo)
 {
     MMDB_close(geo);
-    g_free(geo);
+    free(geo);
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_geo_country(char *name)

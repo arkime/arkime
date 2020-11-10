@@ -274,7 +274,7 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
             // The encoded text is empty
         } else if (*(question+1) == 'B' || *(question+1) == 'b') {
             *question = 0;
-            *endquestion = 0;
+            *endquestion = 0; // g_base64_decode_inplace expected null terminated string
 
             if (question[3]) {
                 g_base64_decode_inplace(question+3, &olen);
@@ -282,32 +282,42 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
                 olen = 0;
 
             char *fmt = smtp_gformat(str+2);
-            char *out = g_convert((char *)question+3, olen, "utf-8", fmt, &bread, &bwritten, &error);
-            if (error) {
-                LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
-                moloch_field_string_add(pos, session, string, len, TRUE);
-                g_error_free(error);
-                return;
-            }
+            if (strcasecmp(fmt, "utf-8") == 0) {
+                // No need to convert, will validate at the end
+                BSB_EXPORT_ptr_some(bsb, question+3, olen);
+            } else {
+                char *out = g_convert((char *)question+3, olen, "utf-8", fmt, &bread, &bwritten, &error);
+                if (error) {
+                    LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
+                    moloch_field_string_add(pos, session, string, len, TRUE);
+                    g_error_free(error);
+                    return;
+                }
 
-            BSB_EXPORT_ptr_some(bsb, out, bwritten);
-            g_free(out);
+                BSB_EXPORT_ptr_some(bsb, out, bwritten);
+                g_free(out);
+            }
         } else if (*(question+1) == 'Q' || *(question+1) == 'q') {
             *question = 0;
 
             smtp_quoteable_decode_inplace(question+3, &olen);
 
             char *fmt = smtp_gformat(str+2);
-            char *out = g_convert((char *)question+3, strlen(question+3), "utf-8", fmt, &bread, &bwritten, &error);
-            if (error) {
-                LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
-                moloch_field_string_add(pos, session, string, len, TRUE);
-                g_error_free(error);
-                return;
-            }
+            if (strcasecmp(fmt, "utf-8") == 0) {
+                // No need to convert, will validate at the end
+                BSB_EXPORT_ptr_some(bsb, question+3, olen);
+            } else {
+                char *out = g_convert((char *)question+3, strlen(question+3), "utf-8", fmt, &bread, &bwritten, &error);
+                if (error) {
+                    LOG("ERROR convering %s to utf-8 %s ", str+2, error->message);
+                    moloch_field_string_add(pos, session, string, len, TRUE);
+                    g_error_free(error);
+                    return;
+                }
 
-            BSB_EXPORT_ptr_some(bsb, out, bwritten);
-            g_free(out);
+                BSB_EXPORT_ptr_some(bsb, out, bwritten);
+                g_free(out);
+            }
         } else {
             moloch_field_string_add(pos, session, string, len, TRUE);
             return;
@@ -316,11 +326,18 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
     }
 
     if (BSB_IS_ERROR(bsb)) {
+        // Error is from being too long, just output what we have
         moloch_field_string_add(pos, session, output, sizeof(output), TRUE);
+        return;
     }
-    else {
-        moloch_field_string_add(pos, session, output, BSB_LENGTH(bsb), TRUE);
+
+    gboolean good = g_utf8_validate(output, BSB_LENGTH(bsb), (const char **)&end);
+
+    if (!good) {
+        moloch_field_string_add(pos, session, "Error Decoding", 14, TRUE);
+        return;
     }
+    moloch_field_string_add(pos, session, output, BSB_LENGTH(bsb), TRUE);
 }
 /******************************************************************************/
 LOCAL void smtp_parse_email_addresses(int field, MolochSession_t *session, char *data, int len)
