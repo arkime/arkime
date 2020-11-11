@@ -42,9 +42,9 @@ typedef struct {
     uint16_t         inBody:2;
     uint16_t         urlWhich:1;
     uint16_t         which:1;
-    uint16_t         isConnect:1;
-    uint16_t         reclassify:2;
-    uint16_t         http2Upgrade;
+    uint16_t         isConnect:2; // Keep track of each side that is CONNECT and completed headers
+    uint16_t         reclassify:2; // Keep track of each side that needs to reclassify still
+    uint16_t         http2Upgrade:1;
 } HTTPInfo_t;
 
 extern MolochConfig_t        config;
@@ -539,8 +539,8 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
 #endif
 
     if (parser->method == HTTP_CONNECT) {
-        http->isConnect = 1;
-        http->reclassify = 3;
+        http->reclassify |= (1 << http->which);
+        http->isConnect |= (1 << http->which);
     }
 
     int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
@@ -694,12 +694,13 @@ LOCAL int http_parse(MolochSession_t *session, void *uw, const unsigned char *da
         if (http->reclassify & (1 << which)) {
             http->reclassify &= ~(1 << which);
             moloch_parsers_classify_tcp(session, data, remaining, which);
+
+            // Both sides have been reclassified, remove http parser
+            if (http->reclassify == 0 && http->isConnect == 0x3) {
+                moloch_parsers_unregister(session, uw);
+            }
+            return 0;
         }
-        // Both sides have been reclassified, remove http parser
-        if (!http->reclassify) {
-            moloch_parsers_unregister(session, uw);
-        }
-        return 0;
     }
 
     if ((http->wParsers & (1 << http->which)) == 0) {

@@ -21,6 +21,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 2.7.0 2020/11/xx
   - NOTICE - Requires ES 7.4 or newer
+  - capture - fix http CONNECT response parsing
 
 2.4.2 2020/11/10
   - NOTICE - db.pl upgrade is required
