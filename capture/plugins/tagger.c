@@ -572,7 +572,7 @@ LOCAL void tagger_load_file(TaggerFile_t *file)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/file/%s/_source", file->str);
+    key_len = snprintf(key, sizeof(key), "/tagger/_doc/%s/_source", file->str);
 
     moloch_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_load_file_cb, file);
 }

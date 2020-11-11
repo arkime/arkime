@@ -6,6 +6,7 @@ use strict;
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use Digest::MD5 qw(md5_hex);
+use Data::Dumper;
 
 my $host = $ARGV[0];
 
@@ -28,7 +29,8 @@ showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 my $userAgent = LWP::UserAgent->new(timeout => 20);
 my $response = $userAgent->request(HTTP::Request::Common::PUT("$host/tagger",
                                "Content-Type" => "application/json;charset=UTF-8",
-                                Content => '{"mappings": {"file": { _all: {enabled: 0}, "properties":{"tags":{"type":"keyword","index": false}, "type": {"type":"keyword","index": false}, "data": {"type":"keyword","index": false}, "md5": {"type":"keyword","index": false}}}}}'));
+                                Content => '{"mappings": { "properties":{"tags":{"type":"keyword","index": false}, "type": {"type":"keyword","index": false}, "data": {"type":"keyword","index": false}, "md5": {"type":"keyword","index": false}}}}'));
+#print Dumper($response) if ($response->code != 200);
 
 my @ELEMENTS;
 open (FILE, $ARGV[2]);
@@ -55,6 +57,6 @@ close (FILE);
 my $md5hex = md5_hex($elements);
 
 my $content  = '{' . $fields . '"tags": "' . join(',', @ARGV[3 .. $#ARGV]) . '", "md5":"' . $md5hex .'", "type":"' . $ARGV[1] . '", "data":"' . $elements . '"}'. "\n";
-$response = $userAgent->post("$host/tagger/file/$ARGV[2]", "Content-Type" => "application/json;charset=UTF-8", Content => $content);
+$response = $userAgent->post("$host/tagger/_doc/$ARGV[2]", "Content-Type" => "application/json;charset=UTF-8", Content => $content);
 print $response->content, "\n";
 
