@@ -1,6 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
@@ -18,9 +19,12 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.7.0 2020/11/xx
+  - NOTICE - Requires ES 7.4 or newer
+
 2.4.2 2020/11/10
   - NOTICE - db.pl upgrade is required
-  - NOTICE- this is the last version to support ES 6
+  - NOTICE - this is the last version to support ES 6
   - release - node 12.19.0
   - viewer - support utf8 chars in content-disposition
   - viewer - add capture process restart to timeline graphs
