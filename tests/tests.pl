@@ -173,7 +173,7 @@ my ($json) = @_;
         my $body = $session->{body};
 
         # Keep as session for now
-        $session->{header}->{index}->{_type} = "session" if ($session->{header}->{index}->{_type} eq "_doc");
+        $session->{header}->{index}->{_type} = "session";
 
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {

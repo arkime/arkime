@@ -512,9 +512,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);

@@ -35,7 +35,7 @@ var internals = { fileId2File: {},
   nodesInfoCache: {},
   masterCache: {},
   qInProgress: 0,
-  apiVersion: '6.8',
+  apiVersion: '7.4',
   q: [] };
 
 exports.initialize = function (info, cb) {
@@ -89,20 +89,18 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(6.[0-7]|[0-5]|8)/)) {
-      console.log('ERROR - ES', data.version.number, 'not supported, ES 6.8.x or later required.');
+    if (data.version.number.match(/^(7.[0-3]|[0-6]|8)/)) {
+      console.log('ERROR - ES', data.version.number, 'not supported, ES 7.4.0 or later required.');
       process.exit();
       throw new Error('Exiting');
     }
 
-    if (data.version.number.match(/^(7)/)) {
-      internals.client7 = new Client({
-        node: internals.info.host,
-        maxRetries: 2,
-        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-        ssl: esSSLOptions
-      });
-    }
+    internals.client7 = new Client({
+      node: internals.info.host,
+      maxRetries: 2,
+      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+      ssl: esSSLOptions
+    });
 
     if (info.usersHost) {
       internals.usersElasticSearchClient = new ESC.Client({
@@ -1351,12 +1349,6 @@ exports.getMinValue = function (index, field, cb) {
 };
 
 exports.getILMPolicy = function () {
-  if (!internals.client7) {
-    return new Promise((resolve, reject) => {
-      console.log('no client 7');
-      resolve({});
-    });
-  }
   return new Promise((resolve, reject) => {
     internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
       if (err) {
@@ -1370,12 +1362,6 @@ exports.getILMPolicy = function () {
 
 exports.setILMPolicy = function (name, policy) {
   console.log('name', name, 'policy', policy);
-  if (!internals.client7) {
-    return new Promise((resolve, reject) => {
-      console.log('no client 7');
-      resolve({});
-    });
-  }
   return new Promise((resolve, reject) => {
     internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
       if (err) {
