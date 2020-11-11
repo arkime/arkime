@@ -89,7 +89,7 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(7.[0-3]|[0-6]|8)/)) {
+    if (data.version.number.match(/^(7\.[0-3]\.|[0-6]|8)/)) {
       console.log('ERROR - ES', data.version.number, 'not supported, ES 7.4.0 or later required.');
       process.exit();
       throw new Error('Exiting');
