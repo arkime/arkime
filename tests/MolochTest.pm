@@ -198,13 +198,13 @@ my ($url) = @_;
 ################################################################################
 sub esCopy
 {
-    my ($srci, $dsti, $type) = @_;
+    my ($srci, $dsti) = @_;
 
     my $id = "";
     while (1) {
         my $url;
         if ($id eq "") {
-            $url = "/$srci/$type/_search?scroll=10m&size=500";
+            $url = "/$srci/_search?scroll=10m&size=500";
         } else {
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
@@ -215,7 +215,7 @@ sub esCopy
         last if (@{$incoming->{hits}->{hits}} == 0);
 
         foreach my $hit (@{$incoming->{hits}->{hits}}) {
-            $out .= "{\"index\": {\"_index\": \"$dsti\", \"_type\": \"$type\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
+            $out .= "{\"index\": {\"_index\": \"$dsti\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
             $out .= to_json($hit->{_source}) . "\n";
         }
 
