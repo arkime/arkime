@@ -68,6 +68,7 @@ use JSON;
 use Data::Dumper;
 use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
 my $VERSION = 66;
@@ -3114,8 +3115,17 @@ if ($ARGV[0] =~ /^http/) {
 }
 
 if ($ARGV[1] =~ /^(users-?import|import)$/) {
-    open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
+    my $fh;
+    if ($ARGV[2] =~ /\.gz$/) {
+        $fh = new IO::Uncompress::Gunzip $ARGV[2] or die "gunzip failed: $GunzipError\n";
+    } else {
+        open($fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
+    }
     my $data = do { local $/; <$fh> };
+    # Use version/version_type instead of _version/_version_type
+    $data =~ s/, "_version": (\d+), "_version_type"/, "version": \1, "version_type"/g;
+    # Remove type from older backups
+    $data =~ s/, "_type": .*, "_id":/, "_id":/g;
     esPost("/_bulk", $data);
     close($fh);
     exit 0;
@@ -3128,7 +3138,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     open(my $fh, ">", "$ARGV[3].${PREFIX}${index}.json") or die "cannot open > $ARGV[3].${PREFIX}${index}.json: $!";
     foreach my $hit (@{$data}) {
-        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
         if (exists $hit->{_source}) {
             print $fh to_json($hit->{_source}) . "\n";
         } else {
@@ -3157,7 +3167,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         next if (scalar(@{$data}) == 0);
         my $fh = bopen($index);
         foreach my $hit (@{$data}) {
-            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
                 print $fh to_json($hit->{_source}) . "\n";
             } else {
