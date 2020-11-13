@@ -20,7 +20,7 @@
                   "notAfter" : 1604404800000,
                   "notBefore" : 1540857600000,
                   "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 1,
+                  "remainingDays" : -1,
                   "serial" : "0a68bb984a507399f4716e809a44a7b0",
                   "subjectCN" : [
                      "cloudflare.com"

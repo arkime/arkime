@@ -246,6 +246,11 @@ body {
 .text-theme-tertiary  { color: var(--color-tertiary); }
 .text-theme-quaternary{ color: var(--color-quaternary); }
 .text-muted-more      { color: var(--color-gray); }
+.text-theme-white     { color: var(--color-white); }
+
+.text-theme-gray-hover:hover {
+  color: var(--color-gray-light);
+}
 
 /* font sizes */
 .medium { font-size: 95%; }

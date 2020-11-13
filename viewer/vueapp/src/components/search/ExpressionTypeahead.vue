@@ -43,6 +43,17 @@
       </span>
       <span class="input-group-append">
         <button type="button"
+          @click="saveExpression"
+          :disabled="!expression"
+          v-b-tooltip.hover.bottom
+          title="Save this search expression (apply it from the views menu)"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-save">
+          </span>
+        </button>
+      </span>
+      <span class="input-group-append">
+        <button type="button"
           @click="clear"
           :disabled="!expression"
           class="btn btn-outline-secondary btn-clear-input">
@@ -159,7 +170,9 @@ export default {
       fieldHistory: [],
       fieldHistoryResults: [],
       lastTokenWasField: false,
-      autocompletingField: false
+      autocompletingField: false,
+      // saved expression vars
+      savedExpressions: []
     };
   },
   computed: {
@@ -218,6 +231,9 @@ export default {
     /* exposed page functions ------------------------------------ */
     clear: function () {
       this.expression = undefined;
+    },
+    saveExpression: function () {
+      this.$emit('modView');
     },
     /**
      * Fired when a value from the typeahead menu is selected

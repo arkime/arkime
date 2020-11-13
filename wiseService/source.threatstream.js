@@ -84,10 +84,10 @@ function ThreatStreamSource (api, section) {
     this.cacheTimeout = -1;
     if (this.mode === 'sqlite3-copy') {
       this.openDbCopy();
+      setInterval(this.openDbCopy.bind(this), 15 * 60 * 1000);
     } else {
       this.openDb();
     }
-    setInterval(this.openDb.bind(this), 15 * 60 * 1000);
     ThreatStreamSource.prototype.getDomain = getDomainSqlite3;
     ThreatStreamSource.prototype.getIp = getIpSqlite3;
     ThreatStreamSource.prototype.getMd5 = getMd5Sqlite3;
@@ -435,7 +435,7 @@ ThreatStreamSource.prototype.openDbCopy = function () {
         realDb = null;
 
         var tempDb = new sqlite3.Database(dbFile + '.temp');
-        tempDb.run('CREATE INDEX md5_index ON ts (md5)', (err) => {
+        tempDb.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
           tempDb.close();
           if (this.db) {
             this.db.close();
@@ -472,7 +472,6 @@ ThreatStreamSource.prototype.openDb = function () {
   var dbStat;
   try { dbStat = fs.statSync(dbFile); } catch (e) {}
 
-  var realDb;
   if (!dbStat || !dbStat.isFile()) {
     console.log(this.section, "ERROR - file doesn't exist", dbFile);
     process.exit();
@@ -483,30 +482,39 @@ ThreatStreamSource.prototype.openDb = function () {
     if (err && err.code === 'SQLITE_BUSY') {
       console.log(this.section, 'Failed to lock sqlite DB', dbFile);
       return setTimeout(() => {
-        realDb.run('BEGIN IMMEDIATE', beginImmediate);
+        this.db.run('BEGIN IMMEDIATE', beginImmediate);
       }, 30 * 1000); // Try to lock in 30 seconds
     }
 
-    realDb.run('CREATE INDEX md5_index ON ts (md5)', (err) => {
-      realDb.run('END', (err) => {
-        if (this.db) {
-          this.db.close();
-        }
-        this.db = realDb;
+    this.db.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
+      this.db.run('END', (err) => {
       });
     });
   };
 
-  // If the last copy time doesn't match start the copy process.
-  // This will also run on startup.
-  if (this.mtime !== dbStat.mtime.getTime()) {
-    this.mtime = dbStat.mtime.getTime();
-    realDb = new sqlite3.Database(dbFile);
-    realDb.run('BEGIN IMMEDIATE', beginImmediate);
-  } else if (!this.db) {
-    // Open the DB if not already opened.
-    this.db = new sqlite3.Database(dbFile, sqlite3.OPEN_READONLY);
+  this.db = new sqlite3.Database(dbFile);
+  if (!this.db) {
+    console.log(`ERROR - couldn't open threatstream db`);
+    process.exit();
   }
+  this.db.run('BEGIN IMMEDIATE', beginImmediate);
+
+  this.truncating = false;
+  setInterval(() => {
+    if (this.truncating) { return; }
+    this.truncating = true;
+    this.db.all('PRAGMA main.wal_checkpoint(TRUNCATE)', (err, data) => {
+      if (data.length > 0 && data[0].busy) {
+        this.db.all('PRAGMA main.wal_checkpoint(PASSIVE)', (err, data) => {
+          console.log('Threatstream Passive - ', err, data);
+          this.truncating = false;
+        });
+      } else {
+        console.log('Threatstream Truncate - ', err, data);
+        this.truncating = false;
+      }
+    });
+  }, 5 * 60 * 1000);
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {

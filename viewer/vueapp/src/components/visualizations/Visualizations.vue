@@ -228,6 +228,9 @@
 </template>
 
 <script>
+// imports
+import moment from 'moment-timezone';
+
 // map imports
 import '../../../../public/jquery-jvectormap-1.2.2.min.js';
 import '../../../../public/jquery-jvectormap-world-en.js';
@@ -252,6 +255,12 @@ let landColorLight;
 let timeout;
 let basePath;
 
+// bar width vars
+let barWidth;
+let hoverBarWidth;
+let barWidthInUnits;
+let barWidthInPixels;
+
 export default {
   name: 'MolochVisualizations',
   props: {
@@ -269,6 +278,15 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
+    },
+    capStartTimes: {
+      type: Array,
+      default: () => {
+        return [{
+          nodeName: 'none',
+          startTime: 1
+        }];
+      }
     }
   },
   data: function () {
@@ -373,6 +391,7 @@ export default {
       if (newVal && oldVal) {
         this.setupGraphData(); // setup this.graph and this.graphOptions
         this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+        this.calculateHoverBarWidth();
       }
     },
     mapData: function (newVal, oldVal) {
@@ -566,6 +585,8 @@ export default {
       this.plotArea = $('#plotArea' + this.id);
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
 
+      this.calculateHoverBarWidth();
+
       setTimeout(() => { // wait for plot to render
         // account for size of the y axis labels
         const yAxisLabelSize = $(this.plotArea.find('.yAxis > .tickLabel')).width() * 2;
@@ -628,6 +649,33 @@ export default {
         } else {
           $(document.body).find('#tooltip').remove();
           previousPoint = null;
+
+          // show capture process start time tooltip
+          // it is only 1px wide, but the hover displays if a user hovers over the
+          // surrounding line by half a bar width on either side (so it should
+          // still allow a user to see tooltips for data)
+          let capNode, capStartTime;
+          let isInCapTimeRange = false;
+          for (let cap of this.capStartTimes) {
+            if (cap.startTime) {
+              if (pos.x1 >= cap.startTime - hoverBarWidth && pos.x1 < cap.startTime + hoverBarWidth) {
+                capNode = cap.nodeName;
+                capStartTime = cap.startTime;
+                isInCapTimeRange = true;
+                break;
+              }
+            }
+          }
+          if (isInCapTimeRange) {
+            let tooltipHTML = `<div id="tooltip" class="graph-tooltip">
+                                Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
+                              </div>`;
+
+            $(tooltipHTML).css({
+              top: pos.pageY - 30,
+              left: pos.pageX - 8
+            }).appendTo(document.body);
+          }
         }
       });
     },
@@ -657,12 +705,12 @@ export default {
         this.graph[i].bars = { show: showBars };
       }
 
+      barWidth = (this.graphData.interval * 1000) / 1.7;
+
       this.graphOptions = { // flot graph options
         series: {
           stack: true,
-          bars: {
-            barWidth: (this.graphData.interval * 1000) / 1.7
-          },
+          bars: { barWidth: barWidth },
           lines: {
             fill: true
           }
@@ -700,7 +748,8 @@ export default {
           borderWidth: 0,
           color: foregroundColor,
           hoverable: true,
-          clickable: true
+          clickable: true,
+          markings: []
         },
         zoom: {
           interactive: false,
@@ -713,6 +762,56 @@ export default {
           frameRate: 20
         }
       };
+
+      for (let capture of this.capStartTimes) {
+        this.graphOptions.grid.markings.push({
+          color: foregroundColor || '#666',
+          xaxis: {
+            from: capture.startTime,
+            to: capture.startTime
+          }
+        });
+      }
+
+      // add business hours to graph if they exist
+      if (this.$constants.MOLOCH_BUSINESS_DAY_START && this.$constants.MOLOCH_BUSINESS_DAY_END) {
+        this.addBusinessHours();
+      }
+    },
+    addBusinessHours () {
+      if (!this.$constants.MOLOCH_BUSINESS_DAY_START || !this.$constants.MOLOCH_BUSINESS_DAY_END) {
+        return;
+      }
+
+      let businessDays = this.$constants.MOLOCH_BUSINESS_DAYS.split(',');
+      let startDate = moment(this.graphData.xmin); // the start of the graph
+      let stopDate = moment(this.graphData.xmax); // the end of the graph
+      let daysInRange = stopDate.diff(startDate, 'days'); // # days in graph
+      // don't bother showing business days if we're looking at more than a month of data
+      if (daysInRange > 31) { return; }
+
+      let day = stopDate.startOf('day');
+      let color = 'rgba(255, 210, 50, 0.2)';
+      while (daysInRange >= 0) { // iterate through each day starting from the end
+        let dayOfWeek = day.day();
+        // only display business hours on the specified business days
+        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
+          // get the start of the business day
+          let dayStart = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_START, 'hours');
+          // get the end of the business day
+          let dayStop = day.clone().add(this.$constants.MOLOCH_BUSINESS_DAY_END, 'hours');
+          // add business hours for this day to graph
+          this.graphOptions.grid.markings.push({
+            color: color,
+            xaxis: {
+              from: dayStart.valueOf(),
+              to: dayStop.valueOf()
+            }
+          });
+        }
+        day.subtract(24, 'hours'); // go back a day
+        daysInRange--;
+      }
     },
     /* helper MAP functions */
     onMapResize: function () {
@@ -838,6 +937,25 @@ export default {
       });
 
       this.legend = this.legend.slice(0, 10); // get top 10
+    },
+    calculateHoverBarWidth: function () {
+      // calculate the bar with units for node start hover behavior
+      barWidthInUnits = this.plot.getOptions().series.bars.barWidth;
+      barWidthInPixels = barWidthInUnits * this.plot.getXAxes()[0].scale;
+      hoverBarWidth = barWidth / 2;
+      // make sure the barwidth isn't too small to activate hover on node start
+      // or too large to overflow bar width
+      if (barWidthInPixels <= 0.2) {
+        hoverBarWidth = barWidth * 10;
+      } else if (barWidthInPixels <= 1) {
+        hoverBarWidth = barWidth * 2;
+      } else if (barWidthInPixels <= 2) {
+        hoverBarWidth = barWidth;
+      } else if (barWidthInPixels >= 50) {
+        hoverBarWidth = barWidth / 10;
+      } else if (barWidthInPixels >= 200) {
+        hoverBarWidth = barWidth / 100;
+      }
     }
   },
   beforeDestroy: function () {

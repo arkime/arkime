@@ -136,10 +136,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData"
+      v-if="mapData && graphData && capStartTimes.length"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="fetchMapData">
@@ -416,6 +417,7 @@ export default {
       fieldConfigs: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       categoryList: [],
       categoryObjects: {},
       spiQuery: this.$route.query.spi,
@@ -447,6 +449,7 @@ export default {
     }
   },
   mounted: function () {
+    this.getCaptureStats();
     if (!this.spiQuery) {
       // get what's saved in the db
       UserService.getState('spiview')
@@ -1041,6 +1044,24 @@ export default {
         })
         .catch((error) => {
           this.fieldConfigError = error.text;
+        });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('stats.json')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
         });
     },
     /**

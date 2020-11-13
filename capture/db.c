@@ -512,9 +512,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -1371,7 +1371,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaOverloadDropped\": %" PRIu64 ","
         "\"deltaESDropped\": %" PRIu64 ","
         "\"esHealthMS\": %" PRIu64 ","
-        "\"deltaMS\": %" PRIu64
+        "\"deltaMS\": %" PRIu64 ","
+        "\"startTime\": %" PRIu64
         "}",
         VERSION,
         config.nodeName,
@@ -1413,7 +1414,8 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
         esHealthMS,
-        diffms);
+        diffms,
+        startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;
@@ -1840,7 +1842,7 @@ LOCAL void moloch_db_check()
 
     snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
 
-    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta&include_type_name=true", tname);
+    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
@@ -1863,18 +1865,10 @@ LOCAL void moloch_db_check()
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
-    uint32_t           session_len;
-    unsigned char     *session = 0;
-
-    session = moloch_js0n_get(mappings, mappings_len, "session", &session_len);
-    if(!session || session_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
     uint32_t           meta_len;
     unsigned char     *meta = 0;
 
-    meta = moloch_js0n_get(session, session_len, "_meta", &meta_len);
+    meta = moloch_js0n_get(mappings, mappings_len, "_meta", &meta_len);
     if(!meta || meta_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
@@ -1897,7 +1891,7 @@ LOCAL void moloch_db_check()
 LOCAL void moloch_db_free_mmdb(MMDB_s *geo)
 {
     MMDB_close(geo);
-    g_free(geo);
+    free(geo);
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_geo_country(char *name)

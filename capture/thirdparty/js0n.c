@@ -52,7 +52,7 @@ int js0n(unsigned char *js, unsigned int len, unsigned int *out)
 		['"'] = &&l_unesc, ['\\'] = &&l_unesc, ['/'] = &&l_unesc, ['b'] = &&l_unesc,
 		['f'] = &&l_unesc, ['n'] = &&l_unesc, ['r'] = &&l_unesc, ['t'] = &&l_unesc, ['u'] = &&l_unesc
 	};
-	static void **go = gostruct;
+	void **go = gostruct;
 	
 	for(cur=js,end=js+len; cur<end; cur++)
 	{
@@ -63,7 +63,7 @@ int js0n(unsigned char *js, unsigned int len, unsigned int *out)
 	return depth; // 0 if successful full parse, >0 for incomplete data
 	
 	l_bad:
-		return 1;
+		return cur - js + 1;
 	
 	l_up:
 		PUSH(0);

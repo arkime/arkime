@@ -76,6 +76,10 @@
                   "1.0"
                ],
                "clientVersionCnt" : 1,
+               "md5" : [
+                  "5b5052b32a057616f2d5f7ccb3619c5b"
+               ],
+               "md5Cnt" : 1,
                "method" : [
                   "CONNECT"
                ],
@@ -84,6 +88,35 @@
                   "user-agent"
                ],
                "requestHeaderCnt" : 1,
+               "responseHeader" : [
+                  "date",
+                  "server",
+                  "via"
+               ],
+               "responseHeaderCnt" : 3,
+               "responseHeaderField" : [
+                  "date",
+                  "server",
+                  "via"
+               ],
+               "responseHeaderValue" : [
+                  "http/1.1 proxies.xxxxxxxxx.xxxxx.com (xxxxxxxxxxxxxxxxxxx)",
+                  "mon, 02 sep 2019 18:56:53 gmt",
+                  "xxx"
+               ],
+               "responseHeaderValueCnt" : 3,
+               "serverVersion" : [
+                  "1.0"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "f14e6e40eb29ee29b25c87422010231d8161b9d63048da94f37873f1915bcd23"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
                "uri" : [
                   "ts01-b.cloudsink.net:443"
                ],
