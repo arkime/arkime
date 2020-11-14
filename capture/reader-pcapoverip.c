@@ -65,6 +65,7 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
             LOG("ERROR: Receive Error: %s", error->message);
             g_error_free(error);
         }
+        // TODO: In client mode should we quit and/or reconnect on disconnection?
         pcapoverip_client_free(poic);
         return FALSE;
     }
@@ -206,15 +207,6 @@ LOCAL void pcapoverip_client_connect() {
     POIClient_t *poic = MOLOCH_TYPE_ALLOC0(POIClient_t);
     poic->client = conn;
     poic->readWatch = moloch_watch_fd(fd, MOLOCH_GIO_READ_COND, pcapoverip_client_read_cb, poic);
-
-#ifdef TCP_KEEPIDLE
-    int res = getsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, &optlen);
-    if(res != -1 && sendbuff > 60*8) {
-        sendbuff = 60*8;
-        setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &sendbuff, sizeof(sendbuff));
-    }
-#endif
-
 }
 /******************************************************************************/
 LOCAL void pcapoverip_client_start()
