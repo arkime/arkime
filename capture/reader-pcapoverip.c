@@ -212,6 +212,7 @@ LOCAL void pcapoverip_client_connect() {
 LOCAL void pcapoverip_client_start()
 {
     pcapoverip_client_connect();
+    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
 gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data)
@@ -273,7 +274,7 @@ void reader_pcapoverip_init(char *name)
     host        = moloch_config_str(NULL, "pcapOverIpHost", "localhost");
     port        = moloch_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
 
-    if (strcmp(name, "pcapoveripclient") == 0 && strcmp(name, "pcap-over-ip-client") == 0) {
+    if (strcmp(name, "pcapoveripclient") == 0 || strcmp(name, "pcap-over-ip-client") == 0) {
         moloch_reader_start         = pcapoverip_client_start;
     } else {
         moloch_reader_start         = pcapoverip_server_start;
