@@ -190,7 +190,7 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /*
- * Called by moloch when moloch is quiting
+ * Called by moloch when moloch is quitting
  */
 LOCAL void suricata_plugin_exit()
 {

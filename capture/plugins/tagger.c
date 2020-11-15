@@ -292,7 +292,7 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 }
 /******************************************************************************/
 /*
- * Called by moloch when moloch is quiting
+ * Called by moloch when moloch is quitting
  */
 LOCAL void tagger_plugin_exit()
 {

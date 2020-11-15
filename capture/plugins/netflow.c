@@ -229,7 +229,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /* 
- * Called by moloch when moloch is quiting
+ * Called by moloch when moloch is quitting
  */
 LOCAL void netflow_plugin_exit()
 {
