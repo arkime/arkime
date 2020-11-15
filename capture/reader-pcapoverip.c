@@ -1,12 +1,14 @@
 /******************************************************************************/
 /* reader-pcapoverip.c  -- Reader supporting pcap-over-ip
  *
- * readerMethod=pcap-over-ip-client will connect out to pcapOverIpHost:pcapOverIpPort
+ * readerMethod=pcap-over-ip-client will connect out to host:port list in interface
  *   and expect to receive 1 PCAP file to process
+ *   Test with nc -l 57013 < tests/pcap/bigendian.pcap
  * readerMethod=pcap-over-ip-server will listen to pcapOverIpPort
  *   and expect to receive 1 PCAP file to process per connection
+ *   Test with nc localhost:57012 < tests/pcap/bigendian.pcap
  *
- * Copyright 2012-2017 AOL Inc. All rights reserved.
+ * Copyright 2020 AOL Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -32,23 +34,29 @@ extern MolochConfig_t        config;
 LOCAL MolochPacketBatch_t   batch;
 LOCAL uint64_t              packets;
 
-LOCAL char                 *host;
 LOCAL int                   port;
 
 typedef struct {
-    GSocket                *client;
+    GSocket                *socket;
     char                    data[0xffff];
-    int                     len;
+    uint32_t                len;
     int                     readWatch;
+    int                     interface;
     uint16_t                state:1;
     uint16_t                bigEndian:1;
+    uint16_t                isClient:1;
 } POIClient_t;
+
+LOCAL int                   isConnected[MAX_INTERFACES];
 
 /******************************************************************************/
 void pcapoverip_client_free (POIClient_t *poic)
 {
+    if (poic->isClient) {
+        isConnected[poic->interface] = 0;
+    }
     g_source_remove(poic->readWatch);
-    g_object_unref (poic->client);
+    g_object_unref (poic->socket);
     MOLOCH_TYPE_FREE(POIClient_t, poic);
 }
 /******************************************************************************/
@@ -58,19 +66,18 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
     //LOG("fd: %d cond: %x data: %p", fd, cond, data);
     GError              *error = 0;
 
-    int len = g_socket_receive(poic->client, poic->data + poic->len, sizeof(poic->data) - poic->len, NULL, &error);
+    int len = g_socket_receive(poic->socket, poic->data + poic->len, sizeof(poic->data) - poic->len, NULL, &error);
 
     if (error || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (error) {
             LOG("ERROR: Receive Error: %s", error->message);
             g_error_free(error);
         }
-        // TODO: In client mode should we quit and/or reconnect on disconnection?
         pcapoverip_client_free(poic);
         return FALSE;
     }
     poic->len += len;
-    int pos = 0;
+    uint32_t pos = 0;
     while (pos < poic->len) {
         if (poic->state == 0) {
             if (poic->len - pos < 24) // Not enough for pcap file header
@@ -125,9 +132,9 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
             break;
         }
 
-        packet->pktlen = caplen;
+        packet->pktlen        = caplen;
         packet->pkt           = (u_char *)poic->data + pos + 16;
-        packet->readerPos     = 0;
+        packet->readerPos     = poic->interface;
 
         // TODO: run config.bpf before adding packet to batch
         moloch_packet_batch(&batch, packet);
@@ -148,16 +155,16 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
     return TRUE;
 }
 /******************************************************************************/
-LOCAL void pcapoverip_client_connect() {
+LOCAL void pcapoverip_client_connect(int interface) {
     GError                   *error = NULL;
     GSocketConnectable       *connectable;
     GSocketAddressEnumerator *enumerator;
     GSocketAddress           *sockaddr;
 
-    connectable = g_network_address_parse(host, port, &error);
+    connectable = g_network_address_parse(config.interface[interface], port, &error);
 
     if (error) {
-        LOGEXIT("Couldn't parse connect string of %s", host);
+        LOGEXIT("Couldn't parse connect string of %s", config.interface[interface]);
     }
 
     enumerator = g_socket_connectable_enumerate (connectable);
@@ -174,6 +181,8 @@ LOCAL void pcapoverip_client_connect() {
         }
 
         if (error && error->code != G_IO_ERROR_PENDING) {
+            g_error_free(error);
+            error = 0;
             g_object_unref (conn);
             conn = NULL;
         } else {
@@ -182,7 +191,8 @@ LOCAL void pcapoverip_client_connect() {
             socklen_t addressLength = sizeof(localAddress);
             getsockname(g_socket_get_fd(conn), (struct sockaddr*)&localAddress, &addressLength);
             g_socket_address_to_native(sockaddr, &remoteAddress, addressLength, NULL);
-            LOG("connected %s:%d", host, port);
+            if (config.debug > 0)
+                LOG("connected %s:%d", config.interface[interface], port);
         }
         g_object_unref (sockaddr);
     }
@@ -194,28 +204,43 @@ LOCAL void pcapoverip_client_connect() {
             error = 0;
         }
     } else if (error) {
-        LOG("Error: %s", error->message);
+        if (config.debug > 0)
+            LOG("%s Error: %s", config.interface[interface], error->message);
     }
 
     if (error || !conn) {
-        LOGEXIT("Couldn't connect %s %d", host, port);
+        return;
     }
 
     g_socket_set_keepalive(conn, TRUE);
     int fd = g_socket_get_fd(conn);
 
     POIClient_t *poic = MOLOCH_TYPE_ALLOC0(POIClient_t);
-    poic->client = conn;
+    poic->interface = interface;
+    poic->isClient = 1;
+    poic->socket = conn;
     poic->readWatch = moloch_watch_fd(fd, MOLOCH_GIO_READ_COND, pcapoverip_client_read_cb, poic);
+    isConnected[poic->interface] = 1;
+}
+/******************************************************************************/
+LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
+{
+    int i;
+    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        if (!isConnected[i])
+            pcapoverip_client_connect(i);
+    }
+    return TRUE;
 }
 /******************************************************************************/
 LOCAL void pcapoverip_client_start()
 {
-    pcapoverip_client_connect();
+    pcapoverip_client_check_connections(NULL);
+    g_timeout_add_seconds(10, pcapoverip_client_check_connections, NULL);
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
-gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data)
+gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer data)
 {
     GError                   *error = NULL;
 
@@ -225,7 +250,7 @@ gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
     }
 
     POIClient_t *poic = MOLOCH_TYPE_ALLOC0(POIClient_t);
-    poic->client = client;
+    poic->socket = client;
 
     int cfd = g_socket_get_fd(client);
     poic->readWatch = moloch_watch_fd(cfd, MOLOCH_GIO_READ_COND, pcapoverip_client_read_cb, poic);
@@ -271,7 +296,6 @@ LOCAL int pcapoverip_stats(MolochReaderStats_t *stats)
 /******************************************************************************/
 void reader_pcapoverip_init(char *name)
 {
-    host        = moloch_config_str(NULL, "pcapOverIpHost", "localhost");
     port        = moloch_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
 
     if (strcmp(name, "pcapoveripclient") == 0 || strcmp(name, "pcap-over-ip-client") == 0) {
