@@ -236,7 +236,7 @@ export default {
   border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: var(--color-quaternary);
-  color: #FFFFFF;
+  color: var(--color-button, #FFF);
 }
 
 /* move the sticky session button up when the toolbars are hidden */
