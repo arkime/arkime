@@ -1558,6 +1558,25 @@
 
             <br>
 
+            <div v-if="displayHelp"
+              class="row">
+              <div class="col-6">
+                <p class="help-block">
+                  <em>Map colors</em>
+                  <br>
+                  These should be different to show contrast between land and water.
+                </p>
+              </div>
+              <div class="col-6">
+                <p class="help-block">
+                  <em>Packet colors</em>
+                  <br>
+                  These are displayed when viewing session packets and in the
+                  sessions timeline graph. They should be very different colors.
+                </p>
+              </div>
+            </div>
+
             <div class="row form-group">
               <!-- visualization colors -->
               <div class="col-md-3">
