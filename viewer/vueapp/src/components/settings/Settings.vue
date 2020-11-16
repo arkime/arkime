@@ -1240,7 +1240,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <img :src="logo.location" alt="hoot" />
+              <img :src="logo.location" :alt="logo.name" />
               <div class="custom-control custom-radio ml-1">
                 <input type="radio"
                   :id="logo.location"
@@ -2916,14 +2916,9 @@ export default {
     },
     /* changes the ui theme (picked from existing themes) */
     changeTheme: function (newTheme) {
-      this.settings.theme = newTheme;
-
-      $(document.body).removeClass();
-      $(document.body).addClass(this.settings.theme);
-
-      this.update();
-
+      document.body.className = newTheme;
       this.getThemeColors();
+      this.update();
     },
     /* changes a color value of a custom theme and applies the theme */
     changeColor: function (newColor) {
@@ -2931,8 +2926,7 @@ export default {
         this[newColor.name] = newColor.value;
       }
 
-      $(document.body).removeClass();
-      $(document.body).addClass('custom-theme');
+      document.body.className = 'custom-theme';
 
       this.setThemeString();
 
@@ -3638,7 +3632,7 @@ export default {
 
 /* theme displays ----------------- */
 .logo-well {
-  background-color: var(--color-gray) !important;
+  background-color: #CCCCCC !important;
 }
 .logo-well .logos {
   text-align: center;
@@ -3680,9 +3674,9 @@ export default {
 }
 
 .settings-page .navbar .arkime-logo {
-  top: 0px;
-  left: 16px;
-  height: 34px;
+  top: 0;
+  left: 20px;
+  height: 36px;
   position: absolute;
 }
 /* icon logos (logo in circle) are wider */
