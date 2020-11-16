@@ -1135,7 +1135,7 @@
               <div class="theme-display">
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
-                    <img src="Arkime_Logo_Mark_White.png"
+                    <img :src="settings.logo"
                       class="arkime-logo"
                       alt="hoot"
                     />
@@ -1230,6 +1230,33 @@
             </div>
           </div> <!-- /theme picker -->
 
+          <!-- logo picker -->
+          <hr>
+          <h3>Logos</h3>
+          <p>
+            Pick from these logos
+          </p>
+          <div class="row well logo-well mr-1 ml-1">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
+              v-for="logo in logos"
+              :key="logo.location">
+              <img :src="logo.location" alt="hoot" />
+              <div class="custom-control custom-radio ml-1">
+                <input type="radio"
+                  :id="logo.location"
+                  :value="logo.location"
+                  v-model="settings.logo"
+                  @change="changeLogo(logo.location)"
+                  class="custom-control-input cursor-pointer"
+                />
+                <label class="custom-control-label cursor-pointer"
+                  :for="logo.location">
+                  {{ logo.name }}
+                </label>
+              </div>
+            </div>
+          </div> <!-- /logo picker -->
+
           <hr>
 
           <!-- custom theme -->
@@ -1305,7 +1332,7 @@
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
-                        <img src="Arkime_Logo_Mark_White.png"
+                        <img :src="settings.logo"
                           class="arkime-logo"
                           alt="hoot"
                         />
@@ -2292,6 +2319,16 @@ export default {
         { name: 'Green on Black', class: 'dark-2-theme' },
         { name: 'Dark Blue', class: 'dark-3-theme' }
       ],
+      logos: [
+        { name: 'Arkime Light', location: 'logos/Arkime_Logo_Mark_White.png' },
+        { name: 'Arkime Dark', location: 'logos/Arkime_Logo_Mark_Black.png' },
+        { name: 'Arkime Color', location: 'logos/Arkime_Logo_Mark_Full.png' },
+        { name: 'Arkime Gradient', location: 'logos/Arkime_Logo_Mark_FullGradient.png' },
+        { name: 'Arkime Circle Light', location: 'logos/Arkime_Icon_White.png' },
+        { name: 'Arkime Circle Dark', location: 'logos/Arkime_Icon_Black.png' },
+        { name: 'Arkime Circle Mint', location: 'logos/Arkime_Icon_ColorMint.png' },
+        { name: 'Arkime Circle Blue', location: 'logos/Arkime_Icon_ColorBlue.png' }
+      ],
       creatingCustom: false,
       displayHelp: true,
       // password settings vars
@@ -2873,6 +2910,9 @@ export default {
         this.settings.theme = 'custom-theme';
         this.creatingCustom = true;
       }
+      if (!this.settings.logo) {
+        this.settings.logo = 'logos/Arkime_Logo_Mark_White.png';
+      }
     },
     /* changes the ui theme (picked from existing themes) */
     changeTheme: function (newTheme) {
@@ -2926,6 +2966,10 @@ export default {
       this.dst = colors[14];
 
       this.changeColor();
+    },
+    changeLogo: function (newLogoLocation) {
+      this.settings.logo = newLogoLocation;
+      this.update();
     },
     /* PASSWORD ---------------------------------------- */
     /* changes the user's password given the current password, the new password,
@@ -3593,6 +3637,16 @@ export default {
 }
 
 /* theme displays ----------------- */
+.logo-well {
+  background-color: var(--color-gray) !important;
+}
+.logo-well .logos {
+  text-align: center;
+}
+.logo-well .logos img {
+  height: 100px;
+}
+
 .field {
   cursor: pointer;
   padding: 0 1px;
@@ -3627,9 +3681,13 @@ export default {
 
 .settings-page .navbar .arkime-logo {
   top: 0px;
-  left: 18px;
+  left: 16px;
   height: 34px;
   position: absolute;
+}
+/* icon logos (logo in circle) are wider */
+.settings-page .navbar .arkime-logo[src*="Icon"] {
+  left: 8px;
 }
 
 .settings-page .navbar .nav {
@@ -3766,7 +3824,6 @@ export default {
   color: #FFFFFF !important;
 }
 
-/** TODO **/
 /* arkime dark */
 .settings-page .arkime-dark-theme .navbar {
   background-color: #9E9E9E;

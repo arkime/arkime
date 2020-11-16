@@ -1,6 +1,7 @@
 <template>
   <div v-if="compatibleBrowser">
-    <moloch-navbar></moloch-navbar>
+    <moloch-navbar :settings="user.settings">
+    </moloch-navbar>
     <router-view v-if="user" />
     <transition name="shortcuts-slide">
       <moloch-keyboard-shortcuts

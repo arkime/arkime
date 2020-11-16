@@ -16,7 +16,7 @@
         <router-link
           :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
           <div id="helpTooltipContainer">
-            <img src="Arkime_Logo_Mark_White.png"
+            <img :src="settings.logo || 'logos/Arkime_Logo_Mark_White.png'"
               class="arkime-logo"
               alt="hoot"
               v-b-tooltip.hover
@@ -104,6 +104,7 @@ import ESHealth from './ESHealth';
 export default {
   name: 'MolochNavbar',
   components: { ESHealth },
+  props: [ 'settings' ],
   data: function () {
     return {
       molochVersion: this.$constants.MOLOCH_VERSION,
@@ -255,9 +256,13 @@ a.nav-link {
 }
 .arkime-logo {
   top: 0px;
-  left: 18px;
+  left: 20px;
   height: 34px;
   position: absolute;
+}
+/* icon logos (logo in circle) are wider */
+.arkime-logo[src*="Icon"] {
+  left: 12px;
 }
 ul.navbar-nav {
   margin-left: 20px;
