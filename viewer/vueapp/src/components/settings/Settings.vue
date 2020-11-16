@@ -1135,8 +1135,8 @@
               <div class="theme-display">
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
-                    <img src="header_logo.png"
-                      class="moloch-logo"
+                    <img src="Arkime_Logo_Mark_White.png"
+                      class="arkime-logo"
                       alt="hoot"
                     />
                   </a>
@@ -1305,8 +1305,8 @@
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
-                        <img src="header_logo.png"
-                          class="moloch-logo"
+                        <img src="Arkime_Logo_Mark_White.png"
+                          class="arkime-logo"
                           alt="hoot"
                         />
                       </a>
@@ -2283,7 +2283,9 @@ export default {
       defaultSpiviewConfig: defaultSpiviewConfig,
       // theme settings vars
       themeDisplays: [
-        { name: 'Purp-purp', class: 'default-theme' },
+        { name: 'Arkime Light', class: 'arkime-light-theme' },
+        { name: 'Arkime Dark', class: 'arkime-dark-theme' },
+        { name: 'Purp-purp', class: 'purp-theme' },
         { name: 'Blue', class: 'blue-theme' },
         { name: 'Green', class: 'green-theme' },
         { name: 'Cotton Candy', class: 'cotton-candy-theme' },
@@ -2866,7 +2868,7 @@ export default {
     /* THEMES ------------------------------------------ */
     setTheme: function () {
       // default to default theme if the user has not set a theme
-      if (!this.settings.theme) { this.settings.theme = 'default-theme'; }
+      if (!this.settings.theme) { this.settings.theme = 'arkime-light-theme'; }
       if (this.settings.theme.startsWith('custom')) {
         this.settings.theme = 'custom-theme';
         this.creatingCustom = true;
@@ -3618,16 +3620,16 @@ export default {
 
 .settings-page .navbar {
   min-height: 20px;
-  height: 30px;
+  height: 36px;
   border-radius: 6px 6px 0 0;
   z-index: 1;
 }
 
-.settings-page .navbar .moloch-logo {
-  height: 36px;
+.settings-page .navbar .arkime-logo {
+  top: 0px;
+  left: 18px;
+  height: 34px;
   position: absolute;
-  top: 2px;
-  left: 6px;
 }
 
 .settings-page .navbar .nav {
@@ -3644,7 +3646,7 @@ export default {
 }
 
 .settings-page .navbar-dark a {
-  padding: 3px;
+  padding: 6px;
   color: #FFFFFF;
 }
 
@@ -3678,89 +3680,262 @@ export default {
   padding-top: 6px;
 }
 
-/* default */
-.settings-page .default-theme .navbar {
-  background-color: #530763;
-  border-color: #360540;
+/* arkime light (default) */
+.settings-page .arkime-light-theme .navbar {
+  background-color: #212121;
+  border-color: #111111;
 }
 
-.settings-page .default-theme .navbar-dark a:hover,
-.settings-page .default-theme .navbar-dark a.active {
-  background-color: #830b9c;
+.settings-page .arkime-light-theme .navbar-dark a:hover,
+.settings-page .arkime-light-theme .navbar-dark a.active {
+  background-color: #303030;
 }
 
-.settings-page .default-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-light-theme .input-group-prepend > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
 }
 
-.settings-page .default-theme .display-sub-navbar {
-  background-color: #EDFCFF;
+.settings-page .arkime-light-theme .display-sub-navbar {
+  background-color: #A4C2D6;
 }
 
-.settings-page .default-theme .display-sub-sub-navbar {
-  background-color: #FFF7E5;
+.settings-page .arkime-light-theme .display-sub-sub-navbar {
+  background-color: #E6F3EB;
 }
 
-.settings-page .default-theme .display-sub-navbar .text-theme-accent {
-  color: #76207d;
+.settings-page .arkime-light-theme .display-sub-navbar .text-theme-accent {
+  color: #004C83;
 }
 
-.settings-page .default-theme .display-sub-navbar .btn-theme-primary-display {
+.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-primary-display {
   color: #FFFFFF;
-  background-color: #830B9C;
-  border-color: #530763;
+  background-color: #303030;
+  border-color: #212121;
 }
-.settings-page .default-theme .display-sub-navbar .btn-theme-secondary-display {
+.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-secondary-display {
   color: #FFFFFF;
-  background-color: #1F1FA5;
-  border-color: #1A1A87;
+  background-color: #004C83;
+  border-color: #003A64;
 }
-.settings-page .default-theme .display-sub-navbar .btn-theme-tertiary-display {
+.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-tertiary-display {
   color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
+  background-color: #66B689;
+  border-color: #52AC79;
 }
-.settings-page .default-theme .display-sub-navbar .btn-theme-quaternary-display {
+.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-quaternary-display {
   color: #FFFFFF;
-  background-color: #ECB30A;
-  border-color: #CD9A09;
+  background-color: #2F7D86;
+  border-color: #27686F;
 }
 
-.settings-page .default-theme .dropdown-menu {
+.settings-page .arkime-light-theme .dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .default-theme .dropdown-menu .dropdown-item {
+.settings-page .arkime-light-theme .dropdown-menu .dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .default-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .default-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .default-theme .dropdown-menu .dropdown-item.active {
-  background-color: #830B9C;
+.settings-page .arkime-light-theme .dropdown-menu li.active .dropdown-item {
+  background-color: #303030;
   color: #FFFFFF;
 }
 
-.settings-page .default-theme .field {
-  color: #76207d;
+.settings-page .arkime-light-theme .field {
+  color: #004C83;
 }
-.settings-page .default-theme .field:hover {
+.settings-page .arkime-light-theme .field:hover {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
 }
 
-.settings-page .default-theme .btn {
+.settings-page .arkime-light-theme .btn {
+  color: #FFFFFF !important;
+}
+
+/** TODO **/
+/* arkime dark */
+.settings-page .arkime-dark-theme .navbar {
+  background-color: #9E9E9E;
+  border-color: #8E8E8E;
+}
+
+.settings-page .arkime-dark-theme .navbar-dark a:hover,
+.settings-page .arkime-dark-theme .navbar-dark a.active {
+  background-color: #ADADAD;
+}
+
+.settings-page .arkime-dark-theme .input-group-prepend > .input-group-text {
+  color: #FFFFFF !important;
+  background-color: #303030 !important;
+  border-color: #CCCCCC !important;
+}
+
+.settings-page .arkime-dark-theme .display-sub-navbar {
+  background-color: #003B66;
+}
+
+.settings-page .arkime-dark-theme .display-sub-sub-navbar {
+  background-color: #237543;
+}
+
+.settings-page .arkime-dark-theme .display-sub-navbar .text-theme-accent {
+  color: #D1E9DC;
+}
+
+.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-primary-display {
+  color: #FFFFFF;
+  background-color: #ADADAD;
+  border-color: #9E9E9E;
+}
+.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-secondary-display {
+  color: #FFFFFF;
+  background-color: #80A9C7;
+  border-color: #6B9BBE;
+}
+.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-tertiary-display {
+  color: #FFFFFF;
+  background-color: #079B72;
+  border-color: #077D5C;
+}
+.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-quaternary-display {
+  color: #FFFFFF;
+  background-color: #66B689;
+  border-color: #52AC79;
+}
+
+.settings-page .arkime-dark-theme .dropdown-menu {
+  background-color: #303030;
+  border-color: #555555;
+  padding: 2px 0;
+  font-size: .85rem;
+  min-width: 12rem;
+}
+.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item {
+  color: #FFFFFF;
+  padding: 2px 8px;
+}
+.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:hover {
+  background-color: #555555;
+  color: #FFFFFF;
+}
+.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:focus {
+  background-color: #555555;
+  color: #FFFFFF;
+}
+.settings-page .arkime-dark-theme .dropdown-menu li.active .dropdown-item {
+  background-color: #ADADAD;
+  color: #303030;
+}
+
+.settings-page .arkime-dark-theme .field {
+  color: #D1E9DC;
+}
+.settings-page .arkime-dark-theme .field:hover {
+  background-color: #303030;
+  border-color: #555555;
+}
+
+.settings-page .arkime-dark-theme .btn {
+  color: #FFFFFF !important;
+}
+
+/* purp */
+.settings-page .purp-theme .navbar {
+  background-color: #530763;
+  border-color: #360540;
+}
+
+.settings-page .purp-theme .navbar-dark a:hover,
+.settings-page .purp-theme .navbar-dark a.active {
+  background-color: #830b9c;
+}
+
+.settings-page .purp-theme .input-group-prepend > .input-group-text {
+  color: #333333 !important;
+  background-color: #EEEEEE !important;
+  border-color: #CCCCCC !important;
+}
+
+.settings-page .purp-theme .display-sub-navbar {
+  background-color: #EDFCFF;
+}
+
+.settings-page .purp-theme .display-sub-sub-navbar {
+  background-color: #FFF7E5;
+}
+
+.settings-page .purp-theme .display-sub-navbar .text-theme-accent {
+  color: #76207d;
+}
+
+.settings-page .purp-theme .display-sub-navbar .btn-theme-primary-display {
+  color: #FFFFFF;
+  background-color: #830B9C;
+  border-color: #530763;
+}
+.settings-page .purp-theme .display-sub-navbar .btn-theme-secondary-display {
+  color: #FFFFFF;
+  background-color: #1F1FA5;
+  border-color: #1A1A87;
+}
+.settings-page .purp-theme .display-sub-navbar .btn-theme-tertiary-display {
+  color: #FFFFFF;
+  background-color: #079B72;
+  border-color: #077D5C;
+}
+.settings-page .purp-theme .display-sub-navbar .btn-theme-quaternary-display {
+  color: #FFFFFF;
+  background-color: #ECB30A;
+  border-color: #CD9A09;
+}
+
+.settings-page .purp-theme .dropdown-menu {
+  background-color: #FFFFFF;
+  border-color: #EEEEEE;
+  padding: 2px 0;
+  font-size: .85rem;
+  min-width: 12rem;
+}
+.settings-page .purp-theme .dropdown-menu .dropdown-item {
+  color: #212529;
+  padding: 2px 8px;
+}
+.settings-page .purp-theme .dropdown-menu .dropdown-item:hover {
+  background-color: #EEEEEE;
+  color: #212529;
+}
+.settings-page .purp-theme .dropdown-menu .dropdown-item:focus {
+  background-color: #FFFFFF;
+  color: #212529;
+}
+.settings-page .purp-theme .dropdown-menu li.active .dropdown-item {
+  background-color: #830B9C;
+  color: #FFFFFF;
+}
+
+.settings-page .purp-theme .field {
+  color: #76207d;
+}
+.settings-page .purp-theme .field:hover {
+  background-color: #FFFFFF;
+  border-color: #EEEEEE;
+}
+
+.settings-page .purp-theme .btn {
   color: #FFFFFF !important;
 }
 
@@ -3833,7 +4008,7 @@ export default {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .blue-theme .dropdown-menu .dropdown-item.active {
+.settings-page .blue-theme .dropdown-menu li.active .dropdown-item {
   background-color: #214B78;
   color: #FFFFFF;
 }
@@ -3919,7 +4094,7 @@ export default {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .green-theme .dropdown-menu .dropdown-item.active {
+.settings-page .green-theme .dropdown-menu li.active .dropdown-item {
   background-color: #2A7847;
   color: #FFFFFF;
 }
@@ -4005,7 +4180,7 @@ export default {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item.active {
+.settings-page .cotton-candy-theme .dropdown-menu li.active .dropdown-item {
   background-color: #C43D75;
   color: #FFFFFF;
 }
@@ -4091,7 +4266,7 @@ export default {
   background-color: #222222;
   color: #C7C7C7;
 }
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item.active {
+.settings-page .dark-2-theme .dropdown-menu li.active .dropdown-item {
   background-color: #444A9B;
   color: #333333;
 }
@@ -4181,7 +4356,7 @@ export default {
   background-color: #002833;
   color: #ADC1C3;
 }
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item.active {
+.settings-page .dark-3-theme .dropdown-menu li.active .dropdown-item {
   background-color: #8A8A8A;
   color: #333333;
 }

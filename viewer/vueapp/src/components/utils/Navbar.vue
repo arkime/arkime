@@ -16,8 +16,8 @@
         <router-link
           :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
           <div id="helpTooltipContainer">
-            <img src="header_logo.png"
-              class="moloch-logo"
+            <img src="Arkime_Logo_Mark_White.png"
+              class="arkime-logo"
               alt="hoot"
               v-b-tooltip.hover
               title="HOOT! Can I help you? Click me to see the help page"
@@ -253,10 +253,11 @@ a.nav-link {
   max-height: 38px;
   margin-bottom: 2px;
 }
-.moloch-logo {
+.arkime-logo {
+  top: 0px;
+  left: 18px;
+  height: 34px;
   position: absolute;
-  height: 41px;
-  top: 2px;
 }
 ul.navbar-nav {
   margin-left: 20px;
