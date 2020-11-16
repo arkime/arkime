@@ -16,7 +16,7 @@
         <router-link
           :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
           <div id="helpTooltipContainer">
-            <img :src="user.settings && user.settings.logo || 'logos/Arkime_Logo_Mark_White.png'"
+            <img :src="userLogo"
               class="arkime-logo"
               alt="hoot"
               v-b-tooltip.hover
@@ -114,6 +114,12 @@ export default {
     };
   },
   computed: {
+    userLogo: function () {
+      if (this.user && this.user.settings.logo && this.user.settings.logo) {
+        return this.user.settings.logo
+      }
+      return 'logos/Arkime_Logo_Mark_White.png'
+    },
     menu: function () {
       let menu = {
         sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'] },
