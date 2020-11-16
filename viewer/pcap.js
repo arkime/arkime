@@ -436,6 +436,9 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     case 0x88be:
       this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
       break;
+    case 0x8847:
+      this.mpls(buffer.slice(bpos), obj, pos + bpos);
+      break;
     default:
       console.log('gre Unknown type', obj.gre.type);
   }
