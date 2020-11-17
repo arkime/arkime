@@ -1,8 +1,7 @@
 INCLUDE_PCAP  = @PCAP_CFLAGS@
 
 INCLUDE_OTHER = -I.. -I../thirdparty \
-                @GLIB2_CFLAGS@ \
-                @MAGIC_CFLAGS@
+                @GLIB2_CFLAGS@
 
 install_sh = @install_sh@
 mkdir_p = @mkdir_p@

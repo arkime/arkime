@@ -20,10 +20,12 @@ LUA=5.3.6
 DAQ=2.0.7
 NODE=14.17.3
 NGHTTP2=1.42.0
+KAFKA=1.5.2
 
 TDIR="/opt/arkime"
 DOPFRING=0
 DODAQ=0
+DOKAFKA=0
 DOCLEAN=0
 DONODE=1
 DOINSTALL=0
@@ -42,6 +44,10 @@ do
     ;;
   --daq)
     DODAQ=1
+    shift
+    ;;
+  --kafka)
+    DOKAFKA=1
     shift
     ;;
   --clean)
@@ -69,6 +75,7 @@ do
     echo "--nonode            = Do NOT download and install nodejs into the moloch directory"
     echo "--pfring            = Build pfring support"
     echo "--daq               = Build daq support"
+    echo "--kafka             = Build kafka support"
     exit 0;
     ;;
   -*)
@@ -296,12 +303,32 @@ else
     fi
   fi
 
+  # kafka
+  if [ $DOKAFKA -eq 1 ]; then
+    if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
+      wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+    fi
+    if [ ! -f "/usr/local/include/librdkafka/rdkafka.h" ]; then
+      tar zxf librdkafka-$KAFKA.tar.gz
+      echo "MOLOCH: Building librddkafka";
+      (cd librdkafka-$KAFKA; ./configure --install-deps --source-deps-only; $MAKE; $MAKE install)
+      if [ $? -ne 0 ]; then
+        echo "MOLOCH: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "MOLOCH: NOT rebuilding librdkafka";
+    fi
+    KAFKALIBDIR=$TPWD/librdkafka-$KAFKA
+    KAFKALIBDIR=/usr/local/include/librdkafka
+    KAFKABUILD="--with-kafka=$KAFKALIBDIR"
+  fi
 
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -327,6 +354,10 @@ fi
 
 if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
+fi
+
+if [ $DOKAFKA -eq 1 ]; then
+    (cd capture/plugins/kafka; $MAKE)
 fi
 
 # Remove old install dir

@@ -1972,7 +1972,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             moloch_db_mkpath(filename);
         }
 
-        snprintf(filename+flen, sizeof(filename) - flen, "/%02d%02d%02d/%s-%08u.pcap", tmp->tm_year, tmp->tm_mon+1, tmp->tm_mday, config.nodeName, num);
+        snprintf(filename+flen, sizeof(filename) - flen, "/%02d%02d%02d/%s-%08u.pcap", tmp.tm_year, tmp.tm_mon+1, tmp.tm_mday, config.nodeName, num);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
