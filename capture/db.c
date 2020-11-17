@@ -1585,7 +1585,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
                 continue;
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("You have most likely run out of space on an elasticsearch node, see https://molo.ch/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
+                LOG("You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
             free(data);
             continue;
@@ -1842,7 +1842,7 @@ LOCAL void moloch_db_check()
 
     snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
 
-    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta&include_type_name=true", tname);
+    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
@@ -1865,18 +1865,10 @@ LOCAL void moloch_db_check()
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
-    uint32_t           session_len;
-    unsigned char     *session = 0;
-
-    session = moloch_js0n_get(mappings, mappings_len, "session", &session_len);
-    if(!session || session_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
     uint32_t           meta_len;
     unsigned char     *meta = 0;
 
-    meta = moloch_js0n_get(session, session_len, "_meta", &meta_len);
+    meta = moloch_js0n_get(mappings, mappings_len, "_meta", &meta_len);
     if(!meta || meta_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
@@ -2378,7 +2370,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2Country[i]) {
-            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+            LOG("WARNING - No Geo Country file could be loaded, see https://arkime.com/settings#geolite2country");
         }
     }
     if (config.geoLite2ASN && config.geoLite2ASN[0]) {
@@ -2389,7 +2381,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2ASN[i]) {
-            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+            LOG("WARNING - No Geo ASN file could be loaded, see https://arkime.com/settings#geolite2asn");
         }
     }
     if (config.ouiFile)

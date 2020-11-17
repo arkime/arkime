@@ -43,8 +43,7 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="Select a field for the source nodes">
-                  <span class="input-group-text"
-                    :style="{'background-color': primaryColor + '!important'}">
+                  <span class="input-group-text primary-legend">
                     Src:
                   </span>
                 </span>
@@ -65,8 +64,7 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="Select a field for the destination nodes">
-                  <span class="input-group-text"
-                    :style="{'background-color': tertiaryColor + '!important'}">
+                  <span class="input-group-text tertiary-legend">
                     Dst:
                   </span>
                 </span>
@@ -86,10 +84,8 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="This is the color of a node that is both a source and destination node">
-                  <span class="input-group-text"
-                    style="border-radius: 4px"
-                    :style="{'background-color': secondaryColor + '!important'}">
-                    Src & Dst
+                  <span class="input-group-text secondary-legend">
+                    Src &amp; Dst
                   </span>
                 </span>
               </div>
@@ -1613,7 +1609,17 @@ export default {
 /* make the color for legend areas white */
 .connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
   font-weight: 700;
-  color: white !important;
+  color: var(--color-button, #FFF) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .primary-legend {
+  background-color: var(--color-primary) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .tertiary-legend {
+  background-color: var(--color-tertiary) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .secondary-legend {
+  border-radius: 4px;
+  background-color: var(--color-secondary) !important;
 }
 
 /* apply foreground theme color */

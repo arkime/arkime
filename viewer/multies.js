@@ -324,7 +324,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 
     var obj = results[0];
     for (var i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings.session._meta.molochDbVersion) {
+      if (results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
     }

@@ -111,7 +111,7 @@ router.beforeEach((to, from, next) => {
     store.commit('setExpression', to.query.expression);
   }
 
-  let page = to.name || 'Moloch - ';
+  let page = to.name || 'Arkime - ';
   let view = to.query.view ? ` - ${to.query.view}` : '';
   let expression = to.query.expression ? ` - ${to.query.expression}` : '';
 

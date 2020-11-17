@@ -247,7 +247,7 @@ export default {
 nav.navbar > .navbar-brand > img {
   position: absolute;
   height: 52px;
-  top: 7px;
+  top: 2px;
 }
 
 /* remove browser select box styling */

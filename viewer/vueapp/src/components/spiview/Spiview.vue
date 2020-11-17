@@ -66,7 +66,7 @@
                 v-b-tooltip.hover
                 @click.stop.prevent="loadFieldConfiguration(-1)"
                 title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
-                Moloch Default
+                Arkime Default
               </b-dropdown-item>
               <b-dropdown-item
                 v-for="(config, key) in fieldConfigs"

@@ -11,7 +11,7 @@ const defaultSettings = {
   sortColumn: 'firstPacket',
   sortDirection: 'desc',
   spiGraph: 'node',
-  theme: 'default-theme',
+  theme: 'arkime-light-theme',
   timezone: 'local',
   manualQuery: false,
   timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields

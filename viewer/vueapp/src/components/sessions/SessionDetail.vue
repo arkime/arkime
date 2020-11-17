@@ -1228,6 +1228,11 @@ export default {
   border: none;
 }
 
+.session-detail .nav-pills li.nav-item a:hover,
+.session-detail .nav-pills div.nav-item button:hover {
+  color: var(--color-button, #FFF);
+}
+
 .session-detail .nav-pills > li.nav-item > a:hover,
 .session-detail .nav-pills > li.nav-item.open > a,
 .session-detail .nav-pills > li.nav-item.open > a:hover,
