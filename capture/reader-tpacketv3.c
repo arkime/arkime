@@ -143,7 +143,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-                    "See https://molo.ch/faq#moloch_requires_full_packet_captures_error",
+                    "See https://arkime.com/faq#moloch_requires_full_packet_captures_error",
                     th->tp_snaplen, th->tp_len);
             }
 
