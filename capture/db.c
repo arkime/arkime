@@ -1585,7 +1585,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
                 continue;
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("You have most likely run out of space on an elasticsearch node, see https://molo.ch/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
+                LOG("You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
             free(data);
             continue;
@@ -2370,7 +2370,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2Country[i]) {
-            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+            LOG("WARNING - No Geo Country file could be loaded, see https://arkime.com/settings#geolite2country");
         }
     }
     if (config.geoLite2ASN && config.geoLite2ASN[0]) {
@@ -2381,7 +2381,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2ASN[i]) {
-            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+            LOG("WARNING - No Geo ASN file could be loaded, see https://arkime.com/settings#geolite2asn");
         }
     }
     if (config.ouiFile)
