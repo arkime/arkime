@@ -917,7 +917,7 @@
               <!-- default col config -->
               <tr v-if="defaultColConfig && fieldsMap">
                 <td>
-                  Moloch Default
+                  Arkime Default
                 </td>
                 <td>
                   <template v-for="col in defaultColConfig.columns">
@@ -1041,7 +1041,7 @@
               <!-- default spiview field config -->
               <tr v-if="defaultSpiviewConfig && fieldsMap">
                 <td>
-                  Moloch Default
+                  Arkime Default
                 </td>
                 <td>
                   <label class="badge badge-secondary mr-1 help-cursor"

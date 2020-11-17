@@ -89,7 +89,7 @@
         <em>
           <strong>
             <span class="fa fa-info-circle"></span>&nbsp;
-            This will send the SPI and PCAP data to the remote Moloch instance.
+            This will send the SPI and PCAP data to the remote Arkime instance.
           </strong>
         </em>
       </p>

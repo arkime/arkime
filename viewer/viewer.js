@@ -3860,7 +3860,7 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
       '^(|null|\\d+%)$');
 
     function addIlm (key, current, name, type, regex) {
-      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://molo.ch/faq#ilm', regex: regex });
+      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
     }
 
     if (ilm[`${internals.prefix}molochsessions`]) {
