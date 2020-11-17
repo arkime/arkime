@@ -40,7 +40,7 @@ Another way to view the data is the SPI View page, which allows the user to see 
 
 ## Install
 
-Most users should use the prebuilt binaries available at our [Downloads page](https://molo.ch/#downloads) and follow the simple install instructions on that page.
+Most users should use the prebuilt binaries available at our [Downloads page](https://arkime.com/downloads) and follow the simple install instructions on that page.
 
 For advanced users, you can build Arkime yourself: 
 * `git clone https://github.com/arkime/arkime`
@@ -50,7 +50,7 @@ For advanced users, you can build Arkime yourself:
 
 ## Configuration
 
-Most of the system configuration will take place in the `/data/arkime/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://github.com/arkime/arkime/wiki/Settings).
+Most of the system configuration will take place in the `/data/arkime/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://arkime.com/settings).
 
 ## Usage
 
@@ -93,7 +93,7 @@ Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used 
 
 ## API
 
-You can learn more about the Arkime API on our [API Wiki page](https://github.com/arkime/arkime/wiki/API).
+You can learn more about the Arkime API on our [API Wiki page](https://arkime.com/api).
 
 
 ## Contribute
@@ -102,7 +102,7 @@ Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information abou
 
 ## Maintainers
 
-The best way to reach us is on Slack.  Please request an invitation to join the Arkime FPC Slack workspace [here](https://slackinvite.arkime.com).
+The best way to reach us is on Slack.  Please request an invitation to join the Arkime Slack workspace [here](https://slackinvite.arkime.com).
 
 ## License
 
