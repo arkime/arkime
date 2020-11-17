@@ -96,7 +96,7 @@
 .nav-pills > a.nav-link.active,
 .nav-pills > a.nav-link.active:hover,
 .nav-pills > a.nav-link.active:focus {
-  color: var(--color-white, #FFF);
+  color: var(--color-button, #FFF);
   background-color: var(--color-primary);
 }
 

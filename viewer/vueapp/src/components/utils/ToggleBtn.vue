@@ -16,8 +16,8 @@ export default {
   computed: {
     btnClass: function () {
       return {
-        'btn-danger': this.opened,
-        'collapsed btn-success': !this.opened
+        'btn-theme-primary': this.opened,
+        'collapsed btn-theme-tertiary': !this.opened
       };
     }
   },
