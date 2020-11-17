@@ -36,6 +36,9 @@ LOCAL uint64_t              packets;
 
 LOCAL int                   port;
 
+struct bpf_program          bpfp;
+pcap_t                     *deadPcap;
+
 typedef struct {
     GSocket                *socket;
     char                    data[0xffff];
@@ -57,6 +60,7 @@ void pcapoverip_client_free (POIClient_t *poic)
     }
     g_source_remove(poic->readWatch);
     g_object_unref (poic->socket);
+
     MOLOCH_TYPE_FREE(POIClient_t, poic);
 }
 /******************************************************************************/
@@ -91,7 +95,6 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
                 return FALSE;
             }
             // TODO: Really we should save the header per connection and do stuff
-            // TODO: Setup bpf filter
             poic->state = 1;
             pos += 24;
             continue;
@@ -136,8 +139,11 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
         packet->pkt           = (u_char *)poic->data + pos + 16;
         packet->readerPos     = poic->interface;
 
-        // TODO: run config.bpf before adding packet to batch
-        moloch_packet_batch(&batch, packet);
+        if (config.bpf && bpf_filter(bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            MOLOCH_TYPE_FREE(MolochPacket_t, packet);
+        } else {
+            moloch_packet_batch(&batch, packet);
+        }
 
         pos += 16 + caplen;
         packets++;
@@ -236,7 +242,7 @@ LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 LOCAL void pcapoverip_client_start()
 {
     pcapoverip_client_check_connections(NULL);
-    g_timeout_add_seconds(10, pcapoverip_client_check_connections, NULL);
+    g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
@@ -305,4 +311,10 @@ void reader_pcapoverip_init(char *name)
     }
     moloch_reader_stats         = pcapoverip_stats;
     moloch_packet_batch_init(&batch);
+    deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
+    if (config.bpf) {
+        if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+            LOGEXIT("ERROR - Couldn't compile bpf '%s' with %s", config.bpf, pcap_geterr(deadPcap));
+        }
+    }
 }
