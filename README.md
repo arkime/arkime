@@ -31,12 +31,12 @@ The Arkime system is comprised of 3 components:
 
 Once installed, a user can look at the data Arkime has captured using a simple web interface. Arkime provides multiple views of the data.  The primary view is the Sessions page that contains a list of sessions. Each session can be opened to view the metadata and PCAP data.
 
-<img src="https://github.com/arkime/arkimeweb/blob/main/assets/sessions.png" width="500">
+<img src="https://github.com/arkime/arkimeweb/blob/main/assets/sessions.png" width="1000">
 
 
 Another way to view the data is the SPI View page, which allows the user to see all the unique values for each field that Arkime understands.
 
-<img src="https://github.com/arkime/arkimeweb/blob/main/assets/spiview.png" width="500">
+<img src="https://github.com/arkime/arkimeweb/blob/main/assets/spiview.png" width="1000">
 
 ## Install
 
