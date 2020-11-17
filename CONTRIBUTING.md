@@ -1,4 +1,4 @@
-# Contributing to ARkime
+# Contributing to Arkime
 
 :sparkles: Glad to see you here! :sparkles:
 
