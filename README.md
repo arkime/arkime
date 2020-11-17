@@ -7,7 +7,7 @@ Arkime augments your current security infrastructure to store and index network 
 
 Arkime is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Metadata retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
 
-[Learn more on our website](arkime.com)
+[Learn more on our website](https://arkime.com)
 
 ## Table of Contents
 
@@ -32,6 +32,7 @@ The Arkime system is comprised of 3 components:
 Once installed, a user can look at the data Arkime has captured using a simple web interface. Arkime provides multiple views of the data.  The primary view is the Sessions page that contains a list of sessions. Each session can be opened to view the metadata and PCAP data.
 
 <img src="https://raw.github.com/wiki/arkime/arkime/sessions.png" width="500">
+
 
 Another way to view the data is the SPI View page, which allows the user to see all the unique values for each field that Arkime understands.
 
