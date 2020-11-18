@@ -42,7 +42,7 @@ Another way to view the data is the SPI View page, which allows the user to see 
 
 Most users should use the prebuilt binaries available at our [Downloads page](https://arkime.com/downloads) and follow the simple install instructions on that page.
 
-For advanced users, you can build Arkime yourself: 
+For advanced users, you can build Arkime yourself:
 * `git clone https://github.com/arkime/arkime`
 * `./easybutton-build.sh --install` downloads all the prerequisites, build, and install
 * `make config` - performs an initial Arkime configuration
@@ -58,7 +58,7 @@ Once Arkime is running, point your browser to http://localhost:8005 to access th
 
 ## Security
 
-Access to Arkime is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Arkime interface or API. Arkime is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.  
+Access to Arkime is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Arkime interface or API. Arkime is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.
 
 Elasticsearch provides NO security by default, so ``iptables`` **MUST** be used to allow only Arkime machines to talk to the ``elasticsearch`` machines (ports 9200-920x) and for them to mesh connect (ports 9300-930x).  An example with 3 ES machines 2 nodes each and a viewer only machine
 ```
