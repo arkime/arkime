@@ -19,6 +19,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
+2.7.1 2020/12/xx
+
 2.7.0 2020/11/18
   - NOTICE - Requires ES 7.4 or newer
   - NOTICE - Moloch to Arkime rebranding in UI, everything else still Moloch
