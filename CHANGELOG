@@ -19,9 +19,16 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.7.0 2020/11/xx
+2.7.0 2020/11/18
   - NOTICE - Requires ES 7.4 or newer
+  - NOTICE - Moloch to Arkime rebranding in UI, everything else still Moloch
+  - all - ES 7 updates, fix most depreciated warnings (mappings/templates still remain)
+  - viewer - fix mpls decoding
+  - viewer - new themes and logo selection
   - capture - fix http CONNECT response parsing
+  - capture - New pcap-over-ip reader support
+  - db - can import gz files directly now
+  - db - fix issues with version importing
 
 2.4.2 2020/11/10
   - NOTICE - db.pl upgrade is required
