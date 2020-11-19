@@ -1057,6 +1057,16 @@ app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
     if (configDef.singleton === true && sectionType !== section) {
       return res.send({ success: false, text: `Section ${section} must not have a :uniquename` });
     }
+
+    // Create new source files
+    if (configDef.editable && config[section].file && !fs.existsSync(config[section].file)) {
+      try {
+        fs.writeFileSync(config[section].file, '');
+      } catch (e) {
+        return res.send({ success: false, text: `New file could not be written to system` });
+      }
+    }
+
     for (let key in config[section]) {
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
