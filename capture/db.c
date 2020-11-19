@@ -1415,7 +1415,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (esDropped - lastESDropped[n]),
         esHealthMS,
         diffms,
-        startTime.tv_sec);
+        (uint64_t)startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;

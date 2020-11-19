@@ -201,6 +201,7 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 /******************************************************************************/
 void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
 {
+    MOLOCH_LOCK_INIT(group->lock);
     group->isIp4 = isIp4;
     DLL_INIT(dhg_, group);
 

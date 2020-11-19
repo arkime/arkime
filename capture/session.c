@@ -574,23 +574,6 @@ int moloch_session_idle_seconds(SessionTypes ses)
 }
 
 /******************************************************************************/
-LOCAL uint32_t moloch_get_prime(uint32_t v)
-{
-    static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
-                                1092757, 1299827, 1500007, 1987411, 2999999, 4000037,
-                                5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
-                                11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
-                                17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
-                                0};
-
-    int p;
-    for (p = 0; primes[p]; p++) {
-        if (primes[p] > v)
-            return primes[p];
-    }
-    return primes[p-1];
-}
-/******************************************************************************/
 void moloch_session_init()
 {
     protocolField = moloch_field_define("general", "termfield",
@@ -602,7 +585,7 @@ void moloch_session_init()
     int primes[SESSION_MAX];
     int s;
     for (s = 0; s < SESSION_MAX; s++) {
-        primes[s] = moloch_get_prime(config.maxStreams[s]);
+        primes[s] = moloch_get_next_prime(config.maxStreams[s]);
     }
 
     if (config.debug)
