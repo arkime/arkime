@@ -88,6 +88,7 @@ exports.initSource = function (api) {
     cacheable: false,
     editable: true,
     fields: [
+      { name: 'file', required: true, help: 'The path of the file to load' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
