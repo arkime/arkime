@@ -4097,129 +4097,13 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
   });
 });
 
-// TODO ECR - test sessions.json
-// TODO ECR - how to make this work with the UI call too?
-let sessionAPIs = require('./apis/sessions');
+// TODO ECR - document
+let sessionAPIs = require('./api/sessions'); // TODO ECR - put this elsewhere?
 app.all(
-  ['/api/sessions', 'sessions.json'],
+  ['/api/sessions', '/sessions.json'],
   [noCacheJson, recordResponseTime, logAction('sessions'), setCookie],
   sessionAPIs.getSessions
 );
-
-// app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'), setCookie], (req, res) => {
-//   var graph = {};
-//   var map = {};
-//
-//   let options;
-//   if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-//
-//   buildSessionQuery(req, function (bsqErr, query, indices) {
-//     if (bsqErr) {
-//       const r = {
-//         recordsTotal: 0,
-//         recordsFiltered: 0,
-//         graph: {},
-//         map: {},
-//         bsqErr: bsqErr.toString(),
-//         health: Db.healthCache(),
-//         data: []
-//       };
-//       return res.send(r);
-//     }
-//
-//     let addMissing = false;
-//     if (req.query.fields) {
-//       query._source = queryValueToArray(req.query.fields);
-//       ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
-//         if (query._source.indexOf(item) === -1) {
-//           query._source.push(item);
-//         }
-//       });
-//     } else {
-//       addMissing = true;
-//       query._source = [
-//         'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
-//         'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
-//         'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
-//         'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
-//         'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
-//         'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
-//       ];
-//     }
-//
-//     if (query.aggregations && query.aggregations.dbHisto) {
-//       graph.interval = query.aggregations.dbHisto.histogram.interval;
-//     }
-//
-//     if (Config.debug) {
-//       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
-//     }
-//
-//     Promise.all([Db.searchPrimary(indices, 'session', query, options),
-//       Db.numberOfDocuments('sessions2-*'),
-//       Db.healthCachePromise()
-//     ]).then(([sessions, total, health]) => {
-//       if (Config.debug) {
-//         console.log('sessions.json result', util.inspect(sessions, false, 50));
-//       }
-//
-//       if (sessions.error) { throw sessions.err; }
-//
-//       graph = graphMerge(req, query, sessions.aggregations);
-//       map = mapMerge(sessions.aggregations);
-//
-//       var results = { total: sessions.hits.total, results: [] };
-//       async.each(sessions.hits.hits, function (hit, hitCb) {
-//         var fields = hit._source || hit.fields;
-//         if (fields === undefined) {
-//           return hitCb(null);
-//         }
-//         // fields.index = hit._index;
-//         fields.id = Db.session2Sid(hit);
-//
-//         if (req.query.flatten === '1') {
-//           fields = flattenFields(fields);
-//         }
-//
-//         if (addMissing) {
-//           ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach(function (item) {
-//             if (fields[item] === undefined) {
-//               fields[item] = -1;
-//             }
-//           });
-//           results.results.push(fields);
-//           return hitCb();
-//         } else {
-//           fixFields(fields, function () {
-//             results.results.push(fields);
-//             return hitCb();
-//           });
-//         }
-//       }, function () {
-//         var r = { recordsTotal: total.count,
-//           recordsFiltered: (results ? results.total : 0),
-//           graph: graph,
-//           health: health,
-//           map: map,
-//           data: (results ? results.results : []) };
-//         res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-//         try {
-//           res.send(r);
-//         } catch (c) {
-//         }
-//       });
-//     }).catch((err) => {
-//       console.log('ERROR - /sessions.json error', err);
-//       var r = { recordsTotal: 0,
-//         recordsFiltered: 0,
-//         graph: {},
-//         map: {},
-//         health: Db.healthCache(),
-//         data: [] };
-//       res.send(r);
-//     });
-//   });
-// });
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
   req.query.facets = '1';

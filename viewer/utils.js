@@ -169,7 +169,7 @@ module.exports = {
        }
      }
 
-     this.lookupQueryItems(query.query.bool.filter, function (lerr) {
+     module.exports.lookupQueryItems(query.query.bool.filter, function (lerr) {
        if (reqQuery.date === '-1' || // An all query
            Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
          return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
