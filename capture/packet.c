@@ -71,7 +71,7 @@ MolochProtocol_t             mProtocols[0x100];
 
 /******************************************************************************/
 
-uint64_t               packetStats[MOLOCH_PACKET_MAX];
+uint64_t                     packetStats[MOLOCH_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
