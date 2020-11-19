@@ -48,6 +48,7 @@ struct dedupsecond {
     uint8_t        *md5s;
     uint8_t        *counts;
     uint32_t        tv_sec;
+    uint32_t        count;
     MOLOCH_LOCK_EXTERN(lock);
 };
 
@@ -76,6 +77,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
         MOLOCH_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again
             memset(seconds[secondSlot].counts, 0, dedupSlots);
+            seconds[secondSlot].count = 0;
             seconds[secondSlot].tv_sec = currentTime.tv_sec;
         }
         MOLOCH_UNLOCK(seconds[secondSlot].lock);
@@ -99,13 +101,14 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
 
     // Is there space to add
     if (seconds[secondSlot].counts[h] == DEDUP_SIZE_FACTOR) {
-        LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above", dedupSlots * DEDUP_SLOT_FACTOR + 1);
+        LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
         return 0;
     }
 
     // For now ignore the race condition of search between incr and copy
     int c = MOLOCH_THREAD_INCROLD(seconds[secondSlot].counts[h]);
     memcpy(seconds[secondSlot].md5s + 16 * (h*DEDUP_SIZE_FACTOR + c), md, 16);
+    MOLOCH_THREAD_INCR(seconds[secondSlot].count);
 
     return 0;
 }
@@ -115,7 +118,7 @@ void arkime_dedup_init()
     if (!config.enablePacketDedup)
         return;
 
-    dedupSeconds   = moloch_config_int(NULL, "dedupSeconds", 3, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
+    dedupSeconds   = moloch_config_int(NULL, "dedupSeconds", 2, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
     dedupPackets   = moloch_config_int(NULL, "dedupPackets", 0xfffff, 0xffff, 0xffffff);
     dedupSlots     = moloch_get_next_prime(dedupPackets/DEDUP_SLOT_FACTOR);
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
