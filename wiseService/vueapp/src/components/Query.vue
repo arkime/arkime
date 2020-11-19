@@ -231,8 +231,6 @@ export default {
           searchType: this.chosenType,
           searchTerm: this.searchTerm
         }
-      }).catch((err) => {
-        console.log(err);
       });
 
       this.hasMadeASearch = true;
