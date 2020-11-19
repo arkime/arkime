@@ -63,8 +63,8 @@ extern MolochFieldOps_t      readerFieldOps[256];
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 LOCAL MolochPacketEnqueue_cb ipCbs[MOLOCH_IPPROTO_MAX];
 
-int tcpMProtocol;
-int udpMProtocol;
+int                          tcpMProtocol;
+int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
