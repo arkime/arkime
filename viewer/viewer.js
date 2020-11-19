@@ -51,6 +51,7 @@ try {
   var RE2 = require('re2');
   var path = require('path');
   var contentDisposition = require('content-disposition');
+  var Utils = require('./utils');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -67,81 +68,9 @@ var app = express();
 // ----------------------------------------------------------------------------
 // Config
 // ----------------------------------------------------------------------------
-var internals = {
-  CYBERCHEFVERSION: '9.16.2',
-  elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
-  esQueryTimeout: Config.get('elasticsearchTimeout', 300) + 's',
-  esScrollTimeout: Config.get('elasticsearchScrollTimeout', 900) + 's',
-  userNameHeader: Config.get('userNameHeader'),
-  requiredAuthHeader: Config.get('requiredAuthHeader'),
-  requiredAuthHeaderVal: Config.get('requiredAuthHeaderVal'),
-  userAutoCreateTmpl: Config.get('userAutoCreateTmpl'),
-  esAdminUsersSet: Config.get('esAdminUsers', false) !== false,
-  esAdminUsers: Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', ''),
-  httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
-  httpsAgent: new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !Config.insecure }),
-  previousNodesStats: [],
-  caTrustCerts: {},
-  cronRunning: false,
-  rightClicks: {},
-  pluginEmitter: new EventEmitter(),
-  writers: {},
-  oldDBFields: {},
-  isLocalViewRegExp: Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined,
-  uploadLimits: {
-  },
-
-  cronTimeout: +Config.get('dbFlushTimeout', 5) + // How long capture holds items
-               60 + // How long before ES reindexs
-               20, // Transmit and extra time
-
-  // http://garethrees.org/2007/11/14/pngcrush/
-  emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
-  PNG_LINE_WIDTH: 256,
-  runningHuntJob: undefined,
-  proccessHuntJobsInitialized: false,
-  notifiers: undefined,
-  prefix: Config.get('prefix', ''),
-  lookupTypeMap: {
-    ip: 'ip',
-    integer: 'number',
-    termfield: 'string',
-    uptermfield: 'string',
-    lotermfield: 'string'
-  },
-  anonymousUser: {
-    userId: 'anonymous',
-    enabled: true,
-    createEnabled: false,
-    webEnabled: true,
-    headerAuthEnabled: false,
-    emailSearch: true,
-    removeEnabled: true,
-    packetSearch: true,
-    settings: {},
-    welcomeMsgNum: 1,
-    found: true
-  },
-  scriptAggs: {}
-};
-
-internals.scriptAggs['ip.dst:port'] = {
-  script: 'if (doc.dstIp.value.indexOf(".") > 0) {return doc.dstIp.value + ":" + doc.dstPort.value} else {return doc.dstIp.value + "." + doc.dstPort.value}',
-  dbField: 'dstIp'
-};
-
-// make sure there's an _ after the prefix
-if (internals.prefix && !internals.prefix.endsWith('_')) {
-  internals.prefix = `${internals.prefix}_`;
-}
-
-if (Config.get('uploadFileSizeLimit')) {
-  internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
-}
-
-if (internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
-  internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
-}
+let internalModule = require('./internals');
+internalModule.buildInternals(Config, http, https, EventEmitter);
+let internals = internalModule.internals;
 
 function isProduction () {
   return app.get('env') === 'production';
@@ -571,16 +500,6 @@ function arrayToObject (array, key) {
     obj[item[key]] = item;
     return obj;
   }, {});
-}
-
-function queryValueToArray (val) {
-  if (val === undefined || val === null) {
-    return [];
-  }
-  if (!Array.isArray(val)) {
-    val = [val];
-  }
-  return val.join(',').split(',');
 }
 
 function errorString (err, result) {
@@ -1281,22 +1200,6 @@ app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
 });
 
 /* User Endpoints ---------------------------------------------------------- */
-// default settings for users with no settings
-let settingDefaults = {
-  timezone: 'local',
-  detailFormat: 'last',
-  showTimestamps: 'last',
-  sortColumn: 'firstPacket',
-  sortDirection: 'desc',
-  spiGraph: 'node',
-  connSrcField: 'srcIp',
-  connDstField: 'ip.dst:port',
-  numPackets: 'last',
-  theme: 'default-theme',
-  manualQuery: false,
-  timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
-};
-
 // gets the current user
 app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
@@ -1323,12 +1226,12 @@ app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
   }
 
   // If no settings, use defaults
-  if (clone.settings === undefined) { clone.settings = settingDefaults; }
+  if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
 
   // Use settingsDefaults for any settings that are missing
-  for (let item in settingDefaults) {
+  for (let item in internals.settingDefaults) {
     if (clone.settings[item] === undefined) {
-      clone.settings[item] = settingDefaults[item];
+      clone.settings[item] = internals.settingDefaults[item];
     }
   }
 
@@ -1759,8 +1662,8 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookie
 // gets a user's settings
 app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie], (req, res) => {
   let settings = (req.settingUser.settings)
-    ? Object.assign(JSON.parse(JSON.stringify(settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
-    : JSON.parse(JSON.stringify(settingDefaults));
+    ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
+    : JSON.parse(JSON.stringify(internals.settingDefaults));
 
   let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
@@ -2672,466 +2575,8 @@ function expireCheckAll () {
 // ----------------------------------------------------------------------------
 // Sessions Query
 // ----------------------------------------------------------------------------
-function addSortToQuery (query, info, d) {
-  function addSortDefault () {
-    if (d) {
-      if (!query.sort) {
-        query.sort = [];
-      }
-      var obj = {};
-      obj[d] = { order: 'asc' };
-      obj[d].missing = '_last';
-      query.sort.push(obj);
-    }
-  }
+// TODO ECR
 
-  if (!info) {
-    addSortDefault();
-    return;
-  }
-
-  // New Method
-  if (info.order) {
-    if (info.order.length === 0) {
-      addSortDefault();
-      return;
-    }
-
-    if (!query.sort) {
-      query.sort = [];
-    }
-
-    info.order.split(',').forEach(function (item) {
-      var parts = item.split(':');
-      var field = parts[0];
-
-      var obj = {};
-      if (field === 'firstPacket') {
-        obj.firstPacket = { order: parts[1] };
-      } else if (field === 'lastPacket') {
-        obj.lastPacket = { order: parts[1] };
-      } else {
-        obj[field] = { order: parts[1] };
-      }
-
-      obj[field].unmapped_type = 'string';
-      var fieldInfo = Config.getDBFieldsMap()[field];
-      if (fieldInfo) {
-        if (fieldInfo.type === 'ip') {
-          obj[field].unmapped_type = 'ip';
-        } else if (fieldInfo.type === 'integer') {
-          obj[field].unmapped_type = 'long';
-        }
-      }
-      obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
-      query.sort.push(obj);
-    });
-    return;
-  }
-
-  // Old Method
-  if (!info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
-    addSortDefault();
-    return;
-  }
-
-  if (!query.sort) {
-    query.sort = [];
-  }
-
-  for (let i = 0, ilen = parseInt(info.iSortingCols, 10); i < ilen; i++) {
-    if (!info['iSortCol_' + i] || !info['sSortDir_' + i] || !info['mDataProp_' + info['iSortCol_' + i]]) {
-      continue;
-    }
-
-    var obj = {};
-    var field = info['mDataProp_' + info['iSortCol_' + i]];
-    obj[field] = { order: info['sSortDir_' + i] };
-    query.sort.push(obj);
-
-    if (field === 'firstPacket') {
-      query.sort.push({ firstPacket: { order: info['sSortDir_' + i] } });
-    } else if (field === 'lastPacket') {
-      query.sort.push({ lastPacket: { order: info['sSortDir_' + i] } });
-    }
-  }
-}
-
-/* This method fixes up parts of the query that jison builds to what ES actually
- * understands.  This includes mapping all the tag fields from strings to numbers
- * and any of the filename stuff
- */
-function lookupQueryItems (query, doneCb) {
-  if (Config.get('multiES', false)) {
-    return doneCb(null);
-  }
-
-  var outstanding = 0;
-  var finished = 0;
-  var err = null;
-
-  function process (parent, obj, item) {
-    // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
-    if (item === 'fileand' && typeof obj[item] === 'string') {
-      var name = obj.fileand;
-      delete obj.fileand;
-      outstanding++;
-      Db.fileNameToFiles(name, function (files) {
-        outstanding--;
-        if (files === null || files.length === 0) {
-          err = "File '" + name + "' not found";
-        } else if (files.length > 1) {
-          obj.bool = { should: [] };
-          files.forEach(function (file) {
-            obj.bool.should.push({ bool: { must: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
-          });
-        } else {
-          obj.bool = { must: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
-        }
-        if (finished && outstanding === 0) {
-          doneCb(err);
-        }
-      });
-    } else if (item === 'field' && obj.field === 'fileand') {
-      obj.field = 'fileId';
-    } else if (typeof obj[item] === 'object') {
-      convert(obj, obj[item]);
-    }
-  }
-
-  function convert (parent, obj) {
-    for (var item in obj) {
-      process(parent, obj, item);
-    }
-  }
-
-  convert(null, query);
-  if (outstanding === 0) {
-    return doneCb(err);
-  }
-
-  finished = 1;
-}
-
-// ----------------------------------------------------------------------------
-// determineQueryTimes(reqQuery)
-//
-// Returns [startTimeSec, stopTimeSec, interval] using values from reqQuery.date,
-//   reqQuery.startTime, reqQuery.stopTime, reqQuery.interval, and
-//   reqQuery.segments.
-//
-// This code was factored out from buildSessionQuery.
-// ----------------------------------------------------------------------------
-function determineQueryTimes (reqQuery) {
-  let startTimeSec = null;
-  let stopTimeSec = null;
-  let interval = 60 * 60;
-
-  if (Config.debug) {
-    console.log('determineQueryTimes<-', reqQuery);
-  }
-
-  if ((reqQuery.date && reqQuery.date === '-1') ||
-      (reqQuery.segments && reqQuery.segments === 'all')) {
-    interval = 60 * 60; // Hour to be safe
-  } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
-    if (!/^-?[0-9]+$/.test(reqQuery.startTime)) {
-      startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
-    } else {
-      startTimeSec = parseInt(reqQuery.startTime, 10);
-    }
-
-    if (!/^-?[0-9]+$/.test(reqQuery.stopTime)) {
-      stopTimeSec = Date.parse(reqQuery.stopTime.replace('+', ' ')) / 1000;
-    } else {
-      stopTimeSec = parseInt(reqQuery.stopTime, 10);
-    }
-
-    var diff = reqQuery.stopTime - reqQuery.startTime;
-    if (diff < 30 * 60) {
-      interval = 1; // second
-    } else if (diff <= 5 * 24 * 60 * 60) {
-      interval = 60; // minute
-    } else {
-      interval = 60 * 60; // hour
-    }
-  } else {
-    let queryDate = reqQuery.date || 1;
-    startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(queryDate, 10));
-    stopTimeSec = Date.now() / 1000;
-
-    if (queryDate <= 5 * 24) {
-      interval = 60; // minute
-    } else {
-      interval = 60 * 60; // hour
-    }
-  }
-
-  switch (reqQuery.interval) {
-  case 'second':
-    interval = 1;
-    break;
-  case 'minute':
-    interval = 60;
-    break;
-  case 'hour':
-    interval = 60 * 60;
-    break;
-  case 'day':
-    interval = 60 * 60 * 24;
-    break;
-  case 'week':
-    interval = 60 * 60 * 24 * 7;
-    break;
-  }
-
-  if (Config.debug) {
-    console.log('determineQueryTimes->', 'startTimeSec', startTimeSec, 'stopTimeSec', stopTimeSec, 'interval', interval);
-  }
-
-  return [startTimeSec, stopTimeSec, interval];
-}
-
-function buildSessionQuery (req, buildCb, queryOverride = null) {
-  // validate time limit is not exceeded
-  let timeLimitExceeded = false;
-  var interval;
-
-  // queryOverride can supercede req.query if specified
-  let reqQuery = queryOverride || req.query;
-
-  // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
-  let startAndStopParams = determineQueryTimes(reqQuery);
-  if (startAndStopParams[0] !== undefined) {
-    reqQuery.startTime = startAndStopParams[0];
-  }
-  if (startAndStopParams[1] !== undefined) {
-    reqQuery.stopTime = startAndStopParams[1];
-  }
-  interval = startAndStopParams[2];
-
-  if ((parseInt(reqQuery.date) > parseInt(req.user.timeLimit)) ||
-    ((reqQuery.date === '-1') && req.user.timeLimit)) {
-    timeLimitExceeded = true;
-  } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
-             ((reqQuery.stopTime - reqQuery.startTime) / 3600 > req.user.timeLimit)) {
-    timeLimitExceeded = true;
-  }
-
-  if (timeLimitExceeded) {
-    console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
-    return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
-  }
-
-  var limit = Math.min(2000000, +reqQuery.length || +reqQuery.iDisplayLength || 100);
-
-  var query = { from: reqQuery.start || reqQuery.iDisplayStart || 0,
-    size: limit,
-    timeout: internals.esQueryTimeout,
-    query: { bool: { filter: [] } }
-  };
-
-  if (query.from === 0) {
-    delete query.from;
-  }
-
-  if (reqQuery.strictly === 'true') {
-    reqQuery.bounding = 'both';
-  }
-
-  if ((reqQuery.date && reqQuery.date === '-1') ||
-      (reqQuery.segments && reqQuery.segments === 'all')) {
-    // interval is already assigned above from result of determineQueryTimes
-
-  } else if (reqQuery.startTime !== undefined && reqQuery.stopTime) {
-    switch (reqQuery.bounding) {
-    case 'first':
-      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-      break;
-    default:
-    case 'last':
-      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-      break;
-    case 'both':
-      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-      query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
-      break;
-    case 'either':
-      query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-      break;
-    case 'database':
-      query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-      break;
-    }
-  } else {
-    switch (reqQuery.bounding) {
-    case 'first':
-      query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-      break;
-    default:
-    case 'both':
-    case 'last':
-      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-      break;
-    case 'either':
-      query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-      query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-      break;
-    case 'database':
-      query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000 } } });
-      break;
-    }
-  }
-
-  if (reqQuery.facets === '1') {
-    query.aggregations = {};
-    // only add map aggregations if requested
-    if (reqQuery.map === 'true') {
-      query.aggregations = {
-        mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1 } },
-        mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1 } },
-        mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1 } }
-      };
-    }
-
-    query.aggregations.dbHisto = { aggregations: {} };
-
-    let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
-    for (let i = 0; i < filters.length; i++) {
-      let filter = filters[i];
-
-      // Will also grap src/dst of these options instead to show on the timeline
-      if (filter === 'totPackets') {
-        query.aggregations.dbHisto.aggregations.srcPackets = { sum: { field: 'srcPackets' } };
-        query.aggregations.dbHisto.aggregations.dstPackets = { sum: { field: 'dstPackets' } };
-      } else if (filter === 'totBytes') {
-        query.aggregations.dbHisto.aggregations.srcBytes = { sum: { field: 'srcBytes' } };
-        query.aggregations.dbHisto.aggregations.dstBytes = { sum: { field: 'dstBytes' } };
-      } else if (filter === 'totDataBytes') {
-        query.aggregations.dbHisto.aggregations.srcDataBytes = { sum: { field: 'srcDataBytes' } };
-        query.aggregations.dbHisto.aggregations.dstDataBytes = { sum: { field: 'dstDataBytes' } };
-      } else {
-        query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
-      }
-    }
-
-    switch (reqQuery.bounding) {
-    case 'first':
-      query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-      break;
-    case 'database':
-      query.aggregations.dbHisto.histogram = { field: 'timestamp', interval: interval * 1000, min_doc_count: 1 };
-      break;
-    default:
-      query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-      break;
-    }
-  }
-
-  addSortToQuery(query, reqQuery, 'firstPacket');
-
-  let err = null;
-
-  molochparser.parser.yy = {
-    views: req.user.views,
-    fieldsMap: Config.getFieldsMap(),
-    dbFieldsMap: Config.getDBFieldsMap(),
-    prefix: internals.prefix,
-    emailSearch: req.user.emailSearch === true,
-    lookups: req.lookups,
-    lookupTypeMap: internals.lookupTypeMap
-  };
-
-  if (reqQuery.expression) {
-    // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-    try {
-      query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
-    } catch (e) {
-      err = e;
-    }
-  }
-
-  if (!err && reqQuery.view) {
-    addViewToQuery(req, query, continueBuildQuery, buildCb, queryOverride);
-  } else {
-    continueBuildQuery(req, query, err, buildCb, queryOverride);
-  }
-}
-
-function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
-  let err;
-  let viewExpression;
-
-  // queryOverride can supercede req.query if specified
-  let reqQuery = queryOverride || req.query;
-
-  if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
-    try {
-      viewExpression = molochparser.parse(req.user.views[reqQuery.view].expression);
-      query.query.bool.filter.push(viewExpression);
-    } catch (e) {
-      console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, e);
-      err = e;
-    }
-    continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-  } else { // it's a shared view
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser && sharedUser.found) {
-        sharedUser = sharedUser._source;
-        sharedUser.views = sharedUser.views || {};
-        for (let viewName in sharedUser.views) {
-          if (viewName === reqQuery.view) {
-            viewExpression = sharedUser.views[viewName].expression;
-            break;
-          }
-        }
-        if (sharedUser.views[reqQuery.view]) {
-          try {
-            viewExpression = molochparser.parse(sharedUser.views[reqQuery.view].expression);
-            query.query.bool.filter.push(viewExpression);
-          } catch (e) {
-            console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, e);
-            err = e;
-          }
-        }
-        continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-      }
-    });
-  }
-}
-
-function continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
-  // queryOverride can supercede req.query if specified
-  let reqQuery = queryOverride || req.query;
-
-  if (!err && req.user.expression && req.user.expression.length > 0) {
-    try {
-      // Expression was set by admin, so assume email search ok
-      molochparser.parser.yy.emailSearch = true;
-      var userExpression = molochparser.parse(req.user.expression);
-      query.query.bool.filter.push(userExpression);
-    } catch (e) {
-      console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);
-      err = e;
-    }
-  }
-
-  lookupQueryItems(query.query.bool.filter, function (lerr) {
-    if (reqQuery.date === '-1' || // An all query
-        Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-      return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
-    }
-
-    Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'), function (indices) {
-      if (indices.length > 3000) { // Will url be too long
-        return finalCb(err || lerr, query, 'sessions2-*');
-      } else {
-        return finalCb(err || lerr, query, indices);
-      }
-    });
-  });
-}
 // ----------------------------------------------------------------------------
 // Sessions List
 // ----------------------------------------------------------------------------
@@ -3186,7 +2631,7 @@ function sessionsListFromQuery (req, res, fields, cb) {
     fields.push('rootId');
   }
 
-  buildSessionQuery(req, function (err, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
     if (err) {
       return res.send('Could not build query.  Err: ' + err);
     }
@@ -3240,7 +2685,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
     });
   }, function (err) {
     if (processSegments) {
-      buildSessionQuery(req, function (err, query, indices) {
+      sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
         query._source = fields;
         sessionsListAddSegments(req, indices, query, list, function (err, list) {
           cb(err, list);
@@ -4628,181 +4073,6 @@ app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson, checkPermissions(['hi
   });
 });
 
-function mapMerge (aggregations) {
-  let map = { src: {}, dst: {}, xffGeo: {} };
-
-  if (!aggregations || !aggregations.mapG1) {
-    return {};
-  }
-
-  aggregations.mapG1.buckets.forEach(function (item) {
-    map.src[item.key] = item.doc_count;
-  });
-
-  aggregations.mapG2.buckets.forEach(function (item) {
-    map.dst[item.key] = item.doc_count;
-  });
-
-  aggregations.mapG3.buckets.forEach(function (item) {
-    map.xffGeo[item.key] = item.doc_count;
-  });
-
-  return map;
-}
-
-function graphMerge (req, query, aggregations) {
-  let filters = req.user.settings.timelineDataFilters || settingDefaults.timelineDataFilters;
-
-  let graph = {
-    xmin: req.query.startTime * 1000 || null,
-    xmax: req.query.stopTime * 1000 || null,
-    interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
-    sessionsHisto: [],
-    sessionsTotal: 0
-  };
-
-  // allowed tot* data map
-  let filtersMap = {
-    'totPackets': ['srcPackets', 'dstPackets'],
-    'totBytes': ['srcBytes', 'dstBytes'],
-    'totDataBytes': ['srcDataBytes', 'dstDataBytes']
-  };
-
-  for (let i = 0; i < filters.length; i++) {
-    let filter = filters[i];
-    if (filtersMap[filter] !== undefined) {
-      for (const j of filtersMap[filter]) {
-        graph[j + 'Histo'] = [];
-      }
-    } else {
-      graph[filter + 'Histo'] = [];
-    }
-
-    graph[filters[i] + 'Total'] = 0;
-  }
-
-  if (!aggregations || !aggregations.dbHisto) {
-    return graph;
-  }
-
-  aggregations.dbHisto.buckets.forEach(function (item) {
-    let key = item.key;
-
-    // always add session information
-    graph.sessionsHisto.push([key, item.doc_count]);
-    graph.sessionsTotal += item.doc_count;
-
-    for (let prop in item) {
-      // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
-      // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
-      // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
-      if (filters.includes(prop) ||
-        prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
-        prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
-        // Note: prop will never be one of the chosen tot* exceptions
-        graph[prop + 'Histo'].push([key, item[prop].value]);
-
-        // Need to specify for when src/dst AND tot* filters are chosen
-        if (filters.includes(prop)) {
-          graph[prop + 'Total'] += item[prop].value;
-        }
-
-        // Add src/dst to tot* counters.
-        if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
-          graph.totPacketsTotal += item[prop].value;
-        } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
-          graph.totBytesTotal += item[prop].value;
-        } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
-          graph.totDataBytesTotal += item[prop].value;
-        }
-      }
-    }
-  });
-
-  return graph;
-}
-
-function fixFields (fields, fixCb) {
-  if (!fields.fileId) {
-    fields.fileId = [];
-    return fixCb(null, fields);
-  }
-
-  var files = [];
-  async.forEachSeries(fields.fileId, function (item, cb) {
-    Db.fileIdToFile(fields.node, item, function (file) {
-      if (file && file.locked === 1) {
-        files.push(file.name);
-      }
-      cb(null);
-    });
-  },
-  function (err) {
-    fields.fileId = files;
-    fixCb(err, fields);
-  });
-}
-
-/**
- * Flattens fields that are objects (only goes 1 level deep)
- *
- * @example
- * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
- * @example
- * { cert: [ { alt: ["test.com"] } ] } => { "cert.alt": ["test.com"] }
- *
- * @param {object} fields The object containing fields to be flattened
- * @returns {object} fields The object with fields flattened
- */
-function flattenFields (fields) {
-  let newFields = {};
-
-  for (let key in fields) {
-    if (fields.hasOwnProperty(key)) {
-      let field = fields[key];
-      let baseKey = key + '.';
-      if (typeof field === 'object' && !field.length) {
-        // flatten out object
-        for (let nestedKey in field) {
-          if (field.hasOwnProperty(nestedKey)) {
-            let nestedField = field[nestedKey];
-            let newKey = baseKey + nestedKey;
-            newFields[newKey] = nestedField;
-          }
-        }
-        fields[key] = null;
-        delete fields[key];
-      } else if (Array.isArray(field)) {
-        // flatten out list
-        for (let nestedField of field) {
-          if (typeof nestedField === 'object') {
-            for (let nestedKey in nestedField) {
-              let newKey = baseKey + nestedKey;
-              if (newFields[newKey] === undefined) {
-                newFields[newKey] = nestedField[nestedKey];
-              } else if (Array.isArray(newFields[newKey])) {
-                newFields[newKey].push(nestedField[nestedKey]);
-              } else {
-                newFields[newKey] = [newFields[newKey], nestedField[nestedKey]];
-              }
-            }
-            fields[key] = null;
-            delete fields[key];
-          }
-        }
-      }
-    }
-  }
-
-  for (let key in newFields) {
-    if (newFields.hasOwnProperty(key)) {
-      fields[key] = newFields[key];
-    }
-  }
-
-  return fields;
-}
-
 app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, res, next) {
   if (req.method === 'POST') {
     req.query = req.body;
@@ -4810,7 +4080,7 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
     next();
   }
 
-  buildSessionQuery(req, function (bsqErr, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
     if (bsqErr) {
       res.send({ recordsTotal: 0,
         recordsFiltered: 0,
@@ -4820,132 +4090,141 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
     }
 
     if (req.query.fields) {
-      query._source = queryValueToArray(req.query.fields);
+      query._source = Utils.queryValueToArray(req.query.fields);
     }
 
     res.send({ 'esquery': query, 'indices': indices });
   });
 });
 
-app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'), setCookie], (req, res) => {
-  var graph = {};
-  var map = {};
+// TODO ECR - test sessions.json
+// TODO ECR - how to make this work with the UI call too?
+let sessionAPIs = require('./apis/sessions');
+app.all(
+  ['/api/sessions', 'sessions.json'],
+  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie],
+  sessionAPIs.getSessions
+);
 
-  let options;
-  if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-
-  buildSessionQuery(req, function (bsqErr, query, indices) {
-    if (bsqErr) {
-      const r = {
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        graph: {},
-        map: {},
-        bsqErr: bsqErr.toString(),
-        health: Db.healthCache(),
-        data: []
-      };
-      return res.send(r);
-    }
-
-    let addMissing = false;
-    if (req.query.fields) {
-      query._source = queryValueToArray(req.query.fields);
-      ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
-        if (query._source.indexOf(item) === -1) {
-          query._source.push(item);
-        }
-      });
-    } else {
-      addMissing = true;
-      query._source = [
-        'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
-        'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
-        'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
-        'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
-        'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
-        'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
-      ];
-    }
-
-    if (query.aggregations && query.aggregations.dbHisto) {
-      graph.interval = query.aggregations.dbHisto.histogram.interval;
-    }
-
-    if (Config.debug) {
-      console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
-    }
-
-    Promise.all([Db.searchPrimary(indices, 'session', query, options),
-      Db.numberOfDocuments('sessions2-*'),
-      Db.healthCachePromise()
-    ]).then(([sessions, total, health]) => {
-      if (Config.debug) {
-        console.log('sessions.json result', util.inspect(sessions, false, 50));
-      }
-
-      if (sessions.error) { throw sessions.err; }
-
-      graph = graphMerge(req, query, sessions.aggregations);
-      map = mapMerge(sessions.aggregations);
-
-      var results = { total: sessions.hits.total, results: [] };
-      async.each(sessions.hits.hits, function (hit, hitCb) {
-        var fields = hit._source || hit.fields;
-        if (fields === undefined) {
-          return hitCb(null);
-        }
-        // fields.index = hit._index;
-        fields.id = Db.session2Sid(hit);
-
-        if (req.query.flatten === '1') {
-          fields = flattenFields(fields);
-        }
-
-        if (addMissing) {
-          ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach(function (item) {
-            if (fields[item] === undefined) {
-              fields[item] = -1;
-            }
-          });
-          results.results.push(fields);
-          return hitCb();
-        } else {
-          fixFields(fields, function () {
-            results.results.push(fields);
-            return hitCb();
-          });
-        }
-      }, function () {
-        var r = { recordsTotal: total.count,
-          recordsFiltered: (results ? results.total : 0),
-          graph: graph,
-          health: health,
-          map: map,
-          data: (results ? results.results : []) };
-        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-        try {
-          res.send(r);
-        } catch (c) {
-        }
-      });
-    }).catch((err) => {
-      console.log('ERROR - /sessions.json error', err);
-      var r = { recordsTotal: 0,
-        recordsFiltered: 0,
-        graph: {},
-        map: {},
-        health: Db.healthCache(),
-        data: [] };
-      res.send(r);
-    });
-  });
-});
+// app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'), setCookie], (req, res) => {
+//   var graph = {};
+//   var map = {};
+//
+//   let options;
+//   if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
+//
+//   buildSessionQuery(req, function (bsqErr, query, indices) {
+//     if (bsqErr) {
+//       const r = {
+//         recordsTotal: 0,
+//         recordsFiltered: 0,
+//         graph: {},
+//         map: {},
+//         bsqErr: bsqErr.toString(),
+//         health: Db.healthCache(),
+//         data: []
+//       };
+//       return res.send(r);
+//     }
+//
+//     let addMissing = false;
+//     if (req.query.fields) {
+//       query._source = queryValueToArray(req.query.fields);
+//       ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
+//         if (query._source.indexOf(item) === -1) {
+//           query._source.push(item);
+//         }
+//       });
+//     } else {
+//       addMissing = true;
+//       query._source = [
+//         'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
+//         'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
+//         'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
+//         'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
+//         'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
+//         'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
+//       ];
+//     }
+//
+//     if (query.aggregations && query.aggregations.dbHisto) {
+//       graph.interval = query.aggregations.dbHisto.histogram.interval;
+//     }
+//
+//     if (Config.debug) {
+//       console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
+//     }
+//
+//     Promise.all([Db.searchPrimary(indices, 'session', query, options),
+//       Db.numberOfDocuments('sessions2-*'),
+//       Db.healthCachePromise()
+//     ]).then(([sessions, total, health]) => {
+//       if (Config.debug) {
+//         console.log('sessions.json result', util.inspect(sessions, false, 50));
+//       }
+//
+//       if (sessions.error) { throw sessions.err; }
+//
+//       graph = graphMerge(req, query, sessions.aggregations);
+//       map = mapMerge(sessions.aggregations);
+//
+//       var results = { total: sessions.hits.total, results: [] };
+//       async.each(sessions.hits.hits, function (hit, hitCb) {
+//         var fields = hit._source || hit.fields;
+//         if (fields === undefined) {
+//           return hitCb(null);
+//         }
+//         // fields.index = hit._index;
+//         fields.id = Db.session2Sid(hit);
+//
+//         if (req.query.flatten === '1') {
+//           fields = flattenFields(fields);
+//         }
+//
+//         if (addMissing) {
+//           ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach(function (item) {
+//             if (fields[item] === undefined) {
+//               fields[item] = -1;
+//             }
+//           });
+//           results.results.push(fields);
+//           return hitCb();
+//         } else {
+//           fixFields(fields, function () {
+//             results.results.push(fields);
+//             return hitCb();
+//           });
+//         }
+//       }, function () {
+//         var r = { recordsTotal: total.count,
+//           recordsFiltered: (results ? results.total : 0),
+//           graph: graph,
+//           health: health,
+//           map: map,
+//           data: (results ? results.results : []) };
+//         res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
+//         try {
+//           res.send(r);
+//         } catch (c) {
+//         }
+//       });
+//     }).catch((err) => {
+//       console.log('ERROR - /sessions.json error', err);
+//       var r = { recordsTotal: 0,
+//         recordsFiltered: 0,
+//         graph: {},
+//         map: {},
+//         health: Db.healthCache(),
+//         data: [] };
+//       res.send(r);
+//     });
+//   });
+// });
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
   req.query.facets = '1';
 
-  buildSessionQuery(req, function (bsqErr, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
     var results = { items: [], graph: {}, map: {} };
     if (bsqErr) {
       return res.molochError(403, bsqErr.toString());
@@ -4981,8 +4260,8 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
       results.recordsTotal = total.count;
       results.recordsFiltered = result.hits.total;
 
-      results.graph = graphMerge(req, query, result.aggregations);
-      results.map = mapMerge(result.aggregations);
+      results.graph = Utils.graphMerge(req, query, result.aggregations);
+      results.map = Utils.mapMerge(result.aggregations);
 
       if (!result.aggregations) {
         result.aggregations = { field: { buckets: [] } };
@@ -5012,7 +4291,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
           result.responses.forEach(function (item, i) {
             var r = { name: queriesInfo[i].key, count: queriesInfo[i].doc_count };
 
-            r.graph = graphMerge(req, query, result.responses[i].aggregations);
+            r.graph = Utils.graphMerge(req, query, result.responses[i].aggregations);
 
             let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes('histo'));
             let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
@@ -5030,7 +4309,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
               r.graph.xmax = results.graph.xmax || histoXMax;
             }
 
-            r.map = mapMerge(result.responses[i].aggregations);
+            r.map = Utils.mapMerge(result.responses[i].aggregations);
 
             results.items.push(r);
             histoKeys.forEach(item => {
@@ -5126,7 +4405,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
     return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
   }
 
-  buildSessionQuery(req, function (bsqErr, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
     if (bsqErr) {
       var r = { spi: {},
         bsqErr: bsqErr.toString(),
@@ -5145,7 +4424,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       query.aggregations.protocols = { terms: { field: 'protocol', size: 1000 } };
     }
 
-    queryValueToArray(req.query.spi).forEach(function (item) {
+    Utils.queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(':');
       if (parts[0] === 'fileand') {
         query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
@@ -5205,8 +4484,8 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       }
 
       if (req.query.facets === '1') {
-        graph = graphMerge(req, query, sessions.aggregations);
-        map = mapMerge(sessions.aggregations);
+        graph = Utils.graphMerge(req, query, sessions.aggregations);
+        map = Utils.mapMerge(sessions.aggregations);
         protocols = {};
         sessions.aggregations.protocols.buckets.forEach(function (item) {
           protocols[item.key] = item.doc_count;
@@ -5343,7 +4622,7 @@ function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resu
 
   if (resultId > 1) {
     // replace current time frame start/stop values with baseline time frame start/stop values
-    let currentQueryTimes = determineQueryTimes(req.query);
+    let currentQueryTimes = Utils.determineQueryTimes(req.query);
     if (Config.debug) {
       console.log('buildConnections baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
     }
@@ -5363,7 +4642,7 @@ function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resu
     }
   } // resultId > 1 (calculating baseline query time frame)
 
-  buildSessionQuery(req, function (bsqErr, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
     if (bsqErr) {
       console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, bsqErr);
       result.err = bsqErr;
@@ -5576,7 +4855,7 @@ function buildConnections (req, res, cb) {
       } else {
         async.eachLimit(connResultSets[0].graph.hits.hits, 10, function (hit, hitCb) {
           let f = hit._source;
-          f = flattenFields(f);
+          f = Utils.flattenFields(f);
 
           let asrc = hit.fields[fsrc];
           let adst = hit.fields[fdst];
@@ -5766,7 +5045,7 @@ function csvListWriter (req, res, list, fields, pcapWriter, extension) {
   }
 
   for (var j = 0, jlen = list.length; j < jlen; j++) {
-    var sessionData = flattenFields(list[j]._source || list[j].fields);
+    var sessionData = Utils.flattenFields(list[j]._source || list[j].fields);
     sessionData._id = list[j]._id;
 
     if (!fields) { continue; }
@@ -5811,11 +5090,11 @@ app.get(/\/sessions.csv.*/, logAction(), function (req, res) {
   var reqFields = fields;
 
   if (req.query.fields) {
-    fields = reqFields = queryValueToArray(req.query.fields);
+    fields = reqFields = Utils.queryValueToArray(req.query.fields);
   }
 
   if (req.query.ids) {
-    var ids = queryValueToArray(req.query.ids);
+    var ids = Utils.queryValueToArray(req.query.ids);
     sessionsListFromIds(req, ids, fields, function (err, list) {
       csvListWriter(req, res, list, reqFields);
     });
@@ -5845,7 +5124,7 @@ app.get('/spigraphhierarchy', noCacheJson, logAction(), (req, res) => {
     fields.push(field);
   }
 
-  buildSessionQuery(req, function (err, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
     query.size = 0; // Don't need any real results, just aggregations
     delete query.sort;
     delete query.aggregations;
@@ -5967,7 +5246,7 @@ app.get('/multiunique.txt', logAction(), function (req, res) {
     }
   }
 
-  buildSessionQuery(req, function (err, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
     delete query.sort;
     delete query.aggregations;
     query.size = 0;
@@ -6074,7 +5353,7 @@ app.get('/unique.txt', [logAction(), fieldToExp], function (req, res) {
     };
   }
 
-  buildSessionQuery(req, function (err, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
     delete query.sort;
     delete query.aggregations;
 
@@ -6300,7 +5579,7 @@ function processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPacket
           fields.tags = [];
         }
 
-        fixFields(fields, endCb);
+        Utils.fixFields(fields, endCb);
       }, limit);
     }
   });
@@ -6590,7 +5869,7 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
     sortFields(session);
 
     let hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
-    fixFields(session, () => {
+    Utils.fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename: 'sessionDetail',
         cache: isProduction(),
@@ -6717,7 +5996,7 @@ app.get('/bodyHash/:hash', logAction('bodyhash'), function (req, res) {
   var nodeName = null;
   var sessionID = null;
 
-  buildSessionQuery(req, function (bsqErr, query, indices) {
+  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
     if (bsqErr) {
       res.status(400);
       return res.end(bsqErr);
@@ -7091,7 +6370,7 @@ function sessionsPcap (req, res, pcapWriter, extension) {
   noCache(req, res, 'application/vnd.tcpdump.pcap');
 
   if (req.query.ids) {
-    var ids = queryValueToArray(req.query.ids);
+    var ids = Utils.queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
@@ -7436,7 +6715,7 @@ app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function (req
   if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
 
   if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
+    var ids = Utils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['tags', 'node'], function (err, list) {
       if (!list.length) {
@@ -7467,7 +6746,7 @@ app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermis
   if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
 
   if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
+    var ids = Utils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['tags'], function (err, list) {
       removeTagsList(res, tags, list);
@@ -7951,7 +7230,7 @@ function processHuntJob (huntId, hunt) {
         fakeReq.query.view = hunt.query.view;
       }
 
-      buildSessionQuery(fakeReq, (err, query, indices) => {
+      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
         if (err) {
           pauseHuntJobWithError(huntId, hunt, {
             value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
@@ -7960,7 +7239,7 @@ function processHuntJob (huntId, hunt) {
           return;
         }
 
-        lookupQueryItems(query.query.bool.filter, (lerr) => {
+        Utils.lookupQueryItems(query.query.bool.filter, (lerr) => {
           query.query.bool.filter[0] = {
             range: {
               lastPacket: {
@@ -8832,7 +8111,7 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermission
   }
 
   if (req.body.ids) {
-    const ids = queryValueToArray(req.body.ids);
+    const ids = Utils.queryValueToArray(req.body.ids);
     sessionsListFromIds(req, ids, ['node'], function (err, list) {
       scrubList(req, res, whatToRemove, list);
     });
@@ -8983,7 +8262,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function (req, res) {
   }
 
   var count = 0;
-  var ids = queryValueToArray(req.body.ids);
+  var ids = Utils.queryValueToArray(req.body.ids);
   ids.forEach(function (id) {
     var options = {
       user: req.user,
@@ -9250,7 +8529,7 @@ app.post('/receiveSession', [noCacheJson], function receiveSession (req, res) {
 
 app.post('/sendSessions', function (req, res) {
   if (req.body.ids) {
-    var ids = queryValueToArray(req.body.ids);
+    var ids = Utils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['node'], function (err, list) {
       sendSessionsList(req, res, list);
@@ -9663,7 +8942,7 @@ function processCronQueries () {
               }
             }
 
-            lookupQueryItems(query.query.bool.filter, function (lerr) {
+            Utils.lookupQueryItems(query.query.bool.filter, function (lerr) {
               processCronQuery(cq, options, query, endTime, function (count, lpValue) {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));

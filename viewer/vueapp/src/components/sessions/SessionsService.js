@@ -62,15 +62,15 @@ export default {
       }
 
       let options = {
-        url: 'sessions.json',
-        method: 'GET',
-        params: params,
+        url: 'api/sessions',
+        method: 'POST',
+        data: params,
         cancelToken: cancelToken
       };
 
       Vue.axios(options)
         .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          if (response.data.error) { reject(response.data.error); }
           resolve(response);
         }, (error) => {
           if (!Vue.axios.isCancel(error)) {
