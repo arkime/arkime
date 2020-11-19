@@ -128,14 +128,14 @@
         About
       </h3>
       <p class="lead"><strong>
-        Moloch is a large scale, open source, full packet capturing, indexing,
+        Arkime is a large scale, open source, full packet capturing, indexing,
         and database system.
       </strong></p>
       <p class="lead">
-        Moloch is not meant to replace Intrusion Detection Systems (IDS).
-        Moloch augments your current security infrastructure by storing and
+        Arkime is not meant to replace Intrusion Detection Systems (IDS).
+        Arkime augments your current security infrastructure by storing and
         indexing network traffic in standard PCAP format, while also providing
-        fast indexed access. Moloch is built with an intuitive UI/UX which
+        fast indexed access. Arkime is built with an intuitive UI/UX which
         reduces the analysis time of suspected incidents.
       </p>
 
@@ -147,11 +147,11 @@
       </h3>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-link" href="https://molo.ch">Home Page</a> |
-          <a class="btn btn-link" href="https://molo.ch/faq">FAQ</a> |
-          <a class="btn btn-link" href="https://molo.ch/learn">Docs</a> |
+          <a class="btn btn-link" href="https://arkime.com">Home Page</a> |
+          <a class="btn btn-link" href="https://arkime.com/faq">FAQ</a> |
+          <a class="btn btn-link" href="https://arkime.com/learn">Docs</a> |
           <a class="btn btn-link" href="https://github.com/aol/moloch">GitHub</a> |
-          <a class="btn btn-link" href="https://slackinvite.molo.ch/">Request Slack Invite</a>
+          <a class="btn btn-link" href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>
 
@@ -162,8 +162,8 @@
         Search Bar
       </h3>
       <p>
-        Most Moloch tabs have a search bar on the top of the page.
-        Moloch uses a very simple query language for building expressions. It
+        Most Arkime tabs have a search bar on the top of the page.
+        Arkime uses a very simple query language for building expressions. It
         supports grouping using parenthesis as well as logical AND and OR statements using
         <code>&amp;&amp;</code> and <code>||</code> respectively.
         Fields can be accessed directly using the field names
@@ -175,7 +175,7 @@
       <p>
         All queries are bounded by a start and stop time. The bounded start and stop times can be
         set either by selecting a choice from a quick relative drop down or by entering exact time sections.
-        Since every session has a first packet, last packet, and database timestamp, Moloch offers
+        Since every session has a first packet, last packet, and database timestamp, Arkime offers
         a choice on how to select the sessions:
       </p>
       <dl class="dl-horizontal">
@@ -197,7 +197,7 @@
           String Search
         </h6>
         <p>
-          In Moloch, string fields are special since they can be searched in several different
+          In Arkime, string fields are special since they can be searched in several different
           ways. When fields are indexed, their case may or may not be normalized,
           which is documented in the
           <a href="help#fields" class="no-decoration">fields table below</a>.
@@ -227,7 +227,7 @@
           </dd>
           <dt>Lists</dt>
           <dd>
-            In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
+            In Arkime, lists are used as a short hand method for doing multiple OR queries. For example
             <code>protocols == [http,ssh]</code>. This query will search for any sessions containing either http OR ssh.
             <strong>Note:</strong> A list containing wildcard or regex strings will be processed as normal strings instead
             of wildcards and regexes.
@@ -351,7 +351,7 @@
         Sessions
       </h3>
       <p>
-        The Sessions page within Moloch is where an analyst will find the bulk of the details regarding
+        The Sessions page within Arkime is where an analyst will find the bulk of the details regarding
         the sessions being investigated.
       </p>
       <div class="ml-4">
@@ -757,9 +757,9 @@
           <dt>Free Space</dt>
           <dd>Percentage of free space across all configured disks</dd>
           <dt>CPU</dt>
-          <dd>CPU percentage that Moloch is using</dd>
+          <dd>CPU percentage that Arkime is using</dd>
           <dt>Memory %</dt>
-          <dd>Perentage of memory that Moloch is using</dd>
+          <dd>Perentage of memory that Arkime is using</dd>
           <dt>Packet Q</dt>
           <dd>Number of packets that are waiting to processed</dd>
           <dt>Packets/s</dt>
@@ -769,7 +769,7 @@
           <dt>Sessions/s</dt>
           <dd>Number of sessions sent to Elasticsearch per second</dd>
           <dt>Packet Drops/s</dt>
-          <dd>Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
+          <dd>Number of dropped packets as reported by the OS or network card (Arkime never sees these) per second</dd>
           <dt>Overload Drops/s</dt>
           <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
           <dt>ES Drops/s</dt>
@@ -777,23 +777,23 @@
           <dt>Bits/Sec</dt>
           <dd>Same as Bytes/Sec but in bits per second</dd>
           <dt>Sessions</dt>
-          <dd>Number of sessions Moloch is currently monitoring</dd>
+          <dd>Number of sessions Arkime is currently monitoring</dd>
           <dt>Active TCP Sessions</dt>
-          <dd>Number of TCP sessions Moloch is currently monitoring</dd>
+          <dd>Number of TCP sessions Arkime is currently monitoring</dd>
           <dt>Active UDP Sessions</dt>
-          <dd>Number of UDP sessions Moloch is currently monitoring</dd>
+          <dd>Number of UDP sessions Arkime is currently monitoring</dd>
           <dt>Active ICMP Sessions</dt>
-          <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
+          <dd>Number of ICMP sessions Arkime is currently monitoring</dd>
           <dt>Free Space</dt>
           <dd>Free space across all configured disks</dd>
           <dt>Memory</dt>
-          <dd>Amount of memory that Moloch is using</dd>
+          <dd>Amount of memory that Arkime is using</dd>
           <dt>Disk Q</dt>
           <dd>Number of blocks of data that are waiting to be written to disk</dd>
           <dt>ES Q</dt>
           <dd>Number of elasticsearch requests that are waiting to be sent</dd>
           <dt>Closing Q</dt>
-          <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
+          <dd>Number of TCP sessions that have received a FIN and Arkime is waiting to see if actually closed</dd>
           <dt>Waiting Q</dt>
           <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
           <dt>Active Fragments</dt>
@@ -803,9 +803,9 @@
           <dt>Total Dropped/Sec</dt>
           <dd>Sum of the inputs dropped and overload metrics</dd>
           <dt>Written Bytes/Sec</dt>
-          <dd>The size of all the packets that Moloch is going write to disk</dd>
+          <dd>The size of all the packets that Arkime is going write to disk</dd>
           <dt>Unritten Bytes/Sec</dt>
-          <dd>The size of all the packets that Moloch isn't going to write to disk, but that we processed</dd>
+          <dd>The size of all the packets that Arkime isn't going to write to disk, but that we processed</dd>
         </dl>
         <p>
           <em>
@@ -995,7 +995,7 @@
         History
       </h3>
       <p>
-        The History page provides the ability to view Moloch actions/queries to
+        The History page provides the ability to view Arkime actions/queries to
         ES. It is usable both as a history for a user and for auditing abilities
         for an admin. A non-admin user can only view their own actions. An admin
         user can view all users' actions.
@@ -1183,9 +1183,9 @@
         <br>
         <code>'C'</code> - jump to the Connections page
         <br>
-        <code>'H'</code> - jump to the Moloch Help page
+        <code>'H'</code> - jump to the Arkime Help page
         <br>
-        <code>'U'</code> - jump to the Moloch Hunt page
+        <code>'U'</code> - jump to the Arkime Hunt page
         <br>
         <code>'shift + enter'</code> - issue search/refresh
         <br>

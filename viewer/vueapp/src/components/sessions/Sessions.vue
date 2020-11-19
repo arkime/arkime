@@ -183,7 +183,7 @@
                   <b-dropdown-item
                     id="coldefault"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
-                    Moloch Default
+                    Arkime Default
                   </b-dropdown-item>
                   <b-tooltip target="coldefault"
                     placement="right"
@@ -253,7 +253,7 @@
                       <b-dropdown-item
                         id="infodefault"
                         @click.stop.prevent="resetInfoVisibility">
-                        Moloch Default
+                        Arkime Default
                       </b-dropdown-item>
                       <b-tooltip target="infodefault"
                         placement="left"

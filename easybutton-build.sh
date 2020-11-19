@@ -11,11 +11,11 @@
 # * install moloch if --install
 
 
-GLIB=2.64.5
+GLIB=2.66.2
 YARA=3.11.0
 MAXMIND=1.3.2
 PCAP=1.9.1
-CURL=7.72.0
+CURL=7.73.0
 LUA=5.3.5
 DAQ=2.0.7
 NODE=12.19.0
@@ -61,7 +61,7 @@ do
     shift
     ;;
   --help)
-    echo "Make it easier to build Moloch!  This will download and build thirdparty libraries plus build Moloch."
+    echo "Make it easier to build Arkime!  This will download and build thirdparty libraries plus build Arkime."
     echo "--dir <directory>   = The directory to install everything into [/data/moloch]"
     echo "--clean             = Do a 'make clean' first"
     echo "--rminstall         = Do a 'rm -rf <dir>' first"
@@ -83,7 +83,7 @@ done
 
 # Warn users
 echo ""
-echo "This script is for building Moloch from source and meant for people who enjoy pain. The prebuilt versions at https://molo.ch/#download are recommended for installation."
+echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
 echo ""
 
 # Check the existance of sudo

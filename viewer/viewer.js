@@ -2144,7 +2144,6 @@ app.get('/user/cron', [noCacheJson, getSettingUserCache], function (req, res) {
     let queries = {};
 
     if (data && data.hits && data.hits.hits) {
-      user.queries = {};
       data.hits.hits.forEach(function (item) {
         queries[item._id] = item._source;
       });
@@ -3860,7 +3859,7 @@ app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, set
       '^(|null|\\d+%)$');
 
     function addIlm (key, current, name, type, regex) {
-      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://molo.ch/faq#ilm', regex: regex });
+      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
     }
 
     if (ilm[`${internals.prefix}molochsessions`]) {
