@@ -105,21 +105,33 @@
            >
            </b-form-textarea>
 
-           <span class="float-right">
+           <span class="d-flex justify-content-between mt-4">
              <b-button
               variant="warning"
-              class="mx-auto mt-4"
-              :disabled="fileActionsDisabled"
+              :disabled="fileResetDisabled"
               @click="loadSourceFile()">
                Reset File
              </b-button>
-             <b-button
-              variant="primary"
-              class="mx-auto mt-4"
-              :disabled="fileActionsDisabled"
-              @click="saveSourceFile()">
-               Save File
-             </b-button>
+
+             <span class="float-right">
+               <div class="input-group">
+                 <input type="text"
+                   class="form-control"
+                   v-model="configCode"
+                   placeholder="Config pin code"
+                   v-b-tooltip.hover.left
+                   title="The config pin code can be found in the output from running the WISE UI"
+                 />
+                 <div class="input-group-append">
+                   <b-button
+                    variant="primary"
+                    :disabled="fileSaveDisabled"
+                    @click="saveSourceFile()">
+                     Save File
+                   </b-button>
+                 </div>
+               </div>
+             </span>
            </span>
         </div>
         <div v-else>
@@ -277,8 +289,11 @@ export default {
     saveEnabled: function () {
       return JSON.stringify(this.currConfig) !== JSON.stringify(this.currConfigBefore) && this.configCode.length > 0;
     },
-    fileActionsDisabled: function () {
+    fileResetDisabled: function () {
       return this.currFile === this.currFileBefore;
+    },
+    fileSaveDisabled: function () {
+      return this.currFile === this.currFileBefore || this.configCode === '';
     }
   },
   watch: {
@@ -362,6 +377,7 @@ export default {
             };
             // Resync object that tests for changes
             this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
+            this.configCode = '';
           }
         })
         .catch((err) => {
@@ -444,7 +460,7 @@ export default {
         return;
       }
 
-      WiseService.saveSourceFile(this.selectedSourceKey, this.currFile)
+      WiseService.saveSourceFile(this.selectedSourceKey, this.currFile, this.configCode)
         .then((data) => {
           if (!data.success) {
             throw data;
@@ -455,6 +471,7 @@ export default {
             };
             // Resync file that tests for changes
             this.currFileBefore = this.currFile;
+            this.configCode = '';
           }
         })
         .catch((err) => {

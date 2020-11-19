@@ -988,7 +988,7 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
   });
 });
 // ----------------------------------------------------------------------------
-app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1004,6 +1004,10 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
     if (err) {
       return res.send({ success: false, text: err });
     }
+    internals.configCode = crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6);
+    console.log(chalk.cyan(
+      `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
+    ));
     return res.send({ success: true, text: 'Saved' });
   });
 });
