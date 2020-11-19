@@ -2144,7 +2144,6 @@ app.get('/user/cron', [noCacheJson, getSettingUserCache], function (req, res) {
     let queries = {};
 
     if (data && data.hits && data.hits.hits) {
-      user.queries = {};
       data.hits.hits.forEach(function (item) {
         queries[item._id] = item._source;
       });
