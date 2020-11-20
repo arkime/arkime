@@ -51,6 +51,7 @@ try {
   var path = require('path');
   var contentDisposition = require('content-disposition');
   var ViewerUtils = require('./viewerUtils');
+  var sessionAPIs = require('./apiSessions');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -63,6 +64,9 @@ if (typeof express !== 'function') {
   throw new Error('Exiting');
 }
 var app = express();
+
+// registers a get and a post
+app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); }
 
 // ----------------------------------------------------------------------------
 // Config
@@ -1068,6 +1072,14 @@ function recordResponseTime (req, res, next) {
     res.setHeader('X-Moloch-Response-Time', ms);
   });
 
+  next();
+}
+
+// fill req.body if it doesn't exist to support POST and GET
+// all endpoints that use POST and GET should look for req.body
+function fillBody (req, res, next) {
+  // if using GET not POST, body will be empty and params will have query
+  if (!Object.keys(req.body).length) { req.body = req.query; }
   next();
 }
 
@@ -2569,10 +2581,6 @@ function expireCheckAll () {
     });
   });
 }
-// ----------------------------------------------------------------------------
-// Sessions Query
-// ----------------------------------------------------------------------------
-// TODO ECR
 
 // ----------------------------------------------------------------------------
 // Sessions List
@@ -4095,12 +4103,11 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
 });
 
 // TODO ECR - document
-let sessionAPIs = require('./apiSessions'); // TODO ECR - put this elsewhere?
-app.all(
+app.getpost(
   ['/api/sessions', '/sessions.json'],
-  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie],
+  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillBody],
   sessionAPIs.getSessions
-);
+)
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
   req.query.facets = '1';

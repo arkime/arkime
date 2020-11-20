@@ -12,15 +12,23 @@ let molochparser = require('./molochparser');
 let internals = require('./internals').internals;
 
 // HELPERS ----------------------------------------------------------------- //
-function addSortToQuery (query, info, d) {
+/**
+ * Adds the sort options to the elasticsearch query
+ * @ignore
+ * @name addSortToQuery
+ * @param {object} query - the elasticsearch query that has been partially built already by buildSessionQuery
+ * @param {object} info - the query params from the client
+ * @param {string} defaultSort - the default sort
+ */
+function addSortToQuery (query, info, defaultSort) {
   function addSortDefault () {
-    if (d) {
+    if (defaultSort) {
       if (!query.sort) {
         query.sort = [];
       }
       let obj = {};
-      obj[d] = { order: 'asc' };
-      obj[d].missing = '_last';
+      obj[defaultSort] = { order: 'asc' };
+      obj[defaultSort].missing = '_last';
       query.sort.push(obj);
     }
   }
@@ -98,6 +106,17 @@ function addSortToQuery (query, info, d) {
   }
 }
 
+/**
+ * Adds the view search expression to the elasticsearch query
+ * @ignore
+ * @name addViewToQuery
+ * @param {object} req - the client request
+ * @param {object} query - the elasticsearch query that has been partially built already by buildSessionQuery
+ * @param {function} continueBuildQueryCb - the callback to call when adding the view is complete
+ * @param {function} finalCb - the callback to pass to continueBuildQueryCb that is called when building the sessions query is complete
+ * @param {boolean} queryOverride=null - override the client query with overriding query
+ * @returns {function} - the callback to call once the session query is built or an error occurs
+ */
 function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
   let err;
   let viewExpression;
@@ -113,7 +132,7 @@ function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverrid
       console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, e);
       err = e;
     }
-    continueBuildQueryCb(req, query, err, finalCb, queryOverride);
+    return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
   } else { // it's a shared view
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (sharedUser && sharedUser.found) {
@@ -134,12 +153,21 @@ function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverrid
             err = e;
           }
         }
-        continueBuildQueryCb(req, query, err, finalCb, queryOverride);
+        return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     });
   }
 }
 
+/**
+ * Builds the session query based on req.body
+ * @ignore
+ * @name buildSessionQuery
+ * @param {object} req - the client request
+ * @param {function} buildCb - the callback to call when building the query is complete
+ * @param {boolean} queryOverride=null - override the client query with overriding query
+ * @returns {function} - the callback to call once the session query is built or an error occurs
+ */
 function buildSessionQuery (req, buildCb, queryOverride = null) {
   // validate time limit is not exceeded
   let timeLimitExceeded = false;
@@ -171,9 +199,9 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
     return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
   }
 
-  let limit = Math.min(2000000, +reqQuery.length || +reqQuery.iDisplayLength || 100);
+  let limit = Math.min(2000000, +reqQuery.length || 100);
 
-  let query = { from: reqQuery.start || reqQuery.iDisplayStart || 0,
+  let query = { from: reqQuery.start || 0,
     size: limit,
     timeout: internals.esQueryTimeout,
     query: { bool: { filter: [] } }
@@ -308,10 +336,31 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
 }
 
 // APIs -------------------------------------------------------------------- //
+/**
+ * Builds a sessions query based on the client's query. Gets a list of sessions and returns them to the client.
+ * Supports POST and GET (preferred method is POST)
+ * @name /api/sessions
+ * @param {number} date=1	- The number of hours of data to return (-1 means all data). Defaults to 1
+ * @param {string} expression - The search expression string
+ * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+ * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+ * @param {number} start=0	- The entry to start at. Defaults to 0
+ * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+ * @param {number} stopTimeI’m  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+ * @param {string} view -	The view name to apply before the expression.
+ * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+ * @param {string} fields - Comma separated list of db field names to return.
+   Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+ * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+   'first' - First Packet: the timestamp of the first packet received for the session.
+   'last' - Last Packet: The timestamp of the last packet received for the session.
+   'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+   'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+   'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+ * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+ * @returns {object} Sends the response to the client
+ */
 function getSessions (req, res) {
-  // if using GET not POST, body will be empty and params will have query
-  if (!Object.keys(req.body).length) { req.body = req.query; }
-
   let map = {};
   let graph = {};
 
@@ -415,17 +464,17 @@ function getSessions (req, res) {
           response.recordsTotal = total.count;
           response.recordsFiltered = (results ? results.total : 0);
           res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
-          res.send(response);
+          return res.send(response);
         } catch (e) {
           console.trace('fetch sessions error', e.stack);
           response.error = e.toString();
-          res.send(response);
+          return res.send(response);
         }
       });
     }).catch((err) => {
       console.log('ERROR - sessions error', err);
       response.error = err.toString();
-      res.send(response);
+      return res.send(response);
     });
   });
 }
