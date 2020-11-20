@@ -343,6 +343,20 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
+app.get("/_cluster/:type/details", function(req, res) {
+  var result = {available: [], active: [], inactive: []};
+  var active_nodes = getActiveNodes();
+  for (var i =0; i < clusterList.length; i++) {
+    result.available.push(clusterList[i]);
+    if (active_nodes.includes(clusters[clusterList[i]])) {
+      result.active.push(clusterList[i]);
+    } else {
+      result.inactive.push(clusterList[i]);
+    }
+  }
+  res.send(result);
+});
+
 app.get('/:index/_status', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     var obj = results[0];
@@ -455,19 +469,7 @@ app.get('/_cluster/settings', function (req, res) {
   res.send({ persistent: {}, transient: {} });
 });
 
-app.get("/_cluster/details", function(req, res) {
-  var result = {available: [], active: [], inactive: []};
-  var active_nodes = getActiveNodes();
-  for (var i =0; i < clusterList.length; i++) {
-    result.available.push(clusterList[i]);
-    if (active_nodes.includes(clusters[clusterList[i]])) {
-      result.active.push(clusterList[i]);
-    } else {
-      result.inactive.push(clusterList[i]);
-    }
-  }
-  res.send(result);
-});
+
 
 app.head(/^\/$/, function(req, res) {
   res.send("");
@@ -691,7 +693,8 @@ function combineResults (obj, result) {
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i]._node = result._node;
+      // result.hits.hits[i]._node = result._node;
+      result.hits.hits[i]._source.escluster = result.escluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }

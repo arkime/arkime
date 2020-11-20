@@ -1349,6 +1349,12 @@ exports.getMinValue = function (index, field, cb) {
   });
 };
 
+exports.getClusterDetails = function (cb) {
+  //return internals.elasticSearchClient.get({index: '_cluster', type: 'details', id: ''}, cb);
+  return internals.elasticSearchClient.get({index: '_cluster',  id: 'details'}, cb);
+
+};
+
 exports.getILMPolicy = function () {
   return new Promise((resolve, reject) => {
     internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
