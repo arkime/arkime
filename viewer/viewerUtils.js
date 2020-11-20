@@ -52,7 +52,7 @@ module.exports = {
          stopTimeSec = parseInt(reqQuery.stopTime, 10);
        }
 
-       var diff = reqQuery.stopTime - reqQuery.startTime;
+       const diff = reqQuery.stopTime - reqQuery.startTime;
        if (diff < 30 * 60) {
          interval = 1; // second
        } else if (diff <= 5 * 24 * 60 * 60) {
@@ -113,7 +113,7 @@ module.exports = {
      function process (parent, obj, item) {
        // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
        if (item === 'fileand' && typeof obj[item] === 'string') {
-         var name = obj.fileand;
+         const name = obj.fileand;
          delete obj.fileand;
          outstanding++;
          Db.fileNameToFiles(name, function (files) {
@@ -140,7 +140,7 @@ module.exports = {
      }
 
      function convert (parent, obj) {
-       for (var item in obj) {
+       for (let item in obj) {
          process(parent, obj, item);
        }
      }
@@ -161,7 +161,7 @@ module.exports = {
        try {
          // Expression was set by admin, so assume email search ok
          molochparser.parser.yy.emailSearch = true;
-         var userExpression = molochparser.parse(req.user.expression);
+         const userExpression = molochparser.parse(req.user.expression);
          query.query.bool.filter.push(userExpression);
        } catch (e) {
          console.log(`ERROR - Forced expression (${req.user.expression}) doesn't compile -`, e);

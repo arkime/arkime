@@ -40,7 +40,6 @@ try {
   var http = require('http');
   var pug = require('pug');
   var https = require('https');
-  var EventEmitter = require('events').EventEmitter;
   var PNG = require('pngjs').PNG;
   var decode = require('./decode.js');
   var onHeaders = require('on-headers');
@@ -51,7 +50,7 @@ try {
   var RE2 = require('re2');
   var path = require('path');
   var contentDisposition = require('content-disposition');
-  var Utils = require('./utils');
+  var ViewerUtils = require('./viewerUtils');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -68,9 +67,7 @@ var app = express();
 // ----------------------------------------------------------------------------
 // Config
 // ----------------------------------------------------------------------------
-let internalModule = require('./internals');
-internalModule.buildInternals(Config, http, https, EventEmitter);
-let internals = internalModule.internals;
+let { internals } = require('./internals');
 
 function isProduction () {
   return app.get('env') === 'production';
@@ -4090,7 +4087,7 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
     }
 
     if (req.query.fields) {
-      query._source = Utils.queryValueToArray(req.query.fields);
+      query._source = ViewerUtils.queryValueToArray(req.query.fields);
     }
 
     res.send({ 'esquery': query, 'indices': indices });
@@ -4098,7 +4095,7 @@ app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, re
 });
 
 // TODO ECR - document
-let sessionAPIs = require('./api/sessions'); // TODO ECR - put this elsewhere?
+let sessionAPIs = require('./apiSessions'); // TODO ECR - put this elsewhere?
 app.all(
   ['/api/sessions', '/sessions.json'],
   [noCacheJson, recordResponseTime, logAction('sessions'), setCookie],
@@ -4144,8 +4141,8 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
       results.recordsTotal = total.count;
       results.recordsFiltered = result.hits.total;
 
-      results.graph = Utils.graphMerge(req, query, result.aggregations);
-      results.map = Utils.mapMerge(result.aggregations);
+      results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+      results.map = ViewerUtils.mapMerge(result.aggregations);
 
       if (!result.aggregations) {
         result.aggregations = { field: { buckets: [] } };
@@ -4175,7 +4172,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
           result.responses.forEach(function (item, i) {
             var r = { name: queriesInfo[i].key, count: queriesInfo[i].doc_count };
 
-            r.graph = Utils.graphMerge(req, query, result.responses[i].aggregations);
+            r.graph = ViewerUtils.graphMerge(req, query, result.responses[i].aggregations);
 
             let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes('histo'));
             let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
@@ -4193,7 +4190,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
               r.graph.xmax = results.graph.xmax || histoXMax;
             }
 
-            r.map = Utils.mapMerge(result.responses[i].aggregations);
+            r.map = ViewerUtils.mapMerge(result.responses[i].aggregations);
 
             results.items.push(r);
             histoKeys.forEach(item => {
@@ -4308,7 +4305,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       query.aggregations.protocols = { terms: { field: 'protocol', size: 1000 } };
     }
 
-    Utils.queryValueToArray(req.query.spi).forEach(function (item) {
+    ViewerUtils.queryValueToArray(req.query.spi).forEach(function (item) {
       var parts = item.split(':');
       if (parts[0] === 'fileand') {
         query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
@@ -4368,8 +4365,8 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
       }
 
       if (req.query.facets === '1') {
-        graph = Utils.graphMerge(req, query, sessions.aggregations);
-        map = Utils.mapMerge(sessions.aggregations);
+        graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
+        map = ViewerUtils.mapMerge(sessions.aggregations);
         protocols = {};
         sessions.aggregations.protocols.buckets.forEach(function (item) {
           protocols[item.key] = item.doc_count;
@@ -4506,7 +4503,7 @@ function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resu
 
   if (resultId > 1) {
     // replace current time frame start/stop values with baseline time frame start/stop values
-    let currentQueryTimes = Utils.determineQueryTimes(req.query);
+    let currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
     if (Config.debug) {
       console.log('buildConnections baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
     }
@@ -4739,7 +4736,7 @@ function buildConnections (req, res, cb) {
       } else {
         async.eachLimit(connResultSets[0].graph.hits.hits, 10, function (hit, hitCb) {
           let f = hit._source;
-          f = Utils.flattenFields(f);
+          f = ViewerUtils.flattenFields(f);
 
           let asrc = hit.fields[fsrc];
           let adst = hit.fields[fdst];
@@ -4929,7 +4926,7 @@ function csvListWriter (req, res, list, fields, pcapWriter, extension) {
   }
 
   for (var j = 0, jlen = list.length; j < jlen; j++) {
-    var sessionData = Utils.flattenFields(list[j]._source || list[j].fields);
+    var sessionData = ViewerUtils.flattenFields(list[j]._source || list[j].fields);
     sessionData._id = list[j]._id;
 
     if (!fields) { continue; }
@@ -4974,11 +4971,11 @@ app.get(/\/sessions.csv.*/, logAction(), function (req, res) {
   var reqFields = fields;
 
   if (req.query.fields) {
-    fields = reqFields = Utils.queryValueToArray(req.query.fields);
+    fields = reqFields = ViewerUtils.queryValueToArray(req.query.fields);
   }
 
   if (req.query.ids) {
-    var ids = Utils.queryValueToArray(req.query.ids);
+    var ids = ViewerUtils.queryValueToArray(req.query.ids);
     sessionsListFromIds(req, ids, fields, function (err, list) {
       csvListWriter(req, res, list, reqFields);
     });
@@ -5463,7 +5460,7 @@ function processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPacket
           fields.tags = [];
         }
 
-        Utils.fixFields(fields, endCb);
+        ViewerUtils.fixFields(fields, endCb);
       }, limit);
     }
   });
@@ -5753,7 +5750,7 @@ app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
     sortFields(session);
 
     let hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
-    Utils.fixFields(session, () => {
+    ViewerUtils.fixFields(session, () => {
       pug.render(internals.sessionDetailNew, {
         filename: 'sessionDetail',
         cache: isProduction(),
@@ -6254,7 +6251,7 @@ function sessionsPcap (req, res, pcapWriter, extension) {
   noCache(req, res, 'application/vnd.tcpdump.pcap');
 
   if (req.query.ids) {
-    var ids = Utils.queryValueToArray(req.query.ids);
+    var ids = ViewerUtils.queryValueToArray(req.query.ids);
 
     sessionsListFromIds(req, ids, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
@@ -6599,7 +6596,7 @@ app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function (req
   if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
 
   if (req.body.ids) {
-    var ids = Utils.queryValueToArray(req.body.ids);
+    var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['tags', 'node'], function (err, list) {
       if (!list.length) {
@@ -6630,7 +6627,7 @@ app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermis
   if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
 
   if (req.body.ids) {
-    var ids = Utils.queryValueToArray(req.body.ids);
+    var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['tags'], function (err, list) {
       removeTagsList(res, tags, list);
@@ -7123,7 +7120,7 @@ function processHuntJob (huntId, hunt) {
           return;
         }
 
-        Utils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+        ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
           query.query.bool.filter[0] = {
             range: {
               lastPacket: {
@@ -7995,7 +7992,7 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermission
   }
 
   if (req.body.ids) {
-    const ids = Utils.queryValueToArray(req.body.ids);
+    const ids = ViewerUtils.queryValueToArray(req.body.ids);
     sessionsListFromIds(req, ids, ['node'], function (err, list) {
       scrubList(req, res, whatToRemove, list);
     });
@@ -8146,7 +8143,7 @@ app.post('/:nodeName/sendSessions', checkProxyRequest, function (req, res) {
   }
 
   var count = 0;
-  var ids = Utils.queryValueToArray(req.body.ids);
+  var ids = ViewerUtils.queryValueToArray(req.body.ids);
   ids.forEach(function (id) {
     var options = {
       user: req.user,
@@ -8413,7 +8410,7 @@ app.post('/receiveSession', [noCacheJson], function receiveSession (req, res) {
 
 app.post('/sendSessions', function (req, res) {
   if (req.body.ids) {
-    var ids = Utils.queryValueToArray(req.body.ids);
+    var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
     sessionsListFromIds(req, ids, ['node'], function (err, list) {
       sendSessionsList(req, res, list);
@@ -8826,7 +8823,7 @@ function processCronQueries () {
               }
             }
 
-            Utils.lookupQueryItems(query.query.bool.filter, function (lerr) {
+            ViewerUtils.lookupQueryItems(query.query.bool.filter, function (lerr) {
               processCronQuery(cq, options, query, endTime, function (count, lpValue) {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));

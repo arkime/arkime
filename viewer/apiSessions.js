@@ -1,13 +1,15 @@
 'use strict';
 
+// external libs
 let util = require('util');
 let async = require('async');
 
-let Db = require('../db');
-let Utils = require('../utils');
-let Config = require('../config');
-let molochparser = require('../molochparser');
-let internals = require('../internals').internals;
+// internal libs
+let Db = require('./db');
+let ViewerUtils = require('./viewerUtils');
+let Config = require('./config');
+let molochparser = require('./molochparser');
+let internals = require('./internals').internals;
 
 // HELPERS ----------------------------------------------------------------- //
 function addSortToQuery (query, info, d) {
@@ -16,7 +18,7 @@ function addSortToQuery (query, info, d) {
       if (!query.sort) {
         query.sort = [];
       }
-      var obj = {};
+      let obj = {};
       obj[d] = { order: 'asc' };
       obj[d].missing = '_last';
       query.sort.push(obj);
@@ -40,10 +42,10 @@ function addSortToQuery (query, info, d) {
     }
 
     info.order.split(',').forEach(function (item) {
-      var parts = item.split(':');
-      var field = parts[0];
+      const parts = item.split(':');
+      const field = parts[0];
 
-      var obj = {};
+      let obj = {};
       if (field === 'firstPacket') {
         obj.firstPacket = { order: parts[1] };
       } else if (field === 'lastPacket') {
@@ -53,7 +55,7 @@ function addSortToQuery (query, info, d) {
       }
 
       obj[field].unmapped_type = 'string';
-      var fieldInfo = Config.getDBFieldsMap()[field];
+      const fieldInfo = Config.getDBFieldsMap()[field];
       if (fieldInfo) {
         if (fieldInfo.type === 'ip') {
           obj[field].unmapped_type = 'ip';
@@ -64,6 +66,7 @@ function addSortToQuery (query, info, d) {
       obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
       query.sort.push(obj);
     });
+
     return;
   }
 
@@ -82,8 +85,8 @@ function addSortToQuery (query, info, d) {
       continue;
     }
 
-    var obj = {};
-    var field = info['mDataProp_' + info['iSortCol_' + i]];
+    let obj = {};
+    const field = info['mDataProp_' + info['iSortCol_' + i]];
     obj[field] = { order: info['sSortDir_' + i] };
     query.sort.push(obj);
 
@@ -99,8 +102,8 @@ function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverrid
   let err;
   let viewExpression;
 
-  // queryOverride can supercede req.query if specified
-  let reqQuery = queryOverride || req.query;
+  // queryOverride can supercede req.body if specified
+  let reqQuery = queryOverride || req.body;
 
   if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
     try {
@@ -140,13 +143,13 @@ function addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverrid
 function buildSessionQuery (req, buildCb, queryOverride = null) {
   // validate time limit is not exceeded
   let timeLimitExceeded = false;
-  var interval;
+  let interval;
 
-  // queryOverride can supercede req.query if specified
-  let reqQuery = queryOverride || req.query;
+  // queryOverride can supercede req.body if specified
+  let reqQuery = queryOverride || req.body;
 
   // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
-  let startAndStopParams = Utils.determineQueryTimes(reqQuery);
+  let startAndStopParams = ViewerUtils.determineQueryTimes(reqQuery);
   if (startAndStopParams[0] !== undefined) {
     reqQuery.startTime = startAndStopParams[0];
   }
@@ -168,9 +171,9 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
     return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
   }
 
-  var limit = Math.min(2000000, +reqQuery.length || +reqQuery.iDisplayLength || 100);
+  let limit = Math.min(2000000, +reqQuery.length || +reqQuery.iDisplayLength || 100);
 
-  var query = { from: reqQuery.start || reqQuery.iDisplayStart || 0,
+  let query = { from: reqQuery.start || reqQuery.iDisplayStart || 0,
     size: limit,
     timeout: internals.esQueryTimeout,
     query: { bool: { filter: [] } }
@@ -229,7 +232,7 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
     }
   }
 
-  if (reqQuery.facets === '1') {
+  if (parseInt(reqQuery.facets) === 1) {
     query.aggregations = {};
     // only add map aggregations if requested
     if (reqQuery.map === 'true') {
@@ -297,17 +300,17 @@ function buildSessionQuery (req, buildCb, queryOverride = null) {
     }
   }
 
-  if (!err && reqQuery.view) { // TODO ECR - test with view
-    addViewToQuery(req, query, Utils.continueBuildQuery, buildCb, queryOverride);
+  if (!err && reqQuery.view) {
+    addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
   } else {
-    Utils.continueBuildQuery(req, query, err, buildCb, queryOverride);
+    ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
   }
 }
 
 // APIs -------------------------------------------------------------------- //
 function getSessions (req, res) {
-  if (!req.body) { req.body = req.params; } // if using GET not POST
-  console.log('app.all called to retrieve sessions', req.body); // TODO ECR - remove
+  // if using GET not POST, body will be empty and params will have query
+  if (!Object.keys(req.body).length) { req.body = req.query; }
 
   let map = {};
   let graph = {};
@@ -319,23 +322,24 @@ function getSessions (req, res) {
     };
   }
 
-  buildSessionQuery(req, (bsqErr, query, indices) => { // TODO ECR
+  let response = {
+    data: [],
+    map: {},
+    graph: {},
+    recordsTotal: 0,
+    recordsFiltered: 0,
+    health: Db.healthCache()
+  };
+
+  buildSessionQuery(req, (bsqErr, query, indices) => {
     if (bsqErr) {
-      const r = {
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        graph: {},
-        map: {},
-        error: bsqErr.toString(),
-        health: Db.healthCache(),
-        data: []
-      };
-      return res.send(r);
+      response.error = bsqErr.toString();
+      return res.send(response);
     }
 
     let addMissing = false;
     if (req.body.fields) {
-      query._source = Utils.queryValueToArray(req.body.fields);
+      query._source = ViewerUtils.queryValueToArray(req.body.fields);
       ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
         if (query._source.indexOf(item) === -1) {
           query._source.push(item);
@@ -372,8 +376,8 @@ function getSessions (req, res) {
 
       if (sessions.error) { throw sessions.err; }
 
-      map = Utils.mapMerge(sessions.aggregations);
-      graph = Utils.graphMerge(req, query, sessions.aggregations);
+      map = ViewerUtils.mapMerge(sessions.aggregations);
+      graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
 
       let results = { total: sessions.hits.total, results: [] };
       async.each(sessions.hits.hits, (hit, hitCb) => {
@@ -384,8 +388,8 @@ function getSessions (req, res) {
 
         fields.id = Db.session2Sid(hit);
 
-        if (req.body.flatten === '1') {
-          fields = Utils.flattenFields(fields);
+        if (parseInt(req.body.flatten) === 1) {
+          fields = ViewerUtils.flattenFields(fields);
         }
 
         if (addMissing) {
@@ -397,40 +401,31 @@ function getSessions (req, res) {
           results.results.push(fields);
           return hitCb();
         } else {
-          Utils.fixFields(fields, function () {
+          ViewerUtils.fixFields(fields, function () {
             results.results.push(fields);
             return hitCb();
           });
         }
       }, function () {
-        const r = {
-          recordsTotal: total.count,
-          recordsFiltered: (results ? results.total : 0),
-          graph: graph,
-          health: health,
-          map: map,
-          data: (results ? results.results : [])
-        };
-        res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
-
         try {
-          res.send(r);
+          response.map = map;
+          response.graph = graph;
+          response.health = health;
+          response.data = (results ? results.results : []);
+          response.recordsTotal = total.count;
+          response.recordsFiltered = (results ? results.total : 0);
+          res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
+          res.send(response);
         } catch (e) {
           console.trace('fetch sessions error', e.stack);
+          response.error = e.toString();
+          res.send(response);
         }
       });
     }).catch((err) => {
       console.log('ERROR - sessions error', err);
-      const r = {
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        graph: {},
-        map: {},
-        health: Db.healthCache(),
-        data: [],
-        error: err.toString()
-      };
-      res.send(r);
+      response.error = err.toString();
+      res.send(response);
     });
   });
 }
