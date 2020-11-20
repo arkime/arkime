@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # This script can initialize, upgrade or provide simple maintenance for the
-# moloch elastic search db
+# Arkime elastic search db
 #
 # Schema Versions
 #  0 - Before this script existed
@@ -138,7 +138,7 @@ sub showHelp($)
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
-    print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
+    print "  init [<opts>]                - Clear ALL elasticsearch Arkime data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
@@ -146,7 +146,7 @@ sub showHelp($)
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
-    print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "  upgrade [<opts>]             - Upgrade Arkime's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
@@ -165,7 +165,7 @@ sub showHelp($)
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
     print "    --optmizewarm              - Only optimize warm green indices\n";
-    print "  optimize                     - Optimize all moloch indices in ES\n";
+    print "  optimize                     - Optimize all Arkime indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize-admin               - Optimize only admin indices in ES, use with ILM\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
@@ -971,9 +971,9 @@ sub fieldsUpdate
       "transform": "ipProtocolLookup"
     }');
     esPost("/${PREFIX}fields_v3/_doc/id?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch ID",
+      "friendlyName": "Arkime ID",
       "group": "general",
-      "help": "Moloch ID for the session",
+      "help": "Arkime ID for the session",
       "type": "termfield",
       "dbField": "_id",
       "dbField2": "_id",
@@ -981,17 +981,17 @@ sub fieldsUpdate
 
     }');
     esPost("/${PREFIX}fields_v3/_doc/rootId?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch Root ID",
+      "friendlyName": "Arkime Root ID",
       "group": "general",
-      "help": "Moloch ID of the first session in a multi session stream",
+      "help": "Arkime ID of the first session in a multi session stream",
       "type": "termfield",
       "dbField": "ro",
       "dbField2": "rootId"
     }');
     esPost("/${PREFIX}fields_v3/_doc/node?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch Node",
+      "friendlyName": "Arkime Node",
       "group": "general",
-      "help": "Moloch node name the session was recorded on",
+      "help": "Arkime node name the session was recorded on",
       "type": "termfield",
       "dbField": "no",
       "dbField2": "node"
@@ -999,7 +999,7 @@ sub fieldsUpdate
     esPost("/${PREFIX}fields_v3/_doc/file?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Filename",
       "group": "general",
-      "help": "Moloch offline pcap filename",
+      "help": "Arkime offline pcap filename",
       "type": "fileand",
       "dbField": "fileand",
       "dbField2": "fileand"
@@ -1071,7 +1071,7 @@ sub fieldsUpdate
     esPost("/${PREFIX}fields_v3/_doc/view?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "View Name",
       "group": "general",
-      "help": "Moloch view name",
+      "help": "Arkime view name",
       "type": "viewand",
       "dbField": "viewand",
       "dbField2": "viewand",
@@ -2821,10 +2821,10 @@ my ($loud) = @_;
         $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion};
         return;
     } else {
-        logmsg "This is a fresh Moloch install\n" if ($loud);
+        logmsg "This is a fresh Arkime install\n" if ($loud);
         $main::versionNumber = -1;
         if ($loud && $ARGV[1] !~ "init") {
-            die "Looks like moloch wasn't installed, must do init"
+            die "Looks like Arkime wasn't installed, must do init"
         }
     }
 }
@@ -3998,7 +3998,7 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
+logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
     logmsg "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
@@ -4026,7 +4026,7 @@ dbCheck();
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        logmsg "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "It appears this elastic search cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         logmsg "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
@@ -4104,7 +4104,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 } elsif ($ARGV[1] =~ /^restore$/) {
 
-    logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n";
+    logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.\n";
 
     dbCheckForActivity();
 

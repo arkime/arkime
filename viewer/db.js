@@ -779,7 +779,7 @@ exports.setUser = function (name, doc, cb) {
 };
 
 exports.setLastUsed = function (name, now, cb) {
-  var params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name };
+  var params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
 
   return internals.usersElasticSearchClient.update(params, cb);
 };

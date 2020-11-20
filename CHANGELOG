@@ -19,9 +19,24 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.7.0 2020/11/xx
+2.7.1 2020/12/xx
+  - release - glib 2.66.2, curl 7.73.0
+  - wise - fix UI queries hanging
+  - viewer - fix anonymous user settings not saving
+  - viewer - fix lastUsed time not always saving to ES
+  - capture - new packet dedup feature
+  - db - Moloch to Arkime text fixes
+
+2.7.0 2020/11/18
   - NOTICE - Requires ES 7.4 or newer
+  - NOTICE - Moloch to Arkime rebranding in UI, everything else still Moloch
+  - all - ES 7 updates, fix most depreciated warnings (mappings/templates still remain)
+  - viewer - fix mpls decoding
+  - viewer - new themes and logo selection
   - capture - fix http CONNECT response parsing
+  - capture - New pcap-over-ip reader support
+  - db - can import gz files directly now
+  - db - fix issues with version importing
 
 2.4.2 2020/11/10
   - NOTICE - db.pl upgrade is required

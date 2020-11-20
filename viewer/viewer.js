@@ -2144,7 +2144,6 @@ app.get('/user/cron', [noCacheJson, getSettingUserCache], function (req, res) {
     let queries = {};
 
     if (data && data.hits && data.hits.hits) {
-      user.queries = {};
       data.hits.hits.forEach(function (item) {
         queries[item._id] = item._source;
       });
@@ -4472,6 +4471,7 @@ app.get('/stats.json', [noCacheJson, recordResponseTime, checkPermissions(['hide
       fields.deltaFragsDroppedPerSec = Math.floor(fields.deltaFragsDropped * 1000.0 / fields.deltaMS);
       fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0 / fields.deltaMS);
       fields.deltaESDroppedPerSec = Math.floor(fields.deltaESDropped * 1000.0 / fields.deltaMS);
+      fields.deltaDupDroppedPerSec = Math.floor(fields.deltaDupDropped * 1000.0 / fields.deltaMS);
       fields.deltaTotalDroppedPerSec = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0 / fields.deltaMS);
       fields.runningTime = fields.currentTime - fields.startTime;
       results.results.push(fields);
@@ -4554,6 +4554,7 @@ app.get('/dstats.json', [noCacheJson, checkPermissions(['hideStats'])], (req, re
     deltaFragsDroppedPerSec: { _source: ['deltaFragsDropped', 'deltaMS'], func: function (item) { return Math.floor(item.deltaFragsDropped * 1000.0 / item.deltaMS); } },
     deltaOverloadDroppedPerSec: { _source: ['deltaOverloadDropped', 'deltaMS'], func: function (item) { return Math.floor(item.deltaOverloadDropped * 1000.0 / item.deltaMS); } },
     deltaESDroppedPerSec: { _source: ['deltaESDropped', 'deltaMS'], func: function (item) { return Math.floor(item.deltaESDropped * 1000.0 / item.deltaMS); } },
+    deltaDupDroppedPerSec: { _source: ['deltaDupDropped', 'deltaMS'], func: function (item) { return Math.floor(item.deltaDupDropped * 1000.0 / item.deltaMS); } },
     deltaTotalDroppedPerSec: { _source: ['deltaDropped', 'deltaOverloadDropped', 'deltaMS'], func: function (item) { return Math.floor((item.deltaDropped + item.deltaOverloadDropped) * 1000.0 / item.deltaMS); } },
     cpu: { _source: ['cpu'], func: function (item) { return item.cpu * 0.01; } }
   };

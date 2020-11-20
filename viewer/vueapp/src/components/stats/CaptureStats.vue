@@ -131,6 +131,7 @@ export default {
         { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaTotalDroppedPerSec); } },
         { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaSessionBytesPerSec); } },
         { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaOverloadDropped); } },
+        { id: 'deltaDupDroppedPerSec', name: 'Dup Drops/s', sort: 'deltaDupDropped', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDupDropped); } },
         { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDropped', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaESDropped); } },
         { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sessionSizePerSec); } },
         { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } },
