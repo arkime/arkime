@@ -77,13 +77,13 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     if (seconds[secondSlot].tv_sec != currentTime.tv_sec) {
         MOLOCH_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again
-            memset(seconds[secondSlot].counts, 0, dedupSlots);
-            seconds[secondSlot].count = 0;
-            seconds[secondSlot].tv_sec = currentTime.tv_sec;
             if (seconds[secondSlot].error) {
                 LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
                 seconds[secondSlot].error = 0;
             }
+            memset(seconds[secondSlot].counts, 0, dedupSlots);
+            seconds[secondSlot].count = 0;
+            seconds[secondSlot].tv_sec = currentTime.tv_sec;
         }
         MOLOCH_UNLOCK(seconds[secondSlot].lock);
     }
