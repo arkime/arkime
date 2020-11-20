@@ -271,7 +271,7 @@ typedef struct {
 #define MOLOCH_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1);
 #define MOLOCH_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1);
 #define MOLOCH_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
-#define MOLOCH_THREAD_INCR_NUM(var, num) __sync_fetch_and_add(&var, num);
+#define MOLOCH_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
@@ -442,7 +442,6 @@ typedef struct moloch_config {
     uint32_t  snapLen;
     uint32_t  maxMemPercentage;
     uint32_t  maxReqBody;
-
     int       packetThreads;
 
     char      logUnknownProtocols;
@@ -470,6 +469,7 @@ typedef struct moloch_config {
     char      ignoreErrors;
     char      enablePacketLen;
     char      gapPacketPos;
+    char      enablePacketDedup;
 } MolochConfig_t;
 
 typedef struct {
@@ -792,6 +792,9 @@ void moloch_add_can_quit(MolochCanQuitFunc func, const char *name);
 
 void moloch_quit();
 
+uint32_t moloch_get_next_prime(uint32_t v);
+uint32_t moloch_get_next_powerof2(uint32_t v);
+
 
 /******************************************************************************/
 /*
@@ -845,6 +848,15 @@ gchar   *moloch_db_community_id(MolochSession_t *session);
 // The implementation must either call a moloch_http_free_buffer or another moloch_http routine that frees the buffer
 typedef void (* MolochDbSendBulkFunc) (char *json, int len);
 void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
+
+/******************************************************************************/
+/*
+ * dedup.c
+ */
+
+void arkime_dedup_init();
+void arkime_dedup_exit();
+int arkime_dedup_should_drop(const MolochPacket_t *packet, int headerLen);
 
 /******************************************************************************/
 /*
@@ -1013,6 +1025,7 @@ typedef enum {
   MOLOCH_PACKET_IPPORT_DROPPED,
   MOLOCH_PACKET_DONT_PROCESS,
   MOLOCH_PACKET_DONT_PROCESS_OR_FREE,
+  MOLOCH_PACKET_DUPLICATE_DROPPED,
   MOLOCH_PACKET_MAX
 } MolochPacketRC;
 
