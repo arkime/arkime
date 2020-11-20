@@ -32,7 +32,7 @@
 extern MolochConfig_t       config;
 
 // How many items in each hashtable we expect to be used
-#define DEDUP_SLOT_FACTOR   16
+#define DEDUP_SLOT_FACTOR   15
 // How many items in each hashtable we actually allow, must be less then 256
 #define DEDUP_SIZE_FACTOR   20
 
@@ -49,6 +49,7 @@ struct dedupsecond {
     uint8_t        *counts;
     uint32_t        tv_sec;
     uint32_t        count;
+    char            error;
     MOLOCH_LOCK_EXTERN(lock);
 };
 
@@ -79,6 +80,10 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
             memset(seconds[secondSlot].counts, 0, dedupSlots);
             seconds[secondSlot].count = 0;
             seconds[secondSlot].tv_sec = currentTime.tv_sec;
+            if (seconds[secondSlot].error) {
+                LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
+                seconds[secondSlot].error = 0;
+            }
         }
         MOLOCH_UNLOCK(seconds[secondSlot].lock);
     }
@@ -101,7 +106,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
 
     // Is there space to add
     if (seconds[secondSlot].counts[h] == DEDUP_SIZE_FACTOR) {
-        LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
+        seconds[secondSlot].error = 1;
         return 0;
     }
 
