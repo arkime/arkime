@@ -126,6 +126,37 @@
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
+       <!-- escluster dropdown menu -->
+      <b-dropdown v-if="showEsClusters"
+        right
+        size="sm"
+        class="pull-right ml-1 escluster-menu-dropdown"
+        no-caret
+        toggle-class="rounded"
+        variant="theme-secondary">
+        <template slot="button-content">
+          <div  v-b-tooltip.hover.left :title="selectedEsClusterText">
+            <span class="fa fa-database"></span>
+            <span v-if="selectedEsCluster"> {{ selectedEsCluster.length }}</span>
+          </div>
+        </template>
+        <b-dropdown-item @click="selectAllESCluster">
+          <span class="fa fa-list"></span>&nbsp;
+          Select All
+        </b-dropdown-item>
+        <b-dropdown-item @click="clearAllESCluster">
+          <span class="fa fa-eraser"></span>&nbsp;
+          Clear All
+        </b-dropdown-item>
+        <b-dropdown-divider></b-dropdown-divider>
+        <div class="dropdown-item bg-white text-body">
+          <b-form-checkbox-group stacked switches
+          v-model="selectedEsCluster"
+          :options="availableEsCluster"
+          @change="changeEsClusterSelection"/>
+        </div>
+      </b-dropdown> <!-- /escluster dropdown menu -->
+
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
         @click="applyParams"
@@ -341,6 +372,39 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    availableEsCluster: {
+      get: function () {
+        return this.$store.state.esCluster.availableCluster;
+      },
+      set: function (newValue) {
+        this.$store.commit('setAvailableEsCluster', newValue);
+      }
+    },
+    selectedEsCluster: {
+      get: function () {
+        return this.$store.state.esCluster.selectedCluster || [];
+      },
+      set: function (newValue) {
+        this.selectedEsClusterText = newValue;
+        this.$store.commit('setSelectedEsCluster', newValue);
+      }
+    },
+    selectedEsClusterText: {
+      get: function () {
+        return this.$store.state.esCluster.selectedClusterText;
+      },
+      set: function (newValue) {
+        this.$store.commit('setSelectedEsClusterText', newValue);
+      }
+    },
+    showEsClusters: {
+      get: function () {
+        return this.$store.state.multiEsEnabled;
+      },
+      set: function (newValue) {
+        this.$store.commit('setMultiEsStatus', newValue);
+      }
     }
   },
   watch: {
@@ -364,6 +428,8 @@ export default {
   created: function () {
     this.getViews();
     this.getMolochClusters();
+    this.getMultiESEnabled();
+    this.getESClusterInformation();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -479,6 +545,20 @@ export default {
     applyColumns: function (view) {
       this.$emit('setColumns', view.sessionsColConfig);
     },
+    selectAllESCluster: function () {
+      var clusters = [];
+      for (var item in this.availableEsCluster) {
+        if (!this.availableEsCluster[item].disabled) {
+          clusters.push(this.availableEsCluster[item].text);
+        }
+      }
+      this.selectedEsCluster = clusters;
+      this.changeEsClusterSelection(clusters);
+    },
+    clearAllESCluster: function () {
+      this.selectedEsCluster = [];
+      this.changeEsClusterSelection([]);
+    },
     /* helper functions ------------------------------------------ */
     getViews: function () {
       UserService.getViews()
@@ -490,6 +570,48 @@ export default {
       ConfigService.getMolochClusters()
         .then((response) => {
           this.molochClusters = response;
+        });
+    },
+    getESClusterInformation: function () {
+      if (!this.availableEsCluster) {
+        ConfigService.getClusters()
+          .then((response) => {
+            this.availableEsCluster = response;
+            var clusters = this.$route.query.escluster ? this.$route.query.escluster.split(',') : [];
+            var selections = [];
+            var item;
+            if (clusters.length === 0) {
+              for (item in response) {
+                if (!response[item].disabled) {
+                  selections.push(response[item].text);
+                }
+              }
+            } else {
+              for (var i = 0; i < clusters.length; i++) {
+                for (item in response) {
+                  if (!response[item].disabled && response[item].text === clusters[i]) {
+                    selections.push(response[item].text);
+                  }
+                }
+              }
+            }
+            this.selectedEsCluster = selections;
+          });
+      }
+    },
+    changeEsClusterSelection: function (clusters) {
+      let routeQuery = this.$route.query;
+      this.$router.push({
+        query: {
+          ...routeQuery,
+          escluster: clusters.length > 0 ? clusters.join(',') : 'none'
+        }
+      });
+    },
+    getMultiESEnabled: function () {
+      ConfigService.multiESEnabled()
+        .then((response) => {
+          this.showEsClusters = response;
         });
     },
     /**
@@ -550,9 +672,15 @@ export default {
 </script>
 
 <style>
-.view-menu-dropdown .dropdown-menu {
+.view-menu-dropdown .dropdown-menu .escluster-menu-dropdown {
   width: 300px;
 }
+
+.dropdown-item {
+  color: #212529;
+  padding: 2px 8px;
+}
+
 </style>
 
 <style scoped>

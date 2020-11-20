@@ -612,7 +612,7 @@ export default {
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        cluster: this.$route.query.cluster || undefined
+        escluster: this.$route.query.escluster || undefined
       };
     },
     user: function () {

@@ -636,7 +636,7 @@ export default {
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        cluster: this.$route.query.cluster || undefined
+        escluster: this.$route.query.escluster || undefined
       };
     },
     sorts: {

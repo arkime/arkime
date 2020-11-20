@@ -27,7 +27,7 @@ export default {
         interval: true,
         cancelId: true,
         expression: true,
-        cluster: true
+        escluster: true
       };
 
       if (query) {
@@ -54,10 +54,6 @@ export default {
             params.fields += item;
             if (i < len - 1) { params.fields += ','; }
           }
-        }
-
-        if (query.cluster) {
-          params.cluster = query.cluster;
         }
       }
 
@@ -87,15 +83,14 @@ export default {
 
   /**
    * Gets details about the session
-   * @param {string} id             The unique id of the session
-   * @param {string} node           The node that the session belongs to
-   * @param {string} cluster        The ES cluster that the session belongs to
+   * @param {string} id         The unique id of the session
+   * @param {string} node       The node that the session belongs to
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node, cluster) {
+  getDetail: function (id, node, escluster) {
     return new Promise((resolve, reject) => {
-      let url = cluster ? `${node}/session/${id}/detail?cluster=${cluster}` : `${node}/session/${id}/detail`;
+      let url = escluster ? `${node}/session/${id}/detail?escluster=${escluster}` : `${node}/session/${id}/detail`;
       Vue.axios.get(url)
         .then((response) => {
           resolve(response);
@@ -429,27 +424,6 @@ export default {
       method: method,
       params: params
     };
-  },
-  getClusters: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('esclusters')
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
-    });
-  },
-
-  multiESEnabled: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('multienabled')
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
-    });
   }
 
 };

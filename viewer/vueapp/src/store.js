@@ -33,12 +33,13 @@ const store = new Vuex.Store({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
+    stickySessionsBtn: false,
     esCluster: {
       availableCluster: undefined,
-      selectedCluster: undefined
+      selectedCluster: undefined,
+      selectedClusterText: undefined
     },
-    multiEsEnabled: false,
-    stickySessionsBtn: false
+    multiEsEnabled: false
   },
   getters: {
     sessionsTableState (state) {
@@ -186,10 +187,29 @@ const store = new Vuex.Store({
     setSelectedEsCluster (state, value) {
       state.esCluster.selectedCluster = value;
     },
+    setSelectedEsClusterText (state, value) {
+      let available = [];
+      let active = [];
+      let selected = value;
+      let inactive = [];
+      for (var item in state.esCluster.availableCluster) {
+        available.push(state.esCluster.availableCluster[item].text);
+        if (state.esCluster.availableCluster[item].disabled) {
+          inactive.push(state.esCluster.availableCluster[item].text);
+        } else {
+          active.push(state.esCluster.availableCluster[item].text);
+        }
+      }
+      available = 'Available: ' + available.join(', ');
+      active = 'Active: ' + (active.length === 0 ? 'none' : active.join(', '));
+      inactive = 'Inactive: ' + (inactive.length === 0 ? 'none' : inactive.join(', '));
+      selected = 'Selected: ' + (selected.length === 0 ? 'none' : selected.join(', '));
+      state.esCluster.selectedClusterText = available + '\n' + active + '\n' + inactive + '\n' + selected;
+    },
     setMultiEsStatus (state, value) {
       state.multiEsEnabled = value;
     },
-    setStickySessionsBtn (state, value) {
+	setStickySessionsBtn (state, value) {
       state.stickySessionsBtn = value;
     }
   }

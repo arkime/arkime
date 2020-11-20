@@ -438,7 +438,7 @@ export default {
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        cluster: this.$route.query.cluster || undefined
+        escluster: this.$route.query.escluster || undefined
       };
     },
     user: function () {
@@ -822,7 +822,7 @@ export default {
         bounding: this.query.bounding,
         interval: this.query.interval,
         view: this.query.view,
-        cluster: this.query.cluster
+        escluster: this.query.escluster
       };
     },
     get: function (query) {

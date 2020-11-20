@@ -243,20 +243,6 @@
       </strong>
     </div> <!-- /human readable time range or error -->
 
-    <!-- cluster select-->
-    <div v-if="showEsClusters">
-      <b-dropdown id="es-cluster" text="Clusters" class="m-md-2" size="sm">
-        <!-- .bg-white and .text-body suppress .dropdown-item.active and .dropdown-item:active styles -->
-        <div class="dropdown-item bg-white text-body">
-          <b-form-checkbox-group stacked
-          v-model="selectedEsCluster"
-          name="escluster"
-          :options="availableEsCluster"
-          @change="changeEsClusterSelection"/>
-        </div>
-      </b-dropdown>
-    </div><!-- /cluster select-->
-
   </div>
 
 </template>
@@ -267,7 +253,6 @@ import FocusInput from '../utils/FocusInput';
 import datePicker from 'vue-bootstrap-datetimepicker';
 import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import moment from 'moment-timezone';
-import SessionService from '../sessions/SessionsService';
 
 const hourSec = 3600;
 let currentTimeSec;
@@ -346,30 +331,6 @@ export default {
       set: function (newValue) {
         this.$store.commit('setExpression', newValue);
       }
-    },
-    availableEsCluster: {
-      get: function () {
-        return this.$store.state.esCluster.availableCluster;
-      },
-      set: function (newValue) {
-        this.$store.commit('setAvailableEsCluster', newValue);
-      }
-    },
-    selectedEsCluster: {
-      get: function () {
-        return this.$store.state.esCluster.selectedCluster;
-      },
-      set: function (newValue) {
-        this.$store.commit('setSelectedEsCluster', newValue);
-      }
-    },
-    showEsClusters: {
-      get: function () {
-        return this.$store.state.multiEsEnabled;
-      },
-      set: function (newValue) {
-        this.$store.commit('setMultiEsStatus', newValue);
-      }
     }
   },
   watch: {
@@ -406,8 +367,6 @@ export default {
   },
   created: function () {
     this.setCurrentTime();
-    this.getMultiESEnabled();
-    this.getClusterInformation();
 
     let date = this.$route.query.date;
     // if no time params exist, default to last hour
@@ -452,6 +411,7 @@ export default {
 
       let routeQuery = this.$route.query;
       routeQuery.expression = this.expression;
+
       this.$router.push({
         query: {
           ...routeQuery,
@@ -772,11 +732,6 @@ export default {
         this.timeInterval = newParams.interval || 'auto';
       }
 
-      if (newParams.cluster !== oldParams.cluster) {
-        change = true;
-        // this.selectedEsCluster = newParams.cluster.split(',');
-      }
-
       if (newParams.date !== oldParams.date) {
         change = true;
         if (newParams.date !== this.timeRange) {
@@ -823,36 +778,6 @@ export default {
       }
 
       if (change) { this.$emit('timeChange'); }
-    },
-    getClusterInformation: function () {
-      if (!this.availableEsCluster) {
-        SessionService.getClusters()
-          .then((response) => {
-            this.availableEsCluster = response;
-            this.selectedEsCluster = response;
-          });
-      }
-    },
-    changeEsClusterSelection: function (clusters) {
-      let routeQuery = this.$route.query;
-      if (routeQuery.cluster && clusters.length === 0) { // no selection, remove cluster param from url
-        let query = Object.assign({}, this.$route.query);
-        delete query.cluster;
-        this.$router.replace({ query });
-      } else {
-        this.$router.push({
-          query: {
-            ...routeQuery,
-            cluster: clusters.join(',')
-          }
-        });
-      }
-    },
-    getMultiESEnabled: function () {
-      SessionService.multiESEnabled()
-        .then((response) => {
-          this.showEsClusters = response;
-        });
     }
   },
   beforeDestroy: function () {

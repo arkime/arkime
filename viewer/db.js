@@ -634,7 +634,7 @@ exports.refresh = function (index, cb) {
 };
 
 exports.addTagsToSession = function (index, id, tags, escluster, cb) {
-    let script = `
+  let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
         if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
@@ -659,6 +659,7 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
   };
 
   if (escluster) { body._cluster = escluster; }
+
   exports.updateSession(index, id, body, cb);
 };
 
@@ -1122,7 +1123,7 @@ exports.getSequenceNumber = function (name, cb) {
 
 exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
-  if (index !== 'sessions2-*' || internals.multiES) {
+  if (index !== "sessions2-*" || internals.multiES) {
     let params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     return internals.elasticSearchClient.count(params);

@@ -3195,11 +3195,9 @@ function sessionsListFromQuery (req, res, fields, cb) {
     if (Config.debug) {
       console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
     }
-
     let options = {};
 
-    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-
+    if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
     Db.searchPrimary(indices, 'session', query, options, function (err, result) {
       if (err || result.error) {
         console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
@@ -3229,9 +3227,8 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    let options = { _source: fields.join(',') };
-    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-
+    let options = { _source: fields.join(",") };
+    if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
     Db.getSession(id, options, function (err, session) {
       if (err) {
         return nextCb(null);
@@ -4841,8 +4838,9 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
   var map = {};
 
   let options = {};
-  if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-  if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+  if (req.query.cancelId) { options.cancelId = `${req.user.userId}::${req.query.cancelId}`; }
+  if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
+
   buildSessionQuery(req, function (bsqErr, query, indices) {
     if (bsqErr) {
       const r = {
@@ -4886,8 +4884,8 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
     }
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options),
-      Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
-      Db.healthCachePromise()
+    Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
+    Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
         console.log('sessions.json result', util.inspect(sessions, false, 50));
@@ -4961,8 +4959,8 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
     }
 
     let options = {};
-    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+    if (req.query.cancelId) { options.cancelId = `${req.user.userId}::${req.query.cancelId}`; }
+    if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
 
     delete query.sort;
     query.size = 0;
@@ -4982,7 +4980,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
 
     Promise.all([
       Db.healthCachePromise(),
-      Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
+      Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
       Db.searchPrimary(indices, 'session', query, options)
     ]).then(([health, total, result]) => {
       if (result.error) { throw result.error; }
@@ -5185,7 +5183,7 @@ app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'),
     var protocols;
 
     let options = {};
-    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
+    if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options, null),
       Db.numberOfDocuments('sessions2-*', options),
@@ -5593,14 +5591,6 @@ function buildConnections (req, res, cb) {
 
           let asrc = hit.fields[fsrc];
           let adst = hit.fields[fdst];
-
-          let options = {};
-          if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-          if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-
-          if (Config.debug) {
-            console.log('buildConnections query', JSON.stringify(req.query, null, 2));
-          }
 
           if (asrc === undefined || adst === undefined) {
             return setImmediate(hitCb);
@@ -6599,11 +6589,10 @@ function localSessionDetail (req, res) {
  * Get SPI data for a session
  */
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
-    var options = {};
-
-    if (req.query.cluster && Config.get('multiES', false)) { options._cluster = req.query.cluster; }
-
-    Db.getSession(req.params.id, options, function (err, session) {
+  var options = {};
+  if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
+  
+  Db.getSession(req.params.id, options, function (err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + ' Error: ' + err);
     }
@@ -9416,7 +9405,37 @@ app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
     });
 });
 
-// ----------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////////
+// MultiES
+//////////////////////////////////////////////////////////////////////////////////
+
+app.get("/multienabled", (req, res) => {
+  var isMultiESEnabled = false;
+  if (Config.get("multiES", false)) {
+    isMultiESEnabled = true;
+  }
+  res.send(isMultiESEnabled);
+});
+
+app.get("/esclusters", (req, res) => {
+  Db.getClusterDetails((err, results) => {
+    var clusters = [];
+    if (err) {
+      console.log('Error: ' + err);
+    } else if (results && results.available && results.inactive) {
+        for (var i = 0; i < results.available.length; i++) {
+          if (results.inactive.includes(results.available[i])) {
+            clusters.push({text: results.available[i], value: results.available[i], disabled: true});
+          } else {
+            clusters.push({text: results.available[i], value: results.available[i], disabled: false});
+          }
+        }
+    }
+    res.send(clusters);
+  });
+});
+
+//////////////////////////////////////////////////////////////////////////////////
 // Vue app
 // ----------------------------------------------------------------------------
 const Vue = require('vue');

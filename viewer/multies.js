@@ -50,9 +50,13 @@ if (esClientKey) {
 var clients = {};
 var nodes = [];
 var clusters = {};
+var clusterList = [];
 var activeESNodes = [];
-var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
-var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+var ccsEnabled = false;
+var ccsNode = null;
+var ccsClient = null;
+var httpAgent  =  new http.Agent({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100});
+var httpsAgent =  new https.Agent(Object.assign({keepAlive: true, keepAliveMsecs:5000, maxSockets: 100}, esSSLOptions));
 
 function hasBody (req) {
   var encoding = 'transfer-encoding' in req.headers;
@@ -117,15 +121,15 @@ function node2Prefix (node) {
   return '';
 }
 
-function removeClusterFromQueryUrl (url) {
-  var base = url.split('?')[0];
-  var query = url.split('?')[1];
-  if (query) {
-    var queryArray = query.split('&');
+function removeClusterFromQueryUrl(url) {
+  var base = url.split("?")[0];
+  var query = url.split("?")[1];
+  if(query) {
+    var query_array = query.split("&");
     var newQuery = [];
-    for (var i = 0; i < queryArray.length; i++) {
-      if (queryArray[i].indexOf('_cluster') === -1) {
-        newQuery.push(queryArray[i]);
+    for (var i = 0; i < query_array.length; i++) {
+      if(query_array[i].indexOf('_cluster') === -1) {
+        newQuery.push(query_array[i]);
       }
     }
    newQuery = newQuery.join('&');
@@ -136,37 +140,94 @@ function removeClusterFromQueryUrl (url) {
   return url;
 }
 
-function getActiveNodes (clusterin) {
-  if (clusterin) {
-    if (!Array.isArray(clusterin)) {
+function getActiveNodes(clusterin){
+  if(clusterin) {
+    if(!Array.isArray(clusterin)) {
       clusterin = [clusterin];
     }
-    var tmpNodes = [];
-    for (var i = 0; i < clusterin.length; i++) {
-      if (clusters[clusterin[i]]) { // cluster -> node
-        tmpNodes.push(clusters[clusterin[i]]);
+    var tmp_nodes = [];
+    for(var i = 0; i < clusterin.length; i++) {
+      if(clusters[clusterin[i]]) { // cluster -> node
+        tmp_nodes.push(clusters[clusterin[i]]);
       }
     }
-    var activeNodes = [];
+    var active_nodes = [];
     activeESNodes.slice().forEach((node) => {
-      if (tmpNodes.includes(node)) {
-        activeNodes.push(node);
+      if(tmp_nodes.includes(node)) {
+        active_nodes.push(node);
       }
     });
-    return activeNodes;
+    return active_nodes;
   } else {
     return activeESNodes.slice();
   }
 }
 
-function simpleGather (req, res, bodies, doneCb) {
+//////////////////////////////////////////////////////////////////////////////////
+//// Cross Cluster Search Begin
+//////////////////////////////////////////////////////////////////////////////////
+
+// add cross cluster information to indices
+function fixIndex(index, cluster) {
+  if (index === undefined || cluster === undefined) {
+    return undefined;
+  } else {
+    var ccs_index = [];
+    for (var i = 0; i < index.length; i++) {
+      for (var j = 0; j < cluster.length; j++) {
+        if(clusters[cluster[j]] !== undefined) { // clusters = {"cluster_one": "escluster1.example.com:9200,prefix:PREFIX", "cluster_two": escluster2.example.com:9200 }
+          ccs_index.push(cluster[j] + ":" +  node2Prefix(clusters[cluster[j]]) + index);
+        }
+      }
+    }
+    // console.log("DEBUG: CCS indices " + ccs_index.join(","));
+    return ccs_index.join(","); // cluster_one:PREFIX1_index,cluster_two:PREFIX2_index,cluster_three:index
+  }
+}
+
+function merge (to, from) {
+  for (var key in from) {
+    to[key] = from[key];
+  }
+}
+
+function crossClusterSearch(index, type, query, options, cluster, cb) {
+  var params = {index: fixIndex(index, cluster), type: type, body: query};
+  merge(params, options);
+  return ccsClient.search(params, (err, result) => {
+    if (err || result.error) {
+      console.log("Error: ", err);
+      cb(err, result);
+    } else {
+      if (result && result.hits && result.hits.hits) {
+       for (var i = 0; i < result.hits.hits.length; i++) {
+          if(result.hits.hits[i]._index) {
+            // add node name
+            result.hits.hits[i]._source.escluster = result.hits.hits[i]._index.split(":")[0]; // "_index": "cluster_one:twitter"
+            result.hits.hits[i]._index = result.hits.hits[i]._index.split(":")[1]; // "_index": "cluster_one:twitter"
+          }
+        }
+      }
+      cb(err, result);
+    }
+  });
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//// Cross Cluster Search End
+//////////////////////////////////////////////////////////////////////////////////
+
+function simpleGather(req, res, bodies, doneCb) {
   var cluster = null;
-  if (req.query._cluster) {
-    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(',');
+  if(req.query._cluster) {
+    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(",");
     req.url = removeClusterFromQueryUrl(req.url);
     delete req.query._cluster;
   }
   var nodes = getActiveNodes(cluster);
+  if (nodes.length === 0 ) { // Empty nodes. Either all clusters are down or invalid clusters
+    return doneCb(true, [{}]);
+  }
   async.map(nodes, (node, asyncCb) => {
     var result = '';
     var url = node2Url(node) + req.url;
@@ -195,7 +256,6 @@ function simpleGather (req, res, bodies, doneCb) {
         } else {
           result = {};
         }
-        result._node = node;
         result.escluster = clusters[node];
         asyncCb(null, result);
       });
@@ -395,8 +455,22 @@ app.get('/_cluster/settings', function (req, res) {
   res.send({ persistent: {}, transient: {} });
 });
 
-app.head(/^\/$/, function (req, res) {
-  res.send('');
+app.get("/_cluster/details", function(req, res) {
+  var result = {available: [], active: [], inactive: []};
+  var active_nodes = getActiveNodes();
+  for (var i =0; i < clusterList.length; i++) {
+    result.available.push(clusterList[i]);
+    if (active_nodes.includes(clusters[clusterList[i]])) {
+      result.active.push(clusterList[i]);
+    } else {
+      result.inactive.push(clusterList[i]);
+    }
+  }
+  res.send(result);
+});
+
+app.head(/^\/$/, function(req, res) {
+  res.send("");
 });
 
 app.get(/^\/$/, function (req, res) {
@@ -618,7 +692,6 @@ function combineResults (obj, result) {
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
       result.hits.hits[i]._node = result._node;
-      result.hits.hits[i]._source.escluster = result.escluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
@@ -800,6 +873,7 @@ function msearch (req, res) {
 app.post('/:index/:type/:id/_update', function (req, res) {
   var body = JSON.parse(req.body);
   if (body._cluster && clusters[body._cluster]) {
+
     var node = clusters[body._cluster];
     delete body._cluster;
 
@@ -810,7 +884,7 @@ app.post('/:index/:type/:id/_update', function (req, res) {
       return res.send(result);
     });
   } else {
-    console.log('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
+    console.log ('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
@@ -819,6 +893,7 @@ app.post(['/:index/history', '/*history*/_doc'], simpleGatherFirst);
 
 app.post('/:index/:type/_msearch', msearch);
 app.post('/_msearch', msearch);
+
 app.get('/:index/_count', simpleGatherAdd);
 app.post('/:index/_count', simpleGatherAdd);
 app.get('/:index/:type/_count', simpleGatherAdd);
@@ -872,9 +947,9 @@ nodes.forEach((node) => {
   });
 });
 
-var clusterList = Config.get('multiESClusters', '').split(';');
-if (clusterList.length === 0 || clusterList[0] === '') {
-  console.log('ERROR - Empty multiESClusters');
+clusterList = Config.get("multiESClusters", "").split(";");
+if (clusterList.length === 0 || clusterList[0] === "") {
+  console.log("ERROR - Empty multiESClusters");
   process.exit(1);
 }
 
@@ -883,7 +958,6 @@ for (var i = 0; i < nodes.length; i++) {
   clusters[nodes[i]] = clusterList[i]; // node -> cluster
   clusters[clusterList[i]] = nodes[i]; // cluster -> node
 }
-
 activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
