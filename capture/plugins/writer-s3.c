@@ -760,10 +760,10 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     char host[200];
-    if (!s3AllowInsecure) {
-        snprintf(host, sizeof(host), "https://%s", s3Host);
-    } else {
+    if (s3AllowInsecure) {
         snprintf(host, sizeof(host), "http://%s", s3Host);
+    } else {
+        snprintf(host, sizeof(host), "https://%s", s3Host);
     }
     s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
     moloch_http_set_print_errors(s3Server);
