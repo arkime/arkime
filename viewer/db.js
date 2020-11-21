@@ -1123,7 +1123,7 @@ exports.getSequenceNumber = function (name, cb) {
 
 exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
-  if (index !== "sessions2-*" || internals.multiES) {
+  if (index !== 'sessions2-*' || internals.multiES) {
     let params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     return internals.elasticSearchClient.count(params);
@@ -1350,9 +1350,7 @@ exports.getMinValue = function (index, field, cb) {
 };
 
 exports.getClusterDetails = function (cb) {
-  //return internals.elasticSearchClient.get({index: '_cluster', type: 'details', id: ''}, cb);
-  return internals.elasticSearchClient.get({index: '_cluster',  id: 'details'}, cb);
-
+  return internals.elasticSearchClient.get({ index: '_cluster', id: 'details' }, cb);
 };
 
 exports.getILMPolicy = function () {

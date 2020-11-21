@@ -3226,7 +3226,7 @@ function sessionsListFromIds (req, ids, fields, cb) {
   let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
   async.eachLimit(ids, 10, function (id, nextCb) {
-    let options = { _source: fields.join(",") };
+    let options = { _source: fields.join(',') };
     if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
     Db.getSession(id, options, function (err, session) {
       if (err) {
@@ -4885,7 +4885,7 @@ app.get('/sessions.json', [noCacheJson, recordResponseTime, logAction('sessions'
     }
 
     Promise.all([Db.searchPrimary(indices, 'session', query, options),
-    Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
+    Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
     Db.healthCachePromise()
     ]).then(([sessions, total, health]) => {
       if (Config.debug) {
@@ -4981,7 +4981,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
 
     Promise.all([
       Db.healthCachePromise(),
-      Db.numberOfDocuments('sessions2-*', options._cluster ? {_cluster: options._cluster} : {}),
+      Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
       Db.searchPrimary(indices, 'session', query, options)
     ]).then(([health, total, result]) => {
       if (result.error) { throw result.error; }
@@ -6592,7 +6592,7 @@ function localSessionDetail (req, res) {
 app.get('/:nodeName/session/:id/detail', cspHeader, logAction(), (req, res) => {
   var options = {};
   if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
-  
+
   Db.getSession(req.params.id, options, function (err, session) {
     if (err || !session.found) {
       return res.end("Couldn't look up SPI data, error for session " + safeStr(req.params.id) + ' Error: ' + err);
@@ -9406,19 +9406,19 @@ app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
     });
 });
 
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // MultiES
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 
-app.get("/multienabled", (req, res) => {
+app.get('/multienabled', (req, res) => {
   var isMultiESEnabled = false;
-  if (Config.get("multiES", false)) {
+  if (Config.get('multiES', false)) {
     isMultiESEnabled = true;
   }
   res.send(isMultiESEnabled);
 });
 
-app.get("/esclusters", (req, res) => {
+app.get('/esclusters', (req, res) => {
   Db.getClusterDetails((err, results) => {
     var clusters = [];
     if (err) {
@@ -9426,9 +9426,9 @@ app.get("/esclusters", (req, res) => {
     } else if (results && results.available && results.inactive) {
         for (var i = 0; i < results.available.length; i++) {
           if (results.inactive.includes(results.available[i])) {
-            clusters.push({text: results.available[i], value: results.available[i], disabled: true});
+            clusters.push({ text: results.available[i], value: results.available[i], disabled: true });
           } else {
-            clusters.push({text: results.available[i], value: results.available[i], disabled: false});
+            clusters.push({ text: results.available[i], value: results.available[i], disabled: false });
           }
         }
     }
@@ -9436,7 +9436,7 @@ app.get("/esclusters", (req, res) => {
   });
 });
 
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // Vue app
 // ----------------------------------------------------------------------------
 const Vue = require('vue');
