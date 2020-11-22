@@ -41,8 +41,6 @@ LOCAL uint32_t              dedupSlots;
 LOCAL uint32_t              dedupPackets;
 LOCAL uint32_t              dedupSize;
 
-extern uint32_t             hashSalt;
-
 typedef struct dedupsecond DedupSeconds_t;
 struct dedupsecond {
     uint8_t        *md5s;
@@ -67,8 +65,16 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     unsigned char md[16];
     MD5_CTX ctx;
     MD5_Init(&ctx);
-    MD5_Update(&ctx, &hashSalt, 4);
-    MD5_Update(&ctx, packet->pkt + packet->ipOffset, headerLen);
+    uint8_t * const ptr = packet->pkt + packet->ipOffset;
+    if ((ptr[0] & 0xf0) == 0x40) {
+        MD5_Update(&ctx, ptr, 8);
+        // Skip TTL
+        MD5_Update(&ctx, ptr+9, headerLen-9);
+    } else {
+        MD5_Update(&ctx, ptr, 7);
+        // Skip HOP
+        MD5_Update(&ctx, ptr+8, headerLen-8);
+    }
     MD5_Final(md, &ctx);
     int h = ((uint32_t *)md)[0] % dedupSlots;
 
@@ -78,7 +84,7 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
         MOLOCH_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again
             if (seconds[secondSlot].error) {
-                LOG ("WARNING - Ran out of room, increase dedupPackets to %d or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
+                LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
                 seconds[secondSlot].error = 0;
             }
             memset(seconds[secondSlot].counts, 0, dedupSlots);
@@ -129,7 +135,7 @@ void arkime_dedup_init()
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
 
     if (config.debug)
-        LOG("seconds = %d packets = %d slots = %d size = %d mem=%d", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize*16));
+        LOG("seconds = %u packets = %u slots = %u size = %u mem=%u", dedupSeconds, dedupPackets, dedupSlots, dedupSize, dedupSeconds *(dedupSlots + dedupSize*16));
 
     seconds = MOLOCH_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
     for (uint32_t i = 0; i < dedupSeconds; i++) {
