@@ -133,7 +133,7 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
     int final = flags & NGHTTP2_FLAG_END_HEADERS;
 
 #ifdef HTTPDEBUG
-    LOG("%d,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
+    LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
     //moloch_print_hex_string(in, inlen);
 #endif
 
