@@ -1034,9 +1034,13 @@ function logAction (uiPage) {
 }
 
 function fieldToExp (req, res, next) {
-  if (req.query.exp && !req.query.field) {
-    var field = Config.getFieldsMap()[req.query.exp];
-    if (field) { req.query.field = field.dbField; } else { req.query.field = req.query.exp; }
+  if (req.body.exp && !req.body.field) {
+    let field = Config.getFieldsMap()[req.body.exp];
+    if (field) {
+      req.body.field = field.dbField;
+    } else {
+      req.body.field = req.body.exp;
+    }
   }
 
   return next();
@@ -4098,178 +4102,19 @@ app.getpost(
   sessionAPIs.getSPIView
 );
 
-app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
-  req.query.facets = '1';
+// TODO ECR - document
+app.getpost(
+  ['/api/spigraph', '/spigraph.json'],
+  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillBody, fieldToExp],
+  sessionAPIs.getSPIGraph
+);
 
-  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
-    var results = { items: [], graph: {}, map: {} };
-    if (bsqErr) {
-      return res.molochError(403, bsqErr.toString());
-    }
-
-    let options;
-    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
-
-    delete query.sort;
-    query.size = 0;
-    var size = +req.query.size || 20;
-
-    var field = req.query.field || 'node';
-
-    if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
-
-    if (field === 'ip.dst:port') {
-      query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
-    } else if (field === 'fileand') {
-      query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
-    } else {
-      query.aggregations.field = { terms: { field: field, size: size * 2 } };
-    }
-
-    Promise.all([
-      Db.healthCachePromise(),
-      Db.numberOfDocuments('sessions2-*'),
-      Db.searchPrimary(indices, 'session', query, options)
-    ]).then(([health, total, result]) => {
-      if (result.error) { throw result.error; }
-
-      results.health = health;
-      results.recordsTotal = total.count;
-      results.recordsFiltered = result.hits.total;
-
-      results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
-      results.map = ViewerUtils.mapMerge(result.aggregations);
-
-      if (!result.aggregations) {
-        result.aggregations = { field: { buckets: [] } };
-      }
-
-      let aggs = result.aggregations.field.buckets;
-      let filter = { term: {} };
-      let sfilter = { term: {} };
-      query.query.bool.filter.push(filter);
-
-      if (field === 'ip.dst:port') {
-        query.query.bool.filter.push(sfilter);
-      }
-
-      delete query.aggregations.field;
-
-      let queriesInfo = [];
-      function endCb () {
-        queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
-        let queries = queriesInfo.map((item) => { return item.query; });
-
-        Db.msearch(indices, 'session', queries, options, function (err, result) {
-          if (!result.responses) {
-            return res.send(results);
-          }
-
-          result.responses.forEach(function (item, i) {
-            var r = { name: queriesInfo[i].key, count: queriesInfo[i].doc_count };
-
-            r.graph = ViewerUtils.graphMerge(req, query, result.responses[i].aggregations);
-
-            let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes('histo'));
-            let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
-            let histoXMin = results.graph[xMinName][0][0];
-            let xMaxName = histoKeys.reduce((prev, curr) => {
-              return results.graph[prev][results.graph[prev].length - 1][0] > results.graph[curr][results.graph[curr].length - 1][0] ? prev : curr;
-            });
-            let histoXMax = results.graph[xMaxName][results.graph[xMaxName].length - 1][0];
-
-            if (r.graph.xmin === null) {
-              r.graph.xmin = results.graph.xmin || histoXMin;
-            }
-
-            if (r.graph.xmax === null) {
-              r.graph.xmax = results.graph.xmax || histoXMax;
-            }
-
-            r.map = ViewerUtils.mapMerge(result.responses[i].aggregations);
-
-            results.items.push(r);
-            histoKeys.forEach(item => {
-              r[item] = 0.0;
-            });
-
-            var graph = r.graph;
-            for (let j = 0; j < histoKeys.length; j++) {
-              item = histoKeys[j];
-              for (let i = 0; i < graph[item].length; i++) {
-                r[item] += graph[item][i][1];
-              }
-            }
-
-            if (graph.totPacketsTotal !== undefined) {
-              r.totPacketsHisto = graph.totPacketsTotal;
-            }
-            if (graph.totDataBytesTotal !== undefined) {
-              r.totDataBytesHisto = graph.totDataBytesTotal;
-            }
-            if (graph.totBytesTotal !== undefined) {
-              r.totBytesHisto = graph.totBytesTotal;
-            }
-
-            if (results.items.length === result.responses.length) {
-              var s = req.query.sort || 'sessionsHisto';
-              results.items = results.items.sort(function (a, b) {
-                var result;
-                if (s === 'name') { result = a.name.localeCompare(b.name); } else { result = b[s] - a[s]; }
-                return result;
-              }).slice(0, size);
-              return res.send(results);
-            }
-          });
-        });
-      }
-
-      let intermediateResults = [];
-      function findFileNames () {
-        async.each(intermediateResults, function (fsitem, cb) {
-          let split = fsitem.key.split(':');
-          let node = split[0];
-          let fileId = split[1];
-          Db.fileIdToFile(node, fileId, function (file) {
-            if (file && file.name) {
-              queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
-            }
-            cb();
-          });
-        }, function () {
-          endCb();
-        });
-      }
-
-      aggs.forEach((item) => {
-        if (field === 'ip.dst:port') {
-          filter.term.dstIp = item.key;
-          let sep = (item.key.indexOf(':') === -1) ? ':' : '.';
-          item.sub.buckets.forEach((sitem) => {
-            sfilter.term.dstPort = sitem.key;
-            queriesInfo.push({ key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
-          });
-        } else if (field === 'fileand') {
-          filter.term.node = item.key;
-          item.sub.buckets.forEach((sitem) => {
-            sfilter.term.fileand = sitem.key;
-            intermediateResults.push({ key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
-          });
-        } else {
-          filter.term[field] = item.key;
-          queriesInfo.push({ key: item.key, doc_count: item.doc_count, query: JSON.stringify(query) });
-        }
-      });
-
-      if (field === 'fileand') { return findFileNames(); }
-
-      return endCb();
-    }).catch((err) => {
-      console.log('spigraph.json error', err);
-      return res.molochError(403, ViewerUtils.errorString(err));
-    });
-  });
-});
+// TODO ECR
+app.getpost(
+  ['/api/spigraphhierarchy', 'spigraphhierarchy'],
+  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillBody],
+  sessionAPIs.getSPIGraphHierarchy
+);
 
 app.get('/reverseDNS.txt', [noCacheJson, logAction()], function (req, res) {
   // console.log('reverseDNS.txt', req.query);
@@ -4827,116 +4672,6 @@ app.get(/\/sessions.csv.*/, logAction(), function (req, res) {
   }
 });
 
-app.get('/spigraphhierarchy', noCacheJson, logAction(), (req, res) => {
-  if (req.query.exp === undefined) {
-    return res.molochError(403, 'Missing exp parameter');
-  }
-
-  let fields = [];
-  let parts = req.query.exp.split(',');
-  for (let i = 0; i < parts.length; i++) {
-    if (internals.scriptAggs[parts[i]] !== undefined) {
-      fields.push(internals.scriptAggs[parts[i]]);
-      continue;
-    }
-    let field = Config.getFieldsMap()[parts[i]];
-    if (!field) {
-      return res.molochError(403, `Unknown expression ${parts[i]}\n`);
-    }
-    fields.push(field);
-  }
-
-  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
-    query.size = 0; // Don't need any real results, just aggregations
-    delete query.sort;
-    delete query.aggregations;
-    const size = +req.query.size || 20;
-
-    if (!query.query.bool.must) {
-      query.query.bool.must = [];
-    }
-
-    let lastQ = query;
-    for (let i = 0; i < fields.length; i++) {
-      // Require that each field exists
-      query.query.bool.must.push({ exists: { field: fields[i].dbField } });
-
-      if (fields[i].script) {
-        lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size: size } } };
-      } else {
-        lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size: size } } };
-      }
-      lastQ = lastQ.aggregations.field;
-    }
-
-    if (Config.debug > 2) {
-      console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
-    }
-
-    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
-      if (err) {
-        console.log('spigraphpie ERROR', err);
-        res.status(400);
-        return res.end(err);
-      }
-
-      if (Config.debug > 2) {
-        console.log('result', JSON.stringify(result, false, 2));
-      }
-
-      // format the data for the pie graph
-      let hierarchicalResults = { name: 'Top Talkers', children: [] };
-      function addDataToPie (buckets, addTo) {
-        for (let i = 0; i < buckets.length; i++) {
-          let bucket = buckets[i];
-          addTo.push({
-            name: bucket.key,
-            size: bucket.doc_count
-          });
-          if (bucket.field) {
-            addTo[i].children = [];
-            addTo[i].size = undefined; // size is interpreted from children
-            addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
-            addDataToPie(bucket.field.buckets, addTo[i].children);
-          }
-        }
-      }
-
-      let grandparent;
-      let tableResults = [];
-      // assumes only 3 levels deep
-      function addDataToTable (buckets, parent) {
-        for (let i = 0; i < buckets.length; i++) {
-          let bucket = buckets[i];
-          if (bucket.field) {
-            if (parent) { grandparent = parent; }
-            addDataToTable(bucket.field.buckets, {
-              name: bucket.key,
-              size: bucket.doc_count
-            });
-          } else {
-            tableResults.push({
-              parent: parent,
-              grandparent: grandparent,
-              name: bucket.key,
-              size: bucket.doc_count
-            });
-          }
-        }
-      }
-
-      addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
-      addDataToTable(result.aggregations.field.buckets);
-
-      return res.send({
-        success: true,
-        tableResults: tableResults,
-        hierarchicalResults: hierarchicalResults
-      });
-    });
-  });
-});
-
 app.get('/multiunique.txt', logAction(), function (req, res) {
   noCache(req, res, 'text/plain; charset=utf-8');
 
@@ -5017,7 +4752,7 @@ app.get('/multiunique.txt', logAction(), function (req, res) {
   });
 });
 
-app.get('/unique.txt', [logAction(), fieldToExp], function (req, res) {
+app.get('/unique.txt', [logAction(), fillBody, fieldToExp], function (req, res) {
   noCache(req, res, 'text/plain; charset=utf-8');
 
   if (req.query.field === undefined && req.query.exp === undefined) {

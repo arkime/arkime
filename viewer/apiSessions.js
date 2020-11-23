@@ -659,5 +659,337 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     });
   };
 
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
+   * @name /api/spigraph
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} field=node - The database field to get data for. Defaults to "node".
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getSPIGraph = (req, res) => {
+    req.body.facets = 1;
+
+    module.buildSessionQuery(req, (bsqErr, query, indices) => {
+      let results = { items: [], graph: {}, map: {} };
+      if (bsqErr) {
+        return res.molochError(403, bsqErr.toString());
+      }
+
+      let options;
+      if (req.body.cancelId) {
+        options = { cancelId: `${req.user.userId}::${req.body.cancelId}` };
+      }
+
+      delete query.sort;
+      query.size = 0;
+      const size = +req.body.size || 20;
+
+      let field = req.body.field || 'node';
+
+      if (req.body.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
+
+      if (field === 'ip.dst:port') {
+        query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+      } else if (field === 'fileand') {
+        query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
+      } else {
+        query.aggregations.field = { terms: { field: field, size: size * 2 } };
+      }
+
+      Promise.all([
+        Db.healthCachePromise(),
+        Db.numberOfDocuments('sessions2-*'),
+        Db.searchPrimary(indices, 'session', query, options)
+      ]).then(([health, total, result]) => {
+        if (result.error) { throw result.error; }
+
+        results.health = health;
+        results.recordsTotal = total.count;
+        results.recordsFiltered = result.hits.total;
+
+        results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+        results.map = ViewerUtils.mapMerge(result.aggregations);
+
+        if (!result.aggregations) {
+          result.aggregations = { field: { buckets: [] } };
+        }
+
+        let aggs = result.aggregations.field.buckets;
+        let filter = { term: {} };
+        let sfilter = { term: {} };
+        query.query.bool.filter.push(filter);
+
+        if (field === 'ip.dst:port') {
+          query.query.bool.filter.push(sfilter);
+        }
+
+        delete query.aggregations.field;
+
+        let queriesInfo = [];
+        function endCb () {
+          queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
+          let queries = queriesInfo.map((item) => { return item.query; });
+
+          Db.msearch(indices, 'session', queries, options, function (err, result) {
+            if (!result.responses) {
+              return res.send(results);
+            }
+
+            result.responses.forEach(function (item, i) {
+              let response = {
+                name: queriesInfo[i].key,
+                count: queriesInfo[i].doc_count
+              };
+
+              response.graph = ViewerUtils.graphMerge(req, query, result.responses[i].aggregations);
+
+              let histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes('histo'));
+              let xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
+              let histoXMin = results.graph[xMinName][0][0];
+              let xMaxName = histoKeys.reduce((prev, curr) => {
+                return results.graph[prev][results.graph[prev].length - 1][0] > results.graph[curr][results.graph[curr].length - 1][0] ? prev : curr;
+              });
+              let histoXMax = results.graph[xMaxName][results.graph[xMaxName].length - 1][0];
+
+              if (response.graph.xmin === null) {
+                response.graph.xmin = results.graph.xmin || histoXMin;
+              }
+
+              if (response.graph.xmax === null) {
+                response.graph.xmax = results.graph.xmax || histoXMax;
+              }
+
+              response.map = ViewerUtils.mapMerge(result.responses[i].aggregations);
+
+              results.items.push(response);
+              histoKeys.forEach(item => {
+                response[item] = 0.0;
+              });
+
+              let graph = response.graph;
+              for (let j = 0; j < histoKeys.length; j++) {
+                item = histoKeys[j];
+                for (let i = 0; i < graph[item].length; i++) {
+                  response[item] += graph[item][i][1];
+                }
+              }
+
+              if (graph.totPacketsTotal !== undefined) {
+                response.totPacketsHisto = graph.totPacketsTotal;
+              }
+              if (graph.totDataBytesTotal !== undefined) {
+                response.totDataBytesHisto = graph.totDataBytesTotal;
+              }
+              if (graph.totBytesTotal !== undefined) {
+                response.totBytesHisto = graph.totBytesTotal;
+              }
+
+              if (results.items.length === result.responses.length) {
+                let s = req.body.sort || 'sessionsHisto';
+                results.items = results.items.sort(function (a, b) {
+                  let result;
+                  if (s === 'name') {
+                    result = a.name.localeCompare(b.name);
+                  } else {
+                    result = b[s] - a[s];
+                  }
+                  return result;
+                }).slice(0, size);
+                return res.send(results);
+              }
+            });
+          });
+        }
+
+        let intermediateResults = [];
+        function findFileNames () {
+          async.each(intermediateResults, function (fsitem, cb) {
+            let split = fsitem.key.split(':');
+            let node = split[0];
+            let fileId = split[1];
+            Db.fileIdToFile(node, fileId, function (file) {
+              if (file && file.name) {
+                queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
+              }
+              cb();
+            });
+          }, function () {
+            endCb();
+          });
+        }
+
+        aggs.forEach((item) => {
+          if (field === 'ip.dst:port') {
+            filter.term.dstIp = item.key;
+            let sep = (item.key.indexOf(':') === -1) ? ':' : '.';
+            item.sub.buckets.forEach((sitem) => {
+              sfilter.term.dstPort = sitem.key;
+              queriesInfo.push({ key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
+            });
+          } else if (field === 'fileand') {
+            filter.term.node = item.key;
+            item.sub.buckets.forEach((sitem) => {
+              sfilter.term.fileand = sitem.key;
+              intermediateResults.push({ key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
+            });
+          } else {
+            filter.term[field] = item.key;
+            queriesInfo.push({ key: item.key, doc_count: item.doc_count, query: JSON.stringify(query) });
+          }
+        });
+
+        if (field === 'fileand') { return findFileNames(); }
+
+        return endCb();
+      }).catch((err) => {
+        console.log('spigraph.json error', err);
+        return res.molochError(403, ViewerUtils.errorString(err));
+      });
+    });
+  };
+
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets a list of values for each field with counts and returns them to the client.
+   * @name /api/spigraph
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} exp - Comma separated list of db fields to populate the graph/table.
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getSPIGraphHierarchy = (req, res) => {
+    if (req.body.exp === undefined) {
+      return res.molochError(403, 'Missing exp parameter');
+    }
+
+    let fields = [];
+    let parts = req.body.exp.split(',');
+    for (let i = 0; i < parts.length; i++) {
+      if (internals.scriptAggs[parts[i]] !== undefined) {
+        fields.push(internals.scriptAggs[parts[i]]);
+        continue;
+      }
+      let field = Config.getFieldsMap()[parts[i]];
+      if (!field) {
+        return res.molochError(403, `Unknown expression ${parts[i]}\n`);
+      }
+      fields.push(field);
+    }
+
+    module.buildSessionQuery(req, (err, query, indices) => {
+      query.size = 0; // Don't need any real results, just aggregations
+      delete query.sort;
+      delete query.aggregations;
+      const size = +req.body.size || 20;
+
+      if (!query.query.bool.must) {
+        query.query.bool.must = [];
+      }
+
+      let lastQ = query;
+      for (let i = 0; i < fields.length; i++) {
+        // Require that each field exists
+        query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+
+        if (fields[i].script) {
+          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size: size } } };
+        } else {
+          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size: size } } };
+        }
+        lastQ = lastQ.aggregations.field;
+      }
+
+      if (Config.debug > 2) {
+        console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
+      }
+
+      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        if (err) {
+          console.log('spigraphpie ERROR', err);
+          res.status(400);
+          return res.end(err);
+        }
+
+        if (Config.debug > 2) {
+          console.log('result', JSON.stringify(result, false, 2));
+        }
+
+        // format the data for the pie graph
+        let hierarchicalResults = { name: 'Top Talkers', children: [] };
+        function addDataToPie (buckets, addTo) {
+          for (let i = 0; i < buckets.length; i++) {
+            let bucket = buckets[i];
+            addTo.push({
+              name: bucket.key,
+              size: bucket.doc_count
+            });
+            if (bucket.field) {
+              addTo[i].children = [];
+              addTo[i].size = undefined; // size is interpreted from children
+              addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
+              addDataToPie(bucket.field.buckets, addTo[i].children);
+            }
+          }
+        }
+
+        let grandparent;
+        let tableResults = [];
+        // assumes only 3 levels deep
+        function addDataToTable (buckets, parent) {
+          for (let i = 0; i < buckets.length; i++) {
+            let bucket = buckets[i];
+            if (bucket.field) {
+              if (parent) { grandparent = parent; }
+              addDataToTable(bucket.field.buckets, {
+                name: bucket.key,
+                size: bucket.doc_count
+              });
+            } else {
+              tableResults.push({
+                parent: parent,
+                grandparent: grandparent,
+                name: bucket.key,
+                size: bucket.doc_count
+              });
+            }
+          }
+        }
+
+        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
+        addDataToTable(result.aggregations.field.buckets);
+
+        return res.send({
+          success: true,
+          tableResults: tableResults,
+          hierarchicalResults: hierarchicalResults
+        });
+      });
+    });
+  };
+
   return module;
 };
