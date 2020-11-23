@@ -3,6 +3,14 @@
 module.exports = (async, Db, Config, molochparser, internals) => {
   let module = {};
 
+  module.noCache = (req, res, ct) => {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    if (ct) {
+      res.setHeader('Content-Type', ct);
+      res.header('X-Content-Type-Options', 'nosniff');
+    }
+  };
+
   module.queryValueToArray = (val) => {
      if (val === undefined || val === null) {
        return [];
@@ -373,6 +381,39 @@ module.exports = (async, Db, Config, molochparser, internals) => {
      } else {
        return 'Elasticsearch error: ' + str;
      }
+   };
+
+   module.loadFields = () => {
+     return new Promise((resolve, reject) => {
+       Db.loadFields((err, data) => {
+         if (err) {
+           reject({ fieldsMap: {}, fieldsArr: [] });
+         } else {
+           data = data.hits.hits;
+         }
+
+         // Everything will use dbField2 as dbField
+         for (let i = 0, ilen = data.length; i < ilen; i++) {
+           internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+           data[i]._source.dbField = data[i]._source.dbField2;
+           if (data[i]._source.portField2) {
+             data[i]._source.portField = data[i]._source.portField2;
+           } else {
+             delete data[i]._source.portField;
+           }
+           delete data[i]._source.rawField;
+         }
+
+         Config.loadFields(data);
+
+         resolve({
+           fieldsMap: JSON.stringify(Config.getFieldsMap()),
+           fieldsArr: Config.getFields().sort((a, b) => {
+             return (a.exp > b.exp ? 1 : -1);
+           })
+         });
+       });
+     });
    };
 
    return module;
