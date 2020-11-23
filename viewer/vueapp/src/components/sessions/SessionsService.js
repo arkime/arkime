@@ -287,7 +287,7 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.csv/${params.filename}`;
+      let baseUrl = `api/sessions.csv/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 

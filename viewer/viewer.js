@@ -2548,126 +2548,6 @@ function expireCheckAll () {
 }
 
 // ----------------------------------------------------------------------------
-// Sessions List
-// ----------------------------------------------------------------------------
-function sessionsListAddSegments (req, indices, query, list, cb) {
-  var processedRo = {};
-
-  // Index all the ids we have, so we don't include them again
-  var haveIds = {};
-  list.forEach(function (item) {
-    haveIds[item._id] = true;
-  });
-
-  delete query.aggregations;
-
-  // Do a ro search on each item
-  var writes = 0;
-  async.eachLimit(list, 10, function (item, nextCb) {
-    var fields = item._source || item.fields;
-    if (!fields.rootId || processedRo[fields.rootId]) {
-      if (writes++ > 100) {
-        writes = 0;
-        setImmediate(nextCb);
-      } else {
-        nextCb();
-      }
-      return;
-    }
-    processedRo[fields.rootId] = true;
-
-    query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
-      if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
-        console.log('ERROR fetching matching sessions', err, result);
-        return nextCb(null);
-      }
-      result.hits.hits.forEach(function (item) {
-        if (!haveIds[item._id]) {
-          haveIds[item._id] = true;
-          list.push(item);
-        }
-      });
-      return nextCb(null);
-    });
-    query.query.bool.filter.pop();
-  }, function (err) {
-    cb(err, list);
-  });
-}
-
-function sessionsListFromQuery (req, res, fields, cb) {
-  if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
-    fields.push('rootId');
-  }
-
-  sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
-    if (err) {
-      return res.send('Could not build query.  Err: ' + err);
-    }
-    query._source = fields;
-    if (Config.debug) {
-      console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
-    }
-    Db.searchPrimary(indices, 'session', query, null, function (err, result) {
-      if (err || result.error) {
-        console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
-        return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
-      }
-      var list = result.hits.hits;
-      if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
-        sessionsListAddSegments(req, indices, query, list, function (err, list) {
-          cb(err, list);
-        });
-      } else {
-        cb(err, list);
-      }
-    });
-  });
-}
-
-function sessionsListFromIds (req, ids, fields, cb) {
-  var processSegments = false;
-  if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
-    if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
-    processSegments = true;
-  }
-
-  let list = [];
-  let nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
-  let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
-
-  async.eachLimit(ids, 10, function (id, nextCb) {
-    Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
-      if (err) {
-        return nextCb(null);
-      }
-
-      for (let i = 0; i < fixFields.length; i++) {
-        var field = fixFields[i];
-        if (session._source[field] && Array.isArray(session._source[field])) {
-          session._source[field] = session._source[field][0];
-        }
-      }
-
-      list.push(session);
-      nextCb(null);
-    });
-  }, function (err) {
-    if (processSegments) {
-      sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
-        query._source = fields;
-        sessionsListAddSegments(req, indices, query, list, function (err, list) {
-          cb(err, list);
-        });
-      });
-    } else {
-      cb(err, list);
-    }
-  });
-}
-
-// ----------------------------------------------------------------------------
 // APIs
 // ----------------------------------------------------------------------------
 app.get('/history/list', [noCacheJson, recordResponseTime, setCookie], (req, res) => {
@@ -4043,31 +3923,6 @@ app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson, checkPermissions(['hi
   });
 });
 
-// TODO ECR - put in sessions?
-app.use('/buildQuery.json', [noCacheJson, logAction('query')], function (req, res, next) {
-  if (req.method === 'POST') {
-    req.query = req.body;
-  } else if (req.method !== 'GET') {
-    next();
-  }
-
-  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
-    if (bsqErr) {
-      res.send({ recordsTotal: 0,
-        recordsFiltered: 0,
-        bsqErr: bsqErr.toString()
-      });
-      return;
-    }
-
-    if (req.query.fields) {
-      query._source = ViewerUtils.queryValueToArray(req.query.fields);
-    }
-
-    res.send({ 'esquery': query, 'indices': indices });
-  });
-});
-
 // TODO ECR - put this elsewhere?
 app.get('/reverseDNS.txt', [noCacheJson, logAction()], (req, res) => {
   dns.reverse(req.query.ip, (err, data) => {
@@ -4103,7 +3958,18 @@ app.getpost( // spigraph hierarchy endpoint (POST or GET)
   sessionAPIs.getSPIGraphHierarchy
 );
 
-// TODO ECR
+app.getpost( // build query endoint (POST or GET)
+  ['/api/buildQuery', '/buildQuery.json'],
+  [noCacheJson, logAction('query', fillBody)],
+  sessionAPIs.getQuery
+);
+
+app.getpost( // sessions csv endpoint (POST or GET)
+  [/\/api\/sessions.csv.*/, /\/sessions.csv.*/],
+  [logAction('sessions csv'), fillBody],
+  sessionAPIs.getSessionsCSV
+);
+
 // Connections Endpoints ------------------------------------------------------
 app.getpost( // connections endpoint (POST or GET)
   ['/api/connections', '/connections.json'],
@@ -4116,88 +3982,6 @@ app.getpost( // connections csv endpoint (POST or GET)
   [logAction('connections.csv'), fillBody],
   connectionAPIs.getConnectionsCSV
 );
-
-function csvListWriter (req, res, list, fields, pcapWriter, extension) {
-  if (list.length > 0 && list[0].fields) {
-    list = list.sort(function (a, b) { return a.fields.lastPacket - b.fields.lastPacket; });
-  } else if (list.length > 0 && list[0]._source) {
-    list = list.sort(function (a, b) { return a._source.lastPacket - b._source.lastPacket; });
-  }
-
-  var fieldObjects = Config.getDBFieldsMap();
-
-  if (fields) {
-    var columnHeaders = [];
-    for (let i = 0, ilen = fields.length; i < ilen; ++i) {
-      if (fieldObjects[fields[i]] !== undefined) {
-        columnHeaders.push(fieldObjects[fields[i]].friendlyName);
-      }
-    }
-    res.write(columnHeaders.join(', '));
-    res.write('\r\n');
-  }
-
-  for (var j = 0, jlen = list.length; j < jlen; j++) {
-    var sessionData = ViewerUtils.flattenFields(list[j]._source || list[j].fields);
-    sessionData._id = list[j]._id;
-
-    if (!fields) { continue; }
-
-    var values = [];
-    for (let k = 0, klen = fields.length; k < klen; ++k) {
-      let value = sessionData[fields[k]];
-      if (fields[k] === 'ipProtocol' && value) {
-        value = Pcap.protocol2Name(value);
-      }
-
-      if (Array.isArray(value)) {
-        let singleValue = '"' + value.join(', ') + '"';
-        values.push(singleValue);
-      } else {
-        if (value === undefined) {
-          value = '';
-        } else if (typeof (value) === 'string' && value.includes(',')) {
-          if (value.includes('"')) {
-            value = value.replace(/"/g, '""');
-          }
-          value = '"' + value + '"';
-        }
-        values.push(value);
-      }
-    }
-
-    res.write(values.join(','));
-    res.write('\r\n');
-  }
-
-  res.end();
-}
-
-// TODO ECR
-app.get(/\/sessions.csv.*/, logAction(), function (req, res) {
-  ViewerUtils.noCache(req, res, 'text/csv');
-
-  // default fields to display in csv
-  var fields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'];
-  // save requested fields because sessionsListFromQuery returns fields with
-  // "rootId" appended onto the end
-  var reqFields = fields;
-
-  if (req.query.fields) {
-    fields = reqFields = ViewerUtils.queryValueToArray(req.query.fields);
-  }
-
-  if (req.query.ids) {
-    var ids = ViewerUtils.queryValueToArray(req.query.ids);
-    sessionsListFromIds(req, ids, fields, function (err, list) {
-      csvListWriter(req, res, list, reqFields);
-    });
-  } else {
-    sessionsListFromQuery(req, res, fields, function (err, list) {
-      csvListWriter(req, res, list, reqFields);
-    });
-  }
-});
 
 app.get('/multiunique.txt', logAction(), function (req, res) {
   ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
@@ -5356,11 +5140,11 @@ function sessionsPcap (req, res, pcapWriter, extension) {
   if (req.query.ids) {
     var ids = ViewerUtils.queryValueToArray(req.query.ids);
 
-    sessionsListFromIds(req, ids, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
+    sessionAPIs.sessionsListFromIds(req, ids, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   } else {
-    sessionsListFromQuery(req, res, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
+    sessionAPIs.sessionsListFromQuery(req, res, ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'], function (err, list) {
       sessionsPcapList(req, res, list, pcapWriter, extension);
     });
   }
@@ -5701,7 +5485,7 @@ app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function (req
   if (req.body.ids) {
     var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ['tags', 'node'], function (err, list) {
+    sessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], function (err, list) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
@@ -5710,7 +5494,7 @@ app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function (req
       });
     });
   } else {
-    sessionsListFromQuery(req, res, ['tags', 'node'], function (err, list) {
+    sessionAPIs.sessionsListFromQuery(req, res, ['tags', 'node'], function (err, list) {
       if (!list.length) {
         return res.molochError(200, 'No sessions to add tags to');
       }
@@ -5732,11 +5516,11 @@ app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermis
   if (req.body.ids) {
     var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ['tags'], function (err, list) {
+    sessionAPIs.sessionsListFromIds(req, ids, ['tags'], function (err, list) {
       removeTagsList(res, tags, list);
     });
   } else {
-    sessionsListFromQuery(req, res, ['tags'], function (err, list) {
+    sessionAPIs.sessionsListFromQuery(req, res, ['tags'], function (err, list) {
       removeTagsList(res, tags, list);
     });
   }
@@ -7096,11 +6880,11 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermission
 
   if (req.body.ids) {
     const ids = ViewerUtils.queryValueToArray(req.body.ids);
-    sessionsListFromIds(req, ids, ['node'], function (err, list) {
+    sessionAPIs.sessionsListFromIds(req, ids, ['node'], function (err, list) {
       scrubList(req, res, whatToRemove, list);
     });
   } else if (req.query.expression) {
-    sessionsListFromQuery(req, res, ['node'], function (err, list) {
+    sessionAPIs.sessionsListFromQuery(req, res, ['node'], function (err, list) {
       scrubList(req, res, whatToRemove, list);
     });
   } else {
@@ -7515,11 +7299,11 @@ app.post('/sendSessions', function (req, res) {
   if (req.body.ids) {
     var ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-    sessionsListFromIds(req, ids, ['node'], function (err, list) {
+    sessionAPIs.sessionsListFromIds(req, ids, ['node'], function (err, list) {
       sendSessionsList(req, res, list);
     });
   } else {
-    sessionsListFromQuery(req, res, ['node'], function (err, list) {
+    sessionAPIs.sessionsListFromQuery(req, res, ['node'], function (err, list) {
       sendSessionsList(req, res, list);
     });
   }
@@ -7807,7 +7591,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
         }
 
         var tags = options.tags.split(',');
-        sessionsListFromIds(null, ids, ['tags', 'node'], function (err, list) {
+        sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], function (err, list) {
           addTagsList(tags, list, doNext);
         });
       } else {

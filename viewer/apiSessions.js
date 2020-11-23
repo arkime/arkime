@@ -153,6 +153,138 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     }
   }
 
+  function csvListWriter (req, res, list, fields, pcapWriter, extension) {
+    if (list.length > 0 && list[0].fields) {
+      list = list.sort(function (a, b) { return a.fields.lastPacket - b.fields.lastPacket; });
+    } else if (list.length > 0 && list[0]._source) {
+      list = list.sort(function (a, b) { return a._source.lastPacket - b._source.lastPacket; });
+    }
+
+    let fieldObjects = Config.getDBFieldsMap();
+
+    if (fields) {
+      let columnHeaders = [];
+      for (let i = 0, ilen = fields.length; i < ilen; ++i) {
+        if (fieldObjects[fields[i]] !== undefined) {
+          columnHeaders.push(fieldObjects[fields[i]].friendlyName);
+        }
+      }
+      res.write(columnHeaders.join(', '));
+      res.write('\r\n');
+    }
+
+    for (let j = 0, jlen = list.length; j < jlen; j++) {
+      let sessionData = ViewerUtils.flattenFields(list[j]._source || list[j].fields);
+      sessionData._id = list[j]._id;
+
+      if (!fields) { continue; }
+
+      let values = [];
+      for (let k = 0, klen = fields.length; k < klen; ++k) {
+        let value = sessionData[fields[k]];
+        if (fields[k] === 'ipProtocol' && value) {
+          value = Pcap.protocol2Name(value);
+        }
+
+        if (Array.isArray(value)) {
+          let singleValue = '"' + value.join(', ') + '"';
+          values.push(singleValue);
+        } else {
+          if (value === undefined) {
+            value = '';
+          } else if (typeof (value) === 'string' && value.includes(',')) {
+            if (value.includes('"')) {
+              value = value.replace(/"/g, '""');
+            }
+            value = '"' + value + '"';
+          }
+          values.push(value);
+        }
+      }
+
+      res.write(values.join(','));
+      res.write('\r\n');
+    }
+
+    res.end();
+  }
+
+  function sessionsListAddSegments (req, indices, query, list, cb) {
+    let processedRo = {};
+
+    // Index all the ids we have, so we don't include them again
+    let haveIds = {};
+    list.forEach(function (item) {
+      haveIds[item._id] = true;
+    });
+
+    delete query.aggregations;
+
+    // Do a ro search on each item
+    let writes = 0;
+    async.eachLimit(list, 10, function (item, nextCb) {
+      let fields = item._source || item.fields;
+      if (!fields.rootId || processedRo[fields.rootId]) {
+        if (writes++ > 100) {
+          writes = 0;
+          setImmediate(nextCb);
+        } else {
+          nextCb();
+        }
+        return;
+      }
+      processedRo[fields.rootId] = true;
+
+      query.query.bool.filter.push({ term: { rootId: fields.rootId } });
+      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
+          console.log('ERROR fetching matching sessions', err, result);
+          return nextCb(null);
+        }
+        result.hits.hits.forEach(function (item) {
+          if (!haveIds[item._id]) {
+            haveIds[item._id] = true;
+            list.push(item);
+          }
+        });
+        return nextCb(null);
+      });
+      query.query.bool.filter.pop();
+    }, function (err) {
+      cb(err, list);
+    });
+  }
+
+  module.sessionsListFromQuery = (req, res, fields, cb) => {
+    if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
+      fields.push('rootId');
+    }
+
+    module.buildSessionQuery(req, (err, query, indices) => {
+      if (err) {
+        return res.send('Could not build query.  Err: ' + err);
+      }
+      query._source = fields;
+      if (Config.debug) {
+        console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
+      }
+      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        if (err || result.error) {
+          console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
+          return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
+        }
+        let list = result.hits.hits;
+        if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
+          sessionsListAddSegments(req, indices, query, list, function (err, list) {
+            cb(err, list);
+          });
+        } else {
+          cb(err, list);
+        }
+      });
+    });
+  };
+
   /**
    * Builds the session query based on req.body
    * @ignore
@@ -329,9 +461,93 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     }
   };
 
+  module.sessionsListFromIds = (req, ids, fields, cb) => {
+    let processSegments = false;
+    if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
+      if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
+      processSegments = true;
+    }
+
+    let list = [];
+    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
+    let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
+
+    async.eachLimit(ids, 10, function (id, nextCb) {
+      Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
+        if (err) {
+          return nextCb(null);
+        }
+
+        for (let i = 0; i < fixFields.length; i++) {
+          let field = fixFields[i];
+          if (session._source[field] && Array.isArray(session._source[field])) {
+            session._source[field] = session._source[field][0];
+          }
+        }
+
+        list.push(session);
+        nextCb(null);
+      });
+    }, function (err) {
+      if (processSegments) {
+        module.buildSessionQuery(req, (err, query, indices) => {
+          query._source = fields;
+          sessionsListAddSegments(req, indices, query, list, function (err, list) {
+            cb(err, list);
+          });
+        });
+      } else {
+        cb(err, list);
+      }
+    });
+  };
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
+   * @name /api/buildQuery
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getQuery = (req, res) => {
+    module.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          error: bsqErr.toString()
+        });
+      }
+
+      if (req.body.fields) {
+        query._source = ViewerUtils.queryValueToArray(req.body.fields);
+      }
+
+      res.send({ 'esquery': query, 'indices': indices });
+    });
+  };
+
   /**
    * POST/GET (preferred method is POST)
    *
@@ -474,6 +690,60 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
         return res.send(response);
       });
     });
+  };
+
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
+   * @name /api/sessions
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getSessionsCSV = (req, res) => {
+    ViewerUtils.noCache(req, res, 'text/csv');
+
+    // default fields to display in csv
+    let fields = [
+      'ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO',
+      'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'
+    ];
+
+    // save requested fields because sessionsListFromQuery returns fields with
+    // "rootId" appended onto the end
+    let reqFields = fields;
+
+    if (req.body.fields) {
+      fields = reqFields = ViewerUtils.queryValueToArray(req.body.fields);
+    }
+
+    if (req.body.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.body.ids);
+      module.sessionsListFromIds(req, ids, fields, (err, list) => {
+        csvListWriter(req, res, list, reqFields);
+      });
+    } else {
+      module.sessionsListFromQuery(req, res, fields, (err, list) => {
+        csvListWriter(req, res, list, reqFields);
+      });
+    }
   };
 
   /**
