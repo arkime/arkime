@@ -1,14 +1,9 @@
 'use strict';
 
-let async = require('async');
+module.exports = (async, Db, Config, molochparser, internals) => {
+  let module = {};
 
-let Db = require('./db');
-let Config = require('./config');
-let molochparser = require('./molochparser');
-let internals = require('./internals').internals;
-
-module.exports = {
-  queryValueToArray (val) {
+  module.queryValueToArray = (val) => {
      if (val === undefined || val === null) {
        return [];
      }
@@ -16,7 +11,7 @@ module.exports = {
        val = [val];
      }
      return val.join(',').split(',');
-   },
+   };
 
    // -------------------------------------------------------------------------
    // determineQueryTimes(reqQuery)
@@ -27,7 +22,7 @@ module.exports = {
    //
    // This code was factored out from buildSessionQuery.
    // -------------------------------------------------------------------------
-   determineQueryTimes (reqQuery) {
+   module.determineQueryTimes = (reqQuery) => {
      let startTimeSec = null;
      let stopTimeSec = null;
      let interval = 60 * 60;
@@ -95,13 +90,13 @@ module.exports = {
      }
 
      return [startTimeSec, stopTimeSec, interval];
-   },
+   };
 
    /* This method fixes up parts of the query that jison builds to what ES actually
     * understands.  This includes mapping all the tag fields from strings to numbers
     * and any of the filename stuff
     */
-   lookupQueryItems (query, doneCb) {
+   module.lookupQueryItems = (query, doneCb) => {
      if (Config.get('multiES', false)) {
        return doneCb(null);
      }
@@ -151,9 +146,9 @@ module.exports = {
      }
 
      finished = 1;
-   },
+   };
 
-   continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
+   module.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
      // queryOverride can supercede req.query if specified
      let reqQuery = queryOverride || req.query;
 
@@ -169,7 +164,7 @@ module.exports = {
        }
      }
 
-     module.exports.lookupQueryItems(query.query.bool.filter, function (lerr) {
+     module.lookupQueryItems(query.query.bool.filter, function (lerr) {
        if (reqQuery.date === '-1' || // An all query
            Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
          return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
@@ -183,9 +178,9 @@ module.exports = {
          }
        });
      });
-   },
+   };
 
-   mapMerge (aggregations) {
+   module.mapMerge = (aggregations) => {
      let map = { src: {}, dst: {}, xffGeo: {} };
 
      if (!aggregations || !aggregations.mapG1) {
@@ -205,9 +200,9 @@ module.exports = {
      });
 
      return map;
-   },
+   };
 
-   graphMerge (req, query, aggregations) {
+   module.graphMerge = (req, query, aggregations) => {
      let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
      let graph = {
@@ -277,7 +272,7 @@ module.exports = {
      });
 
      return graph;
-   },
+   };
 
    /**
     * Flattens fields that are objects (only goes 1 level deep)
@@ -290,7 +285,7 @@ module.exports = {
     * @param {object} fields The object containing fields to be flattened
     * @returns {object} fields The object with fields flattened
     */
-   flattenFields (fields) {
+   module.flattenFields = (fields) => {
      let newFields = {};
 
      for (let key in fields) {
@@ -337,9 +332,9 @@ module.exports = {
      }
 
      return fields;
-   },
+   };
 
-   fixFields (fields, fixCb) {
+   module.fixFields = (fields, fixCb) => {
      if (!fields.fileId) {
        fields.fileId = [];
        return fixCb(null, fields);
@@ -358,5 +353,27 @@ module.exports = {
        fields.fileId = files;
        fixCb(err, fields);
      });
-   }
+   };
+
+   module.errorString = (err, result) => {
+     let str;
+     if (err && typeof err === 'string') {
+       str = err;
+     } else if (err && typeof err.message === 'string') {
+       str = err.message;
+     } else if (result && result.error) {
+       str = result.error;
+     } else {
+       str = 'Unknown issue, check logs';
+       console.log(err, result);
+     }
+
+     if (str.match('IndexMissingException')) {
+       return "Arkime's Elasticsearch database has no matching session indices for the timeframe selected.";
+     } else {
+       return 'Elasticsearch error: ' + str;
+     }
+   };
+
+   return module;
 };

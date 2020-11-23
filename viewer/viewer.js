@@ -50,7 +50,6 @@ try {
   var RE2 = require('re2');
   var path = require('path');
   var contentDisposition = require('content-disposition');
-  var ViewerUtils = require('./viewerUtils');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -65,13 +64,14 @@ if (typeof express !== 'function') {
 var app = express();
 
 // registers a get and a post
-app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); }
+app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
 
 // ----------------------------------------------------------------------------
 // Config
 // ----------------------------------------------------------------------------
 let { internals } = require('./internals')(Config, RE2, http, https);
-let sessionAPIs = require('./apiSessions')(async, util, Db, Config, ViewerUtils, molochparser, internals);
+let ViewerUtils = require('./viewerUtils')(async, Db, Config, molochparser, internals);
+let sessionAPIs = require('./apiSessions')(async, util, Pcap, Db, Config, ViewerUtils, molochparser, internals);
 
 function isProduction () {
   return app.get('env') === 'production';
@@ -501,26 +501,6 @@ function arrayToObject (array, key) {
     obj[item[key]] = item;
     return obj;
   }, {});
-}
-
-function errorString (err, result) {
-  var str;
-  if (err && typeof err === 'string') {
-    str = err;
-  } else if (err && typeof err.message === 'string') {
-    str = err.message;
-  } else if (result && result.error) {
-    str = result.error;
-  } else {
-    str = 'Unknown issue, check logs';
-    console.log(err, result);
-  }
-
-  if (str.match('IndexMissingException')) {
-    return "Moloch's Elasticsearch database has no matching session indices for timeframe selected";
-  } else {
-    return 'Elasticsearch error: ' + str;
-  }
 }
 
 function parseCustomView (key, input) {
@@ -1089,21 +1069,22 @@ function fillBody (req, res, next) {
 // APIs disabled in demoMode, needs to be before real callbacks
 if (Config.get('demoMode', false)) {
   console.log('WARNING - Starting in demo mode, some APIs disabled');
-  app.all(['/settings', '/users', '/history/list'], function (req, res) {
+  app.all(['/settings', '/users', '/history/list'], (req, res) => {
     return res.send('Disabled in demo mode.');
   });
 
-  app.get(['/user/cron', '/history/list'], function (req, res) {
+  app.get(['/user/cron', '/history/list'], (req, res) => {
     return res.molochError(403, 'Disabled in demo mode.');
   });
 
-  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], function (req, res) {
+  app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], (req, res) => {
     return res.molochError(403, 'Disabled in demo mode.');
   });
 }
 
-app.get(['/', '/app'], function (req, res) {
-  var question = req.url.indexOf('?');
+// redirect to sessions page and conserve params
+app.get(['/', '/app'], (req, res) => {
+  let question = req.url.indexOf('?');
   if (question === -1) {
     res.redirect('sessions');
   } else {
@@ -1111,6 +1092,7 @@ app.get(['/', '/app'], function (req, res) {
   }
 });
 
+// redirect to help page (keeps #)
 app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
   res.redirect('help');
 });
@@ -1148,7 +1130,7 @@ app.get('/molochclusters', function (req, res) {
   return res.send(clustersClone);
 });
 
-// custom user css
+// custom user css - used for custom user theme
 app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
   fs.readFile('./views/user.styl', 'utf8', function (err, str) {
     function error (msg) {
@@ -1156,7 +1138,7 @@ app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
       return res.status(404).end();
     }
 
-    var date = new Date().toUTCString();
+    let date = new Date().toUTCString();
     res.setHeader('Content-Type', 'text/css');
     res.setHeader('Date', date);
     res.setHeader('Cache-Control', 'public, max-age=0');
@@ -1165,13 +1147,13 @@ app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
     if (err) { return error(err); }
     if (!req.user.settings.theme) { return error('no custom theme defined'); }
 
-    var theme = req.user.settings.theme.split(':');
+    let theme = req.user.settings.theme.split(':');
 
     if (!theme[1]) { return error('custom theme corrupted'); }
 
-    var style = stylus(str);
+    let style = stylus(str);
 
-    var colors = theme[1].split(',');
+    let colors = theme[1].split(',');
 
     if (!colors) { return error('custom theme corrupted'); }
 
@@ -4107,7 +4089,14 @@ app.getpost(
   ['/api/sessions', '/sessions.json'],
   [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillBody],
   sessionAPIs.getSessions
-)
+);
+
+// TODO ECR - document
+app.getpost(
+  ['/api/spiview', '/spiview.json'],
+  [noCacheJson, recordResponseTime, logAction('spiview'), setCookie, fillBody],
+  sessionAPIs.getSPIView
+);
 
 app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'), fieldToExp, setCookie], (req, res) => {
   req.query.facets = '1';
@@ -4277,161 +4266,7 @@ app.get('/spigraph.json', [noCacheJson, recordResponseTime, logAction('spigraph'
       return endCb();
     }).catch((err) => {
       console.log('spigraph.json error', err);
-      return res.molochError(403, errorString(err));
-    });
-  });
-});
-
-app.get('/spiview.json', [noCacheJson, recordResponseTime, logAction('spiview'), setCookie], (req, res) => {
-  if (req.query.spi === undefined) {
-    return res.send({ spi: {}, recordsTotal: 0, recordsFiltered: 0 });
-  }
-
-  var spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
-
-  if (req.query.date === '-1' && spiDataMaxIndices !== -1) {
-    return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
-  }
-
-  sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
-    if (bsqErr) {
-      var r = { spi: {},
-        bsqErr: bsqErr.toString(),
-        health: Db.healthCache()
-      };
-      return res.send(r);
-    }
-
-    delete query.sort;
-
-    if (!query.aggregations) {
-      query.aggregations = {};
-    }
-
-    if (req.query.facets === '1') {
-      query.aggregations.protocols = { terms: { field: 'protocol', size: 1000 } };
-    }
-
-    ViewerUtils.queryValueToArray(req.query.spi).forEach(function (item) {
-      var parts = item.split(':');
-      if (parts[0] === 'fileand') {
-        query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
-      } else {
-        query.aggregations[parts[0]] = { terms: { field: parts[0] } };
-
-        if (parts.length > 1) {
-          query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
-        }
-      }
-    });
-    query.size = 0;
-
-    // console.log("spiview.json query", JSON.stringify(query), "indices", indices);
-
-    var graph;
-    var map;
-
-    var indicesa = indices.split(',');
-    if (spiDataMaxIndices !== -1 && indicesa.length > spiDataMaxIndices) {
-      bsqErr = 'To save ES from blowing up, reducing number of spi data indices searched from ' + indicesa.length + ' to ' + spiDataMaxIndices + '.  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ';
-      indices = indicesa.slice(-spiDataMaxIndices).join(',');
-      bsqErr += indices;
-    }
-
-    var recordsFiltered = 0;
-    var protocols;
-
-    Promise.all([Db.searchPrimary(indices, 'session', query, null),
-      Db.numberOfDocuments('sessions2-*'),
-      Db.healthCachePromise()
-    ]).then(([sessions, total, health]) => {
-      if (Config.debug) {
-        console.log('spiview.json result', util.inspect(sessions, false, 50));
-      }
-
-      if (sessions.error) {
-        bsqErr = errorString(null, sessions);
-        console.log('spiview.json ERROR', (sessions ? sessions.error : null));
-        sendResult();
-        return;
-      }
-
-      recordsFiltered = sessions.hits.total;
-
-      if (!sessions.aggregations) {
-        sessions.aggregations = {};
-        for (var spi in query.aggregations) {
-          sessions.aggregations[spi] = { sum_other_doc_count: 0, buckets: [] };
-        }
-      }
-
-      if (sessions.aggregations.ipProtocol) {
-        sessions.aggregations.ipProtocol.buckets.forEach(function (item) {
-          item.key = Pcap.protocol2Name(item.key);
-        });
-      }
-
-      if (req.query.facets === '1') {
-        graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
-        map = ViewerUtils.mapMerge(sessions.aggregations);
-        protocols = {};
-        sessions.aggregations.protocols.buckets.forEach(function (item) {
-          protocols[item.key] = item.doc_count;
-        });
-
-        delete sessions.aggregations.dbHisto;
-        delete sessions.aggregations.byHisto;
-        delete sessions.aggregations.mapG1;
-        delete sessions.aggregations.mapG2;
-        delete sessions.aggregations.mapG3;
-        delete sessions.aggregations.protocols;
-      }
-
-      function sendResult () {
-        r = { health: health,
-          recordsTotal: total.count,
-          spi: sessions.aggregations,
-          recordsFiltered: recordsFiltered,
-          graph: graph,
-          map: map,
-          protocols: protocols,
-          bsqErr: bsqErr
-        };
-        res.logCounts(r.spi.count, r.recordsFiltered, r.total);
-        try {
-          res.send(r);
-        } catch (c) {
-        }
-      }
-
-      if (!sessions.aggregations.fileand) {
-        return sendResult();
-      }
-
-      var nresults = [];
-      var sodc = 0;
-      async.each(sessions.aggregations.fileand.buckets, function (nobucket, cb) {
-        sodc += nobucket.fileId.sum_other_doc_count;
-        async.each(nobucket.fileId.buckets, function (fsitem, cb) {
-          Db.fileIdToFile(nobucket.key, fsitem.key, function (file) {
-            if (file && file.name) {
-              nresults.push({ key: file.name, doc_count: fsitem.doc_count });
-            }
-            cb();
-          });
-        }, function () {
-          cb();
-        });
-      }, function () {
-        nresults = nresults.sort(function (a, b) {
-          if (a.doc_count === b.doc_count) {
-            return a.key.localeCompare(b.key);
-          }
-          return b.doc_count - a.doc_count;
-        });
-        sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
-        return sendResult();
-      });
+      return res.molochError(403, ViewerUtils.errorString(err));
     });
   });
 });

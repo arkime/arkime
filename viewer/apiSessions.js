@@ -1,9 +1,11 @@
 'use strict';
 
-module.exports = (async, util, Db, Config, ViewerUtils, molochparser, internals) => {
+module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, internals) => {
   let module = {};
 
-  // HELPERS ----------------------------------------------------------------- //
+  // --------------------------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------------------------
   /**
    * Adds the sort options to the elasticsearch query
    * @ignore
@@ -325,22 +327,24 @@ module.exports = (async, util, Db, Config, ViewerUtils, molochparser, internals)
     } else {
       ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
     }
-  }
+  };
 
-  // APIs -------------------------------------------------------------------- //
+  // --------------------------------------------------------------------------
+  // APIs
+  // --------------------------------------------------------------------------
   /**
    * POST/GET (preferred method is POST)
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them to the client.
    * @name /api/sessions
-   * @param {number} date=1	- The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
    * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0	- The entry to start at. Defaults to 0
+   * @param {number} start=0 - The entry to start at. Defaults to 0
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTimeI’m  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view -	The view name to apply before the expression.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
      Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
@@ -470,7 +474,190 @@ module.exports = (async, util, Db, Config, ViewerUtils, molochparser, internals)
         return res.send(response);
       });
     });
-  }
+  };
+
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets a list of field values with counts and returns them to the client.
+   * @name /api/spiview
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} spi - Comma separated list of db fields to return. Optionally can be followed by :{count} to specify the number of values returned for the field (defaults to 100).
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getSPIView = (req, res) => {
+    if (req.body.spi === undefined) {
+      return res.send({ spi: {}, recordsTotal: 0, recordsFiltered: 0 });
+    }
+
+    const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
+
+    if (parseInt(req.body.date) === -1 && spiDataMaxIndices !== -1) {
+      return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
+    }
+
+    let response = {
+      spi: {},
+      health: Db.healthCache()
+    };
+
+    module.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        response.error = bsqErr.toString();
+        return res.send(response);
+      }
+
+      delete query.sort;
+
+      if (!query.aggregations) {
+        query.aggregations = {};
+      }
+
+      if (parseInt(req.body.facets) === 1) {
+        query.aggregations.protocols = {
+          terms: { field: 'protocol', size: 1000 }
+        };
+      }
+
+      ViewerUtils.queryValueToArray(req.body.spi).forEach(function (item) {
+        const parts = item.split(':');
+        if (parts[0] === 'fileand') {
+          query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
+        } else {
+          query.aggregations[parts[0]] = { terms: { field: parts[0] } };
+
+          if (parts.length > 1) {
+            query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
+          }
+        }
+      });
+
+      query.size = 0;
+
+      if (Config.debug) {
+        console.log('spiview.json query', JSON.stringify(query), 'indices', indices);
+      }
+
+      let graph, map;
+
+      const indicesa = indices.split(',');
+      if (spiDataMaxIndices !== -1 && indicesa.length > spiDataMaxIndices) {
+        bsqErr = 'To save ES from blowing up, reducing number of spi data indices searched from ' + indicesa.length + ' to ' + spiDataMaxIndices + '.  This can be increased by setting spiDataMaxIndices in the config file.  Indices being searched: ';
+        indices = indicesa.slice(-spiDataMaxIndices).join(',');
+        bsqErr += indices;
+      }
+
+      let protocols;
+      let recordsFiltered = 0;
+
+      Promise.all([Db.searchPrimary(indices, 'session', query, null),
+        Db.numberOfDocuments('sessions2-*'),
+        Db.healthCachePromise()
+      ]).then(([sessions, total, health]) => {
+        if (Config.debug) {
+          console.log('spiview.json result', util.inspect(sessions, false, 50));
+        }
+
+        if (sessions.error) {
+          bsqErr = ViewerUtils.errorString(null, sessions);
+          console.log('spiview.json ERROR', (sessions ? sessions.error : null));
+          sendResult();
+          return;
+        }
+
+        recordsFiltered = sessions.hits.total;
+
+        if (!sessions.aggregations) {
+          sessions.aggregations = {};
+          for (let spi in query.aggregations) {
+            sessions.aggregations[spi] = { sum_other_doc_count: 0, buckets: [] };
+          }
+        }
+
+        if (sessions.aggregations.ipProtocol) {
+          sessions.aggregations.ipProtocol.buckets.forEach(function (item) {
+            item.key = Pcap.protocol2Name(item.key);
+          });
+        }
+
+        if (parseInt(req.body.facets) === 1) {
+          protocols = {};
+          map = ViewerUtils.mapMerge(sessions.aggregations);
+          graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
+          sessions.aggregations.protocols.buckets.forEach(function (item) {
+            protocols[item.key] = item.doc_count;
+          });
+
+          delete sessions.aggregations.mapG1;
+          delete sessions.aggregations.mapG2;
+          delete sessions.aggregations.mapG3;
+          delete sessions.aggregations.dbHisto;
+          delete sessions.aggregations.byHisto;
+          delete sessions.aggregations.protocols;
+        }
+
+        function sendResult () {
+          try {
+            response.map = map;
+            response.graph = graph;
+            response.error = bsqErr;
+            response.health = health;
+            response.protocols = protocols;
+            response.recordsTotal = total.count;
+            response.spi = sessions.aggregations;
+            response.recordsFiltered = recordsFiltered;
+            res.logCounts(response.spi.count, response.recordsFiltered, response.total);
+            return res.send(response);
+          } catch (e) {
+            console.trace('fetch spiview error', e.stack);
+            response.error = e.toString();
+            return res.send(response);
+          }
+        }
+
+        if (!sessions.aggregations.fileand) {
+          return sendResult();
+        }
+
+        let sodc = 0;
+        let nresults = [];
+        async.each(sessions.aggregations.fileand.buckets, function (nobucket, cb) {
+          sodc += nobucket.fileId.sum_other_doc_count;
+          async.each(nobucket.fileId.buckets, function (fsitem, cb) {
+            Db.fileIdToFile(nobucket.key, fsitem.key, function (file) {
+              if (file && file.name) {
+                nresults.push({ key: file.name, doc_count: fsitem.doc_count });
+              }
+              cb();
+            });
+          }, function () {
+            cb();
+          });
+        }, function () {
+          nresults = nresults.sort(function (a, b) {
+            if (a.doc_count === b.doc_count) {
+              return a.key.localeCompare(b.key);
+            }
+            return b.doc_count - a.doc_count;
+          });
+          sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
+          return sendResult();
+        });
+      });
+    });
+  };
 
   return module;
-}
+};
