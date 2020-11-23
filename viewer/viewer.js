@@ -51,7 +51,6 @@ try {
   var path = require('path');
   var contentDisposition = require('content-disposition');
   var ViewerUtils = require('./viewerUtils');
-  var sessionAPIs = require('./apiSessions');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -71,7 +70,8 @@ app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, m
 // ----------------------------------------------------------------------------
 // Config
 // ----------------------------------------------------------------------------
-let { internals } = require('./internals');
+let { internals } = require('./internals')(Config, RE2, http, https);
+let sessionAPIs = require('./apiSessions')(async, util, Db, Config, ViewerUtils, molochparser, internals);
 
 function isProduction () {
   return app.get('env') === 'production';
@@ -4634,7 +4634,6 @@ function buildConnections (req, res, cb) {
 
   req.query.srcField = req.query.srcField || 'srcIp';
   req.query.dstField = req.query.dstField || 'dstIp';
-  req.query.iDisplayLength = req.query.iDisplayLength || '5000';
   let fsrc = req.query.srcField;
   let fdst = req.query.dstField;
   let minConn = req.query.minConn || 1;
