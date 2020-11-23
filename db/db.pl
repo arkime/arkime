@@ -4015,13 +4015,13 @@ if (int($SHARDS) > $main::numberOfNodes) {
     }
 }
 
+dbCheck();
+
 dbVersion(1);
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if schema is up to date.  Use upgrade first.";
 }
-
-dbCheck();
 
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
