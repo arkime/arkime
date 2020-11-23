@@ -70,7 +70,7 @@ function makeS3 (node, region) {
     s3Params.s3ForcePathStyle = true;
   }
 
-  if (Config.getBoolFull(node, 's3AllowInsecure', false) === true) {
+  if (Config.getBoolFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
   }
 
