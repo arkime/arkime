@@ -20,6 +20,12 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 2.7.1 2020/12/xx
+  - release - glib 2.66.2, curl 7.73.0
+  - wise - fix UI queries hanging
+  - viewer - fix anonymous user settings not saving
+  - viewer - fix lastUsed time not always saving to ES
+  - capture - new packet dedup feature
+  - db - Moloch to Arkime text fixes
 
 2.7.0 2020/11/18
   - NOTICE - Requires ES 7.4 or newer

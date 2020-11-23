@@ -63,15 +63,15 @@ extern MolochFieldOps_t      readerFieldOps[256];
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 LOCAL MolochPacketEnqueue_cb ipCbs[MOLOCH_IPPROTO_MAX];
 
-int tcpMProtocol;
-int udpMProtocol;
+int                          tcpMProtocol;
+int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
 
 /******************************************************************************/
 
-LOCAL uint64_t               packetStats[MOLOCH_PACKET_MAX];
+uint64_t                     packetStats[MOLOCH_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
@@ -623,7 +623,7 @@ LOCAL void moloch_packet_log(SessionTypes ses)
 
     uint32_t wql = moloch_writer_queue_length();
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
       totalPackets,
       moloch_session_watch_count(ses),
       moloch_session_monitoring(),
@@ -643,7 +643,8 @@ LOCAL void moloch_packet_log(SessionTypes ses)
       packetStats[MOLOCH_PACKET_OVERLOAD_DROPPED],
       packetStats[MOLOCH_PACKET_CORRUPT],
       packetStats[MOLOCH_PACKET_UNKNOWN],
-      packetStats[MOLOCH_PACKET_IPPORT_DROPPED]
+      packetStats[MOLOCH_PACKET_IPPORT_DROPPED],
+      packetStats[MOLOCH_PACKET_DUPLICATE_DROPPED]
       );
 
       if (config.debug > 0) {
@@ -804,6 +805,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
             return MOLOCH_PACKET_IPPORT_DROPPED;
         }
 
+        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct tcphdr)))
+            return MOLOCH_PACKET_DUPLICATE_DROPPED;
+
         moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->mProtocol = tcpMProtocol;
@@ -836,6 +840,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
                 return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
             }
         }
+
+        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
+            return MOLOCH_PACKET_DUPLICATE_DROPPED;
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
@@ -969,6 +976,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
                 return MOLOCH_PACKET_IPPORT_DROPPED;
             }
 
+            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct tcphdr)))
+                return MOLOCH_PACKET_DUPLICATE_DROPPED;
+
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
             packet->mProtocol = tcpMProtocol;
@@ -992,6 +1002,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
                     return moloch_packet_ip_gtp(batch, packet, buf, rem);
                 }
             }
+
+            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
+                return MOLOCH_PACKET_DUPLICATE_DROPPED;
 
             packet->mProtocol = udpMProtocol;
             done = 1;

@@ -66,6 +66,8 @@ LOCAL int               dbExit;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 
+extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -1254,6 +1256,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
     static uint64_t       lastESDropped[NUMBER_OF_STATS];
+    static uint64_t       lastDupDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
@@ -1278,6 +1281,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     uint64_t overloadDropped = moloch_packet_dropped_overload();
     uint64_t totalDropped    = moloch_packet_dropped_packets();
     uint64_t fragsDropped    = moloch_packet_dropped_frags();
+    uint64_t dupDropped      = packetStats[MOLOCH_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = moloch_http_dropped_count(esServer);
     uint64_t totalBytes      = moloch_packet_total_bytes();
 
@@ -1370,6 +1374,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaFragsDropped\": %" PRIu64 ","
         "\"deltaOverloadDropped\": %" PRIu64 ","
         "\"deltaESDropped\": %" PRIu64 ","
+        "\"deltaDupDropped\": %" PRIu64 ","
         "\"esHealthMS\": %" PRIu64 ","
         "\"deltaMS\": %" PRIu64 ","
         "\"startTime\": %" PRIu64
@@ -1413,9 +1418,10 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
+        (dupDropped - lastDupDropped[n]),
         esHealthMS,
         diffms,
-        startTime.tv_sec);
+        (uint64_t)startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;
@@ -1428,6 +1434,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
     lastESDropped[n]       = esDropped;
+    lastDupDropped[n]      = dupDropped;
     lastUsage[n]           = usage;
 
     if (n == 0) {

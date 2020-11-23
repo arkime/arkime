@@ -62,6 +62,7 @@ void moloch_readers_init()
     moloch_readers_add("libpcap-file", reader_libpcapfile_init);
     moloch_readers_add("libpcap", reader_libpcap_init);
     moloch_readers_add("tpacketv3", reader_tpacketv3_init);
+    moloch_readers_add("afpacketv3", reader_tpacketv3_init);
     moloch_readers_add("null", reader_null_init);
     moloch_readers_add("pcapoveripclient", reader_pcapoverip_init);
     moloch_readers_add("pcap-over-ip-client", reader_pcapoverip_init);

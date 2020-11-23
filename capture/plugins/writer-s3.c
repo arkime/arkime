@@ -80,6 +80,7 @@ LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
+LOCAL  char                   s3UseHttp;
 
 LOCAL  int                    inprogress;
 
@@ -693,6 +694,7 @@ void writer_s3_init(char *UNUSED(name))
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
+    s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
     s3Token               = NULL;
     s3TokenTime           = 0;
     s3Role                = NULL;
@@ -758,7 +760,11 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     char host[200];
-    snprintf(host, sizeof(host), "https://%s", s3Host);
+    if (s3UseHttp) {
+        snprintf(host, sizeof(host), "http://%s", s3Host);
+    } else {
+        snprintf(host, sizeof(host), "https://%s", s3Host);
+    }
     s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
     moloch_http_set_print_errors(s3Server);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);
