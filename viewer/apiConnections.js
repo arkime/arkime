@@ -40,7 +40,7 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
       options: options
     };
 
-    // If network graph baseline is enabled (enabled: req.body.baselineDate != 0, disabled:req.body.baselineDate=0 or undefined)
+    // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
     //   then two queries will be run (ie., run buildSessionQuery->searchPrimary->process twice): first for the
     //   original specified time frame and second for the same time frame immediately preceding it.
     //
@@ -51,23 +51,23 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
     //   3 = 11 = seen during both the "current" time frame and the "baseline" time frame
     // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
     //
-    // With baselining, req.body.baselineDate can determine baseline time frame, which is the number of
-    // hours prior to the "start" query time, similar to req.body.date. If unspecified or zero, baseline
-    // uses the immediate time frame of the same duration immediately prior to the req.body.startTime.
-    // However, If req.body.baselineDate ends with x, the duration of the baseline is the time frame of
+    // With baselining, req.query.baselineDate can determine baseline time frame, which is the number of
+    // hours prior to the "start" query time, similar to req.query.date. If unspecified or zero, baseline
+    // uses the immediate time frame of the same duration immediately prior to the req.query.startTime.
+    // However, If req.query.baselineDate ends with x, the duration of the baseline is the time frame of
     // the "current" time frame multiplied by that number.
     let doBaseline = false;
     let baselineDate = 0;
     let baselineDateIsMultiplier = false;
 
-    if (((req.body.baselineDate !== undefined) && (req.body.baselineDate.length !== 0) && (String(req.body.baselineDate) !== '0') &&
-          (req.body.date !== '-1') && (req.body.startTime !== undefined) && (req.body.stopTime !== undefined)) ||
+    if (((req.query.baselineDate !== undefined) && (req.query.baselineDate.length !== 0) && (String(req.query.baselineDate) !== '0') &&
+          (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
         (resultId > 1)) {
       doBaseline = true;
     }
 
     if (doBaseline) {
-      let baselineDateTmpStr = req.body.baselineDate;
+      let baselineDateTmpStr = req.query.baselineDate;
       if (baselineDateTmpStr.endsWith('x')) {
         baselineDateIsMultiplier = true;
         baselineDateTmpStr = baselineDateTmpStr.slice(0, -1);
@@ -77,12 +77,12 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
       baselineDateIsMultiplier = (doBaseline && baselineDateIsMultiplier && (baselineDate > 0));
     }
 
-    // use a copy of req.body as we will modify the startTime/stopTime if we are doing a baseline query
-    let tmpReqQuery = JSON.parse(JSON.stringify(req.body));
+    // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
+    let tmpReqQuery = JSON.parse(JSON.stringify(req.query));
 
     if (resultId > 1) {
       // replace current time frame start/stop values with baseline time frame start/stop values
-      let currentQueryTimes = ViewerUtils.determineQueryTimes(req.body);
+      let currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
       if (Config.debug) {
         console.log('buildConnections baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
       }
@@ -108,8 +108,8 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
         result.err = bsqErr;
         return cb([result]);
       } else {
-        query.query.bool.filter.push({ exists: { field: req.body.srcField } });
-        query.query.bool.filter.push({ exists: { field: req.body.dstField } });
+        query.query.bool.filter.push({ exists: { field: req.query.srcField } });
+        query.query.bool.filter.push({ exists: { field: req.query.dstField } });
 
         query._source = fields;
         query.docvalue_fields = [fsrc, fdst];
@@ -199,23 +199,23 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
   // --------------------------------------------------------------------------
   function buildConnections (req, res, cb) {
     let dstipport;
-    if (req.body.dstField === 'ip.dst:port') {
+    if (req.query.dstField === 'ip.dst:port') {
       dstipport = true;
-      req.body.dstField = 'dstIp';
+      req.query.dstField = 'dstIp';
     }
 
-    req.body.srcField = req.body.srcField || 'srcIp';
-    req.body.dstField = req.body.dstField || 'dstIp';
-    let fsrc = req.body.srcField;
-    let fdst = req.body.dstField;
-    let minConn = req.body.minConn || 1;
+    req.query.srcField = req.query.srcField || 'srcIp';
+    req.query.dstField = req.query.dstField || 'dstIp';
+    let fsrc = req.query.srcField;
+    let fdst = req.query.dstField;
+    let minConn = req.query.minConn || 1;
 
     // get the requested fields
     let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-    if (req.body.fields) { fields = req.body.fields.split(','); }
+    if (req.query.fields) { fields = req.query.fields.split(','); }
 
     let options;
-    if (req.body.cancelId) { options = { cancelId: `${req.user.userId}::${req.body.cancelId}` }; }
+    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
 
     let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
@@ -364,7 +364,7 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
       }
 
       // ONE or TWO session queries will be executed, depending on if baseline is enabled:
-      //   1. for the "current" time frame, the one specified originally in req.body
+      //   1. for the "current" time frame, the one specified originally in req.query
       //   2. for the "baseline" time frame immediately prior to the time frame of "1."
       //      (only if baseline is enabled)
       // The call to process() will ensure the resultId value is OR'ed into the .inresult
@@ -499,7 +499,7 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
   module.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
-    const seperator = req.body.seperator || ',';
+    const seperator = req.query.seperator || ',';
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
         return res.send(err);
@@ -507,7 +507,7 @@ module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
 
       // write out the fields requested
       let fields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
-      if (req.body.fields) { fields = req.body.fields.split(','); }
+      if (req.query.fields) { fields = req.query.fields.split(','); }
 
       res.write('Source, Destination, Sessions');
       let displayFields = {};

@@ -39,7 +39,7 @@ module.exports = (async, Db, Config, molochparser, internals) => {
        console.log('determineQueryTimes <-', reqQuery);
      }
 
-     if ((reqQuery.date && reqQuery.date === '-1') ||
+     if ((reqQuery.date && parseInt(reqQuery.date) === -1) ||
          (reqQuery.segments && reqQuery.segments === 'all')) {
        interval = 60 * 60; // Hour to be safe
      } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
@@ -414,6 +414,72 @@ module.exports = (async, Db, Config, molochparser, internals) => {
          });
        });
      });
+   };
+
+   module.oldDB2newDB = (x) => {
+     if (!internals.oldDBFields[x]) { return x; }
+     return internals.oldDBFields[x].dbField2;
+   };
+
+   module.mergeUnarray = (to, from) => {
+     for (var key in from) {
+       if (Array.isArray(from[key])) {
+         to[key] = from[key][0];
+       } else {
+         to[key] = from[key];
+       }
+     }
+   };
+
+   module.commaStringToArray = (commaString) => {
+     // split string on commas and newlines
+     let values = commaString.split(/[,\n]+/g);
+
+     // remove any empty values
+     values = values.filter(function (val) {
+       return val !== '';
+     });
+
+     return values;
+   };
+
+   module.safeStr = (str) => {
+     return str.replace(/&/g, '&amp;')
+       .replace(/</g, '&lt;')
+       .replace(/>/g, '&gt;')
+       .replace(/"/g, '&quot;')
+       .replace(/'/g, '&#39;')
+       .replace(/\//g, '&#47;');
+   };
+
+   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
+   module.arrayToObject = (array, key) => {
+     return array.reduce((obj, item) => {
+       obj[item[key]] = item;
+       return obj;
+     }, {});
+   };
+
+   // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+   module.splitRemain = (str, separator, limit) => {
+     str = str.split(separator);
+     if (str.length <= limit) { return str; }
+
+     let ret = str.splice(0, limit);
+     ret.push(str.join(separator));
+
+     return ret;
+   };
+
+   module.arrayZeroFill = (n) => {
+     let a = [];
+
+     while (n > 0) {
+       a.push(0);
+       n--;
+     }
+
+     return a;
    };
 
    return module;

@@ -115,8 +115,8 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     let err;
     let viewExpression;
 
-    // queryOverride can supercede req.body if specified
-    let reqQuery = queryOverride || req.body;
+    // queryOverride can supercede req.query if specified
+    let reqQuery = queryOverride || req.query;
 
     if (req.user.views && req.user.views[reqQuery.view]) { // it's a user's view
       try {
@@ -286,7 +286,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
   };
 
   /**
-   * Builds the session query based on req.body
+   * Builds the session query based on req.query
    * @ignore
    * @name buildSessionQuery
    * @param {object} req - the client request
@@ -299,8 +299,8 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     let timeLimitExceeded = false;
     let interval;
 
-    // queryOverride can supercede req.body if specified
-    let reqQuery = queryOverride || req.body;
+    // queryOverride can supercede req.query if specified
+    let reqQuery = queryOverride || req.query;
 
     // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
     let startAndStopParams = ViewerUtils.determineQueryTimes(reqQuery);
@@ -463,7 +463,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
 
   module.sessionsListFromIds = (req, ids, fields, cb) => {
     let processSegments = false;
-    if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.body.segments && req.body.segments.match(/^(time|all)$/)))) {
+    if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.query.segments && req.query.segments.match(/^(time|all)$/)))) {
       if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
       processSegments = true;
     }
@@ -540,8 +540,8 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
         });
       }
 
-      if (req.body.fields) {
-        query._source = ViewerUtils.queryValueToArray(req.body.fields);
+      if (req.query.fields) {
+        query._source = ViewerUtils.queryValueToArray(req.query.fields);
       }
 
       res.send({ 'esquery': query, 'indices': indices });
@@ -578,9 +578,9 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     let graph = {};
 
     let options;
-    if (req.body.cancelId) {
+    if (req.query.cancelId) {
       options = {
-        cancelId: `${req.user.userId}::${req.body.cancelId}`
+        cancelId: `${req.user.userId}::${req.query.cancelId}`
       };
     }
 
@@ -600,8 +600,8 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
       }
 
       let addMissing = false;
-      if (req.body.fields) {
-        query._source = ViewerUtils.queryValueToArray(req.body.fields);
+      if (req.query.fields) {
+        query._source = ViewerUtils.queryValueToArray(req.query.fields);
         ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
           if (query._source.indexOf(item) === -1) {
             query._source.push(item);
@@ -650,7 +650,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
 
           fields.id = Db.session2Sid(hit);
 
-          if (parseInt(req.body.flatten) === 1) {
+          if (parseInt(req.query.flatten) === 1) {
             fields = ViewerUtils.flattenFields(fields);
           }
 
@@ -730,12 +730,12 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     // "rootId" appended onto the end
     let reqFields = fields;
 
-    if (req.body.fields) {
-      fields = reqFields = ViewerUtils.queryValueToArray(req.body.fields);
+    if (req.query.fields) {
+      fields = reqFields = ViewerUtils.queryValueToArray(req.query.fields);
     }
 
-    if (req.body.ids) {
-      const ids = ViewerUtils.queryValueToArray(req.body.ids);
+    if (req.query.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.query.ids);
       module.sessionsListFromIds(req, ids, fields, (err, list) => {
         csvListWriter(req, res, list, reqFields);
       });
@@ -768,13 +768,13 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
    * @returns {object} Sends the response to the client
    */
   module.getSPIView = (req, res) => {
-    if (req.body.spi === undefined) {
+    if (req.query.spi === undefined) {
       return res.send({ spi: {}, recordsTotal: 0, recordsFiltered: 0 });
     }
 
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
-    if (parseInt(req.body.date) === -1 && spiDataMaxIndices !== -1) {
+    if (parseInt(req.query.date) === -1 && spiDataMaxIndices !== -1) {
       return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
     }
 
@@ -795,13 +795,13 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
         query.aggregations = {};
       }
 
-      if (parseInt(req.body.facets) === 1) {
+      if (parseInt(req.query.facets) === 1) {
         query.aggregations.protocols = {
           terms: { field: 'protocol', size: 1000 }
         };
       }
 
-      ViewerUtils.queryValueToArray(req.body.spi).forEach(function (item) {
+      ViewerUtils.queryValueToArray(req.query.spi).forEach(function (item) {
         const parts = item.split(':');
         if (parts[0] === 'fileand') {
           query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
@@ -862,7 +862,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
           });
         }
 
-        if (parseInt(req.body.facets) === 1) {
+        if (parseInt(req.query.facets) === 1) {
           protocols = {};
           map = ViewerUtils.mapMerge(sessions.aggregations);
           graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
@@ -950,7 +950,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
    * @returns {object} Sends the response to the client
    */
   module.getSPIGraph = (req, res) => {
-    req.body.facets = 1;
+    req.query.facets = 1;
 
     module.buildSessionQuery(req, (bsqErr, query, indices) => {
       let results = { items: [], graph: {}, map: {} };
@@ -959,17 +959,17 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
       }
 
       let options;
-      if (req.body.cancelId) {
-        options = { cancelId: `${req.user.userId}::${req.body.cancelId}` };
+      if (req.query.cancelId) {
+        options = { cancelId: `${req.user.userId}::${req.query.cancelId}` };
       }
 
       delete query.sort;
       query.size = 0;
-      const size = +req.body.size || 20;
+      const size = +req.query.size || 20;
 
-      let field = req.body.field || 'node';
+      let field = req.query.field || 'node';
 
-      if (req.body.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
+      if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
       if (field === 'ip.dst:port') {
         query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
@@ -1068,7 +1068,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
               }
 
               if (results.items.length === result.responses.length) {
-                let s = req.body.sort || 'sessionsHisto';
+                let s = req.query.sort || 'sessionsHisto';
                 results.items = results.items.sort(function (a, b) {
                   let result;
                   if (s === 'name') {
@@ -1152,12 +1152,12 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
    * @returns {object} Sends the response to the client
    */
   module.getSPIGraphHierarchy = (req, res) => {
-    if (req.body.exp === undefined) {
+    if (req.query.exp === undefined) {
       return res.molochError(403, 'Missing exp parameter');
     }
 
     let fields = [];
-    let parts = req.body.exp.split(',');
+    let parts = req.query.exp.split(',');
     for (let i = 0; i < parts.length; i++) {
       if (internals.scriptAggs[parts[i]] !== undefined) {
         fields.push(internals.scriptAggs[parts[i]]);
@@ -1174,7 +1174,7 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
-      const size = +req.body.size || 20;
+      const size = +req.query.size || 20;
 
       if (!query.query.bool.must) {
         query.query.bool.must = [];

@@ -75,6 +75,18 @@ module.exports = (Config, RE2, http, https) => {
       theme: 'default-theme',
       manualQuery: false,
       timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
+    },
+    usersMissing: {
+      userId: '',
+      userName: '',
+      expression: '',
+      enabled: 0,
+      createEnabled: 0,
+      webEnabled: 0,
+      headerAuthEnabled: 0,
+      emailSearch: 0,
+      removeEnabled: 0,
+      lastUsed: 0
     }
   };
 
