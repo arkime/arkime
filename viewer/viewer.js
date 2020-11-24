@@ -5488,8 +5488,9 @@ function buildConnections (req, res, cb) {
   let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
   if (req.query.fields) { fields = req.query.fields.split(','); }
 
-  let options;
-  if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
+  let options = {};
+  if (req.query.cancelId) { options.cancelId = `${req.user.userId}::${req.query.cancelId}`; }
+  if (req.query.escluster && Config.get('multiES', false)) { options._cluster = req.query.escluster; }
 
   let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
