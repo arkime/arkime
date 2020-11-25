@@ -61,7 +61,7 @@
     "lint-fix-viewer": "eslint --fix --ext .js,.vue viewer",
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
-    "doc": "jsdoc2md viewer/apiSessions.js viewer/apiConnections.js > ../arkimeAPI.md"
+    "viewerdoc": "jsdoc2md --partial viewer/jsdoc/body.hbs viewer/jsdoc/returns.hbs --files viewer/apiSessions.js viewer/apiConnections.js viewer/viewer.js > viewer/jsdoc/arkimeAPI.md"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",

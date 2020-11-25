@@ -4056,7 +4056,15 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
 });
 
 // field apis -----------------------------------------------------------------
-app.get('/fields', function (req, res) {
+/**
+ * GET
+ *
+ * Gets available database field objects pertaining to sessions.
+ * @name /fields
+ * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
+ * @returns {array|map} The map or list of database fields
+ */
+app.get('/fields', (req, res) => {
   if (!app.locals.fieldsMap) {
     res.status(404);
     res.send('Cannot locate fields');
@@ -4070,7 +4078,18 @@ app.get('/fields', function (req, res) {
 });
 
 // file apis ------------------------------------------------------------------
-app.get('/file/list', [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
+/**
+ * GET
+ *
+ * Gets a list of PCAP files that Arkime knows about.
+ * @name /api/files
+ * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
+ * @param {number} start=0 - The entry to start at. Defaults to 0
+ * @returns {Array} data - The list of files
+ * @returns {number} recordsTotal - The total number of files Arkime knows about
+ * @returns {number} recordsFiltered - The number of files returned in this result
+ */
+app.get(['/api/files', '/file/list'], [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
   const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
 
   let query = {
@@ -5477,7 +5496,7 @@ app.getpost( // spigraph endpoint (POST or GET)
 
 app.getpost( // spigraph hierarchy endpoint (POST or GET)
   ['/api/spigraphhierarchy', 'spigraphhierarchy'],
-  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQuery],
   sessionAPIs.getSPIGraphHierarchy
 );
 
@@ -5488,7 +5507,7 @@ app.getpost( // build query endoint (POST or GET)
 );
 
 app.getpost( // sessions csv endpoint (POST or GET)
-  [/\/api\/sessions.csv.*/, /\/sessions.csv.*/],
+  [/\/api\/sessionsCSV.*/, /\/sessions.csv.*/],
   [logAction('sessions csv'), fillQuery],
   sessionAPIs.getSessionsCSV
 );
@@ -5506,13 +5525,13 @@ app.getpost( // multiunique endpoint (POST or GET)
 );
 
 app.get( // session detail (SPI) endpoint
-  '/:nodeName/session/:id/detail',
+  ['/:nodeName/session/:id/detail', '/api/:nodeName/session/:id/detail'],
   [cspHeader, logAction()],
   sessionAPIs.getDetail
 );
 
 app.get( // session packets endopint
-  '/:nodeName/session/:id/packets',
+  ['/:nodeName/session/:id/packets', '/api/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
 );
@@ -5558,6 +5577,30 @@ app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownl
   return sessionsPcap(req, res, writePcapNg, 'pcapng');
 });
 
+/**
+ * GET
+ *
+ * Retrieve the raw session data in pcap format
+ * @name /sessionsPCAP
+ * @param {string} ids - The list of ids to return
+ * @param {boolean} segments=false - When set return linked segments
+ * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+ * @param {string} expression - The search expression string
+ * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+ * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+ * @param {number} start=0 - The entry to start at. Defaults to 0
+ * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+ * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+ * @param {string} view - The view name to apply before the expression.
+ * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+   'first' - First Packet: the timestamp of the first packet received for the session.
+   'last' - Last Packet: The timestamp of the last packet received for the session.
+   'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+   'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+   'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+ * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+ * @returns {pcap} A PCAP file with the sessions requested
+ */
 app.get(/\/sessions.pcap.*/, [logAction(), checkPermissions(['disablePcapDownload'])], (req, res) => {
   return sessionsPcap(req, res, writePcap, 'pcap');
 });
@@ -5784,7 +5827,7 @@ app.getpost( // connections endpoint (POST or GET)
 );
 
 app.getpost( // connections csv endpoint (POST or GET)
-  ['/api/connections.csv', '/connections.csv'],
+  ['/api/connectionsCSV', '/connections.csv'],
   [logAction('connections.csv'), fillQuery],
   connectionAPIs.getConnectionsCSV
 );

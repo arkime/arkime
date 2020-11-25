@@ -452,6 +452,8 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
    * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
    * @param {string} view - The view name to apply before the expression.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is totBytes,totDataBytes,totPackets,node
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -459,7 +461,33 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @param {number} baselineDate=0 - The baseline date range to compare connections against. Default is 0, disabled. Options include:
+     1x - 1 times query range.
+     2x - 2 times query range.
+     4x - 4 times query range.
+     6x - 6 times query range.
+     8x - 8 times query range.
+     10x - 10 times query range.
+     1 - 1 hour.
+     6 - 6 hours.
+     24 - 1 day.
+     48 - 2 days.
+     72 - 3 days.
+     168 - 1 week.
+     336 - 2 weeks.
+     720 - 1 month.
+     1440 - 2 months.
+     4380 - 6 months.
+     8760 - 1 year.
+   * @param {string} baselineVis=all - Which connections to display when a baseline date range is applied. Default is all. Options include:
+     'all' - All Nodes: all nodes are visible.
+     'actual' - Actual Nodes: nodes present in the "current" timeframe query results are visible.
+     'actualold' - Baseline Nodes: nodes present in the "baseline" timeframe query results are visible.
+     'new' - New Nodes Only: nodes present in the "current" but NOT the "baseline" timeframe are visible.
+     'old' - Baseline Nodes Only: nodes present in the "baseline" but NOT the "current" timeframe are visible.
+   * @returns {array} links - The list of links
+   * @returns {array} links - The list of nodes
+   * @returns {object} health - The elasticsearch cluster health status and info
    */
   module.getConnections = (req, res) => {
     let health;
@@ -479,7 +507,7 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
    * POST/GET (preferred method is POST)
    *
    * Builds an elasticsearch connections query. Gets a list of nodes and links in csv format and returns them to the client.
-   * @name /api/connections.csv
+   * @name /api/connectionsCSV
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
@@ -496,7 +524,7 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {string} The csv with the connections requested
    */
   module.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');

@@ -1065,7 +1065,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {object} query - The elasticsearch query
+   * @returns {object} indices - The elasticsearch indices that contain sessions in this query
    */
   module.getQuery = (req, res) => {
     module.buildSessionQuery(req, (bsqErr, query, indices) => {
@@ -1108,7 +1109,12 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {object} map - The data to populate the sessions map
+   * @returns {object} graph - The data to populate the sessions timeline graph
+   * @returns {array} data - The list of sessions with the requested fields
+   * @returns {number} recordsTotal - The total number of files Arkime knows about
+   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {object} health - The elasticsearch cluster health status and info
    */
   module.getSessions = (req, res) => {
     let map = {};
@@ -1233,7 +1239,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * POST/GET (preferred method is POST)
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
-   * @name /api/sessions
+   * @name /api/sessionsCSV
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -1252,7 +1258,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {string} csv - The csv with the sessions requested
    */
   module.getSessionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
@@ -1302,7 +1308,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {object} map - The data to populate the sessions map
+   * @returns {object} graph - The data to populate the sessions timeline graph
+   * @returns {object} spi - The list of spi fields with values and counts
+   * @returns {object} protocols - The list of protocols with counts
+   * @returns {number} recordsTotal - The total number of files Arkime knows about
+   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {object} health - The elasticsearch cluster health status and info
    */
   module.getSPIView = (req, res) => {
     if (req.query.spi === undefined) {
@@ -1484,7 +1496,12 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
+   * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
+   * @returns {array} items - The list of field values with their corresponding timeline graph and map data
+   * @returns {number} recordsTotal - The total number of files Arkime knows about
+   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {object} health - The elasticsearch cluster health status and info
    */
   module.getSPIGraph = (req, res) => {
     req.query.facets = 1;
@@ -1686,7 +1703,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
+   * @returns {array} tableResults - The list data to populate the table
    */
   module.getSPIGraphHierarchy = (req, res) => {
     if (req.query.exp === undefined) {
@@ -1817,7 +1835,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {string} The list of unique fields (with counts if requested)
    */
   module.getUnique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
@@ -1963,7 +1981,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
   module.getMultiunique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
@@ -2050,7 +2068,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Gets SPI data for a session.
    * @name /:nodeName/session/:id/detail
-   * @returns {object} Sends the response to the client
+   * @returns {html} The html to display as session detail
    */
   module.getDetail = (req, res) => {
     Db.getSession(req.params.id, {}, function (err, session) {
@@ -2098,7 +2116,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Gets packets for a session.
    * @name /:nodeName/session/:id/packets
-   * @returns {object} Sends the response to the client
+   * @returns {html} The html to display as session packets
    */
   module.getPackets = (req, res) => {
     module.isLocalView(req.params.nodeName, () => {
@@ -2118,6 +2136,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @name /api/sessions/addTags
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
+   * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
+     no - Don't add tags to linked segments
+     all - Add tags to all linked segments
+     time - Add tags to segments occurring in the same time period
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -2136,7 +2158,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {boolean} success - Whether the add tags operation was successful
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
    module.addTags = (req, res) => {
      let tags = [];
@@ -2184,6 +2207,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @name /api/sessions/removeTags
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
+   * @param {string} segments=no - Whether to remove tags from linked session segments. Default is no. Options include:
+     no - Don't remove tags from linked segments
+     all - Remove tags from all linked segments
+     time - Remove tags from segments occurring in the same time period
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -2202,7 +2229,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {object} Sends the response to the client
+   * @returns {boolean} success - Whether the remove tags operation was successful
+   * @returns {string} text - The success/error message to (optionally) display to the user
    */
   module.removeTags = (req, res) => {
     let tags = [];

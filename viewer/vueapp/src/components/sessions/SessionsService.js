@@ -89,7 +89,7 @@ export default {
    */
   getDetail: function (id, node) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`${node}/session/${id}/detail`)
+      Vue.axios.get(`api/${node}/session/${id}/detail`)
         .then((response) => {
           resolve(response);
         }, (error) => {
@@ -115,7 +115,7 @@ export default {
         method: 'GET',
         params: params,
         cancelToken: source.token,
-        url: `${node}/session/${id}/packets`
+        url: `api/${node}/session/${id}/packets`
       };
 
       Vue.axios(options)
@@ -288,7 +288,7 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `api/sessions.csv/${params.filename}`;
+      let baseUrl = `api/sessionsCSV/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
