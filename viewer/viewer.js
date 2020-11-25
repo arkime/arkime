@@ -5495,7 +5495,7 @@ app.getpost( // spigraph endpoint (POST or GET)
 );
 
 app.getpost( // spigraph hierarchy endpoint (POST or GET)
-  ['/api/spigraphhierarchy', 'spigraphhierarchy'],
+  ['/api/spigraphhierarchy', '/spigraphhierarchy'],
   [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQuery],
   sessionAPIs.getSPIGraphHierarchy
 );

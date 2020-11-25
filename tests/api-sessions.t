@@ -89,7 +89,7 @@ my ($url) = @_;
 
 # Check ip.protocol=blah
     my $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
-    is($json->{bsqErr}, "Unknown protocol string blah", "ip.protocol==blah");
+    is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
