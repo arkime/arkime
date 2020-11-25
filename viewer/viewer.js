@@ -1416,49 +1416,6 @@ function reqGetRawBody (req, cb) {
   });
 }
 
-function addTagsList (allTagNames, sessionList, doneCb) {
-  if (!sessionList.length) {
-    console.log('No sessions to add tags (', allTagNames, ') to');
-    return doneCb(null);
-  }
-
-  async.eachLimit(sessionList, 10, function (session, nextCb) {
-    if (!session._source && !session.fields) {
-      console.log('No Fields', session);
-      return nextCb(null);
-    }
-
-    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
-
-    Db.addTagsToSession(session._index, session._id, allTagNames, node, function (err, data) {
-      if (err) { console.log('addTagsList error', session, err, data); }
-      nextCb(null);
-    });
-  }, doneCb);
-}
-
-function removeTagsList (res, allTagNames, sessionList) {
-  if (!sessionList.length) {
-    return res.molochError(200, 'No sessions to remove tags from');
-  }
-
-  async.eachLimit(sessionList, 10, function (session, nextCb) {
-    if (!session._source && !session.fields) {
-      console.log('No Fields', session);
-      return nextCb(null);
-    }
-
-    let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
-
-    Db.removeTagsFromSession(session._index, session._id, allTagNames, node, function (err, data) {
-      if (err) { console.log('removeTagsList error', session, err, data); }
-      nextCb(null);
-    });
-  }, function (err) {
-    return res.send(JSON.stringify({ success: true, text: 'Tags removed successfully' }));
-  });
-}
-
 function sendSessionWorker (options, cb) {
   var packetslen = 0;
   var packets = [];
@@ -5548,16 +5505,28 @@ app.getpost( // multiunique endpoint (POST or GET)
   sessionAPIs.getMultiunique
 );
 
-app.get(
+app.get( // session detail (SPI) endpoint
   '/:nodeName/session/:id/detail',
   [cspHeader, logAction()],
   sessionAPIs.getDetail
 );
 
-app.get(
+app.get( // session packets endopint
   '/:nodeName/session/:id/packets',
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
+);
+
+app.post( // add tags endpoint
+  ['/api/sessions/addTags', '/addTags'],
+  [noCacheJson, checkHeaderToken, logAction('addTags')],
+  sessionAPIs.addTags
+);
+
+app.post( // remove tags endpoint
+  ['/api/sessions/removeTags', '/removeTags'],
+  [noCacheJson, checkHeaderToken, logAction('removeTags'), checkPermissions(['removeEnabled'])],
+  sessionAPIs.removeTags
 );
 
 app.get('/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', checkProxyRequest, function (req, res) {
@@ -5591,60 +5560,6 @@ app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownl
 
 app.get(/\/sessions.pcap.*/, [logAction(), checkPermissions(['disablePcapDownload'])], (req, res) => {
   return sessionsPcap(req, res, writePcap, 'pcap');
-});
-
-// TODO ECR - put in apiSessions
-app.post('/addTags', [noCacheJson, checkHeaderToken, logAction()], function (req, res) {
-  var tags = [];
-  if (req.body.tags) {
-    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-  }
-
-  if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
-
-  if (req.body.ids) {
-    var ids = ViewerUtils.queryValueToArray(req.body.ids);
-
-    sessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], function (err, list) {
-      if (!list.length) {
-        return res.molochError(200, 'No sessions to add tags to');
-      }
-      addTagsList(tags, list, function () {
-        return res.send(JSON.stringify({ success: true, text: 'Tags added successfully' }));
-      });
-    });
-  } else {
-    sessionAPIs.sessionsListFromQuery(req, res, ['tags', 'node'], function (err, list) {
-      if (!list.length) {
-        return res.molochError(200, 'No sessions to add tags to');
-      }
-      addTagsList(tags, list, function () {
-        return res.send(JSON.stringify({ success: true, text: 'Tags added successfully' }));
-      });
-    });
-  }
-});
-
-// TODO ECR - put in apiSessions
-app.post('/removeTags', [noCacheJson, checkHeaderToken, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
-  var tags = [];
-  if (req.body.tags) {
-    tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-  }
-
-  if (tags.length === 0) { return res.molochError(200, 'No tags specified'); }
-
-  if (req.body.ids) {
-    var ids = ViewerUtils.queryValueToArray(req.body.ids);
-
-    sessionAPIs.sessionsListFromIds(req, ids, ['tags'], function (err, list) {
-      removeTagsList(res, tags, list);
-    });
-  } else {
-    sessionAPIs.sessionsListFromQuery(req, res, ['tags'], function (err, list) {
-      removeTagsList(res, tags, list);
-    });
-  }
 });
 
 app.get('/:nodeName/sendSession/:id', checkProxyRequest, function (req, res) {
@@ -6791,7 +6706,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
 
         var tags = options.tags.split(',');
         sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], function (err, list) {
-          addTagsList(tags, list, doNext);
+          sessionAPIs.addTagsList(tags, list, doNext);
         });
       } else {
         console.log('Unknown action', cq);

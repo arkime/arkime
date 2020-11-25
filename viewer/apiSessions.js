@@ -993,6 +993,52 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     });
   };
 
+  module.addTagsList = (allTagNames, sessionList, doneCb) => {
+    if (!sessionList.length) {
+      console.log(`No sessions to add tags (${allTagNames}) to`);
+      return doneCb(null);
+    }
+
+    async.eachLimit(sessionList, 10, (session, nextCb) => {
+      if (!session._source && !session.fields) {
+        console.log('No Fields', session);
+        return nextCb(null);
+      }
+
+      let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+
+      Db.addTagsToSession(session._index, session._id, allTagNames, node, (err, data) => {
+        if (err) { console.log('addTagsList error', session, err, data); }
+        nextCb(null);
+      });
+    }, doneCb);
+  };
+
+  module.removeTagsList = (res, allTagNames, sessionList) => {
+    if (!sessionList.length) {
+      return res.molochError(200, 'No sessions to remove tags from');
+    }
+
+    async.eachLimit(sessionList, 10, (session, nextCb) => {
+      if (!session._source && !session.fields) {
+        console.log('No Fields', session);
+        return nextCb(null);
+      }
+
+      let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+
+      Db.removeTagsFromSession(session._index, session._id, allTagNames, node, (err, data) => {
+        if (err) { console.log('removeTagsList error', session, err, data); }
+        nextCb(null);
+      });
+    }, (err) => {
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Tags removed successfully'
+       }));
+    });
+  };
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -2002,7 +2048,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   /**
    * GET
    *
-   * Gets SPI data for a session
+   * Gets SPI data for a session.
    * @name /:nodeName/session/:id/detail
    * @returns {object} Sends the response to the client
    */
@@ -2050,7 +2096,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   /**
    * GET
    *
-   * Gets packets for a session
+   * Gets packets for a session.
    * @name /:nodeName/session/:id/packets
    * @returns {object} Sends the response to the client
    */
@@ -2063,6 +2109,122 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     function () {
       return module.proxyRequest(req, res);
     });
+  };
+
+  /**
+   * POST
+   *
+   * Add tag(s) to individual session(s) by id or by query.
+   * @name /api/sessions/addTags
+   * @param {string} tags - Comma separated list of tags to add to session(s)
+   * @param {string} ids - Comma separated list of sessions to add tag(s) to
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+   module.addTags = (req, res) => {
+     let tags = [];
+     if (req.body.tags) {
+       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
+     }
+
+     if (tags.length === 0) {
+       return res.molochError(200, 'No tags specified');
+     }
+
+     if (req.body.ids) {
+       let ids = ViewerUtils.queryValueToArray(req.body.ids);
+
+       module.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
+         if (!list.length) {
+           return res.molochError(200, 'No sessions to add tags to');
+         }
+         module.addTagsList(tags, list, () => {
+           return res.send(JSON.stringify({
+             success: true,
+             text: 'Tags added successfully'
+           }));
+         });
+       });
+     } else {
+       module.sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
+         if (!list.length) {
+           return res.molochError(200, 'No sessions to add tags to');
+         }
+         module.addTagsList(tags, list, () => {
+           return res.send(JSON.stringify({
+             success: true,
+             text: 'Tags added successfully'
+           }));
+         });
+       });
+     }
+   };
+
+  /**
+   * POST
+   *
+   * Removes tag(s) from individual session(s) by id or by query.
+   * @name /api/sessions/removeTags
+   * @param {string} tags - Comma separated list of tags to remove from session(s)
+   * @param {string} ids - Comma separated list of sessions to remove tag(s) from
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.removeTags = (req, res) => {
+    let tags = [];
+    if (req.body.tags) {
+      tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
+    }
+
+    if (tags.length === 0) {
+      return res.molochError(200, 'No tags specified');
+    }
+
+    if (req.body.ids) {
+      let ids = ViewerUtils.queryValueToArray(req.body.ids);
+
+      module.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
+        module.removeTagsList(res, tags, list);
+      });
+    } else {
+      sessionAPIs.sessionsListFromQuery(req, res, ['tags'], (err, list) => {
+        module.removeTagsList(res, tags, list);
+      });
+    }
   };
 
   return module;

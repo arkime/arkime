@@ -167,7 +167,8 @@ export default {
    */
   tag: function (addTags, params, routeParams) {
     return new Promise((resolve, reject) => {
-      let url = addTags ? 'addTags' : 'removeTags';
+      let url = 'api/sessions';
+      addTags ? url += '/addTags' : url += '/removeTags';
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); }
