@@ -2221,7 +2221,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         module.removeTagsList(res, tags, list);
       });
     } else {
-      sessionAPIs.sessionsListFromQuery(req, res, ['tags'], (err, list) => {
+      module.sessionsListFromQuery(req, res, ['tags'], (err, list) => {
         module.removeTagsList(res, tags, list);
       });
     }
