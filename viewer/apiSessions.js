@@ -1,8 +1,15 @@
 'use strict';
 
-let pug = require('pug');
+const async = require('async');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const path = require('path');
+const pug = require('pug');
+const url = require('url');
+const util = require('util');
 
-module.exports = (async, decode, fs, http, https, path, Pcap, url, util, Config, Db, internals, molochparser, ViewerUtils) => {
+module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils) => {
   let module = {};
 
   // --------------------------------------------------------------------------

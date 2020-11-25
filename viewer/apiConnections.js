@@ -1,8 +1,10 @@
 'use strict';
 
+const async = require('async');
+
 let fieldsMap;
 
-module.exports = (async, Db, Config, ViewerUtils, sessionAPIs) => {
+module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
   let module = {};
 
   if (!fieldsMap) {

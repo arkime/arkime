@@ -1,8 +1,11 @@
 'use strict';
 
-let EventEmitter = require('events').EventEmitter;
+const EventEmitter = require('events').EventEmitter;
+const http = require('http');
+const https = require('https');
+const RE2 = require('re2');
 
-module.exports = (app, Config, RE2, http, https) => {
+module.exports = (app, Config) => {
   let module = {};
 
   // build internals

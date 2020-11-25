@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = (async, Db, Config, molochparser, internals) => {
+const async = require('async');
+
+module.exports = (Db, Config, molochparser, internals) => {
   let module = {};
 
   module.addAuth = (info, user, node, secret) => {

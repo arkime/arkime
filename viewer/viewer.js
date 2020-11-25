@@ -94,10 +94,10 @@ var methodOverride = require('method-override');
 var compression = require('compression');
 
 // internal app deps
-let { internals } = require('./internals')(app, Config, RE2, http, https);
-let ViewerUtils = require('./viewerUtils')(async, Db, Config, molochparser, internals);
-let sessionAPIs = require('./apiSessions')(async, decode, fs, http, https, path, Pcap, url, util, Config, Db, internals, molochparser, ViewerUtils);
-let connectionAPIs = require('./apiConnections')(async, Db, Config, ViewerUtils, sessionAPIs);
+let { internals } = require('./internals')(app, Config);
+let ViewerUtils = require('./viewerUtils')(Db, Config, molochparser, internals);
+let sessionAPIs = require('./apiSessions')(Config, Db, decode, internals, molochparser, Pcap, ViewerUtils);
+let connectionAPIs = require('./apiConnections')(Db, Config, ViewerUtils, sessionAPIs);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
