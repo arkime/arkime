@@ -98,13 +98,24 @@ void reader_pfring_start() {
     }
 }
 /******************************************************************************/
-void reader_pfring_stop() 
+void reader_pfring_stop()
 {
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         if (rings[i])
             pfring_breakloop(rings[i]);
+    }
+}
+/******************************************************************************/
+void reader_pfring_exit()
+{
+
+    int i;
+    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        if (rings[i]) {
+            pfring_close(rings[i]);
+        }
     }
 }
 /******************************************************************************/
@@ -139,6 +150,7 @@ void reader_pfring_init(char *UNUSED(name))
     moloch_reader_start         = reader_pfring_start;
     moloch_reader_stop          = reader_pfring_stop;
     moloch_reader_stats         = reader_pfring_stats;
+    moloch_reader_exit          = reader_pfring_exit;
 }
 /******************************************************************************/
 void moloch_plugin_init()

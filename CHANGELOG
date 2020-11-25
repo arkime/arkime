@@ -24,8 +24,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - fix UI queries hanging
   - viewer - fix anonymous user settings not saving
   - viewer - fix lastUsed time not always saving to ES
-  - capture - new packet dedup feature
+  - capture - new packet dedup feature https://arkime.com/settings#packet-deduplication-settings
   - db - Moloch to Arkime text fixes
+  - capture - close pfring on exit (issue #1538)
 
 2.7.0 2020/11/18
   - NOTICE - Requires ES 7.4 or newer
