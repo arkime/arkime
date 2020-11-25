@@ -2,11 +2,12 @@
 
 let EventEmitter = require('events').EventEmitter;
 
-module.exports = (Config, RE2, http, https) => {
+module.exports = (app, Config, RE2, http, https) => {
   let module = {};
 
   // build internals
   module.internals = {
+    isProduction: app.get('env') === 'production',
     CYBERCHEFVERSION: '9.16.2',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
     esQueryTimeout: Config.get('elasticsearchTimeout', 300) + 's',

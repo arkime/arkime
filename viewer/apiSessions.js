@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, internals) => {
+let pug = require('pug');
+
+module.exports = (async, decode, fs, http, https, path, Pcap, url, util, Config, Db, internals, molochparser, ViewerUtils) => {
   let module = {};
 
   // --------------------------------------------------------------------------
@@ -255,6 +257,394 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
     });
   }
 
+  function sortFields (session) {
+    if (session.tags) {
+      session.tags = session.tags.sort();
+    }
+    if (session.http) {
+      if (session.http.requestHeader) {
+        session.http.requestHeader = session.http.requestHeader.sort();
+      }
+      if (session.http.responseHeader) {
+        session.http.responseHeader = session.http.responseHeader.sort();
+      }
+    }
+    if (session.email && session.email.headers) {
+      session.email.headers = session.email.headers.sort();
+    }
+    if (session.ipProtocol) {
+      session.ipProtocol = Pcap.protocol2Name(session.ipProtocol);
+    }
+  }
+
+  function localSessionDetailReturnFull (req, res, session, incoming) {
+    if (req.packetsOnly) { // only return packets
+      res.render('sessionPackets.pug', {
+        filename: 'sessionPackets',
+        cache: internals.isProduction,
+        compileDebug: !internals.isProduction,
+        user: req.user,
+        session: session,
+        data: incoming,
+        reqPackets: req.query.packets,
+        query: req.query,
+        basedir: '/',
+        reqFields: Config.headers('headers-http-request'),
+        resFields: Config.headers('headers-http-response'),
+        emailFields: Config.headers('headers-email'),
+        showFrames: req.query.showFrames
+      }, function (err, data) {
+        if (err) {
+          console.trace('ERROR - localSession - ', err);
+          return req.next(err);
+        }
+        res.send(data);
+      });
+    } else { // return SPI data and packets
+      res.send('HOW DID I GET HERE?');
+      console.trace('HOW DID I GET HERE');
+    }
+  }
+
+  function localSessionDetailReturn (req, res, session, incoming) {
+    // console.log("ALW", JSON.stringify(incoming));
+    var numPackets = req.query.packets || 200;
+    if (incoming.length > numPackets) {
+      incoming.length = numPackets;
+    }
+
+    if (incoming.length === 0) {
+      return localSessionDetailReturnFull(req, res, session, []);
+    }
+
+    var options = {
+      id: session.id,
+      nodeName: req.params.nodeName,
+      order: [],
+      'ITEM-HTTP': {
+        order: []
+      },
+      'ITEM-SMTP': {
+        order: []
+      },
+      'ITEM-CB': {
+      }
+    };
+
+    if (req.query.needgzip) {
+      options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
+      options['ITEM-SMTP'].order.push('BODY-UNBASE64');
+      options['ITEM-SMTP'].order.push('BODY-UNCOMPRESS');
+    }
+
+    options.order.push('ITEM-HTTP');
+    options.order.push('ITEM-SMTP');
+
+    var decodeOptions = JSON.parse(req.query.decode || '{}');
+    for (var key in decodeOptions) {
+      if (key.match(/^ITEM/)) {
+        options.order.push(key);
+      } else {
+        options['ITEM-HTTP'].order.push(key);
+        options['ITEM-SMTP'].order.push(key);
+      }
+      options[key] = decodeOptions[key];
+    }
+
+    if (req.query.needgzip) {
+      options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
+      options['ITEM-SMTP'].order.push('BODY-UNCOMPRESS');
+    }
+
+    options.order.push('ITEM-BYTES');
+    options.order.push('ITEM-SORTER');
+    if (req.query.needimage) {
+      options.order.push('ITEM-LINKBODY');
+    }
+    if (req.query.base === 'hex') {
+      options.order.push('ITEM-HEX');
+      options['ITEM-HEX'] = { showOffsets: req.query.line === 'true' };
+    } else if (req.query.base === 'ascii') {
+      options.order.push('ITEM-ASCII');
+    } else if (req.query.base === 'utf8') {
+      options.order.push('ITEM-UTF8');
+    } else {
+      options.order.push('ITEM-NATURAL');
+    }
+    options.order.push('ITEM-CB');
+    options['ITEM-CB'].cb = function (err, outgoing) {
+      localSessionDetailReturnFull(req, res, session, outgoing);
+    };
+
+    if (Config.debug) {
+      console.log('Pipeline options', options);
+    }
+
+    decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
+  }
+
+  function localSessionDetail (req, res) {
+    if (!req.query) {
+      req.query = { gzip: false, line: false, base: 'natural', packets: 200 };
+    }
+
+    req.query.needgzip = req.query.gzip === 'true' || false;
+    req.query.needimage = req.query.image === 'true' || false;
+    req.query.line = req.query.line || false;
+    req.query.base = req.query.base || 'ascii';
+    req.query.showFrames = req.query.showFrames === 'true' || false;
+
+    var packets = [];
+    module.processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
+      var obj = {};
+      if (buffer.length > 16) {
+        try {
+          pcap.decode(buffer, obj);
+        } catch (e) {
+          obj = { ip: { p: 'Error decoding' + e } };
+          console.trace('loadSessionDetail error', e.stack);
+        }
+      } else {
+        obj = { ip: { p: 'Empty' } };
+      }
+      packets[i] = obj;
+      cb(null);
+    },
+    function (err, session) {
+      if (err) {
+        return res.end('Problem loading packets for ' + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+      }
+      session.id = req.params.id;
+      sortFields(session);
+
+      if (req.query.showFrames && packets.length !== 0) {
+        Pcap.packetFlow(session, packets, +req.query.packets || 200, function (err, results, sourceKey, destinationKey) {
+          session._err = err;
+          session.sourceKey = sourceKey;
+          session.destinationKey = destinationKey;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets.length === 0) {
+        session._err = 'No pcap data found';
+        localSessionDetailReturn(req, res, session, []);
+      } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
+        Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip === undefined) {
+        session._err = "Couldn't decode pcap file, check viewer log";
+        localSessionDetailReturn(req, res, session, []);
+      } else if (packets[0].ip.p === 1) {
+        Pcap.reassemble_icmp(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.p === 6) {
+        var key = session.srcIp;
+        Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.p === 17) {
+        Pcap.reassemble_udp(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.p === 132) {
+        Pcap.reassemble_sctp(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.p === 50) {
+        Pcap.reassemble_esp(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.p === 58) {
+        Pcap.reassemble_icmp(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else if (packets[0].ip.data !== undefined) {
+        Pcap.reassemble_generic_ip(packets, +req.query.packets || 200, function (err, results) {
+          session._err = err;
+          localSessionDetailReturn(req, res, session, results || []);
+        });
+      } else {
+        session._err = 'Unknown ip.p=' + packets[0].ip.p;
+        localSessionDetailReturn(req, res, session, []);
+      }
+    },
+    req.query.needimage ? 10000 : 400, 10);
+  }
+
+  function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
+    let fields;
+
+    function processFile (pcap, pos, i, nextCb) {
+      pcap.ref();
+      pcap.readPacket(pos, function (packet) {
+        switch (packet) {
+        case null:
+          let msg = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
+          console.log('ERROR - processSessionIdDisk -', msg);
+          endCb(msg, null);
+          break;
+        case undefined:
+          break;
+        default:
+          packetCb(pcap, packet, nextCb, i);
+          break;
+        }
+        pcap.unref();
+      });
+    }
+
+    fields = session._source || session.fields;
+
+    var fileNum;
+    var itemPos = 0;
+    async.eachLimit(fields.packetPos, limit || 1, function (pos, nextCb) {
+      if (pos < 0) {
+        fileNum = pos * -1;
+        return nextCb(null);
+      }
+
+      // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+      var opcap = Pcap.get(fields.node + ':' + fileNum);
+      if (!opcap.isOpen()) {
+        Db.fileIdToFile(fields.node, fileNum, function (file) {
+          if (!file) {
+            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
+            return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
+          }
+          if (file.kekId) {
+            file.kek = Config.sectionGet('keks', file.kekId, undefined);
+            if (file.kek === undefined) {
+              console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
+              return nextCb("Couldn't find kek " + file.kekId + ' in keks section');
+            }
+          }
+
+          var ipcap = Pcap.get(fields.node + ':' + file.num);
+
+          try {
+            ipcap.open(file.name, file);
+          } catch (err) {
+            console.log("ERROR - Couldn't open file ", err);
+            if (err.code === 'EACCES') {
+              // Find all the directories to check
+              let checks = [];
+              let dir = path.resolve(file.name);
+              while ((dir = path.dirname(dir)) !== '/') {
+                checks.push(dir);
+              }
+
+              // Check them in reverse order, smallest to largest
+              let i;
+              for (i = checks.length - 1; i >= 0; i--) {
+                try {
+                  fs.accessSync(checks[i], fs.constants.X_OK);
+                } catch (e) {
+                  console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
+                  break;
+                }
+              }
+
+              // No directory issue, check the file itself
+              if (i === -1) {
+                try {
+                  fs.accessSync(file.name, fs.constants.R_OK);
+                } catch (e) {
+                  console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
+                }
+              }
+            }
+            return nextCb("Couldn't open file " + err);
+          }
+
+          if (headerCb) {
+            headerCb(ipcap, ipcap.readHeader());
+            headerCb = null;
+          }
+          processFile(ipcap, pos, itemPos++, nextCb);
+        });
+      } else {
+        if (headerCb) {
+          headerCb(opcap, opcap.readHeader());
+          headerCb = null;
+        }
+        processFile(opcap, pos, itemPos++, nextCb);
+      }
+    },
+    function (pcapErr, results) {
+      endCb(pcapErr, fields);
+    });
+  }
+
+  module.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
+    var options;
+    if (!fullSession) {
+      options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
+    }
+
+    Db.getSession(id, options, (err, session) => {
+      if (err || !session.found) {
+        console.log('session get error', err, session);
+        return endCb('Session not found', null);
+      }
+
+      var fields = session._source || session.fields;
+
+      if (maxPackets && fields.packetPos.length > maxPackets) {
+        fields.packetPos.length = maxPackets;
+      }
+
+      /* Go through the list of prefetch the id to file name if we are running in parallel to
+       * reduce the number of elasticsearch queries and problems
+       */
+      let outstanding = 0; let i; let ilen;
+
+      function fileReadyCb (fileInfo) {
+        outstanding--;
+
+        // All of the replies have been received
+        if (i === ilen && outstanding === 0) {
+          readyToProcess();
+        }
+      }
+
+      for (i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+        if (fields.packetPos[i] < 0) {
+          outstanding++;
+          Db.fileIdToFile(fields.node, -1 * fields.packetPos[i], fileReadyCb);
+        }
+      }
+
+      function readyToProcess () {
+        var pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
+        var psid = processSessionIdDisk;
+        var writer = internals.writers[pcapWriteMethod];
+        if (writer && writer.processSessionId) {
+          psid = writer.processSessionId;
+        }
+
+        psid(session, headerCb, packetCb, function (err, fields) {
+          if (!fields) {
+            return endCb(err, fields);
+          }
+
+          if (!fields.tags) {
+            fields.tags = [];
+          }
+
+          ViewerUtils.fixFields(fields, endCb);
+        }, limit);
+      }
+    });
+  };
+
   module.sessionsListFromQuery = (req, res, fields, cb) => {
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
@@ -499,6 +889,100 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
       } else {
         cb(err, list);
       }
+    });
+  };
+
+  module.isLocalView = (node, yesCb, noCb) => {
+    if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
+      }
+      return yesCb();
+    }
+
+    var pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
+    var writer = internals.writers[pcapWriteMethod];
+    if (writer && writer.localNode === false) {
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is local view because of writer`);
+      }
+      return yesCb();
+    }
+    return Db.isLocalView(node, yesCb, noCb);
+  };
+
+  module.getViewUrl = (node, cb) => {
+    if (Array.isArray(node)) {
+      node = node[0];
+    }
+
+    var url = Config.getFull(node, 'viewUrl');
+    if (url) {
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
+      }
+      cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+      return;
+    }
+
+    Db.molochNodeStatsCache(node, function (err, stat) {
+      if (err) {
+        return cb(err);
+      }
+
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
+      }
+
+      if (Config.isHTTPS(node)) {
+        cb(null, 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), https);
+      } else {
+        cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
+      }
+    });
+  };
+
+  module.proxyRequest = (req, res, errCb) => {
+    ViewerUtils.noCache(req, res);
+
+    module.getViewUrl(req.params.nodeName, function (err, viewUrl, client) {
+      if (err) {
+        if (errCb) {
+          return errCb(err);
+        }
+        console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
+        return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
+      }
+      var info = url.parse(viewUrl);
+      info.path = req.url;
+      info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+      info.timeout = 20 * 60 * 1000;
+      ViewerUtils.addAuth(info, req.user, req.params.nodeName);
+      ViewerUtils.addCaTrust(info, req.params.nodeName);
+
+      var preq = client.request(info, function (pres) {
+        if (pres.headers['content-type']) {
+          res.setHeader('content-type', pres.headers['content-type']);
+        }
+        if (pres.headers['content-disposition']) {
+          res.setHeader('content-disposition', pres.headers['content-disposition']);
+        }
+        pres.on('data', function (chunk) {
+          res.write(chunk);
+        });
+        pres.on('end', function () {
+          res.end();
+        });
+      });
+
+      preq.on('error', function (e) {
+        if (errCb) {
+          return errCb(e);
+        }
+        console.log("ERROR - Couldn't proxy request=", info, '\nerror=', e, 'You might want to run viewer with two --debug for more info');
+        res.send(`Error talking to node '${ViewerUtils.safeStr(req.params.nodeName)}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
+      });
+      preq.end();
     });
   };
 
@@ -1258,6 +1742,319 @@ module.exports = (async, util, Pcap, Db, Config, ViewerUtils, molochparser, inte
           hierarchicalResults: hierarchicalResults
         });
       });
+    });
+  };
+
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
+   * @name /api/unique.txt
+   * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} exp - Comma separated list of expression field names to return.
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+    'first' - First Packet: the timestamp of the first packet received for the session.
+    'last' - Last Packet: The timestamp of the last packet received for the session.
+    'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+    'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+    'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getUnique = (req, res) => {
+    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
+
+    if (req.query.field === undefined && req.query.exp === undefined) {
+      return res.send('Missing field or exp parameter');
+    }
+
+    /* How should the results be written.  Use setImmediate to not blow stack frame */
+    let writeCb;
+    let doneCb;
+    let items = [];
+    let aggSize = +Config.get('maxAggSize', 10000);
+
+    if (req.query.autocomplete !== undefined) {
+      if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
+        res.send([]);
+        return;
+      }
+
+      let spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
+      if (spiDataMaxIndices !== -1) {
+        if (req.query.date === '-1' ||
+            (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
+          console.log(`INFO For autocomplete replacing date=${ViewerUtils.safeStr(req.query.date)} with ${spiDataMaxIndices}`);
+          req.query.date = spiDataMaxIndices;
+        }
+      }
+
+      aggSize = 1000; // lower agg size for autocomplete
+      doneCb = function () {
+        res.send(items);
+      };
+      writeCb = function (item) {
+        items.push(item.key);
+      };
+    } else if (parseInt(req.query.counts, 10) || 0) {
+      writeCb = function (item) {
+        res.write(`${item.key}, ${item.doc_count}\n`);
+      };
+    } else {
+      writeCb = function (item) {
+        res.write(`${item.key}\n`);
+      };
+    }
+
+    /* How should each item be processed. */
+    let eachCb = writeCb;
+
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+      eachCb = function (item) {
+        let sep = (item.key.indexOf(':') === -1) ? ':' : '.';
+        item.field2.buckets.forEach((item2) => {
+          item2.key = item.key + sep + item2.key;
+          writeCb(item2);
+        });
+      };
+    }
+
+    module.buildSessionQuery(req, (err, query, indices) => {
+      delete query.sort;
+      delete query.aggregations;
+
+      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
+        query.aggregations = { field: { terms: { field: 'srcIp', size: aggSize }, aggregations: { field2: { terms: { field: 'srcPort', size: 100 } } } } };
+      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+        query.aggregations = { field: { terms: { field: 'dstIp', size: aggSize }, aggregations: { field2: { terms: { field: 'dstPort', size: 100 } } } } };
+      } else if (req.query.field === 'fileand') {
+        query.aggregations = { field: { terms: { field: 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
+      } else {
+        query.aggregations = { field: { terms: { field: req.query.field, size: aggSize } } };
+      }
+
+      query.size = 0;
+      console.log('unique aggregations', indices, JSON.stringify(query));
+
+      function findFileNames (result) {
+        let intermediateResults = [];
+        let aggs = result.aggregations.field.buckets;
+        aggs.forEach((item) => {
+          item.field2.buckets.forEach((sitem) => {
+            intermediateResults.push({ key: item.key + ':' + sitem.key, doc_count: sitem.doc_count });
+          });
+        });
+
+        async.each(intermediateResults, (fsitem, cb) => {
+          let split = fsitem.key.split(':');
+          let node = split[0];
+          let fileId = split[1];
+          Db.fileIdToFile(node, fileId, function (file) {
+            if (file && file.name) {
+              eachCb({ key: file.name, doc_count: fsitem.doc_count });
+            }
+            cb();
+          });
+        }, function () {
+          return res.end();
+        });
+      }
+
+      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        if (err) {
+          console.log('Error', query, err);
+          return doneCb ? doneCb() : res.end();
+        }
+        if (Config.debug) {
+          console.log('unique.txt result', util.inspect(result, false, 50));
+        }
+        if (!result.aggregations || !result.aggregations.field) {
+          return doneCb ? doneCb() : res.end();
+        }
+
+        if (req.query.field === 'fileand') {
+          return findFileNames(result);
+        }
+
+        for (let i = 0, ilen = result.aggregations.field.buckets.length; i < ilen; i++) {
+          eachCb(result.aggregations.field.buckets[i]);
+        }
+
+        return doneCb ? doneCb() : res.end();
+      });
+    });
+  };
+
+  /**
+   * POST/GET (preferred method is POST)
+   *
+   * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
+   * @name /api/multiunique.txt
+   * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @returns {object} Sends the response to the client
+   */
+  module.getMultiunique = (req, res) => {
+    ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
+
+    if (req.query.exp === undefined) {
+      return res.send('Missing exp parameter');
+    }
+
+    let fields = [];
+    let parts = req.query.exp.split(',');
+    for (let i = 0; i < parts.length; i++) {
+      let field = Config.getFieldsMap()[parts[i]];
+      if (!field) {
+        return res.send(`Unknown expression ${parts[i]}\n`);
+      }
+      fields.push(field);
+    }
+
+    let separator = req.query.separator || ', ';
+    let doCounts = parseInt(req.query.counts, 10) || 0;
+
+    let results = [];
+    function printUnique (buckets, line) {
+      for (let i = 0; i < buckets.length; i++) {
+        if (buckets[i].field) {
+          printUnique(buckets[i].field.buckets, line + buckets[i].key + separator);
+        } else {
+          results.push({ line: line + buckets[i].key, count: buckets[i].doc_count });
+        }
+      }
+    }
+
+    module.buildSessionQuery(req, (err, query, indices) => {
+      delete query.sort;
+      delete query.aggregations;
+      query.size = 0;
+
+      if (!query.query.bool.must) {
+        query.query.bool.must = [];
+      }
+
+      let lastQ = query;
+      for (let i = 0; i < fields.length; i++) {
+        query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+        lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size: +Config.get('maxAggSize', 10000) } } };
+        lastQ = lastQ.aggregations.field;
+      }
+
+      if (Config.debug > 2) {
+        console.log('multiunique aggregations', indices, JSON.stringify(query, false, 2));
+      }
+      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+        if (err) {
+          console.log('multiunique ERROR', err);
+          res.status(400);
+          return res.end(err);
+        }
+
+        if (Config.debug > 2) {
+          console.log('result', JSON.stringify(result, false, 2));
+        }
+        printUnique(result.aggregations.field.buckets, '');
+
+        if (req.query.sort !== 'field') {
+          results = results.sort(function (a, b) { return b.count - a.count; });
+        }
+
+        if (doCounts) {
+          for (let i = 0; i < results.length; i++) {
+            res.write(results[i].line + separator + results[i].count + '\n');
+          }
+        } else {
+          for (let i = 0; i < results.length; i++) {
+            res.write(results[i].line + '\n');
+          }
+        }
+        return res.end();
+      });
+    });
+  };
+
+  /**
+   * GET
+   *
+   * Gets SPI data for a session
+   * @name /:nodeName/session/:id/detail
+   * @returns {object} Sends the response to the client
+   */
+  module.getDetail = (req, res) => {
+    Db.getSession(req.params.id, {}, function (err, session) {
+      if (err || !session.found) {
+        return res.end("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+      }
+
+      session = session._source;
+
+      session.id = req.params.id;
+
+      sortFields(session);
+
+      let hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
+      ViewerUtils.fixFields(session, () => {
+        pug.render(internals.sessionDetailNew, {
+          filename: 'sessionDetail',
+          cache: internals.isProduction,
+          compileDebug: !internals.isProduction,
+          user: req.user,
+          session: session,
+          Db: Db,
+          query: req.query,
+          basedir: '/',
+          hidePackets: hidePackets,
+          reqFields: Config.headers('headers-http-request'),
+          resFields: Config.headers('headers-http-response'),
+          emailFields: Config.headers('headers-email')
+        }, function (err, data) {
+          if (err) {
+            console.trace('ERROR - fixFields - ', err);
+            return req.next(err);
+          }
+          if (Config.debug > 1) {
+            console.log('Detail Rendering', data.replace(/>/g, '>\n'));
+          }
+          res.send(data);
+        });
+      });
+    });
+  };
+
+  /**
+   * GET
+   *
+   * Gets packets for a session
+   * @name /:nodeName/session/:id/packets
+   * @returns {object} Sends the response to the client
+   */
+  module.getPackets = (req, res) => {
+    module.isLocalView(req.params.nodeName, () => {
+      ViewerUtils.noCache(req, res);
+      req.packetsOnly = true;
+      localSessionDetail(req, res);
+    },
+    function () {
+      return module.proxyRequest(req, res);
     });
   };
 

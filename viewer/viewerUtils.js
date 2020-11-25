@@ -3,6 +3,36 @@
 module.exports = (async, Db, Config, molochparser, internals) => {
   let module = {};
 
+  module.addAuth = (info, user, node, secret) => {
+    if (!info.headers) {
+      info.headers = {};
+    }
+    info.headers['x-moloch-auth'] = Config.obj2auth({ date: Date.now(),
+      user: user.userId,
+      node: node,
+      path: info.path
+    }, false, secret);
+  };
+
+  module.addCaTrust = (info, node) => {
+    if (!Config.isHTTPS(node)) {
+      return;
+    }
+
+    if ((internals.caTrustCerts[node] !== undefined) && (internals.caTrustCerts[node].length > 0)) {
+      info.ca = internals.caTrustCerts[node];
+      info.agent.options.ca = internals.caTrustCerts[node];
+      return;
+    }
+
+    internals.caTrustCerts[node] = Config.getCaTrustCerts(node);
+
+    if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
+      info.ca = internals.caTrustCerts[node];
+      info.agent.options.ca = internals.caTrustCerts[node];
+    }
+  };
+
   module.noCache = (req, res, ct) => {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     if (ct) {

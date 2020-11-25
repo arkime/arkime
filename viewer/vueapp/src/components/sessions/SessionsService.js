@@ -328,7 +328,7 @@ export default {
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
 
-    let url = `multiunique.txt?${qs.stringify(params)}`;
+    let url = `/api/multiunique.txt?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -352,7 +352,7 @@ export default {
       expression: clonedParams.expression
     };
 
-    let url = `unique.txt?${qs.stringify(params)}`;
+    let url = `/api/unique.txt?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
