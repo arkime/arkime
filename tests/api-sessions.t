@@ -94,7 +94,7 @@ my ($url) = @_;
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
+    eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 tcp,1386004312331,1386004312384,10.180.156.185,53534,US,10.180.156.249,1080,US,2780,1770,15,test
 tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2905,1763,17,test
@@ -104,13 +104,13 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
     $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id})->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv,
-'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
+'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
     my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,srcIp,srcGEO,dstIp,dstGEO,totPackets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Moloch Node, TCP Flag RST, TCP Flag PSH,  ASN
+    eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Arkime Node, TCP Flag RST, TCP Flag PSH,  ASN
 1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
 1386004312331,1386004312384,10.180.156.185,US,10.180.156.249,US,15,test,0,4,
 1386004317979,1386004317989,10.180.156.185,US,10.180.156.249,US,17,test,0,6,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"

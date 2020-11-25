@@ -70,6 +70,10 @@ function makeS3 (node, region) {
     s3Params.s3ForcePathStyle = true;
   }
 
+  if (Config.getBoolFull(node, 's3UseHttp', false) === true) {
+    s3Params.sslEnabled = false;
+  }
+
   // Lets hope that we can find a credential provider elsewhere
   var rv = S3s[region + key] = new AWS.S3(s3Params);
   return rv;

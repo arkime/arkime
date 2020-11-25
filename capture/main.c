@@ -330,6 +330,36 @@ void reload(int UNUSED(sig))
     moloch_plugins_reload();
 }
 /******************************************************************************/
+uint32_t moloch_get_next_prime(uint32_t v)
+{
+    static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
+                                1092757, 1299827, 1500007, 1987411, 2999999, 4000037,
+                                5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
+                                11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
+                                17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
+                                0};
+
+    int p;
+    for (p = 0; primes[p]; p++) {
+        if (primes[p] > v)
+            return primes[p];
+    }
+    return primes[p-1];
+}
+/******************************************************************************/
+//https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+uint32_t moloch_get_next_powerof2(uint32_t v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v++;
+    return v;
+}
+/******************************************************************************/
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
@@ -577,7 +607,6 @@ LOCAL gboolean writerExit   = TRUE;
         readerExit = FALSE;
         if (moloch_reader_stop)
             moloch_reader_stop();
-        moloch_readers_exit();
         moloch_packet_exit();
         moloch_session_exit();
         if (config.debug)
@@ -808,6 +837,7 @@ int main(int argc, char **argv)
     moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
+    arkime_dedup_init();
     moloch_writers_init();
     moloch_readers_init();
     moloch_plugins_init();
@@ -843,6 +873,8 @@ int main(int argc, char **argv)
     moloch_db_exit();
     moloch_http_exit();
     moloch_field_exit();
+    moloch_readers_exit();
+    arkime_dedup_exit();
     moloch_config_exit();
     moloch_rules_exit();
     moloch_yara_exit();
