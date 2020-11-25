@@ -833,7 +833,7 @@ export default {
 
       let promise = new Promise((resolve, reject) => {
         let options = {
-          method: 'GET',
+          method: 'POST',
           params: query,
           cancelToken: source.token,
           url: 'api/spiview'

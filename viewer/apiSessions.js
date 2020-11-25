@@ -786,7 +786,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     if (parseInt(reqQuery.facets) === 1) {
       query.aggregations = {};
       // only add map aggregations if requested
-      if (reqQuery.map === 'true') {
+      if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
           mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1 } },
           mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1 } },
