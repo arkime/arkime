@@ -20,7 +20,7 @@ install:
 	$(CP) -pr favicon.ico $(WISEDIR)
 	$(CP) -pr vueapp/dist "$(WISEDIR)/vueapp"
 	(cd $(WISEDIR) ; npm ci --production)
-	rm -f $(VIEWERDIR)/package-lock.json
+	rm -f $(WISEDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -f *.o *.so
