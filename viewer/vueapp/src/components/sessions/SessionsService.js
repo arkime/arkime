@@ -254,7 +254,7 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.pcap/${params.filename}`;
+      let baseUrl = `api/sessions/pcap/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -288,7 +288,7 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `api/sessionsCSV/${params.filename}`;
+      let baseUrl = `api/sessions/csv/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -329,7 +329,7 @@ export default {
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
 
-    let url = `/api/multiunique.txt?${qs.stringify(params)}`;
+    let url = `api/multiunique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -353,7 +353,7 @@ export default {
       expression: clonedParams.expression
     };
 
-    let url = `/api/unique.txt?${qs.stringify(params)}`;
+    let url = `api/unique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },

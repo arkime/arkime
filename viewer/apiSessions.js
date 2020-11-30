@@ -1043,10 +1043,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   // APIs
   // --------------------------------------------------------------------------
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/buildQuery
    *
    * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
-   * @name /api/buildQuery
+   * @name buildQuery
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -1057,7 +1057,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1087,10 +1087,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/sessions
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them to the client.
-   * @name /api/sessions
+   * @name sessions
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -1101,7 +1101,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1236,10 +1236,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/sessions/csv
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
-   * @name /api/sessionsCSV
+   * @name sessions/csv
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -1250,7 +1250,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1290,10 +1290,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/spiview
    *
    * Builds an elasticsearch session query. Gets a list of field values with counts and returns them to the client.
-   * @name /api/spiview
+   * @name spiview
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
@@ -1479,10 +1479,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/spigraph
    *
    * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
-   * @name /api/spigraph
+   * @name spigraph
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
@@ -1686,10 +1686,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/spigraphhierarchy
    *
    * Builds an elasticsearch session query. Gets a list of values for each field with counts and returns them to the client.
-   * @name /api/spigraph
+   * @name spigraphhierarchy
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
@@ -1817,10 +1817,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/unique
    *
    * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
-   * @name /api/unique.txt
+   * @name unique
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
@@ -1942,7 +1942,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
           return doneCb ? doneCb() : res.end();
         }
         if (Config.debug) {
-          console.log('unique.txt result', util.inspect(result, false, 50));
+          console.log('unique result', util.inspect(result, false, 50));
         }
         if (!result.aggregations || !result.aggregations.field) {
           return doneCb ? doneCb() : res.end();
@@ -1962,10 +1962,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/multiunique
    *
    * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
-   * @name /api/multiunique.txt
+   * @name multiunique
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} expression - The search expression string
@@ -2064,10 +2064,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * GET
+   * GET - /api/:nodeName/session/:id/detail
    *
    * Gets SPI data for a session.
-   * @name /:nodeName/session/:id/detail
+   * @name :nodeName/session/:id/detail
    * @returns {html} The html to display as session detail
    */
   module.getDetail = (req, res) => {
@@ -2112,10 +2112,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * GET
+   * GET - /api/:nodeName/session/:id/packets
    *
    * Gets packets for a session.
-   * @name /:nodeName/session/:id/packets
+   * @name :nodeName/session/:id/packets
    * @returns {html} The html to display as session packets
    */
   module.getPackets = (req, res) => {
@@ -2130,10 +2130,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST
+   * POST - /api/sessions/addTags
    *
    * Add tag(s) to individual session(s) by id or by query.
-   * @name /api/sessions/addTags
+   * @name sessions/addTags
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
    * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
@@ -2150,7 +2150,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -2201,10 +2201,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    };
 
   /**
-   * POST
+   * POST - /api/sessions/removeTags
    *
    * Removes tag(s) from individual session(s) by id or by query.
-   * @name /api/sessions/removeTags
+   * @name  sessions/removeTags
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
    * @param {string} segments=no - Whether to remove tags from linked session segments. Default is no. Options include:
@@ -2221,7 +2221,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol,rootId,totDataBytes,srcDataBytes,dstDataBytes,firstPacket,lastPacket,srcIp,srcPort,dstIp,dstPort,totPackets,srcPackets,dstPackets,totBytes,srcBytes,dstBytes,node,http.uri,srcGEO,dstGEO,email.subject,email.src,email.dst,email.filename,dns.host,cert,irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.

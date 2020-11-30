@@ -439,10 +439,10 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
   // APIs
   // --------------------------------------------------------------------------
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/connections
    *
    * Builds an elasticsearch connections query. Gets a list of nodes and links and returns them to the client.
-   * @name /api/connections
+   * @name connections
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
@@ -504,10 +504,10 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
   };
 
   /**
-   * POST/GET (preferred method is POST)
+   * POST/GET - /api/connections/csv
    *
    * Builds an elasticsearch connections query. Gets a list of nodes and links in csv format and returns them to the client.
-   * @name /api/connectionsCSV
+   * @name connections/csv
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name

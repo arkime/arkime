@@ -4057,14 +4057,14 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
 
 // field apis -----------------------------------------------------------------
 /**
- * GET
+ * GET - /api/fields
  *
  * Gets available database field objects pertaining to sessions.
- * @name /fields
+ * @name fields
  * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
  * @returns {array|map} The map or list of database fields
  */
-app.get('/fields', (req, res) => {
+app.get('/api/fields', (req, res) => {
   if (!app.locals.fieldsMap) {
     res.status(404);
     res.send('Cannot locate fields');
@@ -4079,10 +4079,10 @@ app.get('/fields', (req, res) => {
 
 // file apis ------------------------------------------------------------------
 /**
- * GET
+ * GET - /api/files
  *
  * Gets a list of PCAP files that Arkime knows about.
- * @name /api/files
+ * @name files
  * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
  * @param {number} start=0 - The entry to start at. Defaults to 0
  * @returns {Array} data - The list of files
@@ -5509,31 +5509,31 @@ app.getpost( // build query endoint (POST or GET)
 );
 
 app.getpost( // sessions csv endpoint (POST or GET)
-  [/\/api\/sessionsCSV.*/, /\/sessions.csv.*/],
-  [logAction('sessions csv'), fillQuery],
+  ['/api/sessions/csv', /\/sessions.csv.*/],
+  [logAction('sessions.csv'), fillQuery],
   sessionAPIs.getSessionsCSV
 );
 
 app.getpost( // unique endpoint (POST or GET)
-  ['/api/unique.txt', '/unique.txt'],
+  ['/api/unique', '/unique.txt'],
   [logAction('unique'), fillQuery, fieldToExp],
   sessionAPIs.getUnique
 );
 
 app.getpost( // multiunique endpoint (POST or GET)
-  ['/api/multiunique.txt', '/multiunique.txt'],
+  ['/api/multiunique', '/multiunique.txt'],
   [logAction('multiunique'), fillQuery, fieldToExp],
   sessionAPIs.getMultiunique
 );
 
 app.get( // session detail (SPI) endpoint
-  ['/:nodeName/session/:id/detail', '/api/:nodeName/session/:id/detail'],
+  ['/api/:nodeName/session/:id/detail', '/:nodeName/session/:id/detail'],
   [cspHeader, logAction()],
   sessionAPIs.getDetail
 );
 
 app.get( // session packets endopint
-  ['/:nodeName/session/:id/packets', '/api/:nodeName/session/:id/packets'],
+  ['/api/:nodeName/session/:id/packets', '/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
 );
@@ -5580,10 +5580,10 @@ app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownl
 });
 
 /**
- * GET
+ * GET - /api/sessions/pcap
  *
  * Retrieve the raw session data in pcap format
- * @name /sessionsPCAP
+ * @name sessions/pcap
  * @param {string} ids - The list of ids to return
  * @param {boolean} segments=false - When set return linked segments
  * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
@@ -5603,9 +5603,13 @@ app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownl
  * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
  * @returns {pcap} A PCAP file with the sessions requested
  */
-app.get(/\/sessions.pcap.*/, [logAction(), checkPermissions(['disablePcapDownload'])], (req, res) => {
-  return sessionsPcap(req, res, writePcap, 'pcap');
-});
+app.get(
+  ['/api/sessions/pcap', /\/sessions.pcap.*/],
+  [logAction(), checkPermissions(['disablePcapDownload'])],
+  (req, res) => {
+    return sessionsPcap(req, res, writePcap, 'pcap');
+  }
+);
 
 app.get('/:nodeName/sendSession/:id', checkProxyRequest, function (req, res) {
   ViewerUtils.noCache(req, res);
@@ -5829,7 +5833,7 @@ app.getpost( // connections endpoint (POST or GET)
 );
 
 app.getpost( // connections csv endpoint (POST or GET)
-  ['/api/connectionsCSV', '/connections.csv'],
+  ['/api/connections/csv', '/connections.csv'],
   [logAction('connections.csv'), fillQuery],
   connectionAPIs.getConnectionsCSV
 );
