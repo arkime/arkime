@@ -92,7 +92,7 @@ export default {
     loadData: function () {
       this.error = null;
 
-      this.$http.get('eshealth.json')
+      this.$http.get('api/eshealth')
         .then((response) => {
           this.esHealth = response.data;
           this.error = null;
