@@ -1,17 +1,10 @@
 {{#if returns}}
 **Returns**:
 
-{{#greaterThan returns.length 1}}
-{{tableHead returns "type|Type" "description|Description" ~}}
-
-{{#tableRow returns "type" "description" ~}}
-| {{>linked-type-list types=type.names delimiter=" &#124; " ~}}
-| {{{stripNewlines (inlineLinks description)}}} |
-{{/tableRow}}
-
-{{else}}
-{{>linked-type-list types=returns.[0].type.names}} -
-{{{stripNewlines (inlineLinks returns.[0].description)}}}
-{{/greaterThan}}
+| Name | Type | Description |
+| --- | --- | --- |
+{{#each returns}}
+| {{{getReturnName description}}} | <code>{{{type.names}}}</code> | {{{getReturnDescription description}}} |
+{{/each}}
 
 {{/if}}

@@ -1,8 +1,19 @@
 'use strict';
 
-exports.greaterThan = function (v1, v2, options) {
-  if (v1 > v2) {
-    return options.fn(this);
+exports.getReturnName = (value, options) => {
+  let split = value.split('-');
+  if (split.length > 1) {
+    return split[0].trim();
+  } else {
+    return '';
   }
-  return options.inverse(this);
+}
+
+exports.getReturnDescription = (value, options) => {
+  let split = value.split('-');
+  if (split.length > 1) {
+    return split[1].trim();
+  } else {
+    return split[0].trim();
+  }
 }

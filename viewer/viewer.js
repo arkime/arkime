@@ -4346,24 +4346,24 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
  *
  * Retrive Elasticsearch health and stats
  * @name eshealth
- * @returns {number} active_primary_shards
- * @returns {number} active_shards
- * @returns {number} active_shards_percent_as_number
+ * @returns {number} active_primary_shards -
+ * @returns {number} active_shards -
+ * @returns {number} active_shards_percent_as_number -
  * @returns {string} cluster_name - The name of the arkime cluster
- * @returns {number} delayed_unassigned_shards
- * @returns {number} initializing_shards
+ * @returns {number} delayed_unassigned_shards -
+ * @returns {number} initializing_shards -
  * @returns {number} molochDbVersion - The arkime database version
- * @returns {number} number_of_data_nodes
- * @returns {number} number_of_in_flight_fetch
- * @returns {number} number_of_nodes
- * @returns {number} number_of_pending_tasks
- * @returns {number} relocating_shards
- * @returns {string} status
- * @returns {number} task_max_waiting_in_queue_millis
- * @returns {boolean} timed_out
- * @returns {number} unassigned_shards
+ * @returns {number} number_of_data_nodes -
+ * @returns {number} number_of_in_flight_fetch -
+ * @returns {number} number_of_nodes -
+ * @returns {number} number_of_pending_tasks -
+ * @returns {number} relocating_shards -
+ * @returns {string} status -
+ * @returns {number} task_max_waiting_in_queue_millis -
+ * @returns {boolean} timed_out -
+ * @returns {number} unassigned_shards -
  * @returns {string} version - the elasticsearch version number
- * @returns {number} _timeStamp: timestamps in ms from unix epoc
+ * @returns {number} _timeStamp - timestamps in ms from unix epoc
  */
 app.get(['/api/eshealth', '/eshealth.json'], [noCacheJson], (req, res) => {
   Db.healthCache(function (err, health) {
