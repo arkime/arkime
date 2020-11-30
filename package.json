@@ -61,8 +61,8 @@
     "lint-fix-viewer": "eslint --fix --ext .js,.vue viewer",
     "lint-fix-parliament": "eslint --fix --ext .js,.vue parliament",
     "lint-fix-wise": "eslint --fix --ext .js,.vue wiseService",
-    "viewerdoc": "jsdoc2md --partial viewer/jsdoc/body.hbs viewer/jsdoc/returns.hbs viewer/jsdoc/sig-name.hbs viewer/jsdoc/global-index.hbs viewer/jsdoc/params-table.hbs --files viewer/apiSessions.js viewer/apiConnections.js viewer/viewer.js > ../arkimeweb/_wiki/api_docs.md",
-    "viewerdoc-location": "jsdoc2md --partial viewer/jsdoc/body.hbs viewer/jsdoc/returns.hbs viewer/jsdoc/sig-name.hbs viewer/jsdoc/global-index.hbs viewer/jsdoc/params-table.hbs --files viewer/apiSessions.js viewer/apiConnections.js viewer/viewer.js >"
+    "viewerdoc": "jsdoc2md --partial viewer/jsdoc/*.hbs --helper viewer/jsdoc/dochelpers.js --files viewer/apiSessions.js viewer/apiConnections.js viewer/viewer.js > ../arkimeweb/_wiki/api_docs.md",
+    "viewerdoc-location": "jsdoc2md --partial viewer/jsdoc/*.hbs --helper viewer/jsdoc/dochelpers.js --files viewer/apiSessions.js viewer/apiConnections.js viewer/viewer.js >"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",

@@ -4062,7 +4062,7 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
  * Gets available database field objects pertaining to sessions.
  * @name fields
  * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
- * @returns {array|map} The map or list of database fields
+ * @returns {array/map} The map or list of database fields
  */
 app.get('/api/fields', (req, res) => {
   if (!app.locals.fieldsMap) {
