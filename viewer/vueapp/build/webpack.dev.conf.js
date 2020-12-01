@@ -36,7 +36,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new webpack.NoEmitOnErrorsPlugin(),
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      title: 'Development Moloch',
+      title: 'Development Arkime',
       filename: config.build.index,
       template: 'index.html',
       inject: true

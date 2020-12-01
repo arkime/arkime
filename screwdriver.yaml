@@ -327,7 +327,7 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - export PATH=/data/moloch/bin:$PWD/node_modules/.bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
@@ -447,3 +447,4 @@ jobs:
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
+

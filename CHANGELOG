@@ -1,6 +1,7 @@
 NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
   * Moloch >= 1.5.0  supports ES >= 5.5.0, 6.x, not 7.x or later
@@ -18,8 +19,33 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.4.2 2020/10/xx
-  - NOTE - this is the last version to support ES 6
+3.0.0 2021/01/xx
+
+2.7.1 2020/12/01
+  - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
+  - wise - fix UI queries hanging
+  - viewer - fix anonymous user settings not saving
+  - viewer - fix lastUsed time not always saving to ES
+  - capture - new packet dedup feature https://arkime.com/settings#packet-deduplication-settings
+  - capture - close pfring on exit (issue #1538)
+  - capture - fix http2 parsing crash
+  - db - Moloch to Arkime text fixes
+
+2.7.0 2020/11/18
+  - NOTICE - Requires ES 7.4 or newer
+  - NOTICE - Moloch to Arkime rebranding in UI, everything else still Moloch
+  - all - ES 7 updates, fix most depreciated warnings (mappings/templates still remain)
+  - viewer - fix mpls decoding
+  - viewer - new themes and logo selection
+  - capture - fix http CONNECT response parsing
+  - capture - New pcap-over-ip reader support
+  - db - can import gz files directly now
+  - db - fix issues with version importing
+
+2.4.2 2020/11/10
+  - NOTICE - db.pl upgrade is required
+  - NOTICE - this is the last version to support ES 6
+  - release - node 12.19.0
   - viewer - support utf8 chars in content-disposition
   - viewer - add capture process restart to timeline graphs
   - viewer - add "bookmarks"
@@ -28,7 +54,19 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - share hunts between users
   - viewer - move all common client bundling, scripts, and npm modules to top level
   - viewer - display business hours on sessions timeline graph
+  - viewer - fix multi mpls header decoding
+  - viewer - fix viewer crashing when pcap file not available
+  - viewer - new getSessionBySearch setting
+  - viewer - decode vxlan packets better
+  - viewer - add help icon
+  - viewer - added startTime and runningTime capture stats
   - capture - QUIC version 5x detection
+  - capture - smtp decoding handles clients that break utf8 section incorrectly
+  - capture - fix a json parsing fail would cause next json parse to fail even if good
+  - capture - support 0x6558 Ether Bridging
+  - wise - threatstream improvements when using the sqlite db
+  - db - fix rm-node to delete over 10k items, and bad count display
+  - tests - use our oui/rir files
 
 2.4.1 2020/09/28
   - NOTICE - db.pl upgrade is required

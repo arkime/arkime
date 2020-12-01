@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # This script can initialize, upgrade or provide simple maintenance for the
-# moloch elastic search db
+# Arkime elastic search db
 #
 # Schema Versions
 #  0 - Before this script existed
@@ -68,6 +68,7 @@ use JSON;
 use Data::Dumper;
 use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
 my $VERSION = 66;
@@ -137,7 +138,7 @@ sub showHelp($)
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
-    print "  init [<opts>]                - Clear ALL elasticsearch moloch data and create schema\n";
+    print "  init [<opts>]                - Clear ALL elasticsearch Arkime data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
@@ -145,7 +146,7 @@ sub showHelp($)
     print "    --hotwarm                  - Set 'hot' for 'node.attr.molochtype' on new indices, warm on non sessions indices\n";
     print "    --ilm                      - Use ilm to manage\n";
     print "  wipe                         - Same as init, but leaves user database untouched\n";
-    print "  upgrade [<opts>]             - Upgrade Moloch's schema in elasticsearch from previous versions\n";
+    print "  upgrade [<opts>]             - Upgrade Arkime's schema in elasticsearch from previous versions\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
     print "    --refresh <num>            - Number of seconds for ES refresh interval for sessions indices, default 60\n";
@@ -164,7 +165,7 @@ sub showHelp($)
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let ES decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
     print "    --optmizewarm              - Only optimize warm green indices\n";
-    print "  optimize                     - Optimize all moloch indices in ES\n";
+    print "  optimize                     - Optimize all Arkime indices in ES\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize-admin               - Optimize only admin indices in ES, use with ILM\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
@@ -491,7 +492,7 @@ sub sequenceUpgrade
     $main::userAgent->timeout(7200);
     sequenceCreate();
     esAlias("remove", "sequence_v2", "sequence");
-    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000", 0);
+    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
 
     logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v2 to ${PREFIX}sequence_v3\n";
 
@@ -711,7 +712,7 @@ sub fieldsCreate
 # Not the fix I want, but it works for now
 sub fieldsIpDst
 {
-    esPost("/${PREFIX}fields_v3/field/ip.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/ip.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst IP",
       "group": "general",
       "help": "Destination IP",
@@ -747,7 +748,7 @@ sub fieldsUpdate
     logmsg "Setting fields_v3 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v3/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
 
-    esPost("/${PREFIX}fields_v3/field/ip?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/ip?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All IP fields",
       "group": "general",
       "help": "Search all ip fields",
@@ -757,7 +758,7 @@ sub fieldsUpdate
       "portField": "portall",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/port?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/port?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All port fields",
       "group": "general",
       "help": "Search all port fields",
@@ -766,7 +767,7 @@ sub fieldsUpdate
       "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/rir?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All rir fields",
       "group": "general",
       "help": "Search all rir fields",
@@ -775,7 +776,7 @@ sub fieldsUpdate
       "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/country?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/country?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All country fields",
       "group": "general",
       "help": "Search all country fields",
@@ -784,7 +785,7 @@ sub fieldsUpdate
       "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/asn?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All ASN fields",
       "group": "general",
       "help": "Search all ASN fields",
@@ -793,7 +794,7 @@ sub fieldsUpdate
       "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/host?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/host?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All Host fields",
       "group": "general",
       "help": "Search all Host fields",
@@ -802,7 +803,7 @@ sub fieldsUpdate
       "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
-    esPost("/${PREFIX}fields_v3/field/ip.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/ip.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src IP",
       "group": "general",
       "help": "Source IP",
@@ -813,7 +814,7 @@ sub fieldsUpdate
       "portField2": "srcPort",
       "category": "ip"
     }');
-    esPost("/${PREFIX}fields_v3/field/port.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/port.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Port",
       "group": "general",
       "help": "Source Port",
@@ -822,7 +823,7 @@ sub fieldsUpdate
       "dbField2": "srcPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/asn.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
@@ -832,7 +833,7 @@ sub fieldsUpdate
       "rawField": "rawas1",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v3/field/country.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/country.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
@@ -841,7 +842,7 @@ sub fieldsUpdate
       "dbField2": "srcGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/rir.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src RIR",
       "group": "general",
       "help": "Source RIR",
@@ -851,7 +852,7 @@ sub fieldsUpdate
       "category": "rir"
     }');
     fieldsIpDst();
-    esPost("/${PREFIX}fields_v3/field/port.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/port.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Port",
       "group": "general",
       "help": "Source Port",
@@ -860,7 +861,7 @@ sub fieldsUpdate
       "dbField2": "dstPort",
       "category": "port"
     }');
-    esPost("/${PREFIX}fields_v3/field/asn.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/asn.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst ASN",
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
@@ -870,7 +871,7 @@ sub fieldsUpdate
       "rawField": "rawas2",
       "category": "asn"
     }');
-    esPost("/${PREFIX}fields_v3/field/country.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/country.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
@@ -879,7 +880,7 @@ sub fieldsUpdate
       "dbField2": "dstGEO",
       "category": "country"
     }');
-    esPost("/${PREFIX}fields_v3/field/rir.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/rir.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst RIR",
       "group": "general",
       "help": "Destination RIR",
@@ -888,7 +889,7 @@ sub fieldsUpdate
       "dbField2": "dstRIR",
       "category": "rir"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/bytes?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
@@ -896,7 +897,7 @@ sub fieldsUpdate
       "dbField": "by",
       "dbField2": "totBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/bytes.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
@@ -904,7 +905,7 @@ sub fieldsUpdate
       "dbField": "by1",
       "dbField2": "srcBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/bytes.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/bytes.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Bytes",
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
@@ -912,7 +913,7 @@ sub fieldsUpdate
       "dbField": "by2",
       "dbField2": "dstBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/databytes?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Data bytes",
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
@@ -920,7 +921,7 @@ sub fieldsUpdate
       "dbField": "db",
       "dbField2": "totDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/databytes.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
@@ -928,7 +929,7 @@ sub fieldsUpdate
       "dbField": "db1",
       "dbField2": "srcDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/databytes.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/databytes.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst data bytes",
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
@@ -936,7 +937,7 @@ sub fieldsUpdate
       "dbField": "db2",
       "dbField2": "dstDataBytes"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/packets?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Packets",
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
@@ -944,7 +945,7 @@ sub fieldsUpdate
       "dbField": "pa",
       "dbField2": "totPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets.src?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/packets.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Packets",
       "group": "general",
       "help": "Total number of packets sent by source in a session",
@@ -952,7 +953,7 @@ sub fieldsUpdate
       "dbField": "pa1",
       "dbField2": "srcPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/packets.dst?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/packets.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Packets",
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
@@ -960,7 +961,7 @@ sub fieldsUpdate
       "dbField": "pa2",
       "dbField2": "dstPackets"
     }');
-    esPost("/${PREFIX}fields_v3/field/ip.protocol?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/ip.protocol?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "IP Protocol",
       "group": "general",
       "help": "IP protocol number or friendly name",
@@ -969,41 +970,41 @@ sub fieldsUpdate
       "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
-    esPost("/${PREFIX}fields_v3/field/id?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch ID",
+    esPost("/${PREFIX}fields_v3/_doc/id?timeout=${ESTIMEOUT}s", '{
+      "friendlyName": "Arkime ID",
       "group": "general",
-      "help": "Moloch ID for the session",
+      "help": "Arkime ID for the session",
       "type": "termfield",
       "dbField": "_id",
       "dbField2": "_id",
       "noFacet": "true"
 
     }');
-    esPost("/${PREFIX}fields_v3/field/rootId?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch Root ID",
+    esPost("/${PREFIX}fields_v3/_doc/rootId?timeout=${ESTIMEOUT}s", '{
+      "friendlyName": "Arkime Root ID",
       "group": "general",
-      "help": "Moloch ID of the first session in a multi session stream",
+      "help": "Arkime ID of the first session in a multi session stream",
       "type": "termfield",
       "dbField": "ro",
       "dbField2": "rootId"
     }');
-    esPost("/${PREFIX}fields_v3/field/node?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Moloch Node",
+    esPost("/${PREFIX}fields_v3/_doc/node?timeout=${ESTIMEOUT}s", '{
+      "friendlyName": "Arkime Node",
       "group": "general",
-      "help": "Moloch node name the session was recorded on",
+      "help": "Arkime node name the session was recorded on",
       "type": "termfield",
       "dbField": "no",
       "dbField2": "node"
     }');
-    esPost("/${PREFIX}fields_v3/field/file?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/file?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Filename",
       "group": "general",
-      "help": "Moloch offline pcap filename",
+      "help": "Arkime offline pcap filename",
       "type": "fileand",
       "dbField": "fileand",
       "dbField2": "fileand"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.src.hex?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.src.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Src Hex",
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
@@ -1012,7 +1013,7 @@ sub fieldsUpdate
       "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.src.utf8?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.src.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Src UTF8",
       "group": "general",
       "help": "First 8 bytes of source payload in utf8",
@@ -1022,7 +1023,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.dst.hex?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.dst.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Dst Hex",
       "group": "general",
       "help": "First 8 bytes of destination payload in hex",
@@ -1031,7 +1032,7 @@ sub fieldsUpdate
       "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.dst.utf8?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.dst.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Dst UTF8",
       "group": "general",
       "help": "First 8 bytes of destination payload in utf8",
@@ -1041,7 +1042,7 @@ sub fieldsUpdate
       "transform": "utf8ToHex",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.hex?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.hex?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload Hex",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -1050,7 +1051,7 @@ sub fieldsUpdate
       "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
-    esPost("/${PREFIX}fields_v3/field/payload8.utf8?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/payload8.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload UTF8",
       "group": "general",
       "help": "First 8 bytes of payload in hex",
@@ -1059,7 +1060,7 @@ sub fieldsUpdate
       "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
-    esPost("/${PREFIX}fields_v3/field/scrubbed.by?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/scrubbed.by?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Scrubbed By",
       "group": "general",
       "help": "SPI data was scrubbed by",
@@ -1067,16 +1068,16 @@ sub fieldsUpdate
       "dbField": "scrubby",
       "dbField2": "scrubby"
     }');
-    esPost("/${PREFIX}fields_v3/field/view?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/view?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "View Name",
       "group": "general",
-      "help": "Moloch view name",
+      "help": "Arkime view name",
       "type": "viewand",
       "dbField": "viewand",
       "dbField2": "viewand",
       "noFacet": "true"
     }');
-    esPost("/${PREFIX}fields_v3/field/starttime?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/starttime?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Start Time",
       "group": "general",
       "help": "Session Start Time",
@@ -1085,7 +1086,7 @@ sub fieldsUpdate
       "dbField": "fp",
       "dbField2": "firstPacket"
     }');
-    esPost("/${PREFIX}fields_v3/field/stoptime?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/stoptime?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Stop Time",
       "group": "general",
       "help": "Session Stop Time",
@@ -1094,7 +1095,7 @@ sub fieldsUpdate
       "dbField": "lp",
       "dbField2": "lastPacket"
     }');
-    esPost("/${PREFIX}fields_v3/field/huntId?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/huntId?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Hunt ID",
       "group": "general",
       "help": "The ID of the packet search job that matched this session",
@@ -1102,7 +1103,7 @@ sub fieldsUpdate
       "dbField": "huntId",
       "dbField2": "huntId"
     }');
-    esPost("/${PREFIX}fields_v3/field/huntName?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v3/_doc/huntName?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Hunt Name",
       "group": "general",
       "help": "The name of the packet search job that matched this session",
@@ -2810,40 +2811,29 @@ sub dbVersion {
 my ($loud) = @_;
     my $version;
 
-    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta&include_type_name=true", 1);
+    $version = esGet("/_template/${PREFIX}sessions2_template?filter_path=**._meta", 1);
 
     if (defined $version &&
         exists $version->{"${PREFIX}sessions2_template"} &&
-        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session} &&
-        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta} &&
-        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion}
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta} &&
+        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion}
     ) {
-        $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{session}->{_meta}->{molochDbVersion};
+        $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion};
         return;
-    }
-
-    my $version = esGet("/${PREFIX}dstats/version/version", 1);
-
-    my $found = $version->{found};
-
-    if (!defined $found) {
-        logmsg "This is a fresh Moloch install\n" if ($loud);
+    } else {
+        logmsg "This is a fresh Arkime install\n" if ($loud);
         $main::versionNumber = -1;
         if ($loud && $ARGV[1] !~ "init") {
-            die "Looks like moloch wasn't installed, must do init"
+            die "Looks like Arkime wasn't installed, must do init"
         }
-    } elsif ($found == 0) {
-        $main::versionNumber = 0;
-    } else {
-        $main::versionNumber = $version->{_source}->{version};
     }
 }
 ################################################################################
 sub dbCheckForActivity {
     logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000");
+    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     sleep(6);
-    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000");
+    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
@@ -2874,10 +2864,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 60800 || ($main::esVersion >= 70000 && $main::esVersion < 70100)) {
+    if ($main::esVersion < 70400) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 6.8.0 is not supported\n",
-              "* 7.0.x is not supported\n",
+              "* < 7.4.0 is not supported\n",
               "\n",
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -2885,8 +2874,8 @@ sub dbCheck {
         exit (1)
     }
 
-    if ($main::esVersion < 60805) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 6.8.5 or newer is recommended\n");
+    if ($main::esVersion < 70800) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.8.0 or newer is recommended\n");
     }
 
     my $error = 0;
@@ -3126,8 +3115,17 @@ if ($ARGV[0] =~ /^http/) {
 }
 
 if ($ARGV[1] =~ /^(users-?import|import)$/) {
-    open(my $fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
+    my $fh;
+    if ($ARGV[2] =~ /\.gz$/) {
+        $fh = new IO::Uncompress::Gunzip $ARGV[2] or die "gunzip failed: $GunzipError\n";
+    } else {
+        open($fh, "<", $ARGV[2]) or die "cannot open < $ARGV[2]: $!";
+    }
     my $data = do { local $/; <$fh> };
+    # Use version/version_type instead of _version/_version_type
+    $data =~ s/, "_version": (\d+), "_version_type"/, "version": \1, "version_type"/g;
+    # Remove type from older backups
+    $data =~ s/, "_type": .*, "_id":/, "_id":/g;
     esPost("/_bulk", $data);
     close($fh);
     exit 0;
@@ -3140,7 +3138,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     open(my $fh, ">", "$ARGV[3].${PREFIX}${index}.json") or die "cannot open > $ARGV[3].${PREFIX}${index}.json: $!";
     foreach my $hit (@{$data}) {
-        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+        print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
         if (exists $hit->{_source}) {
             print $fh to_json($hit->{_source}) . "\n";
         } else {
@@ -3169,7 +3167,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         next if (scalar(@{$data}) == 0);
         my $fh = bopen($index);
         foreach my $hit (@{$data}) {
-            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_type\": \"$hit->{_type}\", \"_id\": \"$hit->{_id}\", \"_version\": $hit->{_version}, \"_version_type\": \"external\"}}\n";
+            print $fh "{\"index\": {\"_index\": \"${PREFIX}${index}\", \"_id\": \"$hit->{_id}\", \"version\": $hit->{_version}, \"version_type\": \"external\"}}\n";
             if (exists $hit->{_source}) {
                 print $fh to_json($hit->{_source}) . "\n";
             } else {
@@ -3625,7 +3623,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+        esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
     }
     logmsg "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
@@ -3645,21 +3643,36 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     waitFor("YES", "Do you want to remove file references from database?");
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if (! -f $hit->{_source}->{name}) {
-            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+            esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
         }
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?node$/) {
-    my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
+    esGet("/${PREFIX}files,${PREFIX}dstats,${PREFIX}stats/_refresh", 1);
+    my $results;
+
+    $results = esGet("/${PREFIX}files/_search?size=1000&q=node:$ARGV[2]&rest_total_hits_as_int=true");
     logmsg "Deleting ", $results->{hits}->{total}, " files\n";
-    foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/${PREFIX}files/file/" . $hit->{_id}, 0);
+    while ($results->{hits}->{total} > 0) {
+        foreach my $hit (@{$results->{hits}->{hits}}) {
+            esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
+        }
+        esPost("/_flush/synced", "", 1);
+        esGet("/${PREFIX}files/_refresh", 1);
+        $results = esGet("/${PREFIX}files/_search?size=1000&q=node:$ARGV[2]&rest_total_hits_as_int=true");
     }
-    esDelete("/${PREFIX}stats/stat/" . $ARGV[2], 1);
-    my $results = esGet("/${PREFIX}dstats/_search?size=10000&q=nodeName:$ARGV[2]");
+
+    esDelete("/${PREFIX}stats/_doc/" . $ARGV[2], 1);
+
+    $results = esGet("/${PREFIX}dstats/_search?size=1000&q=nodeName:$ARGV[2]&rest_total_hits_as_int=true");
     logmsg "Deleting ", $results->{hits}->{total}, " stats\n";
-    foreach my $hit (@{$results->{hits}->{hits}}) {
-        esDelete("/${PREFIX}dstats/dstat/" . $hit->{_id}, 0);
+    while ($results->{hits}->{total} > 0) {
+        foreach my $hit (@{$results->{hits}->{hits}}) {
+            esDelete("/${PREFIX}dstats/_doc/" . $hit->{_id}, 0);
+        }
+        esPost("/_flush/synced", "", 1);
+        esGet("/${PREFIX}dstats/_refresh", 1);
+        $results = esGet("/${PREFIX}dstats/_search?size=1000&q=nodeName:$ARGV[2]&rest_total_hits_as_int=true");
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^hide-?node$/) {
@@ -3688,7 +3701,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         $file =~ /(\d+)-(\d+).pcap/;
         my $filenum = int($2);
         my $ctime = (stat("$dir/$file"))[10];
-        my $info = esGet("/${PREFIX}files/file/$ARGV[2]-$filenum", 1);
+        my $info = esGet("/${PREFIX}files/_doc/$ARGV[2]-$filenum", 1);
         if (!$info->{found}) {
             logmsg "Adding $dir/$file $filenum $ctime\n";
             esPost("/${PREFIX}files/file/$ARGV[2]-$filenum", to_json({
@@ -3726,7 +3739,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     foreach my $hit (@{$remotefiles}) {
         if (! -f $hit->{_source}->{name}) {
             progress("Removing " . $hit->{_source}->{name} . " id: " . $hit->{_id} . "\n");
-            esDelete("/${PREFIX}files/file/" . $hit->{_id}, 1);
+            esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 1);
         } else {
             $remotefileshash{$hit->{_source}->{name}} = $hit->{_source};
         }
@@ -3759,7 +3772,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg("\n") if ($verbose > 0);
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
-    my $result = esGet("/${PREFIX}fields/field/$ARGV[3]", 1);
+    my $result = esGet("/${PREFIX}fields/_doc/$ARGV[3]", 1);
     my $found = $result->{found};
     die "Field $ARGV[3] isn't found" if (!$found);
 
@@ -3985,7 +3998,7 @@ my $health = dbCheckHealth();
 
 my $nodes = esGet("/_nodes");
 $main::numberOfNodes = dataNodes($nodes->{nodes});
-logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
+logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.  Use 'db.pl ${main::elasticsearch} backup' to backup db first.\n\n";
 if ($main::numberOfNodes == 1) {
     logmsg "There is $main::numberOfNodes elastic search data node, if you expect more please fix first before proceeding.\n\n";
 } else {
@@ -4002,18 +4015,18 @@ if (int($SHARDS) > $main::numberOfNodes) {
     }
 }
 
+dbCheck();
+
 dbVersion(1);
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if schema is up to date.  Use upgrade first.";
 }
 
-dbCheck();
-
 if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
-        logmsg "It appears this elastic search cluster already has moloch installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "It appears this elastic search cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in elastic search! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
     } elsif ($ARGV[1] eq "wipe") {
         logmsg "This will delete ALL session data in elastic search! (It does not delete the pcap files on disk or user info.)\n\n";
@@ -4091,7 +4104,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 } elsif ($ARGV[1] =~ /^restore$/) {
 
-    logmsg "It is STRONGLY recommended that you stop ALL moloch captures and viewers before proceeding.\n";
+    logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.\n";
 
     dbCheckForActivity();
 
@@ -4280,9 +4293,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Starting Upgrade\n";
-
-    esDelete("/${PREFIX}dstats_v2/version/version", 1);
-    esDelete("/${PREFIX}dstats_v3/version/version", 1);
 
     if ($main::versionNumber <= 62) {
         dbCheckForActivity();

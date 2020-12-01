@@ -1,8 +1,8 @@
-# Moloch Wise
+# Arkime WISE
 
-Moloch Wise is a data feed aggregator. External information can get matched with existing moloch data for better analysis.
+Arkime WISE is a data feed aggregator. External information can get matched with existing Arkime data for better analysis.
 
-Learn more about [Wise](https://molo.ch/wise).
+Learn more about [WISE](https://arkime.com/wise).
 
 ### Install Dependencies
 

@@ -18,7 +18,7 @@
     <!-- info icon -->
     <span class="cursor-help"
       id="infoTooltip">
-      <span class="fa fa-info-circle fa-2x"
+      <span class="fa fa-info-circle fa-lg"
         :class="esHealthClass"
         v-if="!error && esHealth">
       </span>
@@ -28,7 +28,7 @@
     <b-tooltip
       :showTooltip.sync="showTooltip"
       target="infoTooltip"
-      placement="left"
+      placement="bottom"
       boundary="viewport">
       <div class="text-center mb-1">
         <strong>Elasticsearch Stats</strong>
@@ -92,7 +92,7 @@ export default {
     loadData: function () {
       this.error = null;
 
-      this.$http.get('eshealth.json')
+      this.$http.get('api/eshealth')
         .then((response) => {
           this.esHealth = response.data;
           this.error = null;
@@ -148,5 +148,9 @@ export default {
   margin-left: 145px;
   text-align: left;
   font-weight: bold;
+}
+
+.fa-info-circle {
+  margin-top: 9px;
 }
 </style>

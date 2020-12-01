@@ -50,7 +50,7 @@ void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, const u_
 {
     if (unlikely(h->caplen != h->len)) {
         LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-            "See https://molo.ch/faq#moloch_requires_full_packet_captures_error",
+            "See https://arkime.com/faq#moloch_requires_full_packet_captures_error",
             h->caplen, h->len);
     }
 

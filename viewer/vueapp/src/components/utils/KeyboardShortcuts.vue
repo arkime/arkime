@@ -24,9 +24,9 @@
       <br>
       <code>'C'</code> - jump to the Connections page
       <br>
-      <code>'H'</code> - jump to the Moloch Help page
+      <code>'H'</code> - jump to the Arkime Help page
       <br>
-      <code>'U'</code> - jump to the Moloch Hunt page
+      <code>'U'</code> - jump to the Arkime Hunt page
       <br>
       <code>'shift + enter'</code> - issue search/refresh
       <br>

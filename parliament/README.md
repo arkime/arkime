@@ -1,12 +1,12 @@
-# Moloch Parliament
+# Arkime Parliament
 
-Moloch Parliament is an [Vue.js][vue] web app to view and monitor multiple Moloch clusters.
+Arkime Parliament is an [Vue.js][vue] web app to view and monitor multiple Arkime clusters.
 
 This project was generated with [Vue CLI][vuecli].
 
 ## What is Parliament and how can I use it?
 
-The Parliament dashboard contains a grouped list of your Moloch clusters with links, ES health, and issues for each. You can search for Molochs in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
+The Parliament dashboard contains a grouped list of your Arkime clusters with links, ES health, and issues for each. You can search for Arkimes in your Parliament, change the data refresh time (15 seconds is the default), and hover over issues and ES health statuses for more information.
 
 The app can be run in three ways:
 1. with a password
@@ -16,7 +16,7 @@ The app can be run in three ways:
 _**If your Parliament has a password (via option 1 or 2), you can interact with it in the ways enumerated below.**_
 
 #### Parliament Page
-The main Parliament page allows a user to view and interact with the Molochs in your Parliament. Once logged in, a user can acknowledge and ignore issues for each cluster as well as update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
+The main Parliament page allows a user to view and interact with the Arkimes in your Parliament. Once logged in, a user can acknowledge and ignore issues for each cluster as well as update the Parliament when in **Edit Mode**. To enter this mode, toggle the switch on the top right (below the navbar). Now you can add, update, delete, or reorder groups and clusters in your Parliament.
 
 #### Issues Page
 The issues page contains a list of issues that your Parliament is experiencing. Here, you can ignore, acknowledge, and remove acknowledged issues.
@@ -46,7 +46,7 @@ Each different notifier can alert on different types of issues.
 
 
 ## Running from RPM/DEB
-If using prepackaged version of Moloch, use "Configure --parliament" to setup.  It will use port 8008 by default.
+If using prepackaged version of Arkime, use "Configure --parliament" to setup.  It will use port 8008 by default.
 
 It is meant to sit behind a reverse proxy such as apache, with config like the following added.
 ```
@@ -130,7 +130,7 @@ For a detailed explanation on how things work, check out the [vue webpack guide]
 
 ### Contributing
 
-Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Moloch.
+Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Arkime.
 
 Before submitting a pull request with your contribution, please move to the top level Moloch directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
 

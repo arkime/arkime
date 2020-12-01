@@ -66,6 +66,8 @@ LOCAL int               dbExit;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 
+extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
+
 /******************************************************************************/
 extern MolochConfig_t        config;
 
@@ -512,9 +514,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -1254,6 +1256,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
     static uint64_t       lastESDropped[NUMBER_OF_STATS];
+    static uint64_t       lastDupDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
@@ -1278,6 +1281,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     uint64_t overloadDropped = moloch_packet_dropped_overload();
     uint64_t totalDropped    = moloch_packet_dropped_packets();
     uint64_t fragsDropped    = moloch_packet_dropped_frags();
+    uint64_t dupDropped      = packetStats[MOLOCH_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = moloch_http_dropped_count(esServer);
     uint64_t totalBytes      = moloch_packet_total_bytes();
 
@@ -1370,6 +1374,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         "\"deltaFragsDropped\": %" PRIu64 ","
         "\"deltaOverloadDropped\": %" PRIu64 ","
         "\"deltaESDropped\": %" PRIu64 ","
+        "\"deltaDupDropped\": %" PRIu64 ","
         "\"esHealthMS\": %" PRIu64 ","
         "\"deltaMS\": %" PRIu64 ","
         "\"startTime\": %" PRIu64
@@ -1413,9 +1418,10 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
+        (dupDropped - lastDupDropped[n]),
         esHealthMS,
         diffms,
-        startTime.tv_sec);
+        (uint64_t)startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;
@@ -1428,6 +1434,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
     lastESDropped[n]       = esDropped;
+    lastDupDropped[n]      = dupDropped;
     lastUsage[n]           = usage;
 
     if (n == 0) {
@@ -1585,7 +1592,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
                 continue;
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("You have most likely run out of space on an elasticsearch node, see https://molo.ch/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
+                LOG("You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
             free(data);
             continue;
@@ -1842,7 +1849,7 @@ LOCAL void moloch_db_check()
 
     snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
 
-    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta&include_type_name=true", tname);
+    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
@@ -1865,18 +1872,10 @@ LOCAL void moloch_db_check()
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
-    uint32_t           session_len;
-    unsigned char     *session = 0;
-
-    session = moloch_js0n_get(mappings, mappings_len, "session", &session_len);
-    if(!session || session_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
     uint32_t           meta_len;
     unsigned char     *meta = 0;
 
-    meta = moloch_js0n_get(session, session_len, "_meta", &meta_len);
+    meta = moloch_js0n_get(mappings, mappings_len, "_meta", &meta_len);
     if(!meta || meta_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
@@ -1899,7 +1898,7 @@ LOCAL void moloch_db_check()
 LOCAL void moloch_db_free_mmdb(MMDB_s *geo)
 {
     MMDB_close(geo);
-    g_free(geo);
+    free(geo);
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_geo_country(char *name)
@@ -2378,7 +2377,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2Country[i]) {
-            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+            LOG("WARNING - No Geo Country file could be loaded, see https://arkime.com/settings#geolite2country");
         }
     }
     if (config.geoLite2ASN && config.geoLite2ASN[0]) {
@@ -2389,7 +2388,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2ASN[i]) {
-            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+            LOG("WARNING - No Geo ASN file could be loaded, see https://arkime.com/settings#geolite2asn");
         }
     }
     if (config.ouiFile)

@@ -15,7 +15,7 @@
     <br/>
 
     <div class="mb-2 mt-2">
-      <a href="https://molo.ch/faq#what-browsers-are-supported"
+      <a href="https://arkime.com/faq#what-browsers-are-supported"
         class="no-decoration">
         Which browsers are supported?
       </a>

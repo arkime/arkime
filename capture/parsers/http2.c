@@ -89,7 +89,7 @@ LOCAL int http2_spos_get(HTTP2Info_t *http2, uint32_t streamId, int create)
     // See if any slots are free and use that
     for (int i = 0; i < http2->numStreams; i++) {
         if (http2->streams[i].id == 0) {
-            http2->streams[http2->numStreams].id = streamId;
+            http2->streams[i].id = streamId;
             return i;
         }
     }
@@ -133,7 +133,7 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
     int final = flags & NGHTTP2_FLAG_END_HEADERS;
 
 #ifdef HTTPDEBUG
-    LOG("%d,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
+    LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
     //moloch_print_hex_string(in, inlen);
 #endif
 
@@ -155,24 +155,24 @@ LOCAL void http2_parse_header_block(MolochSession_t *session, HTTP2Info_t *http2
 
         if(inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
             if (nv.name[0] == ':') {
-                if (memcmp(nv.name, ":method", 7) == 0) {
+                if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
                     moloch_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
-                } else if (memcmp(nv.name, ":authority", 10) == 0) {
+                } else if (nv.namelen == 10 && memcmp(nv.name, ":authority", 10) == 0) {
                     uint8_t *colon = memchr(nv.value, ':', nv.valuelen);
                     if (colon) {
                         moloch_field_string_add(hostField, session, (char *)nv.value, colon - nv.value, TRUE);
                     } else {
                         moloch_field_string_add(hostField, session, (char *)nv.value, nv.valuelen, TRUE);
                     }
-                } else if (memcmp(nv.name, ":path", 5) == 0) {
+                } else if (nv.namelen == 5 && memcmp(nv.name, ":path", 5) == 0) {
                     http_common_parse_url(session, (char *)nv.value, nv.valuelen);
-                } else if (memcmp(nv.name, ":status", 7) == 0) {
+                } else if (nv.namelen == 7 && memcmp(nv.name, ":status", 7) == 0) {
                     moloch_field_int_add(statuscodeField, session, atoi((const char *)nv.value));
                 }
             } else {
                 http_common_add_header(session, 0, which == http2->which, (const char *)nv.name, nv.namelen, (const char *)nv.value, nv.valuelen);
 
-                if (memcmp(nv.name, "cookie", 6) == 0) {
+                if (nv.namelen == 6 && memcmp(nv.name, "cookie", 6) == 0) {
                     http_common_parse_cookie(session, (char *)nv.value, nv.valuelen);
                 }
             }

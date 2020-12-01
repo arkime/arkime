@@ -52,10 +52,10 @@
             About
           </h3>
           <p class="lead"><strong>
-            Parliament contains a grouped list of your Moloch clusters.
+            Parliament contains a grouped list of your Arkime clusters.
           </strong></p>
           <p class="lead">
-            Parliament allows users to view your Moloch cluster's status and
+            Parliament allows users to view your Arkime cluster's status and
             navigate to each cluster.
           </p>
           <!-- /about -->
@@ -69,7 +69,7 @@
             Parliament Dashboard
           </h3>
           <p class="lead">
-            The Parliament dashboard includes links, ES health, and issues for each Moloch cluster.
+            The Parliament dashboard includes links, ES health, and issues for each Arkime cluster.
           </p>
           <p>
             The dashboard page allows users to view and interact with the Molochs in your Parliament.

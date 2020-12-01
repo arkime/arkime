@@ -1,8 +1,8 @@
-# Moloch Viewer
+# Arkime Viewer
 
-Moloch viewer is a [Vue.js][vuejs] web app.
+Arkime viewer is a [Vue.js][vuejs] web app.
 
-Read the main [Moloch README](../README.rst) for more information on how to build and run the app for demo or production. These instructions are for running in development mode out of the source tree.
+Read the main [Arkime README](../README.md) for more information on how to build and run the app for demo or production. These instructions are for running in development mode out of the source tree.
 
 ---
 
@@ -33,7 +33,7 @@ You should find that you have a new folder:
 
 ### Run the Application
 
-**To run the web application, you must have an elasticsearch cluster running and already built and configured Moloch. Read the main [Moloch README](../README.rst) for more information.**
+**To run the web application, you must have an elasticsearch cluster running and already built and configured Arkime. Read the main [Arkime README](../README.md) for more information.**
 
 
 #### The simplest way to start the web app is:
