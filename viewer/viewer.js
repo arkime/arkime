@@ -5537,7 +5537,7 @@ app.getpost( // spigraph hierarchy endpoint (POST or GET)
 );
 
 app.getpost( // build query endoint (POST or GET)
-  ['/api/buildQuery', '/buildQuery.json'],
+  ['/api/buildquery', '/buildQuery.json'],
   [noCacheJson, logAction('query', fillQuery)],
   sessionAPIs.getQuery
 );
@@ -5573,13 +5573,13 @@ app.get( // session packets endopint
 );
 
 app.post( // add tags endpoint
-  ['/api/sessions/addTags', '/addTags'],
+  ['/api/sessions/addtags', '/addTags'],
   [noCacheJson, checkHeaderToken, logAction('addTags')],
   sessionAPIs.addTags
 );
 
 app.post( // remove tags endpoint
-  ['/api/sessions/removeTags', '/removeTags'],
+  ['/api/sessions/removetags', '/removeTags'],
   [noCacheJson, checkHeaderToken, logAction('removeTags'), checkPermissions(['removeEnabled'])],
   sessionAPIs.removeTags
 );

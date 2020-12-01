@@ -1067,10 +1067,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   // APIs
   // --------------------------------------------------------------------------
   /**
-   * POST/GET - /api/buildQuery
+   * POST/GET - /api/buildquery
    *
    * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
-   * @name buildQuery
+   * @name buildquery
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
@@ -2048,10 +2048,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
-   * POST - /api/sessions/addTags
+   * POST - /api/sessions/addtags
    *
    * Add tag(s) to individual session(s) by id or by query.
-   * @name sessions/addTags
+   * @name sessions/addtags
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
@@ -2102,10 +2102,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    };
 
   /**
-   * POST - /api/sessions/removeTags
+   * POST - /api/sessions/removetags
    *
    * Removes tag(s) from individual session(s) by id or by query.
-   * @name  sessions/removeTags
+   * @name  sessions/removetags
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
