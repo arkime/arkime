@@ -88,6 +88,23 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Additionally, for any viewer or parliament changes, verify that all UI tests pass by runnning `./tests.pl --viewer`
 * The README file in the tests directory provides additional information on the test cases
 
+#### API Documentation
+
+The API is documented using [jsdoc](https://jsdoc.app/) and [jsdoc2md](https://github.com/jsdoc2md/jsdoc-to-markdown).
+
+If you update or create an API, please document it thoroughly with these items:
+1. METHOD - endpoint (e.g. GET - /api/sessions)
+2. Description
+3. Name the endpoint with `@name endpointname` (e.g. sessions). This is the name that will be reflected in the title of the endpoint and the table of contents.
+4. List the parameters including any defaults with `@param` (e.g. `@param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1`)
+5. Describe the return value(s) with `@returns` (e.g. `@returns {array} data - The list of sessions with the requested fields`)
+
+The documentation lives on our website at [arkime.com/api](https://arkime.com/api). It is generated using the code documentation. Follow these steps to update the API documentation:
+1. Check out the [arkimeweb repository](https://github.com/arkime/arkimeweb) in the same parent directory as the Arkime repository.
+2. Run `npm run viewerdoc` from the `arkime` directory. If you checked out the arkimeweb repository into a different location, you can run `npm run viewerdoc-location -- <path/to/arkimeweb/_wiki/api_docs.md>`.
+3. Run the arkime website locally (find out how [here](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md)) to make sure all of your documentation is correct.
+4. Make a PR to [arkime](https://github.com/arkime/arkime/blob/master/CONTRIBUTING.md) and [arkimeweb](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md) with your changes.
+
 ---
 
 ### Upgrading Cyberchef

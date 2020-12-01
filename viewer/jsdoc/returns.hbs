@@ -1,0 +1,10 @@
+{{#if returns}}
+**Returns**:
+
+| Name | Type | Description |
+| --- | --- | --- |
+{{#each returns}}
+| {{{getReturnName description type.names}}} | {{>linked-type-list types=type.names delimiter=" \| " ~}} | {{{getReturnDescription description}}} |
+{{/each}}
+
+{{/if}}
