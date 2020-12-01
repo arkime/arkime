@@ -41,8 +41,9 @@ char *moloch_yara_version() {
 }
 
 
-#if YR_MAJOR_VERSION == 3 && YR_MINOR_VERSION >= 4
-// Yara 3
+
+#if YR_MAJOR_VERSION == 3 && YR_MINOR_VERSION >= 4 || YR_MAJOR_VERSION == 4
+// Yara 3 + 4, see https://github.com/VirusTotal/yara/wiki/Backward-incompatible-changes-in-YARA-4.0-API
 LOCAL  YR_COMPILER *yCompiler = 0;
 LOCAL  YR_COMPILER *yEmailCompiler = 0;
 LOCAL  YR_RULES    *yRules = 0;
@@ -50,7 +51,11 @@ LOCAL  YR_RULES    *yEmailRules = 0;
 LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
-void moloch_yara_report_error(int error_level, const char* file_name, int line_number, const char* error_message, void* UNUSED(user_data))
+void moloch_yara_report_error(int error_level, const char* file_name, int line_number,
+#if YR_MAJOR_VERSION >= 4
+const YR_RULE* rule
+#endif
+const char* error_message, void* UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
@@ -134,7 +139,11 @@ void moloch_yara_init()
 }
 
 /******************************************************************************/
-int moloch_yara_callback(int message, YR_RULE* rule, MolochSession_t* session)
+int moloch_yara_callback(
+#if YR_MAJOR_VERSION >= 4
+YR_SCAN_CONTEXT* context,
+#endif
+int message, YR_RULE* rule, MolochSession_t* session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
