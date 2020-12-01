@@ -238,6 +238,8 @@ app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/
 
 app.use('/parliament/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
 
+app.use('/parliament/assets', express.static(`${__dirname}/vueapp/src/assets`, { maxAge: 600 * 1000 }));
+
 // log requests
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
 

@@ -17,12 +17,12 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 
 **Then, get some test data!**
 
-* Make sure node 10 is in your path
+* Make sure `node` is in your path
 * Install and Start Elasticsearch
 * Use `easybutton-build.sh` or `configure` and `make` to build everything
 * Run `make check` from the top level directory, this will
   * run `npm ci` everywhere
-  * run `tests.pl` and `tests.pl --viewer` in the tests directory
+  * run `tests.pl` and `tests.pl --viewer` in the tests directory (this loads PCAPs)
 
 > **Note:** this will only work if viewer is not already running.
 
@@ -30,15 +30,20 @@ You should now have test data loaded, so let's **start the web app**:
 
 * Move to the Arkime viewer directory
 * Run `npm ci`
-* Move to the vueapp directory
-* Run `npm ci`
-* Move back up to the viewer directory
-* Run `npm run start:test`
+* Move back up to the top level Moloch directory
+* Run `npm run viewer:test`
 * Now browse to the app at `http://localhost:8123`
+
+If you want to run Moloch in non-anonymous mode:
+* Move to the top level Moloch directory
+* run `npm run viewer:addtestuser`
+* run `npm run viewer:dev`
 
 > :clock1: _On first load, you will likely see this message: "No results or none that match your search within your time range." This is because the data that was loaded is from all time ranges, so make sure you search for ALL times ranges._
 
 For more information about running the Arkime Viewer web application, visit the [viewer README](viewer/README.md).
+
+**To contribute to [Parliament](parliament/README.md) or [WISE](wiseService/README.md), read their READMEs for information on how to build them for development**
 
 ---
 
@@ -68,6 +73,7 @@ Feature requests include new features and minor improvements to existing functio
 
 Feature requests are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 **Please follow these guidelines when submitting a feature request:**
+* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 * Provide a clear and descriptive title
 * Describe the suggested feature in as much detail as possible
 * Use examples to help us understand the use case of the feature
@@ -101,7 +107,7 @@ If you update or create an API, please document it thoroughly with these items:
 
 The documentation lives on our website at [arkime.com/api](https://arkime.com/api). It is generated using the code documentation. Follow these steps to update the API documentation:
 1. Check out the [arkimeweb repository](https://github.com/arkime/arkimeweb) in the same parent directory as the Arkime repository.
-2. Run `npm run viewerdoc` from the `arkime` directory. If you checked out the arkimeweb repository into a different location, you can run `npm run viewerdoc-location -- <path/to/arkimeweb/_wiki/api_docs.md>`.
+2. Run `npm run viewer:doc` from the `arkime` directory. If you checked out the arkimeweb repository into a different location, you can run `npm run viewer:doc-location -- <path/to/arkimeweb/_wiki/api_docs.md>`.
 3. Run the arkime website locally (find out how [here](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md)) to make sure all of your documentation is correct.
 4. Make a PR to [arkime](https://github.com/arkime/arkime/blob/master/CONTRIBUTING.md) and [arkimeweb](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md) with your changes.
 

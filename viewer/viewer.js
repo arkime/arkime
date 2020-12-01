@@ -6654,7 +6654,7 @@ app.use(cspHeader, setCookie, (req, res) => {
   }
 
   const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync('./vueapp/dist/index.html', 'utf-8')
+    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
 
   let theme = req.user.settings.theme || 'default-theme';
@@ -6953,7 +6953,7 @@ function processCronQueries () {
 // MAIN
 // ============================================================================
 function main () {
-  if (!fs.existsSync('./vueapp/dist/index.html')) {
+  if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 

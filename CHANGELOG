@@ -23,6 +23,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize some APIs
+  - viewer - put npm scripts and common npm packages at top level
 
 2.7.1 2020/12/01
   - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
@@ -55,6 +56,7 @@ NOTICE: Restart wiseService before capture when upgrading
              apply a view's expression to the search input without issuing a query
   - viewer - fix anonymous users settings not being saved
   - viewer - share hunts between users
+  - viewer - move all common client bundling, scripts, and npm modules to top level
   - viewer - display business hours on sessions timeline graph
   - viewer - fix multi mpls header decoding
   - viewer - fix viewer crashing when pcap file not available

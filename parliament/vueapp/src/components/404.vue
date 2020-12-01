@@ -1,10 +1,10 @@
 <template>
 
-  <div class="parliament-info container">
+<div class="parliament-info container">
 
   <div class="center-area">
 
-    <img src="../assets/watching.gif"
+    <img src="assets/watching.gif"
       alt="hoot" />
 
     <div class="well well-lg">
