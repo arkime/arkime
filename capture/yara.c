@@ -53,7 +53,7 @@ LOCAL  int         yFlags = 0;
 /******************************************************************************/
 void moloch_yara_report_error(int error_level, const char* file_name, int line_number,
 #if YR_MAJOR_VERSION >= 4
-const YR_RULE* rule
+const YR_RULE* rule,
 #endif
 const char* error_message, void* UNUSED(user_data))
 {
