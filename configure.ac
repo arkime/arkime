@@ -265,7 +265,7 @@ esac ], [
   if test -f ${prefix}/include/libyara/yara.h; then
      YARA_CFLAGS="-I${prefix}/include/libyara"
      YARA_LIBS="-L${exec_prefix}/lib -lyara"
-  elif test -f /usr/include/libyara/yara.h; then
+  elif test -f /usr/include/libyara/yara.h -o -f /usr/include/yara/libyara.h; then
      YARA_CFLAGS=""
      YARA_LIBS="-lyara"
   else
