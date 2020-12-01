@@ -683,6 +683,30 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   };
 
   /**
+   * The query params to build an Elasticsearch sessions query.
+   * @typedef SessionsQuery
+   * @type {object}
+   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
+   * @param {string} expression - The search expression string
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
+   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {string} view - The view name to apply before the expression.
+   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
+   * @param {string} fields - Comma separated list of db field names to return.
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
+   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
+     'first' - First Packet: the timestamp of the first packet received for the session.
+     'last' - Last Packet: The timestamp of the last packet received for the session.
+     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
+     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
+     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   */
+
+  /**
    * Builds the session query based on req.query
    * @ignore
    * @name buildSessionQuery
@@ -1047,24 +1071,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
    * @name buildQuery
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
-   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
-   * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
    */
@@ -1091,30 +1098,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them to the client.
    * @name sessions
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
-   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
-   * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
    * @returns {array} data - The list of sessions with the requested fields
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {object} health - The elasticsearch cluster health status and info
+   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   module.getSessions = (req, res) => {
     let map = {};
@@ -1240,24 +1230,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
    * @name sessions/csv
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
-   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
-   * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {csv} csv - The csv with the sessions requested
    */
   module.getSessionsCSV = (req, res) => {
@@ -1294,27 +1267,15 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of field values with counts and returns them to the client.
    * @name spiview
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} spi - Comma separated list of db fields to return. Optionally can be followed by :{count} to specify the number of values returned for the field (defaults to 100).
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
    * @returns {object} spi - The list of spi fields with values and counts
    * @returns {object} protocols - The list of protocols with counts
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {object} health - The elasticsearch cluster health status and info
+   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   module.getSPIView = (req, res) => {
     if (req.query.spi === undefined) {
@@ -1483,25 +1444,14 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
    * @name spigraph
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} field=node - The database field to get data for. Defaults to "node".
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {object} health - The elasticsearch cluster health status and info
+   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   module.getSPIGraph = (req, res) => {
     req.query.facets = 1;
@@ -1690,18 +1640,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of values for each field with counts and returns them to the client.
    * @name spigraphhierarchy
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} exp - Comma separated list of db fields to populate the graph/table.
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
    * @returns {array} tableResults - The list data to populate the table
@@ -1821,20 +1761,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
    * @name unique
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
    * @param {string} exp - Comma separated list of expression field names to return.
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-    'first' - First Packet: the timestamp of the first packet received for the session.
-    'last' - Last Packet: The timestamp of the last packet received for the session.
-    'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-    'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-    'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {string} The list of unique fields (with counts if requested)
    */
   module.getUnique = (req, res) => {
@@ -1966,21 +1895,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
    * @name multiunique
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
    * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
   module.getMultiunique = (req, res) => {
@@ -2134,30 +2052,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Add tag(s) to individual session(s) by id or by query.
    * @name sessions/addTags
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
    * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
      no - Don't add tags to linked segments
      all - Add tags to all linked segments
      time - Add tags to segments occurring in the same time period
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
-   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
-   * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {boolean} success - Whether the add tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
@@ -2205,30 +2106,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    *
    * Removes tag(s) from individual session(s) by id or by query.
    * @name  sessions/removeTags
+   * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
    * @param {string} segments=no - Whether to remove tags from linked session segments. Default is no. Options include:
      no - Don't remove tags from linked segments
      all - Remove tags from all linked segments
      time - Remove tags from segments occurring in the same time period
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
-   * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
-   * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
-   * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-     'first' - First Packet: the timestamp of the first packet received for the session.
-     'last' - Last Packet: The timestamp of the last packet received for the session.
-     'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-     'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-     'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {boolean} success - Whether the remove tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */

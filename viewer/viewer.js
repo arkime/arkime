@@ -4340,30 +4340,40 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
   res.send(app.locals.molochRightClick);
 });
 
-// No auth necessary for eshealth.json
+ /**
+ * The Elasticsearch cluster health status and information.
+ * @typedef ESHealth
+ * @type {object}
+ * @property {number} active_primary_shards - The number of active primary shards.
+ * @property {number} active_shards - The total number of active primary and replica shards.
+ * @property {number} active_shards_percent_as_number - The ratio of active shards in the cluster expressed as a percentage.
+ * @property {string} cluster_name - The name of the arkime cluster
+ * @property {number} delayed_unassigned_shards - The number of shards whose allocation has been delayed by the timeout settings.
+ * @property {number} initializing_shards - The number of shards that are under initialization.
+ * @property {number} molochDbVersion - The arkime database version
+ * @property {number} number_of_data_nodes - The number of nodes that are dedicated data nodes.
+ * @property {number} number_of_in_flight_fetch - The number of unfinished fetches.
+ * @property {number} number_of_nodes - The number of nodes within the cluster.
+ * @property {number} number_of_pending_tasks - The number of cluster-level changes that have not yet been executed.
+ * @property {number} relocating_shards - The number of shards that are under relocation.
+ * @property {string} status - Health status of the cluster, based on the state of its primary and replica shards. Statuses are:
+    "green" - All shards are assigned.
+    "yellow" - All primary shards are assigned, but one or more replica shards are unassigned. If a node in the cluster fails, some data could be unavailable until that node is repaired.
+    "red" - One or more primary shards are unassigned, so some data is unavailable. This can occur briefly during cluster startup as primary shards are assigned.
+ * @property {number} task_max_waiting_in_queue_millis - The time expressed in milliseconds since the earliest initiated task is waiting for being performed.
+ * @property {boolean} timed_out - If false the response returned within the period of time that is specified by the timeout parameter (30s by default).
+ * @property {number} unassigned_shards - The number of shards that are not allocated.
+ * @property {string} version - the elasticsearch version number
+ * @property {number} _timeStamp - timestamps in ms from unix epoc
+ */
+
 /**
  * GET - /api/eshealth
  *
  * Retrive Elasticsearch health and stats
+ * There is no auth necessary to retrieve eshealth
  * @name eshealth
- * @returns {number} active_primary_shards -
- * @returns {number} active_shards -
- * @returns {number} active_shards_percent_as_number -
- * @returns {string} cluster_name - The name of the arkime cluster
- * @returns {number} delayed_unassigned_shards -
- * @returns {number} initializing_shards -
- * @returns {number} molochDbVersion - The arkime database version
- * @returns {number} number_of_data_nodes -
- * @returns {number} number_of_in_flight_fetch -
- * @returns {number} number_of_nodes -
- * @returns {number} number_of_pending_tasks -
- * @returns {number} relocating_shards -
- * @returns {string} status -
- * @returns {number} task_max_waiting_in_queue_millis -
- * @returns {boolean} timed_out -
- * @returns {number} unassigned_shards -
- * @returns {string} version - the elasticsearch version number
- * @returns {number} _timeStamp - timestamps in ms from unix epoc
+ * @returns {ESHealth} health - The elasticsearch cluster health status and info
  */
 app.get(['/api/eshealth', '/eshealth.json'], [noCacheJson], (req, res) => {
   Db.healthCache(function (err, health) {
@@ -5608,23 +5618,9 @@ app.get(/\/sessions.pcapng.*/, [logAction(), checkPermissions(['disablePcapDownl
  *
  * Retrieve the raw session data in pcap format
  * @name sessions/pcap
+ * @param {SessionsQuery} query - The request query to filter sessions
  * @param {string} ids - The list of ids to return
  * @param {boolean} segments=false - When set return linked segments
- * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
- * @param {string} expression - The search expression string
- * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
- * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
- * @param {number} start=0 - The entry to start at. Defaults to 0
- * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
- * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
- * @param {string} view - The view name to apply before the expression.
- * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
-   'first' - First Packet: the timestamp of the first packet received for the session.
-   'last' - Last Packet: The timestamp of the last packet received for the session.
-   'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
-   'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
-   'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
- * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
  * @returns {pcap} A PCAP file with the sessions requested
  */
 app.get(
