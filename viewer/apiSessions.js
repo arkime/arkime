@@ -1258,7 +1258,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
-   * @returns {string} csv - The csv with the sessions requested
+   * @returns {csv} csv - The csv with the sessions requested
    */
   module.getSessionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
