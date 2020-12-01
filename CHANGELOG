@@ -20,6 +20,9 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 3.0.0 2021/01/xx
+  - viewer - add POST version session query APIs to support long expressions
+             old GET versions still work
+  - viewer - reorganize and standardize some APIs
 
 2.7.1 2020/12/01
   - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
