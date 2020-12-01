@@ -19,7 +19,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.7.1 2020/12/xx
+2.7.1 2020/12/01
   - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
   - wise - fix UI queries hanging
   - viewer - fix anonymous user settings not saving
