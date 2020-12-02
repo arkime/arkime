@@ -17,7 +17,7 @@
       />
 
       <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-5">
+      <ul class="navbar-nav mr-auto">
         <li class="nav-item mr-2">
           <router-link :to="{ path: '/', query: queryParams }"
             active-class="active"
@@ -228,6 +228,10 @@ nav.navbar img {
   position: absolute;
   height: 52px;
   top: 2px;
+}
+
+.navbar-nav {
+  margin-left: 4rem;
 }
 
 /* remove browser select box styling */
