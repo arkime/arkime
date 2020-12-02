@@ -26,11 +26,6 @@
   background-color: var(--color-background, #EEE) !important;
 }
 
-#es-cluster > .dropdown-toggle {
-  border-color: var(--color-gray) !important;
-  color: var(--color-foreground, #555) !important;
-  background-color: var(--color-background, #EEE) !important;
-}
 
 
 /* give error text theme color --------------------------------------------- */

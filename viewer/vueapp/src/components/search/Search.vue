@@ -126,21 +126,32 @@
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
-       <!-- escluster dropdown menu -->
+      <!-- ES cluster dropdown menu -->
       <b-dropdown v-if="showEsClusters"
         right
         size="sm"
-        class="pull-right ml-1 escluster-menu-dropdown"
+        class="pull-right ml-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
-        variant="theme-secondary">
+        variant="theme-secondary"
+        @show="esVisMenuOpen = true"
+        @hide="esVisMenuOpen = false">
         <template slot="button-content">
-          <div  v-b-tooltip.hover.left :title="selectedEsClusterText">
-            <span class="fa fa-database"></span>
-            <span v-if="selectedEsCluster"> {{ selectedEsCluster.length }}</span>
-          </div>
+          <span class="fa fa-th"
+            v-b-tooltip.hover.right
+            title="Elasticsearch clusters">
+          </span>
         </template>
-        <b-dropdown-item @click="selectAllESCluster">
+        <b-dropdown-header>
+          <input type="text"
+            v-model="esQuery"
+            class="form-control form-control-sm dropdown-typeahead"
+            placeholder="Search for ES clusters..."
+          />
+        </b-dropdown-header>
+        <b-dropdown-divider>
+        </b-dropdown-divider>
+         <b-dropdown-item @click="selectAllESCluster">
           <span class="fa fa-list"></span>&nbsp;
           Select All
         </b-dropdown-item>
@@ -148,14 +159,27 @@
           <span class="fa fa-eraser"></span>&nbsp;
           Clear All
         </b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
-        <div class="dropdown-item bg-white text-body">
-          <b-form-checkbox-group stacked switches
-          v-model="selectedEsCluster"
-          :options="availableEsCluster"
-          @change="changeEsClusterSelection"/>
-        </div>
-      </b-dropdown> <!-- /escluster dropdown menu -->
+        <b-dropdown-divider>
+        </b-dropdown-divider>
+        <template v-if="esVisMenuOpen">
+          <template v-for="(clusters, group) in filteredESClusteres">
+            <b-dropdown-header
+              :key="group"
+              class="group-header">
+              {{ group + ' (' + clusters.length + ')' }}
+            </b-dropdown-header>
+            <template v-for="cluster in clusters">
+              <b-dropdown-item
+                :id="group + cluster + 'item'"
+                :key="group + cluster + 'item'"
+                :class="{'active':isESClusterVis(cluster)}"
+                @click.stop.prevent="toggleESClusterSelection(cluster)">
+                {{ cluster }}
+              </b-dropdown-item>
+            </template>
+          </template>
+        </template>
+      </b-dropdown> <!-- /Es cluster dropdown menu -->
 
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
@@ -340,6 +364,8 @@ export default {
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
+      esVisMenuOpen: false,
+      esQuery: '', // query for ES to toggle visibility
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
@@ -405,6 +431,16 @@ export default {
       set: function (newValue) {
         this.$store.commit('setMultiEsStatus', newValue);
       }
+    },
+    filteredESClusteres: function () {
+      let filteredGroupedClusters = {};
+      for (let group in this.availableEsCluster) {
+        filteredGroupedClusters[group] = this.$options.filters.searchESCluster(
+          this.esQuery,
+          this.availableEsCluster[group]
+        );
+      }
+      return filteredGroupedClusters;
     }
   },
   watch: {
@@ -545,20 +581,6 @@ export default {
     applyColumns: function (view) {
       this.$emit('setColumns', view.sessionsColConfig);
     },
-    selectAllESCluster: function () {
-      var clusters = [];
-      for (var item in this.availableEsCluster) {
-        if (!this.availableEsCluster[item].disabled) {
-          clusters.push(this.availableEsCluster[item].text);
-        }
-      }
-      this.selectedEsCluster = clusters;
-      this.changeEsClusterSelection(clusters);
-    },
-    clearAllESCluster: function () {
-      this.selectedEsCluster = [];
-      this.changeEsClusterSelection([]);
-    },
     /* helper functions ------------------------------------------ */
     getViews: function () {
       UserService.getViews()
@@ -572,47 +594,64 @@ export default {
           this.molochClusters = response;
         });
     },
+    /* MultiES functions ------------------------------------------ */
     getESClusterInformation: function () {
       if (!this.availableEsCluster) {
-        ConfigService.getClusters()
+        ConfigService.getESClusters()
           .then((response) => {
             this.availableEsCluster = response;
             var clusters = this.$route.query.escluster ? this.$route.query.escluster.split(',') : [];
-            var selections = [];
-            var item;
             if (clusters.length === 0) {
-              for (item in response) {
-                if (!response[item].disabled) {
-                  selections.push(response[item].text);
-                }
-              }
+              this.selectedEsCluster = response.active;
             } else {
+              this.selectedEsCluster = [];
               for (var i = 0; i < clusters.length; i++) {
-                for (item in response) {
-                  if (!response[item].disabled && response[item].text === clusters[i]) {
-                    selections.push(response[item].text);
-                  }
+                if (response.active.includes(clusters[i])) {
+                  this.selectedEsCluster.push(clusters[i]);
                 }
               }
             }
-            this.selectedEsCluster = selections;
           });
       }
-    },
-    changeEsClusterSelection: function (clusters) {
-      let routeQuery = this.$route.query;
-      this.$router.push({
-        query: {
-          ...routeQuery,
-          escluster: clusters.length > 0 ? clusters.join(',') : 'none'
-        }
-      });
     },
     getMultiESEnabled: function () {
       ConfigService.multiESEnabled()
         .then((response) => {
           this.showEsClusters = response;
         });
+    },
+    selectAllESCluster: function () {
+      this.selectedEsCluster = this.availableEsCluster.active;
+      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+    },
+    clearAllESCluster: function () {
+      this.selectedEsCluster = [];
+      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+    },
+    updateRouteQueryForESClusters: function (clusters) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          escluster: clusters.length > 0 ? clusters.join(',') : 'none'
+        }
+      });
+    },
+    toggleESClusterSelection: function (cluster) {
+      if (this.selectedEsCluster.includes(cluster)) { // already selected; remove from selection
+        this.selectedEsCluster = this.selectedEsCluster.filter((item) => {
+          return item !== cluster;
+        });
+      } else { // add to list
+        this.selectedEsCluster.push(cluster);
+      }
+      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+    },
+    isESClusterVis: function (cluster) {
+      if (this.availableEsCluster.active.includes(cluster)) { // active cluster is selected
+        return this.selectedEsCluster.includes(cluster);
+      } else { // inactive cluster is selected
+        return false;
+      }
     },
     /**
      * If the start/stop time has changed:
@@ -681,6 +720,21 @@ export default {
   padding: 2px 8px;
 }
 
+.col-vis-menu > button.btn {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;;
+}
+.col-vis-menu .dropdown-menu {
+  max-height: 300px;
+  overflow: auto;
+}
+
+</style>
+
+<style>
+.view-menu-dropdown .dropdown-menu {
+  width: 300px;
+}
 </style>
 
 <style scoped>
@@ -688,21 +742,17 @@ form {
   border: none;
   z-index: 5;
   background-color: var(--color-secondary-lightest);
-
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
-
 .action-form-separator {
   margin: 5px 0;
   border-top: 1px solid var(--color-gray-light);
 }
-
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
-
 .form-group {
   margin-bottom: 0;
 }

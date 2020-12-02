@@ -9421,17 +9421,12 @@ app.get('/multienabled', (req, res) => {
 
 app.get('/esclusters', (req, res) => {
   Db.getClusterDetails((err, results) => {
-    var clusters = [];
+    var clusters = { active: [], inactive: [] };
     if (err) {
       console.log('Error: ' + err);
-    } else if (results && results.available && results.inactive) {
-        for (var i = 0; i < results.available.length; i++) {
-          if (results.inactive.includes(results.available[i])) {
-            clusters.push({ text: results.available[i], value: results.available[i], disabled: true });
-          } else {
-            clusters.push({ text: results.available[i], value: results.available[i], disabled: false });
-          }
-        }
+    } else if (results) {
+      clusters.active = results.active;
+      clusters.inactive = results.inactive;
     }
     res.send(clusters);
   });

@@ -83,7 +83,7 @@ export default {
     });
   },
 
-  getClusters: function () {
+  getESClusters: function () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('esclusters')
         .then((response) => {
