@@ -19,12 +19,20 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-2.7.1 2020/12/xx
-  - release - glib 2.66.2, curl 7.73.0
+3.0.0 2021/01/xx
+  - viewer - add POST version session query APIs to support long expressions
+             old GET versions still work
+  - viewer - reorganize and standardize some APIs
+  - viewer - put npm scripts and common npm packages at top level
+
+2.7.1 2020/12/01
+  - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
   - wise - fix UI queries hanging
   - viewer - fix anonymous user settings not saving
   - viewer - fix lastUsed time not always saving to ES
-  - capture - new packet dedup feature
+  - capture - new packet dedup feature https://arkime.com/settings#packet-deduplication-settings
+  - capture - close pfring on exit (issue #1538)
+  - capture - fix http2 parsing crash
   - db - Moloch to Arkime text fixes
 
 2.7.0 2020/11/18
@@ -48,6 +56,7 @@ NOTICE: Restart wiseService before capture when upgrading
              apply a view's expression to the search input without issuing a query
   - viewer - fix anonymous users settings not being saved
   - viewer - share hunts between users
+  - viewer - move all common client bundling, scripts, and npm modules to top level
   - viewer - display business hours on sessions timeline graph
   - viewer - fix multi mpls header decoding
   - viewer - fix viewer crashing when pcap file not available

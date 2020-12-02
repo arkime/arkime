@@ -31,6 +31,7 @@ void reader_pcapoverip_init(char*);
 MolochReaderStart  moloch_reader_start;
 MolochReaderStats  moloch_reader_stats;
 MolochReaderStop   moloch_reader_stop;
+MolochReaderExit   moloch_reader_exit;
 
 char              *readerFileName[256];
 MolochFieldOps_t   readerFieldOps[256];
@@ -105,4 +106,6 @@ void moloch_readers_init()
 /******************************************************************************/
 void moloch_readers_exit()
 {
+    if (moloch_reader_exit)
+        moloch_reader_exit();
 }

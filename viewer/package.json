@@ -15,58 +15,34 @@
     "multer": "^1.2.0",
     "peek-stream": "^1.1.1",
     "pngjs": "^3.3.3",
-    "re2": "^1.11.0",
+    "re2": "^1.15.8",
     "save-svg-as-png": "^1.4.5",
     "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"
   },
-  "scripts": {
-    "addtestuser": "node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
-    "build": "npm run bundle:min",
-    "start": "node viewer.js -c ../config.ini",
-    "start:dev": "nodemon viewer.js -c config.dev.ini & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:test": "nodemon viewer.js --debug -c ../tests/config.test.ini -n test & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:testuser": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "dev": "nodemon viewer.js -c ../tests/config.test.ini -n testuser & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:testuserdebug": "node viewer.js -c ../tests/config.test.ini -n testuser --debug & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "start:multiviewer": "node multies.js -c ../tests/config.test.ini -n all",
-    "start:testmultiviewer": "node viewer.js -c ../tests/config.test.ini -n testmulties & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle": "webpack --progress --hide-modules -d --display-error-details --bail --config vueapp/build/webpack.dev.conf.js",
-    "bundle:min": "node vueapp/build/build.js",
-    "prestart": "npm run bundle:min",
-    "lint": "cd .. ; npm run lint-viewer"
-  },
   "devDependencies": {
-    "copy-webpack-plugin": "^6.0.3",
-    "css-loader": "^3.4.2",
-    "d3": "^5.7.0",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "friendly-errors-webpack-plugin": "^1.6.1",
-    "html-webpack-plugin": "^3.2.0",
-    "jquery": "^3.5.0",
-    "json-loader": "^0.5.7",
+    "d3": "^5.16.0",
+    "jquery": "^3.5.1",
     "moment-timezone": "^0.5.31",
-    "nodemon": "^2.0.3",
-    "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "portfinder": "^1.0.13",
-    "qs": "^6.5.1",
-    "sanitize-html": "^1.18.2",
-    "terser-webpack-plugin": "^2.3.8",
+    "qs": "^6.9.4",
+    "sanitize-html": "^1.27.5",
     "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-clickaway": "^2.2.2",
     "vue-clipboard2": "^0.3.0",
-    "vue-color": "^2.4.6",
-    "vue-loader": "^15.9.0",
-    "vue-style-loader": "^4.1.2",
-    "webpack": "^4.43.0",
-    "webpack-bundle-analyzer": "^3.6.1",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^4.2.2"
+    "vue-color": "^2.4.6"
+  },
+  "scripts": {
+    "bundle": "cd ../ && npm run viewer:bundle",
+    "bundle:min": "cd ../ && npm run viewer:build"
   },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules/*"
+    ]
   },
   "browserslist": [
     "> 1%",

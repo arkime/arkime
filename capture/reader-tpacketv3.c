@@ -181,7 +181,7 @@ void reader_tpacketv3_start() {
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_stop()
+void reader_tpacketv3_exit()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -287,7 +287,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     moloch_reader_start         = reader_tpacketv3_start;
-    moloch_reader_stop          = reader_tpacketv3_stop;
+    moloch_reader_exit          = reader_tpacketv3_exit;
     moloch_reader_stats         = reader_tpacketv3_stats;
 }
 #endif // TPACKET_V3

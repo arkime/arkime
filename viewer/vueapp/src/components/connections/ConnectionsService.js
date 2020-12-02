@@ -13,9 +13,9 @@ export default {
   get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'connections.json',
-        method: 'GET',
-        params: query,
+        url: 'api/connections',
+        method: 'POST',
+        data: query,
         cancelToken: cancelToken
       };
 

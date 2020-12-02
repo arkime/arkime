@@ -9,13 +9,13 @@ all:
 
 check:
 	npm ci
-	npm run build
+	npm run bundle
 
 install:
 	@mkdir -p "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
 	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)
 	npm ci
-	npm run build
+	npm run bundle:min
 	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
 	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
 	(cd $(PARLIAMENTDIR) ; npm ci --production)

@@ -607,7 +607,6 @@ LOCAL gboolean writerExit   = TRUE;
         readerExit = FALSE;
         if (moloch_reader_stop)
             moloch_reader_stop();
-        moloch_readers_exit();
         moloch_packet_exit();
         moloch_session_exit();
         if (config.debug)
@@ -874,6 +873,7 @@ int main(int argc, char **argv)
     moloch_db_exit();
     moloch_http_exit();
     moloch_field_exit();
+    moloch_readers_exit();
     arkime_dedup_exit();
     moloch_config_exit();
     moloch_rules_exit();

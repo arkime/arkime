@@ -10,35 +10,15 @@
     "serve-favicon": "^2.5.0"
   },
   "scripts": {
-    "build": "npm run bundle:min",
-    "start": "node wiseService.js --webconfig -c ../tests/config.test.json",
-    "prestart": "npm run bundle:min",
-    "dev": "nodemon wiseService.js --webconfig --filedirs ../tests -c ../tests/config.test.json & webpack -d --watch --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle": "webpack -d --progress --hide-modules --display-error-details --config vueapp/build/webpack.dev.conf.js",
-    "bundle:min": "node vueapp/build/build.js",
-    "lint": "cd .. ; npm run lint-wise"
-  },
-  "devDependencies": {
-    "copy-webpack-plugin": "^6.0.3",
-    "css-loader": "^3.6.0",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "friendly-errors-webpack-plugin": "^1.7.0",
-    "html-webpack-plugin": "^4.3.0",
-    "nodemon": "^2.0.4",
-    "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "portfinder": "^1.0.26",
-    "terser-webpack-plugin": "^3.0.6",
-    "url-loader": "^1.0.1",
-    "vue-loader": "^15.9.3",
-    "vue-style-loader": "^4.1.2",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^5.0.8"
+    "bundle": "cd ../ && npm run wise:bundle",
+    "bundle:min": "cd ../ && npm run wise:build"
   },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": ["node_modules/*"]
   },
   "browserslist": [
     "> 1%",

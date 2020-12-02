@@ -171,7 +171,7 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('file/list', { params: this.query })
+      this.$http.get('api/files', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
