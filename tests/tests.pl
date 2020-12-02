@@ -278,7 +278,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8123/flushCache");
         print ("Starting viewer\n");
         if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.ini > /tmp/moloch.wise &");
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
@@ -286,7 +286,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.ini > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
@@ -318,9 +318,9 @@ my ($cmd) = @_;
 
         # Start Wise
         if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.ini > /tmp/moloch.wise &");
         } else {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.ini > /dev/null &");
         }
 
         waitFor($MolochTest::host, 8081, 1);

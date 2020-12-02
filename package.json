@@ -35,6 +35,8 @@
     "natives": "^1.1.6",
     "notifme-sdk": "^1.10.0",
     "on-headers": "^1.0.2",
+    "passport": "^0.3.2",
+    "passport-http": "^0.3.0",
     "pug": "^2.0.4",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
@@ -84,7 +86,7 @@
     "wise:bundle": "webpack -d --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
     "prewise:start": "npm run wise:build",
-    "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.ini) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
+    "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

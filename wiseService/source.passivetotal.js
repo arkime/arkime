@@ -135,6 +135,17 @@ PassiveTotalSource.prototype.getIp = PassiveTotalSource.prototype.fetch;
 PassiveTotalSource.prototype.getDomain = PassiveTotalSource.prototype.fetch;
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('passivetotal', {
+    singleton: true,
+    name: 'passivetotal',
+    description: 'Passive Total commercial support',
+    types: ['ip', 'domain'],
+    fields: [
+      { name: 'key', password: true, required: true, help: 'The API key' },
+      { name: 'user', required: true, help: 'The API user' }
+    ]
+  });
+
   return new PassiveTotalSource(api, 'passivetotal');
 };
 // ----------------------------------------------------------------------------

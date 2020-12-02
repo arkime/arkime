@@ -86,5 +86,17 @@ HODIRedisSource.prototype.getIp = function (query, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('hodiredis', {
+    singleton: true,
+    name: 'hodiredis',
+    description: 'Experimental “History of Observed Data Indicators” plugin using Redis. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
+    types: ['ip', 'domain', 'md5', 'email'],
+    cacheable: false,
+    fields: [
+      { name: 'contentTypes', required: true, help: 'Comma separated list of contentTypes to store md5 results for' },
+      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' }
+    ]
+  });
+
   return new HODIRedisSource(api, 'hodiredis');
 };

@@ -29,12 +29,12 @@ function FileSource (api, section) {
   this.cacheTimeout = -1;
 
   if (this.file === undefined) {
-    console.log(this.section, '- ERROR not loading since no file specified in config file');
+    console.log(`${this.section} - ERROR not loading since no file specified in config file`);
     return;
   }
 
   if (!fs.existsSync(this.file)) {
-    console.log(this.section, '- ERROR not loading since', this.file, "doesn't exist");
+    console.log(`${this.section} - ERROR not loading since ${this.file} doesn't exist`);
     return;
   }
 
@@ -75,8 +75,39 @@ FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   });
 };
 // ----------------------------------------------------------------------------
+FileSource.prototype.getRaw = function (cb) {
+  fs.readFile(this.file, (err, body) => {
+    if (err) {
+      return cb(err);
+    }
+    return cb(null, body);
+  });
+};
+// ----------------------------------------------------------------------------
+FileSource.prototype.putRaw = function (body, cb) {
+  fs.writeFile(this.file, body, (err) => {
+    return cb(err);
+  });
+};
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
+  api.addSourceConfigDef('file', {
+    singleton: false,
+    name: 'file',
+    description: 'The file source allows you to read in multiple files and do stuff',
+    cacheable: false,
+    editable: true,
+    fields: [
+      { name: 'file', required: true, help: 'The path of the file to load' },
+      { name: 'type', required: true, help: 'The wise query type this source supports' },
+      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
+      { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' }
+    ]
+  });
+
   sections.forEach((section) => {
     return new FileSource(api, section);
   });

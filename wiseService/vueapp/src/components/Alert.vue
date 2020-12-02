@@ -1,48 +1,54 @@
 <template>
   <transition name="fade">
-    <!-- page error -->
-    <div v-if="error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
-      {{ error }}
+    <!-- alert -->
+    <div
+      v-if="alertMessage"
+      class="alert"
+      :class="variant"
+    >
+      <span v-if="variant === 'alert-danger'" class="fa fa-exclamation-triangle"></span>
+      <span v-if="variant === 'alert-success'" class="fa fa-check"></span>
+      <span v-if="variant === 'alert-warning'" class="fa fa-exclamation-circle"></span>
+
+      &nbsp;
+      {{ alertMessage }}
       <button type="button"
         class="close cursor-pointer"
         @click="clear">
         <span>&times;</span>
       </button>
-    </div> <!-- /page error -->
+    </div> <!-- /alert -->
   </transition>
 </template>
 
 <script>
 export default {
-  name: 'Error',
-  props: ['initialError'],
+  name: 'Alert',
+  props: ['initialAlert', 'variant'],
   data: function () {
     return {
-      error: this.initialError || '',
+      alertMessage: this.initialAlert || '',
       timeLimit: 5000,
       timeoutID: ''
     };
   },
   methods: {
     clear: function () {
-      this.error = '';
-      this.$emit('clear-initialError');
+      this.alertMessage = '';
+      this.$emit('clear-initialAlert');
       clearTimeout(this.timeoutID);
       this.timeoutID = '';
     }
   },
   watch: {
-    initialError: {
+    initialAlert: {
       immediate: true,
       handler (newVal, OldVal) {
         if (newVal) {
           if (this.timeoutID) {
             this.clear();
           }
-          this.error = newVal;
+          this.alertMessage = newVal;
           this.timeoutID = setTimeout(() => this.clear(), this.timeLimit);
         }
       }

@@ -141,5 +141,16 @@ EmergingThreatsSource.prototype.dump = function (res) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('emergingthreats', {
+    singleton: true,
+    name: 'emergingthreats',
+    description: 'Link to the emergingthreats data',
+    types: ['ip', 'domain'],
+    cacheable: false,
+    fields: [
+      { name: 'key', password: true, required: true, help: 'The API key' }
+    ]
+  });
+
   return new EmergingThreatsSource(api, 'emergingthreats');
 };

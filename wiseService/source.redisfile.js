@@ -23,6 +23,11 @@ var simpleSource = require('./simpleSource.js');
 // ----------------------------------------------------------------------------
 function RedisFileSource (api, section) {
   RedisFileSource.super_.call(this, api, section);
+  this.url = api.getConfig(section, 'url');
+  if (this.url === undefined) {
+    console.log(this.section, '- ERROR not loading since no url specified in config file');
+    return;
+  }
   this.key = api.getConfig(section, 'key');
   this.reload = +api.getConfig(section, 'reload', -1);
   this.headers = {};
@@ -67,7 +72,34 @@ RedisFileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
   });
 };
 // ----------------------------------------------------------------------------
+RedisFileSource.prototype.getRaw = function (cb) {
+  this.client.get(this.key, cb);
+};
+// ----------------------------------------------------------------------------
+RedisFileSource.prototype.putRaw = function (file, cb) {
+  this.client.set(this.key, file, cb);
+};
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('redisfile', {
+    singleton: false,
+    name: 'redisfile',
+    description: 'Like the file source, but fetch the file from redis instead of the file system',
+    cacheable: false,
+    editable: true,
+    fields: [
+      { name: 'file', required: true, help: 'The path of the file to load' },
+      { name: 'type', required: true, help: 'The wise query type this source supports' },
+      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
+      { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'key', required: true, help: 'The key in redis to fetch' },
+      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
+      { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^redisfile:/); });
   sections.forEach((section) => {
     return new RedisFileSource(api, section);

@@ -4,21 +4,23 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^0.19.2",
     "core-js": "^3.6.5",
     "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
     "serve-favicon": "^2.5.0"
   },
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",
-    "bundle:min": "cd ../ && npm run wise:build"
+    "bundle:min": "cd ../ && npm run wise:build",
+    "lint": "cd ../ && npm run lint-wise"
   },
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
-    "ignore": ["node_modules/*"]
+    "ignore": [
+      "node_modules/*"
+    ]
   },
   "browserslist": [
     "> 1%",

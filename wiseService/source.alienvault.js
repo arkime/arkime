@@ -145,5 +145,16 @@ AlienVaultSource.prototype.dump = function (res) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('alienvault', {
+    singleton: true,
+    name: 'alienvault',
+    description: 'Link to the alienvault data',
+    types: ['ip'],
+    cacheable: false,
+    fields: [
+      { name: 'key', password: true, required: true, help: 'The API key' }
+    ]
+  });
+
   return new AlienVaultSource(api, 'alienvault');
 };
