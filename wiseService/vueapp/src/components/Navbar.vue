@@ -12,7 +12,7 @@
           title="HOOT! Can I help you? Click me to see the help page"
         />
       </router-link> -->
-      <img src="../assets/header_logo.png"
+      <img src="assets/Arkime_Icon_ColorMint.png"
         alt="owl image"
       />
 
