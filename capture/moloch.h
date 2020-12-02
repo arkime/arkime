@@ -1282,11 +1282,12 @@ typedef void (*MolochReaderInit)(char *name);
 typedef int  (*MolochReaderStats)(MolochReaderStats_t *stats);
 typedef void (*MolochReaderStart)();
 typedef void (*MolochReaderStop)();
+typedef void (*MolochReaderExit)();
 
 extern MolochReaderStart moloch_reader_start;
 extern MolochReaderStats moloch_reader_stats;
-extern MolochReaderStop moloch_reader_stop;
-
+extern MolochReaderStop  moloch_reader_stop;
+extern MolochReaderExit  moloch_reader_exit;
 
 void moloch_readers_init();
 void moloch_readers_set(char *name);

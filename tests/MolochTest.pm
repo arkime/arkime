@@ -251,7 +251,7 @@ my ($test, $debug) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet("/sessions.json?$test");
     diag Dumper($json) if ($debug);
-    ok (exists $json->{bsqErr}, " bsqErr exists");
+    ok (exists $json->{error}, " bsqErr exists");
 }
 ################################################################################
 sub bin2hex {

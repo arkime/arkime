@@ -13,15 +13,15 @@ export default {
   get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'spigraph.json',
-        method: 'GET',
-        params: query,
+        url: 'api/spigraph',
+        method: 'POST',
+        data: query,
         cancelToken: cancelToken
       };
 
       Vue.axios(options)
         .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          if (response.data.error) { reject(response.data.error); }
           resolve(response);
         }, (error) => {
           if (!Vue.axios.isCancel(error)) {
@@ -41,15 +41,15 @@ export default {
   getHierarchy: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'spigraphhierarchy',
-        method: 'GET',
-        params: query,
+        url: 'api/spigraphhierarchy',
+        method: 'POST',
+        data: query,
         cancelToken: cancelToken
       };
 
       Vue.axios(options)
         .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          if (response.data.error) { reject(response.data.error); }
           resolve(response);
         }, (error) => {
           if (!Vue.axios.isCancel(error)) {

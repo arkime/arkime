@@ -16,11 +16,11 @@ install:
 	@mkdir -p "$(WISEDIR)" "$(WISEDIR)/vueapp"
 	$(INSTALL) *.js wiseService.ini.sample package.json package-lock.json $(WISEDIR)
 	npm ci
-	npm run build
+	npm run bundle:min
 	$(CP) -pr favicon.ico $(WISEDIR)
 	$(CP) -pr vueapp/dist "$(WISEDIR)/vueapp"
 	(cd $(WISEDIR) ; npm ci --production)
-	rm -f $(VIEWERDIR)/package-lock.json
+	rm -f $(WISEDIR)/package-lock.json
 
 distclean realclean clean:
 	rm -f *.o *.so

@@ -124,7 +124,7 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
 
         if (unlikely(caplen != origlen)) {
             if (!config.readTruncatedPackets && !config.ignoreErrors) {
-                LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d. "
+                LOGEXIT("ERROR - Moloch requires full packet captures caplen: %u pktlen: %u. "
                     "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
                     caplen, origlen);
             }

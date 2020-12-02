@@ -63,15 +63,15 @@ export default {
       }
 
       let options = {
-        url: 'sessions.json',
-        method: 'GET',
-        params: params,
+        url: 'api/sessions',
+        method: 'POST',
+        data: params,
         cancelToken: cancelToken
       };
 
       Vue.axios(options)
         .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          if (response.data.error) { reject(response.data.error); }
           resolve(response);
         }, (error) => {
           if (!Vue.axios.isCancel(error)) {
@@ -90,7 +90,7 @@ export default {
    */
   getDetail: function (id, node, escluster) {
     return new Promise((resolve, reject) => {
-      let url = escluster ? `${node}/session/${id}/detail?escluster=${escluster}` : `${node}/session/${id}/detail`;
+      let url = escluster ? `api/${node}/session/${id}/detail?escluster=${escluster}` : `api/${node}/session/${id}/detail`;
       Vue.axios.get(url)
         .then((response) => {
           resolve(response);
@@ -117,7 +117,7 @@ export default {
         method: 'GET',
         params: params,
         cancelToken: source.token,
-        url: `${node}/session/${id}/packets`
+        url: `api/${node}/session/${id}/packets`
       };
 
       Vue.axios(options)
@@ -169,7 +169,8 @@ export default {
    */
   tag: function (addTags, params, routeParams) {
     return new Promise((resolve, reject) => {
-      let url = addTags ? 'addTags' : 'removeTags';
+      let url = 'api/sessions';
+      addTags ? url += '/addtags' : url += '/removetags';
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); }
@@ -255,7 +256,7 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.pcap/${params.filename}`;
+      let baseUrl = `api/sessions/pcap/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -289,7 +290,7 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.csv/${params.filename}`;
+      let baseUrl = `api/sessions/csv/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -330,7 +331,7 @@ export default {
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
 
-    let url = `multiunique.txt?${qs.stringify(params)}`;
+    let url = `api/multiunique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -354,7 +355,7 @@ export default {
       expression: clonedParams.expression
     };
 
-    let url = `unique.txt?${qs.stringify(params)}`;
+    let url = `api/unique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },

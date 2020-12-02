@@ -131,9 +131,6 @@ a.no-href:hover { color: #0056b3 !important; }
 }
 
 /* info page (404 & upgrade) */
-.parliament-info {
-  margin-top: 20px;
-}
 .parliament-info .center-area > img {
   z-index: 99;
 }

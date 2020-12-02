@@ -803,7 +803,7 @@ export default {
 
       this.get(query).promise
         .then((response) => {
-          if (response.bsqErr) { this.error = response.bsqErr; }
+          if (response.error) { this.error = response.error; }
           this.mapData = response.map;
         })
         .catch((error) => {
@@ -835,10 +835,10 @@ export default {
 
       let promise = new Promise((resolve, reject) => {
         let options = {
-          method: 'GET',
+          method: 'POST',
           params: query,
           cancelToken: source.token,
-          url: 'spiview.json'
+          url: 'api/spiview'
         };
 
         Vue.axios(options)
@@ -964,8 +964,8 @@ export default {
         // start processing tasks serially
         this.serial(tasks)
           .then((response) => { // returns the last result in the series
-            if (response && response.bsqErr) {
-              this.error = response.bsqErr;
+            if (response && response.error) {
+              this.error = response.error;
             }
             this.dataLoading = false;
             pendingPromise = null;
@@ -1007,7 +1007,7 @@ export default {
         .then((response) => {
           this.countCategoryFieldsLoading(category, false);
 
-          if (response.bsqErr) { spiData.error = response.bsqErr; }
+          if (response.error) { spiData.error = response.error; }
 
           // only update the requested spi data
           Vue.set(spiData, 'loading', false);
