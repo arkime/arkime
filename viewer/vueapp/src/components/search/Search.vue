@@ -615,7 +615,7 @@ export default {
       }
     },
     getMultiESEnabled: function () {
-      ConfigService.multiESEnabled()
+      ConfigService.isMultiESEnabled()
         .then((response) => {
           this.showEsClusters = response;
         });
