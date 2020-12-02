@@ -333,7 +333,8 @@ function checkAdmin (req, res, next) {
   if (req.user.createEnabled) {
     return next();
   } else {
-      return res.send(JSON.stringify({ success: false, text: 'Not admin' }));
+    console.log(`${req.userId} is not an admin`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
 
@@ -343,7 +344,8 @@ function checkConfigCode (req, res, next) {
   if (req.body !== undefined && req.body.configCode !== undefined && req.body.configCode === internals.configCode) {
     return next();
   } else {
-      return res.send(JSON.stringify({ success: false, text: 'Not admin' })); // not specific error
+    console.log(`Incorrect pin code used - Config pin code is: ${internals.configCode}`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
   }
 }
 
@@ -1006,10 +1008,6 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
     if (err) {
       return res.send({ success: false, text: err });
     }
-    internals.configCode = crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6);
-    console.log(chalk.cyan(
-      `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
-    ));
     return res.send({ success: true, text: 'Saved' });
   });
 });
@@ -1045,7 +1043,9 @@ app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
   }
 
   let config = req.body.config;
-  console.log(config);
+  if (internals.debug > 0) {
+    console.log(config);
+  }
 
   for (let section in config) {
     const sectionType = section.split(':')[0];
