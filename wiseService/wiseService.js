@@ -339,7 +339,7 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
-app.use('/assets', express.static(`${__dirname}/vueapp/src/assets`, { maxAge: 600 * 1000 }));
+app.use('/assets', express.static(`${__dirname}/../assets`, { maxAge: 600 * 1000 }));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
 app.use(timeout(5 * 1000));
 // ----------------------------------------------------------------------------
