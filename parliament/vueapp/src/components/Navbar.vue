@@ -8,7 +8,7 @@
         active-class="active"
         class="navbar-brand"
         exact>
-        <img src="assets/header_logo.png"
+        <img src="assets/Arkime_Icon_White.png"
           alt="hoot"
           v-b-tooltip.hover
           title="HOOT! Can I help you? Click me to see the help page"

@@ -118,7 +118,7 @@ export default {
       if (this.user && this.user.settings.logo && this.user.settings.logo) {
         return this.user.settings.logo;
       }
-      return 'logos/Arkime_Logo_Mark_White.png';
+      return 'assets/Arkime_Logo_Mark_White.png';
     },
     menu: function () {
       let menu = {
