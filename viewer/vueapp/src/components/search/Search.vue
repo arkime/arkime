@@ -130,14 +130,14 @@
       <b-dropdown v-if="showEsClusters"
         right
         size="sm"
-        class="pull-right ml-1 view-menu-dropdown"
+        class="multies-menu-dropdown pull-right ml-1"
         no-caret
         toggle-class="rounded"
         variant="theme-secondary"
         @show="esVisMenuOpen = true"
         @hide="esVisMenuOpen = false">
         <template slot="button-content">
-          <span class="fa fa-th"
+          <span class="fa fa-database"
             v-b-tooltip.hover.right
             title="Elasticsearch clusters">
           </span>
@@ -412,16 +412,7 @@ export default {
         return this.$store.state.esCluster.selectedCluster || [];
       },
       set: function (newValue) {
-        this.selectedEsClusterText = newValue;
         this.$store.commit('setSelectedEsCluster', newValue);
-      }
-    },
-    selectedEsClusterText: {
-      get: function () {
-        return this.$store.state.esCluster.selectedClusterText;
-      },
-      set: function (newValue) {
-        this.$store.commit('setSelectedEsClusterText', newValue);
       }
     },
     showEsClusters: {
@@ -487,7 +478,9 @@ export default {
       this.timeUpdate();
     },
     applyParams: function () {
-      this.applyExpression();
+      if (this.$route.query.expression !== this.expression) {
+        this.applyExpression();
+      }
       this.timeUpdate();
     },
     exportPCAP: function () {
@@ -711,29 +704,28 @@ export default {
 </script>
 
 <style>
-.view-menu-dropdown .dropdown-menu .escluster-menu-dropdown {
+.view-menu-dropdown .dropdown-menu {
   width: 300px;
 }
-
-.dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-
-.col-vis-menu > button.btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
-}
-.col-vis-menu .dropdown-menu {
-  max-height: 300px;
-  overflow: auto;
-}
-
 </style>
 
 <style>
-.view-menu-dropdown .dropdown-menu {
-  width: 300px;
+.multies-menu-dropdown .dropdown-menu {
+  /* max-height: 300px; */
+  /* overflow: auto; */
+  width: 300px
+}
+
+.multies-menu-dropdown .dropdown-header {
+  padding: .25rem .5rem 0;
+}
+
+.multies-menu-dropdown .group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  /* font-size: 120%; */
+  font-weight: bold;
 }
 </style>
 

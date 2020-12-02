@@ -94,7 +94,7 @@ export default {
     });
   },
 
-  isMultiESEnable: function () {
+  isMultiESEnabled: function () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('multienabled')
         .then((response) => {
