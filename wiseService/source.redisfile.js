@@ -84,7 +84,6 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('redisfile', {
     singleton: false,
     name: 'redisfile',
-    description: 'Like the file source, but fetch the file from redis instead of the file system',
     description: 'Like the url source, use a single redis key as the file. The redis key can be periodically reloaded.',
     cacheable: false,
     editable: true,
