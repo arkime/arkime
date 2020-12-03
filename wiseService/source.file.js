@@ -95,13 +95,13 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('file', {
     singleton: false,
     name: 'file',
-    description: 'The file source allows you to read in multiple files and do stuff',
+    description: 'Use a local file to load data into wise. The file is automatically reloaded if it changes.',
     cacheable: false,
     editable: true,
     fields: [
       { name: 'file', required: true, help: 'The path of the file to load' },
-      { name: 'type', required: true, help: 'The wise query type this source supports' },
-      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'type', required: false, help: 'The wise query type this source supports' },
+      { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' }

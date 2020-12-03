@@ -85,7 +85,7 @@ exports.initSource = function (api) {
     description: 'Link to the redis data',
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
-      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
       { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },

@@ -85,16 +85,18 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'redisfile',
     description: 'Like the file source, but fetch the file from redis instead of the file system',
+    description: 'Like the url source, use a single redis key as the file. The redis key can be periodically reloaded.',
     cacheable: false,
     editable: true,
     fields: [
       { name: 'file', required: true, help: 'The path of the file to load' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
-      { name: 'tags', required: true, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
       { name: 'key', required: true, help: 'The key in redis to fetch' },
+      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
       { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
       { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' }
     ]
