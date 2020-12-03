@@ -992,7 +992,7 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
   });
 });
 // ----------------------------------------------------------------------------
-app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });

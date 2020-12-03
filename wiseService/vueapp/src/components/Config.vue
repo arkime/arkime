@@ -115,13 +115,6 @@
 
              <span class="float-right">
                <div class="input-group">
-                 <input type="text"
-                   class="form-control"
-                   v-model="configCode"
-                   placeholder="Config pin code"
-                   v-b-tooltip.hover.left
-                   title="The config pin code can be found in the output from running the WISE UI"
-                 />
                  <div class="input-group-append">
                    <b-button
                     variant="primary"
@@ -293,7 +286,7 @@ export default {
       return this.currFile === this.currFileBefore;
     },
     fileSaveDisabled: function () {
-      return this.currFile === this.currFileBefore || this.configCode === '';
+      return this.currFile === this.currFileBefore;
     }
   },
   watch: {
