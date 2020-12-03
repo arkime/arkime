@@ -33,7 +33,8 @@
   },
   "scripts": {
     "bundle": "cd ../ && npm run viewer:bundle",
-    "bundle:min": "cd ../ && npm run viewer:build"
+    "bundle:min": "cd ../ && npm run viewer:build",
+    "lint": "cd ../ && npm run viewer:lint"
   },
   "engines": {
     "node": ">= 6.0.0",

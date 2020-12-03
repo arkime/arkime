@@ -13,7 +13,8 @@
   },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
-    "bundle:min": "cd ../ && npm run parliament:build"
+    "bundle:min": "cd ../ && npm run parliament:build",
+    "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
     "node": ">= 6.0.0",
