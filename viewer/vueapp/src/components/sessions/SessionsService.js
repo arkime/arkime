@@ -330,6 +330,7 @@ export default {
     params.stopTime = clonedParams.stopTime;
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
+    params.escluster = clonedParams.escluster;
 
     let url = `api/multiunique?${qs.stringify(params)}`;
 
@@ -352,7 +353,8 @@ export default {
       date: clonedParams.date,
       stopTime: clonedParams.stopTime,
       startTime: clonedParams.startTime,
-      expression: clonedParams.expression
+      expression: clonedParams.expression,
+      escluster: clonedParams.escluster
     };
 
     let url = `api/unique?${qs.stringify(params)}`;

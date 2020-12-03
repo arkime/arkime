@@ -1351,8 +1351,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       let protocols;
       let recordsFiltered = 0;
 
-      Promise.all([Db.searchPrimary(indices, 'session', query, null),
-        Db.numberOfDocuments('sessions2-*'),
+      let options = {};
+      if (req.query.escluster && Config.get('multiES', false)) {
+        options._cluster = req.query.escluster;
+      }
+
+      Promise.all([Db.searchPrimary(indices, 'session', query, options),
+        Db.numberOfDocuments('sessions2-*', options._cluster ? { _cluster: options._cluster } : {}),
         Db.healthCachePromise()
       ]).then(([sessions, total, health]) => {
         if (Config.debug) {
@@ -1704,7 +1709,12 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
       }
 
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      let options = {};
+      if (req.query.escluster && Config.get('multiES', false)) {
+        options._cluster = req.query.escluster;
+      }
+
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('spigraphpie ERROR', err);
           res.status(400);
@@ -1877,7 +1887,12 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         });
       }
 
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      let options = {};
+      if (req.query.escluster && Config.get('multiES', false)) {
+        options._cluster = req.query.escluster;
+      }
+
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('Error', query, err);
           return doneCb ? doneCb() : res.end();
@@ -1963,7 +1978,13 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       if (Config.debug > 2) {
         console.log('multiunique aggregations', indices, JSON.stringify(query, false, 2));
       }
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+
+      let options = {};
+      if (req.query.escluster && Config.get('multiES', false)) {
+        options._cluster = req.query.escluster;
+      }
+
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('multiunique ERROR', err);
           res.status(400);
