@@ -9,11 +9,11 @@ yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bz
 (cd /etc/yum.repos.d/; wget https://packages.ntop.org/centos-stable/ntop.repo); \
 yum -y update; \
 yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
-git clone https://github.com/aol/moloch; \
-(cd moloch; git checkout master; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
-mv moloch/thirdparty /; \
+git clone https://github.com/arkime/arkime; \
+(cd arkime; git checkout master; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
+mv arkime/thirdparty /; \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
-rm -rf moloch; \
+rm -rf arkime; \
 scl enable rh-ruby23 'gem install --no-ri --no-rdoc fpm'; \
 scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
 useradd -u 2000 elasticsearch; \

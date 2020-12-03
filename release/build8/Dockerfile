@@ -12,11 +12,11 @@ dnf config-manager --set-enabled PowerTools && \
 dnf config-manager --set-enabled remi && \
 yum -y clean all && \
 yum -y install pfring && \
-git clone https://github.com/aol/moloch && \
-(cd moloch; git checkout master; ./easybutton-build.sh --daq --pfring) && \
-mv moloch/thirdparty / && \
+git clone https://github.com/arkime/arkime && \
+(cd arkime; git checkout master; ./easybutton-build.sh --daq --pfring) && \
+mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
-rm -rf moloch && \
+rm -rf arkime && \
 gem install --no-ri --no-rdoc fpm && \
 pip3 install awscli && \
 useradd -u 2000 elasticsearch && \

@@ -8,9 +8,9 @@ apt-get update && \
 apt-get install -y pfring && \
 gem install --no-ri --no-rdoc fpm && \
 pip3 install awscli && \
-git clone https://github.com/aol/moloch && \
-(cd moloch; git checkout master; ./easybutton-build.sh --daq --pfring) && \
-mv moloch/thirdparty / && \
+git clone https://github.com/arkime/arkime && \
+(cd arkime; git checkout master; ./easybutton-build.sh --daq --pfring) && \
+mv arkime/thirdparty / && \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
-rm -rf moloch && \
+rm -rf arkime && \
 rm -rf /var/lib/apt/lists/*
