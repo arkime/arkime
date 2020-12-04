@@ -5546,7 +5546,7 @@ app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBo
 app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
-  [noCacheJson, logAction('query', fillQueryFromBody)],
+  [noCacheJson, logAction('query'), fillQueryFromBody],
   sessionAPIs.getQuery
 );
 
