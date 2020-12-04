@@ -800,10 +800,11 @@ function recordResponseTime (req, res, next) {
   next();
 }
 
-// body middleware ------------------------------------------------------------
-// fill req.query if it doesn't exist to support POST and GET
-// all endpoints that use POST and GET should look for req.query
-function fillQuery (req, res, next) {
+// query middleware -----------------------------------------------------------
+// fill req.query from req.body if it doesn't exist to support both POST and GET
+// POST sends req.body and GET sends req.query
+// all endpoints that use POST and GET (app.getpost) should look for req.query
+function fillQueryFromBody (req, res, next) {
   // if using POST not GET, query will be empty and query params will be in body
   if (!Object.keys(req.query).length) { req.query = req.body; }
   next();
@@ -5514,51 +5515,59 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
 });
 
 // session apis ---------------------------------------------------------------
-app.getpost( // sessions endpoint (POST or GET)
+app.getpost( // sessions endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions', '/sessions.json'],
-  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillQueryFromBody],
   sessionAPIs.getSessions
 );
 
-app.getpost( // spiview endpoint (POST or GET)
+app.getpost( // spiview endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spiview', '/spiview.json'],
-  [noCacheJson, recordResponseTime, logAction('spiview'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('spiview'), setCookie, fillQueryFromBody],
   sessionAPIs.getSPIView
 );
 
-app.getpost( // spigraph endpoint (POST or GET)
+app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraph', '/spigraph.json'],
-  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillQuery, fieldToExp],
+  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillQueryFromBody, fieldToExp],
   sessionAPIs.getSPIGraph
 );
 
-app.getpost( // spigraph hierarchy endpoint (POST or GET)
+app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraphhierarchy', '/spigraphhierarchy'],
-  [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQueryFromBody],
   sessionAPIs.getSPIGraphHierarchy
 );
 
-app.getpost( // build query endoint (POST or GET)
+app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
-  [noCacheJson, logAction('query', fillQuery)],
+  [noCacheJson, logAction('query', fillQueryFromBody)],
   sessionAPIs.getQuery
 );
 
-app.getpost( // sessions csv endpoint (POST or GET)
+app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions/csv', /\/sessions.csv.*/],
-  [logAction('sessions.csv'), fillQuery],
+  [logAction('sessions.csv'), fillQueryFromBody],
   sessionAPIs.getSessionsCSV
 );
 
-app.getpost( // unique endpoint (POST or GET)
+app.getpost( // unique endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/unique', '/unique.txt'],
-  [logAction('unique'), fillQuery, fieldToExp],
+  [logAction('unique'), fillQueryFromBody, fieldToExp],
   sessionAPIs.getUnique
 );
 
-app.getpost( // multiunique endpoint (POST or GET)
+app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/multiunique', '/multiunique.txt'],
-  [logAction('multiunique'), fillQuery, fieldToExp],
+  [logAction('multiunique'), fillQueryFromBody, fieldToExp],
   sessionAPIs.getMultiunique
 );
 
@@ -5848,15 +5857,17 @@ app.get('/reverseDNS.txt', [noCacheJson, logAction()], (req, res) => {
 });
 
 // connections apis -----------------------------------------------------------
-app.getpost( // connections endpoint (POST or GET)
+app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections', '/connections.json'],
-  [noCacheJson, recordResponseTime, logAction('connections'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('connections'), setCookie, fillQueryFromBody],
   connectionAPIs.getConnections
 );
 
-app.getpost( // connections csv endpoint (POST or GET)
+app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections/csv', '/connections.csv'],
-  [logAction('connections.csv'), fillQuery],
+  [logAction('connections.csv'), fillQueryFromBody],
   connectionAPIs.getConnectionsCSV
 );
 
