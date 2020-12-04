@@ -684,6 +684,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
   /**
    * The query params to build an Elasticsearch sessions query.
+   *
+   * For long expressions use POST for client requests to the server.
+   * When using POST the request body and request query are merged. Any duplicate parameters use the request body parameter.
    * @typedef SessionsQuery
    * @type {object}
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1

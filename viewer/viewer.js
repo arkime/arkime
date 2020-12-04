@@ -801,12 +801,18 @@ function recordResponseTime (req, res, next) {
 }
 
 // query middleware -----------------------------------------------------------
-// fill req.query from req.body if it doesn't exist to support both POST and GET
-// POST sends req.body and GET sends req.query
+// merge query and body objects into query parameters (duplicate params use body)
+// to support both POST and GET requests for endpoints using this middleware
+// POST sends req.body (and might have req.query too) and GET sends req.query
 // all endpoints that use POST and GET (app.getpost) should look for req.query
 function fillQueryFromBody (req, res, next) {
-  // if using POST not GET, query will be empty and query params will be in body
-  if (!Object.keys(req.query).length) { req.query = req.body; }
+  if (req.method === 'POST') {
+    let query = { // last object property overwrites the previous one
+      ...req.query,
+      ...req.body
+    };
+    req.query = query;
+  }
   next();
 }
 

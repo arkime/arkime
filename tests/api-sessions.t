@@ -1,4 +1,4 @@
-use Test::More tests => 54;
+use Test::More tests => 58;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -138,3 +138,11 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # Check file == EXISTS!
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     is ($json->{recordsFiltered}, 6, "file == EXISTS!");
+
+# buildquery should return a query and indices for GET and POSt
+    $json = viewerGet("/api/buildquery");
+    ok (exists $json->{esquery}, "buildquery returns esquery");
+    ok (exists $json->{indices}, "buildquery returns indices");
+    $json = viewerPost("/api/buildquery");
+    ok (exists $json->{esquery}, "buildquery returns esquery");
+    ok (exists $json->{indices}, "buildquery returns indices");
