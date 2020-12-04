@@ -239,9 +239,8 @@ LOCAL gboolean suricata_parse_ip(char *str, int len, struct in6_addr *v)
 LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
 {
     uint32_t out[4*100];
-    memset(out, 0, sizeof(out));
     int rc;
-    if ((rc = js0n((unsigned char *)data, len, out)) != 0) {
+    if ((rc = js0n((unsigned char *)data, len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d >%.*s<\n", rc, len, data);
         fflush(stdout);
         return;
@@ -283,9 +282,8 @@ LOCAL void suricata_process()
         return;
 
     uint32_t out[4*100]; // Can have up to 100 elements at any level
-    memset(out, 0, sizeof(out));
     int rc;
-    if ((rc = js0n((unsigned char *)line, lineLen, out)) != 0) {
+    if ((rc = js0n((unsigned char *)line, lineLen, out, sizeof(out))) != 0) {
         if (rc > 0)
             LOG("ERROR: Parse error at character pos %d (%c) >%.*s<\n", rc-1, line[rc-1], lineLen, line);
         else

@@ -366,10 +366,9 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
     int      i;
     uint32_t out[4*100]; // Can have up to 100 elements at any level
 
-    memset(out, 0, sizeof(out));
     *olen = 0;
     int rc;
-    if ((rc = js0n(data, len, out)) != 0) {
+    if ((rc = js0n(data, len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d for >%s< in >%.*s<\n", rc, key, len, data);
         fflush(stdout);
         return 0;

@@ -436,7 +436,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
     }
 
     int rc;
-    if ((rc = js0n(data, data_len, out)) != 0) {
+    if ((rc = js0n(data, data_len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, data_len, data);
         HASH_REMOVE(s_, allFiles, file);
         free(file->str);
@@ -594,8 +594,11 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), unsigned char *data, int data
         return;
 
     uint32_t out[2*8000];
-    memset(out, 0, sizeof(out));
-    js0n(hits, hits_len, out);
+    int rc;
+    if ((rc = js0n(hits, hits_len, out, sizeof(out))) != 0) {
+        LOG("ERROR: Parse error %d in >%.*s<\n", rc, hits_len, hits);
+        return;
+    }
     int i;
     for (i = 0; out[i]; i+= 2) {
         uint32_t           source_len;

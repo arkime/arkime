@@ -1,13 +1,24 @@
 // by jeremie miller - 2010
-// public domain, contributions/improvements welcome via github
+// public domain, contributions/improvements welcome via github at https://github.com/quartzjer/js0n
+
+// gcc started warning for the init syntax used here, is not helpful so don't generate the spam, supressing the warning is really inconsistently supported across versions
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Winitializer-overrides"
+#pragma GCC diagnostic ignored "-Woverride-init"
 
 // opportunity to further optimize would be having different jump tables for higher depths
-#define PUSH(i) if(depth == 1) *out = ((cur+i) - js), out++
-#define CAP(i) if(depth == 1) *out = (cur+i) - (js + *(out-1)) + 1, out++
+#define PUSH(i) if(depth == 1) prev = *out++ = ((cur+i) - js)
+#define CAP(i) if(depth == 1) prev = *out++ = ((cur+i) - (js + prev) + 1)
 
-int js0n(unsigned char *js, unsigned int len, unsigned int *out)
+// this makes a single pass across the json bytes, using each byte as an index into a jump table to build an index and transition state
+int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned int olen) // ALW - Changed out to int from short
 {
-	unsigned char *cur, *end;
+	unsigned int prev = 0, *oend; // ALW - Changed to int from short
+	const unsigned char *cur, *end;
 	int depth=0;
 	int utf8_remain=0;
 	static void *gostruct[] = 
@@ -54,16 +65,17 @@ int js0n(unsigned char *js, unsigned int len, unsigned int *out)
 	};
 	void **go = gostruct;
 	
-	for(cur=js,end=js+len; cur<end; cur++)
+	for(cur=js,end=js+len,oend=out+olen; cur<end && out<oend; cur++)
 	{
 			goto *go[*cur];
 			l_loop:;
 	}
 	
+	if(out < oend) *out = 0;
 	return depth; // 0 if successful full parse, >0 for incomplete data
 	
 	l_bad:
-		return cur - js + 1;
+		return cur - js + 1; // ALW - Return where the error happen
 	
 	l_up:
 		PUSH(0);
@@ -125,3 +137,6 @@ int js0n(unsigned char *js, unsigned int len, unsigned int *out)
 
 }
 
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
