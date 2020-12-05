@@ -757,8 +757,16 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    var id = req.params.id;
+    let params = {
+      retry_on_conflict: 3,
+      index: index,
+      body: body,
+      id: id,
+      timeout: '10m'
+    };
 
-    clients[node].update({ index: index, id: req.params.id, body: body }, (err, result) => {
+    clients[node].update(params, (err, result) => {
       if (err) {
         console.log('ERROR - failed to update the document' + ' err:' + err);
       }
