@@ -25,6 +25,7 @@ NOTICE: Restart wiseService before capture when upgrading
              old GET versions still work
   - viewer - reorganize and standardize some APIs
   - viewer - put npm scripts and common npm packages at top level
+  - viewer - allow viewing of large encrypted pcap files (issue #1555)
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
 
