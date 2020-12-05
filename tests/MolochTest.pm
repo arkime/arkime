@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken);
+@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -80,6 +80,21 @@ my ($url, $content, $debug) = @_;
         $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     } else {
         $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content);
+    }
+
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub multiPost {
+my ($url, $content, $debug) = @_;
+
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8125$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
+    } else {
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8125$url", Content => $content);
     }
 
     diag $url, " response:", $response->content if ($debug);
