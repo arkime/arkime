@@ -749,7 +749,7 @@ function msearch (req, res) {
   });
 }
 
-app.post(['/:index/:type/:id/_update','/:index/_update/:id'], function (req, res) {
+app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
   var body = JSON.parse(req.body);
   if (body._node && clients[body._node]) {
     var node = body._node;
