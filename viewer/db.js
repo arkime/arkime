@@ -62,6 +62,8 @@ exports.initialize = function (info, cb) {
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
+  internals.hostName = info.hostName;
+  delete info.hostName;
 
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
@@ -1203,14 +1205,14 @@ exports.isLocalView = function (node, yesCB, noCB) {
   }
 
   exports.molochNodeStatsCache(node, (err, stat) => {
-    if (err || stat.hostname !== os.hostname()) {
+    if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
       if (internals.debug > 1) {
-        console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()}`);
+        console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
       noCB();
     } else {
       if (internals.debug > 1) {
-        console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()}`);
+        console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()} or --host ${internals.hostName}`);
       }
       yesCB();
     }
