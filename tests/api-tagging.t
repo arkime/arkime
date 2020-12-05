@@ -1,4 +1,4 @@
-use Test::More tests => 64;
+use Test::More tests => 72;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -14,6 +14,12 @@ my $json;
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST3"));
+
+    countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST1"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST2"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST3"));
+
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
 # adding/removing tags test expression
@@ -33,16 +39,16 @@ my $json;
     }
 
 # adding/removing tags test expression for MultiViewer
-    multiPost("/addTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
+    multiPost("/addTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=MTAGTEST1");
     esGet("/_refresh");
-    $json = countTest(3, "date=-1&fields=tags,tagsCnt&expression=" . uri_escape("tags==TAGTEST1"));
+    $json = countTest(3, "date=-1&fields=tags,tagsCnt&expression=" . uri_escape("tags==MTAGTEST1"));
     foreach my $item (@{$json->{data}}) {
         is ($item->{tagsCnt}, scalar @{$item->{"tags"}}, "add: tagsCnt and array size match");
     }
 
-    multiPost("/removeTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
+    multiPost("/removeTags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=MTAGTEST1");
     esGet("/_refresh");
-    countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST1"));
     $json = countTest(3, "date=-1&fields=tags,tagsCnt&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
     foreach my $item (@{$json->{data}}) {
         is ($item->{tagsCnt}, scalar @{$item->{"tags"}}, "remove: tagsCnt and array size match");
@@ -60,12 +66,12 @@ my $json;
 
 # adding/removing tags test ids for MultiViewer - remove doesn't work on ES 2.4
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
-    multiPost("/addTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
+    multiPost("/addTags?date=-1", "tags=MTAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
-    countTest(1, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
-    multiPost("/removeTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
+    countTest(1, "date=-1&expression=" . uri_escape("tags==MTAGTEST2"));
+    multiPost("/removeTags?date=-1", "tags=MTAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
-    countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
+    countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST2"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
 # adding tag to no tag item - remove doesn't work on ES 2.4
@@ -81,11 +87,11 @@ my $json;
 
 # adding tag to no tag item for MultiViewer - remove doesn't work on ES 2.4
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
-    multiPost("/addTags?date=-1&expression=file=$pwd/irc.pcap", "tags=TAGTEST3");
+    multiPost("/addTags?date=-1&expression=file=$pwd/irc.pcap", "tags=MTAGTEST3");
     esGet("/_refresh");
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==TAGTEST3"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==MTAGTEST3"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
-    multiPost("/removeTags?date=-1&expression=file=$pwd/irc.pcap", "tags=TAGTEST3");
+    multiPost("/removeTags?date=-1&expression=file=$pwd/irc.pcap", "tags=MTAGTEST3");
     esGet("/_refresh");
-    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==TAGTEST3"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==MTAGTEST3"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
