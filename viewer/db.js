@@ -105,17 +105,14 @@ exports.initialize = function (info, cb) {
     });
 
     if (info.usersHost) {
-      internals.usersElasticSearchClient = new ESC.Client({
-        host: internals.info.usersHost,
-        apiVersion: internals.apiVersion,
-        requestTimeout: info.requestTimeout * 1000 || 300000,
-        keepAlive: true,
-        minSockets: 5,
-        maxSockets: 6,
+      internals.usersClient7 = new Client({
+        node: internals.info.usersHost,
+        maxRetries: 2,
+        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
         ssl: esSSLOptions
       });
     } else {
-      internals.usersElasticSearchClient = internals.elasticSearchClient;
+      internals.usersClient7 = internals.client7;
     }
     return cb();
   });
@@ -621,17 +618,17 @@ exports.reroute = function (cb) {
 
 exports.flush = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.flush({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.flush({ index: fixIndex(index) }, cb);
   }
 };
 
 exports.refresh = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.refresh({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.refresh({ index: fixIndex(index) }, cb);
   }
 };
 
@@ -735,14 +732,23 @@ exports.flushCache = function () {
   internals.lookupsCache = {};
   delete internals.aliasesCache;
 };
+// search against user index, promise only
 exports.searchUsers = function (query, cb) {
-  return internals.usersElasticSearchClient.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true }, cb);
+  return new Promise((resolve, reject) => {
+    internals.usersClient7.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true })
+      .then((results) => { resolve(results.body); })
+      .catch((error) => { reject(error); });
+  });
 };
 
+// Return a user from DB, callback only
 exports.getUser = function (name, cb) {
-  return internals.usersElasticSearchClient.get({ index: internals.usersPrefix + 'users', id: name }, cb);
+  internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: name }, (err, result) => {
+    cb(err, result.body || { found: false });
+  });
 };
 
+// Return a user from cache, callback only
 exports.getUserCache = function (name, cb) {
   if (internals.usersCache[name] && internals.usersCache[name]._timeStamp > Date.now() - 5000) {
     return cb(null, internals.usersCache[name]);
@@ -760,21 +766,28 @@ exports.getUserCache = function (name, cb) {
   });
 };
 
-exports.numberOfUsers = function (cb) {
-  return internals.usersElasticSearchClient.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true }, cb);
+// Return a user from cache, promise only
+exports.numberOfUsers = function () {
+  return new Promise((resolve, reject) => {
+    internals.usersClient7.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true })
+      .then((results) => { resolve({ count: results.body.count }); })
+      .catch((error) => { reject(error); });
+  });
 };
 
+// Delete user, callback only
 exports.deleteUser = function (name, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.delete({ index: internals.usersPrefix + 'users', id: name, refresh: true }, (err) => {
+  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: name, refresh: true }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
+// Set user, callback only
 exports.setUser = function (name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({ index: internals.usersPrefix + 'users', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
+  internals.usersClient7.index({ index: internals.usersPrefix + 'users', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
@@ -783,7 +796,7 @@ exports.setUser = function (name, doc, cb) {
 exports.setLastUsed = function (name, now, cb) {
   var params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
 
-  return internals.usersElasticSearchClient.update(params, cb);
+  return internals.usersClient7.update(params, cb);
 };
 
 function twoDigitString (value) {
@@ -825,7 +838,7 @@ exports.setHunt = function (id, doc, cb) {
   return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
 };
 exports.getHunt = function (id, cb) {
-  return internals.usersElasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
+  return internals.elasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
 };
 
 exports.searchLookups = function (query, cb) {
