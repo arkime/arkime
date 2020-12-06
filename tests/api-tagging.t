@@ -54,7 +54,7 @@ my $json;
         is ($item->{tagsCnt}, scalar @{$item->{"tags"}}, "remove: tagsCnt and array size match");
     }
 
-# adding/removing tags test ids - remove doesn't work on ES 2.4
+# adding/removing tags test ids
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     viewerPost("/addTags?date=-1", "tags=TAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
@@ -64,7 +64,7 @@ my $json;
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST2"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
-# adding/removing tags test ids for MultiViewer - remove doesn't work on ES 2.4
+# adding/removing tags test ids for MultiViewer
     my $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     multiPost("/addTags?date=-1", "tags=MTAGTEST2&ids=" . $idQuery->{data}->[0]->{id});
     esGet("/_refresh");
@@ -74,7 +74,7 @@ my $json;
     countTest(0, "date=-1&expression=" . uri_escape("tags==MTAGTEST2"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));
 
-# adding tag to no tag item - remove doesn't work on ES 2.4
+# adding tag to no tag item
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
     viewerPost("/addTags?date=-1&expression=file=$pwd/irc.pcap", "tags=TAGTEST3");
     esGet("/_refresh");
@@ -85,7 +85,7 @@ my $json;
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==TAGTEST3"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
 
-# adding tag to no tag item for MultiViewer - remove doesn't work on ES 2.4
+# adding tag to no tag item for MultiViewer
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
     multiPost("/addTags?date=-1&expression=file=$pwd/irc.pcap", "tags=MTAGTEST3");
     esGet("/_refresh");
