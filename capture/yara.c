@@ -53,9 +53,9 @@ LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
 // Yara 4 compiler callback: const YR_RULE* rule inbetween int line_number and const char* message.
-void moloch_yara_report_error(int error_level, const char* file_name, int line_number, const YR_RULE* rule, const char* error_message, void* UNUSED(user_data))
+void moloch_yara_report_error(int error_level, const char* file_name, int line_number, const YR_RULE* UNUSED(rule), const char* error_message, void* UNUSED(user_data))
 {
-    LOG("%d %s:%d: %s\n", error_level, file_name, line_number, rule, error_message);
+    LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
 void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
@@ -138,7 +138,7 @@ void moloch_yara_init()
 
 /******************************************************************************/
 // Yara 4: scanning callback now has a YR_SCAN_CONTEXT* context as 0th param.
-int moloch_yara_callback(YR_SCAN_CONTEXT* context, int message, YR_RULE* rule, MolochSession_t* session)
+int moloch_yara_callback(YR_SCAN_CONTEXT* UNUSED(context), int message, YR_RULE* rule, MolochSession_t* session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
