@@ -1355,5 +1355,5 @@ void moloch_pq_flush();
 /*
  * js0n.c
  */
-int js0n(unsigned char *js, unsigned int len, unsigned int *out);
+int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned int olen);
 

@@ -247,6 +247,8 @@ app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
 app.use('/bootstrap', express.static(path.join(__dirname, '/../node_modules/bootstrap'), { maxAge: 600 * 1000 }));
 app.use('/', express.static(path.join(__dirname, '/public'), { maxAge: 600 * 1000 }));
+app.use('/assets', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
+app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
@@ -798,12 +800,19 @@ function recordResponseTime (req, res, next) {
   next();
 }
 
-// body middleware ------------------------------------------------------------
-// fill req.query if it doesn't exist to support POST and GET
-// all endpoints that use POST and GET should look for req.query
-function fillQuery (req, res, next) {
-  // if using POST not GET, query will be empty and query params will be in body
-  if (!Object.keys(req.query).length) { req.query = req.body; }
+// query middleware -----------------------------------------------------------
+// merge query and body objects into query parameters (duplicate params use body)
+// to support both POST and GET requests for endpoints using this middleware
+// POST sends req.body (and might have req.query too) and GET sends req.query
+// all endpoints that use POST and GET (app.getpost) should look for req.query
+function fillQueryFromBody (req, res, next) {
+  if (req.method === 'POST') {
+    let query = { // last object property overwrites the previous one
+      ...req.query,
+      ...req.body
+    };
+    req.query = query;
+  }
   next();
 }
 
@@ -2316,27 +2325,27 @@ function validateUserIds (userIdList) {
       resolve({ validUsers: [], invalidUsers: [] });
     }
 
-    Db.searchUsers(query, (error, users) => {
-      if (error) {
-        reject('Unable to validate userIds');
-      }
+    Db.searchUsers(query)
+      .then((users) => {
+        let usersList = [];
+        usersList = users.hits.hits.map((user) => {
+          return user._source.userId;
+        });
 
-      let usersList = [];
-      usersList = users.hits.hits.map((user) => {
-        return user._source.userId;
+        let validUsers = [];
+        let invalidUsers = [];
+        for (let user of userIdList) {
+          usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
+        }
+
+        resolve({
+          validUsers: validUsers,
+          invalidUsers: invalidUsers
+        });
+      })
+      .catch((error) => {
+          reject('Unable to validate userIds');
       });
-
-      let validUsers = [];
-      let invalidUsers = [];
-      for (let user of userIdList) {
-        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
-      }
-
-      resolve({
-        validUsers: validUsers,
-        invalidUsers: invalidUsers
-      });
-    });
   });
 }
 
@@ -5512,51 +5521,59 @@ app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, check
 });
 
 // session apis ---------------------------------------------------------------
-app.getpost( // sessions endpoint (POST or GET)
+app.getpost( // sessions endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions', '/sessions.json'],
-  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('sessions'), setCookie, fillQueryFromBody],
   sessionAPIs.getSessions
 );
 
-app.getpost( // spiview endpoint (POST or GET)
+app.getpost( // spiview endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spiview', '/spiview.json'],
-  [noCacheJson, recordResponseTime, logAction('spiview'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('spiview'), setCookie, fillQueryFromBody],
   sessionAPIs.getSPIView
 );
 
-app.getpost( // spigraph endpoint (POST or GET)
+app.getpost( // spigraph endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraph', '/spigraph.json'],
-  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillQuery, fieldToExp],
+  [noCacheJson, recordResponseTime, logAction('spigraph'), setCookie, fillQueryFromBody, fieldToExp],
   sessionAPIs.getSPIGraph
 );
 
-app.getpost( // spigraph hierarchy endpoint (POST or GET)
+app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/spigraphhierarchy', '/spigraphhierarchy'],
-  [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('spigraphhierarchy'), setCookie, fillQueryFromBody],
   sessionAPIs.getSPIGraphHierarchy
 );
 
-app.getpost( // build query endoint (POST or GET)
+app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
-  [noCacheJson, logAction('query', fillQuery)],
+  [noCacheJson, logAction('query'), fillQueryFromBody],
   sessionAPIs.getQuery
 );
 
-app.getpost( // sessions csv endpoint (POST or GET)
+app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/sessions/csv', /\/sessions.csv.*/],
-  [logAction('sessions.csv'), fillQuery],
+  [logAction('sessions.csv'), fillQueryFromBody],
   sessionAPIs.getSessionsCSV
 );
 
-app.getpost( // unique endpoint (POST or GET)
+app.getpost( // unique endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/unique', '/unique.txt'],
-  [logAction('unique'), fillQuery, fieldToExp],
+  [logAction('unique'), fillQueryFromBody, fieldToExp],
   sessionAPIs.getUnique
 );
 
-app.getpost( // multiunique endpoint (POST or GET)
+app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/multiunique', '/multiunique.txt'],
-  [logAction('multiunique'), fillQuery, fieldToExp],
+  [logAction('multiunique'), fillQueryFromBody, fieldToExp],
   sessionAPIs.getMultiunique
 );
 
@@ -5846,15 +5863,17 @@ app.get('/reverseDNS.txt', [noCacheJson, logAction()], (req, res) => {
 });
 
 // connections apis -----------------------------------------------------------
-app.getpost( // connections endpoint (POST or GET)
+app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections', '/connections.json'],
-  [noCacheJson, recordResponseTime, logAction('connections'), setCookie, fillQuery],
+  [noCacheJson, recordResponseTime, logAction('connections'), setCookie, fillQueryFromBody],
   connectionAPIs.getConnections
 );
 
-app.getpost( // connections csv endpoint (POST or GET)
+app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody to
+  // fill the query parameters if the client uses POST to support POST and GET
   ['/api/connections/csv', '/connections.csv'],
-  [logAction('connections.csv'), fillQuery],
+  [logAction('connections.csv'), fillQueryFromBody],
   connectionAPIs.getConnectionsCSV
 );
 
@@ -7072,6 +7091,7 @@ Db.initialize({ host: internals.elasticBase,
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
   usersPrefix: Config.get('usersPrefix'),
   nodeName: Config.nodeName(),
+  hostName: Config.hostName(),
   esClientKey: Config.get('esClientKey', null),
   esClientCert: Config.get('esClientCert', null),
   esClientKeyPass: Config.get('esClientKeyPass', null),

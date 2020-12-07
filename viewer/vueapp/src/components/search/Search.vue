@@ -466,6 +466,7 @@ export default {
       this.$parent.$emit('recalc-collapse');
     },
     applyExpression: function (expression) {
+      if (!this.expression) { this.expression = undefined; }
       this.$router.push({
         query: {
           ...this.$route.query,

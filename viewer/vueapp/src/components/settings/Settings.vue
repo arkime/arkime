@@ -2339,14 +2339,14 @@ export default {
         { name: 'Dark Blue', class: 'dark-3-theme' }
       ],
       logos: [
-        { name: 'Arkime Light', location: 'logos/Arkime_Logo_Mark_White.png' },
-        { name: 'Arkime Dark', location: 'logos/Arkime_Logo_Mark_Black.png' },
-        { name: 'Arkime Color', location: 'logos/Arkime_Logo_Mark_Full.png' },
-        { name: 'Arkime Gradient', location: 'logos/Arkime_Logo_Mark_FullGradient.png' },
-        { name: 'Arkime Circle Light', location: 'logos/Arkime_Icon_White.png' },
-        { name: 'Arkime Circle Dark', location: 'logos/Arkime_Icon_Black.png' },
-        { name: 'Arkime Circle Mint', location: 'logos/Arkime_Icon_ColorMint.png' },
-        { name: 'Arkime Circle Blue', location: 'logos/Arkime_Icon_ColorBlue.png' }
+        { name: 'Arkime Light', location: 'assets/Arkime_Logo_Mark_White.png' },
+        { name: 'Arkime Dark', location: 'assets/Arkime_Logo_Mark_Black.png' },
+        { name: 'Arkime Color', location: 'assets/Arkime_Logo_Mark_Full.png' },
+        { name: 'Arkime Gradient', location: 'assets/Arkime_Logo_Mark_FullGradient.png' },
+        { name: 'Arkime Circle Light', location: 'assets/Arkime_Icon_White.png' },
+        { name: 'Arkime Circle Dark', location: 'assets/Arkime_Icon_Black.png' },
+        { name: 'Arkime Circle Mint', location: 'assets/Arkime_Icon_ColorMint.png' },
+        { name: 'Arkime Circle Blue', location: 'assets/Arkime_Icon_ColorBlue.png' }
       ],
       creatingCustom: false,
       displayHelp: true,
@@ -2930,7 +2930,7 @@ export default {
         this.creatingCustom = true;
       }
       if (!this.settings.logo) {
-        this.settings.logo = 'logos/Arkime_Logo_Mark_White.png';
+        this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
       }
     },
     /* changes the ui theme (picked from existing themes) */

@@ -161,5 +161,17 @@ ThreatQSource.prototype.dump = function (res) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('threatq', {
+    singleton: true,
+    name: 'threatq',
+    description: 'ThreatQ source',
+    types: ['ip', 'domain', 'md5', 'email'],
+    cacheable: false,
+    fields: [
+      { name: 'key', password: true, required: true, help: 'The API key' },
+      { name: 'host', required: true, help: 'Server hostname location' }
+    ]
+  });
+
   return new ThreatQSource(api, 'threatq');
 };

@@ -20,10 +20,15 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 3.0.0 2021/01/xx
+  - capture - search for GeoIP files first in /var/lib/GeoIP
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize some APIs
   - viewer - put npm scripts and common npm packages at top level
+  - viewer - allow viewing of large encrypted pcap files (issue #1555)
+  - viewer - can find nodes for pcap based on --host
+  - wise - new config UI, enable with --webconfig
+  - wise - more moloch->arkime changes
 
 2.7.1 2020/12/01
   - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0

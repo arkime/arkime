@@ -144,11 +144,8 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 8,
             "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"domainwise"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"},{"doc_count":3, "key":"wisebyhost2"}]}'), "ALL ta");
 
-    SKIP: {
-        skip "Upgrade test", 1 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have http.requestHeader
-        eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
-                "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
-    }
+    eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
+            "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
 
     delete $json->{health};
     delete $mjson->{health};

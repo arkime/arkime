@@ -79,6 +79,21 @@ RedisSource.prototype.fetchDomain = function (key, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('redis', {
+    singleton: false,
+    name: 'redis',
+    description: 'Link to the redis data',
+    fields: [
+      { name: 'type', required: true, help: 'The wise query type this source supports' },
+      { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
+      { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'column', required: true, help: 'For csv formatted files, which column is the data' },
+      { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
   sections.forEach((section) => {
     return new RedisSource(api, section);

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <Error :initialError="error" v-on:clear-initialError="error = ''"/>
+    <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
 
     <div>
       <b-tabs content-class="mt-3">
@@ -23,16 +23,16 @@
 
 <script>
 import WiseService from './wise.service';
-import Error from './Error';
+import Alert from './Alert';
 
 export default {
   name: 'Stats',
   components: {
-    Error
+    Alert
   },
   data: function () {
     return {
-      error: '',
+      alertMessage: '',
       sourceStats: [],
       typeStats: [],
       sourceTableFields: [],
@@ -46,7 +46,7 @@ export default {
     loadResourceStats: function () {
       WiseService.getResourceStats()
         .then((data) => {
-          this.error = '';
+          this.alertMessage = '';
           if (data && data.sources && data.sources.length > 0) {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
@@ -61,7 +61,7 @@ export default {
           }
         })
         .catch((error) => {
-          this.error = error.text ||
+          this.alertMessage = error.text ||
             `Error fetching resource stats for wise.`;
         });
     }

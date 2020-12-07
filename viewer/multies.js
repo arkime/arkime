@@ -814,7 +814,7 @@ function msearch (req, res) {
   });
 }
 
-app.post('/:index/:type/:id/_update', function (req, res) {
+app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
   var body = JSON.parse(req.body);
   if (body._cluster && clusters[body._cluster]) {
     var node = clusters[body._cluster];
@@ -822,8 +822,19 @@ app.post('/:index/:type/:id/_update', function (req, res) {
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    var id = req.params.id;
+    let params = {
+      retry_on_conflict: 3,
+      index: index,
+      body: body,
+      id: id,
+      timeout: '10m'
+    };
 
-    clients[node].update({ index: index, type: req.params.type, id: req.params.id, body: body }, (err, result) => {
+    clients[node].update(params, (err, result) => {
+      if (err) {
+        console.log('ERROR - failed to update the document' + ' err:' + err);
+      }
       return res.send(result);
     });
   } else {
@@ -870,7 +881,7 @@ nodes.forEach((node) => {
   }
   clients[node] = new ESC.Client({
     host: node.split(',')[0],
-    apiVersion: '6.8',
+    apiVersion: '7.4',
     requestTimeout: 300000,
     keepAlive: true,
     ssl: esSSLOptions

@@ -114,6 +114,22 @@ ElasticsearchSource.prototype.sendResult = function (key, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
+  api.addSourceConfigDef('elasticsearch', {
+    singleton: false,
+    name: 'elasticsearch',
+    description: 'Link to the elasticsearch data',
+    fields: [
+      { name: 'type', required: true, help: 'The wise type of this source' },
+      { name: 'tag', required: true, help: 'The tags to set on matches' },
+      { name: 'esQueryField', required: true, help: 'The elasticsearch field in each document that is being queried' },
+      { name: 'elasticsearch', required: true, help: 'Elasticsearch base url' },
+      { name: 'esIndex', required: true, help: 'The index pattern to look at' },
+      { name: 'esTimestampField', required: true, help: 'The field to use in queries that has the timestamp in ms' },
+      { name: 'esMaxTimeMS', required: false, help: 'Timestamp field must be less then this (default: 1hr)' },
+      { name: 'esResultField', required: true, help: 'Field that is required to be in the result' }
+    ]
+  });
+
   var sections = api.getConfigSections().filter((e) => { return e.match(/^elasticsearch:/); });
   sections.forEach((section) => {
     return new ElasticsearchSource(api, section);

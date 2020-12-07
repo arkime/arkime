@@ -2111,7 +2111,7 @@ LOCAL void moloch_db_load_fields()
 
     uint32_t out[2*8000];
     memset(out, 0, sizeof(out));
-    js0n(ahits, ahits_len, out);
+    js0n(ahits, ahits_len, out, sizeof(out));
     int i;
     for (i = 0; out[i]; i+= 2) {
         uint32_t           id_len;

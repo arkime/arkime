@@ -1348,13 +1348,12 @@ int moloch_packet_outstanding()
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-SUPPRESS_SIGNED_INTEGER_OVERFLOW
 LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;
     uint32_t n = 0;
     for (i = 0; i < 10; i++) {
-        n = (n << 5) - n + ((char*)key)[i];
+        n = (n << 5) - n + ((unsigned char*)key)[i];
     }
     return n;
 }

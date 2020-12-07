@@ -1,242 +1,74 @@
 {
-  "default": {
-    "elasticsearch": ", , 127.0.0.1:9200,",
-    "pcapDir": "/tmp",
-    "geoLite2ASN": "GeoLite2-ASN.mmdb",
-    "geoLite2Country": "GeoLite2-Country.mmdb",
-    "rirFile": "ipv4-address-space.csv",
-    "ouiFile": "oui.txt",
-    "parsersDir": "../capture/parsers;parsers",
-    "pluginsDir": "plugins;../tests/plugins;../capture/plugins",
-    "yara": "rules.yara",
-    "smtpIpHeaders": "X-Originating-IP:;X-Barracuda-Apparent-Source-IP:",
-    "keyFile": "",
-    "spiDataMaxIndices": "-1",
-    "parseQSValue": "true",
-    "parseCookieValue": "true",
-    "passwordSecret": "password",
-    "viewPort": "8123",
-    "viewerPlugins": "wise.js",
-    "icmpTimeout": "60",
-    "rulesFiles": "rules.yaml",
-    "supportSha256": "true",
-    "maxStreams": "1000",
-    "trackESP": "true",
-    "parseSMTPHeaderAll": "true",
-    "parseHTTPHeaderRequestAll": "true",
-    "parseHTTPHeaderResponseAll": "true",
-    "parseDNSRecordAll": "true",
-    "autoGenerateId": "true",
-    "enablePacketLen": "true",
-    "ja3Strings": "true",
-    "maxReqBody": "2000",
-    "disableParsers": "",
-    "packetThreads": "2",
-    "magicMode": "basic",
-    "filenameOps": "tags=/gre-(.*)\\\\.pcap%gretest-\\\\1;tags=dns-error%error-dns",
-    "esAdminUsers": "adminuser1,admin",
-    "scrubspi": "http.uri=/sheepskin%20boots/Sheepskin%20Boots/"
-  },
-  "scrubspi": {
-    "http.uri": "/sheepskin%20boots/Sheepskin%20Boots/"
-  },
-  "test": {
-    "pcapWriteMethod": "simple",
-    "interface": "eth1",
-    "prefix": "tests",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "plugins": "test.so;tagger.so;wise.so;scrubspi.so",
-    "cronQueries": "true",
-    "dontSaveBPFs": "port 12345",
-    "viewUrl": "http://localhost:8123"
-  },
-  "testuser": {
-    "pcapWriteMethod": "simple",
-    "interface": "eth1",
-    "prefix": "tests",
-    "passwordSecret": "secret",
-    "regressionTests": "false",
-    "plugins": "test.so;tagger.so;wise.so",
-    "cronQueries": "true",
-    "dontSaveBPFs": "port 12345",
-    "webBasePath": "/moloch/",
-    "esAdminUsers": "admin"
-  },
-  "testmulties": {
-    "pcapWriteMethod": "simple",
-    "interface": "eth1",
-    "prefix": "tests",
-    "passwordSecret": "secret",
-    "regressionTests": "false",
-    "plugins": "test.so;tagger.so;wise.so",
-    "cronQueries": "true",
-    "dontSaveBPFs": "port 12345",
-    "webBasePath": "/moloch/",
-    "usersElasticsearch": "http://127.0.0.1:9200",
-    "elasticsearch": "http://127.0.0.1:8200",
-    "multiES": "true",
-    "multiESPort": "8200",
-    "multiESNodes": "127.0.0.1:9200,prefix:tests;127.0.0.1:9200,prefix:tests2_"
-  },
-  "nowise": {
-    "prefix": "tests",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "plugins": "test.so;tagger.so",
-    "interface": "en0",
-    "packetThreads": "1",
-    "usersPrefix": ""
-  },
-  "suricata": {
-    "prefix": "tests",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "plugins": "suricata.so",
-    "interface": "en0",
-    "packetThreads": "1",
-    "usersPrefix": "",
-    "suricataExpireMinutes": "6000",
-    "suricataAlertFile": "eve.json"
-  },
-  "nowisekek": {
-    "prefix": "tests",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "plugins": "test.so;tagger.so",
-    "interface": "en0",
-    "simpleEncoding": "aes-256-ctr",
-    "simpleKEKId": "test"
-  },
-  "test2": {
-    "viewPort": "8124",
-    "prefix": "tests2",
-    "usersPrefix": "tests",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "plugins": "test.so;tagger.so"
-  },
-  "all": {
-    "viewPort": "8125",
-    "passwordSecret": "",
-    "regressionTests": "true",
-    "elasticsearch": "http://127.0.0.1:8200",
-    "multiES": "true",
-    "multiESPort": "8200",
-    "multiESNodes": "127.0.0.1:9200,prefix:tests;127.0.0.1:9200,prefix:tests2_"
-  },
-  "lua": {
-    "regressionTests": "true",
-    "pcapWriteMethod": "simple",
-    "plugins": "lua.so",
-    "cronQueries": "true",
-    "luaFiles": "../capture/plugins/lua/moloch.lua"
-  },
-  "headers-http-request": {
-    "referer": "type:string;count:true;unique:true",
-    "authorization": "type:string;count:true"
-  },
-  "headers-http-response": {
-    "location": "type:string"
-  },
-  "headers-email": {
-    "x-priority": "type:integer",
-    "x-elnk-trace": "type:lotermfield"
-  },
-  "override-ips": {
-    "10.0.0.1": "tag:srcip;asn:AS0000 This is neat;country:RU",
-    "10.0.0.2": "tag:dstip;asn:AS0001 Cool Beans!;rir:TEST;country:CA",
-    "10.0.0.3": "asn:AS0002 Hmm!@#$%^&*()"
-  },
-  "moloch-clusters": {
-    "test2": "url:http://localhost:8124;passwordSecret:password;name:Test2"
-  },
-  "wise-types": {
-    "mac": "db:srcMac;mac.dst"
-  },
-  "wiseService": {
-    "regressionTests": "true"
-  },
-  "file:email": {
-    "file": "../tests/email.wise",
-    "tags": "emailwise",
-    "type": "email",
-    "format": "tagger"
-  },
-  "file:ip": {
-    "file": "../tests/ip.wise",
-    "tags": "ipwise",
-    "type": "ip",
-    "format": "tagger"
-  },
-  "file:mac": {
-    "file": "../tests/mac.wise",
-    "tags": "macwise",
-    "type": "mac",
-    "format": "tagger"
-  },
-  "file:ipcsv": {
-    "file": "../tests/ip.wise.csv",
-    "tags": "ipwisecsv",
-    "type": "ip",
-    "column": "1"
-  },
-  "file:ipjson": {
-    "file": "../tests/ip.wise.json",
-    "tags": "ipwisejson",
-    "type": "ip",
-    "format": "json",
-    "keyColumn": "ip",
-    "fields": "field:tags;shortcut:tag"
-  },
-  "file:md5": {
-    "file": "../tests/md5.wise",
-    "tags": "md5wise",
-    "type": "md5",
-    "format": "tagger"
-  },
-  "file:ja3": {
-    "file": "../tests/ja3.wise",
-    "tags": "ja3wise",
-    "type": "ja3",
-    "format": "tagger"
-  },
-  "file:sha256": {
-    "file": "../tests/sha256.wise",
-    "tags": "sha256wise",
-    "type": "sha256",
-    "format": "tagger"
-  },
-  "file:domain": {
-    "file": "../tests/domain.wise",
-    "tags": "domainwise",
-    "type": "domain",
-    "format": "tagger"
-  },
-  "file:url": {
-    "file": "../tests/uri.wise",
-    "tags": "urlwise",
-    "type": "url",
-    "format": "tagger"
-  },
-  "right-click": {
-    "VTIP": "url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip",
-    "VTHOST": "url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host",
-    "VTURL": "url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url"
-  },
-  "custom-fields": {
-    "iscool": "kind:termfield;count:true;friendly:Is cool;db:iscool;help:Is Cool String",
-    "sample.md5": "db:sample.md5;kind:lotermfield;friendly:Sample MD5;count:true;help:MD5 of the sample"
-  },
-  "custom-views": {
-    "nice": "title:Nice;require:http;fields:ip.src,iscool,http.host",
-    "sample": "title:Sample;require:sample;fields:sample.md5"
-  },
-  "reversedns": {
-    "ips": "0.0.0.0/32",
-    "field": "asset"
-  },
-  "keks": {
-    "test": "abc123"
-  }
+ "wiseService": {
+  "usersPrefix": "tests",
+  "userNameHeader": "anonymous",
+  "usersElasticsearch": "http://localhost:9200"
+ },
+ "file:email": {
+  "file": "../tests/email.wise",
+  "tags": "emailwise",
+  "type": "email",
+  "format": "tagger"
+ },
+ "file:ip": {
+  "file": "../tests/ip.wise",
+  "tags": "ipwise",
+  "type": "ip",
+  "format": "tagger"
+ },
+ "file:mac": {
+  "file": "../tests/mac.wise",
+  "tags": "macwise",
+  "type": "mac",
+  "format": "tagger"
+ },
+ "file:ipcsv": {
+  "file": "../tests/ip.wise.csv",
+  "tags": "ipwisecsv",
+  "type": "ip",
+  "column": "1"
+ },
+ "file:ipjson": {
+  "file": "../tests/ip.wise.json",
+  "tags": "ipwisejson",
+  "type": "ip",
+  "format": "json",
+  "keyColumn": "ip",
+  "fields": "field:tags;shortcut:tag"
+ },
+ "file:md5": {
+  "file": "../tests/md5.wise",
+  "tags": "md5wise",
+  "type": "md5",
+  "format": "tagger"
+ },
+ "file:ja3": {
+  "file": "../tests/ja3.wise",
+  "tags": "ja3wise",
+  "type": "ja3",
+  "format": "tagger"
+ },
+ "file:sha256": {
+  "file": "../tests/sha256.wise",
+  "tags": "sha256wise",
+  "type": "sha256",
+  "format": "tagger"
+ },
+ "file:domain": {
+  "file": "../tests/domain.wise",
+  "tags": "domainwise",
+  "type": "domain",
+  "format": "tagger"
+ },
+ "file:url": {
+  "file": "../tests/uri.wise",
+  "tags": "urlwise",
+  "type": "url",
+  "format": "tagger"
+ },
+ "reversedns": {
+  "ips": "0.0.0.0/32",
+  "field": "asset"
+ },
+ "wiseCache": {}
 }

@@ -1,7 +1,7 @@
 <template>
 
   <div class="loading">
-    <img src="logos/Arkime_Logo_Mark_FullGradient.png" />
+    <img src="assets/Arkime_Logo_Mark_FullGradient.png" />
     <div class="loader circles"></div>
     <div class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">

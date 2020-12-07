@@ -137,7 +137,7 @@ Pcap.prototype.unref = function () {
 };
 
 Pcap.prototype.createDecipher = function (pos) {
-  this.iv.writeInt32BE(pos, 12);
+  this.iv.writeUInt32BE(pos, 12);
   return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
 };
 
