@@ -635,8 +635,8 @@ export default {
         this.selectedEsCluster = this.selectedEsCluster.filter((item) => {
           return item !== cluster;
         });
-      } else { // add to list
-        this.selectedEsCluster.push(cluster);
+      } else if (!this.availableEsCluster.inactive.includes(cluster)) { // not in inactive cluster
+        this.selectedEsCluster.push(cluster); // add to selected list
       }
       this.updateRouteQueryForESClusters(this.selectedEsCluster);
     },
