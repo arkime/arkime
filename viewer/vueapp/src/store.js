@@ -180,10 +180,10 @@ const store = new Vuex.Store({
         if (i < len - 1) { state.sortsParam += ','; }
       }
     },
-    setAvailableEsCluster (state, value) {
+    setAvailableESCluster (state, value) {
       state.esCluster.availableCluster = value;
     },
-    setSelectedEsCluster (state, value) {
+    setSelectedESCluster (state, value) {
       state.esCluster.selectedCluster = value;
     },
     setMultiEsStatus (state, value) {

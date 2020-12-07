@@ -127,7 +127,7 @@
       </b-dropdown> <!-- /views dropdown menu -->
 
       <!-- ES cluster dropdown menu -->
-      <b-dropdown v-if="showEsClusters"
+      <b-dropdown v-if="showESClusterMenu"
         right
         size="sm"
         class="multies-menu-dropdown pull-right ml-1"
@@ -399,23 +399,23 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
-    availableEsCluster: {
+    availableESCluster: {
       get: function () {
         return this.$store.state.esCluster.availableCluster;
       },
       set: function (newValue) {
-        this.$store.commit('setAvailableEsCluster', newValue);
+        this.$store.commit('setAvailableESCluster', newValue);
       }
     },
-    selectedEsCluster: {
+    selectedESCluster: {
       get: function () {
         return this.$store.state.esCluster.selectedCluster || [];
       },
       set: function (newValue) {
-        this.$store.commit('setSelectedEsCluster', newValue);
+        this.$store.commit('setSelectedESCluster', newValue);
       }
     },
-    showEsClusters: {
+    showESClusterMenu: {
       get: function () {
         return this.$store.state.multiEsEnabled;
       },
@@ -425,10 +425,10 @@ export default {
     },
     filteredESClusteres: function () {
       let filteredGroupedClusters = {};
-      for (let group in this.availableEsCluster) {
+      for (let group in this.availableESCluster) {
         filteredGroupedClusters[group] = this.$options.filters.searchESCluster(
           this.esQuery,
-          this.availableEsCluster[group]
+          this.availableESCluster[group]
         );
       }
       return filteredGroupedClusters;
@@ -590,18 +590,18 @@ export default {
     },
     /* MultiES functions ------------------------------------------ */
     getESClusterInformation: function () {
-      if (!this.availableEsCluster) {
+      if (!this.availableESCluster) {
         ConfigService.getESClusters()
           .then((response) => {
-            this.availableEsCluster = response;
+            this.availableESCluster = response;
             var clusters = this.$route.query.escluster ? this.$route.query.escluster.split(',') : [];
             if (clusters.length === 0) {
-              this.selectedEsCluster = response.active;
+              this.selectedESCluster = response.active;
             } else {
-              this.selectedEsCluster = [];
+              this.selectedESCluster = [];
               for (var i = 0; i < clusters.length; i++) {
                 if (response.active.includes(clusters[i])) {
-                  this.selectedEsCluster.push(clusters[i]);
+                  this.selectedESCluster.push(clusters[i]);
                 }
               }
             }
@@ -611,16 +611,16 @@ export default {
     getMultiESEnabled: function () {
       ConfigService.isMultiESEnabled()
         .then((response) => {
-          this.showEsClusters = response;
+          this.showESClusterMenu = response;
         });
     },
     selectAllESCluster: function () {
-      this.selectedEsCluster = this.availableEsCluster.active;
-      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+      this.selectedESCluster = this.availableESCluster.active;
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
     },
     clearAllESCluster: function () {
-      this.selectedEsCluster = [];
-      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+      this.selectedESCluster = [];
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
     },
     updateRouteQueryForESClusters: function (clusters) {
       this.$router.push({
@@ -631,18 +631,18 @@ export default {
       });
     },
     toggleESClusterSelection: function (cluster) {
-      if (this.selectedEsCluster.includes(cluster)) { // already selected; remove from selection
-        this.selectedEsCluster = this.selectedEsCluster.filter((item) => {
+      if (this.selectedESCluster.includes(cluster)) { // already selected; remove from selection
+        this.selectedESCluster = this.selectedESCluster.filter((item) => {
           return item !== cluster;
         });
-      } else if (!this.availableEsCluster.inactive.includes(cluster)) { // not in inactive cluster
-        this.selectedEsCluster.push(cluster); // add to selected list
+      } else if (!this.availableESCluster.inactive.includes(cluster)) { // not in inactive cluster
+        this.selectedESCluster.push(cluster); // add to selected list
       }
-      this.updateRouteQueryForESClusters(this.selectedEsCluster);
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
     },
     isESClusterVis: function (cluster) {
-      if (this.availableEsCluster.active.includes(cluster)) { // active cluster is selected
-        return this.selectedEsCluster.includes(cluster);
+      if (this.availableESCluster.active.includes(cluster)) { // active cluster is selected
+        return this.selectedESCluster.includes(cluster);
       } else { // inactive cluster is selected
         return false;
       }
