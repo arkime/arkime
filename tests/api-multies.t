@@ -52,13 +52,20 @@ my $json;
     $json = mesGet("/_cluster/settings");
     eq_or_diff($json, from_json('{"persistent": {}, "transient": {}}'));
 
-# escluster
+# _cluster/_doc/details
+    $json = mesGet("/_cluster/_doc/details");
+    is ($json->{available}->[0], "test", "Correct available ES cluster");
+    is ($json->{available}->[1], "test2", "Correct acvilable ES cluster");
+    is ($json->{active}->[0], "test", "Correct active ES cluster");
+    is ($json->{active}->[1], "test2", "Correct active ES cluster");
+    is (scalar @{$json->{inactive}}, 0, "Correct number of ES cluster name");
 
+# _node
     $json = mesGet("/_nodes/stats?fs=1");
-    is ($json->{escluster}, "test", "Correct escluster status");
+    is ($json->{escluster}, "test", "Correct _node status");
 
     $json = mesGet("/_nodes/stats?jvm=1&process=1&fs=1&search=1&os=1");
-    is ($json->{escluster}, "test", "Correct escluster status");
+    is ($json->{escluster}, "test", "Correct _node status");
 
 # aliases
     $json = mesGet("/MULTIPREFIX_sessions2-*/_alias");
