@@ -614,13 +614,12 @@ export default {
           this.showESClusterMenu = response;
         });
     },
-    selectAllESCluster: function () {
-      this.selectedESCluster = this.availableESCluster.active;
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
-    },
-    clearAllESCluster: function () {
-      this.selectedESCluster = [];
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
+    isESClusterVis: function (cluster) {
+      if (this.availableESCluster.active.includes(cluster)) { // found in active cluster list
+        return this.selectedESCluster.includes(cluster); // returns True if found in selected cluster list
+      } else { // inactive cluster
+        return false;
+      }
     },
     updateRouteQueryForESClusters: function (clusters) {
       this.$router.push({
@@ -629,23 +628,6 @@ export default {
           escluster: clusters.length > 0 ? clusters.join(',') : 'none'
         }
       });
-    },
-    toggleESClusterSelection: function (cluster) {
-      if (this.selectedESCluster.includes(cluster)) { // already selected; remove from selection
-        this.selectedESCluster = this.selectedESCluster.filter((item) => {
-          return item !== cluster;
-        });
-      } else if (!this.availableESCluster.inactive.includes(cluster)) { // not in inactive cluster
-        this.selectedESCluster.push(cluster); // add to selected list
-      }
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
-    },
-    isESClusterVis: function (cluster) {
-      if (this.availableESCluster.active.includes(cluster)) { // active cluster is selected
-        return this.selectedESCluster.includes(cluster);
-      } else { // inactive cluster is selected
-        return false;
-      }
     },
     /**
      * If the start/stop time has changed:
@@ -699,6 +681,24 @@ export default {
       } else {
         this.$emit('changeSearch');
       }
+    },
+    selectAllESCluster: function () {
+      this.selectedESCluster = this.availableESCluster.active;
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
+    },
+    clearAllESCluster: function () {
+      this.selectedESCluster = [];
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
+    },
+    toggleESClusterSelection: function (cluster) {
+      if (this.selectedESCluster.includes(cluster)) { // already selected; remove from selection
+        this.selectedESCluster = this.selectedESCluster.filter((item) => {
+          return item !== cluster;
+        });
+      } else if (!this.availableESCluster.inactive.includes(cluster)) { // not in inactive cluster
+        this.selectedESCluster.push(cluster); // add to selected list
+      }
+      this.updateRouteQueryForESClusters(this.selectedESCluster);
     }
   }
 };
