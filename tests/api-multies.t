@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 33;
 use Cwd;
 use URI::Escape;
 use MolochTest;
