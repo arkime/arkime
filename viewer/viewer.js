@@ -911,7 +911,7 @@ function loadPlugins () {
     getPcap: function () { return Pcap; }
   };
   var plugins = Config.getArray('viewerPlugins', ';', '');
-  var dirs = Config.getArray('pluginsDir', ';', '/data/moloch/plugins');
+  var dirs = Config.getArray('pluginsDir', ';', `${molochversion.config_prefix}/plugins`);
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === '') {
