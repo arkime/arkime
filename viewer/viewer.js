@@ -443,8 +443,8 @@ function createSessionDetail () {
   var found = {};
   var dirs = [];
 
-  dirs = dirs.concat(Config.getArray('pluginsDir', ';', '/data/moloch/plugins'));
-  dirs = dirs.concat(Config.getArray('parsersDir', ';', '/data/moloch/parsers'));
+  dirs = dirs.concat(Config.getArray('pluginsDir', ';', `${molochversion.config_prefix}/plugins`));
+  dirs = dirs.concat(Config.getArray('parsersDir', ';', `${molochversion.config_prefix}/parsers`));
 
   dirs.forEach(function (dir) {
     try {
