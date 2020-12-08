@@ -127,7 +127,7 @@
       </b-dropdown> <!-- /views dropdown menu -->
 
       <!-- ES cluster dropdown menu -->
-      <b-dropdown v-if="showESClusterMenu"
+      <b-dropdown v-if="multiviewer"
         right
         size="sm"
         class="multies-menu-dropdown pull-right ml-1"
@@ -139,7 +139,7 @@
         <template slot="button-content">
           <span class="fa fa-database"
             v-b-tooltip.hover.right
-            title="Elasticsearch clusters">
+            :title="esMenuHoverText">
           </span>
         </template>
         <b-dropdown-header>
@@ -370,7 +370,8 @@ export default {
       message: undefined,
       messageType: undefined,
       updateTime: false,
-      editableView: undefined // Not necessarily active view
+      editableView: undefined, // Not necessarily active view
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -399,6 +400,15 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    esMenuHoverText: function () {
+      if (this.selectedESCluster.length === 0) {
+        return 'No Selection';
+      } else if (this.selectedESCluster.length === 1) {
+        return this.selectedESCluster[0];
+      } else {
+        return this.selectedESCluster.length + ' out of ' + this.availableESCluster.active.length + ' selected';
+      }
+    },
     availableESCluster: {
       get: function () {
         return this.$store.state.esCluster.availableCluster;
@@ -413,14 +423,6 @@ export default {
       },
       set: function (newValue) {
         this.$store.commit('setSelectedESCluster', newValue);
-      }
-    },
-    showESClusterMenu: {
-      get: function () {
-        return this.$store.state.multiEsEnabled;
-      },
-      set: function (newValue) {
-        this.$store.commit('setMultiEsStatus', newValue);
       }
     },
     filteredESClusteres: function () {
@@ -455,7 +457,6 @@ export default {
   created: function () {
     this.getViews();
     this.getMolochClusters();
-    this.getMultiESEnabled();
     this.getESClusterInformation();
   },
   methods: {
@@ -608,12 +609,6 @@ export default {
           });
       }
     },
-    getMultiESEnabled: function () {
-      ConfigService.isMultiESEnabled()
-        .then((response) => {
-          this.showESClusterMenu = response;
-        });
-    },
     isESClusterVis: function (cluster) {
       if (this.availableESCluster.active.includes(cluster)) { // found in active cluster list
         return this.selectedESCluster.includes(cluster); // returns True if found in selected cluster list
@@ -622,12 +617,15 @@ export default {
       }
     },
     updateRouteQueryForESClusters: function (clusters) {
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          escluster: clusters.length > 0 ? clusters.join(',') : 'none'
-        }
-      });
+      var escluster = clusters.length > 0 ? clusters.join(',') : 'none';
+      if (this.$route.query.escluster !== escluster) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            escluster: escluster
+          }
+        });
+      }
     },
     /**
      * If the start/stop time has changed:

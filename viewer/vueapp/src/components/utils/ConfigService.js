@@ -92,17 +92,5 @@ export default {
           reject(error);
         });
     });
-  },
-
-  isMultiESEnabled: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('multienabled')
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
-    });
   }
-
 };

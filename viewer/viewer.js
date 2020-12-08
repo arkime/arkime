@@ -6644,14 +6644,6 @@ if (Config.get('regressionTests')) {
 // ----------------------------------------------------------------------------
 // MultiES
 // ----------------------------------------------------------------------------
-app.get('/multienabled', (req, res) => {
-  var isMultiESEnabled = false;
-  if (Config.get('multiES', false)) {
-    isMultiESEnabled = true;
-  }
-  res.send(isMultiESEnabled);
-});
-
 app.get('/esclusters', (req, res) => {
   Db.getClusterDetails((err, results) => {
     var clusters = { active: [], inactive: [] };
