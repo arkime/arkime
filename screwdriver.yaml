@@ -40,7 +40,7 @@ jobs:
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key both-arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
 
                   mv /opt/arkime /data/moloch
-                  scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch"
+                  scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
                   (cd capture ; make install)
                   (cd release ; make install)
                   cp viewer/version.js /data/moloch/viewer/
