@@ -1,4 +1,4 @@
-use Test::More tests => 58;
+use Test::More tests => 60;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,13 +9,10 @@ use strict;
 
 my $pwd = "*/pcap";
 
-sub get {
-my ($url) = @_;
+sub testMulti {
+    my ($json, $mjson, $url) = @_;
 
-    my $json = viewerGet($url);
-    my $mjson = multiGet($url);
-
-    # Health might be different
+    # health might be different
     delete $json->{health};
     delete $mjson->{health};
 
@@ -26,6 +23,28 @@ my ($url) = @_;
     eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
 
     return $json
+}
+
+sub get {
+    my ($url) = @_;
+
+    my $json = viewerGet($url);
+    my $mjson = multiGet($url);
+
+    $json = testMulti($json, $mjson, $url);
+
+    return $json;
+}
+
+sub post {
+    my ($url, $content) = @_;
+
+    my $json = viewerPost($url, $content);
+    my $mjson = multiPost($url, $content);
+
+    $json = testMulti($json, $mjson, $url);
+
+    return $json;
 }
 
 sub getBinary {
@@ -87,8 +106,10 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
-# Check ip.protocol=blah
+# Check ip.protocol=blah (GET and POST)
     my $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
+    my $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression":"file=' . $pwd . '/bigendian.pcap&&ip.protocol==blah"}');
     is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # csv
@@ -132,14 +153,14 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # Check file != blah.pcap
     my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     is ($json->{recordsFiltered}, 6, "file ==");
-    my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file!=$pwd/bigendian.pcap&&file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    my $json = post("/api/sessions", '{"date": -1, "expression": "file!=' . $pwd . '/bigendian.pcap&&file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
     is ($json->{recordsFiltered}, 5, "file !=");
 
 # Check file == EXISTS!
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     is ($json->{recordsFiltered}, 6, "file == EXISTS!");
 
-# buildquery should return a query and indices for GET and POSt
+# buildquery should return a query and indices for GET and POST
     $json = viewerGet("/api/buildquery");
     ok (exists $json->{esquery}, "buildquery returns esquery");
     ok (exists $json->{indices}, "buildquery returns indices");
