@@ -27,7 +27,7 @@
 #include <sched.h>
 #endif
 #include "pcap.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 
 #ifndef BUILD_VERSION
 #define BUILD_VERSION "unkn"
@@ -90,7 +90,7 @@ gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpo
 
 LOCAL  GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
@@ -161,7 +161,7 @@ void parse_args(int argc, char **argv)
     config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs || config.pcapFileLists);
 
     if (!config.configFile)
-        config.configFile = g_strdup("/data/moloch/etc/config.ini");
+        config.configFile = g_strdup(CONFIG_PREFIX "/etc/config.ini");
 
     if (showVersion || config.debug) {
         printf("moloch-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);

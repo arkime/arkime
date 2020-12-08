@@ -21,7 +21,7 @@ DAQ=2.0.7
 NODE=12.19.0
 NGHTTP2=1.42.0
 
-TDIR="/data/moloch"
+TDIR="/opt/arkime"
 DOPFRING=0
 DODAQ=0
 DOCLEAN=0
@@ -62,7 +62,7 @@ do
     ;;
   --help)
     echo "Make it easier to build Arkime!  This will download and build thirdparty libraries plus build Arkime."
-    echo "--dir <directory>   = The directory to install everything into [/data/moloch]"
+    echo "--dir <directory>   = The directory to install everything into [$TDIR]"
     echo "--clean             = Do a 'make clean' first"
     echo "--rminstall         = Do a 'rm -rf <dir>' first"
     echo "--install           = Do a 'make install' at the end, adding our node to the path"
