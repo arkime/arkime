@@ -43,7 +43,7 @@ jobs:
                 rm -rf /data/moloch
                 mv /opt/arkime /data/moloch
                 scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
-                (cd capture ; make install)
+                scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
@@ -81,7 +81,7 @@ jobs:
                 rm -rf /data/moloch
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
-                (cd capture ; make install)
+                (cd capture ; make clean; make; make install)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
@@ -123,7 +123,7 @@ jobs:
                 rm -rf /data/moloch
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
-                (cd capture ; make install)
+                (cd capture ; make clean; make; make install)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
@@ -173,7 +173,7 @@ jobs:
                 rm -rf /data/moloch
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
-                (cd capture ; make clean; make install)
+                (cd capture ; make clean; make; make install)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
@@ -225,7 +225,7 @@ jobs:
                 rm -rf /data/moloch
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
-                (cd capture ; make clean; make install)
+                (cd capture ; make clean; make; make install)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
