@@ -2,7 +2,7 @@
 
 const async = require('async');
 
-module.exports = (Db, Config, molochparser, internals) => {
+module.exports = (Config, Db, molochparser, internals) => {
   let module = {};
 
   module.addAuth = (info, user, node, secret) => {

@@ -4,7 +4,7 @@ const async = require('async');
 
 let fieldsMap;
 
-module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
+module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   let module = {};
 
   if (!fieldsMap) {

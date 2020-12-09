@@ -1456,7 +1456,7 @@ export default {
     },
     /* Fetches capture stats to show the last time each capture node started */
     getCaptureStats: function () {
-      this.$http.get('stats.json')
+      this.$http.get('api/stats')
         .then((response) => {
           for (let data of response.data.data) {
             this.capStartTimes.push({
