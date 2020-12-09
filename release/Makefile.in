@@ -21,6 +21,8 @@ install:
 	chmod 0755 @prefix@/bin/arkime_update_geo.sh @prefix@/bin/arkime_add_user.sh @prefix@/bin/Configure
 
 installmoloch:
+	rm -f @prefix@/etc/arkime*
+	rm -f @prefix@/bin/arkime*
 	$(INSTALL) README.txt @prefix@
 	$(INSTALL) ../LICENSE @prefix@
 	@mkdir -p $(etcdir) @prefix@/logs

@@ -46,7 +46,6 @@ jobs:
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
@@ -85,7 +84,6 @@ jobs:
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
@@ -128,7 +126,6 @@ jobs:
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
@@ -179,7 +176,6 @@ jobs:
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
@@ -232,13 +228,12 @@ jobs:
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
                 fi
 
         secrets:
@@ -284,27 +279,24 @@ jobs:
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch
+            - build: ./easybutton-build.sh --daq --pfring --rminstall
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
-            - cp -r capture/plugins/lua/samples /data/moloch/lua
+            - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
-
-                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | head -n 1`
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
+                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu16_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}_ubuntu16_amd64.deb --acl public-read
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/sanitize/arkime-${MOLOCH_FILE_NAME}_ubuntu16_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/arkime-${MOLOCH_FILE_NAME}_ubuntu16_amd64.deb --acl public-read
                 fi
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -322,7 +314,7 @@ jobs:
                 echo ARKIME_VERSION: $ARKIME_VERSION
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   MSG=`git log -1 --format=%s`
-                  BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - moloch-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
+                  BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
                   curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
                 fi
         secrets:
