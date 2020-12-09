@@ -600,7 +600,8 @@ export default {
       infoFieldVisMenuOpen: false,
       stickyHeader: false,
       tableHeaderOverflow: undefined,
-      showFitButton: false
+      showFitButton: false,
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   created: function () {
@@ -723,8 +724,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -734,7 +737,6 @@ export default {
               }
               return;
             }
-
             this.loadData(updateTable);
           });
       } else if (runNewQuery) {
@@ -786,7 +788,6 @@ export default {
 
       this.stickySessions = [];
     },
-
     /* TABLE SORTING */
     /**
      * Determines if the table is being sorted by specified column
@@ -1361,6 +1362,18 @@ export default {
     loadData: function (updateTable) {
       this.loading = true;
       this.error = '';
+
+      if (this.multiviewer) {
+        var availableESCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkESClusterSelection(this.query.escluster, availableESCluster);
+        if (!selection.valid) { // invlaid selection
+          pendingPromise = null;
+          this.sessions.data = undefined;
+          this.error = selection.error;
+          this.dataLoading = false;
+          return;
+        }
+      }
 
       // save expanded sessions
       let expandedSessions = [];

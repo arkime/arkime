@@ -35,8 +35,11 @@ const store = new Vuex.Store({
     sortsParam: 'firstPacket:desc',
     stickySessionsBtn: false,
     esCluster: {
-      availableCluster: undefined,
-      selectedCluster: undefined
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
     },
     multiEsEnabled: false
   },

@@ -383,6 +383,9 @@ import MolochSearch from '../search/Search';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 
+// import utils
+import Utils from '../utils/utils';
+
 const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
 
 let newQuery = true;
@@ -424,7 +427,8 @@ export default {
       // field config vars
       newFieldConfigName: '',
       fieldConfigError: '',
-      fieldConfigSuccess: ''
+      fieldConfigSuccess: '',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -901,6 +905,17 @@ export default {
     },
     getSpiData: function (spiQuery) {
       if (!spiQuery) { return; }
+
+      if (this.multiviewer) {
+        var availableESCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkESClusterSelection(this.query.escluster, availableESCluster);
+        if (!selection.valid) { // invlaid selection
+          pendingPromise = null;
+          this.error = selection.error;
+          this.dataLoading = false;
+          return;
+        }
+      }
 
       // reset loading counts for categories
       categoryLoadingCounts = {};

@@ -591,7 +591,8 @@ export default {
       closePopups: closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
-      weight: 'sessions'
+      weight: 'sessions',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -708,8 +709,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -863,6 +866,19 @@ export default {
     loadData: function () {
       this.error = '';
       this.loading = true;
+
+      if (this.multiviewer) {
+        var availableESCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkESClusterSelection(this.query.escluster, availableESCluster);
+        if (!selection.valid) { // invlaid selection
+          this.getFields({ nodes: [], links: [] });
+          this.recordsFiltered = 0;
+          pendingPromise = null;
+          this.error = selection.error;
+          this.loading = false;
+          return;
+        }
+      }
 
       if (!this.$route.query.srcField) {
         this.query.srcField = this.user.settings.connSrcField;
@@ -1540,25 +1556,28 @@ export default {
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
     d3.zoom().on('zoom', null);
-    simulation.on('tick', null);
+    if (simulation) { simulation.on('tick', null); }
     d3.drag()
       .on('start', null)
       .on('drag', null)
       .on('end', null);
-    node.on('mouseover', null)
-      .on('mouseout', null);
-    link.on('mouseover', null)
-      .on('mouseout', null);
 
-    // remove svg elements
-    node.exit().remove();
-    link.exit().remove();
-    nodeLabel.exit().remove();
-    svg.selectAll('.link').remove();
-    svg.selectAll('.node').remove();
-    svg.selectAll('.node-label').remove();
-    container.remove();
-    svg.remove();
+    if (svg) {
+      node.on('mouseover', null)
+        .on('mouseout', null);
+      link.on('mouseover', null)
+        .on('mouseout', null);
+
+      // remove svg elements
+      node.exit().remove();
+      link.exit().remove();
+      nodeLabel.exit().remove();
+      svg.selectAll('.link').remove();
+      svg.selectAll('.node').remove();
+      svg.selectAll('.node-label').remove();
+      container.remove();
+      svg.remove();
+    }
 
     // destroy child component
     $('.connections-popup').remove();
