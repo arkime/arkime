@@ -6645,16 +6645,20 @@ if (Config.get('regressionTests')) {
 // MultiES
 // ----------------------------------------------------------------------------
 app.get('/esclusters', (req, res) => {
-  Db.getClusterDetails((err, results) => {
-    var clusters = { active: [], inactive: [] };
-    if (err) {
-      console.log('Error: ' + err);
-    } else if (results) {
-      clusters.active = results.active;
-      clusters.inactive = results.inactive;
-    }
+  var clusters = { active: [], inactive: [] };
+  if (Config.get('multiES', false)) {
+    Db.getClusterDetails((err, results) => {
+      if (err) {
+        console.log('Error: ' + err);
+      } else if (results) {
+        clusters.active = results.active;
+        clusters.inactive = results.inactive;
+      }
+      res.send(clusters);
+    });
+  } else {
     res.send(clusters);
-  });
+  }
 });
 
 // ============================================================================
