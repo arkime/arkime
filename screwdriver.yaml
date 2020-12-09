@@ -44,8 +44,9 @@ jobs:
                 mv /opt/arkime /data/moloch
                 scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
@@ -82,8 +83,9 @@ jobs:
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
@@ -124,8 +126,9 @@ jobs:
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
@@ -174,8 +177,9 @@ jobs:
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
@@ -226,8 +230,9 @@ jobs:
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
@@ -260,6 +265,9 @@ jobs:
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
+
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | head -n 1 | tr "-" "_"`
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
@@ -289,6 +297,9 @@ jobs:
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
+
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
