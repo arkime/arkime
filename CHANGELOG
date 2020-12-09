@@ -20,6 +20,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 3.0.0 2021/01/xx
+  - release - curl 7.74.0
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
