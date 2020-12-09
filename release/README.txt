@@ -7,8 +7,7 @@ Basic Arkime Installation steps:
  3) Configure basic moloch items by running the Configure script (this needs to be done only once)
      /data/moloch/bin/Configure
  4) The Configure script can install elasticsearch for you or you can install yourself
-      /sbin/start elasticsearch # for upstart/Centos 6/Ubuntu 14.04
-      systemctl start elasticsearch.service # for systemd/Centos 7/Ubuntu 16.04
+      systemctl start elasticsearch.service
  5) Initialize/Upgrade Elasticsearch Arkime configuration
   a) If this is the first install, or want to delete all data
       /data/moloch/db/db.pl http://ESHOST:9200 init
@@ -17,10 +16,6 @@ Basic Arkime Installation steps:
  6) Add an admin user if a new install or after an init
       /data/moloch/bin/moloch_add_user.sh admin "Admin User" THEPASSWORD --admin
  7) Start everything
-   a) If using upstart (Centos 6 or sometimes Ubuntu 14.04):
-      /sbin/start molochcapture
-      /sbin/start molochviewer
-   b) If using systemd (Centos 7 or Ubuntu 16.04 or sometimes Ubuntu 14.04)
       systemctl start molochcapture.service
       systemctl start molochviewer.service
  8) Look at log files for errors

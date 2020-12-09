@@ -15,9 +15,9 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-MOLOCH_NAME=BUILD_MOLOCH_NAME
-if [ "$MOLOCH_NAME" == "BUILD_MOLOCH_NAME" ]; then
-    MOLOCH_NAME=moloch
+ARKIME_NAME=BUILD_MOLOCH_NAME
+if [ "$ARKIME_NAME" == "BUILD_ARKIME_NAME" ]; then
+    ARKIME_NAME=arkime
 fi
 
 MOLOCH_INSTALL_DIR=BUILD_MOLOCH_INSTALL_DIR
@@ -35,14 +35,12 @@ if [ "$1" == "--wise" ]; then
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         echo "Installing systemd start files, use systemctl"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.systemd.service > /etc/systemd/system/molochwise.service
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimewise.systemd.service > /etc/systemd/system/arkimewise.service
         systemctl daemon-reload
-        systemctl enable molochwise
-        systemctl start molochwise
-    elif [ -d "/etc/init" ]; then
-        echo "Installing upstart start files, use start"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochwise.upstart.conf > /etc/init/molochwise.conf
-        start molochwise
+        systemctl enable arkimewise
+        systemctl start arkimewise
+    else
+        echo "No startup scripts created for wise"
     fi
 
 
@@ -52,14 +50,12 @@ fi
 if [ "$1" == "--parliament" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         echo "Installing systemd start files, use systemctl"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.systemd.service > /etc/systemd/system/molochparliament.service
+        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimeparliament.systemd.service > /etc/systemd/system/arkimeparliament.service
         systemctl daemon-reload
-        systemctl enable molochparliament
-        systemctl start molochparliament
-    elif [ -d "/etc/init" ]; then
-        echo "Installing upstart start files, use 'start molochparliament'"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochparliament.upstart.conf > /etc/init/molochparliament.conf
-        start molochparliament
+        systemctl enable arkimeparliament
+        systemctl start arkimeparliament
+    else
+        echo "No startup scripts created for parliament"
     fi
 
     exit 0;
@@ -121,12 +117,8 @@ fi
 
 if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
     echo "Installing systemd start files, use systemctl"
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.systemd.service > /etc/systemd/system/molochcapture.service
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.systemd.service > /etc/systemd/system/molochviewer.service
-elif [ -d "/etc/init" ]; then
-    echo "Installing upstart start files, use start"
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochcapture.upstart.conf > /etc/init/molochcapture.conf
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/molochviewer.upstart.conf > /etc/init/molochviewer.conf
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimecapture.systemd.service > /etc/systemd/system/arkimecapture.service
+    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimeviewer.systemd.service > /etc/systemd/system/arkimeviewer.service
 else
     echo "No startup scripts created for capture and viewer"
 fi

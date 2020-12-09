@@ -142,7 +142,7 @@ void reader_pfring_init(char *UNUSED(name))
         }
 
         pfring_set_cluster(rings[i], clusterId, cluster_per_flow_5_tuple);
-        pfring_set_application_name(rings[i], "moloch-capture");
+        pfring_set_application_name(rings[i], "arkime-capture");
         pfring_set_poll_watermark(rings[i], 64);
         pfring_enable_rss_rehash(rings[i]);
     }

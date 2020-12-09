@@ -164,7 +164,7 @@ void parse_args(int argc, char **argv)
         config.configFile = g_strdup(CONFIG_PREFIX "/etc/config.ini");
 
     if (showVersion || config.debug) {
-        printf("moloch-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
+        printf("arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
     }
 
     if (showVersion) {
