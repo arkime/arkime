@@ -151,11 +151,11 @@
         </b-dropdown-header>
         <b-dropdown-divider>
         </b-dropdown-divider>
-         <b-dropdown-item @click="selectAllESCluster">
+         <b-dropdown-item @click.native.capture.stop.prevent="selectAllESCluster">
           <span class="fa fa-list"></span>&nbsp;
           Select All
         </b-dropdown-item>
-        <b-dropdown-item @click="clearAllESCluster">
+        <b-dropdown-item @click.native.capture.stop.prevent="clearAllESCluster">
           <span class="fa fa-eraser"></span>&nbsp;
           Clear All
         </b-dropdown-item>
@@ -173,7 +173,7 @@
                 :id="group + cluster + 'item'"
                 :key="group + cluster + 'item'"
                 :class="{'active':isESClusterVis(cluster)}"
-                @click.stop.prevent="toggleESClusterSelection(cluster)">
+                @click.native.capture.stop.prevent="toggleESClusterSelection(cluster)">
                 {{ cluster }}
               </b-dropdown-item>
             </template>
