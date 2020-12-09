@@ -618,7 +618,7 @@ export default {
     },
     updateRouteQueryForESClusters: function (clusters) {
       var escluster = clusters.length > 0 ? clusters.join(',') : 'none';
-      if (this.$route.query.escluster && this.$route.query.escluster !== escluster) {
+      if (!this.$route.query.escluster || this.$route.query.escluster !== escluster) {
         this.$router.push({
           query: {
             ...this.$route.query,
