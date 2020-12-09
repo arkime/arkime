@@ -15,27 +15,27 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-ARKIME_NAME=BUILD_MOLOCH_NAME
+ARKIME_NAME=BUILD_ARKIME_NAME
 if [ "$ARKIME_NAME" == "BUILD_ARKIME_NAME" ]; then
     ARKIME_NAME=arkime
 fi
 
-MOLOCH_INSTALL_DIR=BUILD_MOLOCH_INSTALL_DIR
-if [ "$MOLOCH_INSTALL_DIR" == "BUILD_MOLOCH_""INSTALL_DIR" ]; then
-MOLOCH_INSTALL_DIR=/data/$MOLOCH_NAME
+ARKIME_INSTALL_DIR=BUILD_ARKIME_INSTALL_DIR
+if [ "$ARKIME_INSTALL_DIR" == "BUILD_ARKIME_""INSTALL_DIR" ]; then
+ARKIME_INSTALL_DIR=/opt/$ARKIME_NAME
 fi
 
 if [ "$1" == "--wise" ]; then
-    if [ ! -f "$MOLOCH_INSTALL_DIR/etc/wise.ini" ]; then
-        sed -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/wise.ini.sample > $MOLOCH_INSTALL_DIR/etc/wise.ini
+    if [ ! -f "$ARKIME_INSTALL_DIR/etc/wise.ini" ]; then
+        sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/wise.ini.sample > $ARKIME_INSTALL_DIR/etc/wise.ini
     else
-        echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
+        echo "Not overwriting $ARKIME_INSTALL_DIR/etc/wise.ini, delete and run again if update required (usually not), or edit by hand"
         sleep 1
     fi
 
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         echo "Installing systemd start files, use systemctl"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimewise.systemd.service > /etc/systemd/system/arkimewise.service
+        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimewise.systemd.service > /etc/systemd/system/arkimewise.service
         systemctl daemon-reload
         systemctl enable arkimewise
         systemctl start arkimewise
@@ -50,7 +50,7 @@ fi
 if [ "$1" == "--parliament" ]; then
     if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
         echo "Installing systemd start files, use systemctl"
-        sed -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimeparliament.systemd.service > /etc/systemd/system/arkimeparliament.service
+        sed -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeparliament.systemd.service > /etc/systemd/system/arkimeparliament.service
         systemctl daemon-reload
         systemctl enable arkimeparliament
         systemctl start arkimeparliament
@@ -63,7 +63,7 @@ fi
 
 ################################################################################
 ### Ask config questions
-if [ -z "$MOLOCH_INTERFACE" ]; then
+if [ -z "$ARKIME_INTERFACE" ]; then
     echo -n "Found interfaces: "
     if [ ! -f /sbin/ifconfig ]; then
         ip -o link | cut -f2 -d: | tr '\n' ' ' | sed 's/ \+/ /ig' | sed 's/ //1' | sed 's/[[:blank:]]*$//' | tr ' ' ';' | sed 's/$/\n/'
@@ -71,18 +71,18 @@ if [ -z "$MOLOCH_INTERFACE" ]; then
         /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
     fi
     echo -n "Semicolon ';' seperated list of interfaces to monitor [eth1] "
-    read -r MOLOCH_INTERFACE
+    read -r ARKIME_INTERFACE
 fi
-if [ -z "$MOLOCH_INTERFACE" ]; then MOLOCH_INTERFACE="eth1"; fi
+if [ -z "$ARKIME_INTERFACE" ]; then ARKIME_INTERFACE="eth1"; fi
 
-MOLOCH_LOCALELASTICSEARCH=not-set
-until [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ] || [ "$MOLOCH_LOCALELASTICSEARCH" == "no" ] || [ "$MOLOCH_LOCALELASTICSEARCH" == "" ]; do
+ARKIME_LOCALELASTICSEARCH=not-set
+until [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ] || [ "$ARKIME_LOCALELASTICSEARCH" == "no" ] || [ "$ARKIME_LOCALELASTICSEARCH" == "" ]; do
     echo -n "Install Elasticsearch server locally for demo, must have at least 3G of memory, NOT recommended for production use (yes or no) [no] "
-    read -r MOLOCH_LOCALELASTICSEARCH
+    read -r ARKIME_LOCALELASTICSEARCH
 done
 
-if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
-    MOLOCH_ELASTICSEARCH="http://localhost:9200"
+if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
+    ARKIME_ELASTICSEARCH="http://localhost:9200"
     which java
     JAVA_VAL=$?
 
@@ -90,35 +90,35 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
         echo "java command not found, make sure java is installed and in the path and run again"
     fi
 else
-    if [ -z "$MOLOCH_ELASTICSEARCH" ]; then
+    if [ -z "$ARKIME_ELASTICSEARCH" ]; then
         echo -n "Elasticsearch server URL [http://localhost:9200] "
-        read -r MOLOCH_ELASTICSEARCH
+        read -r ARKIME_ELASTICSEARCH
     fi
-    if [ -z "$MOLOCH_ELASTICSEARCH" ]; then MOLOCH_ELASTICSEARCH="http://localhost:9200"; fi
+    if [ -z "$ARKIME_ELASTICSEARCH" ]; then ARKIME_ELASTICSEARCH="http://localhost:9200"; fi
 fi
 
-while [ -z "$MOLOCH_PASSWORD" ]; do
+while [ -z "$ARKIME_PASSWORD" ]; do
     echo -n "Password to encrypt S2S and other things [no-default] "
-    read -r MOLOCH_PASSWORD
+    read -r ARKIME_PASSWORD
 done
-if [ -z "$MOLOCH_PASSWORD" ]; then echo "Must provide a password"; exit; fi
+if [ -z "$ARKIME_PASSWORD" ]; then echo "Must provide a password"; exit; fi
 
 
 ################################################################################
-echo "Moloch - Creating configuration files"
-if [ ! -f "$MOLOCH_INSTALL_DIR/etc/config.ini" ]; then
-    echo sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/config.ini.sample > $MOLOCH_INSTALL_DIR/etc/config.ini
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/config.ini.sample > $MOLOCH_INSTALL_DIR/etc/config.ini
+echo "Arkime - Creating configuration files"
+if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
+    echo sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
+    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
 else
-    echo "Not overwriting $MOLOCH_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
+    echo "Not overwriting $ARKIME_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
     sleep 2
 fi
 
 
 if [ -d "/etc/systemd" ] && [ -x "/bin/systemctl" ]; then
     echo "Installing systemd start files, use systemctl"
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimecapture.systemd.service > /etc/systemd/system/arkimecapture.service
-    sed -e "s/MOLOCH_INTERFACE/${MOLOCH_INTERFACE}/g" -e "s,MOLOCH_ELASTICSEARCH,${MOLOCH_ELASTICSEARCH},g" -e "s/MOLOCH_PASSWORD/${MOLOCH_PASSWORD}/g" -e "s,MOLOCH_INSTALL_DIR,${MOLOCH_INSTALL_DIR},g" < $MOLOCH_INSTALL_DIR/etc/arkimeviewer.systemd.service > /etc/systemd/system/arkimeviewer.service
+    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimecapture.systemd.service > /etc/systemd/system/arkimecapture.service
+    sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/arkimeviewer.systemd.service > /etc/systemd/system/arkimeviewer.service
 else
     echo "No startup scripts created for capture and viewer"
 fi
@@ -127,9 +127,9 @@ fi
 # re-create these directories after installation so they are not part of the package manifest
 CREATEDIRS="logs raw"
 for CREATEDIR in $CREATEDIRS; do
-    if [ ! -e $MOLOCH_INSTALL_DIR/$CREATEDIR ]; then
-        mkdir -m 0700 -p $MOLOCH_INSTALL_DIR/$CREATEDIR && \
-        chown nobody $MOLOCH_INSTALL_DIR/$CREATEDIR
+    if [ ! -e $ARKIME_INSTALL_DIR/$CREATEDIR ]; then
+        mkdir -m 0700 -p $ARKIME_INSTALL_DIR/$CREATEDIR && \
+        chown nobody $ARKIME_INSTALL_DIR/$CREATEDIR
     fi
 done
 
@@ -144,8 +144,8 @@ case $ARCHRPM in
         ;;
 esac
 
-if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
-    echo "Moloch - Downloading and installing demo OSS version of Elasticsearch"
+if [ "$ARKIME_LOCALELASTICSEARCH" == "yes" ]; then
+    echo "Arkime - Downloading and installing demo OSS version of Elasticsearch"
     ES_VERSION=7.7.1
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHRPM}.rpm
@@ -157,11 +157,11 @@ if [ "$MOLOCH_LOCALELASTICSEARCH" == "yes" ]; then
 fi
 
 ################################################################################
-if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$MOLOCH_NAME" ]; then
-    echo "Moloch - Installing /etc/logrotate.d/$MOLOCH_NAME to rotate files after 7 days"
-    cat << EOF > /etc/logrotate.d/$MOLOCH_NAME
-$MOLOCH_INSTALL_DIR/logs/capture.log
-$MOLOCH_INSTALL_DIR/logs/viewer.log {
+if [ -d "/etc/logrotate.d" ] && [ ! -f "/etc/logrotate.d/$ARKIME_NAME" ]; then
+    echo "Arkime - Installing /etc/logrotate.d/$ARKIME_NAME to rotate files after 7 days"
+    cat << EOF > /etc/logrotate.d/$ARKIME_NAME
+$ARKIME_INSTALL_DIR/logs/capture.log
+$ARKIME_INSTALL_DIR/logs/viewer.log {
     daily
     rotate 7
     notifempty
@@ -171,8 +171,8 @@ EOF
 fi
 
 ################################################################################
-INTERFACES=${MOLOCH_INTERFACE//;/ }
-cat << EOF > $MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
+INTERFACES=${ARKIME_INTERFACE//;/ }
+cat << EOF > $ARKIME_INSTALL_DIR/bin/moloch_config_interfaces.sh
 #!/bin/sh
 for interface in $INTERFACES; do
   /sbin/ethtool -G \$interface rx 4096 tx 4096 || true
@@ -181,11 +181,11 @@ for interface in $INTERFACES; do
   done
 done
 EOF
-chmod a+x $MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
+chmod a+x $ARKIME_INSTALL_DIR/bin/moloch_config_interfaces.sh
 
 ################################################################################
 if [ -d "/etc/security/limits.d" ] && [ ! -f "/etc/security/limits.d/99-moloch.conf" ]; then
-    echo "Moloch - Installing /etc/security/limits.d/99-moloch.conf to make core and memlock unlimited"
+    echo "Arkime - Installing /etc/security/limits.d/99-moloch.conf to make core and memlock unlimited"
     cat << EOF > /etc/security/limits.d/99-moloch.conf
 nobody  -       core    unlimited
 root    -       core    unlimited
@@ -196,23 +196,23 @@ fi
 
 ################################################################################
 
-MOLOCH_INET=not-set
-until [ "$MOLOCH_INET" == "yes" ] || [ "$MOLOCH_INET" == "no" ] || [ "$MOLOCH_INET" == "" ]; do
+ARKIME_INET=not-set
+until [ "$ARKIME_INET" == "yes" ] || [ "$ARKIME_INET" == "no" ] || [ "$ARKIME_INET" == "" ]; do
     echo -n "Download GEO files? (yes or no) [yes] "
-    read -r MOLOCH_INET
+    read -r ARKIME_INET
 done
 
-if [ "$MOLOCH_INET" != "no" ]; then
-    echo "Moloch - Downloading GEO files"
-    $MOLOCH_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
+if [ "$ARKIME_INET" != "no" ]; then
+    echo "Arkime - Downloading GEO files"
+    $ARKIME_INSTALL_DIR/bin/moloch_update_geo.sh > /dev/null
 else
-    echo "Moloch - NOT downloading GEO files"
+    echo "Arkime - NOT downloading GEO files"
 fi
 
 
 ################################################################################
 echo ""
-echo "Moloch - Configured - Now continue with step 4 in $MOLOCH_INSTALL_DIR/README.txt"
+echo "Arkime - Configured - Now continue with step 4 in $ARKIME_INSTALL_DIR/README.txt"
 echo ""
-tail -n +10 $MOLOCH_INSTALL_DIR/README.txt
+tail -n +10 $ARKIME_INSTALL_DIR/README.txt
 

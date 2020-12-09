@@ -109,7 +109,7 @@ app.locals.isIndex = false;
 app.locals.basePath = Config.basePath();
 app.locals.elasticBase = internals.elasticBase[0];
 app.locals.allowUploads = Config.get('uploadCommand') !== undefined;
-app.locals.molochClusters = Config.configMap('moloch-clusters');
+app.locals.molochClusters = Config.configMap('arkime-clusters', Config.configMap('moloch-clusters'));
 
 app.use(passport.initialize());
 app.use(bodyParser.json());
@@ -1478,15 +1478,15 @@ function sendSessionWorker (options, cb) {
       session.tags = session.tags.concat(tags);
     }
 
-    var molochClusters = Config.configMap('moloch-clusters');
+    var molochClusters = app.locals.molochClusters;
     if (!molochClusters) {
-      console.log('ERROR - sendSession is not configured');
+      console.log('ERROR - [arkime-clusters] is not configured');
       return cb();
     }
 
     var sobj = molochClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - moloch-clusters is not configured for ' + options.cluster);
+      console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
       return cb();
     }
 
@@ -2662,14 +2662,8 @@ app.get('/molochclusters', function (req, res) {
   }
 
   if (!app.locals.molochClusters) {
-    var molochClusters = Config.configMap('moloch-clusters');
-
-    if (!molochClusters) {
-      res.status(404);
-      return res.send('Cannot locate right clicks');
-    }
-
-    return res.send(cloneClusters(molochClusters));
+    res.status(404);
+    return res.send('Cannot locate arkime clusters');
   }
 
   var clustersClone = cloneClusters(app.locals.molochClusters);

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-DEST_DIR="${MOLOCH_DIR:-BUILD_MOLOCH_INSTALL_DIR}/etc"
+DEST_DIR="${MOLOCH_DIR:-BUILD_ARKIME_INSTALL_DIR}/etc"
 TIMEOUT=${WGET_TIMEOUT:-30}
 
 # Check we have a number for timeout

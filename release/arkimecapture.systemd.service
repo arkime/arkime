@@ -1,15 +1,15 @@
 [Unit]
-Description=Moloch Capture
+Description=Arkime Capture
 After=network.target
 
 [Service]
 Type=simple
 Restart=on-failure
 StandardOutput=tty
-EnvironmentFile=-MOLOCH_INSTALL_DIR/etc/molochcapture.env
-ExecStartPre=-MOLOCH_INSTALL_DIR/bin/moloch_config_interfaces.sh
-ExecStart=/bin/sh -c 'MOLOCH_INSTALL_DIR/bin/moloch-capture -c MOLOCH_INSTALL_DIR/etc/config.ini ${OPTIONS} >> MOLOCH_INSTALL_DIR/logs/capture.log 2>&1'
-WorkingDirectory=MOLOCH_INSTALL_DIR
+EnvironmentFile=-ARKIME_INSTALL_DIR/etc/molochcapture.env
+ExecStartPre=-ARKIME_INSTALL_DIR/bin/moloch_config_interfaces.sh
+ExecStart=/bin/sh -c 'ARKIME_INSTALL_DIR/bin/moloch-capture -c ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS} >> ARKIME_INSTALL_DIR/logs/capture.log 2>&1'
+WorkingDirectory=ARKIME_INSTALL_DIR
 LimitCORE=infinity
 LimitMEMLOCK=infinity
 
