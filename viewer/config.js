@@ -26,13 +26,13 @@ var ini = require('iniparser');
 var os = require('os');
 var fs = require('fs');
 var crypto = require('crypto');
-var molochversion = require('./version');
+var version = require('./version');
 
 exports.debug = 0;
 exports.insecure = false;
 exports.esProfile = false;
 var internals = {
-  configFile: `${molochversion.config_prefix}/etc/config.ini`,
+  configFile: `${version.config_prefix}/etc/config.ini`,
   hostName: os.hostname(),
   fields: [],
   fieldsMap: {},
