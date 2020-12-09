@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 #include "moloch.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <uuid/uuid.h>

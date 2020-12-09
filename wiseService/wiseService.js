@@ -42,11 +42,12 @@ const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const elasticsearch = require('elasticsearch');
 const chalk = require('chalk');
+const version = require('../viewer/version');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
 var internals = {
-  configFile: '/data/moloch/etc/wiseService.ini',
+  configFile: `${version.config_prefix}/etc/wiseService.ini`,
   debug: 0,
   insecure: false,
   fieldsTS: 0,
@@ -127,10 +128,9 @@ function processArgs (argv) {
       console.log('');
       console.log('Options:');
       console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --filedirs            A comma separated list of directories where files editable');
-      console.log('                        from web can live, default /data/moloch/wisefiles');
       console.log('  --webconfig           Allow the config to be edited from web page');
       console.log('  --workers <b>         Number of worker processes to create');
+      console.log('  --insecure            Disable cert verification');
 
       process.exit(0);
     }

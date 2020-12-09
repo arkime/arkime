@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "The moloch package is meant for folks who aren't ready for the Arkime name yet, and shouldn't be used for new installs. Please download the arkime package"

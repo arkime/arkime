@@ -120,7 +120,7 @@ sub doTests {
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
 
 
-        my $cmd = "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
@@ -233,9 +233,9 @@ sub doMake {
     foreach my $filename (@ARGV) {
         $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
         if ($main::debug) {
-          print("../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################
@@ -330,7 +330,7 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $mcmd = "../capture/moloch-capture $main::copy -c config.test.ini -n test -R pcap --flush";
+        my $mcmd = "../capture/capture $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
@@ -451,7 +451,7 @@ if ($main::cmd eq "--fix") {
     print "  --viewerstart         Viewer tests without reloading pcap\n";
     print "  --fuzz [fuzzoptions]  Run fuzzloch\n";
     print "  --fuzz2pcap           Convert a fuzzloch crash file into a pcap file\n";
-    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/moloch-capture and compare to .test file\n";
+    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include "pcap.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>

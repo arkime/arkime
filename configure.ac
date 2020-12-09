@@ -3,8 +3,8 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
 AC_CHECK_TOOL([GIT],[git],[:])
-AC_CONFIG_HEADERS([capture/molochconfig.h])
-AC_PREFIX_DEFAULT(["/data/moloch"])
+AC_CONFIG_HEADERS([capture/arkimeconfig.h])
+AC_PREFIX_DEFAULT(["/opt/arkime"])
 AC_CHECK_HEADERS([sys/inotify.h])
 AC_CONFIG_FILES([
   Makefile
@@ -47,8 +47,6 @@ darwin*)
 esac
 AC_SUBST(SHARED_FLAGS)
 AC_SUBST(UNDEFINED_FLAGS)
-
-
 
 dnl Checks for pfring
 AC_MSG_CHECKING(for pfring)
@@ -507,5 +505,9 @@ esac ], [
 AC_MSG_RESULT(yes) ])
 AC_SUBST(NGHTTP2_CFLAGS)
 AC_SUBST(NGHTTP2_LIBS)
+
+AS_IF([test "$prefix" == "NONE"],
+    [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],
+    [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$prefix", [config prefix directory])])
 
 AC_OUTPUT

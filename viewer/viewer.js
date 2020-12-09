@@ -37,7 +37,7 @@ try {
   var molochparser = require('./molochparser.js');
   var passport = require('passport');
   var DigestStrategy = require('passport-http').DigestStrategy;
-  var molochversion = require('./version');
+  var version = require('./version');
   var http = require('http');
   var https = require('https');
   var PNG = require('pngjs').PNG;
@@ -105,12 +105,11 @@ app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
-app.locals.molochversion = molochversion.version;
 app.locals.isIndex = false;
 app.locals.basePath = Config.basePath();
 app.locals.elasticBase = internals.elasticBase[0];
 app.locals.allowUploads = Config.get('uploadCommand') !== undefined;
-app.locals.molochClusters = Config.configMap('moloch-clusters');
+app.locals.molochClusters = Config.configMap('arkime-clusters', Config.configMap('moloch-clusters'));
 
 app.use(passport.initialize());
 app.use(bodyParser.json());
@@ -443,8 +442,8 @@ function createSessionDetail () {
   var found = {};
   var dirs = [];
 
-  dirs = dirs.concat(Config.getArray('pluginsDir', ';', '/data/moloch/plugins'));
-  dirs = dirs.concat(Config.getArray('parsersDir', ';', '/data/moloch/parsers'));
+  dirs = dirs.concat(Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`));
+  dirs = dirs.concat(Config.getArray('parsersDir', ';', `${version.config_prefix}/parsers`));
 
   dirs.forEach(function (dir) {
     try {
@@ -911,7 +910,7 @@ function loadPlugins () {
     getPcap: function () { return Pcap; }
   };
   var plugins = Config.getArray('viewerPlugins', ';', '');
-  var dirs = Config.getArray('pluginsDir', ';', '/data/moloch/plugins');
+  var dirs = Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`);
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === '') {
@@ -1279,7 +1278,7 @@ function writePcapNg (res, id, options, doneCb) {
     }
     res.write(b.slice(0, boffset));
 
-    session.version = molochversion.version;
+    session.version = version.version;
     delete session.packetPos;
     var json = JSON.stringify(session);
 
@@ -1479,15 +1478,15 @@ function sendSessionWorker (options, cb) {
       session.tags = session.tags.concat(tags);
     }
 
-    var molochClusters = Config.configMap('moloch-clusters');
+    var molochClusters = app.locals.molochClusters;
     if (!molochClusters) {
-      console.log('ERROR - sendSession is not configured');
+      console.log('ERROR - [arkime-clusters] is not configured');
       return cb();
     }
 
     var sobj = molochClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - moloch-clusters is not configured for ' + options.cluster);
+      console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
       return cb();
     }
 
@@ -2663,14 +2662,8 @@ app.get('/molochclusters', function (req, res) {
   }
 
   if (!app.locals.molochClusters) {
-    var molochClusters = Config.configMap('moloch-clusters');
-
-    if (!molochClusters) {
-      res.status(404);
-      return res.send('Cannot locate right clicks');
-    }
-
-    return res.send(cloneClusters(molochClusters));
+    res.status(404);
+    return res.send('Cannot locate arkime clusters');
   }
 
   var clustersClone = cloneClusters(app.locals.molochClusters);
@@ -6690,7 +6683,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     theme: theme,
     titleConfig: titleConfig,
     path: app.locals.basePath,
-    version: app.locals.molochversion,
+    version: version.version,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
