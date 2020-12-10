@@ -1166,7 +1166,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
       Promise.all([
         Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', { escluster: options.escluster || {} }),
+        Db.numberOfDocuments('sessions2-*', options.escluster ? { escluster: options.escluster } : {}),
         Db.healthCachePromise()
       ]).then(([sessions, total, health]) => {
         if (Config.debug) {
@@ -1348,7 +1348,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       let options = ViewerUtils.addCluster(req.query.escluster);
 
       Promise.all([Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', { escluster: options.escluster || {} }),
+        Db.numberOfDocuments('sessions2-*', options.escluster ? { escluster: options.escluster } : {}),
         Db.healthCachePromise()
       ]).then(([sessions, total, health]) => {
         if (Config.debug) {
@@ -1491,7 +1491,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
       Promise.all([
         Db.healthCachePromise(),
-        Db.numberOfDocuments('sessions2-*', { escluster: options.escluster || {} }),
+        Db.numberOfDocuments('sessions2-*', options.escluster ? { escluster: options.escluster } : {}),
         Db.searchPrimary(indices, 'session', query, options)
       ]).then(([health, total, result]) => {
         if (result.error) { throw result.error; }
