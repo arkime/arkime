@@ -2649,7 +2649,7 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
     var clone = {};
 
     for (var key in clusters) {
-      if (remoteClusters.hasOwnProperty(key)) {
+      if (clusters.hasOwnProperty(key)) {
         var cluster = clusters[key];
         clone[key] = {
           name: cluster.name,
