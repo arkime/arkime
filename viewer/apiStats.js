@@ -792,7 +792,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name estasks/:id/cancel
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @TODO ECR - make sure both '/api/estasks/:id/cancel' & '/estask/cancel'
    */
   module.cancelESTask = (req, res) => {
     let taskId;
@@ -817,7 +816,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name estasks/:id/cancelByUser
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @TODO ECR - make sure both '/api/estasks/:id/cancelByUser' & '/estask/cancelById'
    */
   module.cancelUserESTask = (req, res) => {
     let cancelId;
