@@ -220,9 +220,7 @@ module.exports = (Db, Config, ViewerUtils, sessionAPIs) => {
     if (req.query.cancelId) {
       options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
-    if (req.query.escluster && Config.get('multiES', false)) {
-      options._cluster = req.query.escluster;
-    }
+    options = ViewerUtils.addCluster(req.query.escluster, options);
 
     let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 

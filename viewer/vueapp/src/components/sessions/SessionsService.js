@@ -85,6 +85,7 @@ export default {
    * Gets details about the session
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
+   * @param {string} escluster  The Elasticsearch cluster that the session belongs to
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -104,18 +105,22 @@ export default {
    * Gets session packets
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
+   * @param {string} escluster  The Elasticsearch cluster that the session belongs to
    * @param {Object} params     The params to send with the request
    * @returns {Object} { promise, source } An object including a promise object
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
    */
-  getPackets: function (id, node, params) {
+  getPackets: function (id, node, escluster, params) {
     let source = Vue.axios.CancelToken.source();
 
     let promise = new Promise((resolve, reject) => {
       let options = {
         method: 'GET',
-        params: params,
+        params: {
+          ...params,
+          escluster: escluster
+        },
         cancelToken: source.token,
         url: `api/${node}/session/${id}/packets`
       };

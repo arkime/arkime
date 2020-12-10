@@ -938,6 +938,7 @@ export default {
       this.packetPromise = SessionsService.getPackets(
         this.session.id,
         this.session.node,
+        this.session.escluster,
         this.params
       );
 

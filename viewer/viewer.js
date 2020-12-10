@@ -5583,7 +5583,7 @@ app.get( // session detail (SPI) endpoint
   sessionAPIs.getDetail
 );
 
-app.get( // session packets endopint
+app.get( // session packets endpoint
   ['/api/:nodeName/session/:id/packets', '/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets

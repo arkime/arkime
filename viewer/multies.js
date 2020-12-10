@@ -118,25 +118,6 @@ function node2Prefix (node) {
   return '';
 }
 
-function removeClusterFromQueryUrl (url) {
-  var base = url.split('?')[0];
-  var query = url.split('?')[1];
-  if (query) {
-    var queryArray = query.split('&');
-    var newQuery = [];
-    for (var i = 0; i < queryArray.length; i++) {
-      if (queryArray[i].indexOf('_cluster') === -1) {
-        newQuery.push(queryArray[i]);
-      }
-    }
-   newQuery = newQuery.join('&');
-   newQuery = newQuery.length > 0 ? '?' + newQuery : newQuery;
-   query = newQuery;
-  }
-  url = base + query;
-  return url;
-}
-
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -164,7 +145,7 @@ function simpleGather (req, res, bodies, doneCb) {
   var cluster = null;
   if (req.query._cluster) {
     cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(',');
-    req.url = removeClusterFromQueryUrl(req.url);
+    req.url = req.url.replace(/_cluster=[^&]*(&|$)/g, ''); // remove _cluster from URL
     delete req.query._cluster;
   }
   var nodes = getActiveNodes(cluster);
