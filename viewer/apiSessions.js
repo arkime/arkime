@@ -1034,7 +1034,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return nextCb(null);
       }
 
-      let escluster = (Config.get('multiES', false) && session._source.escluster) ? session._source.escluster : undefined;
+      let escluster = (Config.get('multiES', false) && session.escluster) ? session.escluster : undefined;
 
       Db.addTagsToSession(session._index, session._id, allTagNames, escluster, (err, data) => {
         if (err) { console.log('addTagsList error', session, err, data); }
@@ -1054,7 +1054,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return nextCb(null);
       }
 
-      let escluster = (Config.get('multiES', false) && session._source.escluster) ? session._source.escluster : undefined;
+      let escluster = (Config.get('multiES', false) && session.escluster) ? session.escluster : undefined;
 
       Db.removeTagsFromSession(session._index, session._id, allTagNames, escluster, (err, data) => {
         if (err) { console.log('removeTagsList error', session, err, data); }
