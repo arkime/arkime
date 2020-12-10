@@ -109,7 +109,7 @@ app.locals.isIndex = false;
 app.locals.basePath = Config.basePath();
 app.locals.elasticBase = internals.elasticBase[0];
 app.locals.allowUploads = Config.get('uploadCommand') !== undefined;
-app.locals.molochClusters = Config.configMap('arkime-clusters', Config.configMap('moloch-clusters'));
+internals.remoteClusters = Config.configMap('remote-clusters', Config.configMap('moloch-clusters'));
 
 app.use(passport.initialize());
 app.use(bodyParser.json());
@@ -1478,13 +1478,13 @@ function sendSessionWorker (options, cb) {
       session.tags = session.tags.concat(tags);
     }
 
-    var molochClusters = app.locals.molochClusters;
-    if (!molochClusters) {
-      console.log('ERROR - [arkime-clusters] is not configured');
+    var remoteClusters = internals.remoteClusters;
+    if (!remoteClusters) {
+      console.log('ERROR - [remote-clusters] is not configured');
       return cb();
     }
 
-    var sobj = molochClusters[options.cluster];
+    var sobj = remoteClusters[options.cluster];
     if (!sobj) {
       console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
       return cb();
@@ -2644,13 +2644,13 @@ app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
   res.redirect('help');
 });
 
-app.get('/molochclusters', function (req, res) {
+app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
   function cloneClusters (clusters) {
     var clone = {};
 
-    for (var key in app.locals.molochClusters) {
-      if (app.locals.molochClusters.hasOwnProperty(key)) {
-        var cluster = app.locals.molochClusters[key];
+    for (var key in clusters) {
+      if (remoteClusters.hasOwnProperty(key)) {
+        var cluster = clusters[key];
         clone[key] = {
           name: cluster.name,
           url: cluster.url
@@ -2661,12 +2661,12 @@ app.get('/molochclusters', function (req, res) {
     return clone;
   }
 
-  if (!app.locals.molochClusters) {
+  if (!internals.remoteClusters) {
     res.status(404);
-    return res.send('Cannot locate arkime clusters');
+    return res.send('Cannot locate remote clusters');
   }
 
-  var clustersClone = cloneClusters(app.locals.molochClusters);
+  var clustersClone = cloneClusters(internals.remoteClusters);
 
   return res.send(clustersClone);
 });

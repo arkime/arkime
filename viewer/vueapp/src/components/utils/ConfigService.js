@@ -18,7 +18,7 @@ export default {
     getMolochClustersQIP = new Promise((resolve, reject) => {
       if (_molochClustersCache) { resolve(_molochClustersCache); }
 
-      Vue.axios.get('molochclusters')
+      Vue.axios.get('remoteclusters')
         .then((response) => {
           getMolochClustersQIP = undefined;
           _molochClustersCache = response.data;
