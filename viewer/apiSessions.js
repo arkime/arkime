@@ -402,7 +402,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     req.query.showFrames = req.query.showFrames === 'true' || false;
 
     var packets = [];
-    module.processSessionId(req, req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
+    module.processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
       var obj = {};
       if (buffer.length > 16) {
         try {
@@ -590,12 +590,12 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     });
   }
 
-  module.processSessionId = (req, id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
+  module.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
       options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
     }
-    options = ViewerUtils.addCluster(req.query.escluster, options);
+    // options = ViewerUtils.addCluster(req.query.escluster, options);
     Db.getSession(id, options, (err, session) => {
       if (err || !session.found) {
         console.log('session get error', err, session);
