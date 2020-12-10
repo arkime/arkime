@@ -657,7 +657,7 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { body._cluster = escluster; }
+  if (escluster) { body.escluster = escluster; }
 
   exports.updateSession(index, id, body, cb);
 };
@@ -687,7 +687,7 @@ exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { body._cluster = escluster; }
+  if (escluster) { body.escluster = escluster; }
 
   exports.updateSession(index, id, body, cb);
 };

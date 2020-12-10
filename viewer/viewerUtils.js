@@ -517,7 +517,7 @@ module.exports = (Db, Config, molochparser, internals) => {
   module.addCluster = (escluster, options) => {
     if (!options) options = {};
     if (escluster && Config.get('multiES', false)) {
-      options._cluster = escluster;
+      options.escluster = escluster;
     }
     return options;
   };

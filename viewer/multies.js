@@ -143,10 +143,10 @@ function getActiveNodes (clusterin) {
 
 function simpleGather (req, res, bodies, doneCb) {
   var cluster = null;
-  if (req.query._cluster) {
-    cluster = Array.isArray(req.query._cluster) ? req.query._cluster : req.query._cluster.split(',');
-    req.url = req.url.replace(/_cluster=[^&]*(&|$)/g, ''); // remove _cluster from URL
-    delete req.query._cluster;
+  if (req.query.escluster) {
+    cluster = Array.isArray(req.query.escluster) ? req.query.escluster : req.query.escluster.split(',');
+    req.url = req.url.replace(/escluster=[^&]*(&|$)/g, ''); // remove escluster from URL
+    delete req.query.escluster;
   }
   var nodes = getActiveNodes(cluster);
   if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
@@ -797,9 +797,9 @@ function msearch (req, res) {
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
   var body = JSON.parse(req.body);
-  if (body._cluster && clusters[body._cluster]) {
-    var node = clusters[body._cluster];
-    delete body._cluster;
+  if (body.escluster && clusters[body.escluster]) {
+    var node = clusters[body.escluster];
+    delete body.escluster;
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
@@ -819,7 +819,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
       return res.send(result);
     });
   } else {
-    console.log('ERROR - body of the request does not contain _cluster field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
