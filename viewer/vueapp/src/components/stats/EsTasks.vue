@@ -164,7 +164,7 @@ export default {
       this.$http.post(`api/estasks/${taskId}/cancel`);
     },
     cancelTasks () {
-      this.$http.post('api/estasks/cancelAll');
+      this.$http.post('api/estasks/cancelall');
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

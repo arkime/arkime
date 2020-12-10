@@ -809,11 +809,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/estasks/:id/cancelByUser
+   * POST - /api/estasks/:id/cancelwith
    *
    * Cancels an Elasticsearch task by opaque id. Used to cancel running tasks
    * that a user has created allowing a user to cancel their own tasks.
-   * @name estasks/:id/cancelByUser
+   * @name estasks/:id/cancelwith
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -833,10 +833,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/estasks/cancelAll
+   * POST - /api/estasks/cancelall
    *
    * Cancels all running Elasticsearch tasks (admin only).
-   * @name estasks/cancelAll
+   * @name estasks/cancelall
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */

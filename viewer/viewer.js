@@ -4516,14 +4516,14 @@ app.post( // cancel elasticsearch task endpoint (POST)
 );
 
 app.post( // cancel elasticsearch task by opaque id endpoint (POST)
-  ['/api/estasks/:id/cancelByUser', '/estask/cancelById'],
+  ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
   // should not have createEnabled check so users can use, each user is name spaced
   [noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
 app.post( // cancel all elasticsearch tasks endpoint (POST)
-  ['/api/estasks/cancelAll', '/estask/cancelAll'],
+  ['/api/estasks/cancelall', '/estask/cancelAll'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.cancelAllESTasks
 );
