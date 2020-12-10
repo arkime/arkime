@@ -1,4 +1,4 @@
-use Test::More tests => 19;
+use Test::More tests => 55;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -14,6 +14,10 @@ my ($url) = @_;
 
     my $json = viewerGet($url);
     my $mjson = multiGet($url);
+
+    for (my $i=0; $i < scalar(@{$mjson->{data}}); $i++) {
+        ok (exists $mjson->{data}->[$i]->{escluster}, "multi GET respone does not include escluster field");
+    }
 
     for (my $i=0; $i < scalar(@{$mjson->{data}}); $i++) { delete $mjson->{data}->[$i]->{escluster}; }
     eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
