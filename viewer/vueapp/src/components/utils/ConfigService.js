@@ -74,7 +74,7 @@ export default {
    */
   cancelEsTask: function (cancelId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('estask/cancelById', { cancelId: cancelId })
+      Vue.axios.post(`api/estasks/${cancelId}/cancelwith`)
         .then((response) => {
           resolve(response);
         }, (error) => {

@@ -157,7 +157,7 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('stats.json', { params: this.query })
+      this.$http.get('api/stats', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
@@ -193,7 +193,7 @@ export default {
         return context.metric((startV, stopV, stepV, callback) => {
           let config = {
             method: 'GET',
-            url: 'dstats.json',
+            url: 'api/dstats',
             params: {
               nodeName: name,
               start: startV / 1000,

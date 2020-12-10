@@ -161,7 +161,7 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('esrecovery/list', { params: this.query })
+      this.$http.get('api/esrecovery', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';

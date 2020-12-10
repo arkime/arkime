@@ -195,7 +195,7 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     exclude: function (type, column) {
-      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
@@ -207,7 +207,7 @@ export default {
         });
     },
     include: function (type, column) {
-      this.$http.post(`esshard/include/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/include`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = false;

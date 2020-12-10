@@ -243,7 +243,7 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('stats.json', { params: this.query })
+      this.$http.get('api/stats', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';
@@ -280,7 +280,7 @@ export default {
         return dcontext.metric(function (startV, stopV, stepV, callback) {
           let config = {
             method: 'GET',
-            url: 'dstats.json',
+            url: 'api/dstats',
             params: {
               nodeName: stat.id,
               start: startV / 1000,
