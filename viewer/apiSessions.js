@@ -244,8 +244,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       }
       processedRo[fields.rootId] = true;
 
+      let options = ViewerUtils.addCluster(req.query.escluster);
       query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
           console.log('ERROR fetching matching sessions', err, result);
           return nextCb(null);
@@ -595,7 +596,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     if (!fullSession) {
       options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
     }
-    // options = ViewerUtils.addCluster(req.query.escluster, options);
+
     Db.getSession(id, options, (err, session) => {
       if (err || !session.found) {
         console.log('session get error', err, session);
