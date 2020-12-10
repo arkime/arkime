@@ -40,8 +40,7 @@ const store = new Vuex.Store({
         inactive: []
       },
       selectedCluster: []
-    },
-    multiEsEnabled: false
+    }
   },
   getters: {
     sessionsTableState (state) {
@@ -188,9 +187,6 @@ const store = new Vuex.Store({
     },
     setSelectedESCluster (state, value) {
       state.esCluster.selectedCluster = value;
-    },
-    setMultiEsStatus (state, value) {
-      state.multiEsEnabled = value;
     },
     setStickySessionsBtn (state, value) {
       state.stickySessionsBtn = value;
