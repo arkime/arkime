@@ -137,10 +137,10 @@
         @show="esVisMenuOpen = true"
         @hide="esVisMenuOpen = false">
         <template slot="button-content">
-          <span class="fa fa-database"
-            v-b-tooltip.hover.right
-            :title="esMenuHoverText">
-          </span>
+          <div v-b-tooltip.hover.left :title="esMenuHoverText">
+            <span class="fa fa-database"> </span>
+            <span> {{ selectedESCluster.length }} </span>
+          </div>
         </template>
         <b-dropdown-header>
           <input type="text"
