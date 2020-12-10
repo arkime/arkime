@@ -4475,7 +4475,7 @@ app.get( // elasticsearch indices endpoint (GET)
 
 app.delete( // delete elasticsearch index endpoint (DELETE)
   ['/api/esindices/:index', '/esindices/:index'],
-  [noCacheJson, recordResponseTime, checkPermissions(['removeEnabled']), setCookie],
+  [noCacheJson, recordResponseTime, checkPermissions(['createEnabled', 'removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
@@ -4503,496 +4503,90 @@ app.post( // shrink elasticsearch index endpoint (POST)
   statsAPIs.shrinkESIndex
 );
 
-// TODO ECR
-// app.get(
-//   ['/api/estask', '/estask/list'],
-//   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
-//   statsAPIs.getESTasks
-// );
-
-app.get('/estask/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
-  Db.tasks(function (err, tasks) {
-    if (err) {
-      console.log('ERROR -  /estask/list', err);
-      return res.send({
-        recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
-      });
-    }
-
-    tasks = tasks.tasks;
-
-    let regex;
-    if (req.query.filter !== undefined) {
-      try {
-        regex = new RE2(req.query.filter);
-      } catch (e) {
-        return res.molochError(500, `Regex Error: ${e}`);
-      }
-    }
-
-    let rtasks = [];
-    for (const key in tasks) {
-      let task = tasks[key];
-
-      task.taskId = key;
-      if (task.children) {
-        task.childrenCount = task.children.length;
-      } else {
-        task.childrenCount = 0;
-      }
-      delete task.children;
-
-      if (req.query.cancellable && req.query.cancellable === 'true') {
-        if (!task.cancellable) { continue; }
-      }
-
-      if (task.headers['X-Opaque-Id']) {
-        let parts = ViewerUtils.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
-        task.user = (parts.length === 1 ? '' : parts[0]);
-      } else {
-        task.user = '';
-      }
-
-      if (regex && (!task.action.match(regex) && !task.user.match(regex))) { continue; }
-
-      rtasks.push(task);
-    }
-
-    const sortField = req.query.sortField || 'action';
-    if (sortField === 'action' || sortField === 'user') {
-      if (req.query.desc === 'true') {
-        rtasks = rtasks.sort(function (a, b) { return b.action.localeCompare(a.index); });
-      } else {
-        rtasks = rtasks.sort(function (a, b) { return a.action.localeCompare(b.index); });
-      }
-    } else {
-      if (req.query.desc === 'true') {
-        rtasks = rtasks.sort(function (a, b) { return b[sortField] - a[sortField]; });
-      } else {
-        rtasks = rtasks.sort(function (a, b) { return a[sortField] - b[sortField]; });
-      }
-    }
-
-    let size = parseInt(req.query.size) || 1000;
-    if (rtasks.length > size) {
-      rtasks = rtasks.slice(0, size);
-    }
-
-    return res.send({
-      recordsTotal: Object.keys(tasks).length,
-      recordsFiltered: rtasks.length,
-      data: rtasks
-    });
-  });
-});
-
-app.post('/estask/cancel', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (!req.body || !req.body.taskId) {
-    return res.molochError(403, 'Missing/Empty required fields');
-  }
-
-  Db.taskCancel(req.body.taskId, (err, result) => {
-    return res.send(JSON.stringify({ success: true, text: result }));
-  });
-});
-
-// Should not have createEnabled check so that users can use, each user is named spaced below
-app.post('/estask/cancelById', [noCacheJson, logAction(), checkCookieToken], (req, res) => {
-  if (!req.body || !req.body.cancelId) {
-    return res.molochError(403, 'Missing cancel ID');
-  }
-
-  Db.cancelByOpaqueId(`${req.user.userId}::${req.body.cancelId}`, (err, result) => {
-    return res.send(JSON.stringify({ success: true, text: result }));
-  });
-});
-
-app.post('/estask/cancelAll', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  Db.taskCancel(undefined, (err, result) => {
-    return res.send(JSON.stringify({ success: true, text: result }));
-  });
-});
-
-app.get('/esadmin/list', [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie], (req, res) => {
-  Promise.all([Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
-               Db.getILMPolicy()]).then(([settings, ilm
-  ]) => {
-    let rsettings = [];
-
-    function addSetting (key, type, name, url, regex) {
-      let current = settings.transient[key];
-      if (current === undefined) { current = settings.persistent[key]; }
-      if (current === undefined) { current = settings.defaults[key]; }
-      if (current === undefined) { return; }
-      rsettings.push({ key: key, current: current, name: name, type: type, url: url, regex: regex });
-    }
-
-    addSetting('search.max_buckets', 'Integer',
-      'Max Aggregation Size',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
-      '^(|null|\\d+)$');
-
-    addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'Percent or Byte Value',
-      'Disk Watermark Flood',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-      '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
-
-    addSetting('cluster.routing.allocation.disk.watermark.high', 'Percent or Byte Value',
-      'Disk Watermark High',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-      '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
-
-    addSetting('cluster.routing.allocation.disk.watermark.low', 'Percent or Byte Value',
-      'Disk Watermark Low',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-      '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
-
-    addSetting('cluster.routing.allocation.enable', 'Mode',
-      'Allocation Mode',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
-      '^(all|primaries|new_primaries|none)$');
-
-    addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'Integer',
-      'Concurrent Rebalances',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
-      '^(|null|\\d+)$');
-
-    addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'Integer',
-      'Concurrent Recoveries',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
-      '^(|null|\\d+)$');
-
-    addSetting('cluster.routing.allocation.node_initial_primaries_recoveries', 'Integer',
-      'Initial Primaries Recoveries',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
-      '^(|null|\\d+)$');
-
-    addSetting('cluster.max_shards_per_node', 'Integer',
-      'Max Shards per Node',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html',
-      '^(|null|\\d+)$');
-
-    addSetting('indices.recovery.max_bytes_per_sec', 'Byte Value',
-      'Recovery Max Bytes per Second',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
-      '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
-
-    addSetting('cluster.routing.allocation.awareness.attributes', 'List of Attributes',
-      'Shard Allocation Awareness',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
-      '^(|null|[a-z0-9_,-]+)$');
-
-    addSetting('indices.breaker.total.limit', 'Percent',
-      'Breaker - Total Limit',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
-      '^(|null|\\d+%)$');
-
-    addSetting('indices.breaker.fielddata.limit', 'Percent',
-      'Breaker - Field data',
-      'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
-      '^(|null|\\d+%)$');
-
-    function addIlm (key, current, name, type, regex) {
-      rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
-    }
-
-    if (ilm[`${internals.prefix}molochsessions`]) {
-      const silm = ilm[`${internals.prefix}molochsessions`];
-      addIlm('moloch.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
-       'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
-      addIlm('moloch.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
-       'ILM - Sessions Replicas', 'Integer', '^\\d$');
-      addIlm('moloch.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
-       'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
-      addIlm('moloch.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
-       'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
-    }
-
-    if (ilm[`${internals.prefix}molochhistory`]) {
-      const hilm = ilm[`${internals.prefix}molochhistory`];
-      addIlm('moloch.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
-       'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
-    }
-
-    return res.send(rsettings);
-  });
-});
-
-app.post('/esadmin/set', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
-  if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
-
-  // Convert null string to null
-  if (req.body.value === 'null') { req.body.value = null; }
-
-  if (req.body.key.startsWith('moloch.ilm')) {
-    Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
-      const silm = ilm[`${internals.prefix}molochsessions`];
-      const hilm = ilm[`${internals.prefix}molochhistory`];
-
-      if (silm === undefined || hilm === undefined) {
-        return res.molochError(500, 'ILM isn\'t configured');
-      }
-
-      switch (req.body.key) {
-      case 'moloch.ilm.sessions.forceTime':
-        silm.policy.phases.warm.min_age = req.body.value;
-        break;
-      case 'moloch.ilm.sessions.replicas':
-        silm.policy.phases.warm.actions.allocate.number_of_replicas = parseInt(req.body.value || 0, 10);
-        break;
-      case 'moloch.ilm.sessions.segments':
-        silm.policy.phases.warm.actions.forcemerge.max_num_segments = parseInt(req.body.value || 0, 10);
-        break;
-      case 'moloch.ilm.sessions.deleteTime':
-        silm.policy.phases.delete.min_age = req.body.value;
-        break;
-      case 'moloch.ilm.history.deleteTime':
-        hilm.policy.phases.delete.min_age = req.body.value;
-        break;
-      default:
-        return res.molochError(500, 'Unknown field');
-      }
-      if (req.body.key.startsWith('moloch.ilm.history')) {
-        Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
-      } else {
-        Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
-      }
-      return res.send(JSON.stringify({ success: true, text: 'Set' }));
-    });
-    return;
-  }
-
-  let query = { body: { persistent: {} } };
-  query.body.persistent[req.body.key] = req.body.value || null;
-
-  Db.putClusterSettings(query, function (err, result) {
-    if (err) {
-      console.log('putSettings failed', result);
-      return res.molochError(500, 'Set failed');
-    }
-    return res.send(JSON.stringify({ success: true, text: 'Set' }));
-  });
-});
-
-app.post('/esadmin/reroute', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.reroute((err) => {
-    if (err) {
-      return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
-    } else {
-      return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
-    }
-  });
-});
-
-app.post('/esadmin/flush', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.refresh('*');
-  Db.flush('*');
-  return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
-});
-
-app.post('/esadmin/unflood', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.setIndexSettings('*', { body: { 'index.blocks.read_only_allow_delete': null } });
-  return res.send(JSON.stringify({ success: true, text: 'Unflood' }));
-});
-
-app.post('/esadmin/clearCache', [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken], (req, res) => {
-  Db.clearCache((err, data) => {
-    if (err) {
-      return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
-    } else {
-      return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
-    }
-  });
-});
-
-app.get('/esshard/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
-  Promise.all([
-    Db.shards(),
-    Db.getClusterSettings({ flatSettings: true })
-  ]).then(([shards, settings]) => {
-    let ipExcludes = [];
-    if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
-      ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
-    }
-
-    let nodeExcludes = [];
-    if (settings.persistent['cluster.routing.allocation.exclude._name']) {
-      nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
-    }
-
-    var regex;
-    if (req.query.filter !== undefined) {
-      try {
-        regex = new RE2(req.query.filter.toLowerCase());
-      } catch (e) {
-        return res.molochError(500, `Regex Error: ${e}`);
-      }
-    }
-
-    let result = {};
-    let nodes = {};
-
-    for (var shard of shards) {
-      if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
-
-      if (!(req.query.show === 'all' ||
-            shard.state === req.query.show || //  Show only matching stage
-            (shard.state !== 'STARTED' && req.query.show === 'notstarted'))) {
-        continue;
-      }
-
-      if (regex && !shard.index.toLowerCase().match(regex) && !shard.node.toLowerCase().match(regex)) { continue; }
-
-      if (result[shard.index] === undefined) {
-        result[shard.index] = { name: shard.index, nodes: {} };
-      }
-      if (result[shard.index].nodes[shard.node] === undefined) {
-        result[shard.index].nodes[shard.node] = [];
-      }
-      result[shard.index].nodes[shard.node].push(shard);
-      nodes[shard.node] = { ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node) };
-
-      result[shard.index].nodes[shard.node]
-        .sort((a, b) => {
-          return a.shard - b.shard;
-        });
-
-      delete shard.node;
-      delete shard.index;
-    }
-
-    let indices = Object.keys(result).map((k) => result[k]);
-    if (req.query.desc === 'true') {
-      indices = indices.sort(function (a, b) {
-        return b.name.localeCompare(a.name);
-      });
-    } else {
-      indices = indices.sort(function (a, b) {
-        return a.name.localeCompare(b.name);
-      });
-    }
-    res.send({ nodes: nodes, indices: indices, nodeExcludes: nodeExcludes, ipExcludes: ipExcludes });
-  });
-});
-
-app.post('/esshard/exclude/:type/:value', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.getClusterSettings({ flatSettings: true }, function (err, settings) {
-    let exclude = [];
-    let settingName;
-
-    if (req.params.type === 'ip') {
-      settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === 'name') {
-      settingName = 'cluster.routing.allocation.exclude._name';
-    } else {
-      return res.molochError(403, 'Unknown exclude type');
-    }
-
-    if (settings.persistent[settingName]) {
-      exclude = settings.persistent[settingName].split(',');
-    }
-
-    if (!exclude.includes(req.params.value)) {
-      exclude.push(req.params.value);
-    }
-    var query = { body: { persistent: {} } };
-    query.body.persistent[settingName] = exclude.join(',');
-
-    Db.putClusterSettings(query, function (err, settings) {
-      if (err) { console.log('putSettings', err); }
-      return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
-    });
-  });
-});
-
-app.post('/esshard/include/:type/:value', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.getClusterSettings({ flatSettings: true }, function (err, settings) {
-    let exclude = [];
-    let settingName;
-
-    if (req.params.type === 'ip') {
-      settingName = 'cluster.routing.allocation.exclude._ip';
-    } else if (req.params.type === 'name') {
-      settingName = 'cluster.routing.allocation.exclude._name';
-    } else {
-      return res.molochError(403, 'Unknown include type');
-    }
-
-    if (settings.persistent[settingName]) {
-      exclude = settings.persistent[settingName].split(',');
-    }
-
-    let pos = exclude.indexOf(req.params.value);
-    if (pos > -1) {
-      exclude.splice(pos, 1);
-    }
-    var query = { body: { persistent: {} } };
-    query.body.persistent[settingName] = exclude.join(',');
-
-    Db.putClusterSettings(query, function (err, settings) {
-      if (err) { console.log('putSettings', err); }
-      return res.send(JSON.stringify({ success: true, text: 'Included' }));
-    });
-  });
-});
-
-app.get('/esrecovery/list', [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie], (req, res) => {
-  const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
-
-  Promise.all([Db.recovery(sortField, req.query.show !== 'all')]).then(([recoveries]) => {
-    let regex;
-    if (req.query.filter !== undefined) {
-      try {
-        regex = new RE2(req.query.filter);
-      } catch (e) {
-        return res.molochError(500, `Regex Error: ${e}`);
-      }
-    }
-
-    let result = [];
-
-    for (const recovery of recoveries) {
-      // filtering
-      if (regex && !recovery.index.match(regex) &&
-        !recovery.target_node.match(regex) &&
-        !recovery.source_node.match(regex)) {
-        continue;
-      }
-
-      result.push(recovery);
-    }
-
-    // Work around for https://github.com/elastic/elasticsearch/issues/48070
-    if (req.query.sortField && req.query.sortField.endsWith('_percent')) {
-      let sf = req.query.sortField;
-      if (req.query.desc === 'true') {
-        result = result.sort((a, b) => { return parseFloat(b[sf]) - parseFloat(a[sf]); });
-      } else {
-        result = result.sort((a, b) => { return parseFloat(a[sf]) - parseFloat(b[sf]); });
-      }
-    }
-
-    res.send({
-      recordsTotal: recoveries.length,
-      recordsFiltered: result.length,
-      data: result
-    });
-  }).catch((err) => {
-    console.log('ERROR -  /esrecovery/list', err);
-    return res.send({
-      recordsTotal: 0,
-      recordsFiltered: 0,
-      data: []
-    });
-  });
-});
+app.get( // elasticsearch tasks endpoint (GET)
+  ['/api/estasks', '/estask/list'],
+  [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  statsAPIs.getESTasks
+);
+
+app.post( // cancel elasticsearch task endpoint (POST)
+  ['/api/estasks/:id/cancel', '/estask/cancel'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  statsAPIs.cancelESTask
+);
+
+app.post( // cancel elasticsearch task by opaque id endpoint (POST)
+  ['/api/estasks/:id/cancelByUser', '/estask/cancelById'],
+  // should not have createEnabled check so users can use, each user is name spaced
+  [noCacheJson, logAction(), checkCookieToken],
+  statsAPIs.cancelUserESTask
+);
+
+app.post( // cancel all elasticsearch tasks endpoint (POST)
+  ['/api/estasks/cancelAll', '/estask/cancelAll'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  statsAPIs.cancelAllESTasks
+);
+
+app.get( // elasticsearch admin settings endpoint (GET)
+  ['/api/esadmin', '/esadmin/list'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  statsAPIs.getESAdminSettings
+);
+
+app.post( // set elasticsearch admin setting endpoint (POST)
+  ['/api/esadmin/set', '/esadmin/set'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  statsAPIs.setESAdminSettings
+);
+
+app.post( // reroute elasticsearch admin endpoint (POST)
+  ['/api/esadmin/reroute', '/esadmin/reroute'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  statsAPIs.rerouteES
+);
+
+app.post( // flush elasticsearch admin endpoint (POST)
+  ['/api/esadmin/flush', '/esadmin/flush'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  statsAPIs.flushES
+);
+
+app.post( // unflood elasticsearch admin endpoint (POST)
+  ['/api/esadmin/unflood', '/esadmin/unflood'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  statsAPIs.unfloodES
+);
+
+app.post( // unflood elasticsearch admin endpoint (POST)
+  ['/api/esadmin/clearcache', '/esadmin/clearcache'],
+  [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  statsAPIs.clearCacheES
+);
+
+app.get( // elasticsearch shards endpoint (GET)
+  ['/api/esshards', '/esshard/list'],
+  [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  statsAPIs.getESShards
+);
+
+app.post( // exclude elasticsearch shard endpoint (POST)
+  ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  statsAPIs.excludeESShard
+);
+
+app.post( // include elasticsearch shard endpoint (POST)
+  ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  statsAPIs.includeESShard
+);
+
+app.get( // elasticsearch recovery endpoint (GET)
+  ['/api/esrecovery', '/esrecovery/list'],
+  [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
+  statsAPIs.getESRecovery
+);
 
 // session apis ---------------------------------------------------------------
 app.getpost( // sessions endpoint (POST or GET) - uses fillQueryFromBody to

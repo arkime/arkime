@@ -161,10 +161,10 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     cancelTask (taskId) {
-      this.$http.post('estask/cancel', { taskId: taskId });
+      this.$http.post(`api/estasks/${taskId}/cancel`);
     },
     cancelTasks () {
-      this.$http.post('estask/cancelAll');
+      this.$http.post('api/estasks/cancelAll');
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -185,7 +185,7 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('estask/list', { params: this.query })
+      this.$http.get('api/estasks', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';

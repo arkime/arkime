@@ -10,6 +10,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
+  // STATS APIS ---------------------------------------------------------------
   /**
    * GET - /api/stats
    *
@@ -157,7 +158,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - /stats.json', query, err);
+      console.log('ERROR - /api/stats', query, err);
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
@@ -290,15 +291,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/esstats
    *
-   * Fetches a list of stats for each elasticsearch cluster.
+   * Fetches a list of stats for each Elasticsearch cluster.
    * @name esstats
-   * @param {string} filter - Search text to filter the list of elasticsearch clusters by.
-   * @param {string} sortField=nodeName - The field to sort the elasticsearch clusters list by.
+   * @param {string} filter - Search text to filter the list of Elasticsearch clusters by.
+   * @param {string} sortField=nodeName - The field to sort the Elasticsearch clusters list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
-   * @returns {array} data - List of es clusters with their corresponding stats.
-   * @returns {number} recordsTotal - The total number of es clusters.
-   * @returns {number} recordsFiltered - The number of es clusters returned in this result.
-   * @returns {ESHealth} health - The elasticsearch cluster health status and info.
+   * @returns {array} data - List of ES clusters with their corresponding stats.
+   * @returns {number} recordsTotal - The total number of ES clusters.
+   * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
+   * @returns {ESHealth} health - The Elasticsearch cluster health status and info.
    */
   module.getESStats = (req, res) => {
     let stats = [];
@@ -439,7 +440,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR -  /esstats.json', err);
+      console.log('ERROR -  /api/esstats', err);
       r = {
         health: Db.healthCache(),
         recordsTotal: 0,
@@ -450,17 +451,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  // ES INDICES APIS ----------------------------------------------------------
   /**
    * GET - /api/esindices
    *
-   * Fetches a list of elasticsearch indices.
+   * Fetches a list of Elasticsearch indices.
    * @name esindices
-   * @param {string} filter - Search text to filter the list of elasticsearch indices by.
-   * @param {string} sortField=index - The field to sort the elasticsearch indices list by.
+   * @param {string} filter - Search text to filter the list of Elasticsearch indices by.
+   * @param {string} sortField=index - The field to sort the Elasticsearch indices list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
-   * @returns {array} data - List of es indices with their corresponding stats.
-   * @returns {number} recordsTotal - The total number of es indices.
-   * @returns {number} recordsFiltered - The number of es indices returned in this result.
+   * @returns {array} data - List of ES indices with their corresponding stats.
+   * @returns {number} recordsTotal - The total number of ES indices.
+   * @returns {number} recordsFiltered - The number of ES indices returned in this result.
    */
   module.getESIndices = (req, res) => {
     async.parallel({
@@ -468,7 +470,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       indicesSettings: Db.indicesSettingsCache
     }, (err, results) => {
       if (err) {
-        console.log('ERROR -  /esindices/list', err);
+        console.log('ERROR -  /api/esindices', err);
         return res.send({
           recordsTotal: 0,
           recordsFiltered: 0,
@@ -541,7 +543,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * DELETE - /api/esindices/:index
    *
-   * Deletes an elasticsearch index.
+   * Deletes an Elasticsearch index (admin and remove access only).
    * @name esindices/:index
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -562,7 +564,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/optimize
    *
-   * Optimizes an elasticsearch index.
+   * Optimizes an Elasticsearch index (admin only).
    * @name esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
@@ -580,7 +582,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/close
    *
-   * Closes an elasticsearch index.
+   * Closes an Elasticsearch index (admin only).
    * @name esindices/:index/close
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -601,7 +603,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/open
    *
-   * Opens an elasticsearch index.
+   * Opens an Elasticsearch index (admin only).
    * @name esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
@@ -619,10 +621,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/esindices/:index/shrink
    *
-   * Shrinks an elasticsearch index.
+   * Shrinks an Elasticsearch index (admin only).
    * @name esindices/:index/shrink
-   * @param {string} target - TODO
-   * @param {number} numShards - TODO
+   * @param {string} target - The index name to shrink the index to.
+   * @param {number} numShards - The number of shards to shrink the index to.
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -687,6 +689,655 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // always return right away, shrinking might take a while
       return res.send(JSON.stringify({ success: true }));
+    });
+  };
+
+  // ES TASK APIS -------------------------------------------------------------
+  /**
+   * GET - /api/estasks
+   *
+   * Fetches Elasticsearch tasks.
+   * @name estasks
+   * @param {string} filter - Search text to filter the list of ES tasks by.
+   * @param {string} cancellable=false - Whether to return only cancellable tasks. Default is "false".
+   * @param {string} sortField=action - The field to sort the ES task list by.
+   * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
+   * @param {number} size=1000 - The number of ES tasks to return. Defaults to 1000.
+   * @returns {array} data - List of ES tasks with their corresponding stats.
+   * @returns {number} recordsTotal - The total number of ES tasks.
+   * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
+   */
+  module.getESTasks = (req, res) => {
+    Db.tasks((err, tasks) => {
+      if (err) {
+        console.log('ERROR -  /api/estask', err);
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          data: []
+        });
+      }
+
+      tasks = tasks.tasks;
+
+      let regex;
+      if (req.query.filter !== undefined) {
+        try {
+          regex = new RE2(req.query.filter);
+        } catch (e) {
+          return res.molochError(500, `Regex Error: ${e}`);
+        }
+      }
+
+      let rtasks = [];
+      for (const key in tasks) {
+        let task = tasks[key];
+
+        task.taskId = key;
+        if (task.children) {
+          task.childrenCount = task.children.length;
+        } else {
+          task.childrenCount = 0;
+        }
+        delete task.children;
+
+        if (req.query.cancellable && req.query.cancellable === 'true') {
+          if (!task.cancellable) { continue; }
+        }
+
+        if (task.headers['X-Opaque-Id']) {
+          let parts = ViewerUtils.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
+          task.user = (parts.length === 1 ? '' : parts[0]);
+        } else {
+          task.user = '';
+        }
+
+        if (regex && (!task.action.match(regex) && !task.user.match(regex))) { continue; }
+
+        rtasks.push(task);
+      }
+
+      const sortField = req.query.sortField || 'action';
+      if (sortField === 'action' || sortField === 'user') {
+        if (req.query.desc === 'true') {
+          rtasks = rtasks.sort((a, b) => { return b.action.localeCompare(a.index); });
+        } else {
+          rtasks = rtasks.sort((a, b) => { return a.action.localeCompare(b.index); });
+        }
+      } else {
+        if (req.query.desc === 'true') {
+          rtasks = rtasks.sort((a, b) => { return b[sortField] - a[sortField]; });
+        } else {
+          rtasks = rtasks.sort((a, b) => { return a[sortField] - b[sortField]; });
+        }
+      }
+
+      let size = parseInt(req.query.size) || 1000;
+      if (rtasks.length > size) {
+        rtasks = rtasks.slice(0, size);
+      }
+
+      return res.send({
+        recordsTotal: Object.keys(tasks).length,
+        recordsFiltered: rtasks.length,
+        data: rtasks
+      });
+    });
+  };
+
+  /**
+   * POST - /api/estasks/:id/cancel
+   *
+   * Cancels an Elasticsearch task (admin only).
+   * @name estasks/:id/cancel
+   * @returns {boolean} success - Whether the cancel task operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @TODO ECR - make sure both '/api/estasks/:id/cancel' & '/estask/cancel'
+   */
+  module.cancelESTask = (req, res) => {
+    let taskId;
+    if (req.params.id) {
+      taskId = req.params.id;
+    } else if (req.body && req.body.taskId) {
+      taskId = req.body.taskId;
+    } else {
+      return res.molochError(403, 'Missing ID of task to cancel');
+    }
+
+    Db.taskCancel(taskId, (err, result) => {
+      return res.send(JSON.stringify({ success: true, text: result }));
+    });
+  };
+
+  /**
+   * POST - /api/estasks/:id/cancelByUser
+   *
+   * Cancels an Elasticsearch task by opaque id. Used to cancel running tasks
+   * that a user has created allowing a user to cancel their own tasks.
+   * @name estasks/:id/cancelByUser
+   * @returns {boolean} success - Whether the cancel task operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @TODO ECR - make sure both '/api/estasks/:id/cancelByUser' & '/estask/cancelById'
+   */
+  module.cancelUserESTask = (req, res) => {
+    let cancelId;
+    if (req.params.id) {
+      cancelId = req.params.id;
+    } else if (req.body && req.body.cancelId) {
+      cancelId = req.body.cancelId;
+    } else {
+      return res.molochError(403, 'Missing ID of task to cancel');
+    }
+
+    Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, (err, result) => {
+      return res.send(JSON.stringify({ success: true, text: result }));
+    });
+  };
+
+  /**
+   * POST - /api/estasks/cancelAll
+   *
+   * Cancels all running Elasticsearch tasks (admin only).
+   * @name estasks/cancelAll
+   * @returns {boolean} success - Whether the cancel all tasks operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.cancelAllESTasks = (req, res) => {
+    Db.taskCancel(undefined, (err, result) => {
+      return res.send(JSON.stringify({ success: true, text: result }));
+    });
+  };
+
+  // ES ADMIN APIS ------------------------------------------------------------
+  /**
+   * GET - /api/esadmin
+   *
+   * Fetches all Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin
+   * @returns {array} settings - List of ES settings that a user can change
+   */
+  module.getESAdminSettings = (req, res) => {
+    Promise.all([
+      Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
+      Db.getILMPolicy()
+    ]).then(([settings, ilm]) => {
+      let rsettings = [];
+
+      function addSetting (key, type, name, url, regex) {
+        let current = settings.transient[key];
+        if (current === undefined) { current = settings.persistent[key]; }
+        if (current === undefined) { current = settings.defaults[key]; }
+        if (current === undefined) { return; }
+        rsettings.push({ key: key, current: current, name: name, type: type, url: url, regex: regex });
+      }
+
+      addSetting('search.max_buckets', 'Integer',
+        'Max Aggregation Size',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
+        '^(|null|\\d+)$');
+
+      addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'Percent or Byte Value',
+        'Disk Watermark Flood',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+      addSetting('cluster.routing.allocation.disk.watermark.high', 'Percent or Byte Value',
+        'Disk Watermark High',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+      addSetting('cluster.routing.allocation.disk.watermark.low', 'Percent or Byte Value',
+        'Disk Watermark Low',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
+        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+
+      addSetting('cluster.routing.allocation.enable', 'Mode',
+        'Allocation Mode',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+        '^(all|primaries|new_primaries|none)$');
+
+      addSetting('cluster.routing.allocation.cluster_concurrent_rebalance', 'Integer',
+        'Concurrent Rebalances',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+        '^(|null|\\d+)$');
+
+      addSetting('cluster.routing.allocation.node_concurrent_recoveries', 'Integer',
+        'Concurrent Recoveries',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+        '^(|null|\\d+)$');
+
+      addSetting('cluster.routing.allocation.node_initial_primaries_recoveries', 'Integer',
+        'Initial Primaries Recoveries',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/shards-allocation.html',
+        '^(|null|\\d+)$');
+
+      addSetting('cluster.max_shards_per_node', 'Integer',
+        'Max Shards per Node',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/master/misc-cluster.html',
+        '^(|null|\\d+)$');
+
+      addSetting('indices.recovery.max_bytes_per_sec', 'Byte Value',
+        'Recovery Max Bytes per Second',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/recovery.html',
+        '^(|null|\\d+(b|kb|mb|gb|tb|pb))$');
+
+      addSetting('cluster.routing.allocation.awareness.attributes', 'List of Attributes',
+        'Shard Allocation Awareness',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-awareness.html',
+        '^(|null|[a-z0-9_,-]+)$');
+
+      addSetting('indices.breaker.total.limit', 'Percent',
+        'Breaker - Total Limit',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+        '^(|null|\\d+%)$');
+
+      addSetting('indices.breaker.fielddata.limit', 'Percent',
+        'Breaker - Field data',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
+        '^(|null|\\d+%)$');
+
+      function addIlm (key, current, name, type, regex) {
+        rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
+      }
+
+      if (ilm[`${internals.prefix}molochsessions`]) {
+        const silm = ilm[`${internals.prefix}molochsessions`];
+        addIlm('moloch.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
+         'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
+        addIlm('moloch.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
+         'ILM - Sessions Replicas', 'Integer', '^\\d$');
+        addIlm('moloch.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
+         'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
+        addIlm('moloch.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
+         'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
+      }
+
+      if (ilm[`${internals.prefix}molochhistory`]) {
+        const hilm = ilm[`${internals.prefix}molochhistory`];
+        addIlm('moloch.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
+         'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
+      }
+
+      return res.send(rsettings);
+    });
+  };
+
+  /**
+   * POST - /api/esadmin/set
+   *
+   * Sets Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin/set
+   * @returns {boolean} success - Whether saving the settings was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.setESAdminSettings = (req, res) => {
+    if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
+    if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
+
+    // Convert null string to null
+    if (req.body.value === 'null') { req.body.value = null; }
+
+    if (req.body.key.startsWith('moloch.ilm')) {
+      Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
+        const silm = ilm[`${internals.prefix}molochsessions`];
+        const hilm = ilm[`${internals.prefix}molochhistory`];
+
+        if (silm === undefined || hilm === undefined) {
+          return res.molochError(500, 'ILM isn\'t configured');
+        }
+
+        switch (req.body.key) {
+        case 'moloch.ilm.sessions.forceTime':
+          silm.policy.phases.warm.min_age = req.body.value;
+          break;
+        case 'moloch.ilm.sessions.replicas':
+          silm.policy.phases.warm.actions.allocate.number_of_replicas = parseInt(req.body.value || 0, 10);
+          break;
+        case 'moloch.ilm.sessions.segments':
+          silm.policy.phases.warm.actions.forcemerge.max_num_segments = parseInt(req.body.value || 0, 10);
+          break;
+        case 'moloch.ilm.sessions.deleteTime':
+          silm.policy.phases.delete.min_age = req.body.value;
+          break;
+        case 'moloch.ilm.history.deleteTime':
+          hilm.policy.phases.delete.min_age = req.body.value;
+          break;
+        default:
+          return res.molochError(500, 'Unknown field');
+        }
+        if (req.body.key.startsWith('moloch.ilm.history')) {
+          Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
+        } else {
+          Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
+        }
+        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+      });
+      return;
+    }
+
+    let query = { body: { persistent: {} } };
+    query.body.persistent[req.body.key] = req.body.value || null;
+
+    Db.putClusterSettings(query, (err, result) => {
+      if (err) {
+        console.log('putSettings failed', result);
+        return res.molochError(500, 'Set failed');
+      }
+      return res.send(JSON.stringify({ success: true, text: 'Set' }));
+    });
+  };
+
+  /**
+   * POST - /api/esadmin/reroute
+   *
+   * Try to restart any shard migrations that have failed or paused (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin/reroute
+   * @returns {boolean} success - Whether the reroute was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.rerouteES = (req, res) => {
+    Db.reroute((err) => {
+      if (err) {
+        return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
+      } else {
+        return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
+      }
+    });
+  };
+
+  /**
+   * POST - /api/esadmin/flush
+   *
+   * Flush and refresh any data waiting in Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin/flush
+   * @returns {boolean} success - Always true
+   * @returns {string} text - The success message to (optionally) display to the user.
+   */
+  module.flushES = (req, res) => {
+    Db.refresh('*');
+    Db.flush('*');
+    return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
+  };
+
+  /**
+   * POST - /api/esadmin/unflood
+   *
+   * Try and clear any indices marked as flooded (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin/unflood
+   * @returns {boolean} success - Always true
+   * @returns {string} text - The success message to (optionally) display to the user.
+   */
+  module.unfloodES = (req, res) => {
+    Db.setIndexSettings('*', {
+      body: { 'index.blocks.read_only_allow_delete': null }
+    });
+    return res.send(JSON.stringify({ success: true, text: 'Unflooded' }));
+  };
+
+  /**
+   * POST - /api/esadmin/clearcache
+   *
+   * Try and clear the cache for all indices (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * @name esadmin/clearcache
+   * @returns {boolean} success - Whether clearing the cache was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.clearCacheES = (req, res) => {
+    Db.clearCache((err, data) => {
+      if (err) {
+        return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
+      } else {
+        return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
+      }
+    });
+  };
+
+  // ES SHARD APIS ------------------------------------------------------------
+  /**
+   * GET - /api/esshards
+   *
+   * Fetches all Elasticsearch shards
+   * @name esshards
+   * @param {string} filter - Search text to filter the list of Elasticsearch shards by.
+   * @param {string} show=all - Which types of shard to show. Options include:
+     all - show all shards.
+     notstarted - show unstarted shards.
+     INITIALIZING - show initializing shards.
+     RELOCATING - show relocating shards.
+     UNASSIGNED - show unassigned shards.
+   * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
+   * @returns {array} nodes - List of ES data nodes.
+   * @returns {array} indices - List of ES indices.
+   * @returns {array} nodeExcludes - List of node names that disallow the allocation of shards.
+   * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
+   */
+  module.getESShards = (req, res) => {
+    Promise.all([
+      Db.shards(),
+      Db.getClusterSettings({ flatSettings: true })
+    ]).then(([shards, settings]) => {
+      let ipExcludes = [];
+      if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
+        ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
+      }
+
+      let nodeExcludes = [];
+      if (settings.persistent['cluster.routing.allocation.exclude._name']) {
+        nodeExcludes = settings.persistent['cluster.routing.allocation.exclude._name'].split(',');
+      }
+
+      let regex;
+      if (req.query.filter !== undefined) {
+        try {
+          regex = new RE2(req.query.filter.toLowerCase());
+        } catch (e) {
+          return res.molochError(500, `Regex Error: ${e}`);
+        }
+      }
+
+      let result = {};
+      let nodes = {};
+
+      for (const shard of shards) {
+        if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
+
+        if (!(req.query.show === 'all' ||
+          shard.state === req.query.show || //  Show only matching stage
+          (shard.state !== 'STARTED' && req.query.show === 'notstarted'))) {
+          continue;
+        }
+
+        if (regex && !shard.index.toLowerCase().match(regex) && !shard.node.toLowerCase().match(regex)) { continue; }
+
+        if (result[shard.index] === undefined) {
+          result[shard.index] = { name: shard.index, nodes: {} };
+        }
+        if (result[shard.index].nodes[shard.node] === undefined) {
+          result[shard.index].nodes[shard.node] = [];
+        }
+        result[shard.index].nodes[shard.node].push(shard);
+        nodes[shard.node] = { ip: shard.ip, ipExcluded: ipExcludes.includes(shard.ip), nodeExcluded: nodeExcludes.includes(shard.node) };
+
+        result[shard.index].nodes[shard.node]
+          .sort((a, b) => {
+            return a.shard - b.shard;
+          });
+
+        delete shard.node;
+        delete shard.index;
+      }
+
+      let indices = Object.keys(result).map((k) => result[k]);
+      if (req.query.desc === 'true') {
+        indices = indices.sort((a, b) => {
+          return b.name.localeCompare(a.name);
+        });
+      } else {
+        indices = indices.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      res.send({
+        nodes: nodes,
+        indices: indices,
+        nodeExcludes: nodeExcludes,
+        ipExcludes: ipExcludes
+      });
+    });
+  };
+
+  /**
+   * POST - /api/esshards/:type/:value/exclude
+   *
+   * Exclude Elasticsearch node by ip or name (admin only).
+   * @name /esshards/:type/:value/exclude
+   * @returns {boolean} success - Whether exclude node operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.excludeESShard = (req, res) => {
+    if (Config.get('multiES', false)) {
+      return res.molochError(401, 'Not supported in multies');
+    }
+
+    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+      let exclude = [];
+      let settingName;
+
+      if (req.params.type === 'ip') {
+        settingName = 'cluster.routing.allocation.exclude._ip';
+      } else if (req.params.type === 'name') {
+        settingName = 'cluster.routing.allocation.exclude._name';
+      } else {
+        return res.molochError(403, 'Unknown exclude type');
+      }
+
+      if (settings.persistent[settingName]) {
+        exclude = settings.persistent[settingName].split(',');
+      }
+
+      if (!exclude.includes(req.params.value)) {
+        exclude.push(req.params.value);
+      }
+
+      let query = { body: { persistent: {} } };
+      query.body.persistent[settingName] = exclude.join(',');
+
+      Db.putClusterSettings(query, (err, settings) => {
+        if (err) { console.log('putSettings', err); }
+        return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
+      });
+    });
+  };
+
+  /**
+   * POST - /api/esshards/:type/:value/include
+   *
+   * Include Elasticsearch node by ip or name (admin only).
+   * @name /esshards/:type/:value/include
+   * @returns {boolean} success - Whether include node operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.includeESShard = (req, res) => {
+    if (Config.get('multiES', false)) {
+      return res.molochError(401, 'Not supported in multies');
+    }
+
+    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+      let exclude = [];
+      let settingName;
+
+      if (req.params.type === 'ip') {
+        settingName = 'cluster.routing.allocation.exclude._ip';
+      } else if (req.params.type === 'name') {
+        settingName = 'cluster.routing.allocation.exclude._name';
+      } else {
+        return res.molochError(403, 'Unknown include type');
+      }
+
+      if (settings.persistent[settingName]) {
+        exclude = settings.persistent[settingName].split(',');
+      }
+
+      let pos = exclude.indexOf(req.params.value);
+      if (pos > -1) {
+        exclude.splice(pos, 1);
+      }
+
+      let query = { body: { persistent: {} } };
+      query.body.persistent[settingName] = exclude.join(',');
+
+      Db.putClusterSettings(query, (err, settings) => {
+        if (err) { console.log('putSettings', err); }
+        return res.send(JSON.stringify({ success: true, text: 'Included' }));
+      });
+    });
+  };
+
+  // ES RECOVERY APIS ---------------------------------------------------------
+  /**
+   * GET - /api/esrecovery
+   *
+   * Returns information about ongoing and completed shard recoveries for indices.
+   * @name esrecovery
+   * @param {string} filter - Search text to filter the list of indices by.
+   * @param {string} sortField=index - The field to sort the indices by.
+   * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
+   * @param {string} show=active - Whether to show "all" or "active" recovering indices.
+   * @returns {array} data - List of indices with their corresponding stats.
+   * @returns {number} recordsTotal - The total number of indices.
+   * @returns {number} recordsFiltered - The number of indices returned in this result.
+   */
+  module.getESRecovery = (req, res) => {
+    const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
+
+    Promise.all([
+      Db.recovery(sortField, req.query.show !== 'all')
+    ]).then(([recoveries]) => {
+      let regex;
+      if (req.query.filter !== undefined) {
+        try {
+          regex = new RE2(req.query.filter);
+        } catch (e) {
+          return res.molochError(500, `Regex Error: ${e}`);
+        }
+      }
+
+      let result = [];
+
+      for (const recovery of recoveries) {
+        // filtering
+        if (regex && !recovery.index.match(regex) &&
+          !recovery.target_node.match(regex) &&
+          !recovery.source_node.match(regex)) {
+          continue;
+        }
+
+        result.push(recovery);
+      }
+
+      // Work around for https://github.com/elastic/elasticsearch/issues/48070
+      if (req.query.sortField && req.query.sortField.endsWith('_percent')) {
+        let sf = req.query.sortField;
+        if (req.query.desc === 'true') {
+          result = result.sort((a, b) => { return parseFloat(b[sf]) - parseFloat(a[sf]); });
+        } else {
+          result = result.sort((a, b) => { return parseFloat(a[sf]) - parseFloat(b[sf]); });
+        }
+      }
+
+      res.send({
+        recordsTotal: recoveries.length,
+        recordsFiltered: result.length,
+        data: result
+      });
+    }).catch((err) => {
+      console.log('ERROR -  /api/esrecovery', err);
+      return res.send({
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
+      });
     });
   };
 

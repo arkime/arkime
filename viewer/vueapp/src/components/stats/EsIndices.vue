@@ -36,7 +36,7 @@
           slot-scope="{ item }">
           <b-dropdown size="sm"
             class="row-actions-btn"
-            v-has-permission="'createEnabled'">
+            v-has-permission="'createEnabled,removeEnabled'">
             <b-dropdown-item
               @click.stop.prevent="confirmDeleteIndex(item.index)">
               Delete Index {{ item.index }}

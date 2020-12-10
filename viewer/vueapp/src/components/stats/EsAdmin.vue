@@ -181,7 +181,7 @@ export default {
         value: setting.current
       };
 
-      this.$http.post('esadmin/set', body)
+      this.$http.post('api/esadmin/set', body)
         .then((response) => {
           this.$set(setting, 'error', '');
           this.$set(setting, 'changed', false);
@@ -191,7 +191,7 @@ export default {
     },
     cancel: function (setting) {
       // update the changed value with the one that's saved
-      this.$http.get('esadmin/list')
+      this.$http.get('api/esadmin')
         .then((response) => {
           this.$set(setting, 'error', '');
           for (let resSetting of response.data) {
@@ -205,7 +205,7 @@ export default {
         });
     },
     clearCache: function () {
-      this.$http.post('esadmin/clearCache')
+      this.$http.post('api/esadmin/clearcache')
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -214,7 +214,7 @@ export default {
         });
     },
     unflood: function () {
-      this.$http.post('esadmin/unflood')
+      this.$http.post('api/esadmin/unflood')
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -223,7 +223,7 @@ export default {
         });
     },
     flush: function () {
-      this.$http.post('esadmin/flush')
+      this.$http.post('api/esadmin/flush')
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -232,7 +232,7 @@ export default {
         });
     },
     retryFailed: function () {
-      this.$http.post('esadmin/reroute')
+      this.$http.post('api/esadmin/reroute')
         .then((response) => {
           this.interactionSuccess = response.data.text;
         })
@@ -244,7 +244,7 @@ export default {
     loadData: function () {
       this.loading = true;
 
-      this.$http.get('esadmin/list')
+      this.$http.get('api/esadmin')
         .then((response) => {
           this.error = '';
           this.loading = false;
