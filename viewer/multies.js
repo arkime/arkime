@@ -838,7 +838,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
       return res.send(result);
     });
   } else {
-    console.log('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain _cluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
