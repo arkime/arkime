@@ -876,4 +876,13 @@ setInterval(enumerateActiveNodes, 1 * 60 * 1000); // 1*60*1000 ms
 console.log(nodes);
 
 console.log('Listen on ', Config.get('multiESPort', '8200'));
-http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+
+if (Config.isHTTPS()) {
+  https.createServer({
+    key: Config.keyFileData,
+    cert: Config.certFileData,
+    secureOptions: require('crypto').constants.SSL_OP_NO_TLSv1 }, app)
+  .listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+} else {
+  http.createServer(app).listen(Config.get('multiESPort', '8200'), Config.get('multiESHost', undefined));
+}
