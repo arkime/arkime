@@ -183,10 +183,10 @@ app.use(helmet.contentSecurityPolicy({
 /**
  * Get from the config section a value or default
  *
- * @name api.getConfig
+ * @name "api.getConfig"
  * @param {string} section - The section in the config file the key is in
  * @param {string} name - The key to get from the section
- * @param {string} d - the default value to return if key is not found in section
+ * @param {string} [d] - the default value to return if key is not found in section
  * @returns {string} - The value found or the default value
  */
 function getConfig (section, name, d) {
@@ -199,8 +199,8 @@ function getConfig (section, name, d) {
 /**
  * Get a list of all the sections int he config file
  *
- * @name api.getConfigSections
- * @returns {array of string} - A list of all the sections in the config file
+ * @name "api.getConfigSections"
+ * @returns {string|Array} - A list of all the sections in the config file
  */
 function getConfigSections () {
   return Object.keys(internals.config);
@@ -209,7 +209,7 @@ function getConfigSections () {
 /**
  * Get the full config for a section
  *
- * @name api.getConfigSections
+ * @name "api.getConfigSection"
  * @param {string} section - The section of the config file to return
  * @returns {object} - A list of all the sections in the config file
  */
@@ -386,7 +386,7 @@ function newFieldsTS () {
 /**
  * Add a field
  *
- * @name api.addField
+ * @name "api.addField"
  * @param {string} addField - An encoded field definition
  */
 function addField (field) {
@@ -453,7 +453,7 @@ function addField (field) {
 /**
  * Add a view
  *
- * @name api.addView
+ * @name "api.addView"
  * @param {string} name - Name of the new view
  * @param {string} input - An encoded view definition
  */
@@ -493,7 +493,7 @@ function addView (name, input) {
  * Activate a section of a source. Must be called if you want wise to query the source.
  * A section is an instance of a source, some sources can have multiple sections.
  *
- * @name api.addSource
+ * @name "api.addSource"
  * @param {string} section - The section name
  * @param {wiseSource} src - A wiseSource object
  */

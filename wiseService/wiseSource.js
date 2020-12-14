@@ -28,11 +28,11 @@ const iptrie = require('iptrie');
  * @param {object} options - All the options
  * @param {object} options.api - The api reference, will be saved in this.api
  * @param {string} options.section - the name of the section, will be saved in this.section
- * @param {boolean} options.dontCache - do not cache this source, the source handles itself
- * @param {integer} options.cacheTimeout - override the cacheAgeMin setting, -1 same as dont
- * @param {boolean} options.tagsSetting - load the optional tags setting
- * @param {boolean} options.typeSetting - load the required type setting
- * @param {boolean} options.formatSetting - load the format setting, default csv
+ * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
+ * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
+ * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
+ * @param {boolean} [options.typeSetting=false] - load the required type setting
+ * @param {boolean} [options.formatSetting=false] - load the format setting
  */
 function WISESource (options, oldsection) {
   // Old construction (api, section)
