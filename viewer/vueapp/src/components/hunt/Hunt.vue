@@ -339,7 +339,7 @@
                     </span>
                     <input type="text"
                       v-model="jobUsers"
-                      placeholder="Comma separated list of user IDs to add to this hunt"
+                      placeholder="Comma separated list of additional users that can view the hunt"
                       class="form-control"
                     />
                   </div>

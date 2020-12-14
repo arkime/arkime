@@ -40,7 +40,7 @@ jobs:
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
             - build-moloch-package: |
-                rm -rf /data/moloch
+                rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
                 scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --dir /data/moloch"
                 scl enable devtoolset-9 rh-python36 "cd capture ; make clean; make; make install"
@@ -78,7 +78,7 @@ jobs:
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                 fi
             - build-moloch-package: |
-                rm -rf /data/moloch
+                rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
@@ -120,7 +120,7 @@ jobs:
                   aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_ubuntu16_amd64.deb --acl public-read
                 fi
             - build-moloch-package: |
-                rm -rf /data/moloch
+                rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
@@ -170,7 +170,7 @@ jobs:
                 fi
 
             - build-moloch-package: |
-                rm -rf /data/moloch
+                rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
@@ -222,7 +222,7 @@ jobs:
                 fi
 
             - build-moloch-package: |
-                rm -rf /data/moloch
+                rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
