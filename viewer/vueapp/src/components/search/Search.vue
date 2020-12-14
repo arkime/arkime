@@ -139,30 +139,30 @@
         <template slot="button-content">
           <div v-b-tooltip.hover.left :title="esMenuHoverText">
             <span class="fa fa-database"> </span>
-            <span> {{ selectedESCluster.length }} </span>
+            <span> {{ selectedCluster.length }} </span>
           </div>
         </template>
         <b-dropdown-header>
           <input type="text"
             v-model="esQuery"
             class="form-control form-control-sm dropdown-typeahead"
-            placeholder="Search for ES clusters..."
+            placeholder="Search for Clusters..."
           />
         </b-dropdown-header>
         <b-dropdown-divider>
         </b-dropdown-divider>
-         <b-dropdown-item @click.native.capture.stop.prevent="selectAllESCluster">
+         <b-dropdown-item @click.native.capture.stop.prevent="selectAllCluster">
           <span class="fa fa-list"></span>&nbsp;
           Select All
         </b-dropdown-item>
-        <b-dropdown-item @click.native.capture.stop.prevent="clearAllESCluster">
+        <b-dropdown-item @click.native.capture.stop.prevent="clearAllCluster">
           <span class="fa fa-eraser"></span>&nbsp;
           Clear All
         </b-dropdown-item>
         <b-dropdown-divider>
         </b-dropdown-divider>
         <template v-if="esVisMenuOpen">
-          <template v-for="(clusters, group) in filteredESClusteres">
+          <template v-for="(clusters, group) in filteredClusteres">
             <b-dropdown-header
               :key="group"
               class="group-header">
@@ -172,8 +172,8 @@
               <b-dropdown-item
                 :id="group + cluster + 'item'"
                 :key="group + cluster + 'item'"
-                :class="{'active':isESClusterVis(cluster)}"
-                @click.native.capture.stop.prevent="toggleESClusterSelection(cluster)">
+                :class="{'active':isClusterVis(cluster)}"
+                @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
                 {{ cluster }}
               </b-dropdown-item>
             </template>
@@ -401,36 +401,36 @@ export default {
       return this.$store.state.user;
     },
     esMenuHoverText: function () {
-      if (this.selectedESCluster.length === 0) {
+      if (this.selectedCluster.length === 0) {
         return 'No Selection';
-      } else if (this.selectedESCluster.length === 1) {
-        return this.selectedESCluster[0];
+      } else if (this.selectedCluster.length === 1) {
+        return this.selectedCluster[0];
       } else {
-        return this.selectedESCluster.length + ' out of ' + this.availableESCluster.active.length + ' selected';
+        return this.selectedCluster.length + ' out of ' + this.availableCluster.active.length + ' selected';
       }
     },
-    availableESCluster: {
+    availableCluster: {
       get: function () {
         return this.$store.state.esCluster.availableCluster;
       },
       set: function (newValue) {
-        this.$store.commit('setAvailableESCluster', newValue);
+        this.$store.commit('setAvailableCluster', newValue);
       }
     },
-    selectedESCluster: {
+    selectedCluster: {
       get: function () {
         return this.$store.state.esCluster.selectedCluster || [];
       },
       set: function (newValue) {
-        this.$store.commit('setSelectedESCluster', newValue);
+        this.$store.commit('setSelectedCluster', newValue);
       }
     },
-    filteredESClusteres: function () {
+    filteredClusteres: function () {
       let filteredGroupedClusters = {};
-      for (let group in this.availableESCluster) {
-        filteredGroupedClusters[group] = this.$options.filters.searchESCluster(
+      for (let group in this.availableCluster) {
+        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
           this.esQuery,
-          this.availableESCluster[group]
+          this.availableCluster[group]
         );
       }
       return filteredGroupedClusters;
@@ -457,7 +457,7 @@ export default {
   created: function () {
     this.getViews();
     this.getMolochClusters();
-    this.getESClusterInformation();
+    this.getClusterInformation();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -590,39 +590,39 @@ export default {
         });
     },
     /* MultiES functions ------------------------------------------ */
-    getESClusterInformation: function () {
-      if (this.availableESCluster.active.length === 0 && this.availableESCluster.inactive.length === 0) {
-        ConfigService.getESClusters()
+    getClusterInformation: function () {
+      if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
+        ConfigService.getClusters()
           .then((response) => {
-            this.availableESCluster = response;
-            var clusters = this.$route.query.escluster ? this.$route.query.escluster.split(',') : [];
+            this.availableCluster = response;
+            var clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
             if (clusters.length === 0) {
-              this.selectedESCluster = response.active;
+              this.selectedCluster = response.active;
             } else {
-              this.selectedESCluster = [];
+              this.selectedCluster = [];
               for (var i = 0; i < clusters.length; i++) {
                 if (response.active.includes(clusters[i])) {
-                  this.selectedESCluster.push(clusters[i]);
+                  this.selectedCluster.push(clusters[i]);
                 }
               }
             }
           });
       }
     },
-    isESClusterVis: function (cluster) {
-      if (this.availableESCluster.active.includes(cluster)) { // found in active cluster list
-        return this.selectedESCluster.includes(cluster); // returns True if found in selected cluster list
+    isClusterVis: function (cluster) {
+      if (this.availableCluster.active.includes(cluster)) { // found in active cluster list
+        return this.selectedCluster.includes(cluster); // returns True if found in selected cluster list
       } else { // inactive cluster
         return false;
       }
     },
-    updateRouteQueryForESClusters: function (clusters) {
-      var escluster = clusters.length > 0 ? clusters.join(',') : 'none';
-      if (!this.$route.query.escluster || this.$route.query.escluster !== escluster) {
+    updateRouteQueryForClusters: function (clusters) {
+      var cluster = clusters.length > 0 ? clusters.join(',') : 'none';
+      if (!this.$route.query.cluster || this.$route.query.cluster !== cluster) {
         this.$router.push({
           query: {
             ...this.$route.query,
-            escluster: escluster
+            cluster: cluster
           }
         });
       }
@@ -680,23 +680,23 @@ export default {
         this.$emit('changeSearch');
       }
     },
-    selectAllESCluster: function () {
-      this.selectedESCluster = this.availableESCluster.active;
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
+    selectAllCluster: function () {
+      this.selectedCluster = this.availableCluster.active;
+      this.updateRouteQueryForClusters(this.selectedCluster);
     },
-    clearAllESCluster: function () {
-      this.selectedESCluster = [];
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
+    clearAllCluster: function () {
+      this.selectedCluster = [];
+      this.updateRouteQueryForClusters(this.selectedCluster);
     },
-    toggleESClusterSelection: function (cluster) {
-      if (this.selectedESCluster.includes(cluster)) { // already selected; remove from selection
-        this.selectedESCluster = this.selectedESCluster.filter((item) => {
+    toggleClusterSelection: function (cluster) {
+      if (this.selectedCluster.includes(cluster)) { // already selected; remove from selection
+        this.selectedCluster = this.selectedCluster.filter((item) => {
           return item !== cluster;
         });
-      } else if (!this.availableESCluster.inactive.includes(cluster)) { // not in inactive cluster
-        this.selectedESCluster.push(cluster); // add to selected list
+      } else if (!this.availableCluster.inactive.includes(cluster)) { // not in inactive cluster
+        this.selectedCluster.push(cluster); // add to selected list
       }
-      this.updateRouteQueryForESClusters(this.selectedESCluster);
+      this.updateRouteQueryForClusters(this.selectedCluster);
     }
   }
 };

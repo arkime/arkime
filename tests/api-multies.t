@@ -18,7 +18,7 @@ my $json;
 
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
-    is ($json->{escluster}, "test", "Correct escluster status");
+    is ($json->{cluster}, "test", "Correct cluster status");
     is (exists $json->{indices}->{MULTIPREFIX_stats_v4}, 1, "Correct stats/_stats index");
 
     $json = mesGet("/MULTIPREFIX_files/_stats");
@@ -62,10 +62,10 @@ my $json;
 
 # _node
     $json = mesGet("/_nodes/stats?fs=1");
-    is ($json->{escluster}, "test", "Correct _node status");
+    is ($json->{cluster}, "test", "Correct _node status");
 
     $json = mesGet("/_nodes/stats?jvm=1&process=1&fs=1&search=1&os=1");
-    is ($json->{escluster}, "test", "Correct _node status");
+    is ($json->{cluster}, "test", "Correct _node status");
 
 # aliases
     $json = mesGet("/MULTIPREFIX_sessions2-*/_alias");

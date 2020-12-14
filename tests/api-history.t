@@ -54,7 +54,7 @@ my ($url) = @_;
     my $index = $json->{data}->[0]->{index};
     delete $json->{data}->[0]->{index};
     delete $mjson->{data}->[0]->{index};
-    delete $mjson->{data}->[0]->{escluster};
+    delete $mjson->{data}->[0]->{cluster};
     eq_or_diff($mjson, $json, "multi Test1", { context => 3 });
     $json->{data}->[0]->{index} = $index;
 

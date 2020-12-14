@@ -46,25 +46,25 @@ export default {
    * @param {array} An array of available ES cluster
    * @returns {object} An object of result
    */
-  checkESClusterSelection: function (queryESCluster, availableESClusterList) {
+  checkClusterSelection: function (queryCluster, availableClusterList) {
     var result = {
       valid: true,
       error: ''
     };
 
-    if (queryESCluster === undefined) {
+    if (queryCluster === undefined) {
       return result;
-    } else if (queryESCluster === 'none') {
+    } else if (queryCluster === 'none') {
       result.valid = false;
       result.error = 'No ES cluster is selected. Select at least one ES cluster.';
       return result;
-    } else if (availableESClusterList.length === 0) {
+    } else if (availableClusterList.length === 0) {
       // either no active cluster or it is taking time to fetch the available cluster
       return result;
     } else {
-      var queryESClusterList = queryESCluster ? queryESCluster.split(',') : [];
-      for (var i = 0; i < queryESClusterList.length; i++) {
-        if (availableESClusterList.includes(queryESClusterList[i])) { // valid selection
+      var queryClusterList = queryCluster ? queryCluster.split(',') : [];
+      for (var i = 0; i < queryClusterList.length; i++) {
+        if (availableClusterList.includes(queryClusterList[i])) { // valid selection
           result.valid = true;
           result.error = '';
           return result;

@@ -613,7 +613,7 @@ export default {
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        escluster: this.$route.query.escluster || undefined
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -868,8 +868,8 @@ export default {
       this.loading = true;
 
       if (this.multiviewer) {
-        var availableESCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkESClusterSelection(this.query.escluster, availableESCluster);
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           this.getFields({ nodes: [], links: [] });
           this.recordsFiltered = 0;

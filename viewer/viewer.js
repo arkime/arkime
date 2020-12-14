@@ -6644,7 +6644,7 @@ if (Config.get('regressionTests')) {
 // ----------------------------------------------------------------------------
 // MultiES
 // ----------------------------------------------------------------------------
-app.get('/esclusters', (req, res) => {
+app.get('/clusters', (req, res) => {
   var clusters = { active: [], inactive: [] };
   if (Config.get('multiES', false)) {
     Db.getClusterDetails((err, results) => {

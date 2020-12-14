@@ -632,7 +632,7 @@ exports.refresh = function (index, cb) {
   }
 };
 
-exports.addTagsToSession = function (index, id, tags, escluster, cb) {
+exports.addTagsToSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -657,12 +657,12 @@ exports.addTagsToSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { body.escluster = escluster; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
+exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -687,7 +687,7 @@ exports.removeTagsFromSession = function (index, id, tags, escluster, cb) {
     }
   };
 
-  if (escluster) { body.escluster = escluster; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };

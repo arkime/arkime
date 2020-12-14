@@ -27,7 +27,7 @@ export default {
         interval: true,
         cancelId: true,
         expression: true,
-        escluster: true
+        cluster: true
       };
 
       if (query) {
@@ -85,13 +85,13 @@ export default {
    * Gets details about the session
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
-   * @param {string} escluster  The Elasticsearch cluster that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster that the session belongs to
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node, escluster) {
+  getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      let url = escluster ? `api/${node}/session/${id}/detail?escluster=${escluster}` : `api/${node}/session/${id}/detail`;
+      let url = cluster ? `api/${node}/session/${id}/detail?cluster=${cluster}` : `api/${node}/session/${id}/detail`;
       Vue.axios.get(url)
         .then((response) => {
           resolve(response);
@@ -105,13 +105,13 @@ export default {
    * Gets session packets
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
-   * @param {string} escluster  The Elasticsearch cluster that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster that the session belongs to
    * @param {Object} params     The params to send with the request
    * @returns {Object} { promise, source } An object including a promise object
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
    */
-  getPackets: function (id, node, escluster, params) {
+  getPackets: function (id, node, cluster, params) {
     let source = Vue.axios.CancelToken.source();
 
     let promise = new Promise((resolve, reject) => {
@@ -119,7 +119,7 @@ export default {
         method: 'GET',
         params: {
           ...params,
-          escluster: escluster
+          cluster: cluster
         },
         cancelToken: source.token,
         url: `api/${node}/session/${id}/packets`
@@ -335,7 +335,7 @@ export default {
     params.stopTime = clonedParams.stopTime;
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
-    params.escluster = clonedParams.escluster;
+    params.cluster = clonedParams.cluster;
 
     let url = `api/multiunique?${qs.stringify(params)}`;
 
@@ -359,7 +359,7 @@ export default {
       stopTime: clonedParams.stopTime,
       startTime: clonedParams.startTime,
       expression: clonedParams.expression,
-      escluster: clonedParams.escluster
+      cluster: clonedParams.cluster
     };
 
     let url = `api/unique?${qs.stringify(params)}`;

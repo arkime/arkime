@@ -637,7 +637,7 @@ export default {
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
-        escluster: this.$route.query.escluster || undefined
+        cluster: this.$route.query.cluster || undefined
       };
     },
     sorts: {
@@ -1364,8 +1364,8 @@ export default {
       this.error = '';
 
       if (this.multiviewer) {
-        var availableESCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkESClusterSelection(this.query.escluster, availableESCluster);
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           pendingPromise = null;
           this.sessions.data = undefined;

@@ -182,10 +182,10 @@ const store = new Vuex.Store({
         if (i < len - 1) { state.sortsParam += ','; }
       }
     },
-    setAvailableESCluster (state, value) {
+    setAvailableCluster (state, value) {
       state.esCluster.availableCluster = value;
     },
-    setSelectedESCluster (state, value) {
+    setSelectedCluster (state, value) {
       state.esCluster.selectedCluster = value;
     },
     setStickySessionsBtn (state, value) {

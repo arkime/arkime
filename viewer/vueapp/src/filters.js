@@ -352,14 +352,14 @@ Vue.filter('buildExpression', function (field, value, op) {
  * Looks for the term in a list of cluster
  *
  * @example
- * '{{ searchTerm | searchESCluster(cluster) }}'
- * this.$options.filters.searchESCluster('ES1', ['ES1', 'ES2', 'ES3']);
+ * '{{ searchTerm | searchCluster(cluster) }}'
+ * this.$options.filters.searchCluster('ES1', ['ES1', 'ES2', 'ES3']);
  *
  * @param {string} searchTerm       The string to search for within the fields
  * @param {array} clusters          The list of cluster to search
  * @returns {array}                 An array of cluster that match the search term
  */
-Vue.filter('searchESCluster', function (searchTerm, clusters) {
+Vue.filter('searchCluster', function (searchTerm, clusters) {
   if (!searchTerm) { searchTerm = ''; }
   return clusters.filter((cluster) => {
     searchTerm = searchTerm.toLowerCase();

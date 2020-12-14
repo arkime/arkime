@@ -143,10 +143,10 @@ function getActiveNodes (clusterin) {
 
 function simpleGather (req, res, bodies, doneCb) {
   var cluster = null;
-  if (req.query.escluster) {
-    cluster = Array.isArray(req.query.escluster) ? req.query.escluster : req.query.escluster.split(',');
-    req.url = req.url.replace(/escluster=[^&]*(&|$)/g, ''); // remove escluster from URL
-    delete req.query.escluster;
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+    req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    delete req.query.cluster;
   }
   var nodes = getActiveNodes(cluster);
   if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
@@ -180,7 +180,7 @@ function simpleGather (req, res, bodies, doneCb) {
         } else {
           result = {};
         }
-        result.escluster = clusters[node];
+        result.cluster = clusters[node];
         asyncCb(null, result);
       });
     });
@@ -380,7 +380,7 @@ app.get('/:index/:type/:id', function (req, res) {
     for (var i = 0; i < results.length; i++) {
       if (results[i].found) {
         if (results[i]._source) {
-          results[i]._source.escluster = results[i].escluster;
+          results[i]._source.cluster = results[i].cluster;
         }
         return res.send(results[i]);
       }
@@ -615,8 +615,8 @@ function combineResults (obj, result) {
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i].escluster = result.escluster;
-      result.hits.hits[i]._source.escluster = result.escluster;
+      result.hits.hits[i].cluster = result.cluster;
+      result.hits.hits[i]._source.cluster = result.cluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
@@ -797,9 +797,9 @@ function msearch (req, res) {
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
   var body = JSON.parse(req.body);
-  if (body.escluster && clusters[body.escluster]) {
-    var node = clusters[body.escluster];
-    delete body.escluster;
+  if (body.cluster && clusters[body.cluster]) {
+    var node = clusters[body.cluster];
+    delete body.cluster;
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
@@ -819,7 +819,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
       return res.send(result);
     });
   } else {
-    console.log('ERROR - body of the request does not contain escluster field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain cluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
@@ -855,6 +855,17 @@ if (nodes.length === 0 || nodes[0] === '') {
   process.exit(1);
 }
 
+clusterList = Config.get('multiESClusters', '').split(';');
+if (clusterList.length === 0 || clusterList[0] === '') {
+  console.log('ERROR - Empty multiESClusters');
+  process.exit(1);
+}
+
+if (clusterList.length !== nodes.length) {
+  console.log('ERROR - The lenghts of multiESNodes and multiESClusters do not match');
+  process.exit(1);
+}
+
 // First connect
 nodes.forEach((node) => {
   if (node.toLowerCase().includes(',http')) {
@@ -882,11 +893,6 @@ nodes.forEach((node) => {
   });
 });
 
-clusterList = Config.get('multiESClusters', '').split(';');
-if (clusterList.length === 0 || clusterList[0] === '') {
-  console.log('ERROR - Empty multiESClusters');
-  process.exit(1);
-}
 
 // Maintain a mapping of node to cluster and cluster to node
 for (var i = 0; i < nodes.length; i++) {
