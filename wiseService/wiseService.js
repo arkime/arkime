@@ -186,7 +186,7 @@ app.use(helmet.contentSecurityPolicy({
  * @name "api.getConfig"
  * @param {string} section - The section in the config file the key is in
  * @param {string} name - The key to get from the section
- * @param {string} [d] - the default value to return if key is not found in section
+ * @param {string} [default] - the default value to return if key is not found in section
  * @returns {string} - The value found or the default value
  */
 function getConfig (section, name, d) {
@@ -672,11 +672,23 @@ if (internals.regressionTests) {
   });
 }
 // ----------------------------------------------------------------------------
-app.get('/_ns_/nstest.html', [noCacheJson], function (req, res) {
+/**
+ * GET - Health check URL
+ *
+ * @name "/_ns_/nstest.html"
+ */
+app.get('/_ns_/nstest.html', [noCacheJson], (req, res) => {
   res.end();
 });
 // ----------------------------------------------------------------------------
-app.get('/fields', [noCacheJson], function (req, res) {
+/**
+ * GET - Used by capture to retrieve all the fields created by wise sources
+ *
+ * @name "/fields"
+ * @param {integer} [ver=0] - Version of the encoded binary to return
+ * @returns {binary}
+ */
+app.get('/fields', [noCacheJson], (req, res) => {
   if (req.query.ver === undefined || req.query.ver === '0') {
     if (internals.fields.length < 256) {
       res.send(internals.fieldsBuf0);
@@ -689,11 +701,23 @@ app.get('/fields', [noCacheJson], function (req, res) {
   }
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Used by viewer to retrieve all the views being created by wise sources
+ *
+ * @name "/views"
+ * @returns {object} All the views
+ */
 app.get('/views', [noCacheJson], function (req, res) {
-  res.send(internals.views);
+  res.send(internals.views|array);
 });
 // ----------------------------------------------------------------------------
-app.get('/rightClicks', [noCacheJson], function (req, res) {
+/**
+ * GET - Used by viewer to retrieve all the field value actions created by wise sources
+ *
+ * @name "/fieldValueActions"
+ * @returns {object|array} All the actions
+ */
+app.get(['/rightClicks', '/fieldValueActions'], [noCacheJson], function (req, res) {
   res.send(internals.rightClicks);
 });
 
@@ -974,6 +998,15 @@ function processQueryResponse2 (req, res, queries, results) {
   res.end();
 }
 // ----------------------------------------------------------------------------
+/**
+ * POST - Used by capture to lookup all the wise items
+ *
+ * @name "/get"
+ * @param {integer} ver=0 - The format of the post data, version 0 and 2 supported
+ * @param {string|array} hashes - A comma separated list of md5 hashes of field arrays that the client knows about.
+ *                                If one of the hashes is the one we would use, then we don't send the field array.
+ * @returns {binary} The encoded results
+ */
 app.post('/get', function (req, res) {
   let offset = 0;
 
@@ -1026,14 +1059,28 @@ app.post('/get', function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/sources', [noCacheJson], (req, res) => {
+/**
+ * GET - Used by wise UI to retrieve all the source sections
+ *
+ * @name "/sections"
+ * @returns {string|array} All the sources
+ */
+app.get(['/sources', '/sections'], [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
-app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
-  const source = internals.sources[req.params.source];
+/**
+ * GET - Used by wise UI to retrieve the raw file being used by the section.
+ *       This is an authenticated API and requires wiseService to be started with --webconfig.
+ *
+ * @name "/source/:section/get"
+ * @param {string} :section - The section to get the raw data for
+ * @returns {object} All the views
+ */
+app.get('/source/:section/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+  const source = internals.sources[req.params.section];
   if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    return res.send({ success: false, text: `Source ${req.params.section} not found` });
   }
 
   if (!source.getRaw) {
@@ -1048,10 +1095,18 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
   });
 });
 // ----------------------------------------------------------------------------
-app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
-  const source = internals.sources[req.params.source];
+/**
+ * PUT - Used by wise UI to save the raw file being used by the section.
+ *       This is an authenticated API and requires wiseService to be started with --webconfig.
+ *
+ * @name "/source/:section/get"
+ * @param {string} :section - The section to put the raw data for
+ * @returns {object} All the views
+ */
+app.put('/source/:section/put', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+  const source = internals.sources[req.params.section];
   if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.source} not found` });
+    return res.send({ success: false, text: `Source ${req.params.section} not found` });
   }
 
   if (!source.putRaw) {
@@ -1068,10 +1123,23 @@ app.put('/source/:source/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, j
   });
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Used by wise UI to retrieve all the configuration definitions for the various sources.
+ *
+ * @name "/config/defs"
+ * @returns {object}
+ */
 app.get('/config/defs', [noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Used by wise UI to retrieve the current config.
+ *       This is an authenticated API and requires wiseService to be started with --webconfig.
+ *
+ * @name "/config/get"
+ * @returns {object}
+ */
 app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   let config = Object.keys(internals.config)
   .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1093,6 +1161,12 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
                    filePath: internals.configFile });
 });
 // ----------------------------------------------------------------------------
+/**
+ * PUT - Used by wise UI to save the current config.
+ *       This is an authenticated API, requires the pin code, and requires wiseService to be started with --webconfig.
+ *
+ * @name "/config/save"
+ */
 app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
