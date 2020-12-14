@@ -303,7 +303,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     gettimeofday(&outputFileTime, 0);
     struct tm         *gm = gmtime(&outputFileTime.tv_sec);
     snprintf(datetime, sizeof(datetime),
-            "%04d%02d%02dT%02d%02d%02dZ",
+            "%04u%02u%02uT%02u%02u%02uZ",
             gm->tm_year + 1900,
             gm->tm_mon+1,
             gm->tm_mday,
@@ -374,35 +374,35 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char kSecret[1000];
     snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
 
-    char  kDate[1000];
+    char  kDate[65];
     gsize kDateLen = sizeof(kDate);
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSecret, strlen(kSecret));
     g_hmac_update(hmac, (guchar*)datetime, 8);
     g_hmac_get_digest(hmac, (guchar*)kDate, &kDateLen);
     g_hmac_unref(hmac);
 
-    char  kRegion[1000];
+    char  kRegion[65];
     gsize kRegionLen = sizeof(kRegion);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kDate, kDateLen);
     g_hmac_update(hmac, (guchar*)s3Region, -1);
     g_hmac_get_digest(hmac, (guchar*)kRegion, &kRegionLen);
     g_hmac_unref(hmac);
 
-    char  kService[1000];
+    char  kService[65];
     gsize kServiceLen = sizeof(kService);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kRegion, kRegionLen);
     g_hmac_update(hmac, (guchar*)"s3", 2);
     g_hmac_get_digest(hmac, (guchar*)kService, &kServiceLen);
     g_hmac_unref(hmac);
 
-    char kSigning[1000];
+    char kSigning[65];
     gsize kSigningLen = sizeof(kSigning);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kService, kServiceLen);
     g_hmac_update(hmac, (guchar*)"aws4_request", 12);
     g_hmac_get_digest(hmac, (guchar*)kSigning, &kSigningLen);
     g_hmac_unref(hmac);
 
-    char signature[1000];
+    char signature[65];
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSigning, kSigningLen);
     g_hmac_update(hmac, (guchar*)stringToSign, -1);
     strcpy(signature, g_hmac_get_string(hmac));
