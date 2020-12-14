@@ -1,6 +1,9 @@
 'use strict';
 
 const async = require('async');
+const http = require('http');
+const https = require('https');
+const url = require('url');
 
 module.exports = (Config, Db, molochparser, internals) => {
   let module = {};
@@ -512,6 +515,71 @@ module.exports = (Config, Db, molochparser, internals) => {
      }
 
      return a;
+   };
+
+   module.getViewUrl = (node, cb) => {
+     if (Array.isArray(node)) {
+       node = node[0];
+     }
+
+     let url = Config.getFull(node, 'viewUrl');
+     if (url) {
+       if (Config.debug > 1) {
+         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
+       }
+       cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+       return;
+     }
+
+     Db.molochNodeStatsCache(node, function (err, stat) {
+       if (err) {
+         return cb(err);
+       }
+
+       if (Config.debug > 1) {
+         console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
+       }
+
+       if (Config.isHTTPS(node)) {
+         cb(null, 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), https);
+       } else {
+         cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
+       }
+     });
+   };
+
+   module.makeRequest = (node, path, user, cb) => {
+     module.getViewUrl(node, function (err, viewUrl, client) {
+       let info = url.parse(viewUrl);
+       info.path = encodeURI(`${Config.basePath(node)}${path}`);
+       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+       info.timeout = 20 * 60 * 1000;
+       module.addAuth(info, user, node);
+       module.addCaTrust(info, node);
+
+       function responseFunc (pres) {
+         let response = '';
+         pres.on('data', function (chunk) {
+           response += chunk;
+         });
+         pres.on('end', function () {
+           cb(null, response);
+         });
+       }
+
+       let preq = client.request(info, responseFunc);
+       preq.on('error', (err) => {
+         // Try a second time on errors
+         console.log(`Retry ${info.path} on remote viewer: ${err}`);
+         let preq2 = client.request(info, responseFunc);
+         preq2.on('error', (err) => {
+           console.log(`Error with ${info.path} on remote viewer: ${err}`);
+           cb(err);
+         });
+         preq2.end();
+       });
+       preq.end();
+     });
    };
 
    return module;

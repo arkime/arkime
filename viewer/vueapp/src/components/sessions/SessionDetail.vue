@@ -988,6 +988,7 @@ export default {
               let img = imgs[i];
               let href = img.href;
               href = href.replace('body', 'bodypng');
+              console.log('href', href);
 
               let tooltip = document.createElement('span');
               tooltip.className = 'img-tip';
@@ -1022,7 +1023,7 @@ export default {
     showSrcBytesImg: function () {
       this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=src">
+        <img src="api/sessions/${this.session.node}/raw/${this.session.id}.png?type=src">
         <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=src" download="${this.session.id}-src.png">
           <span class="fa fa-download"></span>&nbsp;
           Download src bytes image
@@ -1033,7 +1034,7 @@ export default {
     showDstBytesImg: function () {
       this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=dst">
+        <img src="api/sessions/${this.session.node}/raw/${this.session.id}.png?type=dst">
         <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=dst" download="${this.session.id}-dst.png">
           <span class="fa fa-download"></span>&nbsp;
           Download dst bytes image

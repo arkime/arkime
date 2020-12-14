@@ -1,15 +1,16 @@
 'use strict';
 
 const async = require('async');
+const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
-const https = require('https');
 const path = require('path');
+const PNG = require('pngjs').PNG;
 const pug = require('pug');
 const url = require('url');
 const util = require('util');
 
-module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils) => {
+module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, ViewerUtils) => {
   let module = {};
 
   // --------------------------------------------------------------------------
@@ -315,7 +316,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
   function localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
-    var numPackets = req.query.packets || 200;
+    let numPackets = req.query.packets || 200;
     if (incoming.length > numPackets) {
       incoming.length = numPackets;
     }
@@ -324,7 +325,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       return localSessionDetailReturnFull(req, res, session, []);
     }
 
-    var options = {
+    let options = {
       id: session.id,
       nodeName: req.params.nodeName,
       order: [],
@@ -347,8 +348,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     options.order.push('ITEM-HTTP');
     options.order.push('ITEM-SMTP');
 
-    var decodeOptions = JSON.parse(req.query.decode || '{}');
-    for (var key in decodeOptions) {
+    let decodeOptions = JSON.parse(req.query.decode || '{}');
+    for (let key in decodeOptions) {
       if (key.match(/^ITEM/)) {
         options.order.push(key);
       } else {
@@ -401,9 +402,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     req.query.base = req.query.base || 'ascii';
     req.query.showFrames = req.query.showFrames === 'true' || false;
 
-    var packets = [];
+    let packets = [];
     module.processSessionId(req.params.id, !req.packetsOnly, null, function (pcap, buffer, cb, i) {
-      var obj = {};
+      let obj = {};
       if (buffer.length > 16) {
         try {
           pcap.decode(buffer, obj);
@@ -448,7 +449,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
           localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 6) {
-        var key = session.srcIp;
+        let key = session.srcIp;
         Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, function (err, results) {
           session._err = err;
           localSessionDetailReturn(req, res, session, results || []);
@@ -510,8 +511,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
     fields = session._source || session.fields;
 
-    var fileNum;
-    var itemPos = 0;
+    let fileNum;
+    let itemPos = 0;
     async.eachLimit(fields.packetPos, limit || 1, function (pos, nextCb) {
       if (pos < 0) {
         fileNum = pos * -1;
@@ -519,7 +520,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       }
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-      var opcap = Pcap.get(fields.node + ':' + fileNum);
+      let opcap = Pcap.get(fields.node + ':' + fileNum);
       if (!opcap.isOpen()) {
         Db.fileIdToFile(fields.node, fileNum, function (file) {
           if (!file) {
@@ -534,7 +535,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
             }
           }
 
-          var ipcap = Pcap.get(fields.node + ':' + file.num);
+          let ipcap = Pcap.get(fields.node + ':' + file.num);
 
           try {
             ipcap.open(file.name, file);
@@ -590,8 +591,152 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     });
   }
 
+  function sessionsPcapList (req, res, list, pcapWriter, extension) {
+    if (list.length > 0 && list[0].fields) {
+      list = list.sort((a, b) => {
+        return a.fields.lastPacket - b.fields.lastPacket;
+      });
+    } else if (list.length > 0 && list[0]._source) {
+      list = list.sort((a, b) => {
+        return a._source.lastPacket - b._source.lastPacket;
+      });
+    }
+
+    let options = { writeHeader: true };
+
+    async.eachLimit(list, 10, (item, nextCb) => {
+      const fields = item._source || item.fields;
+      module.isLocalView(fields.node, () => {
+        // Get from our DISK
+        pcapWriter(res, Db.session2Sid(item), options, nextCb);
+      }, () => {
+        // Get from remote DISK
+        ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
+          let buffer = Buffer.alloc(fields.totPackets * 20 + fields.totBytes);
+          let bufpos = 0;
+          let info = url.parse(viewUrl);
+          info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
+          info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
+
+          ViewerUtils.addAuth(info, req.user, fields.node);
+          ViewerUtils.addCaTrust(info, fields.node);
+          let preq = client.request(info, (pres) => {
+            pres.on('data', (chunk) => {
+              if (bufpos + chunk.length > buffer.length) {
+                let tmp = Buffer.alloc(buffer.length + chunk.length * 10);
+                buffer.copy(tmp, 0, 0, bufpos);
+                buffer = tmp;
+              }
+              chunk.copy(buffer, bufpos);
+              bufpos += chunk.length;
+            });
+            pres.on('end', () => {
+              if (bufpos < 24) {
+              } else if (options.writeHeader) {
+                options.writeHeader = false;
+                res.write(buffer.slice(0, bufpos));
+              } else {
+                res.write(buffer.slice(24, bufpos));
+              }
+              setImmediate(nextCb);
+            });
+          });
+          preq.on('error', (e) => {
+            console.log("ERROR - Couldn't proxy pcap request=", info, '\nerror=', e);
+            nextCb(null);
+          });
+          preq.end();
+        });
+      });
+    }, (err) => {
+      res.end();
+    });
+  }
+
+  function localGetItemByHash (nodeName, sessionID, hash, cb) {
+    module.processSessionIdAndDecode(sessionID, 10000, function (err, session, incoming) {
+      if (err) {
+        return cb(err);
+      }
+
+      if (incoming.length === 0) {
+        return cb(null, null);
+      }
+
+      let options = {
+        id: sessionID,
+        nodeName: nodeName,
+        order: [],
+        'ITEM-HTTP': {
+          order: []
+        },
+        'ITEM-SMTP': {
+          order: ['BODY-UNBASE64']
+        },
+        'ITEM-HASH': {
+          hash: hash
+        },
+        'ITEM-CB': {
+        }
+      };
+
+      options.order.push('ITEM-HTTP');
+      options.order.push('ITEM-SMTP');
+      options.order.push('ITEM-HASH');
+      options.order.push('ITEM-CB');
+      options['ITEM-CB'].cb = (err, items) => {
+        if (err) {
+          return cb(err, null);
+        }
+        if (items === undefined || items.length === 0) {
+          return cb('No match', null);
+        }
+        return cb(err, items[0]);
+      };
+
+      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
+    });
+  }
+
+  function sendSessionsList (req, res, list) {
+    if (!list) { return res.molochError(200, 'Missing list of sessions'); }
+
+    const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
+
+    async.eachLimit(list, 10, (item, nextCb) => {
+      const fields = item._source || item.fields;
+      const sid = Db.session2Sid(item);
+      module.isLocalView(fields.node, () => {
+        const options = {
+          user: req.user,
+          cluster: req.body.cluster,
+          id: sid,
+          saveId: saveId,
+          tags: req.body.tags,
+          nodeName: fields.node
+        };
+        // Get from our DISK
+        internals.sendSessionQueue.push(options, nextCb);
+      }, () => {
+        let path = `api/sessions/${fields.node}/send/${sid}?saveId=${saveId}&cluster=${req.body.cluster}`;
+        if (req.body.tags) {
+          path += `&tags=${req.body.tags}`;
+        }
+
+        ViewerUtils.makeRequest(fields.node, path, req.user, (err, response) => {
+          setImmediate(nextCb);
+        });
+      });
+    }, (err) => {
+      return res.end(JSON.stringify({
+        success: true,
+        text: 'Sending of ' + list.length + ' sessions complete'
+      }));
+    });
+  }
+
   module.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
-    var options;
+    let options;
     if (!fullSession) {
       options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
     }
@@ -602,7 +747,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return endCb('Session not found', null);
       }
 
-      var fields = session._source || session.fields;
+      let fields = session._source || session.fields;
 
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
@@ -630,9 +775,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       }
 
       function readyToProcess () {
-        var pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
-        var psid = processSessionIdDisk;
-        var writer = internals.writers[pcapWriteMethod];
+        let pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
+        let psid = processSessionIdDisk;
+        let writer = internals.writers[pcapWriteMethod];
         if (writer && writer.processSessionId) {
           psid = writer.processSessionId;
         }
@@ -934,8 +1079,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       return yesCb();
     }
 
-    var pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
-    var writer = internals.writers[pcapWriteMethod];
+    let pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
+    let writer = internals.writers[pcapWriteMethod];
     if (writer && writer.localNode === false) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because of writer`);
@@ -945,41 +1090,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     return Db.isLocalView(node, yesCb, noCb);
   };
 
-  module.getViewUrl = (node, cb) => {
-    if (Array.isArray(node)) {
-      node = node[0];
-    }
-
-    var url = Config.getFull(node, 'viewUrl');
-    if (url) {
-      if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
-      }
-      cb(null, url, url.slice(0, 5) === 'https' ? https : http);
-      return;
-    }
-
-    Db.molochNodeStatsCache(node, function (err, stat) {
-      if (err) {
-        return cb(err);
-      }
-
-      if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is using ${stat.hostname} from elasticsearch stats index`);
-      }
-
-      if (Config.isHTTPS(node)) {
-        cb(null, 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), https);
-      } else {
-        cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
-      }
-    });
-  };
-
   module.proxyRequest = (req, res, errCb) => {
     ViewerUtils.noCache(req, res);
 
-    module.getViewUrl(req.params.nodeName, function (err, viewUrl, client) {
+    ViewerUtils.getViewUrl(req.params.nodeName, function (err, viewUrl, client) {
       if (err) {
         if (errCb) {
           return errCb(err);
@@ -987,14 +1101,14 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
         return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
-      var info = url.parse(viewUrl);
+      let info = url.parse(viewUrl);
       info.path = req.url;
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;
       ViewerUtils.addAuth(info, req.user, req.params.nodeName);
       ViewerUtils.addCaTrust(info, req.params.nodeName);
 
-      var preq = client.request(info, function (pres) {
+      let preq = client.request(info, function (pres) {
         if (pres.headers['content-type']) {
           res.setHeader('content-type', pres.headers['content-type']);
         }
@@ -1063,6 +1177,228 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         success: true,
         text: 'Tags removed successfully'
        }));
+    });
+  };
+
+  module.processSessionIdAndDecode = (id, numPackets, doneCb) => {
+    let packets = [];
+    module.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
+      let obj = {};
+      if (buffer.length > 16) {
+        pcap.decode(buffer, obj);
+      } else {
+        obj = { ip: { p: '' } };
+      }
+      packets[i] = obj;
+      cb(null);
+    },
+    (err, session) => {
+      if (err) {
+        console.log('ERROR - processSessionIdAndDecode', err);
+        return doneCb(err);
+      }
+      packets = packets.filter(Boolean);
+      if (packets.length === 0) {
+        return doneCb(null, session, []);
+      } else if (packets[0].ip === undefined) {
+        return doneCb(null, session, []);
+      } else if (packets[0].ip.p === 1) {
+        Pcap.reassemble_icmp(packets, numPackets, (err, results) => {
+          return doneCb(err, session, results);
+        });
+      } else if (packets[0].ip.p === 6) {
+        var key = session.srcIp;
+        Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.srcPort, (err, results) => {
+          return doneCb(err, session, results);
+        });
+      } else if (packets[0].ip.p === 17) {
+        Pcap.reassemble_udp(packets, numPackets, (err, results) => {
+          return doneCb(err, session, results);
+        });
+      } else if (packets[0].ip.p === 132) {
+        Pcap.reassemble_sctp(packets, numPackets, (err, results) => {
+          return doneCb(err, session, results);
+        });
+      } else {
+        return doneCb(null, session, []);
+      }
+    },
+    numPackets, 10);
+  };
+
+  module.reqGetRawBody = (req, cb) => {
+    module.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
+      if (err) {
+        return cb(err);
+      }
+
+      if (incoming.length === 0) {
+        return cb(null, null);
+      }
+
+      let options = {
+        id: session.id,
+        nodeName: req.params.nodeName,
+        order: [],
+        'ITEM-HTTP': {
+          order: []
+        },
+        'ITEM-SMTP': {
+          order: ['BODY-UNBASE64']
+        },
+        'ITEM-CB': {
+        },
+        'ITEM-RAWBODY': {
+          bodyNumber: +req.params.bodyNum
+        }
+      };
+
+      if (req.query.needgzip) {
+        options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
+        options['ITEM-SMTP'].order.push('BODY-UNCOMPRESS');
+      }
+
+      options.order.push('ITEM-HTTP');
+      options.order.push('ITEM-SMTP');
+
+      options.order.push('ITEM-RAWBODY');
+      options.order.push('ITEM-CB');
+      options['ITEM-CB'].cb = (err, items) => {
+        if (err) {
+          return cb(err);
+        }
+        if (items === undefined || items.length === 0) {
+          return cb('No match');
+        }
+        cb(err, items[0].data);
+      };
+
+      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
+    });
+  };
+
+  module.sessionsPcap = (req, res, pcapWriter, extension) => {
+    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+
+    const fields = ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'];
+
+    if (req.query.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.query.ids);
+
+      module.sessionsListFromIds(req, ids, fields, (err, list) => {
+        sessionsPcapList(req, res, list, pcapWriter, extension);
+      });
+    } else {
+      module.sessionsListFromQuery(req, res, fields, (err, list) => {
+        sessionsPcapList(req, res, list, pcapWriter, extension);
+      });
+    }
+  };
+
+  module.writePcap = (res, id, options, doneCb) => {
+    let b = Buffer.alloc(0xfffe);
+    let nextPacket = 0;
+    let boffset = 0;
+    let packets = {};
+
+    module.processSessionId(id, false, function (pcap, buffer) {
+      if (options.writeHeader) {
+        res.write(buffer);
+        options.writeHeader = false;
+      }
+    },
+    (pcap, buffer, cb, i) => {
+      // Save this packet in its spot
+      packets[i] = buffer;
+
+      // Send any packets we have in order
+      while (packets[nextPacket]) {
+        buffer = packets[nextPacket];
+        delete packets[nextPacket];
+        nextPacket++;
+
+        if (boffset + buffer.length > b.length) {
+          res.write(b.slice(0, boffset));
+          boffset = 0;
+          b = Buffer.alloc(0xfffe);
+        }
+        buffer.copy(b, boffset, 0, buffer.length);
+        boffset += buffer.length;
+      }
+      cb(null);
+    },
+    (err, session) => {
+      if (err) {
+        console.trace('writePcap', err);
+        return doneCb(err);
+      }
+      res.write(b.slice(0, boffset));
+      doneCb(err);
+    }, undefined, 10);
+  };
+
+  module.writePcapNg = (res, id, options, doneCb) => {
+    let b = Buffer.alloc(0xfffe);
+    let boffset = 0;
+
+    module.processSessionId(id, true, (pcap, buffer) => {
+      if (options.writeHeader) {
+        res.write(pcap.getHeaderNg());
+        options.writeHeader = false;
+      }
+    },
+    (pcap, buffer, cb) => {
+      if (boffset + buffer.length + 20 > b.length) {
+        res.write(b.slice(0, boffset));
+        boffset = 0;
+        b = Buffer.alloc(0xfffe);
+      }
+
+      /* Need to write the ng block, and conver the old timestamp */
+
+      b.writeUInt32LE(0x00000006, boffset); // Block Type
+      const len = ((buffer.length + 20 + 3) >> 2) << 2;
+      b.writeUInt32LE(len, boffset + 4); // Block Len 1
+      b.writeUInt32LE(0, boffset + 8); // Interface Id
+
+      // js has 53 bit numbers, this will over flow on Jun 05 2255
+      const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
+      b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Block Len 1
+      b.writeUInt32LE(time % 0x100000000, boffset + 16); // Interface Id
+
+      buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
+      b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
+      boffset += len - 8;
+
+      b.writeUInt32LE(0, boffset); // Options
+      b.writeUInt32LE(len, boffset + 4); // Block Len 2
+      boffset += 8;
+
+      cb(null);
+    }, (err, session) => {
+      if (err) {
+        console.log('writePcapNg', err);
+        return;
+      }
+      res.write(b.slice(0, boffset));
+
+      session.version = version.version;
+      delete session.packetPos;
+      var json = JSON.stringify(session);
+
+      const len = ((json.length + 20 + 3) >> 2) << 2;
+      b = Buffer.alloc(len);
+
+      b.writeUInt32LE(0x80808080, 0); // Block Type
+      b.writeUInt32LE(len, 4); // Block Len 1
+      b.write('MOWL', 8); // Magic
+      b.writeUInt32LE(json.length, 12); // Block Len 1
+      b.write(json, 16); // Magic
+      b.fill(0, 16 + json.length, 16 + json.length + (4 - (json.length % 4)) % 4); // padding
+      b.writeUInt32LE(len, len - 4); // Block Len 2
+      res.write(b);
+
+      doneCb(err);
     });
   };
 
@@ -2140,6 +2476,560 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         module.removeTagsList(res, tags, list);
       });
     }
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
+   *
+   * Retrieves a file that was transferred in a session.
+   * @name  sessions/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
+   * @returns {file} file - The file in the session
+   */
+  module.getRawBody = (req, res) => {
+    module.reqGetRawBody(req, function (err, data) {
+      if (err) {
+        console.trace(err);
+        return res.end('Error');
+      }
+
+      res.setHeader('Content-Type', 'application/force-download');
+      res.setHeader('content-disposition', contentDisposition(req.params.bodyName));
+
+      return res.end(data);
+    });
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
+   *
+   * Retrieves a bitmap image representation of the bytes in a file.
+   * @name  sessions/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
+   * @returns {image/png} image - The bitmap image.
+   */
+  module.getFilePNG = (req, res) => {
+    module.reqGetRawBody(req, function (err, data) {
+      if (err || data === null || data.length === 0) {
+        return res.send(internals.emptyPNG);
+      }
+
+      res.setHeader('Content-Type', 'image/png');
+
+      let png = new PNG({
+        width: internals.PNG_LINE_WIDTH,
+        height: Math.ceil(data.length / internals.PNG_LINE_WIDTH)
+      });
+      png.data = data;
+
+      res.send(PNG.sync.write(png, { inputColorType: 0, colorType: 0, bitDepth: 8, inputHasAlpha: false }));
+    });
+  };
+
+  /**
+   * GET - /api/sessions/pcap
+   *
+   * Retrieve the raw session data in pcap format.
+   * @name sessions/pcap
+   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {string} ids - The list of ids to return
+   * @param {boolean} segments=false - When set return linked segments
+   * @returns {pcap} A PCAP file with the sessions requested
+   */
+  module.getPCAP = (req, res) => {
+    return module.sessionsPcap(req, res, module.writePcap, 'pcap');
+  };
+
+  /**
+   * GET - /api/sessions/pcapng
+   *
+   * Retrieve the raw session data in pcapng format.
+   * @name sessions/pcapng
+   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {string} ids - The list of ids to return
+   * @param {boolean} segments=false - When set return linked segments
+   * @returns {pcap} A PCAPNG file with the sessions requested
+   */
+  module.getPCAPNG = (req, res) => {
+    return module.sessionsPcap(req, res, module.writePcapNg, 'pcapng');
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/pcap/:id.pcap
+   *
+   * Retrieve the raw session data in pcap format from a specific node.
+   * @name sessions/:nodeName/pcap/:id.pcap
+   * @returns {pcap} A PCAP file with the session requested
+   */
+  module.getPCAPFromNode = (req, res) => {
+    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    let writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
+    module.writePcap(res, req.params.id, { writeHeader: writeHeader }, () => {
+      res.end();
+    });
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/pcapng/:id.pcapng
+   *
+   * Retrieve the raw session data in pcapng format from a specific node.
+   * @name sessions/:nodeName/pcapng/:id.pcapng
+   * @returns {pcap} A PCAPNG file with the session requested
+   */
+  module.getPCAPNGFromNode = (req, res) => {
+    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    let writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
+    module.writePcapNg(res, req.params.id, { writeHeader: writeHeader }, () => {
+      res.end();
+    });
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/entirepcap/:id.pcap
+   *
+   * Retrieve the entire pcap for a session.
+   * @name sessions/:nodeName/entirepcap/:id.pcap
+   * @returns {pcap} A PCAP file with the session requested
+   */
+  module.getEntirePCAP = (req, res) => {
+    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+
+    let options = { writeHeader: true };
+
+    let query = {
+      size: 1000,
+      _source: ['rootId'],
+      sort: { lastPacket: { order: 'asc' } },
+      query: { term: { rootId: req.params.id } }
+    };
+
+    console.log('entirePcap query', JSON.stringify(query));
+
+    Db.searchPrimary('sessions2-*', 'session', query, null, (err, data) => {
+      async.forEachSeries(data.hits.hits, (item, nextCb) => {
+        module.writePcap(res, Db.session2Sid(item), options, nextCb);
+      }, (err) => {
+        res.end();
+      });
+    });
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/raw/:id.png
+   *
+   * Retrieve a bitmap image representation of packets in a session.
+   * @name sessions/:nodeName/raw/:id.png
+   * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
+   * @returns {image/png} image - The bitmap image.
+   */
+  module.getPacketPNG = (req, res) => {
+    ViewerUtils.noCache(req, res, 'image/png');
+
+    module.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
+      if (err) {
+        return res.send(internals.emptyPNG);
+      }
+
+      let size = 0;
+      let i, ilen;
+      for (i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
+        size += results[i].data.length + 2 * internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+      }
+
+      const buffer = Buffer.alloc(size, 0);
+      let pos = 0;
+      if (size === 0) {
+        return res.send(internals.emptyPNG);
+      }
+
+      for (i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
+        results[i].data.copy(buffer, pos);
+        pos += results[i].data.length;
+        let fillpos = pos;
+        pos += 2 * internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+        buffer.fill(0xff, fillpos, pos);
+      }
+
+      let png = new PNG({ width: internals.PNG_LINE_WIDTH, height: (size / internals.PNG_LINE_WIDTH) - 1 });
+      png.data = buffer;
+      res.send(PNG.sync.write(
+        png,
+        {
+          inputColorType: 0,
+          colorType: 0,
+          bitDepth: 8,
+          inputHasAlpha: false
+        }
+      ));
+    });
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/raw/:id
+   *
+   * Retrieve raw packets for a session.
+   * @name sessions/:nodeName/raw/:id
+   * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
+   * @returns {string} The source or destination packet text.
+   */
+  module.getRawPackets = (req, res) => {
+    ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
+
+    module.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
+      if (err) {
+        return res.send('Error');
+      }
+
+      for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
+        res.write(results[i].data);
+      }
+
+      res.end();
+    });
+  };
+
+  /**
+   * GET - /api/sessions/bodyhash/:hash
+   *
+   * Retrieve a file given a hash of that file.
+   * @name sessions/bodyhash/:hash
+   * @param {SessionsQuery} query - The request query to filter sessions
+   * @returns {file} file - The file that matches the hash
+   */
+  module.getBodyHash = (req, res) => {
+    let hash = null;
+    let nodeName = null;
+    let sessionID = null;
+
+    module.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        res.status(400);
+        return res.end(bsqErr);
+      }
+
+      query.size = 1;
+      query.sort = { lastPacket: { order: 'desc' } };
+      query._source = ['node'];
+
+      if (Config.debug) {
+        console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
+      }
+
+      Db.searchPrimary(indices, 'session', query, null, (err, sessions) => {
+        if (err) {
+          console.log('Error -> Db Search ', err);
+          res.status(400);
+          res.end(err);
+        } else if (sessions.error) {
+          console.log('Error -> Db Search ', sessions.error);
+          res.status(400);
+          res.end(sessions.error);
+        } else {
+          if (Config.debug) {
+            console.log('bodyHash result', util.inspect(sessions, false, 50));
+          }
+
+          if (sessions.hits.hits.length > 0) {
+            nodeName = sessions.hits.hits[0]._source.node;
+            sessionID = Db.session2Sid(sessions.hits.hits[0]);
+            hash = req.params.hash;
+
+            module.isLocalView(nodeName, () => { // get file from the local disk
+              localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
+                if (err) {
+                  res.status(400);
+                  return res.end(err);
+                } else if (item) {
+                  ViewerUtils.noCache(req, res, 'application/force-download');
+                  res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
+                  return res.end(item.data);
+                } else {
+                  res.status(400);
+                  return res.end('No Match');
+                }
+              });
+            },
+            () => { // get file from the remote disk
+              let preq = Object.assign({}, req);
+              preq.params.nodeName = nodeName;
+              preq.params.id = sessionID;
+              preq.params.hash = hash;
+              preq.url = `api/sessions/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
+              return module.proxyRequest(preq, res);
+            });
+          } else {
+            res.status(400);
+            res.end('No Match Found');
+          }
+        }
+      });
+    });
+  };
+
+  /**
+   * @ignore
+   * POST - /api/sessions/decodings
+   *
+   * Retrieve decodings.
+   * @name sessions/decodings
+   */
+  module.getDecodings = (req, res) => {
+    res.send(JSON.stringify(decode.settings()));
+  };
+
+  /**
+   * GET - /api/sessions/:nodeName/:id/bodyhash/:hash
+   *
+   * Retrieve a file from a specific node given a hash of that file.
+   * @name sessions/:nodeName/:id/bodyhash/:hash
+   * @param {SessionsQuery} query - The request query to filter sessions
+   * @returns {file} file - The file that matches the hash
+   */
+  module.getBodyHashFromNode = (req, res) => {
+    localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
+      if (err) {
+        res.status(400);
+        return res.end(err);
+      } else if (item) {
+        ViewerUtils.noCache(req, res, 'application/force-download');
+        res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
+        return res.end(item.data);
+      } else {
+        res.status(400);
+        return res.end('No Match');
+      }
+    });
+  };
+
+  /**
+   * @ignore
+   * GET - /api/sessions/:nodeName/send/:id
+   *
+   * Sends a session to a node.
+   * @name sessions/:nodeName/send/:id
+   */
+  module.sendSessionToNode = (req, res) => {
+    ViewerUtils.noCache(req, res);
+    res.statusCode = 200;
+
+    const options = {
+      user: req.user,
+      cluster: req.query.cluster,
+      id: req.params.id,
+      saveId: req.query.saveId,
+      tags: req.body.tags,
+      nodeName: req.params.nodeName
+    };
+
+    internals.sendSessionQueue.push(options, () => {
+      res.end();
+    });
+  };
+
+  /**
+   * @ignore
+   * POST - /api/sessions/:nodeName/send
+   *
+   * Sends sessions to a node.
+   * @name sessions/:nodeName/send
+   * @param {string} ids - Comma separated list of session ids.
+   * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
+   * @param {string} cluster - The name of the Arkime cluster to send the sessions.
+   * @param {saveId} saveId - The sessionId to use on the remote side.
+   */
+  module.sendSessionsToNode = (req, res) => {
+    ViewerUtils.noCache(req, res);
+    res.statusCode = 200;
+
+    if (req.body.ids === undefined ||
+      req.query.cluster === undefined ||
+      req.query.saveId === undefined ||
+      req.body.tags === undefined) {
+      return res.end();
+    }
+
+    let count = 0;
+    const ids = ViewerUtils.queryValueToArray(req.body.ids);
+    ids.forEach((id) => {
+      const options = {
+        user: req.user,
+        cluster: req.query.cluster,
+        id: id,
+        saveId: req.query.saveId,
+        tags: req.body.tags,
+        nodeName: req.params.nodeName
+      };
+
+      count++;
+      internals.sendSessionQueue.push(options, () => {
+        count--;
+        if (count === 0) {
+          return res.end();
+        }
+      });
+    });
+  };
+
+  /**
+   * @ignore
+   * POST - /api/sessions/send
+   *
+   * Sends sessions.
+   * @name sessions/send
+   * @param {string} ids - Comma separated list of session ids.
+   */
+  module.sendSessions = (req, res) => {
+    if (req.body.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.body.ids);
+
+      module.sessionsListFromIds(req, ids, ['node'], function (err, list) {
+        sendSessionsList(req, res, list);
+      });
+    } else {
+      module.sessionsListFromQuery(req, res, ['node'], function (err, list) {
+        sendSessionsList(req, res, list);
+      });
+    }
+  };
+
+  /**
+   * @ignore
+   * POST - /api/sessions/receive
+   *
+   * Receive sessions.
+   * @name sessions/receive
+   * @param {saveId} saveId - The sessionId to save the session.
+   */
+  module.receiveSession = (req, res) => {
+    if (!req.query.saveId) { return res.molochError(200, 'Missing saveId'); }
+
+    req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
+
+    // JS Static Variable :)
+    this.saveIds = this.saveIds || {};
+
+    let saveId = this.saveIds[req.query.saveId];
+    if (!saveId) {
+      saveId = this.saveIds[req.query.saveId] = { start: 0 };
+    }
+
+    let sessionlen = -1;
+    let filelen = -1;
+    let written = 0;
+    let session = null;
+    let buffer;
+    let file;
+    let writeHeader;
+
+    function makeFilename (cb) {
+      if (saveId.filename) {
+        return cb(saveId.filename);
+      }
+
+      // Just keep calling ourselves every 100 ms until we have a filename
+      if (saveId.inProgress) {
+        return setTimeout(makeFilename, 100, cb);
+      }
+
+      saveId.inProgress = 1;
+      Db.getSequenceNumber('fn-' + Config.nodeName(), function (err, seq) {
+        const filename = Config.get('pcapDir') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
+        saveId.seq = seq;
+        Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 }, function () {
+          cb(filename);
+          saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
+        });
+      });
+    }
+
+    function saveSession () {
+      const id = session.id;
+      delete session.id;
+      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session, (err, info) => {});
+    }
+
+    function chunkWrite (chunk) {
+      // Write full chunk if first packet and writeHeader or not first packet
+      if (writeHeader || written !== 0) {
+        writeHeader = false;
+        file.write(chunk);
+      } else {
+        file.write(chunk.slice(24));
+      }
+      written += chunk.length; // Pretend we wrote it all
+    }
+
+    req.on('data', function (chunk) {
+      // If the file is open, just write the current chunk
+      if (file) {
+        return chunkWrite(chunk);
+      }
+
+      // If no file is open, then save the current chunk to the end of the buffer.
+      if (!buffer) {
+        buffer = chunk;
+      } else {
+        buffer = Buffer.concat([buffer, chunk]);
+      }
+
+      // Found the lengths
+      if (sessionlen === -1 && (buffer.length >= 12)) {
+        sessionlen = buffer.readUInt32BE(0);
+        filelen = buffer.readUInt32BE(8);
+        buffer = buffer.slice(12);
+      }
+
+      // If we know the session len and haven't read the session
+      if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
+        session = JSON.parse(buffer.toString('utf8', 0, sessionlen));
+        session.node = Config.nodeName();
+        buffer = buffer.slice(sessionlen);
+
+        if (filelen > 0) {
+          req.pause();
+
+          makeFilename(function (filename) {
+            req.resume();
+            session.packetPos[0] = -saveId.seq;
+            session.fileId = [saveId.seq];
+
+            if (saveId.start === 0) {
+              file = fs.createWriteStream(filename, { flags: 'w' });
+            } else {
+              file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' });
+            }
+            writeHeader = saveId.start === 0;
+
+            // Adjust packet location based on where we start writing
+            if (saveId.start > 0) {
+              for (var p = 1, plen = session.packetPos.length; p < plen; p++) {
+                session.packetPos[p] += (saveId.start - 24);
+              }
+            }
+
+            // Filelen always includes header, if we don't write header subtract it
+            saveId.start += filelen;
+            if (!writeHeader) {
+              saveId.start -= 24;
+            }
+
+            // Still more data in buffer, start of pcap
+            if (buffer.length > 0) {
+              chunkWrite(buffer);
+            }
+
+            saveSession();
+          });
+        } else {
+          saveSession();
+        }
+      }
+    });
+
+    req.on('end', (chunk) => {
+      if (file) {
+        file.end();
+      }
+      return res.send({ success: true });
+    });
   };
 
   return module;

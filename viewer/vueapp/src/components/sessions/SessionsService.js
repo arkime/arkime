@@ -143,7 +143,7 @@ export default {
     getDecodingsQIP = new Promise((resolve, reject) => {
       if (_decodingsCache) { resolve(_decodingsCache); }
 
-      Vue.axios.get('decodings')
+      Vue.axios.get('api/sessions/decodings')
         .then((response) => {
           getDecodingsQIP = undefined;
           _decodingsCache = response.data;
@@ -224,7 +224,7 @@ export default {
    */
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
+      let options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
