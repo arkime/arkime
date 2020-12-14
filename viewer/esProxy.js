@@ -24,7 +24,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
-var URL = require('url');
+const URL = require('url');
 
 // express app
 const app = express();
@@ -48,20 +48,20 @@ if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
     prefix += '_';
 }
 
-let esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
-let esClientKey = Config.get('esClientKey');
-let esClientCert = Config.get('esClientCert');
+const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
+const esClientKey = Config.get('esClientKey');
+const esClientCert = Config.get('esClientCert');
 if (esClientKey) {
   esSSLOptions.key = fs.readFileSync(esClientKey);
   esSSLOptions.cert = fs.readFileSync(esClientCert);
-  var esClientKeyPass = Config.get('esClientKeyPass');
+  const esClientKeyPass = Config.get('esClientKeyPass');
   if (esClientKeyPass) {
     esSSLOptions.passphrase = esClientKeyPass;
   }
 }
 
 // GET calls we can match exactly
-let getExact = {
+const getExact = {
   '/': 1,
   '/_cat/health': 1,
   '/_cluster/health': 1,
@@ -78,7 +78,7 @@ getExact[`/${prefix}files/_stats`] = 1;
 getExact[`/${prefix}fields/_search`] = 1;
 
 // POST calls we can match exactly
-let postExact = {
+const postExact = {
 };
 postExact[`/${prefix}stats/_search`] = 1;
 postExact[`/${prefix}fields/_search`] = 1;
@@ -89,7 +89,7 @@ postExact[`/${prefix}lookups/_search`] = 1;
 // ===========================================================================
 
 app.use((req, res, next) => {
-  let credentials = basicAuth(req);
+  const credentials = basicAuth(req);
   if (!credentials) {
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
@@ -129,8 +129,8 @@ app.use((req, res, next) => {
 // Save the post body
 
 function hasBody (req) {
-  var encoding = 'transfer-encoding' in req.headers;
-  var length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
+  const encoding = 'transfer-encoding' in req.headers;
+  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
   return encoding || length;
 }
 
@@ -144,7 +144,7 @@ function saveBody (req, res, next) {
   req._body = true;
 
   // parse
-  var buf = Buffer.alloc(parseInt(req.headers['content-length'] || '1024'));
+  const buf = Buffer.alloc(parseInt(req.headers['content-length'] || '1024'));
   let pos = 0;
   req.on('data', (chunk) => { chunk.copy(buf, pos); pos += chunk.length; });
   req.on('end', () => {
@@ -157,11 +157,11 @@ function saveBody (req, res, next) {
 
 function doProxy (req, res, cb) {
   let result = '';
-  let url = elasticsearch + req.url;
+  const url = elasticsearch + req.url;
   console.log('URL', url);
-  var info = URL.parse(url);
+  const info = URL.parse(url);
   info.method = req.method;
-  var client;
+  let client;
   if (url.match(/^https:/)) {
     info.agent = httpsAgent;
     client = https;
@@ -170,7 +170,7 @@ function doProxy (req, res, cb) {
     client = http;
   }
 
-  var preq = client.request(info, (pres) => {
+  const preq = client.request(info, (pres) => {
     pres.on('data', (chunk) => {
       result += chunk.toString();
     });
@@ -182,7 +182,7 @@ function doProxy (req, res, cb) {
   preq.setHeader('content-type', req.headers['content-type'] || 'application/json');
 
   // Copy these headers from original request to new request
-  for (let header of ['x-opaque-id', 'content-encoding', 'content-length']) {
+  for (const header of ['x-opaque-id', 'content-encoding', 'content-length']) {
     if (req.headers[header] !== undefined) {
       preq.setHeader(header, req.headers[header]);
     }
@@ -206,6 +206,7 @@ function doProxy (req, res, cb) {
 app.get('*', (req, res) => {
   const path = req.params['0'];
 
+  // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
   } else if (path.startsWith(`/tagger`)) {
   } else if (path.startsWith(`/${prefix}users/_doc/`)) {
@@ -221,7 +222,7 @@ app.get('*', (req, res) => {
 });
 
 // Validate Bulk
-// Doesn't work with inflate/defate yet
+// TODO - work with inflate/defate
 function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -242,6 +243,7 @@ function validateBulk (req) {
 app.post('*', saveBody, (req, res) => {
   const path = req.params['0'];
 
+  // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
   } else if (path.startsWith(`/${prefix}fields/_doc/`)) {
   } else if (path.startsWith(`/tagger`)) {
@@ -265,8 +267,8 @@ app.post('*', saveBody, (req, res) => {
 // ============================================================================
 // MAIN
 // ===========================================================================
-var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
-var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
+const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
 console.log('Listen on ', Config.get('esProxyPort', '7200'));
 if (Config.isHTTPS()) {
