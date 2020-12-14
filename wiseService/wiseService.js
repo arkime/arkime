@@ -46,7 +46,7 @@ const version = require('../viewer/version');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
-var internals = {
+const internals = {
   configFile: `${version.config_prefix}/etc/wiseService.ini`,
   debug: 0,
   insecure: false,
@@ -105,7 +105,7 @@ internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 's
 // Command Line Parsing
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
-  for (var i = 0, ilen = argv.length; i < ilen; i++) {
+  for (let i = 0, ilen = argv.length; i < ilen; i++) {
     if (argv[i] === '-c') {
       i++;
       internals.configFile = argv[i];
@@ -141,7 +141,7 @@ processArgs(process.argv);
 
 if (internals.workers > 1) {
   if (cluster.isMaster) {
-    for (var i = 0; i < internals.workers; i++) {
+    for (let i = 0; i < internals.workers; i++) {
       cluster.fork();
     }
     cluster.on('exit', (worker, code, signal) => {
@@ -151,9 +151,9 @@ if (internals.workers > 1) {
   }
 }
 // ----------------------------------------------------------------------------
-var app = express();
-var logger = require('morgan');
-var timeout = require('connect-timeout');
+const app = express();
+const logger = require('morgan');
+const timeout = require('connect-timeout');
 
 // super secret
 app.use(helmet.hidePoweredBy());
@@ -180,6 +180,15 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
+/**
+ * Get from the config section a value or default
+ *
+ * @name api.getConfig
+ * @param {string} section - The section in the config file the key is in
+ * @param {string} name - The key to get from the section
+ * @param {string} d - the default value to return if key is not found in section
+ * @returns {string} - The value found or the default value
+ */
 function getConfig (section, name, d) {
   if (!internals.config[section]) {
     return d;
@@ -187,10 +196,23 @@ function getConfig (section, name, d) {
   return internals.config[section][name] || d;
 }
 
+/**
+ * Get a list of all the sections int he config file
+ *
+ * @name api.getConfigSections
+ * @returns {array of string} - A list of all the sections in the config file
+ */
 function getConfigSections () {
   return Object.keys(internals.config);
 }
 
+/**
+ * Get the full config for a section
+ *
+ * @name api.getConfigSections
+ * @param {string} section - The section of the config file to return
+ * @returns {object} - A list of all the sections in the config file
+ */
 function getConfigSection (section) {
   return internals.config[section];
 }
@@ -225,7 +247,7 @@ function getUser (name, cb) {
 // Decrypt the encrypted hashed password, it is still hashed
 function store2ha1 (passstore) {
   try {
-    var parts = passstore.split('.');
+    const parts = passstore.split('.');
     if (parts.length === 2) {
       // New style with IV: IV.E
       let c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
@@ -234,8 +256,8 @@ function store2ha1 (passstore) {
       return d;
     } else {
       // Old style without IV: E
-      var c = crypto.createDecipher('aes192', internals.passwordSecret);
-      var d = c.update(passstore, 'hex', 'binary');
+      const c = crypto.createDecipher('aes192', internals.passwordSecret);
+      let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
     }
@@ -353,7 +375,7 @@ function checkConfigCode (req, res, next) {
 // Sources
 // ----------------------------------------------------------------------------
 function newFieldsTS () {
-  var now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
   if (now <= internals.fieldsTS) {
     internals.fieldsTS++;
   } else {
@@ -361,16 +383,22 @@ function newFieldsTS () {
   }
 }
 // ----------------------------------------------------------------------------
+/**
+ * Add a field
+ *
+ * @name api.addField
+ * @param {string} addField - An encoded field definition
+ */
 function addField (field) {
-  var match = field.match(/field:([^;]+)/);
-  var name = match[1];
+  let match = field.match(/field:([^;]+)/);
+  const name = match[1];
 
-  var db;
+  let db;
   if ((match = field.match(/db:([^;]+)/))) {
     db = match[1];
   }
 
-  var friendly;
+  let friendly;
   if ((match = field.match(/friendly:([^;]+)/))) {
     friendly = match[1];
   }
@@ -379,7 +407,7 @@ function addField (field) {
     return wiseSource.field2Pos[name];
   }
 
-  var pos = internals.fields.length;
+  const pos = internals.fields.length;
   newFieldsTS();
   internals.fields.push(field);
   internals.fieldsSize += field.length + 10;
@@ -422,12 +450,147 @@ function addField (field) {
   return pos;
 }
 // ----------------------------------------------------------------------------
+/**
+ * Add a view
+ *
+ * @name api.addView
+ * @param {string} name - Name of the new view
+ * @param {string} input - An encoded view definition
+ */
+function addView (name, input) {
+  if (input.includes('require:')) {
+    let match = input.match(/require:([^;]+)/);
+    const require = match[1];
+    match = input.match(/title:([^;]+)/);
+    const title = match[1];
+    match = input.match(/fields:([^;]+)/);
+    const fields = match[1];
+
+    let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+    for (let field of fields.split(',')) {
+      let info = wiseSource.field2Info[field];
+      if (!info) {
+        continue;
+      }
+      if (!info.db) {
+        console.log(`ERROR, missing db information for ${field}`);
+        process.exit(0);
+      }
+      const parts = splitRemain(info.db, '.', 1);
+      if (parts.length === 1) {
+        output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+      } else {
+        output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+      }
+    }
+    internals.views[name] = output;
+  } else {
+    internals.views[name] = input;
+  }
+}
+// ----------------------------------------------------------------------------
+/**
+ * Activate a section of a source. Must be called if you want wise to query the source.
+ * A section is an instance of a source, some sources can have multiple sections.
+ *
+ * @name api.addSource
+ * @param {string} section - The section name
+ * @param {wiseSource} src - A wiseSource object
+ */
+function addSource (section, src) {
+  internals.sources[section] = src;
+
+  let types;
+
+  if (src.getTypes) {
+    // getTypes function defined, we can just use it
+    types = src.getTypes();
+  } else {
+    // No getTypes function, go thru all the default types and any types we already know and guess
+    types = [];
+    for (let i = 0; i < internals.type2Name.length; i++) {
+      if (src[funcName(internals.type2Name[i])]) {
+        types.push(internals.type2Name[i]);
+      }
+    }
+    for (let type in internals.types) {
+      const typeInfo = internals.types[type];
+      if (src[typeInfo.funcName] && !types.includes(type)) {
+        types.push(type);
+      }
+    }
+    src.getTypes = function () {
+      return types;
+    };
+  }
+
+  for (let i = 0; i < types.length; i++) {
+    addType(types[i], src);
+  }
+};
+// ----------------------------------------------------------------------------
+/**
+ * Add for each source config definition for the UI to use.
+ *
+ * @name addSourceConfigDef
+ * @param {string} sourceName - The source name
+ * @param {object} configDef - An array of objects of the config ALW
+ */
+function addSourceConfigDef (sourceName, configDef) {
+  if (!internals.configDefs.hasOwnProperty(sourceName)) {
+// ALW - should really merge all the types somehow here instead of type2Name
+    let types = configDef.types || internals.type2Name;
+    for (let i = 0; i < types.length; i++) {
+      let type = types[i];
+      let excludeName;
+      if (type === 'url') {
+        excludeName = 'excludeURLs';
+      } else if (type === 'ip') {
+        configDef.fields = configDef.fields.concat(
+          [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+           { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
+        );
+        if (configDef.singleton === false && types.length > 0) {
+          Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
+          Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+        }
+        continue;
+      } else {
+        excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
+      }
+
+      configDef.fields = configDef.fields.concat(
+        [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+      );
+
+      if (configDef.singleton === false && types.length > 0) {
+        Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+      }
+    }
+
+    if (configDef.cacheable !== false) {
+      configDef.fields = configDef.fields.concat(
+        [{ name: 'cacheAgeMin', required: false, help: 'Minutes to cache items from previous lookup. (defaults to 60)', regex: '^[0-9]+$' }]
+      );
+    }
+
+    if (configDef.singleton === false && types.length > 0) {
+      configDef.fields = configDef.fields.concat(
+        [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+        { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
+      );
+    }
+
+    internals.configDefs[sourceName] = configDef;
+  }
+};
+// ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
     str = str.split(separator);
     if (str.length <= limit) { return str; }
 
-    var ret = str.splice(0, limit);
+    const ret = str.splice(0, limit);
     ret.push(str.join(separator));
 
     return ret;
@@ -440,121 +603,14 @@ function buildSourceApi () {
     getConfigSection: getConfigSection,
     addField: addField,
     createRedisClient: createRedisClient,
-    addView: function (name, input) {
-      if (input.includes('require:')) {
-        var match = input.match(/require:([^;]+)/);
-        var require = match[1];
-        match = input.match(/title:([^;]+)/);
-        var title = match[1];
-        match = input.match(/fields:([^;]+)/);
-        var fields = match[1];
-
-        let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
-        for (let field of fields.split(',')) {
-          let info = wiseSource.field2Info[field];
-          if (!info) {
-            continue;
-          }
-          if (!info.db) {
-            console.log(`ERROR, missing db information for ${field}`);
-            process.exit(0);
-          }
-          var parts = splitRemain(info.db, '.', 1);
-          if (parts.length === 1) {
-            output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
-          } else {
-            output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
-          }
-        }
-        internals.views[name] = output;
-      } else {
-        internals.views[name] = input;
-      }
-    },
+    addView: addView,
     addRightClick: function (name, rightClick) {
       internals.rightClicks[name] = rightClick;
     },
     debug: internals.debug,
     insecure: internals.insecure,
-    addSource: function (section, src) {
-      internals.sources[section] = src;
-
-      let types;
-
-      if (src.getTypes) {
-        // getTypes function defined, we can just use it
-        types = src.getTypes();
-      } else {
-        // No getTypes function, go thru all the default types and any types we already know and guess
-        types = [];
-        for (let i = 0; i < internals.type2Name.length; i++) {
-          if (src[funcName(internals.type2Name[i])]) {
-            types.push(internals.type2Name[i]);
-          }
-        }
-        for (let type in internals.types) {
-          let typeInfo = internals.types[type];
-          if (src[typeInfo.funcName] && !types.includes(type)) {
-            types.push(type);
-          }
-        }
-        src.getTypes = function () {
-          return types;
-        };
-      }
-
-      for (let i = 0; i < types.length; i++) {
-        addType(types[i], src);
-      }
-    },
-    addSourceConfigDef: function (sourceName, configDef) {
-      if (!internals.configDefs.hasOwnProperty(sourceName)) {
-    // ALW - should really merge all the types somehow here instead of type2Name
-        let types = configDef.types || internals.type2Name;
-        for (var i = 0; i < types.length; i++) {
-          let type = types[i];
-          let excludeName;
-          if (type === 'url') {
-            excludeName = 'excludeURLs';
-          } else if (type === 'ip') {
-            configDef.fields = configDef.fields.concat(
-              [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-               { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
-            );
-            if (configDef.singleton === false && types.length > 0) {
-              Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
-              Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
-            }
-            continue;
-          } else {
-            excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
-          }
-
-          configDef.fields = configDef.fields.concat(
-            [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
-          );
-
-          if (configDef.singleton === false && types.length > 0) {
-            Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
-          }
-        }
-
-        if (configDef.cacheable !== false) {
-          configDef.fields = configDef.fields.concat(
-            [{ name: 'cacheAgeMin', required: false, help: 'Minutes to cache items from previous lookup. (defaults to 60)', regex: '^[0-9]+$' }]
-          );
-        }
-
-        if (configDef.singleton === false && types.length > 0) {
-          configDef.fields = configDef.fields.concat(
-            [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-            { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
-          );
-        }
-
-        internals.configDefs[sourceName] = configDef;
-      }
-    },
+    addSource: addSource,
+    addSourceConfigDef: addSourceConfigDef,
     isWebConfig: function () { return internals.webconfig; },
     funcName: funcName,
     app: app
@@ -564,13 +620,13 @@ function buildSourceApi () {
 function loadSources () {
   glob(getConfig('wiseService', 'sourcePath', `${__dirname}/`) + 'source.*.js', (err, files) => {
     files.forEach((file) => {
-      var src = require(file);
+      const src = require(file);
       src.initSource(internals.sourceApi);
     });
   });
 
   // ALW - should really merge all the types somehow here instead of type2Name
-  for (var i = 0; i < internals.type2Name.length; i++) {
+  for (let i = 0; i < internals.type2Name.length; i++) {
     let type = internals.type2Name[i];
     let excludeName;
     if (type === 'url') {
@@ -643,7 +699,7 @@ app.get('/rightClicks', [noCacheJson], function (req, res) {
 
 // ----------------------------------------------------------------------------
 function globalAllowed (value) {
-  for (var i = 0; i < this.excludes.length; i++) {
+  for (let i = 0; i < this.excludes.length; i++) {
     if (value.match(this.excludes[i])) {
       if (internals.debug > 0) {
         console.log(`Found in Global ${this.name} Exclude`, value);
@@ -665,8 +721,8 @@ function globalIPAllowed (value) {
 }
 // ----------------------------------------------------------------------------
 function sourceAllowed (src, value) {
-  var excludes = src[this.excludeName] || [];
-  for (var i = 0; i < excludes.length; i++) {
+  const excludes = src[this.excludeName] || [];
+  for (let i = 0; i < excludes.length; i++) {
     if (value.match(excludes[i])) {
       if (internals.debug > 0) {
         console.log('Found in', src.section, this.name, 'exclude', value);
@@ -729,14 +785,14 @@ function addType (type, newSrc) {
       typeInfo.sourceAllowed = sourceIPAllowed;
     }
 
-    for (var src in internals.sources) {
+    for (const src in internals.sources) {
       if (internals.sources[src][typeInfo.funcName]) {
         typeInfo.sources.push(internals.sources[src]);
         internals.sources[src].srcInProgress[type] = [];
       }
     }
 
-    var items = getConfig('wiseService', typeInfo.excludeName, '');
+    const items = getConfig('wiseService', typeInfo.excludeName, '');
     if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
@@ -759,7 +815,7 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
-  var typeInfo = internals.types[query.typeName];
+  let typeInfo = internals.types[query.typeName];
 
   // First time we've seen this typeName
   if (!typeInfo) {
@@ -770,7 +826,7 @@ function processQuery (req, query, cb) {
 
   // md5/sha256 have content type
   if (query.typeName === 'md5' || query.typeName === 'sha256') {
-    var parts = query.value.split(';');
+    const parts = query.value.split(';');
     query.value = parts[0];
     query.contentType = parts[1];
   }
@@ -790,9 +846,9 @@ function processQuery (req, query, cb) {
       return cb('Timed out ' + query.typeName + ' ' + query.value);
     }
 
-    var now = Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / 1000);
 
-    var cacheChanged = false;
+    let cacheChanged = false;
     if (cacheResult === undefined) {
       cacheResult = {};
     } else {
@@ -838,9 +894,9 @@ function processQuery (req, query, cb) {
             err = null;
             result = undefined;
           }
-          var srcInProgress = src.srcInProgress[query.typeName][query.value];
+          const srcInProgress = src.srcInProgress[query.typeName][query.value];
           delete src.srcInProgress[query.typeName][query.value];
-          for (var i = 0, l = srcInProgress.length; i < l; i++) {
+          for (let i = 0, l = srcInProgress.length; i < l; i++) {
             srcInProgress[i](err, result);
           }
         });
@@ -874,11 +930,11 @@ function processQuery (req, query, cb) {
 }
 // ----------------------------------------------------------------------------
 function processQueryResponse0 (req, res, queries, results) {
-  var buf = Buffer.allocUnsafe(8);
+  const buf = Buffer.allocUnsafe(8);
   buf.writeUInt32BE(internals.fieldsTS, 0);
   buf.writeUInt32BE(0, 4);
   res.write(buf);
-  for (var r = 0; r < results.length; r++) {
+  for (let r = 0; r < results.length; r++) {
     if (results[r][0] > 0) {
       internals.types[queries[r].typeName].foundStats++;
     }
@@ -889,11 +945,11 @@ function processQueryResponse0 (req, res, queries, results) {
 // ----------------------------------------------------------------------------
 //
 function processQueryResponse2 (req, res, queries, results) {
-  var hashes = (req.query.hashes || '').split(',');
+  const hashes = (req.query.hashes || '').split(',');
 
   const sendFields = !hashes.includes(internals.fieldsMd5);
 
-  var buf = Buffer.allocUnsafe(42);
+  const buf = Buffer.allocUnsafe(42);
   buf.writeUInt32BE(0, 0);
   buf.writeUInt32BE(2, 4);
   buf.write(internals.fieldsMd5, 8);
@@ -919,19 +975,19 @@ function processQueryResponse2 (req, res, queries, results) {
 }
 // ----------------------------------------------------------------------------
 app.post('/get', function (req, res) {
-  var offset = 0;
+  let offset = 0;
 
-  var buffers = [];
+  const buffers = [];
   req.on('data', (chunk) => {
     buffers.push(chunk);
   }).once('end', (err) => {
-    var queries = [];
+    const queries = [];
     try {
-      for (var buf = Buffer.concat(buffers); offset < buf.length;) {
-        var type = buf[offset];
+      for (const buf = Buffer.concat(buffers); offset < buf.length;) {
+        const type = buf[offset];
         offset++;
 
-        var typeName;
+        let typeName;
         if (type & 0x80) {
           typeName = buf.toString('utf8', offset, offset + (type & ~0x80));
           offset += (type & ~0x80);
@@ -939,10 +995,10 @@ app.post('/get', function (req, res) {
           typeName = internals.type2Name[type];
         }
 
-        var len = buf.readUInt16BE(offset);
+        const len = buf.readUInt16BE(offset);
         offset += 2;
 
-        var value = buf.toString('utf8', offset, offset + len);
+        const value = buf.toString('utf8', offset, offset + len);
         if (internals.debug > 1) {
           console.log(typeName, value);
         }
@@ -1106,12 +1162,12 @@ app.get('/types/:source?', [noCacheJson], (req, res) => {
 });
 // ----------------------------------------------------------------------------
 app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
-  var source = internals.sources[req.params.source];
+  const source = internals.sources[req.params.source];
   if (!source) {
     return res.end('Unknown source ' + req.params.source);
   }
 
-  var query = { typeName: req.params.typeName,
+  const query = { typeName: req.params.typeName,
                value: req.params.value,
                sources: [source] };
 
@@ -1124,7 +1180,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
 });
 // ----------------------------------------------------------------------------
 app.get('/dump/:source', [noCacheJson], function (req, res) {
-  var source = internals.sources[req.params.source];
+  const source = internals.sources[req.params.source];
   if (!source) {
     return res.end('Unknown source ' + req.params.source);
   }
@@ -1197,8 +1253,8 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
 */
 // ----------------------------------------------------------------------------
 app.get('/:typeName/:value', [noCacheJson], function (req, res) {
-  var query = { typeName: req.params.typeName,
-               value: req.params.value };
+  const query = { typeName: req.params.typeName,
+                  value: req.params.value };
 
   processQuery(req, query, (err, result) => {
     if (err || !result) {
@@ -1212,7 +1268,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
   let types = Object.keys(internals.types).sort();
   let stats = { types: [], sources: [] };
 
-  for (var type of types) {
+  for (const type of types) {
     let typeInfo = internals.types[type];
     stats.types.push({
       type: type,
@@ -1266,8 +1322,8 @@ function createRedisClient (redisType, section) {
 }
 // ----------------------------------------------------------------------------
 function printStats () {
-  var keys = Object.keys(internals.types).sort();
-  var lines = [];
+  const keys = Object.keys(internals.types).sort();
+  const lines = [];
   lines[0] = '                   ';
   lines[1] = 'REQUESTS:          ';
   lines[2] = 'FOUND:             ';
@@ -1275,7 +1331,7 @@ function printStats () {
   lines[4] = 'CACHE SRC HIT:     ';
   lines[5] = 'CACHE SRC REFRESH: ';
 
-  for (var key of keys) {
+  for (const key of keys) {
     let typeInfo = internals.types[key];
     lines[0] += sprintf(' %11s', key);
     lines[1] += sprintf(' %11d', typeInfo.requestStats);
@@ -1285,11 +1341,11 @@ function printStats () {
     lines[5] += sprintf(' %11d', typeInfo.cacheSrcRefreshStats);
   }
 
-  for (var i = 0; i < lines.length; i++) {
+  for (let i = 0; i < lines.length; i++) {
     console.log(lines[i]);
   }
 
-  for (var section in internals.sources) {
+  for (const section in internals.sources) {
     let src = internals.sources[section];
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.cacheDroppedStat, src.average100MS));
@@ -1501,10 +1557,10 @@ function main () {
   loadSources();
   setInterval(printStats, 60 * 1000);
 
-  var server;
+  let server;
   if (getConfig('wiseService', 'keyFile') && getConfig('wiseService', 'certFile')) {
-    var keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
-    var certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
+    const keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
+    const certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
 
     server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
   } else {

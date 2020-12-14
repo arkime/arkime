@@ -17,10 +17,10 @@
  */
 'use strict';
 
-var csv = require('csv');
-var request = require('request');
-var fs = require('fs');
-var iptrie = require('iptrie');
+const csv = require('csv');
+const request = require('request');
+const fs = require('fs');
+const iptrie = require('iptrie');
 
 /**
  * All wise sources need to inherit from this object
@@ -72,7 +72,7 @@ function WISESource (options, oldsection) {
 
   // Domain and Email wildcards to exclude from source
   ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
-    var items = options.api.getConfig(options.section, type);
+    const items = options.api.getConfig(options.section, type);
     this[type] = [];
     if (!items) { return; }
     items.split(';').map(item => item.trim()).forEach((item) => {
@@ -85,12 +85,12 @@ function WISESource (options, oldsection) {
 
   // IP CIDRs to exclude from source
   this.excludeIPs = new iptrie.IPTrie();
-  var items = options.api.getConfig(options.section, 'excludeIPs', '');
+  let items = options.api.getConfig(options.section, 'excludeIPs', '');
   items.split(';').map(item => item.trim()).forEach((item) => {
     if (item === '') {
       return;
     }
-    var parts = item.split('/');
+    const parts = item.split('/');
     try {
       this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
     } catch (e) {
@@ -117,16 +117,16 @@ function WISESource (options, oldsection) {
   }
 
   // fields defined for source
-  var fields = options.api.getConfig(options.section, 'fields');
+  let fields = options.api.getConfig(options.section, 'fields');
   if (fields !== undefined) {
     fields = fields.split('\\n');
-    for (var i = 0; i < fields.length; i++) {
+    for (let i = 0; i < fields.length; i++) {
       this.parseFieldDef(fields[i]);
     }
   }
 
   // views defined for source
-  var view = options.api.getConfig(options.section, 'view');
+  const view = options.api.getConfig(options.section, 'view');
   if (view !== undefined) {
     this.view = view.replace(/\\n/g, '\n');
   }
@@ -149,7 +149,7 @@ function splitRemain (str, separator, limit) {
     str = str.split(separator);
     if (str.length <= limit) { return str; }
 
-    var ret = str.splice(0, limit);
+    const ret = str.splice(0, limit);
     ret.push(str.join(separator));
 
     return ret;
@@ -161,9 +161,9 @@ WISESource.prototype.parseCSV = function (body, setCb, endCb) {
       return endCb(err);
     }
 
-    for (var i = 0; i < data.length; i++) {
-      var args = [];
-      for (var k in this.shortcuts) {
+    for (let i = 0; i < data.length; i++) {
+      const args = [];
+      for (const k in this.shortcuts) {
         if (data[i][k] !== undefined) {
           args.push(this.shortcuts[k]);
           args.push(data[i][k]);
@@ -186,8 +186,8 @@ WISESource.prototype.parseFieldDef = function (line) {
   }
 
   if (line.lastIndexOf('field:', 0) === 0) {
-    var pos = this.api.addField(line);
-    var match = line.match(/shortcut:([^;]+)/);
+    const pos = this.api.addField(line);
+    const match = line.match(/shortcut:([^;]+)/);
     if (match) {
       this.shortcuts[match[1]] = pos;
     }
@@ -197,9 +197,9 @@ WISESource.prototype.parseFieldDef = function (line) {
 };
 // ----------------------------------------------------------------------------
 WISESource.prototype.parseTagger = function (body, setCb, endCb) {
-  var lines = body.toString().split(/\r?\n/);
+  const lines = body.toString().split(/\r?\n/);
   this.view = '';
-  for (var l = 0, llen = lines.length; l < llen; l++) {
+  for (let l = 0, llen = lines.length; l < llen; l++) {
     if (lines[l][0] === '#') {
       this.parseFieldDef(lines[l]);
       continue;
@@ -209,10 +209,10 @@ WISESource.prototype.parseTagger = function (body, setCb, endCb) {
       continue;
     }
 
-    var args = [];
-    var parts = lines[l].split(';');
-    for (var p = 1; p < parts.length; p++) {
-      var kv = splitRemain(parts[p], '=', 1);
+    const args = [];
+    const parts = lines[l].split(';');
+    for (let p = 1; p < parts.length; p++) {
+      const kv = splitRemain(parts[p], '=', 1);
       if (kv.length !== 2) {
         console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
         continue;
@@ -235,7 +235,7 @@ WISESource.prototype.parseTagger = function (body, setCb, endCb) {
 };
 // ----------------------------------------------------------------------------
 WISESource.prototype.parseJSON = function (body, setCb, endCb) {
-  var json = JSON.parse(body);
+  const json = JSON.parse(body);
 
   if (this.keyColumn === undefined) {
     return endCb('No keyColumn set');
@@ -246,12 +246,12 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
   // Convert shortcuts into array of key path
   let shortcuts = [];
   let shortcutsValue = [];
-  for (var k in this.shortcuts) {
+  for (const k in this.shortcuts) {
     shortcuts.push(k.split('.'));
     shortcutsValue.push(this.shortcuts[k]);
   }
 
-  for (var i = 0; i < json.length; i++) {
+  for (let i = 0; i < json.length; i++) {
     // Walk the key path
     let key = json[i];
     for (let j = 0; key && j < keyColumn.length; j++) {
@@ -262,10 +262,10 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
       continue;
     }
 
-    var args = [];
+    const args = [];
     // Check each shortcut
     for (let k = 0; k < shortcuts.length; k++) {
-      var obj = json[i];
+      let obj = json[i];
       // Walk the shortcut path
       for (let j = 0; obj && j < shortcuts[k].length; j++) {
         obj = obj[shortcuts[k][j]];
@@ -288,8 +288,9 @@ WISESource.prototype.parseJSON = function (body, setCb, endCb) {
 };
 // ----------------------------------------------------------------------------
 WISESource.combineResults = function (results) {
-  var a; var num = 0; var len = 1;
-  for (a = 0; a < results.length; a++) {
+  let num = 0;
+  let len = 1;
+  for (let a = 0; a < results.length; a++) {
     if (!results[a]) {
       continue;
     }
@@ -297,9 +298,9 @@ WISESource.combineResults = function (results) {
     len += results[a].buffer.length;
   }
 
-  var buf = Buffer.allocUnsafe(len);
-  var offset = 1;
-  for (a = 0; a < results.length; a++) {
+  const buf = Buffer.allocUnsafe(len);
+  let offset = 1;
+  for (let a = 0; a < results.length; a++) {
     if (!results[a]) {
       continue;
     }
@@ -313,11 +314,11 @@ WISESource.combineResults = function (results) {
 // ----------------------------------------------------------------------------
 WISESource.result2Str = function (result) {
   let collection = [];
-  var offset = 1;
-  for (var i = 0; i < result[0]; i++) {
-    var pos = result[offset];
-    var len = result[offset + 1];
-    var value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
+  let offset = 1;
+  for (let i = 0; i < result[0]; i++) {
+    const pos = result[offset];
+    const len = result[offset + 1];
+    const value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
     offset += 2 + len;
     collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value: value });
   }
@@ -326,8 +327,9 @@ WISESource.result2Str = function (result) {
 };
 // ----------------------------------------------------------------------------
 WISESource.encode = function () {
-  var a; var l; var len = 0;
-  for (a = 1; a < arguments.length; a += 2) {
+  let l;
+  let len = 0;
+  for (let a = 1; a < arguments.length; a += 2) {
     l = Buffer.byteLength(arguments[a]);
     if (l > 250) {
       arguments[a] = arguments[a].substring(0, 240);
@@ -335,9 +337,9 @@ WISESource.encode = function () {
     len += 3 + Buffer.byteLength(arguments[a]);
   }
 
-  var buf = Buffer.allocUnsafe(len);
-  var offset = 0;
-  for (a = 1; a < arguments.length; a += 2) {
+  const buf = Buffer.allocUnsafe(len);
+  let offset = 0;
+  for (let a = 1; a < arguments.length; a += 2) {
       buf.writeUInt8(arguments[a - 1], offset);
       len = Buffer.byteLength(arguments[a]);
       buf.writeUInt8(len + 1, offset + 1);
@@ -349,10 +351,10 @@ WISESource.encode = function () {
 };
 // ----------------------------------------------------------------------------
 WISESource.request = function (url, file, cb) {
-  var headers = {};
+  const headers = {};
   if (file) {
     if (fs.existsSync(file)) {
-      var stat = fs.statSync(file);
+      const stat = fs.statSync(file);
 
       // Don't download again if file is less then 1 minutes old
       if (Date.now() - stat.mtime.getTime() < 60000) {
@@ -361,7 +363,7 @@ WISESource.request = function (url, file, cb) {
       headers['If-Modified-Since'] = stat.mtime.toUTCString();
     }
   }
-  var statusCode;
+  let statusCode;
   console.log(url);
   request({ url: url, headers: headers })
   .on('response', function (response) {
@@ -380,10 +382,10 @@ WISESource.request = function (url, file, cb) {
 };
 // ----------------------------------------------------------------------------
 WISESource.prototype.tagsSetting = function () {
-  var tagsField = this.api.addField('field:tags');
-  var tags = this.api.getConfig(this.section, 'tags');
+  const tagsField = this.api.addField('field:tags');
+  const tags = this.api.getConfig(this.section, 'tags');
   if (tags) {
-    var args = [];
+    const args = [];
     tags.split(',').map(item => item.trim()).forEach((part) => {
       args.push(tagsField, part);
     });
