@@ -893,7 +893,6 @@ nodes.forEach((node) => {
   });
 });
 
-
 // Maintain a mapping of node to cluster and cluster to node
 for (var i = 0; i < nodes.length; i++) {
   clusters[nodes[i]] = clusterList[i]; // node -> cluster
