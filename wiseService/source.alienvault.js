@@ -23,9 +23,8 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function AlienVaultSource (api, section) {
-  AlienVaultSource.super_.call(this, api, section);
+  AlienVaultSource.super_.call(this, { api: api, section: section, dontCache: true });
   this.key = api.getConfig('alienvault', 'key');
-  this.cacheTimeout = -1;
 
   if (this.key === undefined) {
     console.log(this.section, '- No export key defined');

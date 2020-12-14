@@ -24,7 +24,7 @@ var LRU = require('lru-cache');
 
 // ----------------------------------------------------------------------------
 function HODISource (api, section) {
-  HODISource.super_.call(this, api, section);
+  HODISource.super_.call(this, { api: api, section: section });
 
   this.contentTypes = {};
   var contentTypes = this.api.getConfig(section, 'contentTypes',

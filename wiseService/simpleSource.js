@@ -22,12 +22,13 @@ var util = require('util');
 var wiseSource = require('./wiseSource.js');
 var iptrie = require('iptrie');
 
-function SimpleSource (api, section) {
-  SimpleSource.super_.call(this, api, section);
-  this.column = +api.getConfig(section, 'column', 0);
-  this.keyColumn = api.getConfig(section, 'keyColumn', 0);
-
-  this.typeSetting();
+function SimpleSource (options) {
+  options.typeSetting = true;
+  options.tagsSetting = true;
+  options.formatSetting = true;
+  SimpleSource.super_.call(this, options);
+  this.column = +options.api.getConfig(options.section, 'column', 0);
+  this.keyColumn = options.api.getConfig(options.section, 'keyColumn', 0);
 
   if (this.type === 'ip') {
     this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
@@ -65,16 +66,6 @@ SimpleSource.prototype.sendResult = function (key, cb) {
 };
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.initSimple = function () {
-  if (!this.type) {
-    console.log(this.section, '- ERROR not loading since no type specified in config file');
-    return false;
-  }
-
-  this.tagsSetting();
-  if (!this.formatSetting()) {
-    return false;
-  }
-
   if (this.type === 'domain') {
     this.getDomain = function (domain, cb) {
       if (this.cache.get(domain)) {

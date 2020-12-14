@@ -33,7 +33,7 @@ function removeArray (arr, value) {
 }
 // ----------------------------------------------------------------------------
 function ReverseDNSSource (api, section) {
-  ReverseDNSSource.super_.call(this, api, section);
+  ReverseDNSSource.super_.call(this, { api: api, section: section });
   this.field = api.getConfig('reversedns', 'field');
   this.ips = api.getConfig('reversedns', 'ips');
   this.servers = api.getConfig('reversedns', 'servers');

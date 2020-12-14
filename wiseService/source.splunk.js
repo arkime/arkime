@@ -24,7 +24,7 @@ var iptrie = require('iptrie');
 
 // ----------------------------------------------------------------------------
 function SplunkSource (api, section) {
-  SplunkSource.super_.call(this, api, section);
+  SplunkSource.super_.call(this, { api: api, section: section, typeSetting: true, tagsSetting: true });
 
   this.host = api.getConfig(section, 'host');
   this.username = api.getConfig(section, 'username');
@@ -34,9 +34,6 @@ function SplunkSource (api, section) {
   this.periodic = api.getConfig(section, 'periodic');
   this.query = api.getConfig(section, 'query');
   this.keyColumn = api.getConfig(section, 'keyColumn');
-
-  this.typeSetting();
-  this.tagsSetting();
 
   ['host', 'username', 'password', 'query', 'keyColumn'].forEach((item) => {
     if (this[item] === undefined) {

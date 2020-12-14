@@ -22,12 +22,35 @@ var request = require('request');
 var fs = require('fs');
 var iptrie = require('iptrie');
 
-function WISESource (api, section) {
-  this.api = api;
-  this.section = section;
+/**
+ * All wise sources need to inherit from this object
+ * @name WISESource
+ * @param {object} options - All the options
+ * @param {object} options.api - The api reference, will be saved in this.api
+ * @param {string} options.section - the name of the section, will be saved in this.section
+ * @param {boolean} options.dontCache - do not cache this source, the source handles itself
+ * @param {integer} options.cacheTimeout - override the cacheAgeMin setting, -1 same as dont
+ * @param {boolean} options.tagsSetting - load the optional tags setting
+ * @param {boolean} options.typeSetting - load the required type setting
+ * @param {boolean} options.formatSetting - load the format setting, default csv
+ */
+function WISESource (options, oldsection) {
+  // Old construction (api, section)
+  if (oldsection) {
+    options = { api: options, section: oldsection };
+  }
+
+  this.api = options.api;
+  this.section = options.section;
   this.view = '';
   this.shortcuts = {};
-  this.cacheTimeout = 60 * +this.api.getConfig(section, 'cacheAgeMin', '60'); // Default an hour
+  if (options.dontCache) {
+    this.cacheTimeout = -1;
+  } else if (options.cacheTimeout !== undefined) {
+    this.cacheTimeout = options.cacheTimeout;
+  } else {
+    this.cacheTimeout = 60 * +this.api.getConfig(options.section, 'cacheAgeMin', '60'); // Default an hour
+  }
   this.cacheHitStat = 0;
   this.cacheMissStat = 0;
   this.cacheRefreshStat = 0;
@@ -35,9 +58,21 @@ function WISESource (api, section) {
   this.average100MS = 0;
   this.srcInProgress = {};
 
+  if (options.typeSetting) {
+    this.typeSetting();
+  }
+
+  if (options.tagsSetting) {
+    this.tagsSetting();
+  }
+
+  if (options.formatSetting) {
+    this.formatSetting();
+  }
+
   // Domain and Email wildcards to exclude from source
   ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
-    var items = api.getConfig(section, type);
+    var items = options.api.getConfig(options.section, type);
     this[type] = [];
     if (!items) { return; }
     items.split(';').map(item => item.trim()).forEach((item) => {
@@ -50,7 +85,7 @@ function WISESource (api, section) {
 
   // IP CIDRs to exclude from source
   this.excludeIPs = new iptrie.IPTrie();
-  var items = api.getConfig(section, 'excludeIPs', '');
+  var items = options.api.getConfig(options.section, 'excludeIPs', '');
   items.split(';').map(item => item.trim()).forEach((item) => {
     if (item === '') {
       return;
@@ -59,12 +94,12 @@ function WISESource (api, section) {
     try {
       this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
     } catch (e) {
-      console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
+      console.log(`${options.section} - ERROR - excludeIPs for '${item}'`, e);
       process.exit();
     }
   });
 
-  items = api.getConfig(section, 'onlyIPs', undefined);
+  items = options.api.getConfig(options.section, 'onlyIPs', undefined);
   if (items) {
     this.onlyIPs = new iptrie.IPTrie();
     items.split(';').map(item => item.trim()).forEach((item) => {
@@ -75,14 +110,14 @@ function WISESource (api, section) {
       try {
         this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
       } catch (e) {
-        console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
+        console.log(`${options.section} - ERROR - onlyIPs for '${item}'`, e);
         process.exit();
       }
     });
   }
 
   // fields defined for source
-  var fields = api.getConfig(section, 'fields');
+  var fields = options.api.getConfig(options.section, 'fields');
   if (fields !== undefined) {
     fields = fields.split('\\n');
     for (var i = 0; i < fields.length; i++) {
@@ -91,13 +126,13 @@ function WISESource (api, section) {
   }
 
   // views defined for source
-  var view = api.getConfig(section, 'view');
+  var view = options.api.getConfig(options.section, 'view');
   if (view !== undefined) {
     this.view = view.replace(/\\n/g, '\n');
   }
 
   if (this.view !== '') {
-    this.api.addView(this.section, this.view);
+    options.api.addView(options.section, this.view);
   }
 }
 
@@ -367,14 +402,15 @@ WISESource.prototype.formatSetting = function () {
   } else if (this.format === 'json') {
     this.parse = this.parseJSON;
   } else {
-    console.log(this.section, '- ERROR not loading unknown data format', this.format);
-    return false;
+    throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
   }
-  return true;
 };
 // ----------------------------------------------------------------------------
 WISESource.prototype.typeSetting = function () {
   this.type = this.api.getConfig(this.section, 'type');
+  if (this.type === undefined) {
+    throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
+  }
   this.typeFunc = this.api.funcName(this.type);
   if (this.getTypes === undefined) {
     this.getTypes = function () {

@@ -22,7 +22,7 @@ var wiseSource = require('./wiseSource.js');
 
 // ----------------------------------------------------------------------------
 function RedisSource (api, section) {
-  RedisSource.super_.call(this, api, section);
+  RedisSource.super_.call(this, { api: api, section: section, tagsSetting: true, typeSetting: true, formatSetting: true });
   this.url = api.getConfig(section, 'url');
   if (this.url === undefined) {
     console.log(this.section, '- ERROR not loading since no url specified in config file');
@@ -32,12 +32,6 @@ function RedisSource (api, section) {
   this.column = +api.getConfig(section, 'column', 0);
   this.format = api.getConfig(section, 'format', 'csv');
   this.template = api.getConfig(section, 'template', undefined);
-
-  this.tagsSetting();
-  this.typeSetting();
-  if (!this.formatSetting()) {
-    return;
-  }
 
   this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
 

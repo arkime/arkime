@@ -25,7 +25,7 @@ var source;
 
 // ----------------------------------------------------------------------------
 function VirusTotalSource (api, section) {
-  VirusTotalSource.super_.call(this, api, section);
+  VirusTotalSource.super_.call(this, { api: api, section: section });
   this.waiting = [];
   this.processing = {};
 

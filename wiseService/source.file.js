@@ -23,10 +23,9 @@ var simpleSource = require('./simpleSource.js');
 
 // ----------------------------------------------------------------------------
 function FileSource (api, section) {
-  FileSource.super_.call(this, api, section);
+  FileSource.super_.call(this, { api: api, section: section, dontCache: true });
 
   this.file = api.getConfig(section, 'file');
-  this.cacheTimeout = -1;
 
   if (this.file === undefined) {
     console.log(`${this.section} - ERROR not loading since no file specified in config file`);

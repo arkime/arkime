@@ -23,7 +23,7 @@ var redis = require('ioredis');
 
 // ----------------------------------------------------------------------------
 function HODIRedisSource (api, section) {
-  HODIRedisSource.super_.call(this, api, section);
+  HODIRedisSource.super_.call(this, { api: api, section: section, dontCache: true });
 
   this.contentTypes = {};
   var contentTypes = this.api.getConfig(section, 'contentTypes',
@@ -39,7 +39,6 @@ function HODIRedisSource (api, section) {
   this.fullQuery = true;
   this.client = redis.createClient({ url: this.url });
   this.api.addSource(section, this);
-  this.cacheTimeout = -1;
 
   var tagsField = this.api.addField('field:tags');
   this.tagsDomain = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-domain') };

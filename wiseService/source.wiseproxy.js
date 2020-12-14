@@ -23,7 +23,7 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function WiseProxySource (api, section) {
-  WiseProxySource.super_.call(this, api, section);
+  WiseProxySource.super_.call(this, { api: api, section: section });
 
   this.url = api.getConfig(section, 'url');
   this.types = api.getConfig(section, 'types');
@@ -34,11 +34,6 @@ function WiseProxySource (api, section) {
 
   if (this.url === undefined) {
     console.log(this.section, '- ERROR not loading since no url specified in config file');
-    return;
-  }
-
-  if (!this.types) {
-    console.log(this.section, '- ERROR not loading since no types specified in config file');
     return;
   }
 

@@ -23,7 +23,7 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function OpenDNSSource (api, section) {
-  OpenDNSSource.super_.call(this, api, section);
+  OpenDNSSource.super_.call(this, { api: api, section: section });
   this.key = this.api.getConfig('opendns', 'key');
   if (this.key === undefined) {
     console.log(this.section, '- No key defined');

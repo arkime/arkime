@@ -24,7 +24,7 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function ThreatQSource (api, section) {
-  ThreatQSource.super_.call(this, api, section);
+  ThreatQSource.super_.call(this, { api: api, section: section, dontCache: true });
   this.key = api.getConfig('threatq', 'key');
   this.host = api.getConfig('threatq', 'host');
 
@@ -42,7 +42,6 @@ function ThreatQSource (api, section) {
   this.domains = new Map();
   this.emails = new Map();
   this.md5s = new Map();
-  this.cacheTimeout = -1;
 
   this.idField = this.api.addField('field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true');
   this.typeField = this.api.addField('field:threatq.type;db:threatq.type;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true');

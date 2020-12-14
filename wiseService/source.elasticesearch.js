@@ -23,7 +23,7 @@ var elasticsearch = require('elasticsearch');
 
 // ----------------------------------------------------------------------------
 function ElasticsearchSource (api, section) {
-  ElasticsearchSource.super_.call(this, api, section);
+  ElasticsearchSource.super_.call(this, { api: api, section: section, typeSetting: true, tagsSetting: true });
 
   this.esIndex = api.getConfig(section, 'esIndex');
   this.esTimestampField = api.getConfig(section, 'esTimestampField');
@@ -32,18 +32,11 @@ function ElasticsearchSource (api, section) {
   this.esMaxTimeMS = api.getConfig(section, 'esMaxTimeMS', 60 * 60 * 1000);
   this.elasticsearch = api.getConfig(section, 'elasticsearch');
 
-  this.typeSetting();
-  this.tagsSetting();
-
   ['esIndex', 'esTimestampField', 'esQueryField', 'esResultField', 'elasticsearch'].forEach((item) => {
     if (this[item] === undefined) {
       console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
     }
   });
-
-  if (!this.type) {
-    return;
-  }
 
   this[this.api.funcName(this.type)] = this.sendResult;
 

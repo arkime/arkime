@@ -22,7 +22,7 @@ var simpleSource = require('./simpleSource.js');
 
 // ----------------------------------------------------------------------------
 function RedisFileSource (api, section) {
-  RedisFileSource.super_.call(this, api, section);
+  RedisFileSource.super_.call(this, { api: api, section: section, dontCache: true });
   this.url = api.getConfig(section, 'url');
   if (this.url === undefined) {
     console.log(this.section, '- ERROR not loading since no url specified in config file');
@@ -32,7 +32,6 @@ function RedisFileSource (api, section) {
   this.reload = +api.getConfig(section, 'reload', -1);
   this.headers = {};
   var headers = api.getConfig(section, 'headers');
-  this.cacheTimeout = -1;
   this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
 
   if (this.key === undefined) {

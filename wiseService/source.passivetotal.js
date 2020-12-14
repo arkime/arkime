@@ -23,7 +23,7 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function PassiveTotalSource (api, section) {
-  PassiveTotalSource.super_.call(this, api, section);
+  PassiveTotalSource.super_.call(this, { api: api, section: section });
 
   this.key = this.api.getConfig('passivetotal', 'key');
   this.user = this.api.getConfig('passivetotal', 'user');

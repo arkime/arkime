@@ -27,7 +27,7 @@ var sqlite3;
 
 // ----------------------------------------------------------------------------
 function ThreatStreamSource (api, section) {
-  ThreatStreamSource.super_.call(this, api, section);
+  ThreatStreamSource.super_.call(this, { api: api, section: section });
   this.user = api.getConfig('threatstream', 'user');
   this.key = api.getConfig('threatstream', 'key');
   this.mode = api.getConfig('threatstream', 'mode', 'zip');

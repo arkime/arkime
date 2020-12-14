@@ -24,7 +24,7 @@ var ini = require('iniparser');
 
 // ----------------------------------------------------------------------------
 function RightClickSource (api, section) {
-  RightClickSource.super_.call(this, api, section);
+  RightClickSource.super_.call(this, { api: api, section: section });
 
   if (section === 'right-click') {
     this.process(api.getConfigSection(section));

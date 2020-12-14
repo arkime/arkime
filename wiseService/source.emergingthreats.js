@@ -24,7 +24,7 @@ var util = require('util');
 
 // ----------------------------------------------------------------------------
 function EmergingThreatsSource (api, section) {
-  EmergingThreatsSource.super_.call(this, api, section);
+  EmergingThreatsSource.super_.call(this, { api: api, section: section, dontCache: true });
   this.key = api.getConfig('emergingthreats', 'key');
 
   if (this.key === undefined) {
@@ -35,7 +35,6 @@ function EmergingThreatsSource (api, section) {
   this.ips = new Map();
   this.domains = new Map();
   this.categories = {};
-  this.cacheTimeout = -1;
 
   this.api.addSource('emergingthreats', this);
 

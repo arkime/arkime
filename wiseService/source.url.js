@@ -23,12 +23,11 @@ var request = require('request');
 
 // ----------------------------------------------------------------------------
 function URLSource (api, section) {
-  URLSource.super_.call(this, api, section);
+  URLSource.super_.call(this, { api: api, section: section, dontCache: true });
   this.url = api.getConfig(section, 'url');
   this.reload = +api.getConfig(section, 'reload', -1);
   this.headers = {};
   var headers = api.getConfig(section, 'headers');
-  this.cacheTimeout = -1;
 
   if (this.url === undefined) {
     console.log(this.section, '- ERROR not loading since no url specified in config file');
