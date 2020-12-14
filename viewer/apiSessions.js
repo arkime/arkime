@@ -2616,7 +2616,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
    * GET - /api/sessions/:nodeName/raw/:id.png
    *
    * Retrieve a bitmap image representation of packets in a session.
-   * @name sessions/:nodeName/raw/:id.png
+   * @name "sessions/:nodeName/raw/:id.png"
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
