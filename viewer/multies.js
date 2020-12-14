@@ -118,6 +118,17 @@ function node2Prefix (node) {
   return '';
 }
 
+function node2Name (node) {
+  var parts = node.split(',');
+  for (var p = 1; p < parts.length; p++) {
+    var kv = parts[p].split(':');
+    if (kv[0] === 'name') {
+      return kv[1];
+    }
+  }
+  return null;
+}
+
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -855,15 +866,17 @@ if (nodes.length === 0 || nodes[0] === '') {
   process.exit(1);
 }
 
-clusterList = Config.get('multiESClusters', '').split(';');
-if (clusterList.length === 0 || clusterList[0] === '') {
-  console.log('ERROR - Empty multiESClusters');
-  process.exit(1);
-}
+for (let i = 0; i < nodes.length; i++) {
+  let name = node2Name(nodes[i]);
+  if (!name) {
+    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;example2:9200,name:<friendly-name-2>');
+    process.exit(1);
+  }
+  clusterList[i] = name; // name
 
-if (clusterList.length !== nodes.length) {
-  console.log('ERROR - The lenghts of multiESNodes and multiESClusters do not match');
-  process.exit(1);
+  // Maintain a mapping of node to cluster and cluster to node
+  clusters[nodes[i]] = clusterList[i]; // node -> cluster
+  clusters[clusterList[i]] = nodes[i]; // cluster -> node
 }
 
 // First connect
@@ -893,11 +906,7 @@ nodes.forEach((node) => {
   });
 });
 
-// Maintain a mapping of node to cluster and cluster to node
-for (var i = 0; i < nodes.length; i++) {
-  clusters[nodes[i]] = clusterList[i]; // node -> cluster
-  clusters[clusterList[i]] = nodes[i]; // cluster -> node
-}
+// list of active nodes
 activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
@@ -913,12 +922,12 @@ function pingESNode (client, node) {
 
 function enumerateActiveNodes () {
   var pingTasks = [];
-  for (var i = 0; i < nodes.length; i++) {
+  for (let i = 0; i < nodes.length; i++) {
     pingTasks.push(pingESNode(clients[nodes[i]], nodes[i]));
   }
   Promise.all(pingTasks).then(function (values) {
     var activeNodes = [];
-    for (var i = 0; i < values.length; i++) {
+    for (let i = 0; i < values.length; i++) {
       if (values[i].isActive) { // true -> node is active
         activeNodes.push(values[i].node);
       } else { // false -> node is down
