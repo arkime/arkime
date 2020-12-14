@@ -223,6 +223,7 @@ jobs:
 
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
+                mv /opt/arkime /data/moloch
                 ./easybutton-build.sh --daq --pfring --dir /data/moloch
                 (cd capture ; make clean; make; make install)
                 (cd release ; make installmoloch)
