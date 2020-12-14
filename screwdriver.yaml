@@ -21,7 +21,7 @@ shared:
 jobs:
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:3.0.0-1
+        image: andywick/arkime-build-7:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -59,7 +59,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-8:3.0.0-1
+        image: andywick/arkime-build-8:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -97,7 +97,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-16:3.0.0-1
+        image: andywick/arkime-build-16:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -107,7 +107,7 @@ jobs:
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
-            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.9.3; cd /elasticsearch-7.9.3 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -139,7 +139,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-18:3.0.0-1
+        image: andywick/arkime-build-18:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -190,7 +190,7 @@ jobs:
 
     ubuntu-20:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-20:3.0.0-1
+        image: andywick/arkime-build-20:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -242,7 +242,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:3.0.0-1
+        image: andywick/arkime-build-7:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -255,7 +255,7 @@ jobs:
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
-            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.9.3; cd /elasticsearch-7.9.3 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - sleep 30
             - cat /tmp/es
             - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
@@ -275,7 +275,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-16:3.0.0-1
+        image: andywick/arkime-build-16:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -286,7 +286,7 @@ jobs:
             - installing: make install
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
-            - run-es: (chown -R elasticsearch /elasticsearch-7.5.1; cd /elasticsearch-7.5.1 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
+            - run-es: (chown -R elasticsearch /elasticsearch-7.9.3; cd /elasticsearch-7.9.3 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
             - test-capture: (cd tests ; ./tests.pl)
             - sleep 30
             - cat /tmp/es
@@ -304,7 +304,7 @@ jobs:
 
     slack:
         requires: [centos-7, centos-8, ubuntu-16, ubuntu-18, ubuntu-20]
-        image: andywick/arkime-build-7:3.0.0-1
+        image: andywick/arkime-build-7:3.0.0-2
         annotations:
             beta.screwdriver.cd/cpu: LOW
             beta.screwdriver.cd/ram: LOW
@@ -321,7 +321,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/arkime-build-7:3.0.0-1
+        image: andywick/arkime-build-7:3.0.0-2
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -331,7 +331,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/arkime-build-7:3.0.0-1
+        image: andywick/arkime-build-7:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -352,7 +352,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/arkime-build-8:3.0.0-1
+        image: andywick/arkime-build-8:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -373,7 +373,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/arkime-build-16:3.0.0-1
+        image: andywick/arkime-build-16:3.0.0-2
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .

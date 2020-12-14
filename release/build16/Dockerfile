@@ -11,10 +11,10 @@ gem install --no-ri --no-rdoc fpm; \
 pip3 install awscli; \
 useradd -u 2000 elasticsearch; \
 (cd / ; \
- wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.5.1-linux-x86_64.tar.gz; \
- tar xf elasticsearch-7.5.1-linux-x86_64.tar.gz; \
- chown -R elasticsearch elasticsearch-7.5.1; \
- rm -f elasticsearch-7.5.1-linux-x86_64.tar.gz \
+ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.9.3-linux-x86_64.tar.gz; \
+ tar xf elasticsearch-7.9.3-linux-x86_64.tar.gz; \
+ chown -R elasticsearch elasticsearch-7.9.3; \
+ rm -f elasticsearch-7.9.3-linux-x86_64.tar.gz \
 ) && \
 git clone https://github.com/arkime/arkime && \
 apt-get -f install -y && \
