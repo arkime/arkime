@@ -1,4 +1,4 @@
-use Test::More tests => 75;
+use Test::More tests => 71;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -115,8 +115,6 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
 
 # no map data
     $json = get("/spigraph.json?date=-1&field=http.useragent&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
-    $pjson = post("/api/spigraph", '{"date":-1, "field":"http.useragent", "expression":"file=' . $pwd . '/socks5-reverse.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
-    eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
 
 # file field works
