@@ -225,8 +225,8 @@ app.use((req, res, next) => {
     return undefined;
   }` };
   mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  mrc.bodyHashMd5 = { category: 'md5', url: 'api/sessions/%ID%/%NODE%/bodyhash/%TEXT%', name: 'Download File' };
-  mrc.bodyHashSha256 = { category: 'sha256', url: 'api/sessions/%ID%/%NODE%/bodyhash/%TEXT%', name: 'Download File' };
+  mrc.bodyHashMd5 = { category: 'md5', url: 'api/session/%NODE%/%ID%/bodyhash/%TEXT%', name: 'Download File' };
+  mrc.bodyHashSha256 = { category: 'sha256', url: 'api/session/%NODE%/%ID%/bodyhash/%TEXT%', name: 'Download File' };
 
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];
@@ -4064,7 +4064,7 @@ app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
 
 app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
-  ['/api/sessions/csv', /\/sessions.csv.*/],
+  [/\/api\/sessions\/csv*/, /\/sessions.csv.*/],
   [logAction('sessions.csv'), fillQueryFromBody],
   sessionAPIs.getSessionsCSV
 );
@@ -4084,13 +4084,13 @@ app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
 );
 
 app.get( // session detail (SPI) endpoint
-  ['/api/sessions/:id/:nodeName/detail', '/:nodeName/session/:id/detail'],
+  ['/api/session/:nodeName/:id/detail', '/:nodeName/session/:id/detail'],
   [cspHeader, logAction()],
   sessionAPIs.getDetail
 );
 
 app.get( // session packets endpoint
-  ['/api/sessions/:id/:nodeName/packets', '/:nodeName/session/:id/packets'],
+  ['/api/session/:nodeName/:id/packets', '/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
 );
@@ -4108,55 +4108,55 @@ app.post( // remove tags endpoint
 );
 
 app.get( // session body file endpoint
-  ['/api/sessions/:id/:nodeName/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
+  ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
   sessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
-  ['/api/sessions/:id/:nodeName/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
+  ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
   sessionAPIs.getFilePNG
 );
 
 app.get( // session pcap endpoint
-  ['/api/sessions/pcap', /\/sessions.pcap.*/],
+  [/\/api\/sessions\/pcap*/, /\/sessions.pcap.*/],
   [logAction(), checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAP
 );
 
 app.get( // session pcapng endpoint
-  ['/api/sessions/pcapng', /\/sessions.pcapng.*/],
+  [/\/api\/sessions\/pcapng*/, /\/sessions.pcapng.*/],
   [logAction(), checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNG
 );
 
 app.get( // session node pcap endpoint
-  ['/api/sessions/:id/:nodeName/pcap', '/:nodeName/pcap/:id.pcap'],
+  ['/api/session/:nodeName/:id/pcap', '/:nodeName/pcap/:id.pcap'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
-  ['/api/sessions/:id/:nodeName/pcapng', '/:nodeName/pcapng/:id.pcapng'],
+  ['/api/session/:nodeName/:id/pcapng', '/:nodeName/pcapng/:id.pcapng'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
-  ['/api/sessions/:id/:nodeName/entirepcap', '/:nodeName/entirePcap/:id.pcap'],
+  ['/api/session/:nodeName/:id/entirepcap', '/:nodeName/entirePcap/:id.pcap'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getEntirePCAP
 );
 
 app.get( // session packets file image endpoint
-  ['/api/sessions/:id/:nodeName/raw/png', '/:nodeName/raw/:id.png'],
+  ['/api/session/:nodeName/:id/raw/png', '/:nodeName/raw/:id.png'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPacketPNG
 );
 
 app.get( // session raw packets endpoint
-  ['/api/sessions/:id/:nodeName/raw', '/:nodeName/raw/:id'],
+  ['/api/session/:nodeName/:id/raw', '/:nodeName/raw/:id'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getRawPackets
 );
@@ -4168,7 +4168,7 @@ app.get( // session file bodyhash endpoint
 );
 
 app.get( // session file bodyhash endpoint
-  ['/api/sessions/:id/:nodeName/bodyhash/:hash', '/:nodeName/:id/bodyHash/:hash'],
+  ['/api/session/:nodeName/:id/bodyhash/:hash', '/:nodeName/:id/bodyHash/:hash'],
   [checkProxyRequest],
   sessionAPIs.getBodyHashFromNode
 );
@@ -4180,7 +4180,7 @@ app.get( // sessions get decodings endpoint
 );
 
 app.get( // session send to node endpoint
-  ['/api/sessions/:id/:nodeName/send', '/:nodeName/sendSession/:id'],
+  ['/api/session/:nodeName/:id/send', '/:nodeName/sendSession/:id'],
   [checkProxyRequest],
   sessionAPIs.sendSessionToNode
 );

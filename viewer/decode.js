@@ -770,9 +770,9 @@ exports.register('ITEM-LINKBODY', through.ctor({ objectMode: true }, function (i
   if (item.bodyType === undefined || item.bodyType === 'text') {
     return callback(null, item);
   }
-  const url = 'api/sessions/' +
-            this.options.id + '/' +
-            this.options.nodeName + '/body/' +
+  const url = 'api/session/' +
+            this.options.nodeName + '/' +
+            this.options.id + '/body/' +
             item.bodyType + '/' +
             item.bodyNum + '/' +
             item.bodyName + '.pellet';

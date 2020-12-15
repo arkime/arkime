@@ -96,7 +96,7 @@ export default {
         params: {
           cluster: cluster
         },
-        url: `api/sessions/${id}/${node}/detail`
+        url: `api/session/${node}/${id}/detail`
       };
 
       Vue.axios(options)
@@ -129,7 +129,7 @@ export default {
           cluster: cluster
         },
         cancelToken: source.token,
-        url: `api/sessions/${id}/${node}/packets`
+        url: `api/session/${node}/${id}/packets`
       };
 
       Vue.axios(options)
@@ -289,6 +289,7 @@ export default {
 
       let url = `${baseUrl}?${qs.stringify(options.params)}`;
 
+console.log(url);
       window.location = url;
 
       return resolve({ text: 'PCAP now exporting' });
