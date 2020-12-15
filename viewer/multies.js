@@ -869,7 +869,7 @@ if (nodes.length === 0 || nodes[0] === '') {
 for (let i = 0; i < nodes.length; i++) {
   let name = node2Name(nodes[i]);
   if (!name) {
-    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;example2:9200,name:<friendly-name-2>');
+    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
     process.exit(1);
   }
   clusterList[i] = name; // name

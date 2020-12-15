@@ -1,4 +1,4 @@
-NOTICE: Please see https://molo.ch/faq#upgrading-moloch for upgrading info
+NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
 ES Versions:
   * Moloch >= 2.7.0  supports ES >= 7.4.0
@@ -20,6 +20,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 3.0.0 2021/01/xx
+  - NOTICE - multiESNodes requires a name: attribute per entry
   - release - curl 7.74.0, node 12.20, glib 2.66.3, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - viewer - add POST version session query APIs to support long expressions
@@ -28,8 +29,11 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - put npm scripts and common npm packages at top level
   - viewer - allow viewing of large encrypted pcap files (issue #1555)
   - viewer - can find nodes for pcap based on --host
+  - viewer - in multiviewer mode can now select which clusters to search (PR #1325)
+  - viewer - fix addTag/removeTag with multiviewer (PR #1556)
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
+  - esproxy - first version, see https://arkime.com/esproxy
 
 2.7.1 2020/12/01
   - release - glib 2.66.2, curl 7.73.0, nghttp2 1.42.0
