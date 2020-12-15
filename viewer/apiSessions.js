@@ -9,8 +9,9 @@ const PNG = require('pngjs').PNG;
 const pug = require('pug');
 const url = require('url');
 const util = require('util');
+const decode = require('./decode.js');
 
-module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, ViewerUtils) => {
+module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   let module = {};
 
   // --------------------------------------------------------------------------

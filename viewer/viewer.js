@@ -39,7 +39,6 @@ try {
   var version = require('./version');
   var http = require('http');
   var https = require('https');
-  var decode = require('./decode.js');
   var onHeaders = require('on-headers');
   var glob = require('glob');
   var unzipper = require('unzipper');
@@ -93,7 +92,7 @@ var compression = require('compression');
 // internal app deps
 let { internals } = require('./internals')(app, Config);
 let ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
-let sessionAPIs = require('./apiSessions')(Config, Db, decode, internals, molochparser, Pcap, version, ViewerUtils);
+let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 
