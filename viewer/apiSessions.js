@@ -719,7 +719,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let path = `api/sessions/${fields.node}/send/${sid}?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let path = `api/sessions/${sid}/${fields.node}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
         if (req.body.tags) {
           path += `&tags=${req.body.tags}`;
         }
@@ -2329,10 +2329,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/:nodeName/session/:id/detail
+   * GET - /api/sessions/:id/:nodeName/detail
    *
    * Gets SPI data for a session.
-   * @name :nodeName/session/:id/detail
+   * @name sessions/:id/:nodeName/detail
    * @returns {html} The html to display as session detail
    */
   module.getDetail = (req, res) => {
@@ -2378,10 +2378,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/:nodeName/session/:id/packets
+   * GET - /api/sessions/:id/:nodeName/packets
    *
    * Gets packets for a session.
-   * @name :nodeName/session/:id/packets
+   * @name sessions/:id/:nodeName/packets
    * @returns {html} The html to display as session packets
    */
   module.getPackets = (req, res) => {
@@ -2488,10 +2488,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
+   * GET - /api/session/:ids/:nodeName/body/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a file that was transferred in a session.
-   * @name  sessions/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
+   * @name  sessions/:id/:nodeName/body/:bodyType/:bodyNum/:bodyName
    * @returns {file} file - The file in the session
    */
   module.getRawBody = (req, res) => {
@@ -2509,10 +2509,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
+   * GET - /api/sessions/:id/:nodeName/bodypng/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a bitmap image representation of the bytes in a file.
-   * @name  sessions/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
+   * @name  sessions/:id/:nodeName/bodypng/:bodyType/:bodyNum/:bodyName
    * @returns {image/png} image - The bitmap image.
    */
   module.getFilePNG = (req, res) => {
@@ -2562,10 +2562,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/pcap/:id.pcap
+   * GET - /api/sessions/:id/:nodeName/pcap
    *
    * Retrieve the raw session data in pcap format from a specific node.
-   * @name sessions/:nodeName/pcap/:id.pcap
+   * @name sessions/:id/:nodeName/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
   module.getPCAPFromNode = (req, res) => {
@@ -2577,10 +2577,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/pcapng/:id.pcapng
+   * GET - /api/sessions/:id/:nodeName/pcapng
    *
    * Retrieve the raw session data in pcapng format from a specific node.
-   * @name sessions/:nodeName/pcapng/:id.pcapng
+   * @name sessions/:id/:nodeName/pcapng
    * @returns {pcap} A PCAPNG file with the session requested
    */
   module.getPCAPNGFromNode = (req, res) => {
@@ -2592,10 +2592,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/entirepcap/:id.pcap
+   * GET - /api/sessions/:id:/:nodeName/entirepcap
    *
    * Retrieve the entire pcap for a session.
-   * @name sessions/:nodeName/entirepcap/:id.pcap
+   * @name sessions/:id/:nodeName/entirepcap
    * @returns {pcap} A PCAP file with the session requested
    */
   module.getEntirePCAP = (req, res) => {
@@ -2622,10 +2622,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/raw/:id.png
+   * GET - /api/sessions/:id/:nodeName/raw/png
    *
    * Retrieve a bitmap image representation of packets in a session.
-   * @name "sessions/:nodeName/raw/:id.png"
+   * @name sessions/:id/:nodeName/raw/png
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
@@ -2672,10 +2672,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/raw/:id
+   * GET - /api/sessions/:id/:nodeName/raw
    *
    * Retrieve raw packets for a session.
-   * @name sessions/:nodeName/raw/:id
+   * @name sessions/:id/:nodeName/raw
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
@@ -2761,7 +2761,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url = `api/sessions/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
+              preq.url = `api/sessions/${sessionID}/${Config.basePath(nodeName) + nodeName}/bodyhash/${hash}`;
               return module.proxyRequest(preq, res);
             });
           } else {
@@ -2785,10 +2785,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/sessions/:nodeName/:id/bodyhash/:hash
+   * GET - /api/sessions/:id/:nodeName/bodyhash/:hash
    *
    * Retrieve a file from a specific node given a hash of that file.
-   * @name sessions/:nodeName/:id/bodyhash/:hash
+   * @name sessions/:id/:nodeName/bodyhash/:hash
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
@@ -2810,10 +2810,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
 
   /**
    * @ignore
-   * GET - /api/sessions/:nodeName/send/:id
+   * GET - /api/sessions/:id/:nodeName/send
    *
    * Sends a session to a node.
-   * @name sessions/:nodeName/send/:id
+   * @name sessions/:id/:nodeName/send
    */
   module.sendSessionToNode = (req, res) => {
     ViewerUtils.noCache(req, res);

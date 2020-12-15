@@ -96,7 +96,7 @@ export default {
         params: {
           cluster: cluster
         },
-        url: `api/${node}/session/${id}/detail`
+        url: `api/sessions/${id}/${node}/detail`
       };
 
       Vue.axios(options)
@@ -129,7 +129,7 @@ export default {
           cluster: cluster
         },
         cancelToken: source.token,
-        url: `api/${node}/session/${id}/packets`
+        url: `api/sessions/${id}/${node}/packets`
       };
 
       Vue.axios(options)

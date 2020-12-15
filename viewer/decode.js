@@ -771,8 +771,8 @@ exports.register('ITEM-LINKBODY', through.ctor({ objectMode: true }, function (i
     return callback(null, item);
   }
   const url = 'api/sessions/' +
-            this.options.nodeName + '/' +
-            this.options.id + '/body/' +
+            this.options.id + '/' +
+            this.options.nodeName + '/body/' +
             item.bodyType + '/' +
             item.bodyNum + '/' +
             item.bodyName + '.pellet';
