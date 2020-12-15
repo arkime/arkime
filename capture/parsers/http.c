@@ -25,7 +25,7 @@ typedef struct {
     GString         *urlString;
     GString         *hostString;
     GString         *cookieString;
-    GString         *authString;
+    GString         *authString[2]; // adding one more slot. slot[0] for authorization header, slot[1] for proxy-authorization header
 
     GString         *valueString[2];
 
@@ -511,11 +511,16 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             else
                 g_string_append_len(http->cookieString, at, length);
         } else if (strcasecmp("authorization", http->header[http->which]) == 0) {
-            if (!http->authString)
-                http->authString = g_string_new_len(at, length);
+            if (!http->authString[0])
+                http->authString[0] = g_string_new_len(at, length);
             else
-                g_string_append_len(http->authString, at, length);
-        }
+                g_string_append_len(http->authString[0], at, length);
+        } else if (strcasecmp("proxy-authorization", http->header[http->which]) == 0) {
+			if (!http->authString[1])
+				http->authString[1] = g_string_new_len(at, length);
+			else
+				g_string_append_len(http->authString[1], at, length);
+		}
     }
 
     if (http->pos[http->which]) {
@@ -575,10 +580,16 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
         g_string_truncate(http->cookieString, 0);
     }
 
-    if (http->authString && http->authString->str[0]) {
-        moloch_http_parse_authorization(session, http->authString->str);
-        g_string_truncate(http->authString, 0);
+    if (http->authString[0] && http->authString[0]->str[0]) {
+        moloch_http_parse_authorization(session, http->authString[0]->str);
+        g_string_truncate(http->authString[0], 0);
     }
+	
+	/* Adding an additional check for proxy-authorization string*/
+	if (http->authString[1] && http->authString[1]->str[0]) {
+		moloch_http_parse_authorization(session, http->authString[1]->str);
+		g_string_truncate(http->authString[1], 0);
+	}
 
     if (http->hostString) {
         g_string_ascii_down(http->hostString);
@@ -755,8 +766,10 @@ LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
         g_string_free(http->hostString, TRUE);
     if (http->cookieString)
         g_string_free(http->cookieString, TRUE);
-    if (http->authString)
-        g_string_free(http->authString, TRUE);
+    if (http->authString[0])
+        g_string_free(http->authString[0], TRUE);
+	if (http->authString[1])
+		g_string_free(http->authString[1], TRUE);
     if (http->valueString[0])
         g_string_free(http->valueString[0], TRUE);
     if (http->valueString[1])
