@@ -3,7 +3,7 @@ import Vue from 'vue';
 export default {
   getSources: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('sections')
+      Vue.axios.get('sources')
         .then((response) => {
           resolve(response.data);
         })

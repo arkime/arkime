@@ -197,7 +197,7 @@ function getConfig (section, name, d) {
 }
 
 /**
- * Get a list of all the sections int he config file
+ * Get a list of all the sections in the config file
  *
  * @name "api.getConfigSections"
  * @returns {string|Array} - A list of all the sections in the config file
@@ -708,7 +708,7 @@ app.get('/fields', [noCacheJson], (req, res) => {
  * @returns {object} All the views
  */
 app.get('/views', [noCacheJson], function (req, res) {
-  res.send(internals.views|array);
+  res.send(internals.views);
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1004,7 +1004,7 @@ function processQueryResponse2 (req, res, queries, results) {
  * @name "/get"
  * @param {integer} ver=0 - The format of the post data, version 0 and 2 supported
  * @param {string|array} hashes - A comma separated list of md5 hashes of field arrays that the client knows about.
- *                                If one of the hashes is the one we would use, then we don't send the field array.
+ *                                If one of the hashes matches the current field array, then we don't send the field array.
  * @returns {binary} The encoded results
  */
 app.post('/get', function (req, res) {
@@ -1060,12 +1060,12 @@ app.post('/get', function (req, res) {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by wise UI to retrieve all the source sections
+ * GET - Used by wise UI to retrieve all the sources
  *
- * @name "/sections"
+ * @name "/sources"
  * @returns {string|array} All the sources
  */
-app.get(['/sources', '/sections'], [noCacheJson], (req, res) => {
+app.get('/sources', [noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
@@ -1073,14 +1073,14 @@ app.get(['/sources', '/sections'], [noCacheJson], (req, res) => {
  * GET - Used by wise UI to retrieve the raw file being used by the section.
  *       This is an authenticated API and requires wiseService to be started with --webconfig.
  *
- * @name "/source/:section/get"
- * @param {string} :section - The section to get the raw data for
+ * @name "/source/:source/get"
+ * @param {string} :source - The source to get the raw data for
  * @returns {object} All the views
  */
-app.get('/source/:section/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
-  const source = internals.sources[req.params.section];
+app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+  const source = internals.sources[req.params.source];
   if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.section} not found` });
+    return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
   if (!source.getRaw) {
@@ -1096,17 +1096,17 @@ app.get('/source/:section/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =
 });
 // ----------------------------------------------------------------------------
 /**
- * PUT - Used by wise UI to save the raw file being used by the section.
+ * PUT - Used by wise UI to save the raw file being used by the source.
  *       This is an authenticated API and requires wiseService to be started with --webconfig.
  *
- * @name "/source/:section/get"
- * @param {string} :section - The section to put the raw data for
+ * @name "/source/:source/get"
+ * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */
-app.put('/source/:section/put', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
-  const source = internals.sources[req.params.section];
+app.put('/source/:source/put', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+  const source = internals.sources[req.params.source];
   if (!source) {
-    return res.send({ success: false, text: `Source ${req.params.section} not found` });
+    return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
   if (!source.putRaw) {
@@ -1223,6 +1223,20 @@ app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
   });
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Used by the wise UI to all the types known.
+ *
+ * @name "/types"
+ * @returns {string|array} - all the types
+ */
+/**
+ * GET - Used by the wise UI to retrieve all the types for a source, or if no source
+ *       all the types known.
+ *
+ * @name "/types/:source"
+ * @param {string} {:source} - the source to get the types for
+ * @returns {string|array} - all the types for the source
+ */
 app.get('/types/:source?', [noCacheJson], (req, res) => {
   if (req.params.source) {
     if (internals.sources[req.params.source]) {
@@ -1235,6 +1249,15 @@ app.get('/types/:source?', [noCacheJson], (req, res) => {
   }
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Query a single source for a key
+ *
+ * @name "/:source/:type/:key"
+ * @param {string} {:source} - The source to get the results for
+ * @param {string} {:type} - The type of the key
+ * @param {string} {:key} - The key to get the results for
+ * @returns {object|array} - The results for the query
+ */
 app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   const source = internals.sources[req.params.source];
   if (!source) {
@@ -1326,6 +1349,14 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
 });
 */
 // ----------------------------------------------------------------------------
+/**
+ * GET - Query all sources for a key
+ *
+ * @name "/:type/:key"
+ * @param {string} {:type} - The type of the key
+ * @param {string} {:key} - The key to get the results for
+ * @returns {object|array} - The results for the query
+ */
 app.get('/:typeName/:value', [noCacheJson], function (req, res) {
   const query = { typeName: req.params.typeName,
                   value: req.params.value };
@@ -1338,6 +1369,12 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
+/**
+ * GET - Query for the stats
+ *
+ * @name "/stats"
+ * @returns {object} - Object with array of stats per type and array of stats per source
+ */
 app.get('/stats', [noCacheJson], function (req, res) {
   let types = Object.keys(internals.types).sort();
   let stats = { types: [], sources: [] };
