@@ -27,6 +27,7 @@
 }
 
 
+
 /* give error text theme color --------------------------------------------- */
 .text-danger {
   color: var(--color-foreground-accent);

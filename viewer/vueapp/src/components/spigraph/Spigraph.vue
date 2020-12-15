@@ -301,7 +301,8 @@ export default {
       fieldTypeahead: 'node',
       baseField: this.$route.query.field || 'node',
       sortBy: this.$route.query.sort || 'graph',
-      spiGraphType: this.$route.query.spiGraphType || 'default'
+      spiGraphType: this.$route.query.spiGraphType || 'default',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -330,7 +331,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     fieldObj: function () {
@@ -408,8 +410,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -502,6 +506,22 @@ export default {
       respondedAt = undefined;
       this.loading = true;
       this.error = false;
+
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          this.items = [];
+          this.mapData = undefined;
+          this.graphData = undefined;
+          this.recordsTotal = 0;
+          this.recordsFiltered = 0;
+          pendingPromise = null;
+          this.error = selection.error;
+          this.loading = false;
+          return;
+        }
+      }
 
       // set whether map is open on the sessions page
       if (localStorage.getItem('spigraph-open-map') === 'true') {

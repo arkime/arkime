@@ -4644,7 +4644,7 @@ app.get( // session detail (SPI) endpoint
   sessionAPIs.getDetail
 );
 
-app.get( // session packets endopint
+app.get( // session packets endpoint
   ['/api/:nodeName/session/:id/packets', '/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets
@@ -5701,6 +5701,26 @@ if (Config.get('regressionTests')) {
     }, 1000);
   });
 }
+
+// ----------------------------------------------------------------------------
+// MultiES
+// ----------------------------------------------------------------------------
+app.get('/clusters', (req, res) => {
+  var clusters = { active: [], inactive: [] };
+  if (Config.get('multiES', false)) {
+    Db.getClusterDetails((err, results) => {
+      if (err) {
+        console.log('Error: ' + err);
+      } else if (results) {
+        clusters.active = results.active;
+        clusters.inactive = results.inactive;
+      }
+      res.send(clusters);
+    });
+  } else {
+    res.send(clusters);
+  }
+});
 
 // ============================================================================
 // VUE APP

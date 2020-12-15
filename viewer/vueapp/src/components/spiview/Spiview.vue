@@ -383,6 +383,9 @@ import MolochSearch from '../search/Search';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 
+// import utils
+import Utils from '../utils/utils';
+
 const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
 
 let newQuery = true;
@@ -424,7 +427,8 @@ export default {
       // field config vars
       newFieldConfigName: '',
       fieldConfigError: '',
-      fieldConfigSuccess: ''
+      fieldConfigSuccess: '',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -437,7 +441,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -820,7 +825,8 @@ export default {
         expression: this.query.expression,
         bounding: this.query.bounding,
         interval: this.query.interval,
-        view: this.query.view
+        view: this.query.view,
+        cluster: this.query.cluster
       };
     },
     get: function (query) {
@@ -899,6 +905,17 @@ export default {
     },
     getSpiData: function (spiQuery) {
       if (!spiQuery) { return; }
+
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          pendingPromise = null;
+          this.error = selection.error;
+          this.dataLoading = false;
+          return;
+        }
+      }
 
       // reset loading counts for categories
       categoryLoadingCounts = {};

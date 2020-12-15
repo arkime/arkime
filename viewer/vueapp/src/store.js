@@ -33,7 +33,14 @@ const store = new Vuex.Store({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
-    stickySessionsBtn: false
+    stickySessionsBtn: false,
+    esCluster: {
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
+    }
   },
   getters: {
     sessionsTableState (state) {
@@ -174,6 +181,12 @@ const store = new Vuex.Store({
         state.sortsParam += item[0] + ':' + item[1];
         if (i < len - 1) { state.sortsParam += ','; }
       }
+    },
+    setAvailableCluster (state, value) {
+      state.esCluster.availableCluster = value;
+    },
+    setSelectedCluster (state, value) {
+      state.esCluster.selectedCluster = value;
     },
     setStickySessionsBtn (state, value) {
       state.stickySessionsBtn = value;

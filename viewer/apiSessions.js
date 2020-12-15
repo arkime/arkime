@@ -244,8 +244,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       }
       processedRo[fields.rootId] = true;
 
+      let options = ViewerUtils.addCluster(req.query.cluster);
       query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
           console.log('ERROR fetching matching sessions', err, result);
           return nextCb(null);
@@ -591,7 +592,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
   }
 
   module.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
-    var options;
+    let options;
     if (!fullSession) {
       options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
     }
@@ -665,7 +666,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       if (Config.debug) {
         console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
       }
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      let options = ViewerUtils.addCluster(req.query.cluster);
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err || result.error) {
           console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
           return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
@@ -897,7 +899,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     let fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
     async.eachLimit(ids, 10, function (id, nextCb) {
-      Db.getSession(id, { _source: fields.join(',') }, function (err, session) {
+      let options = ViewerUtils.addCluster(req.query.cluster);
+      Db.getSession(id, options, function (err, session) {
         if (err) {
           return nextCb(null);
         }
@@ -1032,9 +1035,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return nextCb(null);
       }
 
-      let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+      let cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.addTagsToSession(session._index, session._id, allTagNames, node, (err, data) => {
+      Db.addTagsToSession(session._index, session._id, allTagNames, cluster, (err, data) => {
         if (err) { console.log('addTagsList error', session, err, data); }
         nextCb(null);
       });
@@ -1052,9 +1055,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return nextCb(null);
       }
 
-      let node = (Config.get('multiES', false) && session._node) ? session._node : undefined;
+      let cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.removeTagsFromSession(session._index, session._id, allTagNames, node, (err, data) => {
+      Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster, (err, data) => {
         if (err) { console.log('removeTagsList error', session, err, data); }
         nextCb(null);
       });
@@ -1113,12 +1116,11 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
     let map = {};
     let graph = {};
 
-    let options;
+    let options = {};
     if (req.query.cancelId) {
-      options = {
-        cancelId: `${req.user.userId}::${req.query.cancelId}`
-      };
+      options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
+    options = ViewerUtils.addCluster(req.query.cluster, options);
 
     let response = {
       data: [],
@@ -1165,7 +1167,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
       Promise.all([
         Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*'),
+        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
         Db.healthCachePromise()
       ]).then(([sessions, total, health]) => {
         if (Config.debug) {
@@ -1344,9 +1346,10 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
       let protocols;
       let recordsFiltered = 0;
+      let options = ViewerUtils.addCluster(req.query.cluster);
 
-      Promise.all([Db.searchPrimary(indices, 'session', query, null),
-        Db.numberOfDocuments('sessions2-*'),
+      Promise.all([Db.searchPrimary(indices, 'session', query, options),
+        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
         Db.healthCachePromise()
       ]).then(([sessions, total, health]) => {
         if (Config.debug) {
@@ -1465,10 +1468,11 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         return res.molochError(403, bsqErr.toString());
       }
 
-      let options;
+      let options = {};
       if (req.query.cancelId) {
-        options = { cancelId: `${req.user.userId}::${req.query.cancelId}` };
+        options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
       }
+      options = ViewerUtils.addCluster(req.query.cluster, options);
 
       delete query.sort;
       query.size = 0;
@@ -1488,7 +1492,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
 
       Promise.all([
         Db.healthCachePromise(),
-        Db.numberOfDocuments('sessions2-*'),
+        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
         Db.searchPrimary(indices, 'session', query, options)
       ]).then(([health, total, result]) => {
         if (result.error) { throw result.error; }
@@ -1695,7 +1699,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
       }
 
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      let options = ViewerUtils.addCluster(req.query.cluster);
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('spigraphpie ERROR', err);
           res.status(400);
@@ -1868,7 +1873,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
         });
       }
 
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+      let options = ViewerUtils.addCluster(req.query.cluster);
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('Error', query, err);
           return doneCb ? doneCb() : res.end();
@@ -1954,7 +1960,9 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
       if (Config.debug > 2) {
         console.log('multiunique aggregations', indices, JSON.stringify(query, false, 2));
       }
-      Db.searchPrimary(indices, 'session', query, null, function (err, result) {
+
+      let options = ViewerUtils.addCluster(req.query.cluster);
+      Db.searchPrimary(indices, 'session', query, options, function (err, result) {
         if (err) {
           console.log('multiunique ERROR', err);
           res.status(400);
@@ -1992,7 +2000,8 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, ViewerUtils
    * @returns {html} The html to display as session detail
    */
   module.getDetail = (req, res) => {
-    Db.getSession(req.params.id, {}, function (err, session) {
+    let options = ViewerUtils.addCluster(req.query.cluster);
+    Db.getSession(req.params.id, options, function (err, session) {
       if (err || !session.found) {
         return res.end("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
       }

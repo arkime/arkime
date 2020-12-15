@@ -1,4 +1,4 @@
-use Test::More tests => 28;
+use Test::More tests => 33;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -18,7 +18,7 @@ my $json;
 
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
-    is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
+    is ($json->{cluster}, "test", "Correct cluster status");
     is (exists $json->{indices}->{MULTIPREFIX_stats_v4}, 1, "Correct stats/_stats index");
 
     $json = mesGet("/MULTIPREFIX_files/_stats");
@@ -52,13 +52,20 @@ my $json;
     $json = mesGet("/_cluster/settings");
     eq_or_diff($json, from_json('{"persistent": {}, "transient": {}}'));
 
-# _nodes
+# _cluster/_doc/details
+    $json = mesGet("/_cluster/_doc/details");
+    is ($json->{available}->[0], "test", "Correct available ES cluster");
+    is ($json->{available}->[1], "test2", "Correct acvilable ES cluster");
+    is ($json->{active}->[0], "test", "Correct active ES cluster");
+    is ($json->{active}->[1], "test2", "Correct active ES cluster");
+    is (scalar @{$json->{inactive}}, 0, "Correct number of ES cluster name");
 
+# _node
     $json = mesGet("/_nodes/stats?fs=1");
-    is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
+    is ($json->{cluster}, "test", "Correct _node status");
 
     $json = mesGet("/_nodes/stats?jvm=1&process=1&fs=1&search=1&os=1");
-    is ($json->{_node}, "127.0.0.1:9200,prefix:tests", "Correct _node status");
+    is ($json->{cluster}, "test", "Correct _node status");
 
 # aliases
     $json = mesGet("/MULTIPREFIX_sessions2-*/_alias");
