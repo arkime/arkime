@@ -216,8 +216,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
     if (req.query.fields) { fields = req.query.fields.split(','); }
 
-    let options;
-    if (req.query.cancelId) { options = { cancelId: `${req.user.userId}::${req.query.cancelId}` }; }
+    let options = {};
+    if (req.query.cancelId) {
+      options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
+    }
+    options = ViewerUtils.addCluster(req.query.cluster, options);
 
     let dstIsIp = fdst.match(/(\.ip|Ip)$/);
 

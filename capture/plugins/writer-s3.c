@@ -295,7 +295,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char           datetime[17];
     char           objectkey[1000];
     char           fullpath[2000];
-    char           bodyHash[1000];
+    char           bodyHash[65];
     char           storageClassHeader[1000];
     char           tokenHeader[4200];
     struct timeval outputFileTime;
