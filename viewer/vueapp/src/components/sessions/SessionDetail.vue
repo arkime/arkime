@@ -989,7 +989,6 @@ export default {
               let img = imgs[i];
               let href = img.href;
               href = href.replace('body', 'bodypng');
-              console.log('href', href);
 
               let tooltip = document.createElement('span');
               tooltip.className = 'img-tip';
