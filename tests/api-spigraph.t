@@ -44,6 +44,8 @@ sub post {
     return $json;
 }
 
+esGet("/_refresh");
+
 my ($json, $mjson, $pjson);
 
 #node
