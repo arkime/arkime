@@ -770,7 +770,7 @@ LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
         g_string_free(http->authString[0], TRUE);
 	if (http->authString[1])
 		g_string_free(http->authString[1], TRUE);
-    if (http->valueString[0])
+	if (http->valueString[0])
         g_string_free(http->valueString[0], TRUE);
     if (http->valueString[1])
         g_string_free(http->valueString[1], TRUE);
