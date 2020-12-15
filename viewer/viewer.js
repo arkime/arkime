@@ -1130,7 +1130,7 @@ function sendSessionWorker (options, cb) {
       return cb();
     }
 
-    var info = url.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
+    let info = url.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
     ViewerUtils.addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
     info.method = 'POST';
 
@@ -4084,13 +4084,13 @@ app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
   sessionAPIs.getMultiunique
 );
 
-app.get( // session detail (SPI) endpoint // TODO ECR - test
+app.get( // session detail (SPI) endpoint
   ['/api/sessions/:id/:nodeName/detail', '/:nodeName/session/:id/detail'],
   [cspHeader, logAction()],
   sessionAPIs.getDetail
 );
 
-app.get( // session packets endpoint // TODO ECR - test
+app.get( // session packets endpoint
   ['/api/sessions/:id/:nodeName/packets', '/:nodeName/session/:id/packets'],
   [logAction(), checkPermissions(['hidePcap'])],
   sessionAPIs.getPackets

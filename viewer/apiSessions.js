@@ -2488,7 +2488,7 @@ module.exports = (Config, Db, decode, internals, molochparser, Pcap, version, Vi
   };
 
   /**
-   * GET - /api/session/:ids/:nodeName/body/:bodyType/:bodyNum/:bodyName
+   * GET - /api/sessions/:ids/:nodeName/body/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a file that was transferred in a session.
    * @name  sessions/:id/:nodeName/body/:bodyType/:bodyNum/:bodyName
