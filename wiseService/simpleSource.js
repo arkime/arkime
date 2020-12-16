@@ -31,7 +31,6 @@ const iptrie = require('iptrie');
  * @extends WISESource
  */
 class SimpleSource extends wiseSource {
-
 /**
  * SimpleSource
  * @param {object} options - see WISESource constructor
