@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var elasticsearch = require('elasticsearch');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
+const elasticsearch = require('elasticsearch');
 
 // ----------------------------------------------------------------------------
 function ElasticsearchSource (api, section) {
@@ -51,7 +51,7 @@ function ElasticsearchSource (api, section) {
   api.addSource(section, this);
 
   this.sourceFields = [this.esResultField];
-  for (var k in this.shortcuts) {
+  for (const k in this.shortcuts) {
     if (this.sourceFields.indexOf(k) === -1) {
       this.sourceFields.push(k);
     }
@@ -60,7 +60,7 @@ function ElasticsearchSource (api, section) {
 util.inherits(ElasticsearchSource, wiseSource);
 // ----------------------------------------------------------------------------
 ElasticsearchSource.prototype.sendResult = function (key, cb) {
-  var query = {
+  const query = {
     query: {
       bool: {
         filter: [
@@ -85,13 +85,13 @@ ElasticsearchSource.prototype.sendResult = function (key, cb) {
     if (err || result.error || !result.hits || result.hits.hits.length === 0) {
       return cb(null, undefined);
     }
-    var json = result.hits.hits[0]._source;
-    var key = json[this.esResultField];
+    const json = result.hits.hits[0]._source;
+    const key = json[this.esResultField];
     if (key === undefined) {
       return cb(null, undefined);
     }
-    var args = [];
-    for (var k in this.shortcuts) {
+    const args = [];
+    for (const k in this.shortcuts) {
       if (json[k] !== undefined) {
         args.push(this.shortcuts[k]);
         if (Array.isArray(json[k])) {
@@ -101,7 +101,7 @@ ElasticsearchSource.prototype.sendResult = function (key, cb) {
         }
       }
     }
-    var newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
+    const newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
     return cb(null, newresult);
   });
 };
@@ -123,7 +123,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^elasticsearch:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^elasticsearch:/); });
   sections.forEach((section) => {
     return new ElasticsearchSource(api, section);
   });

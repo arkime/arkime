@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var https = require('https');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const https = require('https');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
 // ----------------------------------------------------------------------------
 function OpenDNSSource (api, section) {
@@ -60,7 +60,7 @@ util.inherits(OpenDNSSource, wiseSource);
 
 // ----------------------------------------------------------------------------
 OpenDNSSource.prototype.getCategories = function () {
-  var options = {
+  const options = {
       host: 'sgraph.api.opendns.com',
       port: '443',
       path: '/domains/categories/',
@@ -70,8 +70,8 @@ OpenDNSSource.prototype.getCategories = function () {
       }
   };
 
-  var response = '';
-  var request = https.request(options, (res) => {
+  let response = '';
+  const request = https.request(options, (res) => {
     res.on('data', (chunk) => {
       response += chunk;
     });
@@ -97,10 +97,10 @@ OpenDNSSource.prototype.performQuery = function () {
 
   // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
   // console.log("doing query:", waiting.length, "current cache", Object.keys(cache).length);
-  var postData = JSON.stringify(this.waiting);
+  const postData = JSON.stringify(this.waiting);
   this.waiting.length = 0;
 
-  var postOptions = {
+  const postOptions = {
       host: 'sgraph.api.opendns.com',
       port: '443',
       path: '/domains/categorization/',
@@ -112,13 +112,13 @@ OpenDNSSource.prototype.performQuery = function () {
       }
   };
 
-  var response = '';
-  var request = https.request(postOptions, (res) => {
+  let response = '';
+  const request = https.request(postOptions, (res) => {
     res.on('data', (chunk) => {
       response += chunk;
     });
     res.on('end', (err) => {
-      var results;
+      let results;
       try {
         results = JSON.parse(response);
       } catch (e) {
@@ -126,7 +126,7 @@ OpenDNSSource.prototype.performQuery = function () {
         results = {};
       }
 
-      for (var result in results) {
+      for (let result in results) {
         let cbs = this.processing[result];
         if (!cbs) {
           return;

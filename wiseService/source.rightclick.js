@@ -17,10 +17,10 @@
  */
 'use strict';
 
-var fs = require('fs');
-var util = require('util');
-var wiseSource = require('./wiseSource.js');
-var ini = require('iniparser');
+const fs = require('fs');
+const util = require('util');
+const wiseSource = require('./wiseSource.js');
+const ini = require('iniparser');
 
 // ----------------------------------------------------------------------------
 function RightClickSource (api, section) {
@@ -72,25 +72,25 @@ RightClickSource.prototype.load = function () {
     return;
   }
 
-  var config = ini.parseSync(this.file);
-  var data = config['right-click'] || config;
+  const config = ini.parseSync(this.file);
+  const data = config['right-click'] || config;
 
   this.process(data);
 };
 // ----------------------------------------------------------------------------
 RightClickSource.prototype.process = function (data) {
-  var keys = Object.keys(data);
+  const keys = Object.keys(data);
   if (!keys) { return; }
 
   keys.forEach((key) => {
-    var obj = {};
+    const obj = {};
     data[key].split(';').forEach((element) => {
-      var i = element.indexOf(':');
+      const i = element.indexOf(':');
       if (i === -1) {
         return;
       }
 
-      var parts = [element.slice(0, i), element.slice(i + 1)];
+      const parts = [element.slice(0, i), element.slice(i + 1)];
       if (parts[1] === 'true') {
         parts[1] = true;
       } else if (parts[1] === 'false') {
@@ -102,7 +102,7 @@ RightClickSource.prototype.process = function (data) {
       obj.fields = obj.fields.split(',').map(item => item.trim());
     }
     if (obj.users) {
-      var users = {};
+      const users = {};
       obj.users.split(',').map(item => item.trim()).forEach((item) => {
         users[item] = 1;
       });
@@ -125,7 +125,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
   sections.forEach((section) => {
     return new RightClickSource(api, section);
   });

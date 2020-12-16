@@ -17,10 +17,10 @@
  */
 'use strict';
 
-var fs = require('fs');
-var csv = require('csv');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const fs = require('fs');
+const csv = require('csv');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
 // ----------------------------------------------------------------------------
 function EmergingThreatsSource (api, section) {
@@ -55,14 +55,14 @@ function EmergingThreatsSource (api, section) {
 util.inherits(EmergingThreatsSource, wiseSource);
 // ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.parseCategories = function (fn) {
-  var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
+  const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
       console.log(this.section, "- Couldn't parse", fn, 'csv', err);
       return;
     }
 
     this.categories = {};
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       this.categories[data[i][0]] = data[i][1];
     }
   });
@@ -70,20 +70,20 @@ EmergingThreatsSource.prototype.parseCategories = function (fn) {
 };
 // ----------------------------------------------------------------------------
 EmergingThreatsSource.prototype.parse = function (fn, hash) {
-  var parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
+  const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
     if (err) {
       console.log(this.section, "- Couldn't parse", fn, 'csv', err);
       return;
     }
 
-    for (var i = 1; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
       if (data[i].length !== 3) {
         continue;
       }
 
-      var encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
+      const encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
                                       this.scoreField, '' + data[i][2]);
-      var value = hash.get(data[i][0]);
+      const value = hash.get(data[i][0]);
       if (value) {
         value.num += 2;
         value.buffer = Buffer.concat([value.buffer, encoded]);
@@ -131,7 +131,7 @@ EmergingThreatsSource.prototype.dump = function (res) {
   ['ips', 'domains'].forEach((ckey) => {
     res.write(`${ckey}:\n`);
     this[ckey].forEach((value, key) => {
-      var str = `{key: "${key}", ops:\n` +
+      const str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
       res.write(str);
     });

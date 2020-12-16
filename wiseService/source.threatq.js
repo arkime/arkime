@@ -17,10 +17,10 @@
  */
 'use strict';
 
-var fs = require('fs');
-var unzipper = require('unzipper');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const fs = require('fs');
+const unzipper = require('unzipper');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
 // ----------------------------------------------------------------------------
 function ThreatQSource (api, section) {
@@ -76,15 +76,15 @@ ThreatQSource.prototype.parseFile = function () {
   this.emails.clear();
   this.md5s.clear();
 
-  var count = 0;
+  let count = 0;
   fs.createReadStream('/tmp/threatquotient.zip')
     .pipe(unzipper.Parse())
     .on('entry', (entry) => {
-      var bufs = [];
+      const bufs = [];
       entry.on('data', (buf) => {
         bufs.push(buf);
       }).on('end', () => {
-        var json = JSON.parse(Buffer.concat(bufs));
+        const json = JSON.parse(Buffer.concat(bufs));
         json.forEach((item) => {
           let args = [this.idField, '' + item.id, this.typeField, item.type];
 
@@ -100,7 +100,7 @@ ThreatQSource.prototype.parseFile = function () {
             });
           }
 
-          var encoded = wiseSource.encode.apply(null, args);
+          const encoded = wiseSource.encode.apply(null, args);
 
           count++;
           if (item.type === 'IP Address') {
@@ -131,7 +131,7 @@ ThreatQSource.prototype.loadFile = function () {
 };
 // ----------------------------------------------------------------------------
 ThreatQSource.prototype.getDomain = function (domain, cb) {
-  var domains = this.domains;
+  const domains = this.domains;
   cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
 };
 // ----------------------------------------------------------------------------
@@ -151,7 +151,7 @@ ThreatQSource.prototype.dump = function (res) {
   ['ips', 'domains', 'emails', 'md5s'].forEach((ckey) => {
     res.write(`${ckey}:\n`);
     this[ckey].forEach((value, key) => {
-      var str = `{key: "${key}", ops:\n` +
+      const str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
       res.write(str);
     });

@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var util = require('util');
-var simpleSource = require('./simpleSource.js');
-var request = require('request');
+const util = require('util');
+const simpleSource = require('./simpleSource.js');
+const request = require('request');
 
 // ----------------------------------------------------------------------------
 function URLSource (api, section) {
@@ -27,7 +27,7 @@ function URLSource (api, section) {
   this.url = api.getConfig(section, 'url');
   this.reload = +api.getConfig(section, 'reload', -1);
   this.headers = {};
-  var headers = api.getConfig(section, 'headers');
+  const headers = api.getConfig(section, 'headers');
 
   if (this.url === undefined) {
     console.log(this.section, '- ERROR not loading since no url specified in config file');
@@ -36,7 +36,7 @@ function URLSource (api, section) {
 
   if (headers) {
     headers.split(';').forEach((header) => {
-      var parts = header.split(':').map(item => item.trim());
+      const parts = header.split(':').map(item => item.trim());
       if (parts.length === 2) {
         this.headers[parts[0]] = parts[1];
       }
@@ -84,7 +84,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);
   });

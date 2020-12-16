@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var fs = require('fs');
-var util = require('util');
-var simpleSource = require('./simpleSource.js');
+const fs = require('fs');
+const util = require('util');
+const simpleSource = require('./simpleSource.js');
 
 // ----------------------------------------------------------------------------
 function FileSource (api, section) {
@@ -90,7 +90,7 @@ FileSource.prototype.putRaw = function (body, cb) {
 };
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   api.addSourceConfigDef('file', {
     singleton: false,
     name: 'file',

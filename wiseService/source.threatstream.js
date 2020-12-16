@@ -17,13 +17,13 @@
  */
 'use strict';
 
-var fs = require('fs');
-var unzipper = require('unzipper');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var request = require('request');
-var exec = require('child_process').exec;
-var sqlite3;
+const fs = require('fs');
+const unzipper = require('unzipper');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
+const request = require('request');
+const exec = require('child_process').exec;
+let sqlite3;
 
 // ----------------------------------------------------------------------------
 function ThreatStreamSource (api, section) {
@@ -143,14 +143,14 @@ ThreatStreamSource.prototype.parseFile = function () {
       entry.on('data', (buf) => {
         bufs.push(buf);
       }).on('end', () => {
-        var json = JSON.parse(Buffer.concat(bufs));
+        const json = JSON.parse(Buffer.concat(bufs));
         json.objects.forEach((item) => {
           if (item.state !== 'active') {
             return;
           }
 
-          var encoded;
-          var num;
+          let encoded;
+          let num;
           try {
             if (item.maltype && item.maltype !== 'null') {
               encoded = wiseSource.encode(this.severityField, item.severity.toLowerCase(),
@@ -208,7 +208,7 @@ ThreatStreamSource.prototype.loadFile = function () {
 };
 // ----------------------------------------------------------------------------
 function getDomainZip (domain, cb) {
-  var domains = this.domains;
+  const domains = this.domains;
   cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
 }
 // ----------------------------------------------------------------------------
@@ -234,7 +234,7 @@ function dumpZip (res) {
   ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey) => {
     res.write(`${ckey}: [\n`);
     this[ckey].forEach((value, key) => {
-      var str = `{key: "${key}", ops:\n` +
+      const str = `{key: "${key}", ops:\n` +
         wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
       res.write(str);
     });
@@ -245,7 +245,7 @@ function dumpZip (res) {
 }
 // ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.getApi = function (type, value, cb) {
-  var options = {
+  const options = {
       url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
       method: 'GET',
       forever: true
@@ -274,7 +274,7 @@ ThreatStreamSource.prototype.getApi = function (type, value, cb) {
       return cb(null, wiseSource.emptyResult);
     }
 
-    var args = [];
+    const args = [];
     body.objects.forEach((item) => {
       args.push(this.confidenceField, '' + item.confidence,
                 this.idField, '' + item.id,
@@ -288,7 +288,7 @@ ThreatStreamSource.prototype.getApi = function (type, value, cb) {
         args.push(this.severityField, item.severity.toLowerCase());
       }
     });
-    var result = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
+    const result = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
     return cb(null, result);
   });
 };
@@ -323,7 +323,7 @@ ThreatStreamSource.prototype.getSqlite3 = function (type, field, value, cb) {
       return cb(null, wiseSource.emptyResult);
     }
 
-    var args = [];
+    const args = [];
     data.forEach((item) => {
       args.push(this.confidenceField, '' + item.confidence,
                 this.idField, '' + item.id,
@@ -340,7 +340,7 @@ ThreatStreamSource.prototype.getSqlite3 = function (type, field, value, cb) {
         args.push(this.importIdField, '' + item.import_session_id);
       }
     });
-    var result = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
+    const result = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
     return cb(null, result);
   });
 };
@@ -389,7 +389,7 @@ ThreatStreamSource.prototype.loadTypes = function () {
         this.types[item.value_type].push(item.name);
       }
     });
-    for (var key in this.types) {
+    for (const key in this.types) {
       this.typesWithQuotes[key] = this.types[key].map((v) => { return "'" + v + "'"; }).join(',');
       this.types[key] = this.types[key].join(',');
     }
@@ -400,12 +400,12 @@ ThreatStreamSource.prototype.loadTypes = function () {
 };
 // ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.openDbCopy = function () {
-  var dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
+  const dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
-  var dbStat;
+  let dbStat;
   try { dbStat = fs.statSync(dbFile); } catch (e) {}
 
-  var realDb;
+  let realDb;
   if (!dbStat || !dbStat.isFile()) {
     console.log(this.section, "ERROR - file doesn't exist", dbFile);
     process.exit();
@@ -434,7 +434,7 @@ ThreatStreamSource.prototype.openDbCopy = function () {
         realDb.close();
         realDb = null;
 
-        var tempDb = new sqlite3.Database(dbFile + '.temp');
+        const tempDb = new sqlite3.Database(dbFile + '.temp');
         tempDb.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
           tempDb.close();
           if (this.db) {
@@ -467,9 +467,9 @@ ThreatStreamSource.prototype.openDbCopy = function () {
 
 // ----------------------------------------------------------------------------
 ThreatStreamSource.prototype.openDb = function () {
-  var dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
+  const dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
-  var dbStat;
+  let dbStat;
   try { dbStat = fs.statSync(dbFile); } catch (e) {}
 
   if (!dbStat || !dbStat.isFile()) {

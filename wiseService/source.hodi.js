@@ -17,17 +17,17 @@
  */
 'use strict';
 
-var wiseSource = require('./wiseSource.js');
-var elasticsearch = require('elasticsearch');
-var util = require('util');
-var LRU = require('lru-cache');
+const wiseSource = require('./wiseSource.js');
+const elasticsearch = require('elasticsearch');
+const util = require('util');
+const LRU = require('lru-cache');
 
 // ----------------------------------------------------------------------------
 function HODISource (api, section) {
   HODISource.super_.call(this, { api: api, section: section });
 
   this.contentTypes = {};
-  var contentTypes = this.api.getConfig(section, 'contentTypes',
+  const contentTypes = this.api.getConfig(section, 'contentTypes',
           'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
 
   contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
@@ -105,14 +105,14 @@ HODISource.prototype.sendBulk = function () {
 HODISource.prototype.process = function (index, id, cb) {
   cb(null, undefined);
 
-  var info = this[index].get(id);
+  const info = this[index].get(id);
   if (info) {
     return;
   }
 
   this[index].set(id, true);
 
-  var date = new Date().toISOString();
+  const date = new Date().toISOString();
   this.bulk.push({ update: { _index: `hodi-${index}`, _type: 'hodi', _id: id } });
   this.bulk.push({ script_file: 'hodi', params: { lastSeen: date }, upsert: { count: 1, firstSeen: date, lastSeen: date } });
   if (this.bulk.length >= 1000) {

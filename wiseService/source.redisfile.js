@@ -17,8 +17,8 @@
  */
 'use strict';
 
-var util = require('util');
-var simpleSource = require('./simpleSource.js');
+const util = require('util');
+const simpleSource = require('./simpleSource.js');
 
 // ----------------------------------------------------------------------------
 function RedisFileSource (api, section) {
@@ -31,7 +31,7 @@ function RedisFileSource (api, section) {
   this.key = api.getConfig(section, 'key');
   this.reload = +api.getConfig(section, 'reload', -1);
   this.headers = {};
-  var headers = api.getConfig(section, 'headers');
+  const headers = api.getConfig(section, 'headers');
   this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
 
   if (this.key === undefined) {
@@ -41,7 +41,7 @@ function RedisFileSource (api, section) {
 
   if (headers) {
     headers.split(';').forEach((header) => {
-      var parts = header.split(':').map(item => item.trim());
+      const parts = header.split(':').map(item => item.trim());
       if (parts.length === 2) {
         this.headers[parts[0]] = parts[1];
       }
@@ -100,7 +100,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^redisfile:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^redisfile:/); });
   sections.forEach((section) => {
     return new RedisFileSource(api, section);
   });

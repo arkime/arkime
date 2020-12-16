@@ -17,16 +17,16 @@
  */
 'use strict';
 
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var redis = require('ioredis');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
+const redis = require('ioredis');
 
 // ----------------------------------------------------------------------------
 function HODIRedisSource (api, section) {
   HODIRedisSource.super_.call(this, { api: api, section: section, dontCache: true });
 
   this.contentTypes = {};
-  var contentTypes = this.api.getConfig(section, 'contentTypes',
+  const contentTypes = this.api.getConfig(section, 'contentTypes',
           'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
 
   contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
@@ -40,7 +40,7 @@ function HODIRedisSource (api, section) {
   this.client = redis.createClient({ url: this.url });
   this.api.addSource(section, this);
 
-  var tagsField = this.api.addField('field:tags');
+  const tagsField = this.api.addField('field:tags');
   this.tagsDomain = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-domain') };
   this.tagsMd5 = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-md5') };
   this.tagsEmail = { num: 1, buffer: wiseSource.encode(tagsField, 'nbs-email') };
@@ -50,7 +50,7 @@ util.inherits(HODIRedisSource, wiseSource);
 
 // ----------------------------------------------------------------------------
 HODIRedisSource.prototype.process = function (key, tag, cb) {
-  var date = new Date();
+  const date = new Date();
 
   this.client.hsetnx(key, 'first', date.getTime(), (err, result) => {
     if (result === 1) {

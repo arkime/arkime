@@ -17,15 +17,15 @@
  */
 'use strict';
 
-var Dns = require('dns');
-var iptrie = require('iptrie');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var resolver = Dns;
+const Dns = require('dns');
+const iptrie = require('iptrie');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
+let resolver = Dns;
 
 // ----------------------------------------------------------------------------
 function removeArray (arr, value) {
-  var pos = 0;
+  let pos = 0;
   while ((pos = arr.indexOf(value, pos)) !== -1) {
     arr.splice(pos, 1);
   }
@@ -59,7 +59,7 @@ function ReverseDNSSource (api, section) {
     if (item === '') {
       return;
     }
-    var parts = item.split('/');
+    const parts = item.split('/');
     this.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
   });
 
@@ -77,22 +77,22 @@ ReverseDNSSource.prototype.getIp = function (ip, cb) {
     if (err || domains.length === 0) {
       return cb(null, wiseSource.emptyResult);
     }
-    var args = [];
-    for (var i = 0; i < domains.length; i++) {
-      var domain = domains[i];
+    const args = [];
+    for (let i = 0; i < domains.length; i++) {
+      const domain = domains[i];
       if (this.stripDomains.length === 0) {
-        var parts = domain.split('.');
+        const parts = domain.split('.');
         args.push(this.theField, parts[0].toLowerCase());
       } else {
-        for (var j = 0; j < this.stripDomains.length; j++) {
-          var stripDomain = this.stripDomains[j];
+        for (let j = 0; j < this.stripDomains.length; j++) {
+          const stripDomain = this.stripDomains[j];
           if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
             args.push(this.theField, domain.slice(0, domain.length - stripDomain.length));
           }
         }
       }
     }
-    var wiseResult = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
+    const wiseResult = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
     cb(null, wiseResult);
   });
 };

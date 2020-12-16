@@ -16,10 +16,10 @@
  */
 'use strict';
 
-var fs = require('fs');
-var csv = require('csv');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const fs = require('fs');
+const csv = require('csv');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
 // ----------------------------------------------------------------------------
 function AlienVaultSource (api, section) {
@@ -55,19 +55,19 @@ function AlienVaultSource (api, section) {
 util.inherits(AlienVaultSource, wiseSource);
 // ----------------------------------------------------------------------------
 AlienVaultSource.prototype.parseFile = function () {
-  var parser = csv.parse({ delimiter: '#', skip_empty_lines: true }, (err, data) => {
+  const parser = csv.parse({ delimiter: '#', skip_empty_lines: true }, (err, data) => {
     if (err) {
       console.log(this.section, "- Couldn't parse csv", err);
       return;
     }
-    var count = 0;
+    let count = 0;
     this.ips.clear();
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (data[i].length < 8) {
         continue;
       }
 
-      var encoded = wiseSource.encode(this.idField, data[i][7],
+      const encoded = wiseSource.encode(this.idField, data[i][7],
                                       this.reliabilityField, data[i][1],
                                       this.threatlevelField, data[i][2],
                                       this.activityField, data[i][3]);
@@ -82,7 +82,7 @@ AlienVaultSource.prototype.parseFile = function () {
 AlienVaultSource.prototype.loadFile = function () {
   console.log(this.section, '- Downloading files');
 
-  var revision = -1;
+  let revision = -1;
 
   // If we already have the rev and data files, find out what revision the data file is
   if (fs.existsSync('/tmp/alienvault.rev') && fs.existsSync('/tmp/alienvault.data')) {
@@ -99,7 +99,7 @@ AlienVaultSource.prototype.loadFile = function () {
       return;
     }
 
-    var line = fs.readFileSync('/tmp/alienvault.rev').toString();
+    const line = fs.readFileSync('/tmp/alienvault.rev').toString();
 
     // New revision doesn't match old revision, need new data file
     if (+line !== revision) {
@@ -136,7 +136,7 @@ AlienVaultSource.prototype.getIp = function (ip, cb) {
 // ----------------------------------------------------------------------------
 AlienVaultSource.prototype.dump = function (res) {
   this.ips.forEach((value, key) => {
-    var str = '{key: "' + key + '", ops:\n' +
+    const str = '{key: "' + key + '", ops:\n' +
                wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
     res.write(str);
   });

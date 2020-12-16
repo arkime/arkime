@@ -1292,11 +1292,11 @@ app.get('/dump/:source', [noCacheJson], function (req, res) {
 // ALW - Need to rewrite to use performQuery
 /*
 app.get("/bro/:type", [noCacheJson], function(req, res) {
-  var hashes = req.query.items.split(",");
-  var needsep = false;
+  let hashes = req.query.items.split(",");
+  let needsep = false;
 
-  var fn = internals.type2Func[req.params.type];
-  var srcs = internals[fn + "s"];
+  let fn = internals.type2Func[req.params.type];
+  let srcs = internals[fn + "s"];
   async.map(hashes, (hash, doneCb) => {
     async.map(srcs, (src, cb) => {
       if (internals.source_allowed[req.params.type](src, hash)) {
@@ -1310,13 +1310,13 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
   },
   (err, results) => {
 
-    for (var hashi = 0; hashi < hashes.length; hashi++) {
+    for (let hashi = 0; hashi < hashes.length; hashi++) {
       if (hashi !== 0) {
         res.write("\tBRONEXT\t");
       }
       res.write(hashes[hashi]);
       res.write("\tBROIS\t");
-      var resulti, found = false;
+      let resulti, found = false;
       for (resulti = 0; resulti < results[hashi].length; resulti++) {
         if (!results[hashi][resulti]) {
           continue;
@@ -1327,15 +1327,15 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
         found = true;
         res.write(srcs[resulti].section);
         res.write("\tBROSUB\t");
-        var offset = 0;
-        var buffer = results[hashi][resulti].buffer;
-        for (var n = 0; n < results[hashi][resulti].num; n++) {
+        let offset = 0;
+        let buffer = results[hashi][resulti].buffer;
+        for (let n = 0; n < results[hashi][resulti].num; n++) {
           if (n !== 0) {
             res.write(" ");
           }
-          var pos = buffer[offset++];
-          var len = buffer[offset++];
-          var value = buffer.toString('utf8', offset, offset+len-1);
+          let pos = buffer[offset++];
+          let len = buffer[offset++];
+          let value = buffer.toString('utf8', offset, offset+len-1);
           offset += len;
           res.write(wiseSource.pos2Field[pos] + ": " + value);
         }

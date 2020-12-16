@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var request = require('request');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const request = require('request');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
 // ----------------------------------------------------------------------------
 function PassiveTotalSource (api, section) {
@@ -43,7 +43,7 @@ function PassiveTotalSource (api, section) {
 
   setInterval(this.performQuery.bind(this), 500);
 
-  var str =
+  const str =
     'if (session.passivetotal)\n' +
     '  div.sessionDetailMeta.bold PassiveTotal\n' +
     '  dl.sessionDetailMeta\n' +
@@ -65,7 +65,7 @@ PassiveTotalSource.prototype.performQuery = function () {
     console.log(this.section, '- Fetching %d', this.waiting.length);
   }
 
-  var options = {
+  const options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       body: { additional: ['osint', 'malware'],
              query: this.waiting },
@@ -78,26 +78,26 @@ PassiveTotalSource.prototype.performQuery = function () {
   };
 
   // eslint-disable-next-line
-  var req = request(options, (err, im, results) => {
+  const req = request(options, (err, im, results) => {
     if (err) {
       console.log(this.section, '- Error parsing for request:\n', options, '\nresults:\n', results);
       results = { results: {} };
     }
 
-    for (var resultname in results.results) {
-      var result = results.results[resultname];
-      var cbs = this.processing[resultname];
+    for (const resultname in results.results) {
+      const result = results.results[resultname];
+      const cbs = this.processing[resultname];
       if (!cbs) {
         return;
       }
       delete this.processing[resultname];
 
-      var wiseResult;
+      let wiseResult;
       if (result.tags === undefined || result.tags.length === 0) {
         wiseResult = wiseSource.emptyResult;
       } else {
-        var args = [];
-        for (var i = 0; i < result.tags.length; i++) {
+        const args = [];
+        for (let i = 0; i < result.tags.length; i++) {
           if (typeof (result.tags[i]) === 'string') {
             args.push(this.tagsField, result.tags[i]);
           }
@@ -106,7 +106,7 @@ PassiveTotalSource.prototype.performQuery = function () {
         wiseResult = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
       }
 
-      var cb;
+      let cb;
       while ((cb = cbs.shift())) {
         cb(null, wiseResult);
       }

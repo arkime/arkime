@@ -18,9 +18,9 @@
 
 'use strict';
 
-var util = require('util');
-var wiseSource = require('./wiseSource.js');
-var iptrie = require('iptrie');
+const util = require('util');
+const wiseSource = require('./wiseSource.js');
+const iptrie = require('iptrie');
 
 function SimpleSource (options) {
   options.typeSetting = true;
@@ -40,9 +40,9 @@ util.inherits(SimpleSource, wiseSource);
 module.exports = SimpleSource;
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.dump = function (res) {
-  var cache = this.type === 'ip' ? this.cache.items : this.cache;
+  const cache = this.type === 'ip' ? this.cache.items : this.cache;
   cache.forEach((value, key) => {
-    var str = `{key: "${key}", ops:\n` +
+    const str = `{key: "${key}", ops:\n` +
       wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
     res.write(str);
   });
@@ -50,7 +50,7 @@ SimpleSource.prototype.dump = function (res) {
 };
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.sendResult = function (key, cb) {
-  var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
+  const result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
   // Not found, or found but no extra values to add
   if (!result) {
@@ -61,7 +61,7 @@ SimpleSource.prototype.sendResult = function (key, cb) {
   }
 
   // Found, so combine the two results (per item, and per source)
-  var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+  const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
   return cb(null, newresult);
 };
 // ----------------------------------------------------------------------------
@@ -87,14 +87,14 @@ SimpleSource.prototype.getTypes = function () {
 };
 // ----------------------------------------------------------------------------
 SimpleSource.prototype.load = function () {
-  var setFunc;
-  var newCache;
-  var count = 0;
+  let setFunc;
+  let newCache;
+  let count = 0;
   if (this.type === 'ip') {
     newCache = { items: new Map(), trie: new iptrie.IPTrie() };
     setFunc = (key, value) => {
       key.split(',').forEach((cidr) => {
-        var parts = cidr.split('/');
+        const parts = cidr.split('/');
         try {
           newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), value);
         } catch (e) {

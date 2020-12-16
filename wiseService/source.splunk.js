@@ -17,10 +17,10 @@
  */
 'use strict';
 
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var splunkjs = require('splunk-sdk');
-var iptrie = require('iptrie');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
+const splunkjs = require('splunk-sdk');
+const iptrie = require('iptrie');
 
 // ----------------------------------------------------------------------------
 function SplunkSource (api, section) {
@@ -66,7 +66,7 @@ function SplunkSource (api, section) {
   api.addSource(section, this);
 
   this.sourceFields = [this.esResultField];
-  for (var k in this.shortcuts) {
+  for (const k in this.shortcuts) {
     if (this.sourceFields.indexOf(k) === -1) {
       this.sourceFields.push(k);
     }
@@ -82,7 +82,7 @@ SplunkSource.prototype.periodicRefresh = function () {
       return;
     }
 
-    var cache;
+    let cache;
     if (this.type === 'ip') {
       cache = { items: new Map(), trie: new iptrie.IPTrie() };
     } else {
@@ -90,11 +90,11 @@ SplunkSource.prototype.periodicRefresh = function () {
     }
 
     for (let item of results.results) {
-      var key = item[this.keyColumn];
+      const key = item[this.keyColumn];
       if (!key) { continue; }
 
-      var args = [];
-      for (var k in this.shortcuts) {
+      const args = [];
+      for (const k in this.shortcuts) {
         if (item[k] !== undefined) {
           args.push(this.shortcuts[k]);
           if (Array.isArray(item[k])) {
@@ -105,10 +105,10 @@ SplunkSource.prototype.periodicRefresh = function () {
         }
       }
 
-      var newitem = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
+      const newitem = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
 
       if (this.type === 'ip') {
-        var parts = key.split('/');
+        const parts = key.split('/');
         cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
         cache.items.set(key, newitem);
       } else {
@@ -125,9 +125,9 @@ SplunkSource.prototype.dump = function (res) {
     return res.end();
   }
 
-  var cache = this.type === 'ip' ? this.cache.items : this.cache;
+  const cache = this.type === 'ip' ? this.cache.items : this.cache;
   cache.forEach((value, key) => {
-    var str = `{key: "${key}", ops:\n` +
+    const str = `{key: "${key}", ops:\n` +
       wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
     res.write(str);
   });
@@ -139,7 +139,7 @@ SplunkSource.prototype.sendResultPeriodic = function (key, cb) {
     return cb(null, undefined);
   }
 
-  var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
+  const result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
   // Not found, or found but no extra values to add
   if (!result) {
@@ -150,13 +150,13 @@ SplunkSource.prototype.sendResultPeriodic = function (key, cb) {
   }
 
   // Found, so combine the two results (per item, and per source)
-  var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+  const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
   return cb(null, newresult);
 };
 
 // ----------------------------------------------------------------------------
 SplunkSource.prototype.sendResult = function (key, cb) {
-  var query = this.query.replace('%%SEARCHTERM%%', key);
+  const query = this.query.replace('%%SEARCHTERM%%', key);
 
   this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
     if (err) {
@@ -168,10 +168,10 @@ SplunkSource.prototype.sendResult = function (key, cb) {
       return cb(null, undefined);
     }
 
-    var item = results.results[0];
+    const item = results.results[0];
 
-    var args = [];
-    for (var k in this.shortcuts) {
+    const args = [];
+    for (const k in this.shortcuts) {
       if (item[k] !== undefined) {
         args.push(this.shortcuts[k]);
         if (Array.isArray(item[k])) {
@@ -181,7 +181,7 @@ SplunkSource.prototype.sendResult = function (key, cb) {
         }
       }
     }
-    var newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
+    const newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
     return cb(null, newresult);
   });
 };
@@ -205,7 +205,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
   sections.forEach((section) => {
     return new SplunkSource(api, section);
   });

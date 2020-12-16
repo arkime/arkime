@@ -17,8 +17,8 @@
  */
 'use strict';
 
-var util = require('util');
-var wiseSource = require('./wiseSource.js');
+const util = require('util');
+const wiseSource = require('./wiseSource.js');
 
 // ----------------------------------------------------------------------------
 function RedisSource (api, section) {
@@ -57,7 +57,7 @@ RedisSource.prototype.fetch = function (key, cb) {
     }
 
     this.parse(reply, (ignorekey, result) => {
-      var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+      const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
       return cb(null, newresult);
     }, () => {});
   });
@@ -88,7 +88,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
   sections.forEach((section) => {
     return new RedisSource(api, section);
   });

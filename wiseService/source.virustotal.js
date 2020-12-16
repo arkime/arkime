@@ -17,11 +17,11 @@
  */
 'use strict';
 
-var request = require('request');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const request = require('request');
+const wiseSource = require('./wiseSource.js');
+const util = require('util');
 
-var source;
+let source;
 
 // ----------------------------------------------------------------------------
 function VirusTotalSource (api, section) {
@@ -36,7 +36,7 @@ function VirusTotalSource (api, section) {
   }
 
   this.contentTypes = {};
-  var contentTypes = this.api.getConfig('virustotal', 'contentTypes',
+  const contentTypes = this.api.getConfig('virustotal', 'contentTypes',
           'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
   contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
 
@@ -50,16 +50,16 @@ function VirusTotalSource (api, section) {
   this.api.addSource('virustotal', this);
   setInterval(this.performQuery.bind(this), 60000 / this.queriesPerMinute);
 
-  var str =
+  let str =
     'if (session.virustotal)\n' +
     '  div.sessionDetailMeta.bold VirusTotal\n' +
     '  dl.sessionDetailMeta\n' +
     "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n" +
     "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
 
-  for (var i = 0; i < this.dataSources.length; i++) {
-    var uc = this.dataSources[i];
-    var lc = this.dataSourcesLC[i];
+  for (let i = 0; i < this.dataSources.length; i++) {
+    const uc = this.dataSources[i];
+    const lc = this.dataSourcesLC[i];
     this.dataFields[i] = this.api.addField(`field:virustotal.${lc};db:virustotal.${lc};kind:lotermfield;friendly:${uc};help:VirusTotal ${uc} Status;count:true`);
     str += "    +arrayList(session.virustotal, '" + lc + "', '" + uc + "', 'virustotal." + lc + "')\n";
   }
@@ -83,14 +83,14 @@ VirusTotalSource.prototype.performQuery = function () {
     console.log(this.section, '- Fetching %d', this.waiting.length);
   }
 
-  var options = {
+  const options = {
       url: 'https://www.virustotal.com/vtapi/v2/file/report?',
       qs: { apikey: this.key,
            resource: this.waiting.join(',') },
       method: 'GET',
       json: true
   };
-  var sent = this.waiting;
+  const sent = this.waiting;
 
   this.waiting = [];
 
@@ -98,7 +98,7 @@ VirusTotalSource.prototype.performQuery = function () {
     if (err || im.statusCode !== 200 || results === undefined) {
       console.log(this.section, 'Error for request:\n', options, '\n', im, '\nresults:\n', results);
       sent.forEach((md5) => {
-        var cb = this.processing[md5];
+        const cb = this.processing[md5];
         if (!cb) {
           return;
         }
@@ -113,20 +113,20 @@ VirusTotalSource.prototype.performQuery = function () {
     }
 
     results.forEach((result) => {
-      var cb = this.processing[result.md5];
+      const cb = this.processing[result.md5];
       if (!cb) {
         return;
       }
       delete this.processing[result.md5];
 
-      var wiseResult;
+      let wiseResult;
       if (result.response_code === 0) {
         wiseResult = wiseSource.emptyResult;
       } else {
-        var args = [this.hitsField, '' + result.positives, this.linksField, result.permalink];
+        const args = [this.hitsField, '' + result.positives, this.linksField, result.permalink];
 
-        for (var i = 0; i < this.dataSources.length; i++) {
-          var uc = this.dataSources[i];
+        for (let i = 0; i < this.dataSources.length; i++) {
+          const uc = this.dataSources[i];
 
           if (result.scans[uc] && result.scans[uc].detected) {
             args.push(this.dataFields[i], result.scans[uc].result);
@@ -156,18 +156,18 @@ VirusTotalSource.prototype.getMd5 = function (query, cb) {
   }
 };
 // ----------------------------------------------------------------------------
-var reportApi = function (req, res) {
+const reportApi = function (req, res) {
   source.getMd5(req.query.resource, (err, result) => {
     // console.log(err, result);
     if (result.num === 0) {
       res.send({ response_code: 0, resource: req.query.resource, verbose_msg: 'The requested resource is not among the finished, queued or pending scans' });
     } else {
-      var obj = { scans: {} };
-      var offset = 0;
-      for (var i = 0; i < result.num; i++) {
-        var pos = result.buffer[offset];
-        var len = result.buffer[offset + 1];
-        var value = result.buffer.toString('utf8', offset + 2, offset + 2 + len - 1);
+      const obj = { scans: {} };
+      let offset = 0;
+      for (let i = 0; i < result.num; i++) {
+        const pos = result.buffer[offset];
+        const len = result.buffer[offset + 1];
+        const value = result.buffer.toString('utf8', offset + 2, offset + 2 + len - 1);
         offset += 2 + len;
         switch (pos) {
         case source.hitsField:
@@ -177,7 +177,7 @@ var reportApi = function (req, res) {
           obj.permalink = value;
           break;
         default:
-          for (var j = 0; j < source.dataFields.length; j++) {
+          for (let j = 0; j < source.dataFields.length; j++) {
             if (source.dataFields[j] === pos) {
               obj.scans[source.dataSources[j]] = { detected: true, result: value };
               break;
