@@ -96,7 +96,7 @@ export default {
         params: {
           cluster: cluster
         },
-        url: `api/${node}/session/${id}/detail`
+        url: `api/session/${node}/${id}/detail`
       };
 
       Vue.axios(options)
@@ -129,7 +129,7 @@ export default {
           cluster: cluster
         },
         cancelToken: source.token,
-        url: `api/${node}/session/${id}/packets`
+        url: `api/session/${node}/${id}/packets`
       };
 
       Vue.axios(options)
@@ -157,7 +157,7 @@ export default {
     getDecodingsQIP = new Promise((resolve, reject) => {
       if (_decodingsCache) { resolve(_decodingsCache); }
 
-      Vue.axios.get('decodings')
+      Vue.axios.get('api/sessions/decodings')
         .then((response) => {
           getDecodingsQIP = undefined;
           _decodingsCache = response.data;
@@ -238,7 +238,7 @@ export default {
    */
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
+      let options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
