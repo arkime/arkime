@@ -1689,7 +1689,10 @@ function main () {
   internals.sourceApi = new WISESourceAPI();
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
-  setInterval(printStats, 60 * 1000);
+
+  if (internals.debug > 0) {
+    setInterval(printStats, 60 * 1000);
+  }
 
   let server;
   if (getConfig('wiseService', 'keyFile') && getConfig('wiseService', 'certFile')) {

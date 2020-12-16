@@ -41,47 +41,59 @@ class HODISource extends WISESource {
       return;
     }
 
-    this.domain = LRU({ max: this.api.getConfig('hodi', 'cacheSize', 100000),
-                        maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5') });
-    this.ip = LRU({ max: this.api.getConfig('hodi', 'cacheSize', 100000),
-                        maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5') });
-    this.md5 = LRU({ max: this.api.getConfig('hodi', 'cacheSize', 100000),
-                        maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5') });
-    this.email = LRU({ max: this.api.getConfig('hodi', 'cacheSize', 100000),
-                        maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5') });
+    this.domain = LRU({
+      max: this.api.getConfig('hodi', 'cacheSize', 100000),
+      maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5')
+    });
+    this.ip = LRU({
+      max: this.api.getConfig('hodi', 'cacheSize', 100000),
+      maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5')
+    });
+    this.md5 = LRU({
+      max: this.api.getConfig('hodi', 'cacheSize', 100000),
+      maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5')
+    });
+    this.email = LRU({
+      max: this.api.getConfig('hodi', 'cacheSize', 100000),
+      maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5')
+    });
 
     this.client = new elasticsearch.Client({
-                        host: this.esHost,
-                        keepAlive: true,
-                        minSockets: 5,
-                        maxSockets: 51
-                      });
+      host: this.esHost,
+      keepAlive: true,
+      minSockets: 5,
+      maxSockets: 51
+    });
 
     ['hodi-domain', 'hodi-ip', 'hodi-md5', 'hodi-email'].forEach((index) => {
       this.client.indices.exists({ index: index }, (err, exists) => {
         if (exists) {
-          this.client.indices.putSettings({ index: index,
-  body: {
-            'index.refresh_interval': '60s'
-          } });
+          this.client.indices.putSettings({
+            index: index,
+            body: {
+              'index.refresh_interval': '60s'
+            }
+          });
           return;
         }
-        this.client.indices.create({ index: index,
-  body: {
-          settings: {
-            'index.refresh_interval': '60s'
-          },
-          mappings: {
-            hodi: {
-              _all: { enabled: false },
-              properties: {
-                firstSeen: { type: 'date', index: 'not_analyzed' },
-                 lastSeen: { type: 'date', index: 'not_analyzed' },
-                 count: { type: 'long', index: 'not_analyzed' }
+        this.client.indices.create({
+          index: index,
+          body: {
+            settings: {
+              'index.refresh_interval': '60s'
+            },
+            mappings: {
+              hodi: {
+                _all: { enabled: false },
+                properties: {
+                  firstSeen: { type: 'date', index: 'not_analyzed' },
+                  lastSeen: { type: 'date', index: 'not_analyzed' },
+                  count: { type: 'long', index: 'not_analyzed' }
+                }
               }
             }
           }
-        } });
+        });
       });
     });
 
