@@ -3666,7 +3666,7 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
  * GET - /api/fields
  *
  * Gets available database field objects pertaining to sessions.
- * @name fields
+ * @name /fields
  * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
  * @returns {array/map} The map or list of database fields
  */
@@ -3688,7 +3688,7 @@ app.get('/api/fields', (req, res) => {
  * GET - /api/files
  *
  * Gets a list of PCAP files that Arkime knows about.
- * @name files
+ * @name /files
  * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
  * @param {number} start=0 - The entry to start at. Defaults to 0
  * @returns {Array} data - The list of files
@@ -3811,7 +3811,7 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
  *
  * Retrive Elasticsearch health and stats
  * There is no auth necessary to retrieve eshealth
- * @name eshealth
+ * @name /eshealth
  * @returns {ESHealth} health - The elasticsearch cluster health status and info
  */
 app.get(['/api/eshealth', '/eshealth.json'], [noCacheJson], (req, res) => {

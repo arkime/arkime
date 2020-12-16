@@ -1414,7 +1414,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/buildquery
    *
    * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
-   * @name buildquery
+   * @name /buildquery
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
@@ -1441,7 +1441,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/sessions
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them to the client.
-   * @name sessions
+   * @name /sessions
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
@@ -1572,7 +1572,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/sessions/csv OR /api/sessions.csv
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
-   * @name sessions/csv
+   * @name /sessions/csv
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {csv} csv - The csv with the sessions requested
    */
@@ -1609,7 +1609,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/spiview
    *
    * Builds an elasticsearch session query. Gets a list of field values with counts and returns them to the client.
-   * @name spiview
+   * @name /spiview
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} spi - Comma separated list of db fields to return. Optionally can be followed by :{count} to specify the number of values returned for the field (defaults to 100).
    * @returns {object} map - The data to populate the sessions map
@@ -1788,7 +1788,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/spigraph
    *
    * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
-   * @name spigraph
+   * @name /spigraph
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} field=node - The database field to get data for. Defaults to "node".
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
@@ -1985,7 +1985,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/spigraphhierarchy
    *
    * Builds an elasticsearch session query. Gets a list of values for each field with counts and returns them to the client.
-   * @name spigraphhierarchy
+   * @name /spigraphhierarchy
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} exp - Comma separated list of db fields to populate the graph/table.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
@@ -2107,7 +2107,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/unique
    *
    * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
-   * @name unique
+   * @name /unique
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - Comma separated list of expression field names to return.
@@ -2243,7 +2243,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST/GET - /api/multiunique
    *
    * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
-   * @name multiunique
+   * @name /multiunique
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
@@ -2336,7 +2336,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/detail
    *
    * Gets SPI data for a session.
-   * @name session/:nodeName/:id/detail
+   * @name /session/:nodeName/:id/detail
    * @returns {html} The html to display as session detail
    */
   module.getDetail = (req, res) => {
@@ -2385,7 +2385,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/packets
    *
    * Gets packets for a session.
-   * @name session/:nodeName/:id/packets
+   * @name /session/:nodeName/:id/packets
    * @returns {html} The html to display as session packets
    */
   module.getPackets = (req, res) => {
@@ -2403,7 +2403,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/addtags
    *
    * Add tag(s) to individual session(s) by id or by query.
-   * @name sessions/addtags
+   * @name /sessions/addtags
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
@@ -2457,7 +2457,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/removetags
    *
    * Removes tag(s) from individual session(s) by id or by query.
-   * @name  sessions/removetags
+   * @name /sessions/removetags
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
@@ -2495,7 +2495,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a file that was transferred in a session.
-   * @name  session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
+   * @name /session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    * @returns {file} file - The file in the session
    */
   module.getRawBody = (req, res) => {
@@ -2516,7 +2516,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a bitmap image representation of the bytes in a file.
-   * @name  session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
+   * @name /session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
    * @returns {image/png} image - The bitmap image.
    */
   module.getFilePNG = (req, res) => {
@@ -2541,7 +2541,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/sessions/pcap OR /api/sessions.pcap
    *
    * Retrieve the raw session data in pcap format.
-   * @name sessions/pcap
+   * @name /sessions/pcap
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} ids - The list of ids to return
    * @param {boolean} segments=false - When set return linked segments
@@ -2555,7 +2555,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/sessions/pcapng OR /api/sessions.pcapng
    *
    * Retrieve the raw session data in pcapng format.
-   * @name sessions/pcapng
+   * @name /sessions/pcapng
    * @param {SessionsQuery} query - The request query to filter sessions
    * @param {string} ids - The list of ids to return
    * @param {boolean} segments=false - When set return linked segments
@@ -2569,7 +2569,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/pcap OR /api/session/:nodeName/:id.pcap
    *
    * Retrieve the raw session data in pcap format from a specific node.
-   * @name session/:nodeName/:id/pcap
+   * @name /session/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
   module.getPCAPFromNode = (req, res) => {
@@ -2584,7 +2584,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/pcapng OR /api/session/:nodeName/:id.pcapng
    *
    * Retrieve the raw session data in pcapng format from a specific node.
-   * @name session/:nodeName/:id/pcapng
+   * @name /session/:nodeName/:id/pcapng
    * @returns {pcap} A PCAPNG file with the session requested
    */
   module.getPCAPNGFromNode = (req, res) => {
@@ -2599,7 +2599,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/entire/:nodeName/:id/pcap OR /api/session/entire/:nodeName/:id.pcap
    *
    * Retrieve the entire pcap for a session.
-   * @name session/entire/:nodeName/:id/pcap
+   * @name /session/entire/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
   module.getEntirePCAP = (req, res) => {
@@ -2631,7 +2631,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/raw/:nodeName/:id/png OR /api/session/raw/:nodeName/:id.png
    *
    * Retrieve a bitmap image representation of packets in a session.
-   * @name session/raw/:nodeName/:id/png
+   * @name /session/raw/:nodeName/:id/png
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
@@ -2681,7 +2681,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/raw/:nodeName/:id
    *
    * Retrieve raw packets for a session.
-   * @name session/raw/:nodeName/:id
+   * @name /session/raw/:nodeName/:id
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
@@ -2705,7 +2705,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/sessions/bodyhash/:hash
    *
    * Retrieve a file given a hash of that file.
-   * @name sessions/bodyhash/:hash
+   * @name /sessions/bodyhash/:hash
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
@@ -2784,7 +2784,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/decodings
    *
    * Retrieve decodings.
-   * @name sessions/decodings
+   * @name /sessions/decodings
    */
   module.getDecodings = (req, res) => {
     res.send(JSON.stringify(decode.settings()));
@@ -2794,7 +2794,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/bodyhash/:hash
    *
    * Retrieve a file from a specific node given a hash of that file.
-   * @name session/:nodeName/:id/bodyhash/:hash
+   * @name /session/:nodeName/:id/bodyhash/:hash
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
@@ -2819,7 +2819,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * GET - /api/session/:nodeName/:id/send
    *
    * Sends a session to a node.
-   * @name session/:nodeName/:id/send
+   * @name /session/:nodeName/:id/send
    */
   module.sendSessionToNode = (req, res) => {
     ViewerUtils.noCache(req, res);
@@ -2844,7 +2844,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/:nodeName/send
    *
    * Sends sessions to a node.
-   * @name sessions/:nodeName/send
+   * @name /sessions/:nodeName/send
    * @param {string} ids - Comma separated list of session ids.
    * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
@@ -2888,7 +2888,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/send
    *
    * Sends sessions.
-   * @name sessions/send
+   * @name /sessions/send
    * @param {string} ids - Comma separated list of session ids.
    */
   module.sendSessions = (req, res) => {
@@ -2910,7 +2910,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * POST - /api/sessions/receive
    *
    * Receive sessions.
-   * @name sessions/receive
+   * @name /sessions/receive
    * @param {saveId} saveId - The sessionId to save the session.
    */
   module.receiveSession = (req, res) => {

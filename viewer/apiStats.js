@@ -15,7 +15,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/stats
    *
    * Fetches a list of stats for each node in the cluster.
-   * @name stats
+   * @name /stats
    * @param {string} filter - Search text to filter the list of nodes by.
    * @param {number} length=500 - The number of nodes to return. Defaults to 500.
    * @param {number} start=0 - The entry to start at. Defaults to 0.
@@ -168,7 +168,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    *
    * Fetches a list of detailed stats for different fields pertaining to a node to populate a cubism graph.
    * <a href="https://github.com/square/cubism">Cubism GitHub</a>
-   * @name dstats
+   * @name /dstats
    * @param {string} nodeName - The name of the node to get the detailed stats for.
    * @param {string} name - The name of the field to get the detailed stats for.
    * @param {number} start - The start time of data to return. Format is seconds since Unix EPOC.
@@ -292,7 +292,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/esstats
    *
    * Fetches a list of stats for each Elasticsearch cluster.
-   * @name esstats
+   * @name /esstats
    * @param {string} filter - Search text to filter the list of Elasticsearch clusters by.
    * @param {string} sortField=nodeName - The field to sort the Elasticsearch clusters list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
@@ -456,7 +456,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/esindices
    *
    * Fetches a list of Elasticsearch indices.
-   * @name esindices
+   * @name /esindices
    * @param {string} filter - Search text to filter the list of Elasticsearch indices by.
    * @param {string} sortField=index - The field to sort the Elasticsearch indices list by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
@@ -544,7 +544,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * DELETE - /api/esindices/:index
    *
    * Deletes an Elasticsearch index (admin and remove access only).
-   * @name esindices/:index
+   * @name /esindices/:index
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -565,7 +565,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esindices/:index/optimize
    *
    * Optimizes an Elasticsearch index (admin only).
-   * @name esindices/:index/optimize
+   * @name /esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
   module.optimizeESIndex = (req, res) => {
@@ -583,7 +583,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esindices/:index/close
    *
    * Closes an Elasticsearch index (admin only).
-   * @name esindices/:index/close
+   * @name /esindices/:index/close
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -604,7 +604,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esindices/:index/open
    *
    * Opens an Elasticsearch index (admin only).
-   * @name esindices/:index/open
+   * @name /esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
   module.openESIndex = (req, res) => {
@@ -622,7 +622,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esindices/:index/shrink
    *
    * Shrinks an Elasticsearch index (admin only).
-   * @name esindices/:index/shrink
+   * @name /esindices/:index/shrink
    * @param {string} target - The index name to shrink the index to.
    * @param {number} numShards - The number of shards to shrink the index to.
    * @returns {boolean} success - Whether the close shrink operation was successful.
@@ -697,7 +697,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/estasks
    *
    * Fetches Elasticsearch tasks.
-   * @name estasks
+   * @name /estasks
    * @param {string} filter - Search text to filter the list of ES tasks by.
    * @param {string} cancellable=false - Whether to return only cancellable tasks. Default is "false".
    * @param {string} sortField=action - The field to sort the ES task list by.
@@ -789,7 +789,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/estasks/:id/cancel
    *
    * Cancels an Elasticsearch task (admin only).
-   * @name estasks/:id/cancel
+   * @name /estasks/:id/cancel
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -813,7 +813,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    *
    * Cancels an Elasticsearch task by opaque id. Used to cancel running tasks
    * that a user has created allowing a user to cancel their own tasks.
-   * @name estasks/:id/cancelwith
+   * @name /estasks/:id/cancelwith
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -836,7 +836,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/estasks/cancelall
    *
    * Cancels all running Elasticsearch tasks (admin only).
-   * @name estasks/cancelall
+   * @name /estasks/cancelall
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -851,7 +851,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/esadmin
    *
    * Fetches all Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin
+   * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
   module.getESAdminSettings = (req, res) => {
@@ -964,7 +964,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esadmin/set
    *
    * Sets Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin/set
+   * @name /esadmin/set
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -1029,7 +1029,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esadmin/reroute
    *
    * Try to restart any shard migrations that have failed or paused (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin/reroute
+   * @name /esadmin/reroute
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -1047,7 +1047,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esadmin/flush
    *
    * Flush and refresh any data waiting in Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin/flush
+   * @name /esadmin/flush
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
@@ -1061,7 +1061,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esadmin/unflood
    *
    * Try and clear any indices marked as flooded (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin/unflood
+   * @name /esadmin/unflood
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
@@ -1076,7 +1076,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * POST - /api/esadmin/clearcache
    *
    * Try and clear the cache for all indices (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
-   * @name esadmin/clearcache
+   * @name /esadmin/clearcache
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
@@ -1095,7 +1095,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/esshards
    *
    * Fetches all Elasticsearch shards
-   * @name esshards
+   * @name /esshards
    * @param {string} filter - Search text to filter the list of Elasticsearch shards by.
    * @param {string} show=all - Which types of shard to show. Options include:
      all - show all shards.
@@ -1277,7 +1277,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/esrecovery
    *
    * Returns information about ongoing and completed shard recoveries for indices.
-   * @name esrecovery
+   * @name /esrecovery
    * @param {string} filter - Search text to filter the list of indices by.
    * @param {string} sortField=index - The field to sort the indices by.
    * @param {string} desc=false - Whether to return the results in descending order. Defaults to "false".
