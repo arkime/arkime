@@ -23,6 +23,13 @@ const fs = require('fs');
 const iptrie = require('iptrie');
 
 /**
+ * All sources need to extend the WISESource base class, or another class
+ * that extends it like SimpleSource.
+ *
+ * @module WISESource
+ */
+
+/**
  * All wise sources need to inherit from this object
  * @name WISESource
  * @param {object} options - All the options
@@ -155,6 +162,13 @@ function splitRemain (str, separator, limit) {
     return ret;
 }
 // ----------------------------------------------------------------------------
+/**
+ * Util function to parse CSV data
+ * @name parseCSV
+ * @param {string} body - the raw CSV data
+ * @param {function} setCb - the function to call for each row found
+ * @param {function} endCB - all done parsing
+ */
 WISESource.prototype.parseCSV = function (body, setCb, endCb) {
   csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
     if (err) {
