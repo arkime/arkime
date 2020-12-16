@@ -365,14 +365,22 @@ function splitRemain (str, separator, limit) {
 }
 // ----------------------------------------------------------------------------
 /**
- * When sources are created they get an api object to interact with the wise service
+ * When sources are created they get an api object to interact with the wise service.
  */
 class WISESourceAPI {
-  constructor () {
-    this.debug = internals.debug;
-    this.insecure = internals.insecure;
-    this.app = app;
-  }
+  /**
+   * Current debug level of wiseService
+   * @type {integer}
+   */
+  debug = internals.debug;
+
+  /**
+   * Is wiseService running in insecure mode
+   * @type {boolean}
+   */
+  insecure = internals.insecure;
+
+  app = app;
 
   /**
    * Get from the config section a value or default
@@ -479,15 +487,15 @@ class WISESourceAPI {
    * Add a view
    *
    * @param {string} name - Name of the new view
-   * @param {string} input - An encoded view definition
+   * @param {string} view - An encoded view definition
    */
-  addView (name, input) {
-    if (input.includes('require:')) {
-      let match = input.match(/require:([^;]+)/);
+  addView (name, view) {
+    if (view.includes('require:')) {
+      let match = view.match(/require:([^;]+)/);
       const require = match[1];
-      match = input.match(/title:([^;]+)/);
+      match = view.match(/title:([^;]+)/);
       const title = match[1];
-      match = input.match(/fields:([^;]+)/);
+      match = view.match(/fields:([^;]+)/);
       const fields = match[1];
 
       let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
@@ -509,7 +517,7 @@ class WISESourceAPI {
       }
       internals.views[name] = output;
     } else {
-      internals.views[name] = input;
+      internals.views[name] = view;
     }
   }
 

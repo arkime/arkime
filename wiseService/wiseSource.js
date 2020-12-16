@@ -337,7 +337,10 @@ class WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  /** A simple constant that should be used when needed to represent an empty result */
   static emptyResult = { num: 0, buffer: Buffer.alloc(0) };
+
+  // ----------------------------------------------------------------------------
   static field2Pos = {};
   static field2Info = {};
   static pos2Field = {};
