@@ -82,7 +82,7 @@ EmergingThreatsSource.prototype.parse = function (fn, hash) {
       }
 
       const encoded = wiseSource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
-                                      this.scoreField, '' + data[i][2]);
+                                        this.scoreField, '' + data[i][2]);
       const value = hash.get(data[i][0]);
       if (value) {
         value.num += 2;

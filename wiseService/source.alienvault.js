@@ -68,9 +68,9 @@ AlienVaultSource.prototype.parseFile = function () {
       }
 
       const encoded = wiseSource.encode(this.idField, data[i][7],
-                                      this.reliabilityField, data[i][1],
-                                      this.threatlevelField, data[i][2],
-                                      this.activityField, data[i][3]);
+                                        this.reliabilityField, data[i][1],
+                                        this.threatlevelField, data[i][2],
+                                        this.activityField, data[i][3]);
       this.ips.set(data[i][0], { num: 4, buffer: encoded });
       count++;
     }
