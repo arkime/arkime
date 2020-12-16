@@ -17,87 +17,162 @@
  */
 'use strict';
 
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
-var splunkjs = require('splunk-sdk');
-var iptrie = require('iptrie');
+const WISESource = require('./wiseSource.js');
+const util = require('util');
+const splunkjs = require('splunk-sdk');
+const iptrie = require('iptrie');
 
-// ----------------------------------------------------------------------------
-function SplunkSource (api, section) {
-  SplunkSource.super_.call(this, api, section);
+class SplunkSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { typeSetting: true, tagsSetting: true });
 
-  this.host = api.getConfig(section, 'host');
-  this.username = api.getConfig(section, 'username');
-  this.password = api.getConfig(section, 'password');
-  this.version = api.getConfig(section, 'version', 5);
-  this.port = api.getConfig(section, 'port', 8089);
-  this.periodic = api.getConfig(section, 'periodic');
-  this.query = api.getConfig(section, 'query');
-  this.keyColumn = api.getConfig(section, 'keyColumn');
+    this.host = api.getConfig(section, 'host');
+    this.username = api.getConfig(section, 'username');
+    this.password = api.getConfig(section, 'password');
+    this.version = api.getConfig(section, 'version', 5);
+    this.port = api.getConfig(section, 'port', 8089);
+    this.periodic = api.getConfig(section, 'periodic');
+    this.query = api.getConfig(section, 'query');
+    this.keyColumn = api.getConfig(section, 'keyColumn');
 
-  this.typeSetting();
-  this.tagsSetting();
+    ['host', 'username', 'password', 'query', 'keyColumn'].forEach((item) => {
+      if (this[item] === undefined) {
+        console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+      }
+    });
 
-  ['host', 'username', 'password', 'query', 'keyColumn'].forEach((item) => {
-    if (this[item] === undefined) {
-      console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
-    }
-  });
-
-  if (this.periodic) {
-    this.cacheTimeout = -1; // Don't cache
-    this[this.api.funcName(this.type)] = this.sendResultPeriodic;
-    setInterval(this.periodicRefresh.bind(this), 1000 * this.periodic);
-  } else {
-    this[this.api.funcName(this.type)] = this.sendResult;
-  }
-
-  this.service = new splunkjs.Service({ username: this.username, password: this.password, host: this.host, port: this.port, version: this.version });
-
-  this.service.login((err, success) => {
-    if (err) {
-      console.log("ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
-      return;
-    }
     if (this.periodic) {
-      this.periodicRefresh();
+      this.cacheTimeout = -1; // Don't cache
+      this[this.api.funcName(this.type)] = this.sendResultPeriodic;
+      setInterval(this.periodicRefresh.bind(this), 1000 * this.periodic);
+    } else {
+      this[this.api.funcName(this.type)] = this.sendResult;
     }
 
-    console.log('Login was successful: ' + success);
-  });
+    this.service = new splunkjs.Service({ username: this.username, password: this.password, host: this.host, port: this.port, version: this.version });
 
-  api.addSource(section, this);
+    this.service.login((err, success) => {
+      if (err) {
+        console.log("ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
+        return;
+      }
+      if (this.periodic) {
+        this.periodicRefresh();
+      }
 
-  this.sourceFields = [this.esResultField];
-  for (var k in this.shortcuts) {
-    if (this.sourceFields.indexOf(k) === -1) {
-      this.sourceFields.push(k);
+      console.log('Login was successful: ' + success);
+    });
+
+    api.addSource(section, this);
+
+    this.sourceFields = [this.esResultField];
+    for (const k in this.shortcuts) {
+      if (this.sourceFields.indexOf(k) === -1) {
+        this.sourceFields.push(k);
+      }
     }
   }
-}
-util.inherits(SplunkSource, wiseSource);
 
-// ----------------------------------------------------------------------------
-SplunkSource.prototype.periodicRefresh = function () {
-  this.service.oneshotSearch(this.query, { output_mode: 'json', count: 0 }, (err, results) => {
-    if (err) {
-      console.log(this.section, '- ERROR', err);
-      return;
+  // ----------------------------------------------------------------------------
+  periodicRefresh () {
+    this.service.oneshotSearch(this.query, { output_mode: 'json', count: 0 }, (err, results) => {
+      if (err) {
+        console.log(this.section, '- ERROR', err);
+        return;
+      }
+
+      let cache;
+      if (this.type === 'ip') {
+        cache = { items: new Map(), trie: new iptrie.IPTrie() };
+      } else {
+        cache = new Map();
+      }
+
+      for (let item of results.results) {
+        const key = item[this.keyColumn];
+        if (!key) { continue; }
+
+        const args = [];
+        for (const k in this.shortcuts) {
+          if (item[k] !== undefined) {
+            args.push(this.shortcuts[k]);
+            if (Array.isArray(item[k])) {
+              args.push(item[k][0]);
+            } else {
+              args.push(item[k]);
+            }
+          }
+        }
+
+        const newitem = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+
+        if (this.type === 'ip') {
+          const parts = key.split('/');
+          cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
+          cache.items.set(key, newitem);
+        } else {
+          cache.set(key, newitem);
+        }
+      }
+      this.cache = cache;
+    });
+  };
+
+  // ----------------------------------------------------------------------------
+  dump (res) {
+    if (this.cache === undefined) {
+      return res.end();
     }
 
-    var cache;
-    if (this.type === 'ip') {
-      cache = { items: new Map(), trie: new iptrie.IPTrie() };
-    } else {
-      cache = new Map();
+    const cache = this.type === 'ip' ? this.cache.items : this.cache;
+    cache.forEach((value, key) => {
+      const str = `{key: "${key}", ops:\n` +
+        WISESource.result2Str(WISESource.combineResults([this.tagsResult, value])) + '},\n';
+      res.write(str);
+    });
+    res.end();
+  };
+
+  // ----------------------------------------------------------------------------
+  sendResultPeriodic (key, cb) {
+    if (!this.cache) {
+      return cb(null, undefined);
     }
 
-    for (let item of results.results) {
-      var key = item[this.keyColumn];
-      if (!key) { continue; }
+    const result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
-      var args = [];
-      for (var k in this.shortcuts) {
+    // Not found, or found but no extra values to add
+    if (!result) {
+      return cb(null, undefined);
+    }
+    if (result.num === 0) {
+      return cb(null, this.tagsResult);
+    }
+
+    // Found, so combine the two results (per item, and per source)
+    const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+    return cb(null, newresult);
+  };
+
+  // ----------------------------------------------------------------------------
+  sendResult (key, cb) {
+    const query = this.query.replace('%%SEARCHTERM%%', key);
+
+    this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
+      if (err) {
+        console.log(this.section, '- ERROR', err);
+        return cb(null, undefined);
+      }
+
+      if (!results.results || results.results.length === 0) {
+        return cb(null, undefined);
+      }
+
+      const item = results.results[0];
+
+      const args = [];
+      for (const k in this.shortcuts) {
         if (item[k] !== undefined) {
           args.push(this.shortcuts[k]);
           if (Array.isArray(item[k])) {
@@ -107,87 +182,12 @@ SplunkSource.prototype.periodicRefresh = function () {
           }
         }
       }
+      const newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([WISESource.encode.apply(null, args), this.tagsResult.buffer]) };
+      return cb(null, newresult);
+    });
+  };
+}
 
-      var newitem = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
-
-      if (this.type === 'ip') {
-        var parts = key.split('/');
-        cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
-        cache.items.set(key, newitem);
-      } else {
-        cache.set(key, newitem);
-      }
-    }
-    this.cache = cache;
-  });
-};
-
-// ----------------------------------------------------------------------------
-SplunkSource.prototype.dump = function (res) {
-  if (this.cache === undefined) {
-    return res.end();
-  }
-
-  var cache = this.type === 'ip' ? this.cache.items : this.cache;
-  cache.forEach((value, key) => {
-    var str = `{key: "${key}", ops:\n` +
-      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
-    res.write(str);
-  });
-  res.end();
-};
-// ----------------------------------------------------------------------------
-SplunkSource.prototype.sendResultPeriodic = function (key, cb) {
-  if (!this.cache) {
-    return cb(null, undefined);
-  }
-
-  var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
-
-  // Not found, or found but no extra values to add
-  if (!result) {
-    return cb(null, undefined);
-  }
-  if (result.num === 0) {
-    return cb(null, this.tagsResult);
-  }
-
-  // Found, so combine the two results (per item, and per source)
-  var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
-  return cb(null, newresult);
-};
-
-// ----------------------------------------------------------------------------
-SplunkSource.prototype.sendResult = function (key, cb) {
-  var query = this.query.replace('%%SEARCHTERM%%', key);
-
-  this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
-    if (err) {
-      console.log(this.section, '- ERROR', err);
-      return cb(null, undefined);
-    }
-
-    if (!results.results || results.results.length === 0) {
-      return cb(null, undefined);
-    }
-
-    var item = results.results[0];
-
-    var args = [];
-    for (var k in this.shortcuts) {
-      if (item[k] !== undefined) {
-        args.push(this.shortcuts[k]);
-        if (Array.isArray(item[k])) {
-          args.push(item[k][0]);
-        } else {
-          args.push(item[k]);
-        }
-      }
-    }
-    var newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([wiseSource.encode.apply(null, args), this.tagsResult.buffer]) };
-    return cb(null, newresult);
-  });
-};
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('splunk', {
@@ -208,7 +208,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^splunk:/); });
   sections.forEach((section) => {
     return new SplunkSource(api, section);
   });

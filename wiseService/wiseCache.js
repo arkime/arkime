@@ -17,9 +17,9 @@
  */
 'use strict';
 
-var LRU = require('lru-cache');
-var Bson = require('bson');
-var BSON = new Bson();
+const LRU = require('lru-cache');
+const Bson = require('bson');
+const BSON = new Bson();
 
 /******************************************************************************/
 // Memory Cache
@@ -32,13 +32,13 @@ function WISEMemoryCache (options) {
 
 // ----------------------------------------------------------------------------
 WISEMemoryCache.prototype.get = function (query, cb) {
-  var cache = this.cache[query.typeName];
+  const cache = this.cache[query.typeName];
   cb(null, cache ? cache.get(query.value) : undefined);
 };
 
 // ----------------------------------------------------------------------------
 WISEMemoryCache.prototype.set = function (query, value) {
-  var cache = this.cache[query.typeName];
+  let cache = this.cache[query.typeName];
   if (!cache) {
     cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
   }
@@ -62,13 +62,11 @@ function WISERedisCache (redisType, options) {
 
 // ----------------------------------------------------------------------------
 WISERedisCache.prototype.get = function (query, cb) {
-  var value;
-
   // Check memory cache first
-  var cache = this.cache[query.typeName];
+  let cache = this.cache[query.typeName];
 
   if (cache) {
-    value = cache.get(query.value);
+    const value = cache.get(query.value);
     if (value !== undefined) {
       return cb(null, value);
     }
@@ -81,7 +79,7 @@ WISERedisCache.prototype.get = function (query, cb) {
     if (reply === null) {
       return cb(null, undefined);
     }
-    value = BSON.deserialize(reply, { promoteBuffers: true });
+    const value = BSON.deserialize(reply, { promoteBuffers: true });
     cb(null, value);
 
     cache.set(query.value, value); // Set memory cache
@@ -90,7 +88,7 @@ WISERedisCache.prototype.get = function (query, cb) {
 
 // ----------------------------------------------------------------------------
 WISERedisCache.prototype.set = function (query, value) {
-  var cache = this.cache[query.typeName];
+  let cache = this.cache[query.typeName];
 
   if (!cache) {
     cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
@@ -98,7 +96,7 @@ WISERedisCache.prototype.set = function (query, value) {
 
   cache.set(query.value, value);
 
-  var data = BSON.serialize(value, false, true, false);
+  const data = BSON.serialize(value, false, true, false);
   this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
@@ -108,7 +106,7 @@ exports.WISERedisCache = WISERedisCache;
 // Load Cache
 /******************************************************************************/
 exports.createCache = function (options) {
-  var type = options.getConfig('cache', 'type', 'memory');
+  const type = options.getConfig('cache', 'type', 'memory');
   options.cacheSize = options.getConfig('cache', 'cacheSize');
 
   switch (type) {

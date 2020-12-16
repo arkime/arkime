@@ -18,124 +18,138 @@
 
 'use strict';
 
-var util = require('util');
-var wiseSource = require('./wiseSource.js');
-var iptrie = require('iptrie');
+const wiseSource = require('./wiseSource.js');
+const iptrie = require('iptrie');
 
-function SimpleSource (api, section) {
-  SimpleSource.super_.call(this, api, section);
-  this.column = +api.getConfig(section, 'column', 0);
-  this.keyColumn = api.getConfig(section, 'keyColumn', 0);
+/**
+ * The SimpleSource base class implements some common functions for
+ * sources that only have one type.
+ *
+ * Sources need to
+ * * call initSimple
+ * * implement initSource, simpleSourceLoad
+ * @extends WISESource
+ */
+class SimpleSource extends wiseSource {
+  /**
+   * SimpleSource
+   * @param {WISESourceAPI} api - the api when source created
+   * @param {string} section - the section name
+   * @param {object} options - see WISESource constructor
+   */
+  constructor (api, section, options) {
+    options.typeSetting = true;
+    options.tagsSetting = true;
+    options.formatSetting = true;
+    super(api, section, options);
+    this.column = +api.getConfig(section, 'column', 0);
+    this.keyColumn = api.getConfig(section, 'keyColumn', 0);
 
-  this.typeSetting();
-
-  if (this.type === 'ip') {
-    this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
-  } else {
-    this.cache = new Map();
-  }
-}
-util.inherits(SimpleSource, wiseSource);
-module.exports = SimpleSource;
-// ----------------------------------------------------------------------------
-SimpleSource.prototype.dump = function (res) {
-  var cache = this.type === 'ip' ? this.cache.items : this.cache;
-  cache.forEach((value, key) => {
-    var str = `{key: "${key}", ops:\n` +
-      wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
-    res.write(str);
-  });
-  res.end();
-};
-// ----------------------------------------------------------------------------
-SimpleSource.prototype.sendResult = function (key, cb) {
-  var result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
-
-  // Not found, or found but no extra values to add
-  if (!result) {
-    return cb(null, undefined);
-  }
-  if (result.num === 0) {
-    return cb(null, this.tagsResult);
+    if (this.type === 'ip') {
+      this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
+    } else {
+      this.cache = new Map();
+    }
   }
 
-  // Found, so combine the two results (per item, and per source)
-  var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
-  return cb(null, newresult);
-};
-// ----------------------------------------------------------------------------
-SimpleSource.prototype.initSimple = function () {
-  if (!this.type) {
-    console.log(this.section, '- ERROR not loading since no type specified in config file');
-    return false;
-  }
+  // ----------------------------------------------------------------------------
+  dump (res) {
+    const cache = this.type === 'ip' ? this.cache.items : this.cache;
+    cache.forEach((value, key) => {
+      const str = `{key: "${key}", ops:\n` +
+        wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
+      res.write(str);
+    });
+    res.end();
+  };
 
-  this.tagsSetting();
-  if (!this.formatSetting()) {
-    return false;
-  }
+  // ----------------------------------------------------------------------------
+  sendResult (key, cb) {
+    const result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
-  if (this.type === 'domain') {
-    this.getDomain = function (domain, cb) {
-      if (this.cache.get(domain)) {
+    // Not found, or found but no extra values to add
+    if (!result) {
+      return cb(null, undefined);
+    }
+    if (result.num === 0) {
+      return cb(null, this.tagsResult);
+    }
+
+    // Found, so combine the two results (per item, and per source)
+    const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+    return cb(null, newresult);
+  };
+  // ----------------------------------------------------------------------------
+  /**
+   * This function should be called by the constructor of the source when all
+   * config is verified and the source is ready to go online.
+   * @returns {boolean} - On true the source was initialized with no issue
+   */
+  initSimple () {
+    if (this.type === 'domain') {
+      this.getDomain = function (domain, cb) {
+        if (this.cache.get(domain)) {
+          return this.sendResult(domain, cb);
+        }
+        domain = domain.substring(domain.indexOf('.') + 1);
         return this.sendResult(domain, cb);
-      }
-      domain = domain.substring(domain.indexOf('.') + 1);
-      return this.sendResult(domain, cb);
-    };
-  } else {
-    this[this.api.funcName(this.type)] = this.sendResult;
-  }
-
-  this.api.addSource(this.section, this);
-  return true;
-};
-// ----------------------------------------------------------------------------
-SimpleSource.prototype.getTypes = function () {
-  return [this.type];
-};
-// ----------------------------------------------------------------------------
-SimpleSource.prototype.load = function () {
-  var setFunc;
-  var newCache;
-  var count = 0;
-  if (this.type === 'ip') {
-    newCache = { items: new Map(), trie: new iptrie.IPTrie() };
-    setFunc = (key, value) => {
-      key.split(',').forEach((cidr) => {
-        var parts = cidr.split('/');
-        try {
-          newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), value);
-        } catch (e) {
-          console.log('ERROR adding', this.section, cidr, e);
-        }
-        newCache.items.set(cidr, value);
-        count++;
-      });
-    };
-  } else {
-    newCache = new Map();
-    if (this.type === 'url') {
-      setFunc = (key, value) => {
-        if (key.lastIndexOf('http://', 0) === 0) {
-          key = key.substring(7);
-        }
-        newCache.set(key, value);
-        count++;
       };
     } else {
-      setFunc = function (key, value) {
-        newCache.set(key, value);
-        count++;
+      this[this.api.funcName(this.type)] = this.sendResult;
+    }
+
+    this.api.addSource(this.section, this);
+    return true;
+  };
+  // ----------------------------------------------------------------------------
+  getTypes () {
+    return [this.type];
+  };
+  // ----------------------------------------------------------------------------
+  load () {
+    let setFunc;
+    let newCache;
+    let count = 0;
+    if (this.type === 'ip') {
+      newCache = { items: new Map(), trie: new iptrie.IPTrie() };
+      setFunc = (key, value) => {
+        key.split(',').forEach((cidr) => {
+          const parts = cidr.split('/');
+          try {
+            newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), value);
+          } catch (e) {
+            console.log('ERROR adding', this.section, cidr, e);
+          }
+          newCache.items.set(cidr, value);
+          count++;
+        });
       };
+    } else {
+      newCache = new Map();
+      if (this.type === 'url') {
+        setFunc = (key, value) => {
+          if (key.lastIndexOf('http://', 0) === 0) {
+            key = key.substring(7);
+          }
+          newCache.set(key, value);
+          count++;
+        };
+      } else {
+        setFunc = function (key, value) {
+          newCache.set(key, value);
+          count++;
+        };
+      }
     }
-  }
-  this.simpleSourceLoad(setFunc, (err) => {
-    if (err) {
-      console.log('ERROR loading', this.section, err);
-      return;
-    }
-    this.cache = newCache;
-    console.log(this.section, '- Done Loading', count, 'elements');
-  });
+    this.simpleSourceLoad(setFunc, (err) => {
+      if (err) {
+        console.log('ERROR loading', this.section, err);
+        return;
+      }
+      this.cache = newCache;
+      console.log(this.section, '- Done Loading', count, 'elements');
+    });
+  };
 };
+
+module.exports = SimpleSource;

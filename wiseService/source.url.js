@@ -17,55 +17,56 @@
  */
 'use strict';
 
-var util = require('util');
-var simpleSource = require('./simpleSource.js');
-var request = require('request');
+const SimpleSource = require('./simpleSource.js');
+const request = require('request');
 
+class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
-function URLSource (api, section) {
-  URLSource.super_.call(this, api, section);
-  this.url = api.getConfig(section, 'url');
-  this.reload = +api.getConfig(section, 'reload', -1);
-  this.headers = {};
-  var headers = api.getConfig(section, 'headers');
-  this.cacheTimeout = -1;
+  constructor (api, section) {
+    super(api, section, { dontCache: true });
+    this.url = api.getConfig(section, 'url');
+    this.reload = +api.getConfig(section, 'reload', -1);
+    this.headers = {};
+    const headers = api.getConfig(section, 'headers');
 
-  if (this.url === undefined) {
-    console.log(this.section, '- ERROR not loading since no url specified in config file');
-    return;
+    if (this.url === undefined) {
+      console.log(this.section, '- ERROR not loading since no url specified in config file');
+      return;
+    }
+
+    if (headers) {
+      headers.split(';').forEach((header) => {
+        const parts = header.split(':').map(item => item.trim());
+        if (parts.length === 2) {
+          this.headers[parts[0]] = parts[1];
+        }
+      });
+    }
+
+    if (!this.initSimple()) {
+      return;
+    }
+
+    setImmediate(this.load.bind(this));
+
+    // Reload url every so often
+    if (this.reload > 0) {
+      setInterval(this.load.bind(this), this.reload * 1000 * 60);
+    }
   }
 
-  if (headers) {
-    headers.split(';').forEach((header) => {
-      var parts = header.split(':').map(item => item.trim());
-      if (parts.length === 2) {
-        this.headers[parts[0]] = parts[1];
+  // ----------------------------------------------------------------------------
+  simpleSourceLoad (setFunc, cb) {
+    request(this.url, { headers: this.headers }, (error, response, body) => {
+      if (!error && response.statusCode === 200) {
+        this.parse(body, setFunc, cb);
+      } else {
+        cb(error);
       }
     });
   }
-
-  if (!this.initSimple()) {
-    return;
-  }
-
-  setImmediate(this.load.bind(this));
-
-  // Reload url every so often
-  if (this.reload > 0) {
-    setInterval(this.load.bind(this), this.reload * 1000 * 60);
-  }
 }
-util.inherits(URLSource, simpleSource);
-// ----------------------------------------------------------------------------
-URLSource.prototype.simpleSourceLoad = function (setFunc, cb) {
-  request(this.url, { headers: this.headers }, (error, response, body) => {
-    if (!error && response.statusCode === 200) {
-      this.parse(body, setFunc, cb);
-    } else {
-      cb(error);
-    }
-  });
-};
+
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('url', {
@@ -85,7 +86,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);
   });

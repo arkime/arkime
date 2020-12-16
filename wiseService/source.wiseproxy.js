@@ -17,201 +17,204 @@
  */
 'use strict';
 
-var request = require('request');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const request = require('request');
+const WISESource = require('./wiseSource.js');
 
-// ----------------------------------------------------------------------------
-function WiseProxySource (api, section) {
-  WiseProxySource.super_.call(this, api, section);
+class WiseProxySource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { });
 
-  this.url = api.getConfig(section, 'url');
-  this.types = api.getConfig(section, 'types');
-  this.mapping = [];
-  this.buffer = Buffer.alloc(10000);
-  this.offset = 0;
-  this.bufferInfo = [];
+    this.url = api.getConfig(section, 'url');
+    this.types = api.getConfig(section, 'types');
+    this.mapping = [];
+    this.buffer = Buffer.alloc(10000);
+    this.offset = 0;
+    this.bufferInfo = [];
 
-  if (this.url === undefined) {
-    console.log(this.section, '- ERROR not loading since no url specified in config file');
-    return;
-  }
-
-  if (!this.types) {
-    console.log(this.section, '- ERROR not loading since no types specified in config file');
-    return;
-  }
-
-  var types = this.types.split(',').map(item => item.trim());
-
-  for (var i = 0; i < types.length; i++) {
-    switch (types[i]) {
-    case 'domain':
-      this.getDomain = getDomain;
-      break;
-    case 'md5':
-      this.getMd5 = getMd5;
-      break;
-    case 'ip':
-      this.getIp = getIp;
-      break;
-    case 'email':
-      this.getEmail = getEmail;
-      break;
-    case 'url':
-      this.getURL = getURL;
-      break;
+    if (this.url === undefined) {
+      console.log(this.section, '- ERROR not loading since no url specified in config file');
+      return;
     }
+
+    const types = this.types.split(',').map(item => item.trim());
+
+    for (let i = 0; i < types.length; i++) {
+      switch (types[i]) {
+      case 'domain':
+        this.getDomain = WiseProxySource.prototype.getDomainImpl;
+        break;
+      case 'md5':
+        this.getMd5 = WiseProxySource.prototype.getMd5Impl;
+        break;
+      case 'ip':
+        this.getIp = WiseProxySource.prototype.getIpImpl;
+        break;
+      case 'email':
+        this.getEmail = WiseProxySource.prototype.getEmailImpl;
+        break;
+      case 'url':
+        this.getURL = WiseProxySource.prototype.getURLImpl;
+        break;
+      }
+    }
+
+    this.updateInfo();
+    setTimeout(this.updateInfo.bind(this), 5 * 60 * 1000);
+
+    this.api.addSource(this.section, this);
+    setInterval(this.performQuery.bind(this), 500);
   }
 
-  this.updateInfo();
-  setTimeout(this.updateInfo.bind(this), 5 * 60 * 1000);
+  // ----------------------------------------------------------------------------
+  performQuery () {
+    if (this.bufferInfo.length === 0) {
+      return;
+    }
 
-  this.api.addSource(this.section, this);
-  setInterval(this.performQuery.bind(this), 500);
-}
-util.inherits(WiseProxySource, wiseSource);
-// ----------------------------------------------------------------------------
-WiseProxySource.prototype.performQuery = function () {
-  if (this.bufferInfo.length === 0) {
-    return;
-  }
+    const options = {
+        url: this.url + '/get',
+        method: 'POST',
+        body: this.buffer.slice(0, this.offset)
+    };
 
-  var options = {
-      url: this.url + '/get',
-      method: 'POST',
-      body: this.buffer.slice(0, this.offset)
-  };
+    const bufferInfo = this.bufferInfo;
+    this.bufferInfo = [];
+    this.offset = 0;
 
-  var bufferInfo = this.bufferInfo;
-  this.bufferInfo = [];
-  this.offset = 0;
+    let i;
+    request(options, (err, response, body) => {
+      if (err || response.statusCode !== 200) {
+        console.log(this.section, 'error', this.section, err || response);
+        for (i = 0; i < bufferInfo.length; i++) {
+          bufferInfo[i].cb('Error');
+        }
 
-  var i;
-  request(options, (err, response, body) => {
-    if (err || response.statusCode !== 200) {
-      console.log(this.section, 'error', this.section, err || response);
+        return;
+      }
+
+      body = Buffer.from(body, 'binary');
+      let offset = 0;
+      const fieldsTS = body.readUInt32BE(offset); offset += 4;
+      if (fieldsTS !== this.fieldsTS) {
+        this.updateInfo();
+      }
+      // const ver = body.readUInt32BE(offset); offset += 4;
       for (i = 0; i < bufferInfo.length; i++) {
-        bufferInfo[i].cb('Error');
+        const num = body[offset]; offset += 1;
+        const bi = bufferInfo[i];
+
+        if (num === 0) {
+          return bi.cb(null, WISESource.emptyResult);
+        }
+
+        const args = [];
+        for (let n = 0; n < num; n++) {
+          const field = body[offset]; offset += 1;
+          const len = body[offset]; offset += 1;
+          const str = body.toString('ascii', offset, offset + len - 1); offset += len;
+          args.push(this.mapping[field], str);
+        }
+        const result = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+        return bi.cb(null, result);
       }
+    });
+  };
 
-      return;
+  // ----------------------------------------------------------------------------
+  fetch (type, item, cb) {
+    this.buffer[this.offset] = type; this.offset++;
+    this.buffer.writeUInt16BE(item.length, this.offset); this.offset += 2;
+    this.buffer.write(item, this.offset); this.offset += item.length;
+    this.bufferInfo.push({ type: type, item: item, cb: cb });
+
+    if (this.bufferInfo.length > 100) {
+      this.performQuery();
     }
+  };
 
-    body = Buffer.from(body, 'binary');
-    var offset = 0;
-    var fieldsTS = body.readUInt32BE(offset); offset += 4;
-    if (fieldsTS !== this.fieldsTS) {
-      this.updateInfo();
-    }
-    // var ver = body.readUInt32BE(offset); offset += 4;
-    for (i = 0; i < bufferInfo.length; i++) {
-      var num = body[offset]; offset += 1;
-      var bi = bufferInfo[i];
+  // ----------------------------------------------------------------------------
+  updateInfo () {
+    let options = {
+        url: this.url + '/fields',
+        method: 'GET'
+    };
 
-      if (num === 0) {
-        return bi.cb(null, wiseSource.emptyResult);
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log(this.section, 'problem fetching /fields', this.section, err || response);
+        return;
       }
+      const buf = Buffer.from(body, 'binary');
+      let offset = 0;
+      this.fieldsTS = buf.readUInt32BE(offset); offset += 4;
+      // const version = buf.readUInt32BE(offset); offset += 4;
+      const length = buf[offset]; offset += 1;
+      for (let i = 0; i < length; i++) {
+        offset++;
+        const len = buf[offset]; offset += 1;
+        const str = buf.toString('ascii', offset, offset + len);
 
-      var args = [];
-      for (var n = 0; n < num; n++) {
-        var field = body[offset]; offset += 1;
-        var len = body[offset]; offset += 1;
-        var str = body.toString('ascii', offset, offset + len - 1); offset += len;
-        args.push(this.mapping[field], str);
+        offset += len;
+        this.mapping[i] = this.api.addField(str);
       }
-      var result = { num: args.length / 2, buffer: wiseSource.encode.apply(null, args) };
-      return bi.cb(null, result);
-    }
-  });
-};
-// ----------------------------------------------------------------------------
-WiseProxySource.prototype.fetch = function (type, item, cb) {
-  this.buffer[this.offset] = type; this.offset++;
-  this.buffer.writeUInt16BE(item.length, this.offset); this.offset += 2;
-  this.buffer.write(item, this.offset); this.offset += item.length;
-  this.bufferInfo.push({ type: type, item: item, cb: cb });
+    });
 
-  if (this.bufferInfo.length > 100) {
-    this.performQuery();
+    options = {
+        url: this.url + '/views',
+        method: 'GET',
+        json: true
+    };
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log(this.section, 'problem fetching /views', this.section, err || response);
+        return;
+      }
+       for (const name in body) {
+         this.api.addView(name, body[name]);
+       }
+    });
+
+    options = {
+        url: this.url + '/rightClicks',
+        method: 'GET',
+        json: true
+    };
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log(this.section, 'problem fetching /rightClicks', this.section, err || response);
+        return;
+      }
+       for (const name in body) {
+         this.api.addView(name, body[name]);
+       }
+    });
+  };
+
+  // ----------------------------------------------------------------------------
+  getIpImpl (item, cb) {
+    this.fetch(0, item, cb);
   }
-};
-// ----------------------------------------------------------------------------
-WiseProxySource.prototype.updateInfo = function () {
-  var options = {
-      url: this.url + '/fields',
-      method: 'GET'
-  };
 
-  request(options, (err, response, body) => {
-    if (err) {
-      console.log(this.section, 'problem fetching /fields', this.section, err || response);
-      return;
-    }
-    var buf = Buffer.from(body, 'binary');
-    var offset = 0;
-    this.fieldsTS = buf.readUInt32BE(offset); offset += 4;
-    // var version = buf.readUInt32BE(offset); offset += 4;
-    var length = buf[offset]; offset += 1;
-    for (var i = 0; i < length; i++) {
-      offset++;
-      var len = buf[offset]; offset += 1;
-      var str = buf.toString('ascii', offset, offset + len);
+  // ----------------------------------------------------------------------------
+  getDomainImpl (item, cb) {
+    this.fetch(1, item, cb);
+  }
 
-      offset += len;
-      this.mapping[i] = this.api.addField(str);
-    }
-  });
+  // ----------------------------------------------------------------------------
+  getMd5Impl (item, cb) {
+    this.fetch(2, item, cb);
+  }
 
-  options = {
-      url: this.url + '/views',
-      method: 'GET',
-      json: true
-  };
-  request(options, (err, response, body) => {
-    if (err) {
-      console.log(this.section, 'problem fetching /views', this.section, err || response);
-      return;
-    }
-     for (var name in body) {
-       this.api.addView(name, body[name]);
-     }
-  });
+  // ----------------------------------------------------------------------------
+  getEmailImpl (item, cb) {
+    this.fetch(3, item, cb);
+  }
 
-  options = {
-      url: this.url + '/rightClicks',
-      method: 'GET',
-      json: true
-  };
-  request(options, (err, response, body) => {
-    if (err) {
-      console.log(this.section, 'problem fetching /rightClicks', this.section, err || response);
-      return;
-    }
-     for (var name in body) {
-       this.api.addView(name, body[name]);
-     }
-  });
-};
-// ----------------------------------------------------------------------------
-function getIp (item, cb) {
-  this.fetch(0, item, cb);
-}
-// ----------------------------------------------------------------------------
-function getDomain (item, cb) {
-  this.fetch(1, item, cb);
-}
-// ----------------------------------------------------------------------------
-function getMd5 (item, cb) {
-  this.fetch(2, item, cb);
-}
-// ----------------------------------------------------------------------------
-function getEmail (item, cb) {
-  this.fetch(3, item, cb);
-}
-// ----------------------------------------------------------------------------
-function getURL (item, cb) {
-  this.fetch(4, item, cb);
+  // ----------------------------------------------------------------------------
+  getURLImpl (item, cb) {
+    this.fetch(4, item, cb);
+  }
 }
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
@@ -225,7 +228,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^wiseproxy:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^wiseproxy:/); });
   sections.forEach((section) => {
     return new WiseProxySource(api, section);
   });

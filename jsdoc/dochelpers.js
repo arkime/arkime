@@ -20,8 +20,8 @@ exports.getReturnDescription = (value, options) => {
   }
 };
 
-exports.getKind = (kind) => {
-  if (kind === 'member') {
+exports.getKind = (kind, name) => {
+  if (kind === 'member' && name[0] === '/') {
     return ' API';
   } else if (kind === 'typedef') {
     return ' Type';

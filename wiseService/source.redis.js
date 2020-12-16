@@ -17,66 +17,61 @@
  */
 'use strict';
 
-var util = require('util');
-var wiseSource = require('./wiseSource.js');
+const WISESource = require('./wiseSource.js');
 
-// ----------------------------------------------------------------------------
-function RedisSource (api, section) {
-  RedisSource.super_.call(this, api, section);
-  this.url = api.getConfig(section, 'url');
-  if (this.url === undefined) {
-    console.log(this.section, '- ERROR not loading since no url specified in config file');
-    return;
+class RedisSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { tagsSetting: true, typeSetting: true, formatSetting: true });
+    this.url = api.getConfig(section, 'url');
+    if (this.url === undefined) {
+      console.log(this.section, '- ERROR not loading since no url specified in config file');
+      return;
+    }
+
+    this.column = +api.getConfig(section, 'column', 0);
+    this.format = api.getConfig(section, 'format', 'csv');
+    this.template = api.getConfig(section, 'template', undefined);
+
+    this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
+
+    if (this.type === 'domain') {
+      this[this.typeFunc] = RedisSource.prototype.fetchDomain;
+    } else {
+      this[this.typeFunc] = RedisSource.prototype.fetch;
+    }
+
+    this.api.addSource(this.section, this);
   }
 
-  this.column = +api.getConfig(section, 'column', 0);
-  this.format = api.getConfig(section, 'format', 'csv');
-  this.template = api.getConfig(section, 'template', undefined);
+  // ----------------------------------------------------------------------------
+  fetch (key, cb) {
+    if (this.template !== undefined) {
+      key = this.template.replace('%key%', key).replace('%type%', this.type);
+    }
 
-  this.tagsSetting();
-  this.typeSetting();
-  if (!this.formatSetting()) {
-    return;
-  }
+    this.client.get(key, (err, reply) => {
+      if (reply === null) {
+        return cb(null, undefined);
+      }
 
-  this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
+      this.parse(reply, (ignorekey, result) => {
+        const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+        return cb(null, newresult);
+      }, () => {});
+    });
+  };
 
-  if (this.type === 'domain') {
-    this[this.typeFunc] = RedisSource.prototype.fetchDomain;
-  } else {
-    this[this.typeFunc] = RedisSource.prototype.fetch;
-  }
-
-  this.api.addSource(this.section, this);
+  // ----------------------------------------------------------------------------
+  fetchDomain (key, cb) {
+    this.fetch(key, (err, result) => {
+      if (result === undefined) {
+        return this.fetch(key.substring(key.indexOf('.') + 1), cb);
+      }
+      return cb(err, result);
+    });
+  };
 }
-util.inherits(RedisSource, wiseSource);
-
-// ----------------------------------------------------------------------------
-RedisSource.prototype.fetch = function (key, cb) {
-  if (this.template !== undefined) {
-    key = this.template.replace('%key%', key).replace('%type%', this.type);
-  }
-
-  this.client.get(key, (err, reply) => {
-    if (reply === null) {
-      return cb(null, undefined);
-    }
-
-    this.parse(reply, (ignorekey, result) => {
-      var newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
-      return cb(null, newresult);
-    }, () => {});
-  });
-};
-// ----------------------------------------------------------------------------
-RedisSource.prototype.fetchDomain = function (key, cb) {
-  this.fetch(key, (err, result) => {
-    if (result === undefined) {
-      return this.fetch(key.substring(key.indexOf('.') + 1), cb);
-    }
-    return cb(err, result);
-  });
-};
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('redis', {
@@ -94,7 +89,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^redis:/); });
   sections.forEach((section) => {
     return new RedisSource(api, section);
   });

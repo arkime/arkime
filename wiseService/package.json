@@ -11,6 +11,7 @@
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",
     "bundle:min": "cd ../ && npm run wise:build",
+    "doc": "cd ../ && npm run wise:doc",
     "lint": "cd ../ && npm run wise:lint"
   },
   "engines": {

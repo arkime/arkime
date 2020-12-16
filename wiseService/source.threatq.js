@@ -17,148 +17,155 @@
  */
 'use strict';
 
-var fs = require('fs');
-var unzipper = require('unzipper');
-var wiseSource = require('./wiseSource.js');
-var util = require('util');
+const fs = require('fs');
+const unzipper = require('unzipper');
+const WISESource = require('./wiseSource.js');
 
-// ----------------------------------------------------------------------------
-function ThreatQSource (api, section) {
-  ThreatQSource.super_.call(this, api, section);
-  this.key = api.getConfig('threatq', 'key');
-  this.host = api.getConfig('threatq', 'host');
+class ThreatQSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { dontCache: true });
+    this.key = api.getConfig('threatq', 'key');
+    this.host = api.getConfig('threatq', 'host');
 
-  if (this.key === undefined) {
-    console.log(this.section, '- No export key defined');
-    return;
-  }
-
-  if (this.host === undefined) {
-    console.log(this.section, '- No server host defined');
-    return;
-  }
-
-  this.ips = new Map();
-  this.domains = new Map();
-  this.emails = new Map();
-  this.md5s = new Map();
-  this.cacheTimeout = -1;
-
-  this.idField = this.api.addField('field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true');
-  this.typeField = this.api.addField('field:threatq.type;db:threatq.type;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true');
-  this.sourceField = this.api.addField('field:threatq.source;db:threatq.source;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true');
-  this.campaignField = this.api.addField('field:threatq.campaign;db:threatq.campaign;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true');
-
-  this.api.addView('threatq',
-    'if (session.threatq)\n' +
-    '  div.sessionDetailMeta.bold ThreatQ\n' +
-    '  dl.sessionDetailMeta\n' +
-    "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
-    "    +arrayList(session.threatq, 'type', 'Type', 'threatq.type')\n" +
-    "    +arrayList(session.threatq, 'source', 'Source', 'threatq.source')\n" +
-    "    +arrayList(session.threatq, 'campaign', 'Campaign', 'threatq.campaign')\n"
-  );
-
-  this.api.addRightClick('threatqip', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'ip' });
-  this.api.addRightClick('threatqhost', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%HOST%`, category: 'host' });
-  this.api.addRightClick('threatqmd5', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'md5' });
-  this.api.addRightClick('threatqid', { name: 'ThreatQ', url: `https://${this.host}/network/%TEXT%`, fields: 'threatq.id' });
-
-  setImmediate(this.loadFile.bind(this));
-  setInterval(this.loadFile.bind(this), 24 * 60 * 60 * 1000); // Reload file every 24 hours
-
-  this.api.addSource('threatq', this);
-}
-util.inherits(ThreatQSource, wiseSource);
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.parseFile = function () {
-  this.ips.clear();
-  this.domains.clear();
-  this.emails.clear();
-  this.md5s.clear();
-
-  var count = 0;
-  fs.createReadStream('/tmp/threatquotient.zip')
-    .pipe(unzipper.Parse())
-    .on('entry', (entry) => {
-      var bufs = [];
-      entry.on('data', (buf) => {
-        bufs.push(buf);
-      }).on('end', () => {
-        var json = JSON.parse(Buffer.concat(bufs));
-        json.forEach((item) => {
-          let args = [this.idField, '' + item.id, this.typeField, item.type];
-
-          if (item.source) {
-            item.source.forEach((str) => {
-              args.push(this.sourceField, str);
-            });
-          }
-
-          if (item.campaign) {
-            item.campaign.forEach((str) => {
-              args.push(this.campaignField, str);
-            });
-          }
-
-          var encoded = wiseSource.encode.apply(null, args);
-
-          count++;
-          if (item.type === 'IP Address') {
-            this.ips.set(item.indicator, { num: args.length / 2, buffer: encoded });
-          } else if (item.type === 'FQDN') {
-            this.domains.set(item.indicator, { num: args.length / 2, buffer: encoded });
-          } else if (item.type === 'Email Address') {
-            this.emails.set(item.indicator, { num: args.length / 2, buffer: encoded });
-          } else if (item.type === 'MD5') {
-            this.md5s.set(item.indicator, { num: args.length / 2, buffer: encoded });
-          }
-        });
-      });
-    })
-    .on('close', () => {
-      console.log(this.section, '- Done Loading', count, 'elements');
-    });
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.loadFile = function () {
-  console.log(this.section, '- Downloading files');
-  wiseSource.request('https://' + this.host + '/export/moloch/?export_key=' + this.key, '/tmp/threatquotient.zip', (statusCode) => {
-    if (statusCode === 200 || !this.loaded) {
-      this.loaded = true;
-      this.parseFile();
+    if (this.key === undefined) {
+      console.log(this.section, '- No export key defined');
+      return;
     }
-  });
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.getDomain = function (domain, cb) {
-  var domains = this.domains;
-  cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.getIp = function (ip, cb) {
-  cb(null, this.ips.get(ip));
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.getMd5 = function (md5, cb) {
-  cb(null, this.md5s.get(md5));
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.getEmail = function (email, cb) {
-  cb(null, this.emails.get(email));
-};
-// ----------------------------------------------------------------------------
-ThreatQSource.prototype.dump = function (res) {
-  ['ips', 'domains', 'emails', 'md5s'].forEach((ckey) => {
-    res.write(`${ckey}:\n`);
-    this[ckey].forEach((value, key) => {
-      var str = `{key: "${key}", ops:\n` +
-        wiseSource.result2Str(wiseSource.combineResults([value])) + '},\n';
-      res.write(str);
+
+    if (this.host === undefined) {
+      console.log(this.section, '- No server host defined');
+      return;
+    }
+
+    this.ips = new Map();
+    this.domains = new Map();
+    this.emails = new Map();
+    this.md5s = new Map();
+
+    this.idField = this.api.addField('field:threatq.id;db:threatq.id;kind:integer;friendly:Id;help:ThreatQ Reference ID;shortcut:0;count:true');
+    this.typeField = this.api.addField('field:threatq.type;db:threatq.type;kind:lotermfield;friendly:Type;help:Indicator Type;shortcut:1;count:true');
+    this.sourceField = this.api.addField('field:threatq.source;db:threatq.source;kind:lotermfield;friendly:Source;help:Indicator Release Source;shortcut:2;count:true');
+    this.campaignField = this.api.addField('field:threatq.campaign;db:threatq.campaign;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true');
+
+    this.api.addView('threatq',
+      'if (session.threatq)\n' +
+      '  div.sessionDetailMeta.bold ThreatQ\n' +
+      '  dl.sessionDetailMeta\n' +
+      "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
+      "    +arrayList(session.threatq, 'type', 'Type', 'threatq.type')\n" +
+      "    +arrayList(session.threatq, 'source', 'Source', 'threatq.source')\n" +
+      "    +arrayList(session.threatq, 'campaign', 'Campaign', 'threatq.campaign')\n"
+    );
+
+    this.api.addRightClick('threatqip', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'ip' });
+    this.api.addRightClick('threatqhost', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%HOST%`, category: 'host' });
+    this.api.addRightClick('threatqmd5', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'md5' });
+    this.api.addRightClick('threatqid', { name: 'ThreatQ', url: `https://${this.host}/network/%TEXT%`, fields: 'threatq.id' });
+
+    setImmediate(this.loadFile.bind(this));
+    setInterval(this.loadFile.bind(this), 24 * 60 * 60 * 1000); // Reload file every 24 hours
+
+    this.api.addSource('threatq', this);
+  }
+
+  // ----------------------------------------------------------------------------
+  parseFile () {
+    this.ips.clear();
+    this.domains.clear();
+    this.emails.clear();
+    this.md5s.clear();
+
+    let count = 0;
+    fs.createReadStream('/tmp/threatquotient.zip')
+      .pipe(unzipper.Parse())
+      .on('entry', (entry) => {
+        const bufs = [];
+        entry.on('data', (buf) => {
+          bufs.push(buf);
+        }).on('end', () => {
+          const json = JSON.parse(Buffer.concat(bufs));
+          json.forEach((item) => {
+            let args = [this.idField, '' + item.id, this.typeField, item.type];
+
+            if (item.source) {
+              item.source.forEach((str) => {
+                args.push(this.sourceField, str);
+              });
+            }
+
+            if (item.campaign) {
+              item.campaign.forEach((str) => {
+                args.push(this.campaignField, str);
+              });
+            }
+
+            const encoded = WISESource.encode.apply(null, args);
+
+            count++;
+            if (item.type === 'IP Address') {
+              this.ips.set(item.indicator, { num: args.length / 2, buffer: encoded });
+            } else if (item.type === 'FQDN') {
+              this.domains.set(item.indicator, { num: args.length / 2, buffer: encoded });
+            } else if (item.type === 'Email Address') {
+              this.emails.set(item.indicator, { num: args.length / 2, buffer: encoded });
+            } else if (item.type === 'MD5') {
+              this.md5s.set(item.indicator, { num: args.length / 2, buffer: encoded });
+            }
+          });
+        });
+      })
+      .on('close', () => {
+        console.log(this.section, '- Done Loading', count, 'elements');
+      });
+  };
+
+  // ----------------------------------------------------------------------------
+  loadFile () {
+    console.log(this.section, '- Downloading files');
+    WISESource.request('https://' + this.host + '/export/moloch/?export_key=' + this.key, '/tmp/threatquotient.zip', (statusCode) => {
+      if (statusCode === 200 || !this.loaded) {
+        this.loaded = true;
+        this.parseFile();
+      }
     });
-  });
-  res.end();
-};
+  };
+
+  // ----------------------------------------------------------------------------
+  getDomain (domain, cb) {
+    const domains = this.domains;
+    cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
+  };
+
+  // ----------------------------------------------------------------------------
+  getIp (ip, cb) {
+    cb(null, this.ips.get(ip));
+  };
+
+  // ----------------------------------------------------------------------------
+  getMd5 (md5, cb) {
+    cb(null, this.md5s.get(md5));
+  };
+
+  // ----------------------------------------------------------------------------
+  getEmail (email, cb) {
+    cb(null, this.emails.get(email));
+  };
+
+  // ----------------------------------------------------------------------------
+  dump (res) {
+    ['ips', 'domains', 'emails', 'md5s'].forEach((ckey) => {
+      res.write(`${ckey}:\n`);
+      this[ckey].forEach((value, key) => {
+        const str = `{key: "${key}", ops:\n` +
+          WISESource.result2Str(WISESource.combineResults([value])) + '},\n';
+        res.write(str);
+      });
+    });
+    res.end();
+  };
+}
+
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('threatq', {

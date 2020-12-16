@@ -17,81 +17,81 @@
  */
 'use strict';
 
-var fs = require('fs');
-var util = require('util');
-var simpleSource = require('./simpleSource.js');
+const fs = require('fs');
+const SimpleSource = require('./simpleSource.js');
 
-// ----------------------------------------------------------------------------
-function FileSource (api, section) {
-  FileSource.super_.call(this, api, section);
+class FileSource extends SimpleSource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { dontCache: true });
 
-  this.file = api.getConfig(section, 'file');
-  this.cacheTimeout = -1;
+    this.file = api.getConfig(section, 'file');
 
-  if (this.file === undefined) {
-    console.log(`${this.section} - ERROR not loading since no file specified in config file`);
-    return;
-  }
-
-  if (!fs.existsSync(this.file)) {
-    console.log(`${this.section} - ERROR not loading since ${this.file} doesn't exist`);
-    return;
-  }
-
-  if (!this.initSimple()) {
-    return;
-  }
-
-  setImmediate(this.load.bind(this));
-
-  // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-  this.watchTimeout = null;
-  let watchCb = (event, filename) => {
-    clearTimeout(this.watchTimeout);
-    if (event === 'rename') {
-      this.watch.close();
-      setTimeout(() => {
-        this.load();
-        this.watch = fs.watch(this.file, watchCb);
-      }, 500);
-    } else {
-      this.watchTimeout = setTimeout(() => {
-        this.watchTimeout = null;
-        this.load();
-      }, 2000);
+    if (this.file === undefined) {
+      console.log(`${this.section} - ERROR not loading since no file specified in config file`);
+      return;
     }
-  };
 
-  this.watch = fs.watch(this.file, watchCb);
+    if (!fs.existsSync(this.file)) {
+      console.log(`${this.section} - ERROR not loading since ${this.file} doesn't exist`);
+      return;
+    }
+
+    if (!this.initSimple()) {
+      return;
+    }
+
+    setImmediate(this.load.bind(this));
+
+    // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
+    this.watchTimeout = null;
+    let watchCb = (event, filename) => {
+      clearTimeout(this.watchTimeout);
+      if (event === 'rename') {
+        this.watch.close();
+        setTimeout(() => {
+          this.load();
+          this.watch = fs.watch(this.file, watchCb);
+        }, 500);
+      } else {
+        this.watchTimeout = setTimeout(() => {
+          this.watchTimeout = null;
+          this.load();
+        }, 2000);
+      }
+    };
+
+    this.watch = fs.watch(this.file, watchCb);
+  }
+
+  // ----------------------------------------------------------------------------
+  simpleSourceLoad (setFunc, cb) {
+    fs.readFile(this.file, (err, body) => {
+      if (err) {
+        return cb(err);
+      }
+      this.parse(body, setFunc, cb);
+    });
+  }
+  // ----------------------------------------------------------------------------
+  getRaw (cb) {
+    fs.readFile(this.file, (err, body) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(null, body);
+    });
+  }
+  // ----------------------------------------------------------------------------
+  putRaw (body, cb) {
+    fs.writeFile(this.file, body, (err) => {
+      return cb(err);
+    });
+  }
 }
-util.inherits(FileSource, simpleSource);
-// ----------------------------------------------------------------------------
-FileSource.prototype.simpleSourceLoad = function (setFunc, cb) {
-  fs.readFile(this.file, (err, body) => {
-    if (err) {
-      return cb(err);
-    }
-    this.parse(body, setFunc, cb);
-  });
-};
-// ----------------------------------------------------------------------------
-FileSource.prototype.getRaw = function (cb) {
-  fs.readFile(this.file, (err, body) => {
-    if (err) {
-      return cb(err);
-    }
-    return cb(null, body);
-  });
-};
-// ----------------------------------------------------------------------------
-FileSource.prototype.putRaw = function (body, cb) {
-  fs.writeFile(this.file, body, (err) => {
-    return cb(err);
-  });
-};
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  var sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   api.addSourceConfigDef('file', {
     singleton: false,
     name: 'file',
@@ -112,4 +112,3 @@ exports.initSource = function (api) {
     return new FileSource(api, section);
   });
 };
-// ----------------------------------------------------------------------------

@@ -86,6 +86,7 @@
     "wise:lint": "eslint --ext .js,.vue wiseService",
     "wise:lint-fix": "eslint --fix --ext .js,.vue wiseService",
     "prewise:start": "npm run wise:build",
+    "wise:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files wiseService/*.js > ../arkimeweb/_wiki/api_wise.md",
     "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack -d --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {

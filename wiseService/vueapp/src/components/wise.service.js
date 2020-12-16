@@ -77,7 +77,7 @@ export default {
   saveSourceFile: function (sourceName, data, configCode) {
     // TODO: new file saving
     return new Promise((resolve, reject) => {
-      Vue.axios.put('source/' + sourceName + '/save', { raw: data, configCode: configCode })
+      Vue.axios.put('source/' + sourceName + '/put', { raw: data, configCode: configCode })
         .then((response) => {
           resolve(response.data);
         })
