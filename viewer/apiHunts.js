@@ -4,7 +4,7 @@ const async = require('async');
 const path = require('path');
 const RE2 = require('re2');
 
-module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
+module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils) => {
   const module = {};
 
   // --------------------------------------------------------------------------
@@ -200,39 +200,39 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
     return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
   }
 
-  function updateHuntStatus (req, res, status, successText, errorText) {
-    Db.getHunt(req.params.id, (err, hit) => {
-      if (err) {
-        console.log(errorText, err, hit);
-        return res.molochError(500, errorText);
-      }
-
-      // don't let a user play a hunt job if one is already running
-      if (status === 'running' && internals.runningHuntJob) {
-        return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
-      }
-
-      let hunt = hit._source;
-
-      // if hunt is finished, don't allow pause
-      if (hunt.status === 'finished' && status === 'paused') {
-        return res.molochError(403, 'You cannot pause a completed hunt.');
-      }
-
-      // clear the running hunt job if this is it
-      if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
-      hunt.status = status; // update the hunt job
-
-      Db.setHunt(req.params.id, hunt, (err, info) => {
-        if (err) {
-          console.log(errorText, err, info);
-          return res.molochError(500, errorText);
-        }
-        res.send(JSON.stringify({ success: true, text: successText }));
-        module.processHuntJobs();
-      });
-    });
-  }
+  // function updateHuntStatus (req, res, status, successText, errorText) {
+  //   Db.getHunt(req.params.id, (err, hit) => {
+  //     if (err) {
+  //       console.log(errorText, err, hit);
+  //       return res.molochError(500, errorText);
+  //     }
+  //
+  //     // don't let a user play a hunt job if one is already running
+  //     if (status === 'running' && internals.runningHuntJob) {
+  //       return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
+  //     }
+  //
+  //     let hunt = hit._source;
+  //
+  //     // if hunt is finished, don't allow pause
+  //     if (hunt.status === 'finished' && status === 'paused') {
+  //       return res.molochError(403, 'You cannot pause a completed hunt.');
+  //     }
+  //
+  //     // clear the running hunt job if this is it
+  //     if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
+  //     hunt.status = status; // update the hunt job
+  //
+  //     Db.setHunt(req.params.id, hunt, (err, info) => {
+  //       if (err) {
+  //         console.log(errorText, err, info);
+  //         return res.molochError(500, errorText);
+  //       }
+  //       res.send(JSON.stringify({ success: true, text: successText }));
+  //       module.processHuntJobs();
+  //     });
+  //   });
+  // }
 
   // if there are failed sessions, go through them one by one and do a packet search
   // if there are no failed sessions left at the end then the hunt is done
@@ -293,7 +293,7 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
 
         if (hunt.notifier) {
           let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-          issueAlert(hunt.notifier, message, continueProcess);
+          notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();
         }
@@ -420,7 +420,7 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
 
         if (hunt.notifier) {
           let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-          issueAlert(hunt.notifier, message, continueProcess);
+          notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();
         }
@@ -595,7 +595,7 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
     }
 
     let message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-    issueAlert(hunt.notifier, message, continueProcess);
+    notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
   }
 
   // --------------------------------------------------------------------------
@@ -605,10 +605,20 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
    * POST - /api/hunt
    *
    * Creates a new hunt (packet search job).
-   * @ignore
    * @name /hunt
-   TODO ECR DOCUMENT!!!!!!!!
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} query - The request query to filter sessions.
+   * @param {number} totalSessions - The number of sessions that a hunt applies to.
+   * @param {string} name - The name of the hunt (not unique).
+   * @param {number} size - The number of packets to search within each session.
+   * @param {boolean} src - Whether to search the source packets. Must search src or dst or both.
+   * @param {boolean} dst - Whether to search the destination packets. Must search src or dst or both.
+   * @param {string} search - The search text to search for within packets.
+   * @param {string} searchType - What type of search the text is. Options include:
+     ascii - search for case insensitive ascii text.
+     asciicase - search for case sensitive ascii text.
+     hex - search for hex text.
+     regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
+     hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
    */
@@ -628,11 +638,11 @@ module.exports = (Config, Db, internals, Pcap, sessionAPIs, ViewerUtils) => {
       return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
     }
 
-    const searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex', 'hexregex' ];
+    const searchTypes = [ 'ascii', 'asciicase', 'hex', 'regex', 'hexregex' ];
     if (!req.body.searchType) {
       return res.molochError(403, 'Missing packet search text type');
     } else if (searchTypes.indexOf(req.body.searchType) === -1) {
-      return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "wildcard", "hexregex", or "regex"');
+      return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "hexregex", or "regex"');
     }
 
     if (!req.body.type) {

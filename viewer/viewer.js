@@ -40,7 +40,6 @@ try {
   var http = require('http');
   var https = require('https');
   var onHeaders = require('on-headers');
-  var glob = require('glob');
   var unzipper = require('unzipper');
   var helmet = require('helmet');
   var uuid = require('uuidv4').default;
@@ -91,10 +90,11 @@ var compression = require('compression');
 // internal app deps
 let { internals } = require('./internals')(app, Config);
 let ViewerUtils = require('./viewerUtils')(app, Config, Db, molochparser, internals);
+let notifierAPIs = require('./apiNotifiers')(Db, internals);
 let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-let huntAPIs = require('./apiHunts')(Config, Db, internals, Pcap, sessionAPIs, ViewerUtils);
+let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils); // TODO ECR
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1215,87 +1215,6 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     });
   }, function (err) {
     nextQLCb();
-  });
-}
-
-// notifiers helpers ----------------------------------------------------------
-function buildNotifiers () {
-  internals.notifiers = {};
-
-  let api = {
-    register: function (str, info) {
-      internals.notifiers[str] = info;
-    }
-  };
-
-  // look for all notifier providers and initialize them
-  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
-  files.forEach((file) => {
-    let plugin = require(file);
-    plugin.init(api);
-  });
-}
-
-function issueAlert (notifierName, alertMessage, continueProcess) {
-  if (!notifierName) { return continueProcess('No name supplied for notifier'); }
-
-  if (!internals.notifiers) { buildNotifiers(); }
-
-  // find notifier
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    sharedUser = sharedUser._source;
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    let notifier = sharedUser.notifiers[notifierName];
-
-    if (!notifier) {
-      console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    let notifierDefinition;
-    for (let n in internals.notifiers) {
-      if (internals.notifiers[n].type === notifier.type) {
-        notifierDefinition = internals.notifiers[n];
-      }
-    }
-    if (!notifierDefinition) {
-      console.log('Cannot find notifier definition, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    let config = {};
-    for (let field of notifierDefinition.fields) {
-      for (let configuredField of notifier.fields) {
-        if (configuredField.name === field.name && configuredField.value !== undefined) {
-          config[field.name] = configuredField.value;
-        }
-      }
-
-      // If a field is required and nothing was set, then we have an error
-      if (field.required && config[field.name] === undefined) {
-        console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-        continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-      }
-    }
-
-    notifierDefinition.sendAlert(config, alertMessage, null, (response) => {
-      let err;
-      // there should only be one error here because only one
-      // notifier alert is sent at a time
-      if (response.errors) {
-        for (let e in response.errors) {
-          err = response.errors[e];
-        }
-      }
-      return continueProcess(err);
-    });
   });
 }
 
@@ -2609,7 +2528,7 @@ app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logActio
 // notifier apis --------------------------------------------------------------
 app.get('/notifierTypes', checkCookieToken, function (req, res) {
   if (!internals.notifiers) {
-    buildNotifiers();
+    notifierAPIs.buildNotifiers();
   }
 
   return res.send(internals.notifiers);
@@ -2677,7 +2596,7 @@ app.post('/notifiers', [noCacheJson, getSettingUserDb, checkCookieToken], functi
 
   req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
-  if (!internals.notifiers) { buildNotifiers(); }
+  if (!internals.notifiers) { notifierAPIs.buildNotifiers(); }
 
   let foundNotifier;
   for (let n in internals.notifiers) {
@@ -2786,7 +2705,7 @@ app.put('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], f
 
     req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
 
-    if (!internals.notifiers) { buildNotifiers(); }
+    if (!internals.notifiers) { notifierAPIs.buildNotifiers(); }
 
     let foundNotifier;
     for (let n in internals.notifiers) {
@@ -2884,7 +2803,7 @@ app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookie
     }));
   }
 
-  issueAlert(req.params.name, 'Test alert', continueProcess);
+  notifierAPIs.issueAlert(req.params.name, 'Test alert', continueProcess);
 });
 
 // history apis ---------------------------------------------------------------
@@ -3607,7 +3526,8 @@ app.get('/state/:name', [noCacheJson], function (req, res) {
 });
 
 // hunt apis ------------------------------------------------------------------
-app.post(
+// TODO ECR - update client
+app.post( // create hunt endpoint
   ['/api/hunt', '/hunt'],
   [noCacheJson, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])],
   huntAPIs.createHunt
@@ -3706,15 +3626,15 @@ app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, c
   });
 });
 
-app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
-});
-
-app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
-});
+// app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+//   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+//   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
+// });
+//
+// app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
+//   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+//   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
+// });
 
 app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
@@ -3797,37 +3717,37 @@ app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), che
   });
 });
 
-app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
-  let huntId = req.params.huntId;
-  let sessionId = req.params.sessionId;
-
-  // fetch hunt and session
-  Promise.all([Db.get('hunts', 'hunt', huntId),
-    Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))])
-    .then(([hunt, session]) => {
-      if (hunt.error || session.error) { res.send({ matched: false }); }
-
-      hunt = hunt._source;
-      session = session._source;
-
-      let options = buildHuntOptions(huntId, hunt);
-
-      sessionHunt(sessionId, options, function (err, matched) {
-        if (err) {
-          return res.send({ matched: false, error: err });
-        }
-
-        if (matched) {
-          updateSessionWithHunt(session, sessionId, hunt, huntId);
-        }
-
-        return res.send({ matched: matched });
-      });
-    }).catch((err) => {
-      console.log('ERROR - hunt/remote', err);
-      res.send({ matched: false, error: err });
-    });
-});
+// app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
+//   let huntId = req.params.huntId;
+//   let sessionId = req.params.sessionId;
+//
+//   // fetch hunt and session
+//   Promise.all([Db.get('hunts', 'hunt', huntId),
+//     Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))])
+//     .then(([hunt, session]) => {
+//       if (hunt.error || session.error) { res.send({ matched: false }); }
+//
+//       hunt = hunt._source;
+//       session = session._source;
+//
+//       let options = buildHuntOptions(huntId, hunt);
+//
+//       sessionHunt(sessionId, options, function (err, matched) {
+//         if (err) {
+//           return res.send({ matched: false, error: err });
+//         }
+//
+//         if (matched) {
+//           updateSessionWithHunt(session, sessionId, hunt, huntId);
+//         }
+//
+//         return res.send({ matched: matched });
+//       });
+//     }).catch((err) => {
+//       console.log('ERROR - hunt/remote', err);
+//       res.send({ matched: false, error: err });
+//     });
+// });
 
 // lookup apis ----------------------------------------------------------------
 let lookupMutex = new Mutex();
@@ -4563,7 +4483,7 @@ function processCronQueries () {
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                   let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
                   let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
-                  issueAlert(cq.notifier, message, continueProcess);
+                  notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
                 } else {
                   return continueProcess();
                 }
