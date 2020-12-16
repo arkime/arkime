@@ -952,7 +952,7 @@ export default {
         users: this.jobUsers
       };
 
-      this.axios.post('hunt', { hunt: newJob })
+      this.axios.post('api/hunt', newJob)
         .then((response) => {
           this.createFormOpened = false;
           this.jobName = '';
