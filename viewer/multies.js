@@ -49,6 +49,9 @@ if (esClientKey) {
 
 var clients = {};
 var nodes = [];
+var clusters = {};
+var clusterList = [];
+var activeESNodes = [];
 var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
 var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
@@ -115,15 +118,51 @@ function node2Prefix (node) {
   return '';
 }
 
-var activeESNodes = [];
-
-function getActiveNodes () {
-  return activeESNodes.slice();
+function node2Name (node) {
+  var parts = node.split(',');
+  for (var p = 1; p < parts.length; p++) {
+    var kv = parts[p].split(':');
+    if (kv[0] === 'name') {
+      return kv[1];
+    }
+  }
+  return null;
 }
 
-// Go thru all the ES nodes and perform the same query and return the bodies for further processing
+function getActiveNodes (clusterin) {
+  if (clusterin) {
+    if (!Array.isArray(clusterin)) {
+      clusterin = [clusterin];
+    }
+    var tmpNodes = [];
+    for (var i = 0; i < clusterin.length; i++) {
+      if (clusters[clusterin[i]]) { // cluster -> node
+        tmpNodes.push(clusters[clusterin[i]]);
+      }
+    }
+    var esNodes = [];
+    activeESNodes.slice().forEach((node) => {
+      if (tmpNodes.includes(node)) {
+        esNodes.push(node);
+      }
+    });
+    return esNodes;
+  } else {
+    return activeESNodes.slice();
+  }
+}
+
 function simpleGather (req, res, bodies, doneCb) {
-  var nodes = getActiveNodes();
+  var cluster = null;
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+    req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
+    delete req.query.cluster;
+  }
+  var nodes = getActiveNodes(cluster);
+  if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
+    return doneCb(true, [{}]);
+  }
   async.map(nodes, (node, asyncCb) => {
     var result = '';
     var url = node2Url(node) + req.url;
@@ -152,7 +191,7 @@ function simpleGather (req, res, bodies, doneCb) {
         } else {
           result = {};
         }
-        result._node = node;
+        result.cluster = clusters[node];
         asyncCb(null, result);
       });
     });
@@ -238,6 +277,20 @@ app.get('/_cluster/health', simpleGatherAdd);
 
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
+
+app.get('/_cluster/:type/details', function (req, res) {
+  var result = { available: [], active: [], inactive: [] };
+  var activeNodes = getActiveNodes();
+  for (var i = 0; i < clusterList.length; i++) {
+    result.available.push(clusterList[i]);
+    if (activeNodes.includes(clusters[clusterList[i]])) {
+      result.active.push(clusterList[i]);
+    } else {
+      result.inactive.push(clusterList[i]);
+    }
+  }
+  res.send(result);
+});
 
 app.get('/:index/_status', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
@@ -337,6 +390,9 @@ app.get('/:index/:type/:id', function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     for (var i = 0; i < results.length; i++) {
       if (results[i].found) {
+        if (results[i]._source) {
+          results[i]._source.cluster = results[i].cluster;
+        }
         return res.send(results[i]);
       }
     }
@@ -570,7 +626,8 @@ function combineResults (obj, result) {
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
     for (var i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i]._node = result._node;
+      result.hits.hits[i].cluster = result.cluster;
+      result.hits.hits[i]._source.cluster = result.cluster;
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
@@ -751,9 +808,9 @@ function msearch (req, res) {
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
   var body = JSON.parse(req.body);
-  if (body._node && clients[body._node]) {
-    var node = body._node;
-    delete body._node;
+  if (body.cluster && clusters[body.cluster]) {
+    var node = clusters[body.cluster];
+    delete body.cluster;
 
     var prefix = node2Prefix(node);
     var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
@@ -773,7 +830,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
       return res.send(result);
     });
   } else {
-    console.log('ERROR - body of the request does not contain _node field', req.method, req.url, req.body);
+    console.log('ERROR - body of the request does not contain cluster field', req.method, req.url, req.body);
     return res.end();
   }
 });
@@ -809,6 +866,19 @@ if (nodes.length === 0 || nodes[0] === '') {
   process.exit(1);
 }
 
+for (let i = 0; i < nodes.length; i++) {
+  let name = node2Name(nodes[i]);
+  if (!name) {
+    console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
+    process.exit(1);
+  }
+  clusterList[i] = name; // name
+
+  // Maintain a mapping of node to cluster and cluster to node
+  clusters[nodes[i]] = clusterList[i]; // node -> cluster
+  clusters[clusterList[i]] = nodes[i]; // cluster -> node
+}
+
 // First connect
 nodes.forEach((node) => {
   if (node.toLowerCase().includes(',http')) {
@@ -836,6 +906,7 @@ nodes.forEach((node) => {
   });
 });
 
+// list of active nodes
 activeESNodes = nodes.slice();
 
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
@@ -851,12 +922,12 @@ function pingESNode (client, node) {
 
 function enumerateActiveNodes () {
   var pingTasks = [];
-  for (var i = 0; i < nodes.length; i++) {
+  for (let i = 0; i < nodes.length; i++) {
     pingTasks.push(pingESNode(clients[nodes[i]], nodes[i]));
   }
   Promise.all(pingTasks).then(function (values) {
     var activeNodes = [];
-    for (var i = 0; i < values.length; i++) {
+    for (let i = 0; i < values.length; i++) {
       if (values[i].isActive) { // true -> node is active
         activeNodes.push(values[i].node);
       } else { // false -> node is down

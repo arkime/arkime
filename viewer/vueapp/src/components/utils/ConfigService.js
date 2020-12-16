@@ -81,6 +81,16 @@ export default {
           reject(error);
         });
     });
-  }
+  },
 
+  getClusters: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('clusters')
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  }
 };

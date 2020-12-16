@@ -632,7 +632,7 @@ exports.refresh = function (index, cb) {
   }
 };
 
-exports.addTagsToSession = function (index, id, tags, node, cb) {
+exports.addTagsToSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -657,12 +657,12 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { body._node = node; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, node, cb) {
+exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -687,7 +687,7 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { body._node = node; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };
@@ -1136,10 +1136,12 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.numberOfDocuments = function (index, cb) {
+exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    return internals.elasticSearchClient.count({ index: fixIndex(index), ignoreUnavailable: true });
+    let params = { index: fixIndex(index), ignoreUnavailable: true };
+    exports.merge(params, options);
+    return internals.elasticSearchClient.count(params);
   }
 
   return new Promise((resolve, reject) => {
@@ -1360,6 +1362,10 @@ exports.getMinValue = function (index, field, cb) {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
   });
+};
+
+exports.getClusterDetails = function (cb) {
+  return internals.elasticSearchClient.get({ index: '_cluster', id: 'details' }, cb);
 };
 
 exports.getILMPolicy = function () {

@@ -126,6 +126,61 @@
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
+      <!-- ES cluster dropdown menu -->
+      <b-dropdown v-if="multiviewer"
+        right
+        size="sm"
+        class="multies-menu-dropdown pull-right ml-1"
+        no-caret
+        toggle-class="rounded"
+        variant="theme-secondary"
+        @show="esVisMenuOpen = true"
+        @hide="esVisMenuOpen = false">
+        <template slot="button-content">
+          <div v-b-tooltip.hover.left :title="esMenuHoverText">
+            <span class="fa fa-database"> </span>
+            <span> {{ selectedCluster.length }} </span>
+          </div>
+        </template>
+        <b-dropdown-header>
+          <input type="text"
+            v-model="esQuery"
+            class="form-control form-control-sm dropdown-typeahead"
+            placeholder="Search for Clusters..."
+          />
+        </b-dropdown-header>
+        <b-dropdown-divider>
+        </b-dropdown-divider>
+         <b-dropdown-item @click.native.capture.stop.prevent="selectAllCluster">
+          <span class="fa fa-list"></span>&nbsp;
+          Select All
+        </b-dropdown-item>
+        <b-dropdown-item @click.native.capture.stop.prevent="clearAllCluster">
+          <span class="fa fa-eraser"></span>&nbsp;
+          Clear All
+        </b-dropdown-item>
+        <b-dropdown-divider>
+        </b-dropdown-divider>
+        <template v-if="esVisMenuOpen">
+          <template v-for="(clusters, group) in filteredClusteres">
+            <b-dropdown-header
+              :key="group"
+              class="group-header">
+              {{ group + ' (' + clusters.length + ')' }}
+            </b-dropdown-header>
+            <template v-for="cluster in clusters">
+              <b-dropdown-item
+                :id="group + cluster + 'item'"
+                :key="group + cluster + 'item'"
+                :class="{'active':isClusterVis(cluster)}"
+                @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
+                {{ cluster }}
+              </b-dropdown-item>
+            </template>
+          </template>
+        </template>
+      </b-dropdown> <!-- /Es cluster dropdown menu -->
+
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
         @click="applyParams"
@@ -309,11 +364,14 @@ export default {
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
+      esVisMenuOpen: false,
+      esQuery: '', // query for ES to toggle visibility
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
       updateTime: false,
-      editableView: undefined // Not necessarily active view
+      editableView: undefined, // Not necessarily active view
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -341,6 +399,41 @@ export default {
     },
     user: function () {
       return this.$store.state.user;
+    },
+    esMenuHoverText: function () {
+      if (this.selectedCluster.length === 0) {
+        return 'No Selection';
+      } else if (this.selectedCluster.length === 1) {
+        return this.selectedCluster[0];
+      } else {
+        return this.selectedCluster.length + ' out of ' + this.availableCluster.active.length + ' selected';
+      }
+    },
+    availableCluster: {
+      get: function () {
+        return this.$store.state.esCluster.availableCluster;
+      },
+      set: function (newValue) {
+        this.$store.commit('setAvailableCluster', newValue);
+      }
+    },
+    selectedCluster: {
+      get: function () {
+        return this.$store.state.esCluster.selectedCluster || [];
+      },
+      set: function (newValue) {
+        this.$store.commit('setSelectedCluster', newValue);
+      }
+    },
+    filteredClusteres: function () {
+      let filteredGroupedClusters = {};
+      for (let group in this.availableCluster) {
+        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
+          this.esQuery,
+          this.availableCluster[group]
+        );
+      }
+      return filteredGroupedClusters;
     }
   },
   watch: {
@@ -364,6 +457,7 @@ export default {
   created: function () {
     this.getViews();
     this.getMolochClusters();
+    this.getClusterInformation();
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -386,7 +480,9 @@ export default {
       this.timeUpdate();
     },
     applyParams: function () {
-      this.applyExpression();
+      if (this.$route.query.expression !== this.expression) {
+        this.applyExpression();
+      }
       this.timeUpdate();
     },
     exportPCAP: function () {
@@ -493,6 +589,44 @@ export default {
           this.molochClusters = response;
         });
     },
+    /* MultiES functions ------------------------------------------ */
+    getClusterInformation: function () {
+      if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
+        ConfigService.getClusters()
+          .then((response) => {
+            this.availableCluster = response;
+            var clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+            if (clusters.length === 0) {
+              this.selectedCluster = response.active;
+            } else {
+              this.selectedCluster = [];
+              for (var i = 0; i < clusters.length; i++) {
+                if (response.active.includes(clusters[i])) {
+                  this.selectedCluster.push(clusters[i]);
+                }
+              }
+            }
+          });
+      }
+    },
+    isClusterVis: function (cluster) {
+      if (this.availableCluster.active.includes(cluster)) { // found in active cluster list
+        return this.selectedCluster.includes(cluster); // returns True if found in selected cluster list
+      } else { // inactive cluster
+        return false;
+      }
+    },
+    updateRouteQueryForClusters: function (clusters) {
+      var cluster = clusters.length > 0 ? clusters.join(',') : 'none';
+      if (!this.$route.query.cluster || this.$route.query.cluster !== cluster) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            cluster: cluster
+          }
+        });
+      }
+    },
     /**
      * If the start/stop time has changed:
      * Applies the date start/stop time url parameters and removes the date url parameter
@@ -545,6 +679,24 @@ export default {
       } else {
         this.$emit('changeSearch');
       }
+    },
+    selectAllCluster: function () {
+      this.selectedCluster = this.availableCluster.active;
+      this.updateRouteQueryForClusters(this.selectedCluster);
+    },
+    clearAllCluster: function () {
+      this.selectedCluster = [];
+      this.updateRouteQueryForClusters(this.selectedCluster);
+    },
+    toggleClusterSelection: function (cluster) {
+      if (this.selectedCluster.includes(cluster)) { // already selected; remove from selection
+        this.selectedCluster = this.selectedCluster.filter((item) => {
+          return item !== cluster;
+        });
+      } else if (!this.availableCluster.inactive.includes(cluster)) { // not in inactive cluster
+        this.selectedCluster.push(cluster); // add to selected list
+      }
+      this.updateRouteQueryForClusters(this.selectedCluster);
     }
   }
 };
@@ -556,26 +708,42 @@ export default {
 }
 </style>
 
+<style>
+.multies-menu-dropdown .dropdown-menu {
+  /* max-height: 300px; */
+  /* overflow: auto; */
+  width: 300px
+}
+
+.multies-menu-dropdown .dropdown-header {
+  padding: .25rem .5rem 0;
+}
+
+.multies-menu-dropdown .group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: .2rem;
+  /* font-size: 120%; */
+  font-weight: bold;
+}
+</style>
+
 <style scoped>
 form {
   border: none;
   z-index: 5;
   background-color: var(--color-secondary-lightest);
-
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
-
 .action-form-separator {
   margin: 5px 0;
   border-top: 1px solid var(--color-gray-light);
 }
-
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
-
 .form-group {
   margin-bottom: 0;
 }

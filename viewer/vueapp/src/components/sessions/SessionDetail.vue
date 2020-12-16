@@ -622,7 +622,7 @@ export default {
 
       let p1 = FieldService.get();
       let p2 = ConfigService.getMolochClusters();
-      let p3 = SessionsService.getDetail(this.session.id, this.session.node);
+      let p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster);
 
       if (this.component) {
         this.component.$destroy(true);
@@ -938,6 +938,7 @@ export default {
       this.packetPromise = SessionsService.getPackets(
         this.session.id,
         this.session.node,
+        this.session.cluster,
         this.params
       );
 
@@ -1022,8 +1023,8 @@ export default {
     showSrcBytesImg: function () {
       this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=src">
-        <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=src" download="${this.session.id}-src.png">
+        <img src="api/session/raw/${this.session.node}/${this.session.id}/png?type=src">
+        <a class="btn small" href="api/session/raw/${this.session.node}/${this.session.id}/png?type=src" download="${this.session.id}-src.png">
           <span class="fa fa-download"></span>&nbsp;
           Download src bytes image
         </button>
@@ -1033,8 +1034,8 @@ export default {
     showDstBytesImg: function () {
       this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
         <br>
-        <img src="${this.session.node}/raw/${this.session.id}.png?type=dst">
-        <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=dst" download="${this.session.id}-dst.png">
+        <img src="api/session/raw/${this.session.node}/${this.session.id}/png?type=dst">
+        <a class="btn small" href="api/session/raw/${this.session.node}/${this.session.id}/png?type=dst" download="${this.session.id}-dst.png">
           <span class="fa fa-download"></span>&nbsp;
           Download dst bytes image
         </button>

@@ -66,7 +66,7 @@
     "viewer:dev": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:test": "(cd viewer && nodemon viewer.js --debug -c ../tests/config.test.ini -n test) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:testuserdebug": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser --debug) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
-    "viewer:multiviewer": "cd viewer && node multies.js -c ../tests/config.test.ini -n all",
+    "viewer:multies": "cd viewer && node multies.js -c ../tests/config.test.ini -n testmulties",
     "viewer:testmultiviewer": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testmulties) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files viewer/*.js > ../arkimeweb/_wiki/api_docs.md",
     "viewer:lint": "eslint --ext .js,.vue viewer capture/plugins",

@@ -21,7 +21,7 @@ shared:
 jobs:
     centos-7:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:3.0.0-2
+        image: andywick/arkime-build-7:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -59,7 +59,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-8:3.0.0-2
+        image: andywick/arkime-build-8:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -97,7 +97,7 @@ jobs:
 
     ubuntu-16:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-16:3.0.0-2
+        image: andywick/arkime-build-16:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -139,7 +139,7 @@ jobs:
 
     ubuntu-18:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-18:3.0.0-2
+        image: andywick/arkime-build-18:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -190,7 +190,7 @@ jobs:
 
     ubuntu-20:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-20:3.0.0-2
+        image: andywick/arkime-build-20:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
@@ -242,7 +242,7 @@ jobs:
 
     centos-7-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-7:3.0.0-2
+        image: andywick/arkime-build-7:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -275,7 +275,7 @@ jobs:
 
     ubuntu-16-sanitize:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-16:3.0.0-2
+        image: andywick/arkime-build-16:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -304,7 +304,7 @@ jobs:
 
     slack:
         requires: [centos-7, centos-8, ubuntu-16, ubuntu-18, ubuntu-20]
-        image: andywick/arkime-build-7:3.0.0-2
+        image: andywick/arkime-build-7:3.0.0-3
         annotations:
             beta.screwdriver.cd/cpu: LOW
             beta.screwdriver.cd/ram: LOW
@@ -321,7 +321,7 @@ jobs:
             - SLACK
 
     release-build:
-        image: andywick/arkime-build-7:3.0.0-2
+        image: andywick/arkime-build-7:3.0.0-3
         requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -331,7 +331,7 @@ jobs:
 
     release-centos-7:
         requires: [release-build]
-        image: andywick/arkime-build-7:3.0.0-2
+        image: andywick/arkime-build-7:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -352,7 +352,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/arkime-build-8:3.0.0-2
+        image: andywick/arkime-build-8:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -373,7 +373,7 @@ jobs:
 
     release-ubuntu-16:
         requires: [release-build]
-        image: andywick/arkime-build-16:3.0.0-2
+        image: andywick/arkime-build-16:3.0.0-3
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .

@@ -3,20 +3,20 @@ ul.nav.nav-pills.mb-3
     li.nav-item
       a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
     li.nav-item
-      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank") Download Segment Pcap
+      a.nav-link(href='api/session/'+ session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
     li.nav-item
-      a.nav-link(href=session.node + '/entirePcap/' + session.rootId + '.pcap', target="_blank") Download Entire Pcap
+      a.nav-link(href='api/session/' + session.node + '/' + session.rootId + '/entirePcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
   else
     li.nav-item
-      a.nav-link(href=session.node + '/pcap/' + session.id + '.pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover="true", title="Download the PCAP file for this session.")
+      a.nav-link(href='api/session/' + session.node  + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover="true", title="Download the PCAP file for this session.", download=session.id + '.pcap')
         span.fa.fa-download
         | &nbsp;Download PCAP
   li.nav-item
-    a.nav-link(href=session.node + '/raw/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover="true", title="Download the raw source packets for this session.")
+    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover="true", title="Download the raw source packets for this session.", download=session.id + '-src-raw')
       span.fa.fa-arrow-circle-up
       | &nbsp;Source Raw
   li.nav-item
-    a.nav-link(href=session.node + '/raw/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover="true", title="Download the raw destination packets for this session.")
+    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover="true", title="Download the raw destination packets for this session.", download=session.id + '-dst-raw')
       span.fa.fa-arrow-circle-down
       | &nbsp;Destination Raw
   li.nav-item
