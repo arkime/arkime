@@ -23,7 +23,7 @@ const request = require('request');
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super({ api: api, section: section, dontCache: true });
+    super(api, section, { dontCache: true });
     this.url = api.getConfig(section, 'url');
     this.reload = +api.getConfig(section, 'reload', -1);
     this.headers = {};
@@ -54,7 +54,8 @@ class URLSource extends SimpleSource {
       setInterval(this.load.bind(this), this.reload * 1000 * 60);
     }
   }
-// ----------------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------------
   simpleSourceLoad (setFunc, cb) {
     request(this.url, { headers: this.headers }, (error, response, body) => {
       if (!error && response.statusCode === 200) {
@@ -65,6 +66,7 @@ class URLSource extends SimpleSource {
     });
   }
 }
+
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   api.addSourceConfigDef('url', {

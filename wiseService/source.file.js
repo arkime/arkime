@@ -21,9 +21,9 @@ const fs = require('fs');
 const SimpleSource = require('./simpleSource.js');
 
 class FileSource extends SimpleSource {
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super({ api: api, section: section, dontCache: true });
+    super(api, section, { dontCache: true });
 
     this.file = api.getConfig(section, 'file');
 
@@ -64,7 +64,7 @@ class FileSource extends SimpleSource {
     this.watch = fs.watch(this.file, watchCb);
   }
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   simpleSourceLoad (setFunc, cb) {
     fs.readFile(this.file, (err, body) => {
       if (err) {
@@ -73,7 +73,7 @@ class FileSource extends SimpleSource {
       this.parse(body, setFunc, cb);
     });
   }
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   getRaw (cb) {
     fs.readFile(this.file, (err, body) => {
       if (err) {
@@ -82,14 +82,14 @@ class FileSource extends SimpleSource {
       return cb(null, body);
     });
   }
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   putRaw (body, cb) {
     fs.writeFile(this.file, body, (err) => {
       return cb(err);
     });
   }
 }
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
   const sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   api.addSourceConfigDef('file', {
@@ -112,4 +112,3 @@ exports.initSource = function (api) {
     return new FileSource(api, section);
   });
 };
-// ----------------------------------------------------------------------------

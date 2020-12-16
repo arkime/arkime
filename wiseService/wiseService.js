@@ -180,41 +180,11 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-/**
- * Get from the config section a value or default
- *
- * @name "api.getConfig"
- * @param {string} section - The section in the config file the key is in
- * @param {string} name - The key to get from the section
- * @param {string} [default] - the default value to return if key is not found in section
- * @returns {string} - The value found or the default value
- */
 function getConfig (section, name, d) {
   if (!internals.config[section]) {
     return d;
   }
   return internals.config[section][name] || d;
-}
-
-/**
- * Get a list of all the sections in the config file
- *
- * @name "api.getConfigSections"
- * @returns {string|Array} - A list of all the sections in the config file
- */
-function getConfigSections () {
-  return Object.keys(internals.config);
-}
-
-/**
- * Get the full config for a section
- *
- * @name "api.getConfigSection"
- * @param {string} section - The section of the config file to return
- * @returns {object} - A list of all the sections in the config file
- */
-function getConfigSection (section) {
-  return internals.config[section];
 }
 
 // Explicit sigint handler for running under docker
@@ -383,208 +353,6 @@ function newFieldsTS () {
   }
 }
 // ----------------------------------------------------------------------------
-/**
- * Add a field
- *
- * @name "api.addField"
- * @param {string} addField - An encoded field definition
- */
-function addField (field) {
-  let match = field.match(/field:([^;]+)/);
-  const name = match[1];
-
-  let db;
-  if ((match = field.match(/db:([^;]+)/))) {
-    db = match[1];
-  }
-
-  let friendly;
-  if ((match = field.match(/friendly:([^;]+)/))) {
-    friendly = match[1];
-  }
-
-  if (wiseSource.field2Pos[name] !== undefined) {
-    return wiseSource.field2Pos[name];
-  }
-
-  const pos = internals.fields.length;
-  newFieldsTS();
-  internals.fields.push(field);
-  internals.fieldsSize += field.length + 10;
-
-  // Create version 0 of fields buf
-  if (internals.fields.length < 256) {
-    internals.fieldsBuf0 = Buffer.alloc(internals.fieldsSize + 9);
-    internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
-    internals.fieldsBuf0.writeUInt32BE(0, 4);
-    internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
-    let offset = 9;
-    for (let i = 0; i < internals.fields.length; i++) {
-      let len = internals.fieldsBuf0.write(internals.fields[i], offset + 2);
-      internals.fieldsBuf0.writeUInt16BE(len + 1, offset);
-      internals.fieldsBuf0.writeUInt8(0, offset + 2 + len);
-      offset += 3 + len;
-    }
-    internals.fieldsBuf0 = internals.fieldsBuf0.slice(0, offset);
-  }
-
-  // Create version 1 of fields buf
-  internals.fieldsBuf1 = Buffer.alloc(internals.fieldsSize + 9);
-  internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
-  internals.fieldsBuf1.writeUInt32BE(1, 4);
-  internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
-  let offset = 10;
-  for (let i = 0; i < internals.fields.length; i++) {
-    let len = internals.fieldsBuf1.write(internals.fields[i], offset + 2);
-    internals.fieldsBuf1.writeUInt16BE(len + 1, offset);
-    internals.fieldsBuf1.writeUInt8(0, offset + 2 + len);
-    offset += 3 + len;
-  }
-  internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
-
-  internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
-
-  wiseSource.pos2Field[pos] = name;
-  wiseSource.field2Pos[name] = pos;
-  wiseSource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
-  return pos;
-}
-// ----------------------------------------------------------------------------
-/**
- * Add a view
- *
- * @name "api.addView"
- * @param {string} name - Name of the new view
- * @param {string} input - An encoded view definition
- */
-function addView (name, input) {
-  if (input.includes('require:')) {
-    let match = input.match(/require:([^;]+)/);
-    const require = match[1];
-    match = input.match(/title:([^;]+)/);
-    const title = match[1];
-    match = input.match(/fields:([^;]+)/);
-    const fields = match[1];
-
-    let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
-    for (let field of fields.split(',')) {
-      let info = wiseSource.field2Info[field];
-      if (!info) {
-        continue;
-      }
-      if (!info.db) {
-        console.log(`ERROR, missing db information for ${field}`);
-        process.exit(0);
-      }
-      const parts = splitRemain(info.db, '.', 1);
-      if (parts.length === 1) {
-        output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
-      } else {
-        output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
-      }
-    }
-    internals.views[name] = output;
-  } else {
-    internals.views[name] = input;
-  }
-}
-// ----------------------------------------------------------------------------
-/**
- * Activate a section of a source. Must be called if you want wise to query the source.
- * A section is an instance of a source, some sources can have multiple sections.
- *
- * @name "api.addSource"
- * @param {string} section - The section name
- * @param {wiseSource} src - A wiseSource object
- */
-function addSource (section, src) {
-  internals.sources[section] = src;
-
-  let types;
-
-  if (src.getTypes) {
-    // getTypes function defined, we can just use it
-    types = src.getTypes();
-  } else {
-    // No getTypes function, go thru all the default types and any types we already know and guess
-    types = [];
-    for (let i = 0; i < internals.type2Name.length; i++) {
-      if (src[funcName(internals.type2Name[i])]) {
-        types.push(internals.type2Name[i]);
-      }
-    }
-    for (let type in internals.types) {
-      const typeInfo = internals.types[type];
-      if (src[typeInfo.funcName] && !types.includes(type)) {
-        types.push(type);
-      }
-    }
-    src.getTypes = function () {
-      return types;
-    };
-  }
-
-  for (let i = 0; i < types.length; i++) {
-    addType(types[i], src);
-  }
-};
-// ----------------------------------------------------------------------------
-/**
- * Add for each source config definition for the UI to use.
- *
- * @name addSourceConfigDef
- * @param {string} sourceName - The source name
- * @param {object} configDef - An array of objects of the config ALW
- */
-function addSourceConfigDef (sourceName, configDef) {
-  if (!internals.configDefs.hasOwnProperty(sourceName)) {
-// ALW - should really merge all the types somehow here instead of type2Name
-    let types = configDef.types || internals.type2Name;
-    for (let i = 0; i < types.length; i++) {
-      let type = types[i];
-      let excludeName;
-      if (type === 'url') {
-        excludeName = 'excludeURLs';
-      } else if (type === 'ip') {
-        configDef.fields = configDef.fields.concat(
-          [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-           { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
-        );
-        if (configDef.singleton === false && types.length > 0) {
-          Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
-          Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
-        }
-        continue;
-      } else {
-        excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
-      }
-
-      configDef.fields = configDef.fields.concat(
-        [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
-      );
-
-      if (configDef.singleton === false && types.length > 0) {
-        Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
-      }
-    }
-
-    if (configDef.cacheable !== false) {
-      configDef.fields = configDef.fields.concat(
-        [{ name: 'cacheAgeMin', required: false, help: 'Minutes to cache items from previous lookup. (defaults to 60)', regex: '^[0-9]+$' }]
-      );
-    }
-
-    if (configDef.singleton === false && types.length > 0) {
-      configDef.fields = configDef.fields.concat(
-        [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-        { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
-      );
-    }
-
-    internals.configDefs[sourceName] = configDef;
-  }
-};
-// ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
     str = str.split(separator);
@@ -596,26 +364,273 @@ function splitRemain (str, separator, limit) {
     return ret;
 }
 // ----------------------------------------------------------------------------
-function buildSourceApi () {
-  internals.sourceApi = {
-    getConfig: getConfig,
-    getConfigSections: getConfigSections,
-    getConfigSection: getConfigSection,
-    addField: addField,
-    createRedisClient: createRedisClient,
-    addView: addView,
-    addRightClick: function (name, rightClick) {
-      internals.rightClicks[name] = rightClick;
-    },
-    debug: internals.debug,
-    insecure: internals.insecure,
-    addSource: addSource,
-    addSourceConfigDef: addSourceConfigDef,
-    isWebConfig: function () { return internals.webconfig; },
-    funcName: funcName,
-    app: app
-  };
-};
+/**
+ * When sources are created they get an api object to interact with the wise service
+ */
+class WISESourceAPI {
+  constructor () {
+    this.debug = internals.debug;
+    this.insecure = internals.insecure;
+    this.app = app;
+  }
+
+  /**
+   * Get from the config section a value or default
+   *
+   * @param {string} section - The section in the config file the key is in
+   * @param {string} name - The key to get from the section
+   * @param {string} [default] - the default value to return if key is not found in section
+   * @returns {string} - The value found or the default value
+   */
+   getConfig (section, name, d) {
+     return getConfig(section, name, d);
+   }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Get a list of all the sections in the config file
+   *
+   * @returns {string|Array} - A list of all the sections in the config file
+   */
+  getConfigSections () {
+    return Object.keys(internals.config);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Get the full config for a section
+   *
+   * @param {string} section - The section of the config file to return
+   * @returns {object} - A list of all the sections in the config file
+   */
+  getConfigSection (section) {
+    return internals.config[section];
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Add a field
+   *
+   * @param {string} field - An encoded field definition
+   */
+  addField (field) {
+    let match = field.match(/field:([^;]+)/);
+    const name = match[1];
+
+    let db;
+    if ((match = field.match(/db:([^;]+)/))) {
+      db = match[1];
+    }
+
+    let friendly;
+    if ((match = field.match(/friendly:([^;]+)/))) {
+      friendly = match[1];
+    }
+
+    if (wiseSource.field2Pos[name] !== undefined) {
+      return wiseSource.field2Pos[name];
+    }
+
+    const pos = internals.fields.length;
+    newFieldsTS();
+    internals.fields.push(field);
+    internals.fieldsSize += field.length + 10;
+
+    // Create version 0 of fields buf
+    if (internals.fields.length < 256) {
+      internals.fieldsBuf0 = Buffer.alloc(internals.fieldsSize + 9);
+      internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
+      internals.fieldsBuf0.writeUInt32BE(0, 4);
+      internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
+      let offset = 9;
+      for (let i = 0; i < internals.fields.length; i++) {
+        let len = internals.fieldsBuf0.write(internals.fields[i], offset + 2);
+        internals.fieldsBuf0.writeUInt16BE(len + 1, offset);
+        internals.fieldsBuf0.writeUInt8(0, offset + 2 + len);
+        offset += 3 + len;
+      }
+      internals.fieldsBuf0 = internals.fieldsBuf0.slice(0, offset);
+    }
+
+    // Create version 1 of fields buf
+    internals.fieldsBuf1 = Buffer.alloc(internals.fieldsSize + 9);
+    internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
+    internals.fieldsBuf1.writeUInt32BE(1, 4);
+    internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
+    let offset = 10;
+    for (let i = 0; i < internals.fields.length; i++) {
+      let len = internals.fieldsBuf1.write(internals.fields[i], offset + 2);
+      internals.fieldsBuf1.writeUInt16BE(len + 1, offset);
+      internals.fieldsBuf1.writeUInt8(0, offset + 2 + len);
+      offset += 3 + len;
+    }
+    internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
+
+    internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
+
+    wiseSource.pos2Field[pos] = name;
+    wiseSource.field2Pos[name] = pos;
+    wiseSource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
+    return pos;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Add a view
+   *
+   * @param {string} name - Name of the new view
+   * @param {string} input - An encoded view definition
+   */
+  addView (name, input) {
+    if (input.includes('require:')) {
+      let match = input.match(/require:([^;]+)/);
+      const require = match[1];
+      match = input.match(/title:([^;]+)/);
+      const title = match[1];
+      match = input.match(/fields:([^;]+)/);
+      const fields = match[1];
+
+      let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      for (let field of fields.split(',')) {
+        let info = wiseSource.field2Info[field];
+        if (!info) {
+          continue;
+        }
+        if (!info.db) {
+          console.log(`ERROR, missing db information for ${field}`);
+          process.exit(0);
+        }
+        const parts = splitRemain(info.db, '.', 1);
+        if (parts.length === 1) {
+          output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+        } else {
+          output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+        }
+      }
+      internals.views[name] = output;
+    } else {
+      internals.views[name] = input;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Activate a section of a source. Must be called if you want wise to query the source.
+   * A section is an instance of a source, some sources can have multiple sections.
+   *
+   * @param {string} section - The section name
+   * @param {wiseSource} src - A wiseSource object
+   */
+  addSource (section, src) {
+    internals.sources[section] = src;
+
+    let types;
+
+    if (src.getTypes) {
+      // getTypes function defined, we can just use it
+      types = src.getTypes();
+    } else {
+      // No getTypes function, go thru all the default types and any types we already know and guess
+      types = [];
+      for (let i = 0; i < internals.type2Name.length; i++) {
+        if (src[funcName(internals.type2Name[i])]) {
+          types.push(internals.type2Name[i]);
+        }
+      }
+      for (let type in internals.types) {
+        const typeInfo = internals.types[type];
+        if (src[typeInfo.funcName] && !types.includes(type)) {
+          types.push(type);
+        }
+      }
+      src.getTypes = function () {
+        return types;
+      };
+    }
+
+    for (let i = 0; i < types.length; i++) {
+      addType(types[i], src);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Add for each source config definition for the UI to use.
+   *
+   * @param {string} sourceName - The source name
+   * @param {object} configDef - An array of objects of the config ALW
+   */
+  addSourceConfigDef (sourceName, configDef) {
+    if (!internals.configDefs.hasOwnProperty(sourceName)) {
+  // ALW - should really merge all the types somehow here instead of type2Name
+      let types = configDef.types || internals.type2Name;
+      for (let i = 0; i < types.length; i++) {
+        let type = types[i];
+        let excludeName;
+        if (type === 'url') {
+          excludeName = 'excludeURLs';
+        } else if (type === 'ip') {
+          configDef.fields = configDef.fields.concat(
+            [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+             { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
+          );
+          if (configDef.singleton === false && types.length > 0) {
+            Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
+            Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+          }
+          continue;
+        } else {
+          excludeName = 'exclude' + type[0].toUpperCase() + type.slice(1) + 's';
+        }
+
+        configDef.fields = configDef.fields.concat(
+          [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+        );
+
+        if (configDef.singleton === false && types.length > 0) {
+          Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
+        }
+      }
+
+      if (configDef.cacheable !== false) {
+        configDef.fields = configDef.fields.concat(
+          [{ name: 'cacheAgeMin', required: false, help: 'Minutes to cache items from previous lookup. (defaults to 60)', regex: '^[0-9]+$' }]
+        );
+      }
+
+      if (configDef.singleton === false && types.length > 0) {
+        configDef.fields = configDef.fields.concat(
+          [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+          { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
+        );
+      }
+
+      internals.configDefs[sourceName] = configDef;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Create a redis client from the info in a section
+   * @params {string} redisType - what kind of redis
+   * @params {string} section - section to get info
+   */
+  createRedisClient (redisType, section) {
+    return createRedisClient(redisType, section);
+  }
+
+  addRightClick (name, rightClick) {
+    internals.rightClicks[name] = rightClick;
+  }
+
+  isWebConfig () {
+    return internals.webconfig;
+  }
+
+  funcName (typeName) {
+    return funcName(typeName);
+  }
+}
 // ----------------------------------------------------------------------------
 function loadSources () {
   glob(getConfig('wiseService', 'sourcePath', `${__dirname}/`) + 'source.*.js', (err, files) => {
@@ -1663,8 +1678,8 @@ internals.configSchemes['ini'] = {
 function main () {
   internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
 
-  addField('field:tags'); // Always add tags field so we have at least 1 field
-  buildSourceApi();
+  internals.sourceApi = new WISESourceAPI();
+  internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
   setInterval(printStats, 60 * 1000);
 

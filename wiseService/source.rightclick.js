@@ -18,99 +18,101 @@
 'use strict';
 
 const fs = require('fs');
-const util = require('util');
-const wiseSource = require('./wiseSource.js');
+const WISESource = require('./wiseSource.js');
 const ini = require('iniparser');
 
-// ----------------------------------------------------------------------------
-function RightClickSource (api, section) {
-  RightClickSource.super_.call(this, { api: api, section: section });
+class RightClickSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { });
 
-  if (section === 'right-click') {
-    this.process(api.getConfigSection(section));
-    return;
-  }
-
-  this.file = api.getConfig(section, 'file');
-
-  if (this.file === undefined) {
-    console.log(this.section, '- ERROR not loading', this.section, 'since no file specified in config file');
-    return;
-  }
-
-  if (!fs.existsSync(this.file)) {
-    console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
-    return;
-  }
-
-  setImmediate(this.load.bind(this));
-
-  // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-  this.watchTimeout = null;
-  let watchCb = (event, filename) => {
-    clearTimeout(this.watchTimeout);
-    if (event === 'rename') {
-      this.watch.close();
-      setTimeout(() => {
-        this.load();
-        this.watch = fs.watch(this.file, watchCb);
-      }, 500);
-    } else {
-      this.watchTimeout = setTimeout(() => {
-        this.watchTimeout = null;
-        this.load();
-      }, 2000);
+    if (section === 'right-click') {
+      this.process(api.getConfigSection(section));
+      return;
     }
+
+    this.file = api.getConfig(section, 'file');
+
+    if (this.file === undefined) {
+      console.log(this.section, '- ERROR not loading', this.section, 'since no file specified in config file');
+      return;
+    }
+
+    if (!fs.existsSync(this.file)) {
+      console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
+      return;
+    }
+
+    setImmediate(this.load.bind(this));
+
+    // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
+    this.watchTimeout = null;
+    let watchCb = (event, filename) => {
+      clearTimeout(this.watchTimeout);
+      if (event === 'rename') {
+        this.watch.close();
+        setTimeout(() => {
+          this.load();
+          this.watch = fs.watch(this.file, watchCb);
+        }, 500);
+      } else {
+        this.watchTimeout = setTimeout(() => {
+          this.watchTimeout = null;
+          this.load();
+        }, 2000);
+      }
+    };
+    this.watch = fs.watch(this.file, watchCb);
+  }
+
+  // ----------------------------------------------------------------------------
+  load () {
+    if (!fs.existsSync(this.file)) {
+      console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
+      return;
+    }
+
+    const config = ini.parseSync(this.file);
+    const data = config['right-click'] || config;
+
+    this.process(data);
   };
-  this.watch = fs.watch(this.file, watchCb);
-}
-util.inherits(RightClickSource, wiseSource);
-// ----------------------------------------------------------------------------
-RightClickSource.prototype.load = function () {
-  if (!fs.existsSync(this.file)) {
-    console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
-    return;
-  }
 
-  const config = ini.parseSync(this.file);
-  const data = config['right-click'] || config;
+  // ----------------------------------------------------------------------------
+  process (data) {
+    const keys = Object.keys(data);
+    if (!keys) { return; }
 
-  this.process(data);
-};
-// ----------------------------------------------------------------------------
-RightClickSource.prototype.process = function (data) {
-  const keys = Object.keys(data);
-  if (!keys) { return; }
+    keys.forEach((key) => {
+      const obj = {};
+      data[key].split(';').forEach((element) => {
+        const i = element.indexOf(':');
+        if (i === -1) {
+          return;
+        }
 
-  keys.forEach((key) => {
-    const obj = {};
-    data[key].split(';').forEach((element) => {
-      const i = element.indexOf(':');
-      if (i === -1) {
-        return;
-      }
-
-      const parts = [element.slice(0, i), element.slice(i + 1)];
-      if (parts[1] === 'true') {
-        parts[1] = true;
-      } else if (parts[1] === 'false') {
-        parts[1] = false;
-      }
-      obj[parts[0]] = parts[1];
-    });
-    if (obj.fields) {
-      obj.fields = obj.fields.split(',').map(item => item.trim());
-    }
-    if (obj.users) {
-      const users = {};
-      obj.users.split(',').map(item => item.trim()).forEach((item) => {
-        users[item] = 1;
+        const parts = [element.slice(0, i), element.slice(i + 1)];
+        if (parts[1] === 'true') {
+          parts[1] = true;
+        } else if (parts[1] === 'false') {
+          parts[1] = false;
+        }
+        obj[parts[0]] = parts[1];
       });
-      obj.users = users;
-    }
-    this.api.addRightClick(key, obj);
-  });
-};
+      if (obj.fields) {
+        obj.fields = obj.fields.split(',').map(item => item.trim());
+      }
+      if (obj.users) {
+        const users = {};
+        obj.users.split(',').map(item => item.trim()).forEach((item) => {
+          users[item] = 1;
+        });
+        obj.users = users;
+      }
+      this.api.addRightClick(key, obj);
+    });
+  };
+}
 
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {

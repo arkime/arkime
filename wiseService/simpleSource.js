@@ -31,17 +31,19 @@ const iptrie = require('iptrie');
  * @extends WISESource
  */
 class SimpleSource extends wiseSource {
-/**
- * SimpleSource
- * @param {object} options - see WISESource constructor
- */
-  constructor (options) {
+  /**
+   * SimpleSource
+   * @param {WISESourceAPI} api - the api when source created
+   * @param {string} section - the section name
+   * @param {object} options - see WISESource constructor
+   */
+  constructor (api, section, options) {
     options.typeSetting = true;
     options.tagsSetting = true;
     options.formatSetting = true;
-    super(options);
-    this.column = +options.api.getConfig(options.section, 'column', 0);
-    this.keyColumn = options.api.getConfig(options.section, 'keyColumn', 0);
+    super(api, section, options);
+    this.column = +api.getConfig(section, 'column', 0);
+    this.keyColumn = api.getConfig(section, 'keyColumn', 0);
 
     if (this.type === 'ip') {
       this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
@@ -50,7 +52,7 @@ class SimpleSource extends wiseSource {
     }
   }
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   dump (res) {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
     cache.forEach((value, key) => {
@@ -61,7 +63,7 @@ class SimpleSource extends wiseSource {
     res.end();
   };
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   sendResult (key, cb) {
     const result = this.type === 'ip' ? this.cache.trie.find(key) : this.cache.get(key);
 
@@ -77,12 +79,12 @@ class SimpleSource extends wiseSource {
     const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
     return cb(null, newresult);
   };
-// ----------------------------------------------------------------------------
-/**
- * This function should be called by the constructor of the source when all
- * config is verified and the source is ready to go online.
- * @returns {boolean} - On true the source was initialized with no issue
- */
+  // ----------------------------------------------------------------------------
+  /**
+   * This function should be called by the constructor of the source when all
+   * config is verified and the source is ready to go online.
+   * @returns {boolean} - On true the source was initialized with no issue
+   */
   initSimple () {
     if (this.type === 'domain') {
       this.getDomain = function (domain, cb) {
@@ -99,11 +101,11 @@ class SimpleSource extends wiseSource {
     this.api.addSource(this.section, this);
     return true;
   };
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   getTypes () {
     return [this.type];
   };
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
   load () {
     let setFunc;
     let newCache;

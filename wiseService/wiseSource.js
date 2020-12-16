@@ -23,283 +23,327 @@ const fs = require('fs');
 const iptrie = require('iptrie');
 
 /**
- * All sources need to extend the WISESource base class, or another class
- * that extends it like SimpleSource.
- *
- * @module WISESource
+ * All sources need to have the WISESource as their top base class.
  */
 
-/**
- * All wise sources need to inherit from this object
- * @name WISESource
- * @param {object} options - All the options
- * @param {object} options.api - The api reference, will be saved in this.api
- * @param {string} options.section - the name of the section, will be saved in this.section
- * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
- * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
- * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
- * @param {boolean} [options.typeSetting=false] - load the required type setting
- * @param {boolean} [options.formatSetting=false] - load the format setting
- */
-function WISESource (options, oldsection) {
-  // Old construction (api, section)
-  if (oldsection) {
-    options = { api: options, section: oldsection };
-  }
+class WISESource {
+  /**
+   * Should only be created by super(api, section, options) call
+   * @param {WISESourceAPI} api - the api when source created
+   * @param {string} section - the section name
+   * @param {object} options - All the options
+   * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
+   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
+   * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
+   * @param {boolean} [options.typeSetting=false] - load the required type setting
+   * @param {boolean} [options.formatSetting=false] - load the format setting
+   */
+  constructor (api, section, options) {
+    this.api = api;
+    this.section = section;
+    this.view = '';
+    this.shortcuts = {};
+    if (options.dontCache) {
+      this.cacheTimeout = -1;
+    } else if (options.cacheTimeout !== undefined) {
+      this.cacheTimeout = options.cacheTimeout;
+    } else {
+      this.cacheTimeout = 60 * +this.api.getConfig(section, 'cacheAgeMin', '60'); // Default an hour
+    }
+    this.cacheHitStat = 0;
+    this.cacheMissStat = 0;
+    this.cacheRefreshStat = 0;
+    this.cacheDroppedStat = 0;
+    this.average100MS = 0;
+    this.srcInProgress = {};
 
-  this.api = options.api;
-  this.section = options.section;
-  this.view = '';
-  this.shortcuts = {};
-  if (options.dontCache) {
-    this.cacheTimeout = -1;
-  } else if (options.cacheTimeout !== undefined) {
-    this.cacheTimeout = options.cacheTimeout;
-  } else {
-    this.cacheTimeout = 60 * +this.api.getConfig(options.section, 'cacheAgeMin', '60'); // Default an hour
-  }
-  this.cacheHitStat = 0;
-  this.cacheMissStat = 0;
-  this.cacheRefreshStat = 0;
-  this.cacheDroppedStat = 0;
-  this.average100MS = 0;
-  this.srcInProgress = {};
+    if (options.typeSetting) {
+      this.typeSetting();
+    }
 
-  if (options.typeSetting) {
-    this.typeSetting();
-  }
+    if (options.tagsSetting) {
+      this.tagsSetting();
+    }
 
-  if (options.tagsSetting) {
-    this.tagsSetting();
-  }
+    if (options.formatSetting) {
+      this.formatSetting();
+    }
 
-  if (options.formatSetting) {
-    this.formatSetting();
-  }
-
-  // Domain and Email wildcards to exclude from source
-  ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
-    const items = options.api.getConfig(options.section, type);
-    this[type] = [];
-    if (!items) { return; }
-    items.split(';').map(item => item.trim()).forEach((item) => {
-      if (item === '') {
-        return;
-      }
-      this[type].push(RegExp.fromWildExp(item, 'ailop'));
+    // Domain and Email wildcards to exclude from source
+    ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
+      const items = api.getConfig(section, type);
+      this[type] = [];
+      if (!items) { return; }
+      items.split(';').map(item => item.trim()).forEach((item) => {
+        if (item === '') {
+          return;
+        }
+        this[type].push(RegExp.fromWildExp(item, 'ailop'));
+      });
     });
-  });
 
-  // IP CIDRs to exclude from source
-  this.excludeIPs = new iptrie.IPTrie();
-  let items = options.api.getConfig(options.section, 'excludeIPs', '');
-  items.split(';').map(item => item.trim()).forEach((item) => {
-    if (item === '') {
-      return;
-    }
-    const parts = item.split('/');
-    try {
-      this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
-    } catch (e) {
-      console.log(`${options.section} - ERROR - excludeIPs for '${item}'`, e);
-      process.exit();
-    }
-  });
-
-  items = options.api.getConfig(options.section, 'onlyIPs', undefined);
-  if (items) {
-    this.onlyIPs = new iptrie.IPTrie();
+    // IP CIDRs to exclude from source
+    this.excludeIPs = new iptrie.IPTrie();
+    let items = api.getConfig(section, 'excludeIPs', '');
     items.split(';').map(item => item.trim()).forEach((item) => {
       if (item === '') {
         return;
       }
-      let parts = item.split('/');
+      const parts = item.split('/');
       try {
-        this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
+        this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
       } catch (e) {
-        console.log(`${options.section} - ERROR - onlyIPs for '${item}'`, e);
+        console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
         process.exit();
       }
     });
-  }
 
-  // fields defined for source
-  let fields = options.api.getConfig(options.section, 'fields');
-  if (fields !== undefined) {
-    fields = fields.split('\\n');
-    for (let i = 0; i < fields.length; i++) {
-      this.parseFieldDef(fields[i]);
+    items = api.getConfig(section, 'onlyIPs', undefined);
+    if (items) {
+      this.onlyIPs = new iptrie.IPTrie();
+      items.split(';').map(item => item.trim()).forEach((item) => {
+        if (item === '') {
+          return;
+        }
+        let parts = item.split('/');
+        try {
+          this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
+        } catch (e) {
+          console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
+          process.exit();
+        }
+      });
+    }
+
+    // fields defined for source
+    let fields = api.getConfig(section, 'fields');
+    if (fields !== undefined) {
+      fields = fields.split('\\n');
+      for (let i = 0; i < fields.length; i++) {
+        this.parseFieldDef(fields[i]);
+      }
+    }
+
+    // views defined for source
+    const view = api.getConfig(section, 'view');
+    if (view !== undefined) {
+      this.view = view.replace(/\\n/g, '\n');
+    }
+
+    if (this.view !== '') {
+      api.addView(section, this.view);
     }
   }
 
-  // views defined for source
-  const view = options.api.getConfig(options.section, 'view');
-  if (view !== undefined) {
-    this.view = view.replace(/\\n/g, '\n');
-  }
-
-  if (this.view !== '') {
-    options.api.addView(options.section, this.view);
-  }
-}
-
-module.exports = WISESource;
-
-WISESource.emptyResult = { num: 0, buffer: Buffer.alloc(0) };
-WISESource.field2Pos = {};
-WISESource.field2Info = {};
-WISESource.pos2Field = {};
-
-// ----------------------------------------------------------------------------
-// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain (str, separator, limit) {
-    str = str.split(separator);
-    if (str.length <= limit) { return str; }
-
-    const ret = str.splice(0, limit);
-    ret.push(str.join(separator));
-
-    return ret;
-}
-// ----------------------------------------------------------------------------
-/**
- * Util function to parse CSV data
- * @name parseCSV
- * @param {string} body - the raw CSV data
- * @param {function} setCb - the function to call for each row found
- * @param {function} endCB - all done parsing
- */
-WISESource.prototype.parseCSV = function (body, setCb, endCb) {
-  csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
-    if (err) {
-      return endCb(err);
+  // ----------------------------------------------------------------------------
+  /**
+   * Parse a field definition line and call the addField or addView as needed
+   * @param {string} line - the line to parse
+   */
+  parseFieldDef (line) {
+    if (line[0] === '#') {
+      line = line.substring(1);
     }
 
-    for (let i = 0; i < data.length; i++) {
+    if (line.lastIndexOf('field:', 0) === 0) {
+      const pos = this.api.addField(line);
+      const match = line.match(/shortcut:([^;]+)/);
+      if (match) {
+        this.shortcuts[match[1]] = pos;
+      }
+    } else if (line.lastIndexOf('view:', 0) === 0) {
+        this.view += line.substring(5) + '\n';
+    }
+  };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to parse CSV formatted data
+   * @param {string} body - the raw CSV data
+   * @param {function} setCb - the function to call for each row found
+   * @param {function} endCB - all done parsing
+   */
+  parseCSV (body, setCb, endCb) {
+    csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
+      if (err) {
+        return endCb(err);
+      }
+
+      for (let i = 0; i < data.length; i++) {
+        const args = [];
+        for (const k in this.shortcuts) {
+          if (data[i][k] !== undefined) {
+            args.push(this.shortcuts[k]);
+            args.push(data[i][k]);
+          }
+        }
+
+        if (args.length === 0) {
+          setCb(data[i][this.column], WISESource.emptyResult);
+        } else {
+          setCb(data[i][this.column], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+        }
+      }
+      endCb(err);
+    });
+  };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to parse tagger formatted data
+   * @param {string} body - the raw CSV data
+   * @param {function} setCb - the function to call for each row found
+   * @param {function} endCB - all done parsing
+   */
+  parseTagger (body, setCb, endCb) {
+    const lines = body.toString().split(/\r?\n/);
+    this.view = '';
+    for (let l = 0, llen = lines.length; l < llen; l++) {
+      if (lines[l][0] === '#') {
+        this.parseFieldDef(lines[l]);
+        continue;
+      }
+
+      if (lines[l].match(/^\s*$/)) {
+        continue;
+      }
+
       const args = [];
-      for (const k in this.shortcuts) {
-        if (data[i][k] !== undefined) {
-          args.push(this.shortcuts[k]);
-          args.push(data[i][k]);
+      const parts = lines[l].split(';');
+      for (let p = 1; p < parts.length; p++) {
+        const kv = splitRemain(parts[p], '=', 1);
+        if (kv.length !== 2) {
+          console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
+          continue;
+        }
+        if (this.shortcuts[kv[0]] !== undefined) {
+          args.push(this.shortcuts[kv[0]]);
+        } else if (WISESource.field2Pos[kv[0]]) {
+          args.push(WISESource.field2Pos[kv[0]]);
+        } else {
+          args.push(this.api.addField('field:' + kv[0]));
+        }
+        args.push(kv[1]);
+      }
+      setCb(parts[0], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+    }
+    if (this.view !== '') {
+      this.api.addView(this.section, this.view);
+    }
+    endCb(null);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to parse JSON formatted data
+   * @param {string} body - the raw CSV data
+   * @param {function} setCb - the function to call for each row found
+   * @param {function} endCB - all done parsing
+   */
+  parseJSON (body, setCb, endCb) {
+    const json = JSON.parse(body);
+
+    if (this.keyColumn === undefined) {
+      return endCb('No keyColumn set');
+    }
+
+    let keyColumn = this.keyColumn.split('.');
+
+    // Convert shortcuts into array of key path
+    let shortcuts = [];
+    let shortcutsValue = [];
+    for (const k in this.shortcuts) {
+      shortcuts.push(k.split('.'));
+      shortcutsValue.push(this.shortcuts[k]);
+    }
+
+    for (let i = 0; i < json.length; i++) {
+      // Walk the key path
+      let key = json[i];
+      for (let j = 0; key && j < keyColumn.length; j++) {
+        key = key[keyColumn[j]];
+      }
+
+      if (key === undefined || key === null) {
+        continue;
+      }
+
+      const args = [];
+      // Check each shortcut
+      for (let k = 0; k < shortcuts.length; k++) {
+        let obj = json[i];
+        // Walk the shortcut path
+        for (let j = 0; obj && j < shortcuts[k].length; j++) {
+          obj = obj[shortcuts[k][j]];
+        }
+        if (obj !== undefined && obj !== null) {
+          args.push(shortcutsValue[k]);
+          args.push(obj);
         }
       }
 
-      if (args.length === 0) {
-        setCb(data[i][this.column], WISESource.emptyResult);
+      if (Array.isArray(key)) {
+        key.forEach((part) => {
+          setCb(part, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+        });
       } else {
-        setCb(data[i][this.column], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+        setCb(key, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
       }
     }
-    endCb(err);
-  });
-};
-// ----------------------------------------------------------------------------
-WISESource.prototype.parseFieldDef = function (line) {
-  if (line[0] === '#') {
-    line = line.substring(1);
+    endCb(null);
   }
 
-  if (line.lastIndexOf('field:', 0) === 0) {
-    const pos = this.api.addField(line);
-    const match = line.match(/shortcut:([^;]+)/);
-    if (match) {
-      this.shortcuts[match[1]] = pos;
-    }
-  } else if (line.lastIndexOf('view:', 0) === 0) {
-      this.view += line.substring(5) + '\n';
-  }
-};
-// ----------------------------------------------------------------------------
-WISESource.prototype.parseTagger = function (body, setCb, endCb) {
-  const lines = body.toString().split(/\r?\n/);
-  this.view = '';
-  for (let l = 0, llen = lines.length; l < llen; l++) {
-    if (lines[l][0] === '#') {
-      this.parseFieldDef(lines[l]);
-      continue;
-    }
-
-    if (lines[l].match(/^\s*$/)) {
-      continue;
-    }
-
-    const args = [];
-    const parts = lines[l].split(';');
-    for (let p = 1; p < parts.length; p++) {
-      const kv = splitRemain(parts[p], '=', 1);
-      if (kv.length !== 2) {
-        console.log('WARNING -', this.section, "- ignored extra piece '" + parts[p] + "' from line '" + lines[l] + "'");
-        continue;
-      }
-      if (this.shortcuts[kv[0]] !== undefined) {
-        args.push(this.shortcuts[kv[0]]);
-      } else if (WISESource.field2Pos[kv[0]]) {
-        args.push(WISESource.field2Pos[kv[0]]);
-      } else {
-        args.push(this.api.addField('field:' + kv[0]));
-      }
-      args.push(kv[1]);
-    }
-    setCb(parts[0], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
-  }
-  if (this.view !== '') {
-    this.api.addView(this.section, this.view);
-  }
-  endCb(null);
-};
-// ----------------------------------------------------------------------------
-WISESource.prototype.parseJSON = function (body, setCb, endCb) {
-  const json = JSON.parse(body);
-
-  if (this.keyColumn === undefined) {
-    return endCb('No keyColumn set');
-  }
-
-  let keyColumn = this.keyColumn.split('.');
-
-  // Convert shortcuts into array of key path
-  let shortcuts = [];
-  let shortcutsValue = [];
-  for (const k in this.shortcuts) {
-    shortcuts.push(k.split('.'));
-    shortcutsValue.push(this.shortcuts[k]);
-  }
-
-  for (let i = 0; i < json.length; i++) {
-    // Walk the key path
-    let key = json[i];
-    for (let j = 0; key && j < keyColumn.length; j++) {
-      key = key[keyColumn[j]];
-    }
-
-    if (key === undefined || key === null) {
-      continue;
-    }
-
-    const args = [];
-    // Check each shortcut
-    for (let k = 0; k < shortcuts.length; k++) {
-      let obj = json[i];
-      // Walk the shortcut path
-      for (let j = 0; obj && j < shortcuts[k].length; j++) {
-        obj = obj[shortcuts[k][j]];
-      }
-      if (obj !== undefined && obj !== null) {
-        args.push(shortcutsValue[k]);
-        args.push(obj);
-      }
-    }
-
-    if (Array.isArray(key)) {
-      key.forEach((part) => {
-        setCb(part, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+  // ----------------------------------------------------------------------------
+  tagsSetting () {
+    const tagsField = this.api.addField('field:tags');
+    const tags = this.api.getConfig(this.section, 'tags');
+    if (tags) {
+      const args = [];
+      tags.split(',').map(item => item.trim()).forEach((part) => {
+        args.push(tagsField, part);
       });
+      this.tagsResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
     } else {
-      setCb(key, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+      this.tagsResult = WISESource.emptyResult;
     }
-  }
-  endCb(null);
-};
+  };
+
+  // ----------------------------------------------------------------------------
+  formatSetting () {
+    this.format = this.api.getConfig(this.section, 'format', 'csv');
+    if (this.format === 'csv') {
+      this.parse = this.parseCSV;
+    } else if (this.format === 'tagger') {
+      this.parse = this.parseTagger;
+    } else if (this.format === 'json') {
+      this.parse = this.parseJSON;
+    } else {
+      throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
+    }
+  };
+
+  // ----------------------------------------------------------------------------
+  typeSetting () {
+    this.type = this.api.getConfig(this.section, 'type');
+    if (this.type === undefined) {
+      throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
+    }
+    this.typeFunc = this.api.funcName(this.type);
+    if (this.getTypes === undefined) {
+      this.getTypes = function () {
+        return [this.type];
+      };
+    }
+  };
+
+  // ----------------------------------------------------------------------------
+  static emptyResult = { num: 0, buffer: Buffer.alloc(0) };
+  static field2Pos = {};
+  static field2Info = {};
+  static pos2Field = {};
+}
+module.exports = WISESource;
+
 // ----------------------------------------------------------------------------
 WISESource.combineResults = function (results) {
   let num = 0;
@@ -394,45 +438,15 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
-// ----------------------------------------------------------------------------
-WISESource.prototype.tagsSetting = function () {
-  const tagsField = this.api.addField('field:tags');
-  const tags = this.api.getConfig(this.section, 'tags');
-  if (tags) {
-    const args = [];
-    tags.split(',').map(item => item.trim()).forEach((part) => {
-      args.push(tagsField, part);
-    });
-    this.tagsResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
-  } else {
-    this.tagsResult = WISESource.emptyResult;
-  }
-};
-// ----------------------------------------------------------------------------
-WISESource.prototype.formatSetting = function () {
-  this.format = this.api.getConfig(this.section, 'format', 'csv');
-  if (this.format === 'csv') {
-    this.parse = this.parseCSV;
-  } else if (this.format === 'tagger') {
-    this.parse = this.parseTagger;
-  } else if (this.format === 'json') {
-    this.parse = this.parseJSON;
-  } else {
-    throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
-  }
-};
-// ----------------------------------------------------------------------------
-WISESource.prototype.typeSetting = function () {
-  this.type = this.api.getConfig(this.section, 'type');
-  if (this.type === undefined) {
-    throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
-  }
-  this.typeFunc = this.api.funcName(this.type);
-  if (this.getTypes === undefined) {
-    this.getTypes = function () {
-      return [this.type];
-    };
-  }
-};
-// ----------------------------------------------------------------------------
 WISESource.emptyCombinedResult = WISESource.combineResults([]);
+// ----------------------------------------------------------------------------
+// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
+function splitRemain (str, separator, limit) {
+    str = str.split(separator);
+    if (str.length <= limit) { return str; }
+
+    const ret = str.splice(0, limit);
+    ret.push(str.join(separator));
+
+    return ret;
+}
