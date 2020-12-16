@@ -18,6 +18,8 @@ compile
 configure
 capture/molochconfig.h
 capture/molochconfig.h.in
+capture/arkimeconfig.h
+capture/arkimeconfig.h.in
 GeoIP.dat
 GeoIPASNum.dat
 GeoIPASNumv6.dat
@@ -25,6 +27,7 @@ GeoIPv6.dat
 ipv4-address-space.csv
 autom4te.cache
 moloch-capture
+capture
 stamp-h1
 npm-debug.log*
 config.dev.ini
