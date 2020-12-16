@@ -225,8 +225,8 @@ app.use((req, res, next) => {
     return undefined;
   }` };
   mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  mrc.bodyHashMd5 = { category: 'md5', url: 'api/session/%NODE%/%ID%/bodyhash/%TEXT%', name: 'Download File' };
-  mrc.bodyHashSha256 = { category: 'sha256', url: 'api/session/%NODE%/%ID%/bodyhash/%TEXT%', name: 'Download File' };
+  mrc.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+  mrc.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 
   for (var key in internals.rightClicks) {
     var rc = internals.rightClicks[key];
@@ -1209,7 +1209,7 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
       ViewerUtils.getViewUrl(node, function (err, viewUrl, client) {
         var info = url.parse(viewUrl);
         info.method = 'POST';
-        info.path = `api/sessions/${Config.basePath(node) + node}/send?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
+        info.path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
         info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
         if (pOptions.tags) {
           info.path += '&tags=' + pOptions.tags;
