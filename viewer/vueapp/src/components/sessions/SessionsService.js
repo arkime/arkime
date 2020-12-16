@@ -289,7 +289,6 @@ export default {
 
       let url = `${baseUrl}?${qs.stringify(options.params)}`;
 
-console.log(url);
       window.location = url;
 
       return resolve({ text: 'PCAP now exporting' });

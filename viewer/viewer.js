@@ -4064,7 +4064,7 @@ app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
 
 app.getpost( // sessions csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
-  [/\/api\/sessions\/csv*/, /\/sessions.csv.*/],
+  [/\/api\/sessions[/.]csv.*/, /\/sessions.csv.*/],
   [logAction('sessions.csv'), fillQueryFromBody],
   sessionAPIs.getSessionsCSV
 );
@@ -4120,43 +4120,45 @@ app.get( // session body file image endpoint
 );
 
 app.get( // session pcap endpoint
-  [/\/api\/sessions\/pcap*/, /\/sessions.pcap.*/],
+  [/\/api\/sessions[/.]pcap.*/, /\/sessions.pcap.*/],
   [logAction(), checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAP
 );
 
 app.get( // session pcapng endpoint
-  [/\/api\/sessions\/pcapng*/, /\/sessions.pcapng.*/],
+  [/\/api\/sessions[/.]pcapng.*/, /\/sessions.pcapng.*/],
   [logAction(), checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNG
 );
 
 app.get( // session node pcap endpoint
-  ['/api/session/:nodeName/:id/pcap', '/:nodeName/pcap/:id.pcap'],
+  [/\/api\/session\/:nodeName\/:id[/.]pcap.*/, '/:nodeName/pcap/:id.pcap'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
-  ['/api/session/:nodeName/:id/pcapng', '/:nodeName/pcapng/:id.pcapng'],
+  [/\/api\/session\/:nodeName\/:id[/.]pcapng.*/, '/:nodeName/pcapng/:id.pcapng'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPCAPNGFromNode
 );
 
+// TODO - why is this not catching /api/session/entire/:nodeName/:id/pcap
 app.get( // session entire pcap endpoint
-  ['/api/session/:nodeName/:id/entirepcap', '/:nodeName/entirePcap/:id.pcap'],
+  [/\/api\/session\/entire\/:nodeName\/:id[/.]pcap.*/, '/:nodeName/entirePcap/:id.pcap'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getEntirePCAP
 );
 
+// TODO - why is this not catching /api/session/raw/:nodeName/:id/png?type=src
 app.get( // session packets file image endpoint
-  ['/api/session/:nodeName/:id/raw/png', '/:nodeName/raw/:id.png'],
+  [/\/api\/session\/raw\/:nodeName\/:id[/.]png.*/, '/:nodeName/raw/:id.png'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getPacketPNG
 );
 
 app.get( // session raw packets endpoint
-  ['/api/session/:nodeName/:id/raw', '/:nodeName/raw/:id'],
+  ['/api/session/raw/:nodeName/:id', '/:nodeName/raw/:id'],
   [checkProxyRequest, checkPermissions(['disablePcapDownload'])],
   sessionAPIs.getRawPackets
 );
@@ -4212,7 +4214,7 @@ app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
 
 app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
-  ['/api/connections/csv', '/connections.csv'],
+  [/\/api\/connections[/.]csv.*/, '/connections.csv'],
   [logAction('connections.csv'), fillQueryFromBody],
   connectionAPIs.getConnectionsCSV
 );

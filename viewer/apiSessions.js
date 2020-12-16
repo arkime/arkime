@@ -1569,7 +1569,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * POST/GET - /api/sessions/csv
+   * POST/GET - /api/sessions/csv OR /api/sessions.csv
    *
    * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
    * @name sessions/csv
@@ -2538,7 +2538,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/sessions/pcap
+   * GET - /api/sessions/pcap OR /api/sessions.pcap
    *
    * Retrieve the raw session data in pcap format.
    * @name sessions/pcap
@@ -2552,7 +2552,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/sessions/pcapng
+   * GET - /api/sessions/pcapng OR /api/sessions.pcapng
    *
    * Retrieve the raw session data in pcapng format.
    * @name sessions/pcapng
@@ -2566,7 +2566,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/session/:nodeName/:id/pcap
+   * GET - /api/session/:nodeName/:id/pcap OR /api/session/:nodeName/:id.pcap
    *
    * Retrieve the raw session data in pcap format from a specific node.
    * @name session/:nodeName/:id/pcap
@@ -2581,7 +2581,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/session/:nodeName/:id/pcapng
+   * GET - /api/session/:nodeName/:id/pcapng OR /api/session/:nodeName/:id.pcapng
    *
    * Retrieve the raw session data in pcapng format from a specific node.
    * @name session/:nodeName/:id/pcapng
@@ -2596,10 +2596,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/session/:nodeName/:id/entirepcap
+   * GET - /api/session/entire/:nodeName/:id/pcap OR /api/session/entire/:nodeName/:id.pcap
    *
    * Retrieve the entire pcap for a session.
-   * @name session/:nodeName/:id/entirepcap
+   * @name session/entire/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
   module.getEntirePCAP = (req, res) => {
@@ -2628,10 +2628,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/session/:nodeName/:id/raw/png
+   * GET - /api/session/raw/:nodeName/:id/png OR /api/session/raw/:nodeName/:id.png
    *
    * Retrieve a bitmap image representation of packets in a session.
-   * @name session/:nodeName/:id/raw/png
+   * @name session/raw/:nodeName/:id/png
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
@@ -2678,10 +2678,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/session/:nodeName/:id/raw
+   * GET - /api/session/raw/:nodeName/:id
    *
    * Retrieve raw packets for a session.
-   * @name session/:nodeName/:id/raw
+   * @name session/raw/:nodeName/:id
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */

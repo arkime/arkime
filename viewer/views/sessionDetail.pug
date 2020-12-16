@@ -12,11 +12,11 @@ ul.nav.nav-pills.mb-3
         span.fa.fa-download
         | &nbsp;Download PCAP
   li.nav-item
-    a.nav-link(href='api/session/' + session.node + '/' + session.id + '/raw?type=src', target="_blank", v-b-tooltip.hover="true", title="Download the raw source packets for this session.", download=session.id + '-src-raw')
+    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover="true", title="Download the raw source packets for this session.", download=session.id + '-src-raw')
       span.fa.fa-arrow-circle-up
       | &nbsp;Source Raw
   li.nav-item
-    a.nav-link(href='api/session/' + session.node + '/' + session.id + '/raw?type=dst', target="_blank", v-b-tooltip.hover="true", title="Download the raw destination packets for this session.", download=session.id + '-dst-raw')
+    a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover="true", title="Download the raw destination packets for this session.", download=session.id + '-dst-raw')
       span.fa.fa-arrow-circle-down
       | &nbsp;Destination Raw
   li.nav-item
