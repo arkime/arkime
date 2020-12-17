@@ -88,9 +88,9 @@ WISERedisCache.prototype.get = function (query, cb) {
       result[source].result.buffer.copy(newResult, 1);
       result[source].result = newResult;
     }
-    cb(null, newResult);
+    cb(null, result);
 
-    cache.set(query.value, newResult); // Set memory cache
+    cache.set(query.value, result); // Set memory cache
   });
 };
 
@@ -110,6 +110,7 @@ WISERedisCache.prototype.set = function (query, result) {
     newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
   }
 
+  const data = BSON.serialize(newResult, false, true, false);
   this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
