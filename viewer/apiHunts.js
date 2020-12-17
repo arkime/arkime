@@ -778,7 +778,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @param {string} desc=false - Whether to sort the results in descending order. Default is ascending.
    * @param {string} history=false - Whether to return only finished hunts. Default is to return queued, paused, and running hunts.
    * @returns {Hunt} runningJob - If there is a hunt running, returns the currently running hunt object.
-   * @returns {array} data - The list of hunts (either finished or queued/paused/running).
+   * @returns {Hunt[]} data - The list of hunts (either finished or queued/paused/running).
    * @returns {number} recordsTotal - The total number of hunts Arkime has.
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */

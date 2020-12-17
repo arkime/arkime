@@ -106,7 +106,7 @@ module.exports = (Config, Db, internals) => {
    * @typedef Notifier
    * @type {object}
    * @property {string} name - The human readable name of the notifier. Must be unique.
-   * @property {string} type - The type of notifier (e.g. email, slack, twilio)
+   * @property {string} type - The type of notifier (e.g. email, slack, twilio).
    * @property {array} fields - The list of fields that need to be configured to use the notifier.
    */
 
@@ -127,7 +127,7 @@ module.exports = (Config, Db, internals) => {
    *
    * Retrieves notifiers that have been configured.
    * @name /notifiers
-   * @returns {object} notifiers - The notifiers that have been created.
+   * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
   module.getNotifiers = (req, res) => {
     function cloneNotifiers (notifiers) {
