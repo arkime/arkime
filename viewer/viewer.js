@@ -2547,7 +2547,7 @@ app.get( // notifiers endpoint
 );
 
 app.post( // create notifier endpoint
-  ['/api/notifiers', '/notifiers'],
+  ['/api/notifier', '/notifiers'],
   [noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
   notifierAPIs.createNotifier
 );

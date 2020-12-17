@@ -162,10 +162,10 @@ module.exports = (Config, Db, internals) => {
   };
 
   /**
-   * POST - /api/notifiers
+   * POST - /api/notifier
    *
    * Creates a new notifier (admin only).
-   * @name /notifiers
+   * @name /notifier
    * @param {string} name - The name of the new notifier (must be unique).
    * @param {type} type - The type of notifier.
    * @param {array} fields - The fields to configure the notifier.

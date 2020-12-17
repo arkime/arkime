@@ -3071,7 +3071,7 @@ export default {
         }
       }
 
-      this.$http.post('api/notifiers', this.newNotifier)
+      this.$http.post('api/notifier', this.newNotifier)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully created new notifier.';
