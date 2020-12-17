@@ -18,30 +18,35 @@
 
 'use strict';
 
-const wiseSource = require('./wiseSource.js');
+const WISESource = require('./wiseSource.js');
 const iptrie = require('iptrie');
 
 /**
  * The SimpleSource base class implements some common functions for
- * sources that only have one type.
+ * sources that only have one type. Sources that extend this
+ * class only need to worry about fetching the data, and
+ * only need to implement the constructor and simpleSourceLoad.
  *
  * Sources need to
- * * call initSimple
- * * implement initSource, simpleSourceLoad
+ * * implement initSource
+ * * call initSimple at the end of their constructor
+ * * implement simpleSourceLoad
  * @extends WISESource
  */
-class SimpleSource extends wiseSource {
+class SimpleSource extends WISESource {
   /**
    * SimpleSource
    * @param {WISESourceAPI} api - the api when source created
    * @param {string} section - the section name
    * @param {object} options - see WISESource constructor
+   * @param {integer} options.reload - If greater to zero, call simpleSourceLoad every options.reload minutes
    */
   constructor (api, section, options) {
     options.typeSetting = true;
     options.tagsSetting = true;
     options.formatSetting = true;
     super(api, section, options);
+    this.reload = options.reload ? parseInt(api.getConfig(section, 'reload', -1)) : -1;
     this.column = +api.getConfig(section, 'column', 0);
     this.keyColumn = api.getConfig(section, 'keyColumn', 0);
 
@@ -55,9 +60,9 @@ class SimpleSource extends wiseSource {
   // ----------------------------------------------------------------------------
   dump (res) {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
-    cache.forEach((value, key) => {
+    cache.forEach((result, key) => {
       const str = `{key: "${key}", ops:\n` +
-        wiseSource.result2Str(wiseSource.combineResults([this.tagsResult, value])) + '},\n';
+        `${WISESource.result2JSON(WISESource.combineResults([this.tagsResult, result]))}},\n`;
       res.write(str);
     });
     res.end();
@@ -71,12 +76,12 @@ class SimpleSource extends wiseSource {
     if (!result) {
       return cb(null, undefined);
     }
-    if (result.num === 0) {
+    if (result[0] === 0) {
       return cb(null, this.tagsResult);
     }
 
     // Found, so combine the two results (per item, and per source)
-    const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+    const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
   };
   // ----------------------------------------------------------------------------
@@ -99,6 +104,12 @@ class SimpleSource extends wiseSource {
     }
 
     this.api.addSource(this.section, this);
+
+    setImmediate(this.load.bind(this));
+
+    if (this.reload > 0) {
+      setInterval(this.load.bind(this), this.reload * 1000 * 60);
+    }
     return true;
   };
   // ----------------------------------------------------------------------------
@@ -106,6 +117,9 @@ class SimpleSource extends wiseSource {
     return [this.type];
   };
   // ----------------------------------------------------------------------------
+  /**
+   * Can be called by the source to force a reload of the data if it for some reason knows.
+   */
   load () {
     let setFunc;
     let newCache;
@@ -151,5 +165,16 @@ class SimpleSource extends wiseSource {
     });
   };
 };
+
+/**
+ * Each simple source must implement this method.
+ * It will be called inside initSimple and periodically if reloading is enabled.
+ *
+ * @method
+ * @name SimpleSource#simpleSourceLoad
+ * @param {function} set - (key, value) the source should call the set function for each value it wants to load
+ * @param {function} cb - (err)
+ * @virtual
+ */
 
 module.exports = SimpleSource;

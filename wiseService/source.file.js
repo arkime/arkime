@@ -41,8 +41,6 @@ class FileSource extends SimpleSource {
       return;
     }
 
-    setImmediate(this.load.bind(this));
-
     // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
     this.watchTimeout = null;
     let watchCb = (event, filename) => {
@@ -74,7 +72,7 @@ class FileSource extends SimpleSource {
     });
   }
   // ----------------------------------------------------------------------------
-  getRaw (cb) {
+  getSourceRaw (cb) {
     fs.readFile(this.file, (err, body) => {
       if (err) {
         return cb(err);
@@ -83,7 +81,7 @@ class FileSource extends SimpleSource {
     });
   }
   // ----------------------------------------------------------------------------
-  putRaw (body, cb) {
+  putSourceRaw (body, cb) {
     fs.writeFile(this.file, body, (err) => {
       return cb(err);
     });

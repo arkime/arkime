@@ -100,17 +100,17 @@ class ThreatQSource extends WISESource {
               });
             }
 
-            const encoded = WISESource.encode.apply(null, args);
+            const encoded = WISESource.encodeResult.apply(null, args);
 
             count++;
             if (item.type === 'IP Address') {
-              this.ips.set(item.indicator, { num: args.length / 2, buffer: encoded });
+              this.ips.set(item.indicator, encoded);
             } else if (item.type === 'FQDN') {
-              this.domains.set(item.indicator, { num: args.length / 2, buffer: encoded });
+              this.domains.set(item.indicator, encoded);
             } else if (item.type === 'Email Address') {
-              this.emails.set(item.indicator, { num: args.length / 2, buffer: encoded });
+              this.emails.set(item.indicator, encoded);
             } else if (item.type === 'MD5') {
-              this.md5s.set(item.indicator, { num: args.length / 2, buffer: encoded });
+              this.md5s.set(item.indicator, encoded);
             }
           });
         });
@@ -158,7 +158,7 @@ class ThreatQSource extends WISESource {
       res.write(`${ckey}:\n`);
       this[ckey].forEach((value, key) => {
         const str = `{key: "${key}", ops:\n` +
-          WISESource.result2Str(WISESource.combineResults([value])) + '},\n';
+          WISESource.result2JSON(value) + '},\n';
         res.write(str);
       });
     });

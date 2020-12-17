@@ -132,7 +132,7 @@ class VirusTotalSource extends WISESource {
             }
           }
 
-          wiseResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+          wiseResult = WISESource.encodeResult.apply(null, args);
         }
 
         cb(null, wiseResult);
@@ -161,15 +161,15 @@ class VirusTotalSource extends WISESource {
 const reportApi = function (req, res) {
   source.getMd5(req.query.resource, (err, result) => {
     // console.log(err, result);
-    if (result.num === 0) {
+    if (result[0] === 0) {
       res.send({ response_code: 0, resource: req.query.resource, verbose_msg: 'The requested resource is not among the finished, queued or pending scans' });
     } else {
       const obj = { scans: {} };
-      let offset = 0;
-      for (let i = 0; i < result.num; i++) {
-        const pos = result.buffer[offset];
-        const len = result.buffer[offset + 1];
-        const value = result.buffer.toString('utf8', offset + 2, offset + 2 + len - 1);
+      let offset = 1;
+      for (let i = 0; i < result[0]; i++) {
+        const pos = result[offset];
+        const len = result[offset + 1];
+        const value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
         offset += 2 + len;
         switch (pos) {
         case source.hitsField:

@@ -155,7 +155,7 @@ class OpenDNSSource extends WISESource {
             });
           }
 
-          result = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+          result = WISESource.encodeResult.apply(null, args);
 
           let cb;
           while ((cb = cbs.shift())) {

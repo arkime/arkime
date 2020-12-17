@@ -56,7 +56,7 @@ class RedisSource extends WISESource {
       }
 
       this.parse(reply, (ignorekey, result) => {
-        const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+        const newresult = WISESource.combineResults([result, this.tagsResult]);
         return cb(null, newresult);
       }, () => {});
     });

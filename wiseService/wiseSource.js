@@ -181,7 +181,7 @@ class WISESource {
         if (args.length === 0) {
           setCb(data[i][this.column], WISESource.emptyResult);
         } else {
-          setCb(data[i][this.column], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+          setCb(data[i][this.column], WISESource.encodeResult.apply(null, args));
         }
       }
       endCb(err);
@@ -225,7 +225,7 @@ class WISESource {
         }
         args.push(kv[1]);
       }
-      setCb(parts[0], { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+      setCb(parts[0], WISESource.encodeResult.apply(null, args));
     }
     if (this.view !== '') {
       this.api.addView(this.section, this.view);
@@ -284,10 +284,10 @@ class WISESource {
 
       if (Array.isArray(key)) {
         key.forEach((part) => {
-          setCb(part, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+          setCb(part, WISESource.encodeResult.apply(null, args));
         });
       } else {
-        setCb(key, { num: args.length / 2, buffer: WISESource.encode.apply(null, args) });
+        setCb(key, WISESource.encodeResult.apply(null, args));
       }
     }
     endCb(null);
@@ -302,7 +302,7 @@ class WISESource {
       tags.split(',').map(item => item.trim()).forEach((part) => {
         args.push(tagsField, part);
       });
-      this.tagsResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+      this.tagsResult = WISESource.encodeResult.apply(null, args);
     } else {
       this.tagsResult = WISESource.emptyResult;
     }
@@ -337,79 +337,148 @@ class WISESource {
   };
 
   // ----------------------------------------------------------------------------
-  /** A simple constant that should be used when needed to represent an empty result */
-  static emptyResult = { num: 0, buffer: Buffer.alloc(0) };
+  /** A simple constant that should be used when needing to represent an empty result */
+  static emptyResult = Buffer.alloc(1);
 
   // ----------------------------------------------------------------------------
   static field2Pos = {};
   static field2Info = {};
   static pos2Field = {};
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Convert field ids and string values into the encoded form used in WISE.
+   *
+   * This method tags a variable number of arguments, each in a pair of field id and string value.
+   * @returns {buffer} - the endcoded results
+   */
+  static encodeResult () {
+    let l;
+    let len = 0;
+    for (let a = 1; a < arguments.length; a += 2) {
+      l = Buffer.byteLength(arguments[a]);
+      if (l > 250) {
+        arguments[a] = arguments[a].substring(0, 240);
+      }
+      len += 3 + Buffer.byteLength(arguments[a]);
+    }
+
+    const buf = Buffer.allocUnsafe(len + 1);
+    let offset = 1;
+    for (let a = 1; a < arguments.length; a += 2) {
+        buf.writeUInt8(arguments[a - 1], offset);
+        len = Buffer.byteLength(arguments[a]);
+        buf.writeUInt8(len + 1, offset + 1);
+        l = buf.write(arguments[a], offset + 2);
+        buf.writeUInt8(0, offset + l + 2);
+        offset += 3 + l;
+    }
+    buf[0] = arguments.length / 2;
+    return buf;
+  };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Combine a array of encoded results into one encoded result
+   *
+   * @param {object|array} results - Array of results
+   * @returns {Buffer} - A single combined result
+   */
+  static combineResults (results) {
+    // Don't really need to combine 1 result
+    if (results.length === 1) {
+      return results[0] ? results[0] : WISESource.emptyResult;
+    }
+
+    let num = 0;
+    let len = 0;
+    for (let a = 0; a < results.length; a++) {
+      if (!results[a]) {
+        continue;
+      }
+      num += results[a][0];
+      len += results[a].length - 1;
+    }
+
+    if (len === 0) { return WISESource.emptyResult; }
+
+    const buf = Buffer.allocUnsafe(len + 1);
+    let offset = 1;
+    for (let a = 0; a < results.length; a++) {
+      if (!results[a]) {
+        continue;
+      }
+
+      results[a].copy(buf, offset, 1);
+      offset += results[a].length - 1;
+    }
+    buf[0] = num;
+    return buf;
+  };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Convert an encoded combined results binary buffer into JSON string
+   *
+   * @param {Buffer} results - The combined results from encode
+   * @returns {string} - The JSON string
+   */
+  static result2JSON (results) {
+    let collection = [];
+    let offset = 1;
+    for (let i = 0; i < results[0]; i++) {
+      const pos = results[offset];
+      const len = results[offset + 1];
+      const value = results.toString('utf8', offset + 2, offset + 2 + len - 1);
+      offset += 2 + len;
+      collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value: value });
+    }
+
+    return JSON.stringify(collection).replace(/},{/g, '},\n{');
+  };
 }
+/**
+ * Get the raw source data for editing.
+ * Source should implement this method if they want to support editing the data for a source.
+ *
+ * @method
+ * @name WISESource#getSourceRaw
+ * @param {function} cb - (err, data)
+ * @abstract
+ */
+/**
+ * Put the raw source data after editing.
+ * Source should implement this method if they want to support editing the data for a source.
+ *
+ * @method
+ * @name WISESource#putSourceRaw
+ * @param {string} data - The full data for the source from UI
+ * @param {function} cb - (err)
+ * @abstract
+ */
+/**
+ * Every source needs to implement this method, usually with
+ * @method
+ * @name WISESource.initSource
+ * @param {WISESourceAPI} api - The api back into the WISE Service
+ * @abstract
+ * @example
+ * exports.initSource = function (api) {
+ *   api.addSourceConfigDef('sourcename', {
+ *     singleton: false,
+ *     name: 'sourcename',
+ *     description: 'This is the best source ever',
+ *     fields: [
+ *       { name: 'type', required: true, help: 'The wise query type this source supports' },
+ *       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' }
+ *     ]
+ *   });
+ *   new TheSource(api);
+ * }
+ */
+
 module.exports = WISESource;
 
-// ----------------------------------------------------------------------------
-WISESource.combineResults = function (results) {
-  let num = 0;
-  let len = 1;
-  for (let a = 0; a < results.length; a++) {
-    if (!results[a]) {
-      continue;
-    }
-    num += results[a].num;
-    len += results[a].buffer.length;
-  }
-
-  const buf = Buffer.allocUnsafe(len);
-  let offset = 1;
-  for (let a = 0; a < results.length; a++) {
-    if (!results[a]) {
-      continue;
-    }
-
-    results[a].buffer.copy(buf, offset);
-    offset += results[a].buffer.length;
-  }
-  buf[0] = num;
-  return buf;
-};
-// ----------------------------------------------------------------------------
-WISESource.result2Str = function (result) {
-  let collection = [];
-  let offset = 1;
-  for (let i = 0; i < result[0]; i++) {
-    const pos = result[offset];
-    const len = result[offset + 1];
-    const value = result.toString('utf8', offset + 2, offset + 2 + len - 1);
-    offset += 2 + len;
-    collection.push({ field: WISESource.pos2Field[pos], len: len - 1, value: value });
-  }
-
-  return JSON.stringify(collection).replace(/},{/g, '},\n{');
-};
-// ----------------------------------------------------------------------------
-WISESource.encode = function () {
-  let l;
-  let len = 0;
-  for (let a = 1; a < arguments.length; a += 2) {
-    l = Buffer.byteLength(arguments[a]);
-    if (l > 250) {
-      arguments[a] = arguments[a].substring(0, 240);
-    }
-    len += 3 + Buffer.byteLength(arguments[a]);
-  }
-
-  const buf = Buffer.allocUnsafe(len);
-  let offset = 0;
-  for (let a = 1; a < arguments.length; a += 2) {
-      buf.writeUInt8(arguments[a - 1], offset);
-      len = Buffer.byteLength(arguments[a]);
-      buf.writeUInt8(len + 1, offset + 1);
-      l = buf.write(arguments[a], offset + 2);
-      buf.writeUInt8(0, offset + l + 2);
-      offset += 3 + l;
-  }
-  return buf;
-};
 // ----------------------------------------------------------------------------
 WISESource.request = function (url, file, cb) {
   const headers = {};
@@ -441,7 +510,6 @@ WISESource.request = function (url, file, cb) {
   })
   ;
 };
-WISESource.emptyCombinedResult = WISESource.combineResults([]);
 // ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {

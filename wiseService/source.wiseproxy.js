@@ -115,7 +115,7 @@ class WiseProxySource extends WISESource {
           const str = body.toString('ascii', offset, offset + len - 1); offset += len;
           args.push(this.mapping[field], str);
         }
-        const result = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+        const result = WISESource.encodeResult.apply(null, args);
         return bi.cb(null, result);
       }
     });

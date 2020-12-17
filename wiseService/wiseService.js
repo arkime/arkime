@@ -27,7 +27,7 @@ const glob = require('glob');
 const async = require('async');
 const sprintf = require('./sprintf.js').sprintf;
 const iptrie = require('iptrie');
-const wiseSource = require('./wiseSource.js');
+const WISESource = require('./wiseSource.js');
 const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
 const crypto = require('crypto');
@@ -435,8 +435,8 @@ class WISESourceAPI {
       friendly = match[1];
     }
 
-    if (wiseSource.field2Pos[name] !== undefined) {
-      return wiseSource.field2Pos[name];
+    if (WISESource.field2Pos[name] !== undefined) {
+      return WISESource.field2Pos[name];
     }
 
     const pos = internals.fields.length;
@@ -476,9 +476,9 @@ class WISESourceAPI {
 
     internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
 
-    wiseSource.pos2Field[pos] = name;
-    wiseSource.field2Pos[name] = pos;
-    wiseSource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
+    WISESource.pos2Field[pos] = name;
+    WISESource.field2Pos[name] = pos;
+    WISESource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
     return pos;
   }
 
@@ -500,7 +500,7 @@ class WISESourceAPI {
 
       let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (let field of fields.split(',')) {
-        let info = wiseSource.field2Info[field];
+        let info = WISESource.field2Info[field];
         if (!info) {
           continue;
         }
@@ -527,7 +527,7 @@ class WISESourceAPI {
    * A section is an instance of a source, some sources can have multiple sections.
    *
    * @param {string} section - The section name
-   * @param {wiseSource} src - A wiseSource object
+   * @param {WISESource} src - A WISESource object
    */
   addSource (section, src) {
     internals.sources[section] = src;
@@ -881,7 +881,7 @@ function processQuery (req, query, cb) {
   // Check if globally allowed
   try {
     if (!typeInfo.globalAllowed(query.value)) {
-      return cb(null, wiseSource.emptyCombinedResult);
+      return cb(null, WISESource.emptyResult);
     }
   } catch (e) {
     console.log('ERROR', query.typeName, query.value, e);
@@ -959,13 +959,13 @@ function processQuery (req, query, cb) {
         return cb(err);
       }
       if (internals.debug > 2) {
-        console.log('RESULT', typeInfo.funcName, query.value, wiseSource.result2Str(wiseSource.combineResults(results)));
+        console.log('RESULT', typeInfo.funcName, query.value, WISESource.result2JSON(WISESource.combineResults(results)));
       }
 
       if (req.timedout) {
         cb('Timed out ' + query.typeName + ' ' + query.value);
       } else {
-        cb(null, wiseSource.combineResults(results));
+        cb(null, WISESource.combineResults(results));
       }
 
       // Need to update the cache
@@ -1106,11 +1106,11 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
-  if (!source.getRaw) {
+  if (!source.getSourceRaw) {
     return res.send({ success: false, text: 'Source does not support viewing' });
   }
 
-  source.getRaw((err, raw) => {
+  source.getSourceRaw((err, raw) => {
     if (err) {
       return res.send({ success: false, text: err });
     }
@@ -1132,13 +1132,13 @@ app.put('/source/:source/put', [isConfigWeb, doAuth, noCacheJson, checkAdmin, js
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
   }
 
-  if (!source.putRaw) {
+  if (!source.putSourceRaw) {
     return res.send({ success: false, text: 'Source does not support editing' });
   }
 
   const raw = req.body.raw;
 
-  source.putRaw(raw, (err) => {
+  source.putSourceRaw(raw, (err) => {
     if (err) {
       return res.send({ success: false, text: err });
     }
@@ -1295,7 +1295,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
     if (err || !result) {
       return res.end('Not found');
     }
-    res.send(wiseSource.result2Str(result));
+    res.send(WISESource.result2JSON(result));
   });
 });
 // ----------------------------------------------------------------------------
@@ -1350,9 +1350,9 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
         found = true;
         res.write(srcs[resulti].section);
         res.write("\tBROSUB\t");
-        let offset = 0;
-        let buffer = results[hashi][resulti].buffer;
-        for (let n = 0; n < results[hashi][resulti].num; n++) {
+        let offset = 1;
+        let buffer = results[hashi][resulti];
+        for (let n = 0; n < buffer[0]; n++) {
           if (n !== 0) {
             res.write(" ");
           }
@@ -1360,7 +1360,7 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
           let len = buffer[offset++];
           let value = buffer.toString('utf8', offset, offset+len-1);
           offset += len;
-          res.write(wiseSource.pos2Field[pos] + ": " + value);
+          res.write(WISESource.pos2Field[pos] + ": " + value);
         }
       }
       if (!found) {
@@ -1388,7 +1388,7 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
     if (err || !result) {
       return res.end('Not found');
     }
-    res.send(wiseSource.result2Str(result));
+    res.send(WISESource.result2JSON(result));
   });
 });
 // ----------------------------------------------------------------------------

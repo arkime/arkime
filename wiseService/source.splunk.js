@@ -105,7 +105,7 @@ class SplunkSource extends WISESource {
           }
         }
 
-        const newitem = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+        const newitem = WISESource.encode.apply(null, args);
 
         if (this.type === 'ip') {
           const parts = key.split('/');
@@ -128,7 +128,7 @@ class SplunkSource extends WISESource {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
     cache.forEach((value, key) => {
       const str = `{key: "${key}", ops:\n` +
-        WISESource.result2Str(WISESource.combineResults([this.tagsResult, value])) + '},\n';
+        WISESource.result2JSON(WISESource.combineResults([this.tagsResult, value])) + '},\n';
       res.write(str);
     });
     res.end();
@@ -146,12 +146,12 @@ class SplunkSource extends WISESource {
     if (!result) {
       return cb(null, undefined);
     }
-    if (result.num === 0) {
+    if (result[0] === 0) {
       return cb(null, this.tagsResult);
     }
 
     // Found, so combine the two results (per item, and per source)
-    const newresult = { num: result.num + this.tagsResult.num, buffer: Buffer.concat([result.buffer, this.tagsResult.buffer]) };
+    const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
   };
 
@@ -182,7 +182,7 @@ class SplunkSource extends WISESource {
           }
         }
       }
-      const newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([WISESource.encode.apply(null, args), this.tagsResult.buffer]) };
+      const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
       return cb(null, newresult);
     });
   };

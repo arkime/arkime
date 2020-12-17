@@ -101,7 +101,7 @@ class ElasticsearchSource extends WISESource {
           }
         }
       }
-      const newresult = { num: args.length / 2 + this.tagsResult.num, buffer: Buffer.concat([WISESource.encode.apply(null, args), this.tagsResult.buffer]) };
+      const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
       return cb(null, newresult);
     });
   };
