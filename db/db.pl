@@ -2864,9 +2864,9 @@ sub dbCheck {
     my @parts = split(/\./, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 70400) {
+    if ($main::esVersion < 70701) {
         logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 7.4.0 is not supported\n",
+              "* < 7.7.1 is not supported\n",
               "\n",
               "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
               "Make sure to restart any viewer or capture after upgrading!\n"
@@ -2874,8 +2874,8 @@ sub dbCheck {
         exit (1)
     }
 
-    if ($main::esVersion < 70800) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.8.0 or newer is recommended\n");
+    if ($main::esVersion < 70900) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.9.0 or newer is recommended\n");
     }
 
     my $error = 0;

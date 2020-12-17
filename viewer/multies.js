@@ -886,7 +886,7 @@ nodes.forEach((node) => {
   }
   clients[node] = new ESC.Client({
     host: node.split(',')[0],
-    apiVersion: '7.4',
+    apiVersion: '7.7',
     requestTimeout: 300000,
     keepAlive: true,
     ssl: esSSLOptions

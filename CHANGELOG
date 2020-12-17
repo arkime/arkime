@@ -1,6 +1,7 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
 ES Versions:
+  * Moloch >= 3.0.0  supports ES >= 7.7.1
   * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
@@ -10,6 +11,7 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Moloch >= 3.0.0 requires NodeJS 12.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
@@ -20,7 +22,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 
 3.0.0 2021/01/xx
-  - NOTICE - multiESNodes requires a name: attribute per entry
+  - BREAKING - multies - multiESNodes requires a name: attribute per entry
+  - BREAKING - wise - custom sources will need to be modified
   - release - curl 7.74.0, node 12.20, glib 2.66.3, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - viewer - add POST version session query APIs to support long expressions
