@@ -105,7 +105,7 @@ class SplunkSource extends WISESource {
           }
         }
 
-        const newitem = WISESource.encode.apply(null, args);
+        const newitem = WISESource.encodeResult.apply(null, args);
 
         if (this.type === 'ip') {
           const parts = key.split('/');

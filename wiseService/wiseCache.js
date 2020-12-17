@@ -82,10 +82,12 @@ WISERedisCache.prototype.get = function (query, cb) {
     const result = BSON.deserialize(reply, { promoteBuffers: true });
 
     // Redis uses old encoding, convert old to new
-    const newResult = Buffer.allocUnsafe(result.buffer.length + 1);
-    newResult[0] = result.num;
-    result.buffer.copy(newResult, 1);
-
+    for (const source in result) {
+      const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
+      newResult[0] = result[source].result.num;
+      result[source].result.buffer.copy(newResult, 1);
+      result[source].result = newResult;
+    }
     cb(null, newResult);
 
     cache.set(query.value, newResult); // Set memory cache
@@ -103,8 +105,11 @@ WISERedisCache.prototype.set = function (query, result) {
   cache.set(query.value, result);
 
   // Redis uses old encoding, convert new to old
-  const newResult = { num: result[0], buffer: result.splice(1) };
-  const data = BSON.serialize(newResult, false, true, false);
+  const newResult = {};
+  for (const source in result) {
+    newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
+  }
+
   this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
