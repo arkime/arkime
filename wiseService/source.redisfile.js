@@ -22,14 +22,13 @@ const SimpleSource = require('./simpleSource.js');
 class RedisFileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { dontCache: true });
+    super(api, section, { dontCache: true, reload: true });
     this.url = api.getConfig(section, 'url');
     if (this.url === undefined) {
       console.log(this.section, '- ERROR not loading since no url specified in config file');
       return;
     }
     this.key = api.getConfig(section, 'key');
-    this.reload = +api.getConfig(section, 'reload', -1);
     this.headers = {};
     const headers = api.getConfig(section, 'headers');
     this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
@@ -48,16 +47,7 @@ class RedisFileSource extends SimpleSource {
       });
     }
 
-    if (!this.initSimple()) {
-      return;
-    }
-
-    setImmediate(this.load.bind(this));
-
-    // Reload key every so often
-    if (this.reload > 0) {
-      setInterval(this.load.bind(this), this.reload * 1000 * 60);
-    }
+    this.initSimple();
   }
 
   // ----------------------------------------------------------------------------
@@ -72,12 +62,12 @@ class RedisFileSource extends SimpleSource {
   }
 
   // ----------------------------------------------------------------------------
-  getRaw (cb) {
+  getSourceRaw (cb) {
     this.client.get(this.key, cb);
   }
 
   // ----------------------------------------------------------------------------
-  putRaw (file, cb) {
+  putSourceRaw (file, cb) {
     this.client.set(this.key, file, cb);
   }
 }

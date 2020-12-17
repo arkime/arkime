@@ -93,7 +93,7 @@ class ReverseDNSSource extends WISESource {
           }
         }
       }
-      const wiseResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+      const wiseResult = WISESource.encodeResult.apply(null, args);
       cb(null, wiseResult);
     });
   };

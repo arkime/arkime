@@ -67,11 +67,13 @@ class AlienVaultSource extends WISESource {
           continue;
         }
 
-        const encoded = WISESource.encode(this.idField, data[i][7],
-                                          this.reliabilityField, data[i][1],
-                                          this.threatlevelField, data[i][2],
-                                          this.activityField, data[i][3]);
-        this.ips.set(data[i][0], { num: 4, buffer: encoded });
+        const encoded = WISESource.encodeResult(
+          this.idField, data[i][7],
+          this.reliabilityField, data[i][1],
+          this.threatlevelField, data[i][2],
+          this.activityField, data[i][3]
+        );
+        this.ips.set(data[i][0], encoded);
         count++;
       }
       console.log(this.section, '- Done Loading', count, 'elements');
@@ -139,7 +141,7 @@ class AlienVaultSource extends WISESource {
   dump (res) {
     this.ips.forEach((value, key) => {
       const str = '{key: "' + key + '", ops:\n' +
-                 WISESource.result2Str(WISESource.combineResults([value])) + '},\n';
+                 WISESource.result2JSON(value) + '},\n';
       res.write(str);
     });
     res.end();

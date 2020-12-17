@@ -150,23 +150,20 @@ class ThreatStreamSource extends WISESource {
             }
 
             let encoded;
-            let num;
             try {
               if (item.maltype && item.maltype !== 'null') {
-                encoded = WISESource.encode(this.severityField, item.severity.toLowerCase(),
+                encoded = WISESource.encodeResult(this.severityField, item.severity.toLowerCase(),
                                             this.confidenceField, '' + item.confidence,
                                             this.idField, '' + item.id,
                                             this.typeField, item.itype.toLowerCase(),
                                             this.maltypeField, item.maltype.toLowerCase(),
                                             this.sourceField, item.source);
-                num = 6;
               } else {
-                encoded = WISESource.encode(this.severityField, item.severity.toLowerCase(),
+                encoded = WISESource.encodeResult(this.severityField, item.severity.toLowerCase(),
                                             this.confidenceField, '' + item.confidence,
                                             this.idField, '' + item.id,
                                             this.typeField, item.itype.toLowerCase(),
                                             this.sourceField, item.source);
-                num = 5;
               }
             } catch (e) {
               console.log(this.section, 'ERROR -', entry.path, e, item, e.stack);
@@ -174,18 +171,18 @@ class ThreatStreamSource extends WISESource {
             }
 
             if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-              this.ips.set(item.srcip, { num: num, buffer: encoded });
+              this.ips.set(item.srcip, encoded);
             } else if (item.itype.match(/_domain|_dns/)) {
-              this.domains.set(item.domain, { num: num, buffer: encoded });
+              this.domains.set(item.domain, encoded);
             } else if (item.itype.match(/_email/)) {
-              this.emails.set(item.email, { num: num, buffer: encoded });
+              this.emails.set(item.email, encoded);
             } else if (item.itype.match(/_md5/)) {
-              this.md5s.set(item.md5, { num: num, buffer: encoded });
+              this.md5s.set(item.md5, encoded);
             } else if (item.itype.match(/_url/)) {
               if (item.url.lastIndexOf('http://', 0) === 0) {
                 item.url = item.url.substring(7);
               }
-              this.urls.set(item.url, { num: num, buffer: encoded });
+              this.urls.set(item.url, encoded);
             }
           });
           // console.log(this.section, "- Done", entry.path);
@@ -242,7 +239,7 @@ class ThreatStreamSource extends WISESource {
       res.write(`${ckey}: [\n`);
       this[ckey].forEach((value, key) => {
         const str = `{key: "${key}", ops:\n` +
-          WISESource.result2Str(WISESource.combineResults([value])) + '},\n';
+          WISESource.result2JSON(value) + '},\n';
         res.write(str);
       });
       res.write('],\n');
@@ -296,7 +293,7 @@ class ThreatStreamSource extends WISESource {
           args.push(this.severityField, item.severity.toLowerCase());
         }
       });
-      const result = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+      const result = WISESource.encodeResult.apply(null, args);
       return cb(null, result);
     });
   };
@@ -353,7 +350,7 @@ class ThreatStreamSource extends WISESource {
           args.push(this.importIdField, '' + item.import_session_id);
         }
       });
-      const result = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+      const result = WISESource.encodeResult.apply(null, args);
       return cb(null, result);
     });
   };

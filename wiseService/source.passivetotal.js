@@ -102,7 +102,7 @@ class PassiveTotalSource extends WISESource {
             }
           }
 
-          wiseResult = { num: args.length / 2, buffer: WISESource.encode.apply(null, args) };
+          wiseResult = WISESource.encodeResult.apply(null, args);
         }
 
         let cb;

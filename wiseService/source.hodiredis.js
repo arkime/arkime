@@ -41,10 +41,10 @@ class HODIRedisSource extends WISESource {
     this.api.addSource(section, this);
 
     const tagsField = this.api.addField('field:tags');
-    this.tagsDomain = { num: 1, buffer: WISESource.encode(tagsField, 'nbs-domain') };
-    this.tagsMd5 = { num: 1, buffer: WISESource.encode(tagsField, 'nbs-md5') };
-    this.tagsEmail = { num: 1, buffer: WISESource.encode(tagsField, 'nbs-email') };
-    this.tagsIp = { num: 1, buffer: WISESource.encode(tagsField, 'nbs-ip') };
+    this.tagsDomain = WISESource.encodeResult(tagsField, 'nbs-domain');
+    this.tagsMd5 = WISESource.encodeResult(tagsField, 'nbs-md5');
+    this.tagsEmail = WISESource.encodeResult(tagsField, 'nbs-email');
+    this.tagsIp = WISESource.encodeResult(tagsField, 'nbs-ip');
   }
 
   // ----------------------------------------------------------------------------

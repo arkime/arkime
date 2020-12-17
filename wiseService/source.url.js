@@ -23,9 +23,8 @@ const request = require('request');
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { dontCache: true });
+    super(api, section, { dontCache: true, reload: true });
     this.url = api.getConfig(section, 'url');
-    this.reload = +api.getConfig(section, 'reload', -1);
     this.headers = {};
     const headers = api.getConfig(section, 'headers');
 
@@ -43,16 +42,7 @@ class URLSource extends SimpleSource {
       });
     }
 
-    if (!this.initSimple()) {
-      return;
-    }
-
-    setImmediate(this.load.bind(this));
-
-    // Reload url every so often
-    if (this.reload > 0) {
-      setInterval(this.load.bind(this), this.reload * 1000 * 60);
-    }
+    this.initSimple();
   }
 
   // ----------------------------------------------------------------------------

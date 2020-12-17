@@ -82,15 +82,18 @@ class EmergingThreatsSource extends WISESource {
           continue;
         }
 
-        const encoded = WISESource.encode(this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
-                                          this.scoreField, '' + data[i][2]);
+        let encoded = WISESource.encodeResult(
+          this.categoryField, this.categories[data[i][1]] || ('Unknown - ' + data[i][1]),
+          this.scoreField, '' + data[i][2]
+        );
+
+        // Already have something for this item, add the new one
         const value = hash.get(data[i][0]);
         if (value) {
-          value.num += 2;
-          value.buffer = Buffer.concat([value.buffer, encoded]);
-        } else {
-          hash.set(data[i][0], { num: 2, buffer: encoded });
+          encoded = WISESource.combineResults([value, encoded]);
         }
+
+        hash.set(data[i][0], encoded);
       }
       console.log(this.section, '- Done Loading', fn);
     });
@@ -137,7 +140,7 @@ class EmergingThreatsSource extends WISESource {
       res.write(`${ckey}:\n`);
       this[ckey].forEach((value, key) => {
         const str = `{key: "${key}", ops:\n` +
-          WISESource.result2Str(WISESource.combineResults([value])) + '},\n';
+          WISESource.result2JSON(value) + '},\n';
         res.write(str);
       });
     });

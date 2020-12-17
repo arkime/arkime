@@ -37,12 +37,12 @@ WISEMemoryCache.prototype.get = function (query, cb) {
 };
 
 // ----------------------------------------------------------------------------
-WISEMemoryCache.prototype.set = function (query, value) {
+WISEMemoryCache.prototype.set = function (query, result) {
   let cache = this.cache[query.typeName];
   if (!cache) {
     cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
   }
-  cache.set(query.value, value);
+  cache.set(query.value, result);
 };
 
 exports.WISEMemoryCache = WISEMemoryCache;
@@ -66,9 +66,9 @@ WISERedisCache.prototype.get = function (query, cb) {
   let cache = this.cache[query.typeName];
 
   if (cache) {
-    const value = cache.get(query.value);
-    if (value !== undefined) {
-      return cb(null, value);
+    const result = cache.get(query.value);
+    if (result !== undefined) {
+      return cb(null, result);
     }
   } else {
     cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
@@ -79,24 +79,32 @@ WISERedisCache.prototype.get = function (query, cb) {
     if (reply === null) {
       return cb(null, undefined);
     }
-    const value = BSON.deserialize(reply, { promoteBuffers: true });
-    cb(null, value);
+    const result = BSON.deserialize(reply, { promoteBuffers: true });
 
-    cache.set(query.value, value); // Set memory cache
+    // Redis uses old encoding, convert old to new
+    const newResult = Buffer.allocUnsafe(result.buffer.length + 1);
+    newResult[0] = result.num;
+    result.buffer.copy(newResult, 1);
+
+    cb(null, newResult);
+
+    cache.set(query.value, newResult); // Set memory cache
   });
 };
 
 // ----------------------------------------------------------------------------
-WISERedisCache.prototype.set = function (query, value) {
+WISERedisCache.prototype.set = function (query, result) {
   let cache = this.cache[query.typeName];
 
   if (!cache) {
     cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
   }
 
-  cache.set(query.value, value);
+  cache.set(query.value, result);
 
-  const data = BSON.serialize(value, false, true, false);
+  // Redis uses old encoding, convert new to old
+  const newResult = { num: result[0], buffer: result.splice(1) };
+  const data = BSON.serialize(newResult, false, true, false);
   this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
 };
 
