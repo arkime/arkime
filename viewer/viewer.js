@@ -94,7 +94,7 @@ let notifierAPIs = require('./apiNotifiers')(Db, internals);
 let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils); // TODO ECR
+let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -604,6 +604,14 @@ function checkPermissions (permissions) {
     }
     next();
   };
+}
+
+// used to disable endpoints in multi es mode
+function disableInMultiES (req, res, next) {
+  if (Config.get('multiES', false)) {
+    return res.molochError(401, 'Not supported in multies');
+  }
+  return next();
 }
 
 function checkHuntAccess (req, res, next) {
@@ -3045,7 +3053,7 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
   res.send(app.locals.molochRightClick);
 });
 
- /**
+/**
  * The Elasticsearch cluster health status and information.
  * @typedef ESHealth
  * @type {object}
@@ -3526,228 +3534,53 @@ app.get('/state/:name', [noCacheJson], function (req, res) {
 });
 
 // hunt apis ------------------------------------------------------------------
-// TODO ECR - update client
+app.get( // hunts endpoint
+  ['/api/hunts', '/hunt/list'],
+  [noCacheJson, disableInMultiES, recordResponseTime, checkPermissions(['packetSearch']), setCookie],
+  huntAPIs.getHunts
+);
+
 app.post( // create hunt endpoint
   ['/api/hunt', '/hunt'],
-  [noCacheJson, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])],
+  [noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])],
   huntAPIs.createHunt
 );
 
-app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch']), setCookie], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
+app.delete( // delete hunt endpoint
+  ['/api/hunt/:id', '/hunt/:id'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.deleteHunt
+);
 
-  let query = {
-    sort: {},
-    from: parseInt(req.query.start) || 0,
-    size: parseInt(req.query.length) || 10000,
-    query: { bool: { must: [] } }
-  };
+app.put( // pause hunt endpoint
+  ['/api/hunt/:id/pause', '/hunt/:id/pause'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.pauseHunt
+);
 
-  query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
+app.put( // play hunt endpoint
+  ['/api/hunt/:id/play', '/hunt/:id/play'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.playHunt
+);
 
-  if (req.query.history) { // only get finished jobs
-    query.query.bool.must.push({ term: { status: 'finished' } });
-    if (req.query.searchTerm) { // apply search term
-      query.query.bool.must.push({
-        query_string: {
-          query: req.query.searchTerm,
-          fields: ['name', 'userId']
-        }
-      });
-    }
-  } else { // get queued, paused, running jobs
-    query.from = 0;
-    query.size = 1000;
-    query.query.bool.must.push({ terms: { status: ['queued', 'paused', 'running'] } });
-  }
+app.post( // add users to hunt endpoint
+  ['/api/hunt/:id/users', '/hunt/:id/users'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.addUsers
+);
 
-  if (Config.debug) {
-    console.log('hunt query:', JSON.stringify(query, null, 2));
-  }
+app.delete( // remove users from hunt endpoint
+  ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.removeUsers
+);
 
-  Promise.all([Db.searchHunt(query),
-    Db.numberOfHunts()])
-    .then(([hunts, total]) => {
-      if (hunts.error) { throw hunts.error; }
-
-      let runningJob;
-
-      let results = { total: hunts.hits.total, results: [] };
-      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        const hit = hunts.hits.hits[i];
-        let hunt = hit._source;
-        hunt.id = hit._id;
-        hunt.index = hit._index;
-        // don't add the running job to the queue
-        if (internals.runningHuntJob && hunt.status === 'running') {
-          runningJob = hunt;
-          continue;
-        }
-
-        hunt.users = hunt.users || [];
-
-        // clear out secret fields for users who don't have access to that hunt
-        // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
-          // since hunt isn't cached we can just modify
-          hunt.search = '';
-          hunt.searchType = '';
-          hunt.id = '';
-          hunt.userId = '';
-          delete hunt.query;
-        }
-        results.results.push(hunt);
-      }
-
-      const r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results,
-        runningJob: runningJob
-      };
-
-      res.send(r);
-    }).catch(err => {
-      console.log('ERROR - /hunt/list', err);
-      return res.molochError(500, 'Error retrieving hunts - ' + err);
-    });
-});
-
-app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.deleteHuntItem(req.params.id, function (err, result) {
-    if (err || result.error) {
-      console.log('ERROR - deleting hunt item', err || result.error);
-      return res.molochError(500, 'Error deleting hunt item');
-    } else {
-      res.send(JSON.stringify({ success: true, text: 'Deleted hunt item successfully' }));
-    }
-  });
-});
-
-// app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-//   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-//   updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
-// });
-//
-// app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-//   if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-//   updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
-// });
-
-app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.getHunt(req.params.id, (err, hit) => {
-    if (err) {
-      console.log('Unable to fetch hunt to remove user', err, hit);
-      return res.molochError(500, 'Unable to fetch hunt to remove user');
-    }
-
-    let hunt = hit._source;
-
-    if (!hunt.users || !hunt.users.length) {
-      return res.molochError(404, 'There are no users that have access to view this hunt');
-    }
-
-    let userIdx = hunt.users.indexOf(req.params.user);
-
-    if (userIdx < 0) { // user doesn't have access to this hunt
-      return res.molochError(404, 'That user does not have access to this hunt');
-    }
-
-    // remove the user from the list
-    hunt.users.splice(userIdx, 1);
-
-    Db.setHunt(req.params.id, hunt, (err, info) => {
-      if (err) {
-        console.log('Unable to remove user', err, info);
-        return res.molochError(500, 'Unable to remove user');
-      }
-      res.send(JSON.stringify({ success: true, users: hunt.users }));
-    });
-  });
-});
-
-app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
-
-  Db.getHunt(req.params.id, (err, hit) => {
-    if (err) {
-      console.log('Unable to fetch hunt to add user(s)', err, hit);
-      return res.molochError(500, 'Unable to fetch hunt to add user(s)');
-    }
-
-    let hunt = hit._source;
-    let reqUsers = ViewerUtils.commaStringToArray(req.body.users);
-
-    ViewerUtils.validateUserIds(reqUsers)
-      .then((response) => {
-        if (!response.validUsers.length) {
-          return res.molochError(404, 'Unable to validate user IDs provided');
-        }
-
-        if (!hunt.users) {
-          hunt.users = response.validUsers;
-        } else {
-          hunt.users = hunt.users.concat(response.validUsers);
-        }
-
-        // dedupe the array of users
-        hunt.users = [...new Set(hunt.users)];
-
-        Db.setHunt(req.params.id, hunt, (err, info) => {
-          if (err) {
-            console.log('Unable to add user(s)', err, info);
-            return res.molochError(500, 'Unable to add user(s)');
-          }
-          res.send(JSON.stringify({
-            success: true,
-            users: hunt.users,
-            invalidUsers: response.invalidUsers
-          }));
-        });
-      })
-      .catch((error) => {
-        res.molochError(500, error);
-      });
-  });
-});
-
-// app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
-//   let huntId = req.params.huntId;
-//   let sessionId = req.params.sessionId;
-//
-//   // fetch hunt and session
-//   Promise.all([Db.get('hunts', 'hunt', huntId),
-//     Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))])
-//     .then(([hunt, session]) => {
-//       if (hunt.error || session.error) { res.send({ matched: false }); }
-//
-//       hunt = hunt._source;
-//       session = session._source;
-//
-//       let options = buildHuntOptions(huntId, hunt);
-//
-//       sessionHunt(sessionId, options, function (err, matched) {
-//         if (err) {
-//           return res.send({ matched: false, error: err });
-//         }
-//
-//         if (matched) {
-//           updateSessionWithHunt(session, sessionId, hunt, huntId);
-//         }
-//
-//         return res.send({ matched: matched });
-//       });
-//     }).catch((err) => {
-//       console.log('ERROR - hunt/remote', err);
-//       res.send({ matched: false, error: err });
-//     });
-// });
+app.get( // remote hunt endpoint
+  ['/api/:nodeName/hunt/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
+  [noCacheJson],
+  huntAPIs.remoteHunt
+);
 
 // lookup apis ----------------------------------------------------------------
 let lookupMutex = new Mutex();

@@ -8,16 +8,16 @@ module.exports = (Db, internals) => {
   module.buildNotifiers = () => {
     internals.notifiers = {};
 
-    let api = {
+    const api = {
       register: function (str, info) {
         internals.notifiers[str] = info;
       }
     };
 
     // look for all notifier providers and initialize them
-    let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
+    const files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
     files.forEach((file) => {
-      let plugin = require(file);
+      const plugin = require(file);
       plugin.init(api);
     });
   };
@@ -38,7 +38,7 @@ module.exports = (Db, internals) => {
 
       sharedUser.notifiers = sharedUser.notifiers || {};
 
-      let notifier = sharedUser.notifiers[notifierName];
+      const notifier = sharedUser.notifiers[notifierName];
 
       if (!notifier) {
         console.log('Cannot find notifier, no alert can be issued');
@@ -46,7 +46,7 @@ module.exports = (Db, internals) => {
       }
 
       let notifierDefinition;
-      for (let n in internals.notifiers) {
+      for (const n in internals.notifiers) {
         if (internals.notifiers[n].type === notifier.type) {
           notifierDefinition = internals.notifiers[n];
         }
@@ -56,9 +56,9 @@ module.exports = (Db, internals) => {
         return continueProcess('Cannot find notifier, no alert can be issued');
       }
 
-      let config = {};
-      for (let field of notifierDefinition.fields) {
-        for (let configuredField of notifier.fields) {
+      const config = {};
+      for (const field of notifierDefinition.fields) {
+        for (const configuredField of notifier.fields) {
           if (configuredField.name === field.name && configuredField.value !== undefined) {
             config[field.name] = configuredField.value;
           }
@@ -76,7 +76,7 @@ module.exports = (Db, internals) => {
         // there should only be one error here because only one
         // notifier alert is sent at a time
         if (response.errors) {
-          for (let e in response.errors) {
+          for (const e in response.errors) {
             err = response.errors[e];
           }
         }

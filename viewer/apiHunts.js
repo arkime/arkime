@@ -1,7 +1,6 @@
 'use strict';
 
 const async = require('async');
-const path = require('path');
 const RE2 = require('re2');
 
 module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils) => {
@@ -48,14 +47,14 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   function sessionHunt (sessionId, options, cb) {
     if (options.type === 'reassembled') {
-      sessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, packets) {
+      sessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, (err, session, packets) => {
         if (err) {
           return cb(null, false);
         }
 
         let i = 0;
         let increment = 1;
-        let len = packets.length;
+        const len = packets.length;
 
         if (options.src && !options.dst) {
           increment = 2;
@@ -71,23 +70,23 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return cb(null, false);
       });
     } else if (options.type === 'raw') {
-      let packets = [];
-      sessionAPIs.processSessionId(sessionId, true, null, function (pcap, buffer, cb, i) {
+      const packets = [];
+      sessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, cb, i) => {
         if (options.src === options.dst) {
           packets.push(buffer);
         } else {
-          let packet = {};
+          const packet = {};
           pcap.decode(buffer, packet);
           packet.data = buffer.slice(16);
           packets.push(packet);
         }
         cb(null);
-      }, function (err, session) {
+      }, (err, session) => {
         if (err) {
           return cb(null, false);
         }
 
-        let len = packets.length;
+        const len = packets.length;
         if (options.src === options.dst) {
           // If search both src/dst don't need to check key
           for (let i = 0; i < len; i++) {
@@ -95,10 +94,10 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           }
         } else {
           // If searching src NOR dst need to check key
-          let skey = Pcap.keyFromSession(session);
+          const skey = Pcap.keyFromSession(session);
           for (let i = 0; i < len; i++) {
-            let key = Pcap.key(packets[i]);
-            let isSrc = key === skey;
+            const key = Pcap.key(packets[i]);
+            const isSrc = key === skey;
             if (options.src && isSrc) {
               if (packetSearch(packets[i].data, options)) { return cb(null, true); }
             } else if (options.dst && !isSrc) {
@@ -112,11 +111,52 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     }
   }
 
+  function pauseHuntJobWithError (huntId, hunt, error, node) {
+    let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
+    if (node) {
+      errorMsg += ` On ${node} node`;
+      error.node = node;
+    }
+
+    if (Config.debug) {
+      console.log(errorMsg);
+    }
+
+    error.time = Math.floor(Date.now() / 1000);
+
+    hunt.status = 'paused';
+
+    if (error.unrunnable) {
+      delete error.unrunnable;
+      hunt.unrunnable = true;
+    }
+
+    if (!hunt.errors) {
+      hunt.errors = [ error ];
+    } else {
+      hunt.errors.push(error);
+    }
+
+    function continueProcess () {
+      Db.setHunt(huntId, hunt, (err, info) => {
+        internals.runningHuntJob = undefined;
+        if (err) {
+          console.log('Error adding errors and pausing hunt job', err, info);
+          return;
+        }
+        module.processHuntJobs();
+      });
+    }
+
+    const message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+    notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
+  }
+
   function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
     // update the hunt with number of matchedSessions and searchedSessions
     // and the date of the first packet of the last searched session
-    let lastPacketTime = session.lastPacket;
-    let now = Math.floor(Date.now() / 1000);
+    const lastPacketTime = session.lastPacket;
+    const now = Math.floor(Date.now() / 1000);
 
     if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
       Db.get('hunts', 'hunt', huntId, (err, huntHit) => {
@@ -125,7 +165,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         }
 
         if (err) {
-          let errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
+          const errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
           pauseHuntJobWithError(huntId, hunt, { value: errorText });
           return cb({ success: false, text: errorText });
         }
@@ -155,7 +195,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
   }
 
   function buildHuntOptions (huntId, hunt) {
-    let options = {
+    const options = {
       src: hunt.src,
       dst: hunt.dst,
       size: hunt.size,
@@ -200,39 +240,39 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
   }
 
-  // function updateHuntStatus (req, res, status, successText, errorText) {
-  //   Db.getHunt(req.params.id, (err, hit) => {
-  //     if (err) {
-  //       console.log(errorText, err, hit);
-  //       return res.molochError(500, errorText);
-  //     }
-  //
-  //     // don't let a user play a hunt job if one is already running
-  //     if (status === 'running' && internals.runningHuntJob) {
-  //       return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
-  //     }
-  //
-  //     let hunt = hit._source;
-  //
-  //     // if hunt is finished, don't allow pause
-  //     if (hunt.status === 'finished' && status === 'paused') {
-  //       return res.molochError(403, 'You cannot pause a completed hunt.');
-  //     }
-  //
-  //     // clear the running hunt job if this is it
-  //     if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
-  //     hunt.status = status; // update the hunt job
-  //
-  //     Db.setHunt(req.params.id, hunt, (err, info) => {
-  //       if (err) {
-  //         console.log(errorText, err, info);
-  //         return res.molochError(500, errorText);
-  //       }
-  //       res.send(JSON.stringify({ success: true, text: successText }));
-  //       module.processHuntJobs();
-  //     });
-  //   });
-  // }
+  function updateHuntStatus (req, res, status, successText, errorText) {
+    Db.getHunt(req.params.id, (err, hit) => {
+      if (err) {
+        console.log(errorText, err, hit);
+        return res.molochError(500, errorText);
+      }
+
+      // don't let a user play a hunt job if one is already running
+      if (status === 'running' && internals.runningHuntJob) {
+        return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
+      }
+
+      const hunt = hit._source;
+
+      // if hunt is finished, don't allow pause
+      if (hunt.status === 'finished' && status === 'paused') {
+        return res.molochError(403, 'You cannot pause a completed hunt.');
+      }
+
+      // clear the running hunt job if this is it
+      if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
+      hunt.status = status; // update the hunt job
+
+      Db.setHunt(req.params.id, hunt, (err, info) => {
+        if (err) {
+          console.log(errorText, err, info);
+          return res.molochError(500, errorText);
+        }
+        res.send(JSON.stringify({ success: true, text: successText }));
+        module.processHuntJobs();
+      });
+    });
+  }
 
   // if there are failed sessions, go through them one by one and do a packet search
   // if there are no failed sessions left at the end then the hunt is done
@@ -246,9 +286,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     options.searchingFailedSessions = true;
     // copy the failed session ids so we can remove them from the hunt
     // but still loop through them iteratively
-    let failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
+    const failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
     // we don't need to search the db for session, we just need to search each session in failedSessionIds
-    async.forEachLimit(failedSessions, 3, function (sessionId, cb) {
+    async.forEachLimit(failedSessions, 3, (sessionId, cb) => {
       Db.getSession(sessionId, { _source: 'node,huntName,huntId,lastPacket,field' }, (err, session) => {
         if (err) {
           return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
@@ -256,15 +296,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
         session = session._source;
 
-        ViewerUtils.makeRequest(session.node, `${session.node}/hunt/${huntId}/remote/${sessionId}`, user, (err, response) => {
+        const huntRemotePath = `api/${session.node}/hunt/${huntId}/remote/${sessionId}`;
+
+        ViewerUtils.makeRequest(session.node, huntRemotePath, user, (err, response) => {
           if (err) {
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
-          let json = JSON.parse(response);
+          const json = JSON.parse(response);
 
           if (json.error) {
-            console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
+            console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
@@ -277,7 +319,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
         });
       });
-    }, function (err) { // done running a pass of the failed sessions
+    }, (err) => { // done running a pass of the failed sessions
       function continueProcess () {
         Db.setHunt(huntId, hunt, (err, info) => {
           internals.runningHuntJob = undefined;
@@ -292,7 +334,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         hunt.status = 'finished';
 
         if (hunt.notifier) {
-          let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+          const message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
           notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();
@@ -316,7 +358,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   // Actually do the search against ES and process the results.
   function runHuntJob (huntId, hunt, query, user) {
-    let options = buildHuntOptions(huntId, hunt);
+    const options = buildHuntOptions(huntId, hunt);
     let searchedSessions;
 
     // look for failed sessions if we're done searching sessions normally
@@ -331,7 +373,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return;
       }
 
-      let hits = result.hits.hits;
+      const hits = result.hits.hits;
       if (searchedSessions === undefined) {
         searchedSessions = hunt.searchedSessions || 0;
         // if the session query results length is not equal to the total sessions that the hunt
@@ -341,19 +383,19 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         }
       }
 
-      async.forEachLimit(hits, 3, function (hit, cb) {
+      async.forEachLimit(hits, 3, (hit, cb) => {
         searchedSessions++;
-        let session = hit._source;
-        let sessionId = Db.session2Sid(hit);
-        let node = session.node;
+        const session = hit._source;
+        const sessionId = Db.session2Sid(hit);
+        const node = session.node;
 
         // There are no files, this is a fake session, don't hunt it
         if (session.fileId === undefined || session.fileId.length === 0) {
           return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
         }
 
-        sessionAPIs.isLocalView(node, function () {
-          sessionHunt(sessionId, options, function (err, matched) {
+        sessionAPIs.isLocalView(node, () => {
+          sessionHunt(sessionId, options, (err, matched) => {
             if (err) {
               return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
             }
@@ -365,24 +407,23 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
             updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
-        },
-        function () { // Check Remotely
-          let path = `${node}/hunt/${huntId}/remote/${sessionId}`;
+        }, () => { // Check Remotely
+          const huntRemotePath = `api/${node}/hunt/${huntId}/remote/${sessionId}`;
 
-          ViewerUtils.makeRequest(node, path, user, (err, response) => {
+          ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
             if (err) {
               return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
             }
-            let json = JSON.parse(response);
+            const json = JSON.parse(response);
             if (json.error) {
-              console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
+              console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
               return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
             }
             if (json.matched) { hunt.matchedSessions++; }
             return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         });
-      }, function (err) { // done running this section of hunt job
+      }, (err) => { // done running this section of hunt job
         // Some kind of error, stop now
         if (err === 'paused' || err === 'undefined') {
           if (result && result._scroll_id) {
@@ -419,7 +460,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         hunt.status = 'finished';
 
         if (hunt.notifier) {
-          let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+          const message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
           notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();
@@ -558,60 +599,61 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       });
   };
 
-  // TODO ECR move this up top
-  function pauseHuntJobWithError (huntId, hunt, error, node) {
-    let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
-    if (node) {
-      errorMsg += ` On ${node} node`;
-      error.node = node;
-    }
-
-    console.log(errorMsg);
-
-    error.time = Math.floor(Date.now() / 1000);
-
-    hunt.status = 'paused';
-
-    if (error.unrunnable) {
-      delete error.unrunnable;
-      hunt.unrunnable = true;
-    }
-
-    if (!hunt.errors) {
-      hunt.errors = [ error ];
-    } else {
-      hunt.errors.push(error);
-    }
-
-    function continueProcess () {
-      Db.setHunt(huntId, hunt, (err, info) => {
-        internals.runningHuntJob = undefined;
-        if (err) {
-          console.log('Error adding errors and pausing hunt job', err, info);
-          return;
-        }
-        module.processHuntJobs();
-      });
-    }
-
-    let message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-    notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
-  }
-
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
   /**
+   * A packet search job that allows users to search within session packets for text.
+   * @typedef Hunt
+   * @type {object}
+   * @property {string} userId - The ID of the user that created the hunt.
+   * @property {string} status - The status of the hunt. Options include:
+     queued - The hunt is queued to search packets once the currently running hunt has finished.
+     running - The hunt is currently searching packets.
+     paused - The hunt is paused, either by a user or by error.
+     finished - The hunt has searched all requested sessions.
+   * @property {string} name - The name of the hunt (not unique).
+   * @property {number} size - The number of packets to search within each session.
+   * @property {string} search - The search text to search for within packets.
+   * @property {string} searchType - What type of search the text is. Options include:
+     ascii - search for case insensitive ascii text.
+     asciicase - search for case sensitive ascii text.
+     hex - search for hex text.
+     regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
+     hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
+   * @property {boolean} src - Whether to search the source packets. Must search src or dst or both.
+   * @property {boolean} dst - Whether to search the destination packets. Must search src or dst or both.
+   * @property {string} type - Whether to search raw or reassembled packets.
+   * @property {number} matchedSessions - How many sessions contain packets that match the search text.
+   * @property {number} searchedSessions - How many sessions have had their packets searched.
+   * @property {number} totalSessions - The number of sessions to search.
+   * @property {number} lastPacketTime - The date of the first packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOC.
+   * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOC.
+   * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOC.
+   * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOC.
+   * @property {SessionsQuery} query - The request query to filter sessions.
+   * @property {array} errors - The list of errors that a hunt encountered. A hunt error includes:
+     value - The error text to display to the user.
+     time - The time the error was encountered.
+     node - The Arkime node that the hunt was searching sessions for when the error occurred.
+   * @property {string} notifier - The otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @property {boolean} unrunnable - Whether an error has rendered the hunt unrunnable.
+   * @property {array} failedSessionIds - The list of sessions that have failed to be searched. Used to run the search against them again once the rest of the hunt is complete.
+   * @property {array} users - The list of users to be added to the hunt so they can view the results.
+   */
+
+  /**
    * POST - /api/hunt
    *
-   * Creates a new hunt (packet search job).
+   * Creates a new hunt.
    * @name /hunt
    * @param {SessionsQuery} query - The request query to filter sessions.
-   * @param {number} totalSessions - The number of sessions that a hunt applies to.
+   * @param {number} totalSessions - The number of sessions to search.
    * @param {string} name - The name of the hunt (not unique).
    * @param {number} size - The number of packets to search within each session.
    * @param {boolean} src - Whether to search the source packets. Must search src or dst or both.
    * @param {boolean} dst - Whether to search the destination packets. Must search src or dst or both.
+   * @param {string} type - Whether to search raw or reassembled packets.
    * @param {string} search - The search text to search for within packets.
    * @param {string} searchType - What type of search the text is. Options include:
      ascii - search for case insensitive ascii text.
@@ -619,12 +661,13 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @returns {object} query - The elasticsearch query
-   * @returns {object} indices - The elasticsearch indices that contain sessions in this query
+   * @param {string} notifier - The otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
+   * @returns {boolean} success - Whether the creation of the hunt was successful.
+   * @returns {Hunt} hunt - The newly created hunt object.
+   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
   module.createHunt = (req, res) => {
-    // make sure viewer is not multi
-    if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
     if (!req.body.name) { return res.molochError(403, 'Missing hunt name'); }
@@ -720,6 +763,286 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       return doneCb(hunt, response.invalidUsers);
     }).catch((error) => {
       res.molochError(500, error);
+    });
+  };
+
+  /**
+   * GET - /api/hunts
+   *
+   * Retrieves a list of hunts.
+   * @name /hunts
+   * @param {string} searchTerm - The search text to search hunt results for.
+   * @param {number} length=10000 - The number of items to return. Defaults to 10000.
+   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {string} sortField=created - The field to sort the hunt results by. Defaults to "created".
+   * @param {string} desc=false - Whether to sort the results in descending order. Default is ascending.
+   * @param {string} history=false - Whether to return only finished hunts. Default is to return queued, paused, and running hunts.
+   * @returns {Hunt} runningJob - If there is a hunt running, returns the currently running hunt object.
+   * @returns {array} data - The list of hunts (either finished or queued/paused/running).
+   * @returns {number} recordsTotal - The total number of hunts Arkime has.
+   * @returns {number} recordsFiltered - The number of hunts returned in this result.
+   */
+  module.getHunts = (req, res) => {
+    const query = {
+      sort: {},
+      from: parseInt(req.query.start) || 0,
+      size: parseInt(req.query.length) || 10000,
+      query: { bool: { must: [] } }
+    };
+
+    query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
+
+    if (req.query.history) { // only get finished jobs
+      query.query.bool.must.push({ term: { status: 'finished' } });
+      if (req.query.searchTerm) { // apply search term
+        query.query.bool.must.push({
+          query_string: {
+            query: req.query.searchTerm,
+            fields: ['name', 'userId']
+          }
+        });
+      }
+    } else { // get queued, paused, running jobs
+      query.from = 0;
+      query.size = 1000;
+      query.query.bool.must.push({ terms: { status: ['queued', 'paused', 'running'] } });
+    }
+
+    if (Config.debug) {
+      console.log('hunt query:', JSON.stringify(query, null, 2));
+    }
+
+    Promise.all([
+      Db.searchHunt(query),
+      Db.numberOfHunts()
+    ]).then(([hunts, total]) => {
+      if (hunts.error) { throw hunts.error; }
+
+      let runningJob;
+
+      const results = { total: hunts.hits.total, results: [] };
+      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
+        const hit = hunts.hits.hits[i];
+        const hunt = hit._source;
+        hunt.id = hit._id;
+        hunt.index = hit._index;
+        // don't add the running job to the queue
+        if (internals.runningHuntJob && hunt.status === 'running') {
+          runningJob = hunt;
+          continue;
+        }
+
+        hunt.users = hunt.users || [];
+
+        // clear out secret fields for users who don't have access to that hunt
+        // if the user is not an admin and didn't create the hunt and isn't part of the user's list
+        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
+          // since hunt isn't cached we can just modify
+          hunt.search = '';
+          hunt.searchType = '';
+          hunt.id = '';
+          hunt.userId = '';
+          delete hunt.query;
+        }
+        results.results.push(hunt);
+      }
+
+      const r = {
+        recordsTotal: total.count,
+        recordsFiltered: results.total,
+        data: results.results,
+        runningJob: runningJob
+      };
+
+      res.send(r);
+    }).catch(err => {
+      console.log('ERROR - /api/hunts', err);
+      return res.molochError(500, 'Error retrieving hunts - ' + err);
+    });
+  };
+
+  /**
+   * DELETE - /api/hunt/:id
+   *
+   * Delete a hunt.
+   * @name /hunt/:id
+   * @returns {boolean} success - Whether the delete hunt operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteHunt = (req, res) => {
+    Db.deleteHuntItem(req.params.id, (err, result) => {
+      if (err || result.error) {
+        console.log('ERROR - deleting hunt', err || result.error);
+        return res.molochError(500, 'Error deleting hunt');
+      } else {
+        res.send(JSON.stringify({
+          success: true,
+          text: 'Deleted hunt successfully'
+        }));
+      }
+    });
+  };
+
+  /**
+   * PUT - /api/hunt/:id/pause
+   *
+   * Pause a hunt.
+   * @name /hunt/:id/pause
+   * @returns {boolean} success - Whether the pause hunt operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.pauseHunt = (req, res) => {
+    updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
+  };
+
+  /**
+   * PUT - /api/hunt/:id/play
+   *
+   * Play a hunt.
+   * @name /hunt/:id/play
+   * @returns {boolean} success - Whether the play hunt operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.playHunt = (req, res) => {
+    updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
+  };
+
+  /**
+   * POST - /api/hunt/:id/users
+   *
+   * Add user(s) to a hunt.
+   * @name /hunt/:id/users
+   * @param {string} users - Comma separated list of user ids to add to the hunt.
+   * @returns {boolean} success - Whether the add users operation was successful.
+   * @returns {array} users - The list of users that were added to the hunt.
+   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
+   */
+  module.addUsers = (req, res) => {
+    if (!req.body.users) {
+      return res.molochError(403, 'You must provide users in a comma separated string');
+    }
+
+    Db.getHunt(req.params.id, (err, hit) => {
+      if (err) {
+        console.log('Unable to fetch hunt to add user(s)', err, hit);
+        return res.molochError(500, 'Unable to fetch hunt to add user(s)');
+      }
+
+      const hunt = hit._source;
+      const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
+
+      ViewerUtils.validateUserIds(reqUsers).then((response) => {
+        if (!response.validUsers.length) {
+          return res.molochError(404, 'Unable to validate user IDs provided');
+        }
+
+        if (!hunt.users) {
+          hunt.users = response.validUsers;
+        } else {
+          hunt.users = hunt.users.concat(response.validUsers);
+        }
+
+        // dedupe the array of users
+        hunt.users = [...new Set(hunt.users)];
+
+        Db.setHunt(req.params.id, hunt, (err, info) => {
+          if (err) {
+            console.log('Unable to add user(s)', err, info);
+            return res.molochError(500, 'Unable to add user(s)');
+          }
+          res.send(JSON.stringify({
+            success: true,
+            users: hunt.users,
+            invalidUsers: response.invalidUsers
+          }));
+        });
+      }).catch((error) => {
+        res.molochError(500, error);
+      });
+    });
+  };
+
+  /**
+   * DELETE - /api/hunt/:id/user/:user
+   *
+   * Remove user(s) from a hunt.
+   * @name /hunt/:id/user/:user
+   * @returns {boolean} success - Whether the remove users operation was successful.
+   * @returns {array} users - The list of users who have access to the hunt.
+   * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
+   */
+  module.removeUsers = (req, res) => {
+    Db.getHunt(req.params.id, (err, hit) => {
+      if (err) {
+        console.log('Unable to fetch hunt to remove user', err, hit);
+        return res.molochError(500, 'Unable to fetch hunt to remove user');
+      }
+
+      const hunt = hit._source;
+
+      if (!hunt.users || !hunt.users.length) {
+        return res.molochError(404, 'There are no users that have access to view this hunt');
+      }
+
+      const userIdx = hunt.users.indexOf(req.params.user);
+
+      if (userIdx < 0) { // user doesn't have access to this hunt
+        return res.molochError(404, 'That user does not have access to this hunt');
+      }
+
+      hunt.users.splice(userIdx, 1); // remove the user from the list
+
+      Db.setHunt(req.params.id, hunt, (err, info) => {
+        if (err) {
+          console.log('Unable to remove user', err, info);
+          return res.molochError(500, 'Unable to remove user');
+        }
+        res.send(JSON.stringify({ success: true, users: hunt.users }));
+      });
+    });
+  };
+
+  /**
+   * @ignore
+   * GET - /api/:nodeName/hunt/:huntId/remote/:sessionId
+   *
+   * Searches a session on a remote node.
+   * @name /:nodeName/hunt/:huntId/remote/:sessionId
+   * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
+   * @returns {string} error - If an error occurred, describes the error.
+   */
+  module.remoteHunt = (req, res) => {
+    const huntId = req.params.huntId;
+    const sessionId = req.params.sessionId;
+
+    // fetch hunt and session
+    Promise.all([
+      Db.get('hunts', 'hunt', huntId),
+      Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))
+    ]).then(([hunt, session]) => {
+      if (hunt.error || session.error) {
+        res.send({ matched: false });
+      }
+
+      hunt = hunt._source;
+      session = session._source;
+
+      const options = buildHuntOptions(huntId, hunt);
+
+      sessionHunt(sessionId, options, (err, matched) => {
+        if (err) {
+          return res.send({ matched: false, error: err });
+        }
+
+        if (matched) {
+          updateSessionWithHunt(session, sessionId, hunt, huntId);
+        }
+
+        return res.send({ matched: matched });
+      });
+    }).catch((err) => {
+      console.log('ERROR - /api/hunt/remote', err);
+      res.send({ matched: false, error: err });
     });
   };
 

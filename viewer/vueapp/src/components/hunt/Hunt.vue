@@ -971,7 +971,7 @@ export default {
       this.setErrorForList(arrayName, '');
       this.$set(job, 'loading', true);
 
-      this.axios.delete(`hunt/${job.id}`)
+      this.axios.delete(`api/hunt/${job.id}`)
         .then((response) => {
           let array = this.results;
           if (arrayName === 'historyResults') {
@@ -995,7 +995,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`hunt/${job.id}/pause`)
+      this.axios.put(`api/hunt/${job.id}/pause`)
         .then((response) => {
           if (job.status === 'running') {
             this.loadData();
@@ -1015,7 +1015,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`hunt/${job.id}/play`)
+      this.axios.put(`api/hunt/${job.id}/play`)
         .then((response) => {
           this.$set(job, 'status', 'queued');
           this.$set(job, 'loading', false);
@@ -1088,7 +1088,7 @@ export default {
     removeUser: function (user, job) {
       this.$set(this, 'floatingError', '');
 
-      this.axios.delete(`hunt/${job.id}/users/${user}`)
+      this.axios.delete(`api/hunt/${job.id}/user/${user}`)
         .then((response) => {
           this.$set(job, 'users', response.data.users);
         }, (error) => {
@@ -1098,7 +1098,7 @@ export default {
     addUsers: function (users, job) {
       this.$set(this, 'floatingError', '');
 
-      this.axios.post(`hunt/${job.id}/users`, { users: users })
+      this.axios.post(`api/hunt/${job.id}/users`, { users: users })
         .then((response) => {
           this.$set(job, 'users', response.data.users);
         }, (error) => {
@@ -1153,7 +1153,7 @@ export default {
       }
 
       // get the hunt history
-      let historyReq = this.axios.get('hunt/list', { params: { ...this.query, history: true } });
+      let historyReq = this.axios.get('api/hunts', { params: { ...this.query, history: true } });
       historyReq.then((response) => {
         this.historyListLoadingError = '';
 
@@ -1184,7 +1184,7 @@ export default {
       queuedQuery.desc = false;
       queuedQuery.length = undefined;
       queuedQuery.start = 0;
-      let queueReq = this.axios.get('hunt/list', { params: queuedQuery });
+      let queueReq = this.axios.get('api/hunts', { params: queuedQuery });
       queueReq.then((response) => {
         this.queuedListLoadingError = '';
 
