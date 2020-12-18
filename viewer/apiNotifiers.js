@@ -251,9 +251,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          if (Config.debug) {
-            console.log('/api/notifiers failed', err, info);
-          }
+          console.log('/api/notifiers failed', err, info);
           return res.molochError(500, 'Creating notifier failed');
         }
         return res.send(JSON.stringify({
@@ -346,9 +344,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          if (Config.debug) {
-            console.log('/api/notifier update failed', err, info);
-          }
+          console.log('/api/notifier update failed', err, info);
           return res.molochError(500, 'Updating notifier failed');
         }
         return res.send(JSON.stringify({
@@ -387,9 +383,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          if (Config.debug) {
-            console.log('/api/notifier delete failed', err, info);
-          }
+          console.log('/api/notifier delete failed', err, info);
           return res.molochError(500, 'Deleting notifier failed');
         }
         return res.send(JSON.stringify({
