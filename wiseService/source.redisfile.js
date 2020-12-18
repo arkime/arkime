@@ -29,22 +29,11 @@ class RedisFileSource extends SimpleSource {
       return;
     }
     this.key = api.getConfig(section, 'key');
-    this.headers = {};
-    const headers = api.getConfig(section, 'headers');
     this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
 
     if (this.key === undefined) {
       console.log(this.section, '- ERROR not loading since no key specified in config file');
       return;
-    }
-
-    if (headers) {
-      headers.split(';').forEach((header) => {
-        const parts = header.split(':').map(item => item.trim());
-        if (parts.length === 2) {
-          this.headers[parts[0]] = parts[1];
-        }
-      });
     }
 
     this.initSimple();
@@ -81,16 +70,19 @@ exports.initSource = function (api) {
     cacheable: false,
     editable: true,
     fields: [
-      { name: 'file', required: true, help: 'The path of the file to load' },
+      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
+      { name: 'redisType', required: false, regex: '^(redis|redis-cluster|redis-sentinel)$', help: 'What kind of redis conenction' },
+      { name: 'redisPassword', password: true, required: false, help: 'Password for redis' },
+      { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
+      { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
+      { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
       { name: 'key', required: true, help: 'The key in redis to fetch' },
-      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
-      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
-      { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' }
+      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' }
     ]
   });
 

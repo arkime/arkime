@@ -35,7 +35,7 @@ const iptrie = require('iptrie');
  */
 class SimpleSource extends WISESource {
   /**
-   * SimpleSource
+   * Create a simple source. The options formatSetting, tagsSetting, typeSetting will all be set to true automatically.
    * @param {WISESourceAPI} api - the api when source created
    * @param {string} section - the section name
    * @param {object} options - see WISESource constructor
@@ -58,6 +58,9 @@ class SimpleSource extends WISESource {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * Implemented for you
+   */
   dump (res) {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
     cache.forEach((result, key) => {

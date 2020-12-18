@@ -81,12 +81,14 @@ WISERedisCache.prototype.get = function (query, cb) {
     }
     const result = BSON.deserialize(reply, { promoteBuffers: true });
 
-    // Redis uses old encoding, convert old to new
     for (const source in result) {
-      const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
-      newResult[0] = result[source].result.num;
-      result[source].result.buffer.copy(newResult, 1);
-      result[source].result = newResult;
+      // Redis uses old encoding, convert old to new when needed
+      if (!Buffer.isBuffer(result[source].result)) {
+        const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
+        newResult[0] = result[source].result.num;
+        result[source].result.buffer.copy(newResult, 1);
+        result[source].result = newResult;
+      }
     }
     cb(null, result);
 

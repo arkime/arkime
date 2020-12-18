@@ -80,7 +80,7 @@ const internals = {
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[[user]:[password]@]host:port[/db-number]' },
         { name: 'redisName', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'User name for redis' },
-        { name: 'redisPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for redis' },
+        { name: 'redisPassword', password: true, required: false, help: 'Password for redis' },
         { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
         { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
         { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' }
@@ -1122,7 +1122,7 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
  * PUT - Used by wise UI to save the raw file being used by the source.
  *       This is an authenticated API and requires wiseService to be started with --webconfig.
  *
- * @name "/source/:source/get"
+ * @name "/source/:source/put"
  * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */

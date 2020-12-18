@@ -293,6 +293,9 @@ class WISESource {
     endCb(null);
   }
 
+  /** The encoded tags result if options.tagsSetting was set to true */
+  tagsResult;
+
   // ----------------------------------------------------------------------------
   tagsSetting () {
     const tagsField = this.api.addField('field:tags');
@@ -308,6 +311,12 @@ class WISESource {
     }
   };
 
+  /** The format of the source if options.formatSetting was set to true. */
+  format;
+
+  /** {function} The parser function of the source if options.formatSetting was set to true. */
+  parse;
+
   // ----------------------------------------------------------------------------
   formatSetting () {
     this.format = this.api.getConfig(this.section, 'format', 'csv');
@@ -321,6 +330,9 @@ class WISESource {
       throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
     }
   };
+
+  /** The wise item type of the source if options.typeSetting was set to true. */
+  type;
 
   // ----------------------------------------------------------------------------
   typeSetting () {
@@ -436,6 +448,45 @@ class WISESource {
 
     return JSON.stringify(collection).replace(/},{/g, '},\n{');
   };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Download a url and save to a file, if we already have the file and less than a minute old use that file.
+   *
+   * @param {string} url - The URL to download
+   * @param {string} file - The file to save the results to
+   * @param {function} cb - (statusCode) The stats code result from the download
+   */
+  static request (url, file, cb) {
+    const headers = {};
+    if (file) {
+      if (fs.existsSync(file)) {
+        const stat = fs.statSync(file);
+
+        // Don't download again if file is less then 1 minutes old
+        if (Date.now() - stat.mtime.getTime() < 60000) {
+          return setImmediate(cb, 304);
+        }
+        headers['If-Modified-Since'] = stat.mtime.toUTCString();
+      }
+    }
+    let statusCode;
+    console.log(url);
+    request({ url: url, headers: headers })
+    .on('response', function (response) {
+      statusCode = response.statusCode;
+      if (response.statusCode === 200) {
+        this.pipe(fs.createWriteStream(file));
+      }
+    })
+    .on('error', (error) => {
+      console.log(error);
+    })
+    .on('end', () => {
+      setTimeout(cb, 100, statusCode);
+    })
+    ;
+  };
 }
 /**
  * Get the raw source data for editing.
@@ -454,6 +505,15 @@ class WISESource {
  * @name WISESource#putSourceRaw
  * @param {string} data - The full data for the source from UI
  * @param {function} cb - (err)
+ * @abstract
+ */
+/**
+ * Dump the sources data to caller.
+ * Source should implement this method if they want to support displaying the current state.
+ *
+ * @method
+ * @name WISESource#dump
+ * @param {object} res - The express res object
  * @abstract
  */
 /**
@@ -479,37 +539,6 @@ class WISESource {
 
 module.exports = WISESource;
 
-// ----------------------------------------------------------------------------
-WISESource.request = function (url, file, cb) {
-  const headers = {};
-  if (file) {
-    if (fs.existsSync(file)) {
-      const stat = fs.statSync(file);
-
-      // Don't download again if file is less then 1 minutes old
-      if (Date.now() - stat.mtime.getTime() < 60000) {
-        return setImmediate(cb, 304);
-      }
-      headers['If-Modified-Since'] = stat.mtime.toUTCString();
-    }
-  }
-  let statusCode;
-  console.log(url);
-  request({ url: url, headers: headers })
-  .on('response', function (response) {
-    statusCode = response.statusCode;
-    if (response.statusCode === 200) {
-      this.pipe(fs.createWriteStream(file));
-    }
-  })
-  .on('error', (error) => {
-    console.log(error);
-  })
-  .on('end', () => {
-    setTimeout(cb, 100, statusCode);
-  })
-  ;
-};
 // ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
