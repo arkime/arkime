@@ -39,7 +39,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       }
       break;
     default:
-      console.log('Invalid hunt search type');
+      if (Config.debug) {
+        console.log('Invalid hunt search type');
+      }
     }
 
     return found;
@@ -141,7 +143,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       Db.setHunt(huntId, hunt, (err, info) => {
         internals.runningHuntJob = undefined;
         if (err) {
-          console.log('Error adding errors and pausing hunt job', err, info);
+          if (Config.debug) {
+            console.log('Error adding errors and pausing hunt job', err, info);
+          }
           return;
         }
         module.processHuntJobs();
@@ -190,7 +194,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   function updateSessionWithHunt (session, sessionId, hunt, huntId) {
     Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
-      if (err) { console.log('add hunt info error', session, err, data); }
+      if (err && Config.debug) {
+        console.log('add hunt info error', session, err, data);
+      }
     });
   }
 
@@ -243,7 +249,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
   function updateHuntStatus (req, res, status, successText, errorText) {
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
-        console.log(errorText, err, hit);
+        if (Config.debug) {
+          console.log(errorText, err, hit);
+        }
         return res.molochError(500, errorText);
       }
 
@@ -265,7 +273,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       Db.setHunt(req.params.id, hunt, (err, info) => {
         if (err) {
-          console.log(errorText, err, info);
+          if (Config.debug) {
+            console.log(errorText, err, info);
+          }
           return res.molochError(500, errorText);
         }
         res.send(JSON.stringify({ success: true, text: successText }));
@@ -306,7 +316,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           const json = JSON.parse(response);
 
           if (json.error) {
-            console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+            if (Config.debug) {
+              console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+            }
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
@@ -416,7 +428,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
             }
             const json = JSON.parse(response);
             if (json.error) {
-              console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+              if (Config.debug) {
+                console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+              }
               return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
             }
             if (json.matched) { hunt.matchedSessions++; }
@@ -594,7 +608,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         internals.runningHuntJob = undefined;
         return (cb ? cb() : null);
       }).catch(err => {
-        console.log('Error fetching hunt jobs', err);
+        if (Config.debug) {
+          console.log('Error fetching hunt jobs', err);
+        }
         return (cb ? cb() : null);
       });
   };
@@ -729,7 +745,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     function doneCb (hunt, invalidUsers) {
       Db.createHunt(hunt, (err, result) => {
         if (err) {
-          console.log('create hunt error', err, result);
+          if (Config.debug) {
+            console.log('create hunt error', err, result);
+          }
           return res.molochError(500, 'Error creating hunt - ' + err);
         }
         hunt.id = result._id;
@@ -856,7 +874,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       res.send(r);
     }).catch(err => {
-      console.log('ERROR - /api/hunts', err);
+      if (Config.debug) {
+        console.log('ERROR - /api/hunts', err);
+      }
       return res.molochError(500, 'Error retrieving hunts - ' + err);
     });
   };
@@ -872,7 +892,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
   module.deleteHunt = (req, res) => {
     Db.deleteHuntItem(req.params.id, (err, result) => {
       if (err || result.error) {
-        console.log('ERROR - deleting hunt', err || result.error);
+        if (Config.debug) {
+          console.log('ERROR - deleting hunt', err || result.error);
+        }
         return res.molochError(500, 'Error deleting hunt');
       } else {
         res.send(JSON.stringify({
@@ -924,7 +946,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
-        console.log('Unable to fetch hunt to add user(s)', err, hit);
+        if (Config.debug) {
+          console.log('Unable to fetch hunt to add user(s)', err, hit);
+        }
         return res.molochError(500, 'Unable to fetch hunt to add user(s)');
       }
 
@@ -947,7 +971,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
         Db.setHunt(req.params.id, hunt, (err, info) => {
           if (err) {
-            console.log('Unable to add user(s)', err, info);
+            if (Config.debug) {
+              console.log('Unable to add user(s)', err, info);
+            }
             return res.molochError(500, 'Unable to add user(s)');
           }
           res.send(JSON.stringify({
@@ -974,7 +1000,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
   module.removeUsers = (req, res) => {
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
-        console.log('Unable to fetch hunt to remove user', err, hit);
+        if (Config.debug) {
+          console.log('Unable to fetch hunt to remove user', err, hit);
+        }
         return res.molochError(500, 'Unable to fetch hunt to remove user');
       }
 
@@ -994,7 +1022,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       Db.setHunt(req.params.id, hunt, (err, info) => {
         if (err) {
-          console.log('Unable to remove user', err, info);
+          if (Config.debug) {
+            console.log('Unable to remove user', err, info);
+          }
           return res.molochError(500, 'Unable to remove user');
         }
         res.send(JSON.stringify({ success: true, users: hunt.users }));
@@ -1041,7 +1071,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return res.send({ matched: matched });
       });
     }).catch((err) => {
-      console.log('ERROR - /api/hunt/remote', err);
+      if (Config.debug) {
+        console.log('ERROR - /api/hunt/remote', err);
+      }
       res.send({ matched: false, error: err });
     });
   };
