@@ -3333,7 +3333,7 @@ app.delete( // remove users from hunt endpoint
 );
 
 app.get( // remote hunt endpoint
-  ['/api/:nodeName/hunt/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
+  ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
   [noCacheJson],
   huntAPIs.remoteHunt
 );

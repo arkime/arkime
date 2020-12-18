@@ -296,7 +296,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
         session = session._source;
 
-        const huntRemotePath = `api/${session.node}/hunt/${huntId}/remote/${sessionId}`;
+        const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
 
         ViewerUtils.makeRequest(session.node, huntRemotePath, user, (err, response) => {
           if (err) {
@@ -408,7 +408,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
             updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         }, () => { // Check Remotely
-          const huntRemotePath = `api/${node}/hunt/${huntId}/remote/${sessionId}`;
+          const huntRemotePath = `${node}/hunt/${huntId}/remote/${sessionId}`;
 
           ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
             if (err) {
