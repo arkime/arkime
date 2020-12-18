@@ -40,11 +40,9 @@ try {
   var http = require('http');
   var https = require('https');
   var onHeaders = require('on-headers');
-  var glob = require('glob');
   var unzipper = require('unzipper');
   var helmet = require('helmet');
   var uuid = require('uuidv4').default;
-  var RE2 = require('re2');
   var path = require('path');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
@@ -91,10 +89,12 @@ var compression = require('compression');
 
 // internal app deps
 let { internals } = require('./internals')(app, Config);
-let ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
+let ViewerUtils = require('./viewerUtils')(app, Config, Db, molochparser, internals);
+let notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
 let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
+let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -606,6 +606,14 @@ function checkPermissions (permissions) {
   };
 }
 
+// used to disable endpoints in multi es mode
+function disableInMultiES (req, res, next) {
+  if (Config.get('multiES', false)) {
+    return res.molochError(401, 'Not supported in multies');
+  }
+  return next();
+}
+
 function checkHuntAccess (req, res, next) {
   if (req.user.createEnabled) {
     // an admin can do anything to any hunt
@@ -924,30 +932,6 @@ class Mutex {
 }
 
 // user helpers ---------------------------------------------------------------
-// check for anonymous mode before fetching user cache and return anonymous
-// user or the user requested by the userId
-function getUserCacheIncAnon (userId, cb) {
-  if (app.locals.noPasswordSecret) { // user is anonymous
-    Db.getUserCache('anonymous', (err, anonUser) => {
-      let anon = internals.anonymousUser;
-
-      if (!err && anonUser && anonUser.found) {
-        anon.settings = anonUser._source.settings || {};
-        anon.views = anonUser._source.views;
-      }
-
-      return cb(null, anon);
-    });
-  } else {
-    Db.getUserCache(userId, (err, user) => {
-      let found = user.found;
-      user = user._source;
-      if (user) { user.found = found; }
-      return cb(err, user);
-    });
-  }
-}
-
 function userCleanup (suser) {
   suser.settings = suser.settings || {};
   if (suser.emailSearch === undefined) { suser.emailSearch = false; }
@@ -1239,716 +1223,6 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     });
   }, function (err) {
     nextQLCb();
-  });
-}
-
-// notifiers helpers ----------------------------------------------------------
-function buildNotifiers () {
-  internals.notifiers = {};
-
-  let api = {
-    register: function (str, info) {
-      internals.notifiers[str] = info;
-    }
-  };
-
-  // look for all notifier providers and initialize them
-  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
-  files.forEach((file) => {
-    let plugin = require(file);
-    plugin.init(api);
-  });
-}
-
-function issueAlert (notifierName, alertMessage, continueProcess) {
-  if (!notifierName) { return continueProcess('No name supplied for notifier'); }
-
-  if (!internals.notifiers) { buildNotifiers(); }
-
-  // find notifier
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    sharedUser = sharedUser._source;
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    let notifier = sharedUser.notifiers[notifierName];
-
-    if (!notifier) {
-      console.log('Cannot find notifier, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    let notifierDefinition;
-    for (let n in internals.notifiers) {
-      if (internals.notifiers[n].type === notifier.type) {
-        notifierDefinition = internals.notifiers[n];
-      }
-    }
-    if (!notifierDefinition) {
-      console.log('Cannot find notifier definition, no alert can be issued');
-      return continueProcess('Cannot find notifier, no alert can be issued');
-    }
-
-    let config = {};
-    for (let field of notifierDefinition.fields) {
-      for (let configuredField of notifier.fields) {
-        if (configuredField.name === field.name && configuredField.value !== undefined) {
-          config[field.name] = configuredField.value;
-        }
-      }
-
-      // If a field is required and nothing was set, then we have an error
-      if (field.required && config[field.name] === undefined) {
-        console.log(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-        continueProcess(`Cannot find notifier field value: ${field.name}, no alert can be issued`);
-      }
-    }
-
-    notifierDefinition.sendAlert(config, alertMessage, null, (response) => {
-      let err;
-      // there should only be one error here because only one
-      // notifier alert is sent at a time
-      if (response.errors) {
-        for (let e in response.errors) {
-          err = response.errors[e];
-        }
-      }
-      return continueProcess(err);
-    });
-  });
-}
-
-// packet search helpers ------------------------------------------------------
-function packetSearch (packet, options) {
-  let found = false;
-
-  switch (options.searchType) {
-  case 'asciicase':
-    if (packet.toString().includes(options.search)) {
-      found = true;
-    }
-    break;
-  case 'ascii':
-    if (packet.toString().toLowerCase().includes(options.search.toLowerCase())) {
-      found = true;
-    }
-    break;
-  case 'regex':
-    if (options.regex && packet.toString().match(options.regex)) {
-      found = true;
-    }
-    break;
-  case 'hex':
-    if (packet.toString('hex').includes(options.search)) {
-      found = true;
-    }
-    break;
-  case 'hexregex':
-    if (options.regex && packet.toString('hex').match(options.regex)) {
-      found = true;
-    }
-    break;
-  default:
-    console.log('Invalid hunt search type');
-  }
-
-  return found;
-}
-
-function sessionHunt (sessionId, options, cb) {
-  if (options.type === 'reassembled') {
-    sessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, function (err, session, packets) {
-      if (err) {
-        return cb(null, false);
-      }
-
-      let i = 0;
-      let increment = 1;
-      let len = packets.length;
-
-      if (options.src && !options.dst) {
-        increment = 2;
-      } else if (options.dst && !options.src) {
-        i = 1;
-        increment = 2;
-      }
-
-      for (i; i < len; i += increment) {
-        if (packetSearch(packets[i].data, options)) { return cb(null, true); }
-      }
-
-      return cb(null, false);
-    });
-  } else if (options.type === 'raw') {
-    let packets = [];
-    sessionAPIs.processSessionId(sessionId, true, null, function (pcap, buffer, cb, i) {
-      if (options.src === options.dst) {
-        packets.push(buffer);
-      } else {
-        let packet = {};
-        pcap.decode(buffer, packet);
-        packet.data = buffer.slice(16);
-        packets.push(packet);
-      }
-      cb(null);
-    }, function (err, session) {
-      if (err) {
-        return cb(null, false);
-      }
-
-      let len = packets.length;
-      if (options.src === options.dst) {
-        // If search both src/dst don't need to check key
-        for (let i = 0; i < len; i++) {
-          if (packetSearch(packets[i], options)) { return cb(null, true); }
-        }
-      } else {
-        // If searching src NOR dst need to check key
-        let skey = Pcap.keyFromSession(session);
-        for (let i = 0; i < len; i++) {
-          let key = Pcap.key(packets[i]);
-          let isSrc = key === skey;
-          if (options.src && isSrc) {
-            if (packetSearch(packets[i].data, options)) { return cb(null, true); }
-          } else if (options.dst && !isSrc) {
-            if (packetSearch(packets[i].data, options)) { return cb(null, true); }
-          }
-        }
-      }
-      return cb(null, false);
-    },
-    options.size || 10000, 10);
-  }
-}
-
-function pauseHuntJobWithError (huntId, hunt, error, node) {
-  let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
-  if (node) {
-    errorMsg += ` On ${node} node`;
-    error.node = node;
-  }
-
-  console.log(errorMsg);
-
-  error.time = Math.floor(Date.now() / 1000);
-
-  hunt.status = 'paused';
-
-  if (error.unrunnable) {
-    delete error.unrunnable;
-    hunt.unrunnable = true;
-  }
-
-  if (!hunt.errors) {
-    hunt.errors = [ error ];
-  } else {
-    hunt.errors.push(error);
-  }
-
-  function continueProcess () {
-    Db.setHunt(huntId, hunt, (err, info) => {
-      internals.runningHuntJob = undefined;
-      if (err) {
-        console.log('Error adding errors and pausing hunt job', err, info);
-        return;
-      }
-      processHuntJobs();
-    });
-  }
-
-  let message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-  issueAlert(hunt.notifier, message, continueProcess);
-}
-
-function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
-  // update the hunt with number of matchedSessions and searchedSessions
-  // and the date of the first packet of the last searched session
-  let lastPacketTime = session.lastPacket;
-  let now = Math.floor(Date.now() / 1000);
-
-  if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
-    Db.get('hunts', 'hunt', huntId, (err, huntHit) => {
-      if (!huntHit || !huntHit.found) { // hunt hit not found, likely deleted
-        return cb('undefined');
-      }
-
-      if (err) {
-        let errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
-        pauseHuntJobWithError(huntId, hunt, { value: errorText });
-        return cb({ success: false, text: errorText });
-      }
-
-      hunt.status = huntHit._source.status;
-      hunt.lastUpdated = now;
-      hunt.searchedSessions = searchedSessions || hunt.searchedSessions;
-      hunt.lastPacketTime = lastPacketTime;
-
-      Db.setHunt(huntId, hunt, () => {});
-
-      if (hunt.status === 'paused') {
-        return cb('paused');
-      } else {
-        return cb(null);
-      }
-    });
-  } else {
-    return cb(null);
-  }
-}
-
-function updateSessionWithHunt (session, sessionId, hunt, huntId) {
-  Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
-    if (err) { console.log('add hunt info error', session, err, data); }
-  });
-}
-
-function buildHuntOptions (huntId, hunt) {
-  let options = {
-    src: hunt.src,
-    dst: hunt.dst,
-    size: hunt.size,
-    type: hunt.type,
-    search: hunt.search,
-    searchType: hunt.searchType
-  };
-
-  if (hunt.searchType === 'regex' || hunt.searchType === 'hexregex') {
-    try {
-      options.regex = new RE2(hunt.search);
-    } catch (e) {
-      pauseHuntJobWithError(huntId, hunt, {
-        value: `Fatal Error: Regex parse error. Fix this issue with your regex and create a new hunt: ${e}`,
-        unrunnable: true
-      });
-    }
-  }
-
-  return options;
-}
-
-// if we couldn't retrieve the seession, skip it but add it to failedSessionIds
-// so that we can go back and search for it at the end of the hunt
-function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
-  if (!hunt.failedSessionIds) {
-    hunt.failedSessionIds = [ sessionId ];
-  } else {
-    // pause the hunt if there are more than 10k failed sessions
-    if (hunt.failedSessionIds.length > 10000) {
-      return pauseHuntJobWithError(huntId, hunt, {
-        value: 'Error hunting: Too many sessions are unreachable. Please contact your administrator.'
-      });
-    }
-    // make sure the session id is not already in the array
-    // if it's not the first pass and a node is still down, this could be a duplicate
-    if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
-      hunt.failedSessionIds.push(sessionId);
-    }
-  }
-
-  return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-}
-
-// if there are failed sessions, go through them one by one and do a packet search
-// if there are no failed sessions left at the end then the hunt is done
-// if there are still failed sessions, but some sessions were searched during the last pass, try again
-// if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
-function huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
-  if (!hunt.failedSessionIds && !hunt.failedSessionIds.length) { return; }
-
-  let changesSearchingFailedSessions = false;
-
-  options.searchingFailedSessions = true;
-  // copy the failed session ids so we can remove them from the hunt
-  // but still loop through them iteratively
-  let failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
-  // we don't need to search the db for session, we just need to search each session in failedSessionIds
-  async.forEachLimit(failedSessions, 3, function (sessionId, cb) {
-    Db.getSession(sessionId, { _source: 'node,huntName,huntId,lastPacket,field' }, (err, session) => {
-      if (err) {
-        return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-      }
-
-      session = session._source;
-
-      ViewerUtils.makeRequest(session.node, `${session.node}/hunt/${huntId}/remote/${sessionId}`, user, (err, response) => {
-        if (err) {
-          return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-        }
-
-        let json = JSON.parse(response);
-
-        if (json.error) {
-          console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
-          return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-        }
-
-        // remove from failedSessionIds if it was found
-        hunt.failedSessionIds.splice(hunt.failedSessionIds.indexOf(sessionId), 1);
-        // there were changes to this hunt; we're making progress
-        changesSearchingFailedSessions = true;
-
-        if (json.matched) { hunt.matchedSessions++; }
-        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-      });
-    });
-  }, function (err) { // done running a pass of the failed sessions
-    function continueProcess () {
-      Db.setHunt(huntId, hunt, (err, info) => {
-        internals.runningHuntJob = undefined;
-        processHuntJobs(); // Start new hunt
-      });
-    }
-
-    if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
-      options.searchingFailedSessions = false; // no longer searching failed sessions
-      // we had failed sessions but we're done searching through them
-      // so we're completely done with this hunt (inital search and failed sessions)
-      hunt.status = 'finished';
-
-      if (hunt.notifier) {
-        let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-        issueAlert(hunt.notifier, message, continueProcess);
-      } else {
-        return continueProcess();
-      }
-    } else if (hunt.failedSessionIds && hunt.failedSessionIds.length > 0 && changesSearchingFailedSessions) {
-      // there are still failed sessions, but there were also changes,
-      // so keep going
-      // uninitialize hunts so that the running job with failed sessions will kick off again
-      internals.proccessHuntJobsInitialized = false;
-      return continueProcess();
-    } else if (!changesSearchingFailedSessions) {
-      options.searchingFailedSessions = false; // no longer searching failed sessions
-      // there were no changes, we're still struggling to connect to one or
-      // more renote nodes, so error out
-      return pauseHuntJobWithError(huntId, hunt, {
-        value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
-      });
-    }
-  });
-}
-
-// Actually do the search against ES and process the results.
-function runHuntJob (huntId, hunt, query, user) {
-  let options = buildHuntOptions(huntId, hunt);
-  let searchedSessions;
-
-  // look for failed sessions if we're done searching sessions normally
-  if (!options.searchingFailedSessions && hunt.searchedSessions === hunt.totalSessions && hunt.failedSessionIds && hunt.failedSessionIds.length) {
-    options.searchingFailedSessions = true;
-    return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
-  }
-
-  Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
-    if (err || result.error) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
-      return;
-    }
-
-    let hits = result.hits.hits;
-    if (searchedSessions === undefined) {
-      searchedSessions = hunt.searchedSessions || 0;
-      // if the session query results length is not equal to the total sessions that the hunt
-      // job is searching, update the hunt total sessions so that the percent works correctly
-      if (!options.searchingFailedSessions && hunt.totalSessions !== (result.hits.total + searchedSessions)) {
-        hunt.totalSessions = result.hits.total + searchedSessions;
-      }
-    }
-
-    async.forEachLimit(hits, 3, function (hit, cb) {
-      searchedSessions++;
-      let session = hit._source;
-      let sessionId = Db.session2Sid(hit);
-      let node = session.node;
-
-      // There are no files, this is a fake session, don't hunt it
-      if (session.fileId === undefined || session.fileId.length === 0) {
-        return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-      }
-
-      sessionAPIs.isLocalView(node, function () {
-        sessionHunt(sessionId, options, function (err, matched) {
-          if (err) {
-            return pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
-          }
-
-          if (matched) {
-            hunt.matchedSessions++;
-            updateSessionWithHunt(session, sessionId, hunt, huntId);
-          }
-
-          updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-        });
-      },
-      function () { // Check Remotely
-        let path = `${node}/hunt/${huntId}/remote/${sessionId}`;
-
-        ViewerUtils.makeRequest(node, path, user, (err, response) => {
-          if (err) {
-            return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-          }
-          let json = JSON.parse(response);
-          if (json.error) {
-            console.log(`Error hunting on remote viewer: ${json.error} - ${path}`);
-            return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
-          }
-          if (json.matched) { hunt.matchedSessions++; }
-          return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-        });
-      });
-    }, function (err) { // done running this section of hunt job
-      // Some kind of error, stop now
-      if (err === 'paused' || err === 'undefined') {
-        if (result && result._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
-        }
-        internals.runningHuntJob = undefined;
-        return;
-      }
-
-      // There might be more, issue another scroll
-      if (result.hits.hits.length !== 0) {
-        return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: internals.esScrollTimeout }, getMoreUntilDone);
-      }
-
-      Db.clearScroll({ body: { scroll_id: result._scroll_id } });
-
-      hunt.searchedSessions = hunt.totalSessions;
-
-      function continueProcess () {
-        Db.setHunt(huntId, hunt, (err, info) => {
-          internals.runningHuntJob = undefined;
-          processHuntJobs(); // start new hunt or go back over failedSessionIds
-        });
-      }
-
-      // the hunt is not actually finished, need to go through the failed session ids
-      if (hunt.failedSessionIds && hunt.failedSessionIds.length) {
-        // uninitialize hunts so that the running job with failed sessions will kick off again
-        internals.proccessHuntJobsInitialized = false;
-        return continueProcess();
-      }
-
-      // We are totally done with this hunt
-      hunt.status = 'finished';
-
-      if (hunt.notifier) {
-        let message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
-        issueAlert(hunt.notifier, message, continueProcess);
-      } else {
-        return continueProcess();
-      }
-    });
-  });
-}
-
-// Do the house keeping before actually running the hunt job
-function processHuntJob (huntId, hunt) {
-  let now = Math.floor(Date.now() / 1000);
-
-  hunt.lastUpdated = now;
-  if (!hunt.started) { hunt.started = now; }
-
-  Db.setHunt(huntId, hunt, (err, info) => {
-    if (err) {
-      pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err} ${info}` });
-    }
-  });
-
-  getUserCacheIncAnon(hunt.userId, (err, user) => {
-    if (err && !user) {
-      pauseHuntJobWithError(huntId, hunt, { value: err });
-      return;
-    }
-    if (!user || !user.found) {
-      pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
-      return;
-    }
-    if (!user.enabled) {
-      pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
-      return;
-    }
-
-    Db.getLookupsCache(hunt.userId, (err, lookups) => {
-      let fakeReq = {
-        user: user,
-        query: {
-          from: 0,
-          size: 100, // only fetch 100 items at a time
-          _source: ['_id', 'node'],
-          sort: 'lastPacket:asc'
-        }
-      };
-
-      if (hunt.query.expression) {
-        fakeReq.query.expression = hunt.query.expression;
-      }
-
-      if (hunt.query.view) {
-        fakeReq.query.view = hunt.query.view;
-      }
-
-      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
-        if (err) {
-          pauseHuntJobWithError(huntId, hunt, {
-            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
-            unrunnable: true
-          });
-          return;
-        }
-
-        ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-          query.query.bool.filter[0] = {
-            range: {
-              lastPacket: {
-                gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-                lt: hunt.query.stopTime * 1000
-              }
-            }
-          };
-
-          query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
-
-          if (Config.debug > 2) {
-            console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
-          }
-
-          // do sessions query
-          runHuntJob(huntId, hunt, query, user);
-        });
-      });
-    });
-  });
-}
-
-// Kick off the process of running a hunt job
-// cb is optional and is called either when a job has been started or end of function
-function processHuntJobs (cb) {
-  if (Config.debug) {
-    console.log('HUNT - processing hunt jobs');
-  }
-
-  if (internals.runningHuntJob) { return (cb ? cb() : null); }
-  internals.runningHuntJob = true;
-
-  let query = {
-    size: 10000,
-    sort: { created: { order: 'asc' } },
-    query: { terms: { status: ['queued', 'paused', 'running'] } }
-  };
-
-  Db.searchHunt(query)
-    .then((hunts) => {
-      if (hunts.error) { throw hunts.error; }
-
-      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        var hit = hunts.hits.hits[i];
-        var hunt = hit._source;
-        let id = hit._id;
-
-         // there is a job already running
-        if (hunt.status === 'running') {
-          internals.runningHuntJob = hunt;
-          if (!internals.proccessHuntJobsInitialized) {
-            internals.proccessHuntJobsInitialized = true;
-            // restart the abandoned or incomplete hunt
-            processHuntJob(id, hunt);
-          }
-          return (cb ? cb() : null);
-        } else if (hunt.status === 'queued') { // get the first queued hunt
-          internals.runningHuntJob = hunt;
-          hunt.status = 'running'; // update the hunt job
-          processHuntJob(id, hunt);
-          return (cb ? cb() : null);
-        }
-      }
-
-      // Made to the end without starting a job
-      internals.proccessHuntJobsInitialized = true;
-      internals.runningHuntJob = undefined;
-      return (cb ? cb() : null);
-    }).catch(err => {
-      console.log('Error fetching hunt jobs', err);
-      return (cb ? cb() : null);
-    });
-}
-
-function updateHuntStatus (req, res, status, successText, errorText) {
-  Db.getHunt(req.params.id, (err, hit) => {
-    if (err) {
-      console.log(errorText, err, hit);
-      return res.molochError(500, errorText);
-    }
-
-    // don't let a user play a hunt job if one is already running
-    if (status === 'running' && internals.runningHuntJob) {
-      return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
-    }
-
-    let hunt = hit._source;
-
-    // if hunt is finished, don't allow pause
-    if (hunt.status === 'finished' && status === 'paused') {
-      return res.molochError(403, 'You cannot pause a completed hunt.');
-    }
-
-    // clear the running hunt job if this is it
-    if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
-    hunt.status = status; // update the hunt job
-
-    Db.setHunt(req.params.id, hunt, (err, info) => {
-      if (err) {
-        console.log(errorText, err, info);
-        return res.molochError(500, errorText);
-      }
-      res.send(JSON.stringify({ success: true, text: successText }));
-      processHuntJobs();
-    });
-  });
-}
-
-function validateUserIds (userIdList) {
-  return new Promise((resolve, reject) => {
-    const query = {
-      _source: ['userId'],
-      from: 0,
-      size: 10000,
-      query: { // exclude the shared user from results
-        bool: { must_not: { term: { userId: '_moloch_shared' } } }
-      }
-    };
-
-    // don't even bother searching for users if in anonymous mode
-    if (!!app.locals.noPasswordSecret && !Config.get('regressionTests', false)) {
-      resolve({ validUsers: [], invalidUsers: [] });
-    }
-
-    Db.searchUsers(query)
-      .then((users) => {
-        let usersList = [];
-        usersList = users.hits.hits.map((user) => {
-          return user._source.userId;
-        });
-
-        let validUsers = [];
-        let invalidUsers = [];
-        for (let user of userIdList) {
-          usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
-        }
-
-        resolve({
-          validUsers: validUsers,
-          invalidUsers: invalidUsers
-        });
-      })
-      .catch((error) => {
-          reject('Unable to validate userIds');
-      });
   });
 }
 
@@ -3260,285 +2534,41 @@ app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logActio
 });
 
 // notifier apis --------------------------------------------------------------
-app.get('/notifierTypes', checkCookieToken, function (req, res) {
-  if (!internals.notifiers) {
-    buildNotifiers();
-  }
+app.get( // notifier types endpoint
+  ['/api/notifiertypes', '/notifierTypes'],
+  [checkPermissions(['createEnabled']), checkCookieToken],
+  notifierAPIs.getNotifierTypes
+);
 
-  return res.send(internals.notifiers);
-});
+app.get( // notifiers endpoint
+  ['/api/notifiers', '/notifiers'],
+  [checkCookieToken],
+  notifierAPIs.getNotifiers
+);
 
-// get created notifiers
-app.get('/notifiers', checkCookieToken, function (req, res) {
-  function cloneNotifiers (notifiers) {
-    var clone = {};
+app.post( // create notifier endpoint
+  ['/api/notifier', '/notifiers'],
+  [noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  notifierAPIs.createNotifier
+);
 
-    for (var key in notifiers) {
-      if (notifiers.hasOwnProperty(key)) {
-        var notifier = notifiers[key];
-        clone[key] = {
-          name: notifier.name,
-          type: notifier.type
-        };
-      }
-    }
+app.put( // update notifier endpoint
+  ['/api/notifier/:name', '/notifiers/:name'],
+  [noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  notifierAPIs.updateNotifier
+);
 
-    return clone;
-  }
+app.delete( // delete notifier endpoint
+  ['/api/notifier/:name', '/notifiers/:name'],
+  [noCacheJson, getSettingUserDb, checkPermissions(['createEnabled']), checkCookieToken],
+  notifierAPIs.deleteNotifier
+);
 
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      return res.send({});
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    if (req.user.createEnabled) {
-      return res.send(sharedUser.notifiers);
-    }
-
-    return res.send(cloneNotifiers(sharedUser.notifiers));
-  });
-});
-
-// create a new notifier
-app.post('/notifiers', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
-  let user = req.settingUser;
-  if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to create a notifier');
-  }
-
-  if (!req.body.notifier) {
-    return res.molochError(403, 'Missing notifier');
-  }
-
-  if (!req.body.notifier.name) {
-    return res.molochError(403, 'Missing a unique notifier name');
-  }
-
-  if (!req.body.notifier.type) {
-    return res.molochError(403, 'Missing notifier type');
-  }
-
-  if (!req.body.notifier.fields) {
-    return res.molochError(403, 'Missing notifier fields');
-  }
-
-  if (!Array.isArray(req.body.notifier.fields)) {
-    return res.molochError(403, 'Notifier fields must be an array');
-  }
-
-  req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-  if (!internals.notifiers) { buildNotifiers(); }
-
-  let foundNotifier;
-  for (let n in internals.notifiers) {
-    let notifier = internals.notifiers[n];
-    if (notifier.type === req.body.notifier.type) {
-      foundNotifier = notifier;
-    }
-  }
-
-  if (!foundNotifier) { return res.molochError(403, 'Unknown notifier type'); }
-
-  // check that required notifier fields exist
-  for (let field of foundNotifier.fields) {
-    if (field.required) {
-      for (let sentField of req.body.notifier.fields) {
-        if (sentField.name === field.name && !sentField.value) {
-          return res.molochError(403, `Missing a value for ${field.name}`);
-        }
-      }
-    }
-  }
-
-  // save the notifier on the shared user
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      // sharing for the first time
-      sharedUser = {
-        userId: '_moloch_shared',
-        userName: '_moloch_shared',
-        enabled: false,
-        webEnabled: false,
-        emailSearch: false,
-        headerAuthEnabled: false,
-        createEnabled: false,
-        removeEnabled: false,
-        packetSearch: false,
-        views: {},
-        notifiers: {}
-      };
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    if (sharedUser.notifiers[req.body.notifier.name]) {
-      console.log('Trying to add duplicate notifier', sharedUser);
-      return res.molochError(403, 'Notifier already exists');
-    }
-
-    sharedUser.notifiers[req.body.notifier.name] = req.body.notifier;
-
-    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-      if (err) {
-        console.log('/notifiers failed', err, info);
-        return res.molochError(500, 'Creating notifier failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Successfully created notifier',
-        name: req.body.notifier.name
-      }));
-    });
-  });
-});
-
-// update a notifier
-app.put('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
-  let user = req.settingUser;
-  if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to update a notifier');
-  }
-
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      return res.molochError(404, 'Cannot find notifer to udpate');
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    if (!sharedUser.notifiers[req.params.name]) {
-      return res.molochError(404, 'Cannot find notifer to udpate');
-    }
-
-    if (!req.body.notifier) {
-      return res.molochError(403, 'Missing notifier');
-    }
-
-    if (!req.body.notifier.name) {
-      return res.molochError(403, 'Missing a unique notifier name');
-    }
-
-    if (!req.body.notifier.type) {
-      return res.molochError(403, 'Missing notifier type');
-    }
-
-    if (!req.body.notifier.fields) {
-      return res.molochError(403, 'Missing notifier fields');
-    }
-
-    if (!Array.isArray(req.body.notifier.fields)) {
-      return res.molochError(403, 'Notifier fields must be an array');
-    }
-
-    req.body.notifier.name = req.body.notifier.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
-
-    if (!internals.notifiers) { buildNotifiers(); }
-
-    let foundNotifier;
-    for (let n in internals.notifiers) {
-      let notifier = internals.notifiers[n];
-      if (notifier.type === req.body.notifier.type) {
-        foundNotifier = notifier;
-      }
-    }
-
-    if (!foundNotifier) { return res.molochError(403, 'Unknown notifier type'); }
-
-    // check that required notifier fields exist
-    for (let field of foundNotifier.fields) {
-      if (field.required) {
-        for (let sentField of req.body.notifier.fields) {
-          if (sentField.name === field.name && !sentField.value) {
-            return res.molochError(403, `Missing a value for ${field.name}`);
-          }
-        }
-      }
-    }
-
-    sharedUser.notifiers[req.body.notifier.name] = req.body.notifier;
-    // delete the old notifier if the name has changed
-    if (sharedUser.notifiers[req.params.name] && req.body.notifier.name !== req.params.name) {
-      sharedUser.notifiers[req.params.name] = null;
-      delete sharedUser.notifiers[req.params.name];
-    }
-
-    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-      if (err) {
-        console.log('/notifiers update failed', err, info);
-        return res.molochError(500, 'Updating notifier failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Successfully updated notifier',
-        name: req.body.notifier.name
-      }));
-    });
-  });
-});
-
-// delete a notifier
-app.delete('/notifiers/:name', [noCacheJson, getSettingUserDb, checkCookieToken], function (req, res) {
-  let user = req.settingUser;
-  if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to delete a notifier');
-  }
-
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      return res.molochError(404, 'Cannot find notifer to remove');
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    sharedUser.notifiers = sharedUser.notifiers || {};
-
-    if (!sharedUser.notifiers[req.params.name]) {
-      return res.molochError(404, 'Cannot find notifer to remove');
-    }
-
-    sharedUser.notifiers[req.params.name] = undefined;
-
-    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-      if (err) {
-        console.log('/notifiers delete failed', err, info);
-        return res.molochError(500, 'Deleting notifier failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Successfully deleted notifier',
-        name: req.params.name
-      }));
-    });
-  });
-});
-
-// test a notifier
-app.post('/notifiers/:name/test', [noCacheJson, getSettingUserCache, checkCookieToken], function (req, res) {
-  let user = req.settingUser;
-  if (!user.createEnabled) {
-    return res.molochError(401, 'Need admin privelages to test a notifier');
-  }
-
-  function continueProcess (err) {
-    if (err) {
-      return res.molochError(500, `Error testing alert: ${err}`);
-    }
-
-    return res.send(JSON.stringify({
-      success: true,
-      text: `Successfully issued alert using the ${req.params.name} notifier.`
-    }));
-  }
-
-  issueAlert(req.params.name, 'Test alert', continueProcess);
-});
+app.post( // test notifier endpoint
+  ['/api/notifier/:name/test', '/notifiers/:name/test'],
+  [noCacheJson, getSettingUserCache, checkPermissions(['createEnabled']), checkCookieToken],
+  notifierAPIs.testNotifier
+);
 
 // history apis ---------------------------------------------------------------
 app.get('/history/list', [noCacheJson, recordResponseTime, setCookie], (req, res) => {
@@ -3779,7 +2809,7 @@ app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (r
   res.send(app.locals.molochRightClick);
 });
 
- /**
+/**
  * The Elasticsearch cluster health status and information.
  * @typedef ESHealth
  * @type {object}
@@ -4260,311 +3290,53 @@ app.get('/state/:name', [noCacheJson], function (req, res) {
 });
 
 // hunt apis ------------------------------------------------------------------
-app.post('/hunt', [noCacheJson, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])], (req, res) => {
-  // make sure viewer is not multi
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  // make sure all the necessary data is included in the post body
-  if (!req.body.hunt) { return res.molochError(403, 'You must provide a hunt object'); }
-  if (!req.body.hunt.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
-  if (!req.body.hunt.name) { return res.molochError(403, 'Missing hunt name'); }
-  if (!req.body.hunt.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
-  if (!req.body.hunt.search) { return res.molochError(403, 'Missing packet search text'); }
-  if (!req.body.hunt.src && !req.body.hunt.dst) {
-    return res.molochError(403, 'The hunt must search source or destination packets (or both)');
-  }
-  if (!req.body.hunt.query) { return res.molochError(403, 'Missing query'); }
-  if (req.body.hunt.query.startTime === undefined || req.body.hunt.query.stopTime === undefined) {
-    return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
-  }
+app.get( // hunts endpoint
+  ['/api/hunts', '/hunt/list'],
+  [noCacheJson, disableInMultiES, recordResponseTime, checkPermissions(['packetSearch']), setCookie],
+  huntAPIs.getHunts
+);
 
-  let searchTypes = [ 'ascii', 'asciicase', 'hex', 'wildcard', 'regex', 'hexregex' ];
-  if (!req.body.hunt.searchType) { return res.molochError(403, 'Missing packet search text type'); } else if (searchTypes.indexOf(req.body.hunt.searchType) === -1) {
-    return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "wildcard", "hexregex", or "regex"');
-  }
+app.post( // create hunt endpoint
+  ['/api/hunt', '/hunt'],
+  [noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, checkPermissions(['packetSearch'])],
+  huntAPIs.createHunt
+);
 
-  if (!req.body.hunt.type) { return res.molochError(403, 'Missing packet search type (raw or reassembled packets)'); } else if (req.body.hunt.type !== 'raw' && req.body.hunt.type !== 'reassembled') {
-    return res.molochError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
-  }
+app.delete( // delete hunt endpoint
+  ['/api/hunt/:id', '/hunt/:id'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.deleteHunt
+);
 
-  let limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
-  if (parseInt(req.body.hunt.totalSessions) > limit) {
-    return res.molochError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
-  }
+app.put( // pause hunt endpoint
+  ['/api/hunt/:id/pause', '/hunt/:id/pause'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.pauseHunt
+);
 
-  let now = Math.floor(Date.now() / 1000);
+app.put( // play hunt endpoint
+  ['/api/hunt/:id/play', '/hunt/:id/play'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.playHunt
+);
 
-  req.body.hunt.name = req.body.hunt.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
+app.post( // add users to hunt endpoint
+  ['/api/hunt/:id/users', '/hunt/:id/users'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.addUsers
+);
 
-  let hunt = req.body.hunt;
-  hunt.created = now;
-  hunt.status = 'queued'; // always starts as queued
-  hunt.userId = req.user.userId;
-  hunt.matchedSessions = 0; // start with no matches
-  hunt.searchedSessions = 0; // start with no sessions searched
-  hunt.query = { // only use the necessary query items
-    expression: req.body.hunt.query.expression,
-    startTime: req.body.hunt.query.startTime,
-    stopTime: req.body.hunt.query.stopTime,
-    view: req.body.hunt.query.view
-  };
+app.delete( // remove users from hunt endpoint
+  ['/api/hunt/:id/user/:user', '/hunt/:id/users/:user'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.removeUsers
+);
 
-  function doneCb (hunt, invalidUsers) {
-    Db.createHunt(hunt, function (err, result) {
-      if (err) {
-        console.log('create hunt error', err, result);
-        return res.molochError(500, 'Error creating hunt - ' + err);
-      }
-      hunt.id = result._id;
-      processHuntJobs(() => {
-        let response = {
-          success: true,
-          hunt: hunt
-        };
-
-        if (invalidUsers) {
-          response.invalidUsers = invalidUsers;
-        }
-
-        return res.send(JSON.stringify(response));
-      });
-    });
-  }
-
-  if (!req.body.hunt.users || !req.body.hunt.users.length) {
-    return doneCb(hunt);
-  }
-
-  let reqUsers = ViewerUtils.commaStringToArray(req.body.hunt.users);
-
-  validateUserIds(reqUsers)
-    .then((response) => {
-      hunt.users = response.validUsers;
-
-      // dedupe the array of users
-      hunt.users = [...new Set(hunt.users)];
-
-      return doneCb(hunt, response.invalidUsers);
-    })
-    .catch((error) => {
-      res.molochError(500, error);
-    });
-});
-
-app.get('/hunt/list', [noCacheJson, recordResponseTime, checkPermissions(['packetSearch']), setCookie], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  let query = {
-    sort: {},
-    from: parseInt(req.query.start) || 0,
-    size: parseInt(req.query.length) || 10000,
-    query: { bool: { must: [] } }
-  };
-
-  query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
-
-  if (req.query.history) { // only get finished jobs
-    query.query.bool.must.push({ term: { status: 'finished' } });
-    if (req.query.searchTerm) { // apply search term
-      query.query.bool.must.push({
-        query_string: {
-          query: req.query.searchTerm,
-          fields: ['name', 'userId']
-        }
-      });
-    }
-  } else { // get queued, paused, running jobs
-    query.from = 0;
-    query.size = 1000;
-    query.query.bool.must.push({ terms: { status: ['queued', 'paused', 'running'] } });
-  }
-
-  if (Config.debug) {
-    console.log('hunt query:', JSON.stringify(query, null, 2));
-  }
-
-  Promise.all([Db.searchHunt(query),
-    Db.numberOfHunts()])
-    .then(([hunts, total]) => {
-      if (hunts.error) { throw hunts.error; }
-
-      let runningJob;
-
-      let results = { total: hunts.hits.total, results: [] };
-      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        const hit = hunts.hits.hits[i];
-        let hunt = hit._source;
-        hunt.id = hit._id;
-        hunt.index = hit._index;
-        // don't add the running job to the queue
-        if (internals.runningHuntJob && hunt.status === 'running') {
-          runningJob = hunt;
-          continue;
-        }
-
-        hunt.users = hunt.users || [];
-
-        // clear out secret fields for users who don't have access to that hunt
-        // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
-          // since hunt isn't cached we can just modify
-          hunt.search = '';
-          hunt.searchType = '';
-          hunt.id = '';
-          hunt.userId = '';
-          delete hunt.query;
-        }
-        results.results.push(hunt);
-      }
-
-      const r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results,
-        runningJob: runningJob
-      };
-
-      res.send(r);
-    }).catch(err => {
-      console.log('ERROR - /hunt/list', err);
-      return res.molochError(500, 'Error retrieving hunts - ' + err);
-    });
-});
-
-app.delete('/hunt/:id', [noCacheJson, logAction('hunt/:id'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.deleteHuntItem(req.params.id, function (err, result) {
-    if (err || result.error) {
-      console.log('ERROR - deleting hunt item', err || result.error);
-      return res.molochError(500, 'Error deleting hunt item');
-    } else {
-      res.send(JSON.stringify({ success: true, text: 'Deleted hunt item successfully' }));
-    }
-  });
-});
-
-app.put('/hunt/:id/pause', [noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  updateHuntStatus(req, res, 'paused', 'Paused hunt item successfully', 'Error pausing hunt job');
-});
-
-app.put('/hunt/:id/play', [noCacheJson, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-  updateHuntStatus(req, res, 'queued', 'Queued hunt item successfully', 'Error starting hunt job');
-});
-
-app.delete('/hunt/:id/users/:user', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  Db.getHunt(req.params.id, (err, hit) => {
-    if (err) {
-      console.log('Unable to fetch hunt to remove user', err, hit);
-      return res.molochError(500, 'Unable to fetch hunt to remove user');
-    }
-
-    let hunt = hit._source;
-
-    if (!hunt.users || !hunt.users.length) {
-      return res.molochError(404, 'There are no users that have access to view this hunt');
-    }
-
-    let userIdx = hunt.users.indexOf(req.params.user);
-
-    if (userIdx < 0) { // user doesn't have access to this hunt
-      return res.molochError(404, 'That user does not have access to this hunt');
-    }
-
-    // remove the user from the list
-    hunt.users.splice(userIdx, 1);
-
-    Db.setHunt(req.params.id, hunt, (err, info) => {
-      if (err) {
-        console.log('Unable to remove user', err, info);
-        return res.molochError(500, 'Unable to remove user');
-      }
-      res.send(JSON.stringify({ success: true, users: hunt.users }));
-    });
-  });
-});
-
-app.post('/hunt/:id/users', [noCacheJson, logAction('hunt/:id/users/:user'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess], (req, res) => {
-  if (Config.get('multiES', false)) { return res.molochError(401, 'Not supported in multies'); }
-
-  if (!req.body.users) { return res.molochError(403, 'You must provide users in a comma separated string'); }
-
-  Db.getHunt(req.params.id, (err, hit) => {
-    if (err) {
-      console.log('Unable to fetch hunt to add user(s)', err, hit);
-      return res.molochError(500, 'Unable to fetch hunt to add user(s)');
-    }
-
-    let hunt = hit._source;
-    let reqUsers = ViewerUtils.commaStringToArray(req.body.users);
-
-    validateUserIds(reqUsers)
-      .then((response) => {
-        if (!response.validUsers.length) {
-          return res.molochError(404, 'Unable to validate user IDs provided');
-        }
-
-        if (!hunt.users) {
-          hunt.users = response.validUsers;
-        } else {
-          hunt.users = hunt.users.concat(response.validUsers);
-        }
-
-        // dedupe the array of users
-        hunt.users = [...new Set(hunt.users)];
-
-        Db.setHunt(req.params.id, hunt, (err, info) => {
-          if (err) {
-            console.log('Unable to add user(s)', err, info);
-            return res.molochError(500, 'Unable to add user(s)');
-          }
-          res.send(JSON.stringify({
-            success: true,
-            users: hunt.users,
-            invalidUsers: response.invalidUsers
-          }));
-        });
-      })
-      .catch((error) => {
-        res.molochError(500, error);
-      });
-  });
-});
-
-app.get('/:nodeName/hunt/:huntId/remote/:sessionId', [noCacheJson], function (req, res) {
-  let huntId = req.params.huntId;
-  let sessionId = req.params.sessionId;
-
-  // fetch hunt and session
-  Promise.all([Db.get('hunts', 'hunt', huntId),
-    Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))])
-    .then(([hunt, session]) => {
-      if (hunt.error || session.error) { res.send({ matched: false }); }
-
-      hunt = hunt._source;
-      session = session._source;
-
-      let options = buildHuntOptions(huntId, hunt);
-
-      sessionHunt(sessionId, options, function (err, matched) {
-        if (err) {
-          return res.send({ matched: false, error: err });
-        }
-
-        if (matched) {
-          updateSessionWithHunt(session, sessionId, hunt, huntId);
-        }
-
-        return res.send({ matched: matched });
-      });
-    }).catch((err) => {
-      console.log('ERROR - hunt/remote', err);
-      res.send({ matched: false, error: err });
-    });
-});
+app.get( // remote hunt endpoint
+  ['/api/hunt/:nodeName/:huntId/remote/:sessionId', '/:nodeName/hunt/:huntId/remote/:sessionId'],
+  [noCacheJson],
+  huntAPIs.remoteHunt
+);
 
 // lookup apis ----------------------------------------------------------------
 let lookupMutex = new Mutex();
@@ -4962,7 +3734,7 @@ if (Config.get('regressionTests')) {
 
   // Make sure all jobs have run and return
   app.get('/processHuntJobs', function (req, res) {
-    processHuntJobs();
+    huntAPIs.processHuntJobs();
 
     setTimeout(function checkHuntFinished () {
       if (internals.runningHuntJob) {
@@ -4970,7 +3742,7 @@ if (Config.get('regressionTests')) {
       } else {
         Db.search('hunts', 'hunt', { query: { term: { status: 'queued' } } }, function (err, result) {
           if (result.hits.total > 0) {
-            processHuntJobs();
+            huntAPIs.processHuntJobs();
             setTimeout(checkHuntFinished, 1000);
           } else {
             res.send('{}');
@@ -5215,7 +3987,7 @@ function processCronQueries () {
           cluster = cq.action.substring(8);
         }
 
-        getUserCacheIncAnon(cq.creator, (err, user) => {
+        ViewerUtils.getUserCacheIncAnon(cq.creator, (err, user) => {
           if (err && !user) {
             return forQueriesCb();
           }
@@ -5300,7 +4072,7 @@ function processCronQueries () {
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                   let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
                   let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
-                  issueAlert(cq.notifier, message, continueProcess);
+                  notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
                 } else {
                   return continueProcess();
                 }
@@ -5365,7 +4137,7 @@ function main () {
     console.log('This node will process Cron Queries, delayed by', internals.cronTimeout, 'seconds');
     setInterval(processCronQueries, 60 * 1000);
     setTimeout(processCronQueries, 1000);
-    setInterval(processHuntJobs, 10000);
+    setInterval(huntAPIs.processHuntJobs, 10000);
   }
 
   var server;

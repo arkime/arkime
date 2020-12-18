@@ -26,64 +26,64 @@ my $hToken = getTokenCookie('huntuser');
 
 ##### ERRORS
 # Must have token to add a hunt
-  $json = viewerPost("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}');
+  $json = viewerPost("/hunt", '{"totalSessions":1,"name":"test hunt 1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}');
   eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
 # Must apply to sessions to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":0,"name":"test hunt 2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/api/hunt", '{"totalSessions":0,"name":"test hunt 2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   eq_or_diff($json, from_json('{"text": "This hunt does not apply to any sessions", "success": false}'));
 
 # Must have a name to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   eq_or_diff($json, from_json('{"text": "Missing hunt name", "success": false}'));
 
 # Must have a size to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   eq_or_diff($json, from_json('{"text": "Missing max mumber of packets to examine per session", "success": false}'));
 
 # Must have search text to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   eq_or_diff($json, from_json('{"text": "Missing packet search text", "success": false}'));
 
 # Must have search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing packet search text type", "success": false}'));
 
 # Must have a valid search text type to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
-  eq_or_diff($json, from_json('{"text": "Improper packet search text type. Must be \"ascii\", \"asciicase\", \"hex\", \"wildcard\", \"hexregex\", or \"regex\"", "success": false}'));
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
+  eq_or_diff($json, from_json('{"text": "Improper packet search text type. Must be \"ascii\", \"asciicase\", \"hex\", \"hexregex\", or \"regex\"", "success": false}'));
 
 # Must have a type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  $json = viewerPostToken("/hunt",'{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing packet search type (raw or reassembled packets)", "success": false}'));
 
 # Must have a valid type to add a hunt
-  $json = viewerPostToken("/hunt",'{"hunt":{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}}', $token);
+  $json = viewerPostToken("/hunt",'{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
   eq_or_diff($json, from_json('{"text": "Improper packet search type. Must be \"raw\" or \"reassembled\"", "success": false}'));
 
 # Must have src or dst to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 9","size":"50","search":"test search text","searchType":"ascii","type":"raw"}}', $token);
+  $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 9","size":"50","search":"test search text","searchType":"ascii","type":"raw"}', $token);
   eq_or_diff($json, from_json('{"text": "The hunt must search source or destination packets (or both)", "success": false}'));
 
 # Must have query to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 10","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}}', $token);
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 10","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   eq_or_diff($json, from_json('{"text": "Missing query", "success": false}'));
 
 # Must have fully formed query to add a hunt
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 11","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}}', $token);
+  $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 11","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
 
-  $json = viewerPostToken("/hunt", '{"hunt":{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt", '{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}', $token);
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
 
 # Make sure no hunts
-  my $hunts = viewerGet("/hunt/list");
+  my $hunts = viewerGet("/api/hunts");
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 ##### GOOD
 
 # Add a valid hunt, and it should immediately run
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{success}, 1);
 
 # Make sure the hunt's name doesn't contain special chars
@@ -92,7 +92,7 @@ my $hToken = getTokenCookie('huntuser');
 # Hunt should finish
   viewerGet("/processHuntJobs");
 
-  $hunts = viewerGet("/hunt/list?molochRegressionUser=user2&history=true");
+  $hunts = viewerGet("/api/hunts?molochRegressionUser=user2&history=true");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
 
 # user2 shouldn't see is, query, search, searchType, userId
@@ -105,13 +105,13 @@ my $hToken = getTokenCookie('huntuser');
 
 # If the user is not an admin they can only delete their own hunts
   my $id1 = $json->{hunt}->{id};
-  $json = viewerDeleteToken("/hunt/$id1?molochRegressionUser=user2", $otherToken);
+  $json = viewerDeleteToken("/api/hunt/$id1?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "You cannot change another user's hunt unless you have admin privileges");
 
   $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
 
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
 
   viewerGet("/processHuntJobs");
 
@@ -120,32 +120,32 @@ my $hToken = getTokenCookie('huntuser');
 
   my $id2 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
-  is ($json->{text}, "Deleted hunt item successfully");
+  is ($json->{text}, "Deleted hunt successfully");
 
   $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id3 = $json->{hunt}->{id};
 
-  $json = viewerPutToken("/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
+  $json = viewerPutToken("/api/hunt/$id3/pause?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
 # If the user is not an admin they can only play their own hunts
-  $json = viewerPutToken("/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
+  $json = viewerPutToken("/api/hunt/$id3/play?molochRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
 
   $json = viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
-  is ($json->{text}, "Deleted hunt item successfully");
+  is ($json->{text}, "Deleted hunt successfully");
 
 # Admin can delete any hunt
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
 
   sleep(2); # Wait for it to finish processing
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
-  is ($json->{text}, "Deleted hunt item successfully");
+  is ($json->{text}, "Deleted hunt successfully");
 
   $hunts = viewerGet("/hunt/list?history=true");
   my $found = 0;
@@ -159,12 +159,12 @@ my $hToken = getTokenCookie('huntuser');
 
 # should be able to run a hunt with a view
   viewerPostToken("/user/views/create?molochRegressionUser=user2", '{"name": "tls", "expression": "protocols == tls", "shared": true}', $otherToken);
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"view":"tls"}}', $otherToken);
   is ($json->{success}, 1, "can run a hunt with a view");
   my $id5 = $json->{hunt}->{id};
 
 # hunt bad regex
-  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"hunt":{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $otherToken);
+  $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/processHuntJobs");
@@ -187,7 +187,7 @@ my $hToken = getTokenCookie('huntuser');
   is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
 
 # add a hunt that is shared with another user
-  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"hunt":{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}}', $token);
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
 
@@ -196,7 +196,7 @@ my $hToken = getTokenCookie('huntuser');
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
 # can't delete a user from an hunt with no users
-  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 # add a user to a hunt
@@ -204,7 +204,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{users}->[0], "huntuser", "hunt should have a user added");
 
 # can't add an unknown user to a hunt
-  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
   eq_or_diff($json, from_json('{"text": "Unable to validate user IDs provided", "success": false}'), "hunt should show error if no users are added");
 
 # hunt should not add and send back invalid users
@@ -214,11 +214,11 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{invalidUsers}->[0], "unknownuser", "hunt should send back invalid users");
 
 # can't add empty users
-  $json = viewerPostToken("/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
+  $json = viewerPostToken("/api/hunt/$id7/users?molochRegressionUser=anonymous", '{"users":""}', $token);
   eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
 
 # can't delete an unknown user
-  $json = viewerDeleteToken("/hunt/$id7/users/unknownuser?molochRegressionUser=anonymous", $token);
+  $json = viewerDeleteToken("/api/hunt/$id7/user/unknownuser?molochRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "That user does not have access to this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
 
@@ -243,12 +243,12 @@ my $hToken = getTokenCookie('huntuser');
   sub createHunts {
     my ($stype, $str) = @_;
 
-    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
-    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}}', $hToken);
+    $HUNTS{"raw-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"raw-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "raw-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"raw","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-both-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-both-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-src-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-src-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":true,"dst":false,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
+    $HUNTS{"reassembled-$stype-dst-$str"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":1,"name":"' . "reassembled-$stype-dst-$str-$$" . '", "size":"50","search":"' . $str . '","searchType":"' . $stype . '","type":"reassembled","src":false,"dst":true,"query":{"startTime":18000,"stopTime":1536872891, "expression": "file == *http-wrapped-header.pcap"}}', $hToken);
   }
 
   # Check hunt vars given name and what the match count should be
@@ -283,7 +283,7 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"hunt":{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/processHuntJobs");

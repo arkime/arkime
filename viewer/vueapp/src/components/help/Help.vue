@@ -680,12 +680,16 @@
           <dd>The name of the hunt (multiple hunts can have the same name)</dd>
           <dt>Max number of packets to examine per session</dt>
           <dd>The maximum number of packets that the hunt will search within each session</dd>
+          <dt>Notify</dt>
+          <dd>An otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
           <dt>Search</dt>
           <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
           <dt>Search src/dst packets</dt>
-          <dd>Whether to search source or destination packets, or both</dd>
+          <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
           <dt>Search raw/reassembled packets</dt>
           <dd>Whether to search raw or reassembled packets</dd>
+          <dt>Users</dt>
+          <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
         </dl>
       <p>
         Once the hunt has been created, it will be added to the <strong>hunt job queue</strong>. Hunts run one at a time and

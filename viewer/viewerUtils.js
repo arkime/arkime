@@ -5,7 +5,7 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-module.exports = (Config, Db, molochparser, internals) => {
+module.exports = (app, Config, Db, molochparser, internals) => {
   let module = {};
 
   module.addAuth = (info, user, node, secret) => {
@@ -588,6 +588,70 @@ module.exports = (Config, Db, molochparser, internals) => {
        options.cluster = cluster;
      }
      return options;
+   };
+
+   // check for anonymous mode before fetching user cache and return anonymous
+   // user or the user requested by the userId
+   module.getUserCacheIncAnon = (userId, cb) => {
+     if (app.locals.noPasswordSecret) { // user is anonymous
+       Db.getUserCache('anonymous', (err, anonUser) => {
+         let anon = internals.anonymousUser;
+
+         if (!err && anonUser && anonUser.found) {
+           anon.settings = anonUser._source.settings || {};
+           anon.views = anonUser._source.views;
+         }
+
+         return cb(null, anon);
+       });
+     } else {
+       Db.getUserCache(userId, (err, user) => {
+         let found = user.found;
+         user = user._source;
+         if (user) { user.found = found; }
+         return cb(err, user);
+       });
+     }
+   };
+
+   module.validateUserIds = (userIdList) => {
+     return new Promise((resolve, reject) => {
+       const query = {
+         _source: ['userId'],
+         from: 0,
+         size: 10000,
+         query: { // exclude the shared user from results
+           bool: { must_not: { term: { userId: '_moloch_shared' } } }
+         }
+       };
+
+       // don't even bother searching for users if in anonymous mode
+       if (!!app.locals.noPasswordSecret && !Config.get('regressionTests', false)) {
+         resolve({ validUsers: [], invalidUsers: [] });
+       }
+
+       Db.searchUsers(query)
+         .then((users) => {
+           let usersList = [];
+           usersList = users.hits.hits.map((user) => {
+             return user._source.userId;
+           });
+
+           let validUsers = [];
+           let invalidUsers = [];
+           for (let user of userIdList) {
+             usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
+           }
+
+           resolve({
+             validUsers: validUsers,
+             invalidUsers: invalidUsers
+           });
+         })
+         .catch((error) => {
+             reject('Unable to validate userIds');
+         });
+     });
    };
 
    return module;

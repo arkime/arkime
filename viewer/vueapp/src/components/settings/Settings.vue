@@ -3071,7 +3071,7 @@ export default {
         }
       }
 
-      this.$http.post('notifiers', { notifier: this.newNotifier })
+      this.$http.post('api/notifier', this.newNotifier)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully created new notifier.';
@@ -3092,7 +3092,7 @@ export default {
     },
     /* deletes a notifier */
     removeNotifier: function (name) {
-      this.$http.delete(`notifiers/${name}`)
+      this.$http.delete(`api/notifier/${name}`)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully deleted notifier.';
@@ -3107,7 +3107,7 @@ export default {
     },
     /* updates a notifier */
     updateNotifier: function (key, notifier) {
-      this.$http.put(`notifiers/${key}`, { notifier: notifier })
+      this.$http.put(`api/notifier/${key}`, notifier)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully updated notifier.';
@@ -3131,7 +3131,7 @@ export default {
       }
 
       this.$set(this.notifiers[name], 'loading', true);
-      this.$http.post(`notifiers/${name}/test`, {})
+      this.$http.post(`api/notifier/${name}/test`, {})
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully issued alert.';
@@ -3507,7 +3507,7 @@ export default {
     },
     /* retrieves the types of notifiers that can be configured */
     getNotifierTypes: function () {
-      this.$http.get('notifierTypes')
+      this.$http.get('api/notifierTypes')
         .then((response) => {
           this.notifierTypes = response.data;
         }, (error) => {
@@ -3516,7 +3516,7 @@ export default {
     },
     /* retrieves the notifiers that have been configured */
     getNotifiers: function () {
-      this.$http.get('notifiers')
+      this.$http.get('api/notifiers')
         .then((response) => {
           this.notifiers = response.data;
         }, (error) => {
