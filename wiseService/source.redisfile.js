@@ -40,14 +40,8 @@ class RedisFileSource extends SimpleSource {
   }
 
   // ----------------------------------------------------------------------------
-  simpleSourceLoad (setFunc, cb) {
-    this.client.get(this.key, (error, reply) => {
-      if (reply === null) {
-        cb(error);
-      } else {
-        this.parse(reply, setFunc, cb);
-      }
-    });
+  simpleSourceLoad (cb) {
+    this.client.get(this.key, cb);
   }
 
   // ----------------------------------------------------------------------------

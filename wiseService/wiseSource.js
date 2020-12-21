@@ -517,6 +517,15 @@ class WISESource {
  * @abstract
  */
 /**
+ * Get the types this source supports.
+ * @returns {string|array} the array of types this source supports, by default the type setting from config file if option.typeSetting was set
+ *
+ * @method
+ * @name WISESource#getTypes
+ * @abstract
+ */
+
+/**
  * Every source needs to implement this method, usually with
  * @method
  * @name WISESource.initSource

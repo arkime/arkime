@@ -63,13 +63,8 @@ class FileSource extends SimpleSource {
   }
 
   // ----------------------------------------------------------------------------
-  simpleSourceLoad (setFunc, cb) {
-    fs.readFile(this.file, (err, body) => {
-      if (err) {
-        return cb(err);
-      }
-      this.parse(body, setFunc, cb);
-    });
+  simpleSourceLoad (cb) {
+    fs.readFile(this.file, cb);
   }
   // ----------------------------------------------------------------------------
   getSourceRaw (cb) {

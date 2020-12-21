@@ -31,6 +31,7 @@ const iptrie = require('iptrie');
  * * implement initSource
  * * call initSimple at the end of their constructor
  * * implement simpleSourceLoad
+ * * they can optionaly call this.load() if they want to force a reload of data
  * @extends WISESource
  */
 class SimpleSource extends WISESource {
@@ -158,25 +159,32 @@ class SimpleSource extends WISESource {
         };
       }
     }
-    this.simpleSourceLoad(setFunc, (err) => {
+    this.simpleSourceLoad((err, body) => {
       if (err) {
         console.log('ERROR loading', this.section, err);
         return;
       }
-      this.cache = newCache;
-      console.log(this.section, '- Done Loading', count, 'elements');
+
+      this.parse(body, setFunc, (err) => {
+        if (err) {
+          console.log('ERROR parsing', this.section, err);
+          return;
+        }
+        this.cache = newCache;
+        console.log(this.section, '- Done Loading', count, 'elements');
+      });
     });
   };
 };
 
 /**
  * Each simple source must implement this method.
+ * It should call the callback with either the error or the entire body of the text to parse.
  * It will be called inside initSimple and periodically if reloading is enabled.
  *
  * @method
  * @name SimpleSource#simpleSourceLoad
- * @param {function} set - (key, value) the source should call the set function for each value it wants to load
- * @param {function} cb - (err)
+ * @param {function} cb - (err, body)
  * @virtual
  */
 

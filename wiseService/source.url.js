@@ -46,12 +46,12 @@ class URLSource extends SimpleSource {
   }
 
   // ----------------------------------------------------------------------------
-  simpleSourceLoad (setFunc, cb) {
-    request(this.url, { headers: this.headers }, (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        this.parse(body, setFunc, cb);
+  simpleSourceLoad (cb) {
+    request(this.url, { headers: this.headers }, (err, response, body) => {
+      if (!err && response.statusCode === 200) {
+        cb(null, body);
       } else {
-        cb(error);
+        cb(err);
       }
     });
   }
