@@ -615,7 +615,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }, () => {
         // Get from remote DISK
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
-          let buffer = Buffer.alloc(fields.totPackets * 20 + fields.totBytes);
+          let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
           let bufpos = 0;
           const info = url.parse(viewUrl);
           info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
@@ -1047,8 +1047,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
+    const options = ViewerUtils.addCluster(req.query.cluster, { _source: fields.join(',') });
     async.eachLimit(ids, 10, function (id, nextCb) {
-      const options = ViewerUtils.addCluster(req.query.cluster);
       Db.getSession(id, options, function (err, session) {
         if (err) {
           return nextCb(null);
