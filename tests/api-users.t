@@ -32,6 +32,8 @@ my $pwd = "*/pcap";
     # This will set a lastUsed time, make sure DB is updated with sleep
     my $test1Token = getTokenCookie("test1");
     sleep(1);
+    esGet("/_flush");
+    esGet("/_refresh");
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #2");
