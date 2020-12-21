@@ -70,7 +70,7 @@ class EmergingThreatsSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
-  parse (fn, hash) {
+  parseRepData (fn, hash) {
     const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
       if (err) {
         console.log(this.section, "- Couldn't parse", fn, 'csv', err);
@@ -111,7 +111,7 @@ class EmergingThreatsSource extends WISESource {
       if (statusCode === 200 || !this.ipsLoaded) {
         this.ipsLoaded = true;
         this.ips.clear();
-        this.parse('/tmp/iprepdata.csv', this.ips);
+        this.parseRepData('/tmp/iprepdata.csv', this.ips);
       }
     });
 
@@ -119,7 +119,7 @@ class EmergingThreatsSource extends WISESource {
       if (statusCode === 200 || !this.domainsLoaded) {
         this.domainsLoaded = true;
         this.domains.clear();
-        this.parse('/tmp/domainrepdata.csv', this.domains);
+        this.parseRepData('/tmp/domainrepdata.csv', this.domains);
       }
     });
   };
