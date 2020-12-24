@@ -257,8 +257,8 @@ jobs:
                 /root/.gem/ruby/2.7.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara /opt/arkime
                 ls -l
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*x86_64.pkg.tar.xz s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}-arch.x86_64.pkg.tar.xz --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}-arch.x86_64.pkg.tar.xz --acl public-read
+                  aws s3 cp --quiet arkime*x86_64.pkg.tar.xz s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.xz --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.xz --acl public-read
                 fi
 
         secrets:
