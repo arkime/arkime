@@ -242,7 +242,7 @@ jobs:
 
     arch:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-arch:3.0.0-4
+        image: andywick/arkime-build-arch:3.0.0-5
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --daq --pfring --rminstall
