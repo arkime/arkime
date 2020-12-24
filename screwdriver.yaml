@@ -240,6 +240,57 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
+    arch:
+        requires: [~pr, ~commit]
+        image: andywick/arkime-build-arch:3.0.0-3
+        steps:
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - build: ./easybutton-build.sh --daq --pfring --rminstall
+            - test-capture: (cd tests ; ./tests.pl)
+            - export PATH=/opt/arkime/bin:$PATH
+            - npm -g config set user root
+            - installing: make install
+            - linting: npm run lint
+            - cp -r capture/plugins/lua/samples /opt/arkime/lua
+            - build-package: |
+                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
+                fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
+                ls -l
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  aws s3 cp --quiet arkime*amd64.zst s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_arch_amd64.zst --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_arch_amd64.zst --acl public-read
+                fi
+
+            - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
+            - install-sanitize: (cd capture; make install)
+            - build-sanitize-package: |
+                rm -f arkime*amd64.deb
+                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
+                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                fi
+
+            - build-moloch-package: |
+                rm -rf /data/moloch; mkdir -p /data
+                mv /opt/arkime /data/moloch
+                ./easybutton-build.sh --daq --pfring --dir /data/moloch
+                (cd capture ; make clean; make; make install)
+                (cd release ; make installmoloch)
+                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
+                /bin/cp -f viewer/version.js /data/moloch/viewer/
+
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                fi
+
+        secrets:
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
     centos-7-sanitize:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:3.0.0-3
