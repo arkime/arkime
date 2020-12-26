@@ -1183,7 +1183,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       return res.send(JSON.stringify({
         success: true,
         text: 'Tags removed successfully'
-       }));
+      }));
     });
   };
 
@@ -2414,44 +2414,44 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {boolean} success - Whether the add tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-   module.addTags = (req, res) => {
-     let tags = [];
-     if (req.body.tags) {
-       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-     }
+  module.addTags = (req, res) => {
+    let tags = [];
+    if (req.body.tags) {
+      tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
+    }
 
-     if (tags.length === 0) {
-       return res.molochError(200, 'No tags specified');
-     }
+    if (tags.length === 0) {
+      return res.molochError(200, 'No tags specified');
+    }
 
-     if (req.body.ids) {
-       const ids = ViewerUtils.queryValueToArray(req.body.ids);
+    if (req.body.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-       module.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
-         if (!list.length) {
-           return res.molochError(200, 'No sessions to add tags to');
-         }
-         module.addTagsList(tags, list, () => {
-           return res.send(JSON.stringify({
-             success: true,
-             text: 'Tags added successfully'
-           }));
-         });
-       });
-     } else {
-       module.sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
-         if (!list.length) {
-           return res.molochError(200, 'No sessions to add tags to');
-         }
-         module.addTagsList(tags, list, () => {
-           return res.send(JSON.stringify({
-             success: true,
-             text: 'Tags added successfully'
-           }));
-         });
-       });
-     }
-   };
+      module.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
+        if (!list.length) {
+          return res.molochError(200, 'No sessions to add tags to');
+        }
+        module.addTagsList(tags, list, () => {
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Tags added successfully'
+          }));
+        });
+      });
+    } else {
+      module.sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
+        if (!list.length) {
+          return res.molochError(200, 'No sessions to add tags to');
+        }
+        module.addTagsList(tags, list, () => {
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Tags added successfully'
+          }));
+        });
+      });
+    }
+  };
 
   /**
    * POST - /api/sessions/removetags

@@ -1229,14 +1229,14 @@ export default {
       let val = 'normal';
       if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = 'lighter';
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = 'bold';
-            break;
+        case 2:
+          // "old" (in baseline, not in actual result set)
+          val = 'lighter';
+          break;
+        case 1:
+          // "new" (in actual, not in baseline result set)
+          val = 'bold';
+          break;
         }
       }
       return val;
@@ -1249,14 +1249,14 @@ export default {
       let val = '';
       if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = ' 🚫';
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = ' ✨';
-            break;
+        case 2:
+          // "old" (in baseline, not in actual result set)
+          val = ' 🚫';
+          break;
+        case 1:
+          // "new" (in actual, not in baseline result set)
+          val = ' ✨';
+          break;
         }
       }
       return val;
@@ -1268,18 +1268,18 @@ export default {
         let inActualSet = ((n.inresult & 0x1) !== 0);
         let inBaselineSet = ((n.inresult & 0x2) !== 0);
         switch (this.query.baselineVis) {
-          case 'actual':
-            val = inActualSet ? 'visible' : 'hidden';
-            break;
-          case 'actualold':
-            val = inBaselineSet ? 'visible' : 'hidden';
-            break;
-          case 'new':
-            val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
-            break;
-          case 'old':
-            val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
-            break;
+        case 'actual':
+          val = inActualSet ? 'visible' : 'hidden';
+          break;
+        case 'actualold':
+          val = inBaselineSet ? 'visible' : 'hidden';
+          break;
+        case 'new':
+          val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
+          break;
+        case 'old':
+          val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
+          break;
         }
       }
 

@@ -353,34 +353,34 @@ export default {
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
       switch (event.keyCode) {
-        case 40: // down arrow
+      case 40: // down arrow
+        event.preventDefault();
+        this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
+        target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
+        if (target && target.parentNode) {
+          target.parentNode.scrollTop = target.offsetTop;
+        }
+        break;
+      case 38: // up arrow
+        event.preventDefault();
+        this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
+        target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
+        if (target && target.parentNode) {
+          target.parentNode.scrollTop = target.offsetTop;
+        }
+        break;
+      case 13: // enter
+        if (this.activeIdx >= 0) {
           event.preventDefault();
-          this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
-          target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-          if (target && target.parentNode) {
-            target.parentNode.scrollTop = target.offsetTop;
+          let result;
+          if (this.activeIdx < this.fieldHistoryResults.length) {
+            result = this.fieldHistoryResults[this.activeIdx];
+          } else {
+            result = this.results[this.activeIdx - this.fieldHistoryResults.length];
           }
-          break;
-        case 38: // up arrow
-          event.preventDefault();
-          this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
-          target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-          if (target && target.parentNode) {
-            target.parentNode.scrollTop = target.offsetTop;
-          }
-          break;
-        case 13: // enter
-          if (this.activeIdx >= 0) {
-            event.preventDefault();
-            let result;
-            if (this.activeIdx < this.fieldHistoryResults.length) {
-              result = this.fieldHistoryResults[this.activeIdx];
-            } else {
-              result = this.results[this.activeIdx - this.fieldHistoryResults.length];
-            }
-            if (result) { this.addToQuery(result); }
-          }
-          break;
+          if (result) { this.addToQuery(result); }
+        }
+        break;
       }
     },
     /* Removes typeahead results */

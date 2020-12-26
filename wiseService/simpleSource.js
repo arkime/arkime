@@ -1,5 +1,6 @@
 /******************************************************************************/
-/* Middle class for simple sources
+/* Middle class for simple sources that can read the entire set of data at once
+ * in one of the formats wise can already parse.
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -28,18 +29,17 @@ const iptrie = require('iptrie');
  * only need to implement the constructor and simpleSourceLoad.
  *
  * Sources need to
- * * implement initSource
- * * call initSimple at the end of their constructor
- * * implement simpleSourceLoad
+ * * implement WISESource#initSource
+ * * implement SimpleSource#simpleSourceLoad
  * * they can optionaly call this.load() if they want to force a reload of data
  * @extends WISESource
  */
 class SimpleSource extends WISESource {
   /**
    * Create a simple source. The options formatSetting, tagsSetting, typeSetting will all be set to true automatically.
-   * @param {WISESourceAPI} api - the api when source created
+   * @param {WISESourceAPI} api - the api when source created passed to initSource
    * @param {string} section - the section name
-   * @param {object} options - see WISESource constructor
+   * @param {object} options - see WISESource constructor for common options
    * @param {integer} options.reload - If greater to zero, call simpleSourceLoad every options.reload minutes
    */
   constructor (api, section, options) {
@@ -48,19 +48,34 @@ class SimpleSource extends WISESource {
     options.formatSetting = true;
     super(api, section, options);
     this.reload = options.reload ? parseInt(api.getConfig(section, 'reload', -1)) : -1;
-    this.column = +api.getConfig(section, 'column', 0);
+    this.column = parseInt(api.getConfig(section, 'column', 0));
     this.keyColumn = api.getConfig(section, 'keyColumn', 0);
+    this.firstLoad = true;
 
     if (this.type === 'ip') {
       this.cache = { items: new Map(), trie: new iptrie.IPTrie() };
     } else {
       this.cache = new Map();
     }
+
+    if (this.type === 'domain') {
+      this.getDomain = function (domain, cb) {
+        if (this.cache.get(domain)) {
+          return this.sendResult(domain, cb);
+        }
+        domain = domain.substring(domain.indexOf('.') + 1);
+        return this.sendResult(domain, cb);
+      };
+    } else {
+      this[this.api.funcName(this.type)] = this.sendResult;
+    }
+
+    setImmediate(this.load.bind(this));
   }
 
   // ----------------------------------------------------------------------------
   /**
-   * Implemented for you
+   * Implemented for simple sources
    */
   dump (res) {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
@@ -80,6 +95,8 @@ class SimpleSource extends WISESource {
     if (!result) {
       return cb(null, undefined);
     }
+
+    // The empty result, just return the tags result
     if (result[0] === 0) {
       return cb(null, this.tagsResult);
     }
@@ -88,41 +105,16 @@ class SimpleSource extends WISESource {
     const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
   };
-  // ----------------------------------------------------------------------------
-  /**
-   * This function should be called by the constructor of the source when all
-   * config is verified and the source is ready to go online.
-   * @returns {boolean} - On true the source was initialized with no issue
-   */
-  initSimple () {
-    if (this.type === 'domain') {
-      this.getDomain = function (domain, cb) {
-        if (this.cache.get(domain)) {
-          return this.sendResult(domain, cb);
-        }
-        domain = domain.substring(domain.indexOf('.') + 1);
-        return this.sendResult(domain, cb);
-      };
-    } else {
-      this[this.api.funcName(this.type)] = this.sendResult;
-    }
 
-    this.api.addSource(this.section, this);
-
-    setImmediate(this.load.bind(this));
-
-    if (this.reload > 0) {
-      setInterval(this.load.bind(this), this.reload * 1000 * 60);
-    }
-    return true;
-  };
   // ----------------------------------------------------------------------------
   getTypes () {
     return [this.type];
   };
+
   // ----------------------------------------------------------------------------
   /**
-   * Can be called by the source to force a reload of the data if it for some reason knows.
+   * This loads the data for the simple source. SimpleSource will call on creation and on reloads.
+   * It can also be called by the source to force a reload of the data.
    */
   load () {
     let setFunc;
@@ -159,12 +151,23 @@ class SimpleSource extends WISESource {
         };
       }
     }
+
     this.simpleSourceLoad((err, body) => {
       if (err) {
         console.log('ERROR loading', this.section, err);
         return;
       }
 
+      // First successful load, register the source and schedule reloads if needed
+      if (this.firstLoad) {
+        this.firstLoad = false;
+        if (this.reload > 0) {
+          setInterval(this.load.bind(this), this.reload * 1000 * 60);
+        }
+        this.api.addSource(this.section, this);
+      }
+
+      // Process results
       this.parse(body, setFunc, (err) => {
         if (err) {
           console.log('ERROR parsing', this.section, err);
@@ -180,7 +183,8 @@ class SimpleSource extends WISESource {
 /**
  * Each simple source must implement this method.
  * It should call the callback with either the error or the entire body of the text to parse.
- * It will be called inside initSimple and periodically if reloading is enabled.
+ * The SimpleSource class will take care of parsing the data.
+ * It will be called after the constructor and periodically if reloading is enabled.
  *
  * @method
  * @name SimpleSource#simpleSourceLoad

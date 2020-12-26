@@ -190,7 +190,7 @@ function getConfig (section, name, d) {
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
 process.on('SIGINT', function () {
-    process.exit();
+  process.exit();
 });
 
 // ----------------------------------------------------------------------------
@@ -355,13 +355,13 @@ function newFieldsTS () {
 // ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
-    str = str.split(separator);
-    if (str.length <= limit) { return str; }
+  str = str.split(separator);
+  if (str.length <= limit) { return str; }
 
-    const ret = str.splice(0, limit);
-    ret.push(str.join(separator));
+  const ret = str.splice(0, limit);
+  ret.push(str.join(separator));
 
-    return ret;
+  return ret;
 }
 // ----------------------------------------------------------------------------
 /**
@@ -390,9 +390,9 @@ class WISESourceAPI {
    * @param {string} [default] - the default value to return if key is not found in section
    * @returns {string} - The value found or the default value
    */
-   getConfig (section, name, d) {
-     return getConfig(section, name, d);
-   }
+  getConfig (section, name, d) {
+    return getConfig(section, name, d);
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -570,7 +570,7 @@ class WISESourceAPI {
    */
   addSourceConfigDef (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
-  // ALW - should really merge all the types somehow here instead of type2Name
+      // ALW - should really merge all the types somehow here instead of type2Name
       let types = configDef.types || internals.type2Name;
       for (let i = 0; i < types.length; i++) {
         let type = types[i];
@@ -578,10 +578,10 @@ class WISESourceAPI {
         if (type === 'url') {
           excludeName = 'excludeURLs';
         } else if (type === 'ip') {
-          configDef.fields = configDef.fields.concat(
-            [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-             { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }]
-          );
+          configDef.fields = configDef.fields.concat([
+            { name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
+            { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }
+          ]);
           if (configDef.singleton === false && types.length > 0) {
             Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
             Object.assign(configDef.fields[configDef.fields.length - 1], { ifField: 'type', ifValue: type });
@@ -607,10 +607,10 @@ class WISESourceAPI {
       }
 
       if (configDef.singleton === false && types.length > 0) {
-        configDef.fields = configDef.fields.concat(
-          [{ name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-          { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }]
-        );
+        configDef.fields = configDef.fields.concat([
+          { name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+          { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
+        ]);
       }
 
       internals.configDefs[sourceName] = configDef;
@@ -855,8 +855,8 @@ function addType (type, newSrc) {
       typeInfo.excludes = items.split(';').map(item => item.trim()).filter(item => item !== '').map(item => RegExp.fromWildExp(item, 'ailop'));
     }
   } else if (newSrc !== undefined) {
-      typeInfo.sources.push(newSrc);
-      newSrc.srcInProgress[type] = [];
+    typeInfo.sources.push(newSrc);
+    newSrc.srcInProgress[type] = [];
   }
   return typeInfo;
 }
@@ -1165,23 +1165,25 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  */
 app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   let config = Object.keys(internals.config)
-  .filter(key => internals.configDefs[key.split(':')[0]])
-  .reduce((obj, key) => {
-    // Deep Copy
-    obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
+    .filter(key => internals.configDefs[key.split(':')[0]])
+    .reduce((obj, key) => {
+      // Deep Copy
+      obj[key] = JSON.parse(JSON.stringify(internals.config[key]));
 
-    // Replace passwords
-    internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
-      if (item.password !== true) { return; }
-      if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
-      obj[key][item.name] = '********';
-    });
-    return obj;
-  }, {});
+      // Replace passwords
+      internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+        if (item.password !== true) { return; }
+        if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
+        obj[key][item.name] = '********';
+      });
+      return obj;
+    }, {});
 
-  return res.send({ success: true,
-                   config: config,
-                   filePath: internals.configFile });
+  return res.send({
+    success: true,
+    config: config,
+    filePath: internals.configFile
+  });
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1287,9 +1289,11 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
     return res.end('Unknown source ' + req.params.source);
   }
 
-  const query = { typeName: req.params.typeName,
-               value: req.params.value,
-               sources: [source] };
+  const query = {
+    typeName: req.params.typeName,
+    value: req.params.value,
+    sources: [source]
+  };
 
   processQuery(req, query, (err, result) => {
     if (err || !result) {
@@ -1381,8 +1385,10 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
  * @returns {object|array} - The results for the query
  */
 app.get('/:typeName/:value', [noCacheJson], function (req, res) {
-  const query = { typeName: req.params.typeName,
-                  value: req.params.value };
+  const query = {
+    typeName: req.params.typeName,
+    value: req.params.value
+  };
 
   processQuery(req, query, (err, result) => {
     if (err || !result) {
@@ -1450,8 +1456,8 @@ function createRedisClient (redisType, section) {
     });
     return new Redis.Cluster(options);
   } else {
-      console.log(`${section} - ERROR - unknown redisType '${redisType}'`);
-      process.exit();
+    console.log(`${section} - ERROR - unknown redisType '${redisType}'`);
+    process.exit();
   }
 }
 // ----------------------------------------------------------------------------
@@ -1579,28 +1585,28 @@ internals.configSchemes['elasticsearch'] = {
     }
 
     axios.get(url)
-    .then((response) => {
-      internals.config = response.data._source;
-      cb(null);
-    })
-    .catch((error) => {
-      if (error.response && error.response.status === 404) {
-        internals.config = {};
-        return cb();
-      }
-      return cb(error);
-    });
+      .then((response) => {
+        internals.config = response.data._source;
+        cb(null);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          internals.config = {};
+          return cb();
+        }
+        return cb(error);
+      });
   },
   save: function (config, cb) {
     let url = internals.configFile.replace('elasticsearch', 'http');
 
     axios.post(url, config)
-    .then((response) => {
-      cb(null);
-    })
-    .catch((error) => {
-      cb(error);
-    });
+      .then((response) => {
+        cb(null);
+      })
+      .catch((error) => {
+        cb(error);
+      });
   }
 };
 // ----------------------------------------------------------------------------
@@ -1612,28 +1618,28 @@ internals.configSchemes['elasticsearchs'] = {
     }
 
     axios.get(url)
-    .then((response) => {
-      internals.config = response.data._source;
-      cb(null);
-    })
-    .catch((error) => {
-      if (error.response && error.response.status === 404) {
-        internals.config = {};
-        return cb();
-      }
-      return cb(error);
-    });
+      .then((response) => {
+        internals.config = response.data._source;
+        cb(null);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          internals.config = {};
+          return cb();
+        }
+        return cb(error);
+      });
   },
   save: function (config, cb) {
     let url = internals.configFile.replace('elasticsearchs', 'https');
 
     axios.post(url, config)
-    .then((response) => {
-      cb();
-    })
-    .catch((error) => {
-      cb(error);
-    });
+      .then((response) => {
+        cb();
+      })
+      .catch((error) => {
+        cb(error);
+      });
   }
 
 };

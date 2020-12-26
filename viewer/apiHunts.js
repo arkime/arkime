@@ -572,7 +572,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           const hunt = hit._source;
           const id = hit._id;
 
-           // there is a job already running
+          // there is a job already running
           if (hunt.status === 'running') {
             internals.runningHuntJob = hunt;
             if (!internals.proccessHuntJobsInitialized) {

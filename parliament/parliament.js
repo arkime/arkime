@@ -81,53 +81,53 @@ let invalidTokens = {};
 
   for (let i = 0, len = appArgs.length; i < len; i++) {
     switch (appArgs[i]) {
-      case '-c':
-      case '--config':
-        file = appArgs[i + 1];
-        i++;
-        break;
+    case '-c':
+    case '--config':
+      file = appArgs[i + 1];
+      i++;
+      break;
 
-      case '--pass':
-        bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
-        i++;
-        break;
+    case '--pass':
+      bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
+      i++;
+      break;
 
-      case '--port':
-        port = appArgs[i + 1];
-        i++;
-        break;
+    case '--port':
+      port = appArgs[i + 1];
+      i++;
+      break;
 
-      case '--cert':
-        app.set('certFile', appArgs[i + 1]);
-        i++;
-        break;
+    case '--cert':
+      app.set('certFile', appArgs[i + 1]);
+      i++;
+      break;
 
-      case '--key':
-        app.set('keyFile', appArgs[i + 1]);
-        i++;
-        break;
+    case '--key':
+      app.set('keyFile', appArgs[i + 1]);
+      i++;
+      break;
 
-      case '--dashboardOnly':
-        app.set('dashboardOnly', true);
-        break;
+    case '--dashboardOnly':
+      app.set('dashboardOnly', true);
+      break;
 
-      case '--regressionTests':
-        app.set('regressionTests', 1);
-        break;
+    case '--regressionTests':
+      app.set('regressionTests', 1);
+      break;
 
-      case '--debug':
-        debug++;
-        break;
+    case '--debug':
+      debug++;
+      break;
 
-      case '-h':
-      case '--help':
-        help();
-        break;
+    case '-h':
+    case '--help':
+      help();
+      break;
 
-      default:
-        console.log(`Unknown option ${appArgs[i]}`);
-        help();
-        break;
+    default:
+      console.log(`Unknown option ${appArgs[i]}`);
+      help();
+      break;
     }
   }
 

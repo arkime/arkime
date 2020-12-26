@@ -941,19 +941,19 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       if (ilm[`${internals.prefix}molochsessions`]) {
         const silm = ilm[`${internals.prefix}molochsessions`];
         addIlm('moloch.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
-         'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
+          'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
         addIlm('moloch.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
-         'ILM - Sessions Replicas', 'Integer', '^\\d$');
+          'ILM - Sessions Replicas', 'Integer', '^\\d$');
         addIlm('moloch.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
-         'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
+          'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
         addIlm('moloch.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
-         'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
+          'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
       }
 
       if (ilm[`${internals.prefix}molochhistory`]) {
         const hilm = ilm[`${internals.prefix}molochhistory`];
         addIlm('moloch.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
-         'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
+          'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
       }
 
       return res.send(rsettings);

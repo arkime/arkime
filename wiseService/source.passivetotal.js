@@ -65,15 +65,16 @@ class PassiveTotalSource extends WISESource {
     }
 
     const options = {
-        url: 'https://api.passivetotal.org/v2/enrichment/bulk',
-        body: { additional: ['osint', 'malware'],
-               query: this.waiting },
-        auth: {
-          user: this.user,
-          pass: this.key
-        },
-        method: 'GET',
-        json: true
+      url: 'https://api.passivetotal.org/v2/enrichment/bulk',
+      body: {
+        additional: ['osint', 'malware'],
+        query: this.waiting },
+      auth: {
+        user: this.user,
+        pass: this.key
+      },
+      method: 'GET',
+      json: true
     };
 
     // eslint-disable-next-line

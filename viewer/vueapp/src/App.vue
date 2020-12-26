@@ -112,58 +112,58 @@ export default {
       }
 
       switch (event.keyCode) {
-        case 81: // q
-          // focus on search expression input
-          this.$store.commit('setFocusSearch', true);
-          break;
-        case 84: // t
-          // focus on time range selector
-          this.$store.commit('setFocusTimeRange', true);
-          break;
-        case 83: // s
-          // open sessions page if not on sessions page
-          if (this.$route.name !== 'Sessions') {
-            this.routeTo('/sessions');
-          }
-          break;
-        case 86: // v
-          // open spiview page if not on spiview page
-          if (this.$route.name !== 'Spiview') {
-            this.routeTo('/spiview');
-          }
-          break;
-        case 71: // g
-          // open spigraph page if not on spigraph page
-          if (this.$route.name !== 'Spigraph') {
-            this.routeTo('/spigraph');
-          }
-          break;
-        case 67: // c
-          // open connections page if not on connections page
-          if (this.$route.name !== 'Connections') {
-            this.routeTo('/connections');
-          }
-          break;
-        case 72: // h
-          // open help page if not on help page
-          if (this.$route.name !== 'Help') {
-            this.routeTo('/help');
-          }
-          break;
-        case 85: // u
-          // open hunt page if not on hunt page
-          if (this.$route.name !== 'Hunt') {
-            this.routeTo('/hunt');
-          }
-          break;
-        case 13: // enter
-          // trigger search/refresh
-          this.$store.commit('setIssueSearch', true);
-          break;
-        case 191: // /
-          // toggle display of the the keyboard shortcut dialog
-          this.$store.commit('setDisplayKeyboardShortcutsHelp', !this.displayKeyboardShortcutsHelp);
-          break;
+      case 81: // q
+        // focus on search expression input
+        this.$store.commit('setFocusSearch', true);
+        break;
+      case 84: // t
+        // focus on time range selector
+        this.$store.commit('setFocusTimeRange', true);
+        break;
+      case 83: // s
+        // open sessions page if not on sessions page
+        if (this.$route.name !== 'Sessions') {
+          this.routeTo('/sessions');
+        }
+        break;
+      case 86: // v
+        // open spiview page if not on spiview page
+        if (this.$route.name !== 'Spiview') {
+          this.routeTo('/spiview');
+        }
+        break;
+      case 71: // g
+        // open spigraph page if not on spigraph page
+        if (this.$route.name !== 'Spigraph') {
+          this.routeTo('/spigraph');
+        }
+        break;
+      case 67: // c
+        // open connections page if not on connections page
+        if (this.$route.name !== 'Connections') {
+          this.routeTo('/connections');
+        }
+        break;
+      case 72: // h
+        // open help page if not on help page
+        if (this.$route.name !== 'Help') {
+          this.routeTo('/help');
+        }
+        break;
+      case 85: // u
+        // open hunt page if not on hunt page
+        if (this.$route.name !== 'Hunt') {
+          this.routeTo('/hunt');
+        }
+        break;
+      case 13: // enter
+        // trigger search/refresh
+        this.$store.commit('setIssueSearch', true);
+        break;
+      case 191: // /
+        // toggle display of the the keyboard shortcut dialog
+        this.$store.commit('setDisplayKeyboardShortcutsHelp', !this.displayKeyboardShortcutsHelp);
+        break;
       }
     });
 

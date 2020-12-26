@@ -37,7 +37,7 @@ class VirusTotalSource extends WISESource {
 
     this.contentTypes = {};
     const contentTypes = this.api.getConfig('virustotal', 'contentTypes',
-            'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
+      'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
     contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
 
     this.queriesPerMinute = +this.api.getConfig('virustotal', 'queriesPerMinute', 3); // Keeps us under default limit, however most wise queries will time out :(
@@ -83,11 +83,10 @@ class VirusTotalSource extends WISESource {
     }
 
     const options = {
-        url: 'https://www.virustotal.com/vtapi/v2/file/report?',
-        qs: { apikey: this.key,
-             resource: this.waiting.join(',') },
-        method: 'GET',
-        json: true
+      url: 'https://www.virustotal.com/vtapi/v2/file/report?',
+      qs: { apikey: this.key, resource: this.waiting.join(',') },
+      method: 'GET',
+      json: true
     };
     const sent = this.waiting;
 
@@ -157,7 +156,7 @@ class VirusTotalSource extends WISESource {
   };
 }
 
-  // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 const reportApi = function (req, res) {
   source.getMd5(req.query.resource, (err, result) => {
     // console.log(err, result);

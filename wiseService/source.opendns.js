@@ -60,13 +60,13 @@ class OpenDNSSource extends WISESource {
   // ----------------------------------------------------------------------------
   getCategories () {
     const options = {
-        host: 'sgraph.api.opendns.com',
-        port: '443',
-        path: '/domains/categories/',
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + this.key
-        }
+      host: 'sgraph.api.opendns.com',
+      port: '443',
+      path: '/domains/categories/',
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + this.key
+      }
     };
 
     let response = '';
@@ -101,15 +101,15 @@ class OpenDNSSource extends WISESource {
     this.waiting.length = 0;
 
     const postOptions = {
-        host: 'sgraph.api.opendns.com',
-        port: '443',
-        path: '/domains/categorization/',
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + this.key,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': postData.length
-        }
+      host: 'sgraph.api.opendns.com',
+      port: '443',
+      path: '/domains/categorization/',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + this.key,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': postData.length
+      }
     };
 
     let response = '';

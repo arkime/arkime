@@ -73,9 +73,9 @@ class WiseProxySource extends WISESource {
     }
 
     const options = {
-        url: this.url + '/get',
-        method: 'POST',
-        body: this.buffer.slice(0, this.offset)
+      url: this.url + '/get',
+      method: 'POST',
+      body: this.buffer.slice(0, this.offset)
     };
 
     const bufferInfo = this.bufferInfo;
@@ -136,8 +136,8 @@ class WiseProxySource extends WISESource {
   // ----------------------------------------------------------------------------
   updateInfo () {
     let options = {
-        url: this.url + '/fields',
-        method: 'GET'
+      url: this.url + '/fields',
+      method: 'GET'
     };
 
     request(options, (err, response, body) => {
@@ -161,33 +161,33 @@ class WiseProxySource extends WISESource {
     });
 
     options = {
-        url: this.url + '/views',
-        method: 'GET',
-        json: true
+      url: this.url + '/views',
+      method: 'GET',
+      json: true
     };
     request(options, (err, response, body) => {
       if (err) {
         console.log(this.section, 'problem fetching /views', this.section, err || response);
         return;
       }
-       for (const name in body) {
-         this.api.addView(name, body[name]);
-       }
+      for (const name in body) {
+        this.api.addView(name, body[name]);
+      }
     });
 
     options = {
-        url: this.url + '/rightClicks',
-        method: 'GET',
-        json: true
+      url: this.url + '/rightClicks',
+      method: 'GET',
+      json: true
     };
     request(options, (err, response, body) => {
       if (err) {
         console.log(this.section, 'problem fetching /rightClicks', this.section, err || response);
         return;
       }
-       for (const name in body) {
-         this.api.addView(name, body[name]);
-       }
+      for (const name in body) {
+        this.api.addView(name, body[name]);
+      }
     });
   };
 

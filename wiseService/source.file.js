@@ -34,10 +34,7 @@ class FileSource extends SimpleSource {
 
     if (!fs.existsSync(this.file)) {
       console.log(`${this.section} - ERROR not loading since ${this.file} doesn't exist`);
-      return;
-    }
-
-    if (!this.initSimple()) {
+      delete this.file;
       return;
     }
 
@@ -64,8 +61,11 @@ class FileSource extends SimpleSource {
 
   // ----------------------------------------------------------------------------
   simpleSourceLoad (cb) {
-    fs.readFile(this.file, cb);
+    if (this.file) {
+      fs.readFile(this.file, cb);
+    }
   }
+
   // ----------------------------------------------------------------------------
   getSourceRaw (cb) {
     fs.readFile(this.file, (err, body) => {
@@ -75,6 +75,7 @@ class FileSource extends SimpleSource {
       return cb(null, body);
     });
   }
+
   // ----------------------------------------------------------------------------
   putSourceRaw (body, cb) {
     fs.writeFile(this.file, body, (err) => {
@@ -82,9 +83,9 @@ class FileSource extends SimpleSource {
     });
   }
 }
-  // ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  const sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   api.addSourceConfigDef('file', {
     singleton: false,
     name: 'file',
@@ -101,6 +102,7 @@ exports.initSource = function (api) {
     ]
   });
 
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^file:/); });
   sections.forEach((section) => {
     return new FileSource(api, section);
   });

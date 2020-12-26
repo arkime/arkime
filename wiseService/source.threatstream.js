@@ -152,18 +152,22 @@ class ThreatStreamSource extends WISESource {
             let encoded;
             try {
               if (item.maltype && item.maltype !== 'null') {
-                encoded = WISESource.encodeResult(this.severityField, item.severity.toLowerCase(),
-                                            this.confidenceField, '' + item.confidence,
-                                            this.idField, '' + item.id,
-                                            this.typeField, item.itype.toLowerCase(),
-                                            this.maltypeField, item.maltype.toLowerCase(),
-                                            this.sourceField, item.source);
+                encoded = WISESource.encodeResult(
+                  this.severityField, item.severity.toLowerCase(),
+                  this.confidenceField, '' + item.confidence,
+                  this.idField, '' + item.id,
+                  this.typeField, item.itype.toLowerCase(),
+                  this.maltypeField, item.maltype.toLowerCase(),
+                  this.sourceField, item.source
+                );
               } else {
-                encoded = WISESource.encodeResult(this.severityField, item.severity.toLowerCase(),
-                                            this.confidenceField, '' + item.confidence,
-                                            this.idField, '' + item.id,
-                                            this.typeField, item.itype.toLowerCase(),
-                                            this.sourceField, item.source);
+                encoded = WISESource.encodeResult(
+                  this.severityField, item.severity.toLowerCase(),
+                  this.confidenceField, '' + item.confidence,
+                  this.idField, '' + item.id,
+                  this.typeField, item.itype.toLowerCase(),
+                  this.sourceField, item.source
+                );
               }
             } catch (e) {
               console.log(this.section, 'ERROR -', entry.path, e, item, e.stack);
@@ -251,9 +255,9 @@ class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
   getApi (type, value, cb) {
     const options = {
-        url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
-        method: 'GET',
-        forever: true
+      url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
+      method: 'GET',
+      forever: true
     };
 
     if (this.inProgress > 50) {
@@ -281,10 +285,12 @@ class ThreatStreamSource extends WISESource {
 
       const args = [];
       body.objects.forEach((item) => {
-        args.push(this.confidenceField, '' + item.confidence,
-                  this.idField, '' + item.id,
-                  this.typeField, item.itype.toLowerCase(),
-                  this.sourceField, item.source);
+        args.push(
+          this.confidenceField, '' + item.confidence,
+          this.idField, '' + item.id,
+          this.typeField, item.itype.toLowerCase(),
+          this.sourceField, item.source
+        );
 
         if (item.maltype !== undefined && item.maltype !== 'null') {
           args.push(this.maltypeField, item.maltype.toLowerCase());
@@ -335,10 +341,12 @@ class ThreatStreamSource extends WISESource {
 
       const args = [];
       data.forEach((item) => {
-        args.push(this.confidenceField, '' + item.confidence,
-                  this.idField, '' + item.id,
-                  this.typeField, item.itype.toLowerCase(),
-                  this.sourceField, item.source);
+        args.push(
+          this.confidenceField, '' + item.confidence,
+          this.idField, '' + item.id,
+          this.typeField, item.itype.toLowerCase(),
+          this.sourceField, item.source
+        );
 
         if (item.maltype !== undefined && item.maltype !== null) {
           args.push(this.maltypeField, item.maltype.toLowerCase());

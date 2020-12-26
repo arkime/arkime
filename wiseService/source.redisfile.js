@@ -33,15 +33,16 @@ class RedisFileSource extends SimpleSource {
 
     if (this.key === undefined) {
       console.log(this.section, '- ERROR not loading since no key specified in config file');
+      delete this.client;
       return;
     }
-
-    this.initSimple();
   }
 
   // ----------------------------------------------------------------------------
   simpleSourceLoad (cb) {
-    this.client.get(this.key, cb);
+    if (this.client && this.key) {
+      this.client.get(this.key, cb);
+    }
   }
 
   // ----------------------------------------------------------------------------

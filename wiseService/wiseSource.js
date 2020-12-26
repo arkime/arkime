@@ -152,7 +152,7 @@ class WISESource {
         this.shortcuts[match[1]] = pos;
       }
     } else if (line.lastIndexOf('view:', 0) === 0) {
-        this.view += line.substring(5) + '\n';
+      this.view += line.substring(5) + '\n';
     }
   };
 
@@ -378,12 +378,12 @@ class WISESource {
     const buf = Buffer.allocUnsafe(len + 1);
     let offset = 1;
     for (let a = 1; a < arguments.length; a += 2) {
-        buf.writeUInt8(arguments[a - 1], offset);
-        len = Buffer.byteLength(arguments[a]);
-        buf.writeUInt8(len + 1, offset + 1);
-        l = buf.write(arguments[a], offset + 2);
-        buf.writeUInt8(0, offset + l + 2);
-        offset += 3 + l;
+      buf.writeUInt8(arguments[a - 1], offset);
+      len = Buffer.byteLength(arguments[a]);
+      buf.writeUInt8(len + 1, offset + 1);
+      l = buf.write(arguments[a], offset + 2);
+      buf.writeUInt8(0, offset + l + 2);
+      offset += 3 + l;
     }
     buf[0] = arguments.length / 2;
     return buf;
@@ -473,19 +473,18 @@ class WISESource {
     let statusCode;
     console.log(url);
     request({ url: url, headers: headers })
-    .on('response', function (response) {
-      statusCode = response.statusCode;
-      if (response.statusCode === 200) {
-        this.pipe(fs.createWriteStream(file));
-      }
-    })
-    .on('error', (error) => {
-      console.log(error);
-    })
-    .on('end', () => {
-      setTimeout(cb, 100, statusCode);
-    })
-    ;
+      .on('response', function (response) {
+        statusCode = response.statusCode;
+        if (response.statusCode === 200) {
+          this.pipe(fs.createWriteStream(file));
+        }
+      })
+      .on('error', (error) => {
+        console.log(error);
+      })
+      .on('end', () => {
+        setTimeout(cb, 100, statusCode);
+      });
   };
 }
 /**
@@ -551,11 +550,11 @@ module.exports = WISESource;
 // ----------------------------------------------------------------------------
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
 function splitRemain (str, separator, limit) {
-    str = str.split(separator);
-    if (str.length <= limit) { return str; }
+  str = str.split(separator);
+  if (str.length <= limit) { return str; }
 
-    const ret = str.splice(0, limit);
-    ret.push(str.join(separator));
+  const ret = str.splice(0, limit);
+  ret.push(str.join(separator));
 
-    return ret;
+  return ret;
 }

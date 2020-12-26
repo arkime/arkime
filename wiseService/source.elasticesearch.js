@@ -41,12 +41,12 @@ class ElasticsearchSource extends WISESource {
     this[this.api.funcName(this.type)] = this.sendResult;
 
     this.client = new elasticsearch.Client({
-                        host: this.elasticsearch.split(','),
-                        keepAlive: true,
-                        minSockets: 5,
-                        maxSockets: 51,
-                        apiVersion: '6.8'
-                      });
+      host: this.elasticsearch.split(','),
+      keepAlive: true,
+      minSockets: 5,
+      maxSockets: 51,
+      apiVersion: '7.7'
+    });
 
     api.addSource(section, this);
 

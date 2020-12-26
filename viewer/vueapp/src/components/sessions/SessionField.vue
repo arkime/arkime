@@ -235,35 +235,35 @@ export default {
         let qVal = result[i].queryVal;
 
         switch (this.field.type) {
-          case 'date':
-          case 'seconds':
-            qVal = val; // save original value as the query value
-            val = this.$options.filters.timezoneDateString(
-              parseInt(val),
-              this.timezone || this.$store.state.user.settings.timezone,
-              this.$store.state.user.settings.ms
-            );
+        case 'date':
+        case 'seconds':
+          qVal = val; // save original value as the query value
+          val = this.$options.filters.timezoneDateString(
+            parseInt(val),
+            this.timezone || this.$store.state.user.settings.timezone,
+            this.$store.state.user.settings.ms
+          );
 
-            if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
-              // only starttime and stoptime fields are applied to time inputs
-              qVal = val;
-            }
-            break;
-          case 'lotermfield':
-            if (this.field.transform === 'ipv6ToHex') {
-              val = this.$options.filters.extractIPv6String(val);
-              qVal = val; // don't save original value (parsed val is query val)
-            } else if (this.field.transform === 'ipProtocolLookup') {
-              val = this.$options.filters.protocol(val);
-              qVal = val; // don't save original value (parsed val is query val)
-            }
-            break;
-          case 'integer':
-            if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
-              qVal = val; // save original value as the query value
-              val = this.$options.filters.commaString(val);
-            }
-            break;
+          if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
+            // only starttime and stoptime fields are applied to time inputs
+            qVal = val;
+          }
+          break;
+        case 'lotermfield':
+          if (this.field.transform === 'ipv6ToHex') {
+            val = this.$options.filters.extractIPv6String(val);
+            qVal = val; // don't save original value (parsed val is query val)
+          } else if (this.field.transform === 'ipProtocolLookup') {
+            val = this.$options.filters.protocol(val);
+            qVal = val; // don't save original value (parsed val is query val)
+          }
+          break;
+        case 'integer':
+          if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
+            qVal = val; // save original value as the query value
+            val = this.$options.filters.commaString(val);
+          }
+          break;
         }
 
         result[i].value = val; // update parsed value in array

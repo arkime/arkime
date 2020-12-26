@@ -41,12 +41,14 @@ class URLSource extends SimpleSource {
         }
       });
     }
-
-    this.initSimple();
   }
 
   // ----------------------------------------------------------------------------
   simpleSourceLoad (cb) {
+    if (!this.url) {
+      return;
+    }
+
     request(this.url, { headers: this.headers }, (err, response, body) => {
       if (!err && response.statusCode === 200) {
         cb(null, body);

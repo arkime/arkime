@@ -45,7 +45,7 @@ for (const sensor in sensors) {
 }
 let prefix = Config.get('prefix', '');
 if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
-    prefix += '_';
+  prefix += '_';
 }
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
@@ -275,8 +275,8 @@ if (Config.isHTTPS()) {
   https.createServer({
     key: Config.keyFileData,
     cert: Config.certFileData,
-    secureOptions: require('crypto').constants.SSL_OP_NO_TLSv1 }, app)
-  .listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+    secureOptions: require('crypto').constants.SSL_OP_NO_TLSv1
+  }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
 } else {
   http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
 }

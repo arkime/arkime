@@ -1331,20 +1331,20 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       let stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
 
       switch (bounding) {
-        default:
-        case 'last':
-          if (stop >= startTime && start <= stopTime) {
-            indices.push(iname);
-          }
-          break;
-        case 'first':
-        case 'both':
-        case 'either':
-        case 'database':
-          if (stop >= (startTime - length) && start <= (stopTime + length)) {
-            indices.push(iname);
-          }
-          break;
+      default:
+      case 'last':
+        if (stop >= startTime && start <= stopTime) {
+          indices.push(iname);
+        }
+        break;
+      case 'first':
+      case 'both':
+      case 'either':
+      case 'database':
+        if (stop >= (startTime - length) && start <= (stopTime + length)) {
+          indices.push(iname);
+        }
+        break;
       }
     }
 

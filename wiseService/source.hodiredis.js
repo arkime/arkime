@@ -27,7 +27,7 @@ class HODIRedisSource extends WISESource {
 
     this.contentTypes = {};
     const contentTypes = this.api.getConfig(section, 'contentTypes',
-            'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
+      'application/x-dosexec,application/vnd.ms-cab-compressed,application/pdf,application/x-shockwave-flash,application/x-java-applet,application/jar').split(',').map(item => item.trim());
 
     contentTypes.forEach((type) => { this.contentTypes[type] = 1; });
     this.url = api.getConfig(section, 'url');
