@@ -24,7 +24,7 @@ NOTICE: Restart wiseService before capture when upgrading
 3.0.0 2021/01/xx
   - BREAKING - multies - multiESNodes requires a name: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
-  - release - curl 7.74.0, node 12.20, glib 2.66.3, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
+  - release - curl 7.74.0, node 12.20, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
