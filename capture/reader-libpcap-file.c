@@ -238,7 +238,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
             gr = getgrgid (stats.st_gid);
             pw = getpwuid (stats.st_uid);
 
-            if (stats.st_mode & S_IROTH)  {
+            if (stats.st_mode & S_IROTH) {
               // world readable
             } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
               // group readable and dropGroup matches file group

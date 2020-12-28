@@ -108,7 +108,7 @@ void tcp_packet_finish(MolochSession_t *session)
                 session->firstBytesLen[which] += copy;
             }
 
-            if (session->totalDatabytes[which] == session->consumed[which])  {
+            if (session->totalDatabytes[which] == session->consumed[which]) {
                 moloch_parsers_classify_tcp(session, data, len, which);
             }
 

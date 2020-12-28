@@ -223,22 +223,22 @@ void parse_args(int argc, char **argv)
         config.dryRun = 1;
     }
 
-    if (config.pcapSkip && config.copyPcap)  {
+    if (config.pcapSkip && config.copyPcap) {
         printf("Can't skip and copy pcap files\n");
         exit(1);
     }
 
-    if (config.pcapDelete && !config.copyPcap)  {
+    if (config.pcapDelete && !config.copyPcap) {
         printf("--delete requires --copy\n");
         exit(1);
     }
 
-    if (config.copyPcap && !config.pcapReadOffline)  {
+    if (config.copyPcap && !config.pcapReadOffline) {
         printf("--copy requires -r or -R\n");
         exit(1);
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs)  {
+    if (config.pcapMonitor && !config.pcapReadDirs) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
@@ -259,15 +259,15 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 
     MOLOCH_LOCK(freeLaterList);
-    if ((freeLaterBack + 1 ) % FREE_LATER_SIZE == freeLaterFront) {
+    if ((freeLaterBack + 1) % FREE_LATER_SIZE == freeLaterFront) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
 
     freeLaterList[freeLaterBack].sec = currentTime.tv_sec + 7;
     freeLaterList[freeLaterBack].ptr = ptr;
     freeLaterList[freeLaterBack].cb  = cb;
-    freeLaterBack = (freeLaterBack + 1 ) % FREE_LATER_SIZE;
+    freeLaterBack = (freeLaterBack + 1) % FREE_LATER_SIZE;
     MOLOCH_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
@@ -282,7 +282,7 @@ LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
     while (freeLaterFront != freeLaterBack &&
            freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
     MOLOCH_UNLOCK(freeLaterList);
     return TRUE;

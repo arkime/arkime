@@ -54,9 +54,9 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
             tls_certinfo_process(ci, &tbsb);
-        } else if (atag  == 6)  {
+        } else if (atag  == 6) {
             moloch_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
-        } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12))  {
+        } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
             /* 20 == BER_UNI_TAG_TeletexString
              * 19 == BER_UNI_TAG_PrintableString
              * 12 == BER_UNI_TAG_UTF8String
@@ -148,7 +148,7 @@ LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB
             if (certs->alt.s_count > 0) {
                 return;
             }
-        } else if (atag == 6)  {
+        } else if (atag == 6) {
             moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {
                 tls_key_usage(certs, bsb);
