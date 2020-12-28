@@ -68,8 +68,10 @@ int arkime_dedup_should_drop (const MolochPacket_t *packet, int headerLen)
     uint8_t * const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
-        // Skip TTL
-        MD5_Update(&ctx, ptr+9, headerLen-9);
+        // Skip TTL (1 byte)
+        MD5_Update(&ctx, ptr+9, 1);
+        // Skip Header checksum (2 byte)
+        MD5_Update(&ctx, ptr+12, headerLen-12);
     } else {
         MD5_Update(&ctx, ptr, 7);
         // Skip HOP
