@@ -96,7 +96,8 @@ const internals = {
   workers: 1,
   regressionTests: false,
   webconfig: false,
-  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6)
+  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
+  startTime: Date.now()
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -1406,7 +1407,7 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
  */
 app.get('/stats', [noCacheJson], function (req, res) {
   let types = Object.keys(internals.types).sort();
-  let stats = { types: [], sources: [] };
+  let stats = { types: [], sources: [], startTime: internals.startTime };
 
   for (const type of types) {
     let typeInfo = internals.types[type];
@@ -1429,7 +1430,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
       cacheMiss: src.cacheMissStat,
       cacheRefresh: src.cacheRefreshStat,
       cacheDropped: src.cacheDroppedStat,
-      average100MS: src.average100MS.toFixed(4)
+      averageMS: src.average100MS.toFixed(4)
     });
   }
   res.send(stats);
