@@ -212,32 +212,6 @@ app.use((req, res, next) => {
   });
 });
 
-app.use((req, res, next) => {
-  if (!req.user || !req.user.userId) {
-    return next();
-  }
-
-  var mrc = {};
-
-  mrc.httpAuthorizationDecode = { fields: 'http.authorization', func: `{
-    if (value.substring(0,5) === "Basic")
-      return {name: "Decoded:", value: atob(value.substring(6))};
-    return undefined;
-  }` };
-  mrc.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  mrc.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-  mrc.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-
-  for (var key in internals.rightClicks) {
-    var rc = internals.rightClicks[key];
-    if (!rc.users || rc.users[req.user.userId]) {
-      mrc[key] = rc;
-    }
-  }
-  app.locals.molochRightClick = mrc;
-  next();
-});
-
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
@@ -2801,12 +2775,37 @@ app.get('/titleconfig', checkPermissions(['webEnabled']), (req, res) => {
   res.send(titleConfig);
 });
 
-app.get('/molochRightClick', [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!app.locals.molochRightClick) {
-    res.status(404);
-    res.send('Cannot locate right clicks');
+/**
+ * GET - /api/valueActions
+ *
+ * Retrive the actions that can be preformed at meta data values
+ * @name /api/valueActions
+ * @returns {object} - The actions that can be preformed on spi data values
+ */
+app.get(['/molochRightClick', '/api/valueActions'], [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
+  if (!req.user || !req.user.userId) {
+    return res.send({});
   }
-  res.send(app.locals.molochRightClick);
+
+  var actions = {};
+
+  actions.httpAuthorizationDecode = { fields: 'http.authorization', func: `{
+    if (value.substring(0,5) === "Basic")
+      return {name: "Decoded:", value: atob(value.substring(6))};
+    return undefined;
+  }` };
+  actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
+  actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+  actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+
+  for (var key in internals.rightClicks) {
+    var rc = internals.rightClicks[key];
+    if (!rc.users || rc.users[req.user.userId]) {
+      actions[key] = rc;
+    }
+  }
+
+  return res.send(actions);
 });
 
 /**

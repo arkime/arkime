@@ -43,7 +43,7 @@ export default {
     getMolochClickablesQIP = new Promise((resolve, reject) => {
       if (_molochClickablesCache) { resolve(_molochClickablesCache); }
 
-      Vue.axios.get('molochRightClick')
+      Vue.axios.get('api/valueActions')
         .then((response) => {
           getMolochClickablesQIP = undefined;
 
