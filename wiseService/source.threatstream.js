@@ -62,7 +62,6 @@ class ThreatStreamSource extends WISESource {
       this.emails = new Map();
       this.md5s = new Map();
       this.urls = new Map();
-      this.cacheTimeout = -1;
       setImmediate(this.loadFile.bind(this));
       setInterval(this.loadFile.bind(this), 8 * 60 * 60 * 1000); // Reload file every 8 hours
       ThreatStreamSource.prototype.getDomain = ThreatStreamSource.prototype.getDomainZip;
@@ -81,7 +80,6 @@ class ThreatStreamSource extends WISESource {
     case 'sqlite3':
     case 'sqlite3-copy':
       sqlite3 = require('sqlite3');
-      this.cacheTimeout = -1;
       if (this.mode === 'sqlite3-copy') {
         this.openDbCopy();
         setInterval(this.openDbCopy.bind(this), 15 * 60 * 1000);
