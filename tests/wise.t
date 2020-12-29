@@ -10,23 +10,29 @@ use strict;
 
 
 my $wise;
-
+my @wise;
 
 # IP Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.0.0.3")->content;
-eq_or_diff(from_json($wise), from_json('[{"field":"tags","len":9,"value":"wisebyip1"},
-{"field":"irc.channel","len":16,"value":"wisebyip1channel"},
+@wise = sort { $a->{value} cmp $b->{value}} @{from_json($wise)};
+
+eq_or_diff(\@wise, from_json('[
 {"field":"email.x-priority","len":3,"value":"999"},
 {"field":"tags","len":6,"value":"ipwise"},
-{"field":"tags","len":9,"value":"ipwisecsv"}]
-'),"All 10.0.0.3");
+{"field":"tags","len":9,"value":"ipwisecsv"},
+{"field":"tags","len":9,"value":"wisebyip1"},
+{"field":"irc.channel","len":16,"value":"wisebyip1channel"}
+]'),"All 10.0.0.3");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:ip/ip/10.0.0.3")->content;
-eq_or_diff(from_json($wise), from_json('[{"field":"tags","len":9,"value":"wisebyip1"},
-{"field":"irc.channel","len":16,"value":"wisebyip1channel"},
+@wise = sort { $a->{value} cmp $b->{value}} @{from_json($wise)};
+
+eq_or_diff(\@wise, from_json('[
 {"field":"email.x-priority","len":3,"value":"999"},
-{"field":"tags","len":6,"value":"ipwise"}]
-'),"file:ip 10.0.0.3");
+{"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":9,"value":"wisebyip1"},
+{"field":"irc.channel","len":16,"value":"wisebyip1channel"}
+]'),"file:ip 10.0.0.3");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:ipblah/ip/10.0.0.3")->content;
 eq_or_diff($wise, 'Unknown source file:ipblah',"file:ipblah 10.0.0.3");
@@ -59,7 +65,7 @@ eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-comma"},
 
 # IP File Dump
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content . "]";
-my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
 eq_or_diff(\@wise,
 from_json('[
 {key:"10.0.0.3",ops:
