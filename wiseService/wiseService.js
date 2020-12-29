@@ -1406,7 +1406,9 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
  * @returns {object} - Object with array of stats per type and array of stats per source
  */
 app.get('/stats', [noCacheJson], function (req, res) {
-  let types = Object.keys(internals.types).sort();
+  const types = Object.keys(internals.types).sort();
+  const sections = Object.keys(internals.sources).sort();
+
   let stats = { types: [], sources: [], startTime: internals.startTime };
 
   for (const type of types) {
@@ -1422,7 +1424,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
     });
   }
 
-  for (let section in internals.sources) {
+  for (const section of sections) {
     let src = internals.sources[section];
     stats.sources.push({
       source: section,

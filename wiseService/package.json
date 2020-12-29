@@ -12,6 +12,7 @@
     "bundle": "cd ../ && npm run wise:bundle",
     "bundle:min": "cd ../ && npm run wise:build",
     "doc": "cd ../ && npm run wise:doc",
+    "dev": "cd ../ && npm run wise:dev",
     "lint": "cd ../ && npm run wise:lint"
   },
   "engines": {
