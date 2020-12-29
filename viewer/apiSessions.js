@@ -1047,7 +1047,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter(function (x) { return fields.indexOf(x) !== -1; });
 
-    const options = ViewerUtils.addCluster(req.query.cluster, { _source: fields.join(',') });
+    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: fields.join(',') });
     async.eachLimit(ids, 10, function (id, nextCb) {
       Db.getSession(id, options, function (err, session) {
         if (err) {
