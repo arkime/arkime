@@ -823,13 +823,31 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
 LOCAL void moloch_rules_match(MolochSession_t * const session, MolochRule_t * const rule)
 {
     if (rule->log) {
-        char logStr[10000];
+        char ipStr[200];
+        char logStr[5000];
         BSB bsb;
+
+
+        BSB_INIT(bsb, ipStr, sizeof(ipStr));
+
+        if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+            uint32_t ip1 = MOLOCH_V6_TO_V4(session->addr1);
+            uint32_t ip2 = MOLOCH_V6_TO_V4(session->addr2);
+            BSB_EXPORT_sprintf(bsb, "%u.%u.%u.%u => %u.%u.%u.%u:%u", ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
+                ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff, session->port2);
+        } else {
+            BSB_EXPORT_inet_ntop(bsb, AF_INET6, &session->addr1);
+            BSB_EXPORT_cstr(bsb, " => ");
+            BSB_EXPORT_inet_ntop(bsb, AF_INET6, &session->addr2);
+            BSB_EXPORT_sprintf(bsb, ".%u", session->port2);
+        }
+
         BSB_INIT(bsb, logStr, sizeof(logStr));
 
         moloch_rules_check_rule_fields(session, rule, -1, &bsb);
+
         if (BSB_LENGTH(bsb) > 2) {
-            LOG("%s - %.*s",rule->name, (int)BSB_LENGTH(bsb) - 2, logStr);
+            LOG("%s - %s - %.*s",rule->name, ipStr, (int)BSB_LENGTH(bsb) - 2, logStr);
         }
     }
     MOLOCH_THREAD_INCR(rule->matched);
