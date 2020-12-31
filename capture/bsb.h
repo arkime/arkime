@@ -148,6 +148,19 @@ do {                                              \
 } while (0)
 #endif
 
+#define BSB_EXPORT_inet_ntop(b,f,s)               \
+do {                                              \
+    if ((b).end != 0) {                           \
+        const char *r = inet_ntop(f, s, (char*)(b).ptr, \
+                         (b).end - (b).ptr);      \
+        if (r) {                                  \
+            (b).ptr += strlen(r);                 \
+        } else {                                  \
+            BSB_SET_ERROR(b);                     \
+        }                                         \
+    }                                             \
+} while (0)
+
 #define BSB_IMPORT_u08(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 1 <= (b).end) {      \
