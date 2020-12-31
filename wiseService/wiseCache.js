@@ -50,11 +50,14 @@ exports.WISEMemoryCache = WISEMemoryCache;
 /******************************************************************************/
 // Redis Cache
 /******************************************************************************/
-
 function WISERedisCache (redisType, options) {
   options = options || {};
   this.cacheSize = +options.cacheSize || 10000;
   this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24 * 60 * 60;
+  this.redisFormat = parseInt(options.getConfig('cache', 'redisFormat', '2'));
+  if (this.redisFormat !== 3) {
+    this.redisFormat = 2;
+  }
   this.cache = {};
 
   this.client = options.createRedisClient(redisType, 'cache');
@@ -106,10 +109,15 @@ WISERedisCache.prototype.set = function (query, result) {
 
   cache.set(query.value, result);
 
-  // Redis uses old encoding, convert new to old
-  const newResult = {};
-  for (const source in result) {
-    newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
+  let newResult;
+  if (this.redisFormat === 3) {
+    newResult = result;
+  } else {
+    // Redis uses old encoding, convert new to old
+    newResult = {};
+    for (const source in result) {
+      newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
+    }
   }
 
   const data = BSON.serialize(newResult, false, true, false);

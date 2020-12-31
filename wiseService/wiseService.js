@@ -83,7 +83,8 @@ const internals = {
         { name: 'redisPassword', password: true, required: false, help: 'Password for redis' },
         { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
         { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
-        { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' }
+        { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
+        { name: 'redisFormat', required: false, help: '3 if WISE 2.x & WISE 3.x in use, 3 if just WISE 3.x, Defaults to 2', regex: '[23]' }
       ]
     }
   },
