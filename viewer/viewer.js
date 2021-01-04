@@ -25,7 +25,6 @@ const MIN_DB_VERSION = 66;
 try {
   var Config = require('./config.js');
   var express = require('express');
-  var stylus = require('stylus');
   var fs = require('fs');
   var fse = require('fs-ext');
   var async = require('async');
@@ -95,6 +94,7 @@ let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, 
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
+let userAPIs = require('./apiUsers')(app, Config, Db, internals, ViewerUtils); // TODO ECR
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1527,243 +1527,31 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
 // APIS
 // ============================================================================
 // user apis ------------------------------------------------------------------
-// custom user css - used for custom user theme
-app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
-  fs.readFile('./views/user.styl', 'utf8', function (err, str) {
-    function error (msg) {
-      console.log('ERROR - user.css -', msg);
-      return res.status(404).end();
-    }
+app.get( // current user endpoint (GET) TODO ECR - update UI
+  ['/api/user', '/user/current'],
+  checkPermissions(['webEnabled']),
+  userAPIs.getUser
+);
 
-    let date = new Date().toUTCString();
-    res.setHeader('Content-Type', 'text/css');
-    res.setHeader('Date', date);
-    res.setHeader('Cache-Control', 'public, max-age=0');
-    res.setHeader('Last-Modified', date);
+app.post( // create user endpoint (POST) TODO ECR - udpate UI
+  ['/api/user', '/user/create'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.createUser
+);
 
-    if (err) { return error(err); }
-    if (!req.user.settings.theme) { return error('no custom theme defined'); }
+app.get( // user css endpoint (GET) TODO ECR - update UI
+  ['/api/user.css', '/user.css'],
+  checkPermissions(['webEnabled']),
+  userAPIs.getUserCSS
+);
 
-    let theme = req.user.settings.theme.split(':');
+app.getpost( // user list endpoint (POST or GET) TODO ECR - update UI
+  ['/api/users', '/user/list'],
+  [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
+  userAPIs.getUsers
+);
 
-    if (!theme[1]) { return error('custom theme corrupted'); }
-
-    let style = stylus(str);
-
-    let colors = theme[1].split(',');
-
-    if (!colors) { return error('custom theme corrupted'); }
-
-    style.define('colorBackground', new stylus.nodes.Literal(colors[0]));
-    style.define('colorForeground', new stylus.nodes.Literal(colors[1]));
-    style.define('colorForegroundAccent', new stylus.nodes.Literal(colors[2]));
-
-    style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
-    style.define('colorBlack', new stylus.nodes.Literal('#333333'));
-    style.define('colorGray', new stylus.nodes.Literal('#CCCCCC'));
-    style.define('colorGrayDark', new stylus.nodes.Literal('#777777'));
-    style.define('colorGrayDarker', new stylus.nodes.Literal('#555555'));
-    style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
-    style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
-
-    style.define('colorPrimary', new stylus.nodes.Literal(colors[3]));
-    style.define('colorPrimaryLightest', new stylus.nodes.Literal(colors[4]));
-    style.define('colorSecondary', new stylus.nodes.Literal(colors[5]));
-    style.define('colorSecondaryLightest', new stylus.nodes.Literal(colors[6]));
-    style.define('colorTertiary', new stylus.nodes.Literal(colors[7]));
-    style.define('colorTertiaryLightest', new stylus.nodes.Literal(colors[8]));
-    style.define('colorQuaternary', new stylus.nodes.Literal(colors[9]));
-    style.define('colorQuaternaryLightest', new stylus.nodes.Literal(colors[10]));
-
-    style.define('colorWater', new stylus.nodes.Literal(colors[11]));
-    style.define('colorLand', new stylus.nodes.Literal(colors[12]));
-    style.define('colorSrc', new stylus.nodes.Literal(colors[13]));
-    style.define('colorDst', new stylus.nodes.Literal(colors[14]));
-
-    style.render(function (err, css) {
-      if (err) { return error(err); }
-      return res.send(css);
-    });
-  });
-});
-
-app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
-  let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-    'lastUsed', 'timeLimit' ];
-
-  let clone = {};
-
-  for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
-    let prop = userProps[i];
-    if (req.user.hasOwnProperty(prop)) {
-      clone[prop] = req.user[prop];
-    }
-  }
-
-  clone.canUpload = app.locals.allowUploads;
-
-  // If esAdminUser is set use that, other wise use createEnable privilege
-  if (internals.esAdminUsersSet) {
-    clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
-  } else {
-    clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
-  }
-
-  // If no settings, use defaults
-  if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
-
-  // Use settingsDefaults for any settings that are missing
-  for (let item in internals.settingDefaults) {
-    if (clone.settings[item] === undefined) {
-      clone.settings[item] = internals.settingDefaults[item];
-    }
-  }
-
-  return res.send(clone);
-});
-
-app.post('/user/list', [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])], (req, res) => {
-  let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
-    'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-    'lastUsed', 'timeLimit' ];
-
-  let query = {
-    _source: columns,
-    sort: {},
-    from: +req.body.start || 0,
-    size: +req.body.length || 10000,
-    query: { // exclude the shared user from results
-      bool: { must_not: { term: { userId: '_moloch_shared' } } }
-    }
-  };
-
-  if (req.body.filter) {
-    query.query.bool.should = [
-      { wildcard: { userName: '*' + req.body.filter + '*' } },
-      { wildcard: { userId: '*' + req.body.filter + '*' } }
-    ];
-  }
-
-  req.body.sortField = req.body.sortField || 'userId';
-  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc' : 'asc' };
-  query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
-
-  Promise.all([Db.searchUsers(query),
-    Db.numberOfUsers()
-  ])
-    .then(([users, total]) => {
-      if (users.error) { throw users.error; }
-      let results = { total: users.hits.total, results: [] };
-      for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
-        let fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
-        fields.id = users.hits.hits[i]._id;
-        fields.expression = fields.expression || '';
-        fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-        fields.emailSearch = fields.emailSearch || false;
-        fields.removeEnabled = fields.removeEnabled || false;
-        fields.userName = ViewerUtils.safeStr(fields.userName || '');
-        fields.packetSearch = fields.packetSearch || false;
-        fields.timeLimit = fields.timeLimit || undefined;
-        results.results.push(fields);
-      }
-
-      let r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results
-      };
-
-      res.send(r);
-    }).catch((err) => {
-      console.log('ERROR - /user/list', err);
-      return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-    });
-});
-
-app.post('/user/create', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.molochError(403, 'Missing/Empty required fields');
-  }
-
-  if (req.body.userId.match(/[^@\w.-]/)) {
-    return res.molochError(403, 'User ID must be word characters');
-  }
-
-  if (req.body.userId === '_moloch_shared') {
-    return res.molochError(403, 'User ID cannot be the same as the shared moloch user');
-  }
-
-  Db.getUser(req.body.userId, function (err, user) {
-    if (!user || user.found) {
-      console.log('Trying to add duplicate user', err, user);
-      return res.molochError(403, 'User already exists');
-    }
-
-    let nuser = {
-      userId: req.body.userId,
-      userName: req.body.userName,
-      expression: req.body.expression,
-      passStore: Config.pass2store(req.body.userId, req.body.password),
-      enabled: req.body.enabled === true,
-      webEnabled: req.body.webEnabled === true,
-      emailSearch: req.body.emailSearch === true,
-      headerAuthEnabled: req.body.headerAuthEnabled === true,
-      createEnabled: req.body.createEnabled === true,
-      removeEnabled: req.body.removeEnabled === true,
-      packetSearch: req.body.packetSearch === true,
-      timeLimit: req.body.timeLimit,
-      hideStats: req.body.hideStats === true,
-      hideFiles: req.body.hideFiles === true,
-      hidePcap: req.body.hidePcap === true,
-      disablePcapDownload: req.body.disablePcapDownload === true,
-      welcomeMsgNum: 0
-    };
-
-    // console.log('Creating new user', nuser);
-    Db.setUser(req.body.userId, nuser, function (err, info) {
-      if (!err) {
-        return res.send(JSON.stringify({ success: true, text: 'User created succesfully' }));
-      } else {
-        console.log('ERROR - add user', err, info);
-        return res.molochError(403, err);
-      }
-    });
-  });
-});
-
-app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieToken], function (req, res) {
-  if (!req.body.msgNum) {
-    return res.molochError(403, 'Message number required');
-  }
-
-  if (req.params.userId !== req.user.userId) {
-    return res.molochError(403, 'Can not change other users msg');
-  }
-
-  Db.getUser(req.params.userId, function (err, user) {
-    if (err || !user.found) {
-      console.log('update user failed', err, user);
-      return res.molochError(403, 'User not found');
-    }
-    user = user._source;
-
-    user.welcomeMsgNum = parseInt(req.body.msgNum);
-
-    Db.setUser(req.params.userId, user, function (err, info) {
-      if (Config.debug) {
-        console.log('setUser', user, err, info);
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
-      }));
-    });
-  });
-});
-
+// TODO ECR add a delete endpoint too?
 app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
   if (req.body.userId === req.user.userId) {
     return res.molochError(403, 'Can not delete yourself');
@@ -2504,6 +2292,36 @@ app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logActio
       success: true,
       text: 'Deleted custom spiview fields configuration successfully'
     }));
+  });
+});
+
+app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieToken], function (req, res) {
+  if (!req.body.msgNum) {
+    return res.molochError(403, 'Message number required');
+  }
+
+  if (req.params.userId !== req.user.userId) {
+    return res.molochError(403, 'Can not change other users msg');
+  }
+
+  Db.getUser(req.params.userId, function (err, user) {
+    if (err || !user.found) {
+      console.log('update user failed', err, user);
+      return res.molochError(403, 'User not found');
+    }
+    user = user._source;
+
+    user.welcomeMsgNum = parseInt(req.body.msgNum);
+
+    Db.setUser(req.params.userId, user, function (err, info) {
+      if (Config.debug) {
+        console.log('setUser', user, err, info);
+      }
+      return res.send(JSON.stringify({
+        success: true,
+        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
+      }));
+    });
   });
 });
 
