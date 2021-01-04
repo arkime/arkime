@@ -70,7 +70,9 @@
   "ips": "0.0.0.0/32",
   "field": "asset"
  },
- "wiseCache": {},
+ "cache": {
+  "type": "memory"
+ },
  "url:aws-ips": {
   "type": "ip",
   "format": "json",
@@ -111,6 +113,6 @@
   "reload": 120
  },
  "valueactions:test": {
-     "file": "../tests/valueactions.ini"
+  "file": "../tests/valueactions.ini"
  }
 }

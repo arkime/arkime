@@ -67,19 +67,19 @@ const internals = {
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix, usually empty' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, usually empty' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
-    wiseCache: {
+    cache: {
       description: 'Specify how WISE should cache results from sources that support it. Using a redis setup is especially useful when there are multiple WISE servers or large amount of results to cache.',
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis)$', help: 'Where to cache results: memory (default), redis, redis-cluster, redis-sentinel' },
+        { name: 'type', required: false, regex: '^(memory|redis)$', help: 'Where to cache results: memory (default) or redis' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
-        { name: 'redisFormat', required: false, help: '3 if WISE 2.x & WISE 3.x in use, 3 if just WISE 3.x, Defaults to 2', regex: '[23]' }
+        { name: 'redisFormat', required: false, help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' }
       ]
     }
   },
@@ -637,11 +637,11 @@ class WISESourceAPI {
   // ----------------------------------------------------------------------------
   /**
    * Create a redis client from the info in a section
-   * @params {string} redisType - what kind of redis
+   * @params {string} url - The redis url to connect to.
    * @params {string} section - section to get info
    */
-  createRedisClient (redisType, section) {
-    return createRedisClient(redisType, section);
+  createRedisClient (url, section) {
+    return createRedisClient(url, section);
   }
 
   addValueAction (name, action) {
@@ -1463,7 +1463,7 @@ function createRedisClient (url, section) {
   if (url.startsWith('redis://') || url.startsWith('rediss://')) {
     const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
     if (!match) {
-      console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisdbnum`);
+      console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisDbNum`);
       process.exit(1);
     }
 
@@ -1473,15 +1473,21 @@ function createRedisClient (url, section) {
     return new Redis(url);
   }
 
-  // redis-sentinel://sentinelPassword:redisPassword@host:port/name/db
+  // redis-sentinel://sentinelPassword:redisPassword@host:port[,hostN;portN]/name/db
   if (url.startsWith('redis-sentinel://')) {
-    const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^:/]+)(:([0-9]+))?\/([^/]+)\/([0-9]+)(\/.+)?/);
+    const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
     if (!match) {
-      console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]redishost[:redisport]/redisname/redisdbnum`);
+      console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`);
       process.exit(1);
     }
 
-    const options = { sentinels: [{ host: match[5], port: match[7] || 26379 }], name: match[8], db: parseInt(match[9]) };
+    // const options = { sentinels: [t: match[5], port: match[7] || 26379 }], name: match[8], db: parseInt(match[9]) };
+    const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
+    match[5].split(',').forEach((hp) => {
+      const hostport = hp.split(':');
+      options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
+    });
+
     if (match[3] && match[3] !== '') {
       options.sentinelPassword = match[3];
     }
@@ -1497,20 +1503,27 @@ function createRedisClient (url, section) {
 
   // redis-cluster://[:pass]@host:port/db
   if (url.startsWith('redis-cluster://')) {
-    const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^:/]+)(:([0-9]+))?\/([0-9]+)(\/.+)?/);
+    const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^/]+)\/([0-9]+)(\/.+)?/);
     if (!match) {
-      console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redishost[:redisport]/redisdbnum`);
+      console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`);
       process.exit(1);
     }
 
-    const options = { db: parseInt(match[7]) };
+    const hosts = [];
+    match[4].split(',').forEach((hp) => {
+      const hostport = hp.split(':');
+      hosts.push({ host: hostport[0], port: hostport[1] || 6379 });
+    });
+
+    const options = { db: parseInt(match[5]) };
     if (match[3] && match[3] !== '') {
       options.password = match[3];
     }
+
     if (internals.debug > 0) {
-      console.log('REDIS-CLUSTER: host', { host: match[4], port: match[6] || 6380 }, 'options', { redisOptions: options });
+      console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
     }
-    return new Redis.Cluster([{ host: match[4], port: match[6] || 6380 }], { redisOptions: options });
+    return new Redis.Cluster(hosts, { redisOptions: options });
   }
 
   console.log(`Unknown redis url '${url}'`);
@@ -1583,7 +1596,7 @@ internals.configSchemes['redis'] = {
   load: function (cb) {
     let redisParts = internals.configFile.split('/');
     if (redisParts.length !== 5) {
-      throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisdbnum/key`);
+      throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
     }
     internals.configRedisKey = redisParts.pop();
     internals.configRedis = createRedisClient(redisParts.join('/'), 'config');
@@ -1617,7 +1630,7 @@ internals.configSchemes['redis-sentinel'] = {
     const redisParts = internals.configFile.split('/');
     redisParts[1] = 'stoperror';
     if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]redishost[:redisport]/redisname/redisdbnum/key`);
+      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum`);
     }
     internals.configRedisKey = redisParts[5];
     internals.configRedis = createRedisClient(internals.configFile, 'config');
@@ -1648,7 +1661,7 @@ internals.configSchemes['redis-cluster'] = {
     const redisParts = internals.configFile.split('/');
     redisParts[1] = 'stoperror';
     if (redisParts.length !== 5 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisdbnum/key`);
+      throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisDbNum/key`);
     }
     internals.configRedisKey = redisParts[4];
     internals.configRedis = createRedisClient(internals.configFile, 'config');
@@ -1807,15 +1820,17 @@ function main () {
     server = http.createServer(app);
   }
 
-  server
-    .on('error', (e) => {
-      console.log("ERROR - couldn't listen on port", getConfig('wiseService', 'port', 8081), 'is wiseService already running?');
-      process.exit(1);
-    })
-    .on('listening', (e) => {
-      console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
-    })
-    .listen(getConfig('wiseService', 'port', 8081));
+  setTimeout(() => {
+    server
+      .on('error', (e) => {
+        console.log("ERROR - couldn't listen on port", getConfig('wiseService', 'port', 8081), 'is wiseService already running?');
+        process.exit(1);
+      })
+      .on('listening', (e) => {
+        console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
+      })
+      .listen(getConfig('wiseService', 'port', 8081));
+  }, 2000);
 }
 
 function buildConfigAndStart () {

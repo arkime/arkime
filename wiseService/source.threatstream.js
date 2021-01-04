@@ -82,7 +82,7 @@ class ThreatStreamSource extends WISESource {
       sqlite3 = require('sqlite3');
       if (this.mode === 'sqlite3-copy') {
         this.openDbCopy();
-        setInterval(this.openDbCopy.bind(this), 15 * 60 * 1000);
+        setInterval(this.openDbCopy.bind(this), 30 * 60 * 1000);
       } else {
         this.openDb();
       }
