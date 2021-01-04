@@ -33,7 +33,7 @@ class RedisSource extends WISESource {
     this.format = api.getConfig(section, 'format', 'csv');
     this.template = api.getConfig(section, 'template', undefined);
 
-    this.client = api.createRedisClient(api.getConfig(section, 'redisType', 'redis'), section);
+    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
 
     if (this.type === 'domain') {
       this[this.typeFunc] = RedisSource.prototype.fetchDomain;
@@ -81,8 +81,7 @@ exports.initSource = function (api) {
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'url', required: true, help: 'The format is [redis:]//[[user][:password@]]host:port[/db-number]' },
-      { name: 'redisType', required: true, help: 'The type of redis cluster:redis,redis-sentinel,redis-cluster' },
+      { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: true, help: 'For csv formatted files, which column is the data' },
       { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' }

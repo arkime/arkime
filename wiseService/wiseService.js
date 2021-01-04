@@ -76,14 +76,9 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|redis-cluster|redis-sentinel)$', help: 'Where to cache results: memory (default), redis, redis-cluster, redis-sentinel' },
+        { name: 'type', required: false, regex: '^(memory|redis)$', help: 'Where to cache results: memory (default), redis, redis-cluster, redis-sentinel' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
-        { name: 'url', required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[[user]:[password]@]host:port[/db-number]' },
-        { name: 'redisName', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'User name for redis' },
-        { name: 'redisPassword', password: true, required: false, help: 'Password for redis' },
-        { name: 'sentinelPassword', password: true, required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Password for sentinel' },
-        { name: 'redisSentinels', required: false, ifField: 'type', ifValue: 'redis-sentinal', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
-        { name: 'redisClusters', required: false, ifField: 'type', ifValue: 'redis-cluster', help: 'Semicolon separated list of host:port. Defaults to localhost:26379' },
+        { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
         { name: 'redisFormat', required: false, help: '3 if WISE 2.x & WISE 3.x in use, 3 if just WISE 3.x, Defaults to 2', regex: '[23]' }
       ]
     }
@@ -93,7 +88,7 @@ const internals = {
   types: {
   },
   views: {},
-  rightClicks: {},
+  valueActions: {},
   workers: 1,
   regressionTests: false,
   webconfig: false,
@@ -441,6 +436,10 @@ class WISESourceAPI {
       return WISESource.field2Pos[name];
     }
 
+    if (internals.debug > 1) {
+      console.log(`Adding field name:${name} db:${db} friendly:${friendly} from '${field}'`);
+    }
+
     const pos = internals.fields.length;
     newFieldsTS();
     internals.fields.push(field);
@@ -499,6 +498,8 @@ class WISESourceAPI {
       const title = match[1];
       match = view.match(/fields:([^;]+)/);
       const fields = match[1];
+      match = view.match(/section:([^;]+)/);
+      name = match[1];
 
       let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (let field of fields.split(',')) {
@@ -507,7 +508,7 @@ class WISESourceAPI {
           continue;
         }
         if (!info.db) {
-          console.log(`ERROR, missing db information for ${field}`);
+          console.log(`ERROR - missing db information for ${field}`);
           process.exit(0);
         }
         const parts = splitRemain(info.db, '.', 1);
@@ -629,8 +630,12 @@ class WISESourceAPI {
     return createRedisClient(redisType, section);
   }
 
-  addRightClick (name, rightClick) {
-    internals.rightClicks[name] = rightClick;
+  addValueAction (name, action) {
+    internals.valueActions[name] = action;
+  }
+
+  addRightClick (name, action) {
+    internals.valueActions[name] = action;
   }
 
   isWebConfig () {
@@ -687,8 +692,6 @@ app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
 app.use('/assets', express.static(`${__dirname}/../assets`, { maxAge: 600 * 1000 }));
-app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
-app.use(timeout(5 * 1000));
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
   app.post('/shutdown', (req, res) => {
@@ -739,11 +742,11 @@ app.get('/views', [noCacheJson], function (req, res) {
 /**
  * GET - Used by viewer to retrieve all the field value actions created by wise sources
  *
- * @name "/fieldValueActions"
+ * @name "/valueActions"
  * @returns {object|array} All the actions
  */
-app.get(['/rightClicks', '/fieldValueActions'], [noCacheJson], function (req, res) {
-  res.send(internals.rightClicks);
+app.get(['/rightClicks', '/valueActions'], [noCacheJson], function (req, res) {
+  res.send(internals.valueActions);
 });
 
 // ----------------------------------------------------------------------------
@@ -1433,37 +1436,73 @@ app.get('/stats', [noCacheJson], function (req, res) {
       cacheMiss: src.cacheMissStat,
       cacheRefresh: src.cacheRefreshStat,
       cacheDropped: src.cacheDroppedStat,
-      averageMS: src.average100MS.toFixed(4)
+      averageMS: src.average100MS.toFixed(4),
+      items: src.itemCount()
     });
   }
   res.send(stats);
 });
 
 // ----------------------------------------------------------------------------
-function createRedisClient (redisType, section) {
-  if (redisType === 'redis') {
-    return new Redis(getConfig(section, 'url'));
-  } else if (redisType === 'redis-sentinel') {
-    let options = { sentinels: [], name: getConfig(section, 'redisName') };
-    getConfig(section, 'redisSentinels', 'localhost').split(';').forEach((key) => {
-      let parts = key.split(':');
-      options.sentinels.push({ host: parts[0], port: parts[1] || 26379 });
-    });
-    options.sentinelPassword = getConfig(section, 'sentinelPassword');
-    options.password = getConfig(section, 'redisPassword');
-    return new Redis(options);
-  } else if (redisType === 'redis-cluster') {
-    let options = [];
-    getConfig(section, 'redisClusters').split(';').forEach((key) => {
-      let parts = key.split(':');
-      options.push({ host: parts[0], port: parts[1] || 26379 });
-    });
-    return new Redis.Cluster(options);
-  } else {
-    console.log(`${section} - ERROR - unknown redisType '${redisType}'`);
-    process.exit();
+function createRedisClient (url, section) {
+  // redis://[:pass]@host:port/db
+  if (url.startsWith('redis://') || url.startsWith('rediss://')) {
+    const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
+    if (!match) {
+      console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisdbnum`);
+      process.exit(1);
+    }
+
+    if (internals.debug > 0) {
+      console.log('REDIS:', url);
+    }
+    return new Redis(url);
   }
+
+  // redis-sentinel://sentinelPassword:redisPassword@host:port/name/db
+  if (url.startsWith('redis-sentinel://')) {
+    const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^:/]+)(:([0-9]+))?\/([^/]+)\/([0-9]+)(\/.+)?/);
+    if (!match) {
+      console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]redishost[:redisport]/redisname/redisdbnum`);
+      process.exit(1);
+    }
+
+    const options = { sentinels: [{ host: match[5], port: match[7] || 26379 }], name: match[8], db: parseInt(match[9]) };
+    if (match[3] && match[3] !== '') {
+      options.sentinelPassword = match[3];
+    }
+    if (match[4] && match[4] !== '') {
+      options.password = match[4];
+    }
+
+    if (internals.debug > 0) {
+      console.log('REDIS-SENTINEL:', options);
+    }
+    return new Redis(options);
+  }
+
+  // redis-cluster://[:pass]@host:port/db
+  if (url.startsWith('redis-cluster://')) {
+    const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^:/]+)(:([0-9]+))?\/([0-9]+)(\/.+)?/);
+    if (!match) {
+      console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redishost[:redisport]/redisdbnum`);
+      process.exit(1);
+    }
+
+    const options = { db: parseInt(match[7]) };
+    if (match[3] && match[3] !== '') {
+      options.password = match[3];
+    }
+    if (internals.debug > 0) {
+      console.log('REDIS-CLUSTER: host', { host: match[4], port: match[6] || 6380 }, 'options', { redisOptions: options });
+    }
+    return new Redis.Cluster([{ host: match[4], port: match[6] || 6380 }], { redisOptions: options });
+  }
+
+  console.log(`Unknown redis url '${url}'`);
+  process.exit(1);
 }
+
 // ----------------------------------------------------------------------------
 function printStats () {
   const keys = Object.keys(internals.types).sort();
@@ -1524,57 +1563,96 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 // ----------------------------------------------------------------------------
 // Config Schemes - For each scheme supported implement a load/save function
 // ----------------------------------------------------------------------------
+
+// redis://[:pass]@host:port/db/key
 internals.configSchemes['redis'] = {
   load: function (cb) {
-    let redisParts = internals.configFile.split(/(\d)/);
-    if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
-      throw new Error('Invalid redis url');
+    let redisParts = internals.configFile.split('/');
+    if (redisParts.length !== 5) {
+      throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisdbnum/key`);
     }
-    let host = redisParts[0].slice(0, redisParts[0].length - 1);
-    let dbNum = redisParts[1];
-    internals.configRedisKey = redisParts[2].slice(1);
-    internals.configRedis = new Redis(host + '/' + dbNum);
+    internals.configRedisKey = redisParts.pop();
+    internals.configRedis = createRedisClient(redisParts.join('/'), 'config');
 
     internals.configRedis.get(internals.configRedisKey, function (err, result) {
       if (err) {
         return cb(err);
       }
-      internals.config = JSON.parse(result);
+      if (result === null) {
+        internals.config = {};
+      } else {
+        internals.config = JSON.parse(result);
+      }
       return cb();
     });
   },
   save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, function (err, result) {
+    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
       cb(err);
     });
   }
 };
 
 // ----------------------------------------------------------------------------
+// rediss://pass@host:port/db/key
 internals.configSchemes['rediss'] = internals.configSchemes['redis'];
 
-// ----------------------------------------------------------------------------
-internals.configSchemes['redis-cluster'] = {
+// redis-sentinel://sentinelPassword:redisPassword@host:port/name/db/key
+internals.configSchemes['redis-sentinel'] = {
   load: function (cb) {
-    let redisParts = internals.configFile.split(/(\d)/);
-    if (redisParts.length !== 3 || redisParts.some(p => p === '')) {
-      throw new Error('Invalid redis url');
+    const redisParts = internals.configFile.split('/');
+    redisParts[1] = 'stoperror';
+    if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
+      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]redishost[:redisport]/redisname/redisdbnum/key`);
     }
-    let host = redisParts[0].slice(0, redisParts[0].length - 1);
-    let dbNum = redisParts[1];
-    internals.configRedisKey = redisParts[2].slice(1);
-    internals.configRedis = new Redis.Cluster(host + '/' + dbNum); // ALW - Fix
+    internals.configRedisKey = redisParts[5];
+    internals.configRedis = createRedisClient(internals.configFile, 'config');
 
     internals.configRedis.get(internals.configRedisKey, function (err, result) {
       if (err) {
         return cb(err);
       }
-      internals.config = JSON.parse(result);
+      if (result === null) {
+        internals.config = {};
+      } else {
+        internals.config = JSON.parse(result);
+      }
       return cb();
     });
   },
   save: function (config, cb) {
-    internals.configRedis.set(internals.configRedisKey, function (err, result) {
+    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
+      cb(err);
+    });
+  }
+};
+
+// ----------------------------------------------------------------------------
+// redis-cluster://[:pass]@host:port/db/key
+internals.configSchemes['redis-cluster'] = {
+  load: function (cb) {
+    const redisParts = internals.configFile.split('/');
+    redisParts[1] = 'stoperror';
+    if (redisParts.length !== 5 || redisParts.some(p => p === '')) {
+      throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisdbnum/key`);
+    }
+    internals.configRedisKey = redisParts[4];
+    internals.configRedis = createRedisClient(internals.configFile, 'config');
+
+    internals.configRedis.get(internals.configRedisKey, function (err, result) {
+      if (err) {
+        return cb(err);
+      }
+      if (result === null) {
+        internals.config = {};
+      } else {
+        internals.config = JSON.parse(result);
+      }
+      return cb();
+    });
+  },
+  save: function (config, cb) {
+    internals.configRedis.set(internals.configRedisKey, JSON.stringify(config), function (err, result) {
       cb(err);
     });
   }
@@ -1604,7 +1682,7 @@ internals.configSchemes['elasticsearch'] = {
   save: function (config, cb) {
     let url = internals.configFile.replace('elasticsearch', 'http');
 
-    axios.post(url, config)
+    axios.post(url, JSON.stringify(config))
       .then((response) => {
         cb(null);
       })
@@ -1613,6 +1691,7 @@ internals.configSchemes['elasticsearch'] = {
       });
   }
 };
+
 // ----------------------------------------------------------------------------
 internals.configSchemes['elasticsearchs'] = {
   load: function (cb) {
@@ -1637,7 +1716,7 @@ internals.configSchemes['elasticsearchs'] = {
   save: function (config, cb) {
     let url = internals.configFile.replace('elasticsearchs', 'https');
 
-    axios.post(url, config)
+    axios.post(url, JSON.stringify(config))
       .then((response) => {
         cb();
       })
@@ -1645,8 +1724,8 @@ internals.configSchemes['elasticsearchs'] = {
         cb(error);
       });
   }
-
 };
+
 // ----------------------------------------------------------------------------
 internals.configSchemes['json'] = {
   load: function (cb) {
@@ -1726,6 +1805,11 @@ function main () {
 }
 
 function buildConfigAndStart () {
+  // The config is actually hidden
+  if (internals.configFile.endsWith('.hiddenconfig')) {
+    internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
+  }
+
   let parts = internals.configFile.split('://');
   if (parts.length === 1) {
     if (internals.configFile.endsWith('json')) {
@@ -1745,6 +1829,10 @@ function buildConfigAndStart () {
     if (err) {
       console.log(`Error reading ${internals.configFile}:\n\n`, err);
       process.exit(1);
+    }
+
+    if (internals.debug > 1) {
+      console.log('Config', internals.config);
     }
 
     setupAuth();

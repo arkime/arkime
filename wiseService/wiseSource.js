@@ -149,7 +149,15 @@ class WISESource {
       const pos = this.api.addField(line);
       const match = line.match(/shortcut:([^;]+)/);
       if (match) {
-        this.shortcuts[match[1]] = pos;
+        this.shortcuts[match[1]] = { pos: pos, mod: 0 };
+        const kind = line.match(/kind:([^;]+)/);
+        if (kind) {
+          if (kind[1] === 'lotermfield') {
+            this.shortcuts[match[1]].mod = 1;
+          } else if (kind[1] === 'uptermfield') {
+            this.shortcuts[match[1]].mod = 2;
+          }
+        }
       }
     } else if (line.lastIndexOf('view:', 0) === 0) {
       this.view += line.substring(5) + '\n';
@@ -172,9 +180,16 @@ class WISESource {
       for (let i = 0; i < data.length; i++) {
         const args = [];
         for (const k in this.shortcuts) {
-          if (data[i][k] !== undefined) {
-            args.push(this.shortcuts[k]);
-            args.push(data[i][k]);
+          if (data[i][k] !== undefined && data[i][k] !== '') {
+            args.push(this.shortcuts[k].pos);
+
+            if (this.shortcuts[k].mod === 1) {
+              args.push(data[i][k].toLowerCase());
+            } else if (this.shortcuts[k].mod === 2) {
+              args.push(data[i][k].toUpperCase());
+            } else {
+              args.push(data[i][k]);
+            }
           }
         }
 
@@ -217,7 +232,7 @@ class WISESource {
           continue;
         }
         if (this.shortcuts[kv[0]] !== undefined) {
-          args.push(this.shortcuts[kv[0]]);
+          args.push(this.shortcuts[kv[0]].pos);
         } else if (WISESource.field2Pos[kv[0]]) {
           args.push(WISESource.field2Pos[kv[0]]);
         } else {
@@ -236,18 +251,28 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse JSON formatted data
-   * @param {string} body - the raw CSV data
+   * @param {string} body - the raw JSON data
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCB - all done parsing
    */
   parseJSON (body, setCb, endCb) {
-    const json = JSON.parse(body);
+    let json = JSON.parse(body);
 
-    if (this.keyColumn === undefined) {
-      return endCb('No keyColumn set');
+    if (this.keyPath === undefined) {
+      return endCb('No keyPath set');
     }
 
-    let keyColumn = this.keyColumn.split('.');
+    if (this.arrayPath !== undefined) {
+      let arrayPath = this.arrayPath.split('.');
+      for (let i = 0; i < arrayPath.length; i++) {
+        json = json[arrayPath[i]];
+        if (!json) {
+          return endCb(`Couldn't find ${arrayPath[i]} in results`);
+        }
+      }
+    }
+
+    let keyPath = this.keyPath.split('.');
 
     // Convert shortcuts into array of key path
     let shortcuts = [];
@@ -260,8 +285,8 @@ class WISESource {
     for (let i = 0; i < json.length; i++) {
       // Walk the key path
       let key = json[i];
-      for (let j = 0; key && j < keyColumn.length; j++) {
-        key = key[keyColumn[j]];
+      for (let j = 0; key && j < keyPath.length; j++) {
+        key = key[keyPath[j]];
       }
 
       if (key === undefined || key === null) {
@@ -276,9 +301,15 @@ class WISESource {
         for (let j = 0; obj && j < shortcuts[k].length; j++) {
           obj = obj[shortcuts[k][j]];
         }
-        if (obj !== undefined && obj !== null) {
-          args.push(shortcutsValue[k]);
-          args.push(obj);
+        if (obj !== undefined && obj !== null && obj !== '') {
+          args.push(shortcutsValue[k].pos);
+          if (shortcutsValue[k].mod === 1) {
+            args.push(obj.toLowerCase());
+          } else if (shortcutsValue[k].mod === 2) {
+            args.push(obj.toUpperCase());
+          } else {
+            args.push(obj);
+          }
         }
       }
 
@@ -485,6 +516,16 @@ class WISESource {
       .on('end', () => {
         setTimeout(cb, 100, statusCode);
       });
+  };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * For sources that support it, get the number of items loaded into memory.
+   *
+   * @returns {integer} the number of items loaded into memory
+   */
+  itemCount () {
+    return 0;
   };
 }
 /**

@@ -93,7 +93,7 @@ class ElasticsearchSource extends WISESource {
       const args = [];
       for (const k in this.shortcuts) {
         if (json[k] !== undefined) {
-          args.push(this.shortcuts[k]);
+          args.push(this.shortcuts[k].pos);
           if (Array.isArray(json[k])) {
             args.push(json[k][0]);
           } else {

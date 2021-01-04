@@ -23,7 +23,7 @@ const request = require('request');
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { dontCache: true, reload: true });
+    super(api, section, { reload: true });
     this.url = api.getConfig(section, 'url');
     this.headers = {};
     const headers = api.getConfig(section, 'headers');
@@ -71,10 +71,11 @@ exports.initSource = function (api) {
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
-      { name: 'keyColumn', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
+      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
       { name: 'url', required: true, help: 'The URL to load' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
-      { name: 'headers', required: true, help: 'Semicolon separated list of headers to send in the URL request' }
+      { name: 'headers', required: false, help: 'Semicolon separated list of headers to send in the URL request' }
     ]
   });
 

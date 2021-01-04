@@ -153,6 +153,11 @@ class ThreatQSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  itemCount () {
+    return this.ips.size() + this.domains.size + this.md5s.size() + this.emails.size();
+  };
+
+  // ----------------------------------------------------------------------------
   dump (res) {
     ['ips', 'domains', 'emails', 'md5s'].forEach((ckey) => {
       res.write(`${ckey}:\n`);

@@ -192,7 +192,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/sources")->content;
-eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns"]',"file:mac query");
+eq_or_diff($wise, '["file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/types")->content;

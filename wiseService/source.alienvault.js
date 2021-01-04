@@ -137,6 +137,12 @@ class AlienVaultSource extends WISESource {
   getIp (ip, cb) {
     cb(null, this.ips.get(ip));
   };
+
+  // ----------------------------------------------------------------------------
+  itemCount () {
+    return this.ips.size();
+  };
+
   // ----------------------------------------------------------------------------
   dump (res) {
     this.ips.forEach((value, key) => {

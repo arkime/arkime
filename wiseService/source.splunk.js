@@ -34,9 +34,10 @@ class SplunkSource extends WISESource {
     this.port = api.getConfig(section, 'port', 8089);
     this.periodic = api.getConfig(section, 'periodic');
     this.query = api.getConfig(section, 'query');
-    this.keyColumn = api.getConfig(section, 'keyColumn');
+    this.arrayPath = api.getConfig(section, 'arrayPath');
+    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
 
-    ['host', 'username', 'password', 'query', 'keyColumn'].forEach((item) => {
+    ['host', 'username', 'password', 'query', 'keyPath'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
       }
@@ -90,13 +91,13 @@ class SplunkSource extends WISESource {
       }
 
       for (let item of results.results) {
-        const key = item[this.keyColumn];
+        const key = item[this.keyPath];
         if (!key) { continue; }
 
         const args = [];
         for (const k in this.shortcuts) {
           if (item[k] !== undefined) {
-            args.push(this.shortcuts[k]);
+            args.push(this.shortcuts[k].pos);
             if (Array.isArray(item[k])) {
               args.push(item[k][0]);
             } else {
@@ -200,6 +201,7 @@ exports.initSource = function (api) {
       { name: 'username', required: true, help: 'The Splunk username' },
       { name: 'password', required: true, help: 'The Splunk password' },
       { name: 'host', required: true, help: 'The Splunk hostname' },
+      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
       { name: 'keyColumn', required: true, help: 'The column to use from the returned data to use as the key' },
       { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
       { name: 'port', required: true, help: 'The Splunk port' },

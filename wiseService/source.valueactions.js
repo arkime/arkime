@@ -21,7 +21,7 @@ const fs = require('fs');
 const WISESource = require('./wiseSource.js');
 const ini = require('iniparser');
 
-class RightClickSource extends WISESource {
+class ValueActionsSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { });
@@ -42,6 +42,8 @@ class RightClickSource extends WISESource {
       console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
       return;
     }
+
+    this.api.addSource(section, this);
 
     setImmediate(this.load.bind(this));
 
@@ -73,7 +75,7 @@ class RightClickSource extends WISESource {
     }
 
     const config = ini.parseSync(this.file);
-    const data = config['right-click'] || config;
+    const data = config['valueactions'] || config;
 
     this.process(data);
   };
@@ -109,27 +111,45 @@ class RightClickSource extends WISESource {
         });
         obj.users = users;
       }
-      this.api.addRightClick(key, obj);
+      this.api.addValueAction(key, obj);
     });
   };
+
+  // ----------------------------------------------------------------------------
+  getSourceRaw (cb) {
+    fs.readFile(this.file, (err, body) => {
+      if (err) {
+        return cb(err);
+      }
+      return cb(null, body);
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  putSourceRaw (body, cb) {
+    fs.writeFile(this.file, body, (err) => {
+      return cb(err);
+    });
+  }
 }
 
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef('rightclick', {
+  api.addSourceConfigDef('valueactions', {
     singleton: false,
-    name: 'rightclick',
-    description: 'This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server',
+    name: 'valueactions',
+    description: "This source monitors configured files for value actions to send to all the viewer instances that connect to this WISE Server. It isn't really a source in the true WISE sense, but makes it easy to edit.",
     cacheable: false,
+    editable: true,
     types: [], // This is a fake source, no types
     fields: [
       { name: 'file', required: true, help: 'The file to load' }
     ]
   });
 
-  const sections = api.getConfigSections().filter((e) => { return e.match(/(^right-click$|^right-click:)/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|valueactions:)/); });
   sections.forEach((section) => {
-    return new RightClickSource(api, section);
+    return new ValueActionsSource(api, section);
   });
 };
 // ----------------------------------------------------------------------------

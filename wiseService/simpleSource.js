@@ -36,7 +36,7 @@ const iptrie = require('iptrie');
  */
 class SimpleSource extends WISESource {
   /**
-   * Create a simple source. The options formatSetting, tagsSetting, typeSetting will all be set to true automatically.
+   * Create a simple source. The options dontCache, formatSetting, tagsSetting, typeSetting will all be set to true automatically.
    * @param {WISESourceAPI} api - the api when source created passed to initSource
    * @param {string} section - the section name
    * @param {object} options - see WISESource constructor for common options
@@ -46,10 +46,12 @@ class SimpleSource extends WISESource {
     options.typeSetting = true;
     options.tagsSetting = true;
     options.formatSetting = true;
+    options.dontCache = true;
     super(api, section, options);
     this.reload = options.reload ? parseInt(api.getConfig(section, 'reload', -1)) : -1;
     this.column = parseInt(api.getConfig(section, 'column', 0));
-    this.keyColumn = api.getConfig(section, 'keyColumn', 0);
+    this.arrayPath = api.getConfig(section, 'arrayPath');
+    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
     this.firstLoad = true;
 
     if (this.type === 'ip') {
@@ -86,6 +88,14 @@ class SimpleSource extends WISESource {
     });
     res.end();
   };
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Implemented for simple sources
+   */
+  itemCount () {
+    return this.type === 'ip' ? this.cache.items.size : this.cache.size;
+  }
 
   // ----------------------------------------------------------------------------
   sendResult (key, cb) {

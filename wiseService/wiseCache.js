@@ -50,7 +50,7 @@ exports.WISEMemoryCache = WISEMemoryCache;
 /******************************************************************************/
 // Redis Cache
 /******************************************************************************/
-function WISERedisCache (redisType, options) {
+function WISERedisCache (options) {
   options = options || {};
   this.cacheSize = +options.cacheSize || 10000;
   this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24 * 60 * 60;
@@ -60,7 +60,7 @@ function WISERedisCache (redisType, options) {
   }
   this.cache = {};
 
-  this.client = options.createRedisClient(redisType, 'cache');
+  this.client = options.createRedisClient(options.getConfig('cache', 'redisURL'), 'cache');
 }
 
 // ----------------------------------------------------------------------------
@@ -137,9 +137,7 @@ exports.createCache = function (options) {
   case 'memory':
     return new WISEMemoryCache(options);
   case 'redis':
-  case 'redis-cluster':
-  case 'redis-sentinel':
-    return new WISERedisCache(type, options);
+    return new WISERedisCache(options);
   default:
     console.log('Unknown cache type', type);
     process.exit(1);

@@ -34,6 +34,7 @@
   "scripts": {
     "bundle": "cd ../ && npm run viewer:bundle",
     "bundle:min": "cd ../ && npm run viewer:build",
+    "dev": "cd ../ && npm run viewer:dev",
     "doc": "cd ../ && npm run viewer:doc",
     "lint": "cd ../ && npm run viewer:lint"
   },
