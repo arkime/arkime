@@ -136,7 +136,7 @@ class EmergingThreatsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   itemCount () {
-    return this.ips.size() + this.domains.size();
+    return this.ips.size + this.domains.size;
   };
 
   // ----------------------------------------------------------------------------

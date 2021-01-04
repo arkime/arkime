@@ -154,7 +154,7 @@ class ThreatQSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   itemCount () {
-    return this.ips.size() + this.domains.size + this.md5s.size() + this.emails.size();
+    return this.ips.size + this.domains.size + this.md5s.size + this.emails.size;
   };
 
   // ----------------------------------------------------------------------------

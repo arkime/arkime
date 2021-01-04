@@ -494,12 +494,26 @@ class WISESourceAPI {
     if (view.includes('require:')) {
       let match = view.match(/require:([^;]+)/);
       const require = match[1];
+
       match = view.match(/title:([^;]+)/);
+      if (!match) {
+        console.log(`ERROR - ${name} view is missing 'title:' ${view}`);
+        return;
+      }
       const title = match[1];
+
       match = view.match(/fields:([^;]+)/);
+      if (!match) {
+        console.log(`ERROR - ${name} view is missing 'fields:' ${view}`);
+        return;
+      }
       const fields = match[1];
+
+      // Can override the name in the view
       match = view.match(/section:([^;]+)/);
-      name = match[1];
+      if (match) {
+        name = match[1];
+      }
 
       let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (let field of fields.split(',')) {
@@ -509,7 +523,7 @@ class WISESourceAPI {
         }
         if (!info.db) {
           console.log(`ERROR - missing db information for ${field}`);
-          process.exit(0);
+          return;
         }
         const parts = splitRemain(info.db, '.', 1);
         if (parts.length === 1) {
