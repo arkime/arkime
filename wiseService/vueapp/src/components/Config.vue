@@ -21,9 +21,7 @@
             type="button"
             class="btn btn-light source-btn btn-outline-dark"
           >
-            <h5>
-              {{ sourceKey }}
-            </h5>
+            {{ sourceKey }}
           </button>
         </div>
 
@@ -38,9 +36,7 @@
             type="button"
             class="btn btn-light source-btn btn-outline-dark"
           >
-            <h5>
-              {{ sourceKey }}
-            </h5>
+            {{ sourceKey }}
           </button>
         </div>
 
@@ -479,13 +475,19 @@ export default {
 </script>
 
 <style scoped>
-/* TODO: verify all the css works for dark mode */
 .source-btn {
   width: 100%;
+  font-size: .9rem;
   border-radius: 0;
-  background: white;
-  border-color: white;
+  padding: .2rem .3rem;
+  border-color: transparent;
+  background-color: transparent;
   box-shadow: none !important; /* Covers all css states that has this defined in boostrap */
+}
+.source-btn:hover {
+  color: #fff;
+  border-color: transparent;
+  background-color: #343a40;
 }
 .input-label {
   height: 54px;
