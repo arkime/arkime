@@ -625,8 +625,8 @@ class WISESourceAPI {
 
       if (configDef.singleton === false && types.length > 0) {
         configDef.fields = configDef.fields.concat([
-          { name: 'fields', required: false, help: 'A "\\n" separated list of fields that this source will add. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-          { name: 'view', required: false, help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful jade format. For the jade format see Tagger Format in the docs for more information (except everything has to be on one line, so replace newlines with \\n). Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
+          { name: 'fields', required: false, multiline: '\\n', help: 'A list of fields that this source will add, one per line. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
+          { name: 'view', required: false, multiline: '\\n', help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful pug format. For the pug format see Tagger Format in the docs for more information. Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
         ]);
       }
 

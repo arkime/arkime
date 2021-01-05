@@ -138,16 +138,27 @@
             </div>
 
             <b-form-input
-              v-if="currConfig && currConfig[selectedSourceKey]"
+              v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
               :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
               class="input-box"
               :value="currConfig[selectedSourceKey][field.name]"
-              @input="(val) => inputChanged(val, field.name, field.required)"
+              @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
               v-b-popover.focus.top="field.help"
             >
             </b-form-input>
+            <b-form-textarea
+              v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
+              :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
+              class="input-box"
+              :value="currConfig[selectedSourceKey][field.name].split(field.multiline).join('\n')"
+              @input="(val) => inputChanged(val, field)"
+              :placeholder="field.help"
+              :required="field.required"
+              v-b-popover.focus.top="field.help"
+            >
+            </b-form-textarea>
           </div>
 
           <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
@@ -313,11 +324,15 @@ export default {
       this.newSource = '';
       this.newSourceName = '';
     },
-    inputChanged: function (val, name, isReq) {
+    inputChanged: function (val, field) {
       if (val) {
-        this.$set(this.currConfig[this.selectedSourceKey], name, val);
-      } else if (this.currConfig[this.selectedSourceKey][name]) {
-        this.$delete(this.currConfig[this.selectedSourceKey], name);
+        if (field.multiline) {
+          this.$set(this.currConfig[this.selectedSourceKey], field.name, val.replace(/\n/g, field.multiline));
+        } else {
+          this.$set(this.currConfig[this.selectedSourceKey], field.name, val);
+        }
+      } else if (this.currConfig[this.selectedSourceKey][field.name]) {
+        this.$delete(this.currConfig[this.selectedSourceKey], field.name);
       }
     },
     deleteSource: function () {
