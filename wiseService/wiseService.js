@@ -1481,7 +1481,6 @@ function createRedisClient (url, section) {
       process.exit(1);
     }
 
-    // const options = { sentinels: [t: match[5], port: match[7] || 26379 }], name: match[8], db: parseInt(match[9]) };
     const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
     match[5].split(',').forEach((hp) => {
       const hostport = hp.split(':');

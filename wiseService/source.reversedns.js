@@ -20,7 +20,7 @@
 const Dns = require('dns');
 const iptrie = require('iptrie');
 const WISESource = require('./wiseSource.js');
-let resolver = Dns;
+let resolver;
 
 // ----------------------------------------------------------------------------
 function removeArray (arr, value) {
@@ -38,8 +38,8 @@ class ReverseDNSSource extends WISESource {
     this.field = api.getConfig('reversedns', 'field');
     this.ips = api.getConfig('reversedns', 'ips');
     this.servers = api.getConfig('reversedns', 'servers');
+    resolver = new Dns.Resolver({ timeout: 2000 });
     if (this.servers !== undefined) {
-      resolver = new Dns();
       resolver.setServers(this.servers.split(';'));
     }
     this.stripDomains = removeArray(api.getConfig('reversedns', 'stripDomains', '').split(';').map(item => item.trim()), '');
