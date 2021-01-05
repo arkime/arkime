@@ -10,7 +10,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^7.9.1",
     "async": "^2.6.3",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "bson": "^1.1.5",
     "chalk": "^4.1.0",
