@@ -67,7 +67,7 @@ class VirusTotalSource extends WISESource {
     this.hitsField = this.api.addField('field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true');
     this.linksField = this.api.addField('field:virustotal.links;db:virustotal.links;kind:termfield;friendly:Link;help:VirusTotal Link;count:true');
 
-    this.api.addRightClick('virustotallinks', { name: 'Open', url: '%TEXT%', fields: 'virustotal.links' });
+    this.api.addValueAction('virustotallinks', { name: 'Open', url: '%TEXT%', fields: 'virustotal.links' });
 
     this.api.addView('virustotal', str);
   }

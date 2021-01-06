@@ -580,10 +580,35 @@ class WISESourceAPI {
 
   // ----------------------------------------------------------------------------
   /**
+   * Define all configuration for a field for a source
+   * @typedef {Object} WISESourceAPI~SourceConfigField
+   * @property {string} name - The name of the field
+   * @property {boolean} [required=false] - Must the config value be filled out
+   * @property {boolean} [password=false] - Is it a password type field that should be hidden
+   * @property {string} [multiline] - If set this should be split using the value and shown in the UI as a text area
+   * @property {string} help - The help text to show the user about the field
+   * @property {string} [ifField] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
+   * @property {string} [ifValue] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
+   * @property {string} [regex] - The value must match the regex to be considered valid
+   */
+
+  /**
+   * Define all the configuration for a source.
+   * This is used by the UI to generate what to display to the admin.
+   * @typedef {Object} WISESourceAPI~SourceConfig
+   * @property {string} name - The name of the source
+   * @property {boolean} singleton - Can there multiple instances of this source
+   * @property {string} description - Friendly text about the source
+   * @property {string|Array} types - List of WISE types the source supports
+   * @property {boolean} [cacheable=true] - Can the source be cached by WISE
+   * @property {WISESourceAPI~SourceConfigField|Array} fields - The fields for the source
+   */
+
+  /**
    * Add for each source config definition for the UI to use.
    *
    * @param {string} sourceName - The source name
-   * @param {object} configDef - An array of objects of the config ALW
+   * @param {WISESourceAPI~SourceConfig} config - The configuration of this source type
    */
   addSourceConfigDef (sourceName, configDef) {
     if (!internals.configDefs.hasOwnProperty(sourceName)) {
@@ -638,17 +663,31 @@ class WISESourceAPI {
   /**
    * Create a redis client from the info in a section
    * @params {string} url - The redis url to connect to.
-   * @params {string} section - section to get info
+   * @params {string} section - The section this redis client is being created for
    */
   createRedisClient (url, section) {
     return createRedisClient(url, section);
   }
 
-  addValueAction (name, action) {
-    internals.valueActions[name] = action;
-  }
+  // ----------------------------------------------------------------------------
+  /**
+   * Define all configuration for a field for a source
+   * @typedef {Object} WISESourceAPI~ValueAction
+   * @property {string} name - The name of the value action to show the user
+   * @property {string} [url] - The url to send the user, supports special subsitutions, must set url or func
+   * @property {string} [func] - A javascript function body to call, will be passed the name and value and must return the value, must set url or func
+   * @property {string} [actionType] - If set to 'fetch' this will replace the menu option with the results of url or func
+   * @property {string} [category] - Which category of fields should the value action be shown for, must set fields or category
+   * @property {string} [fields] - Which fields to show the value action for, must set fields or category
+   * @property {string} [regex] - When set replaces %REGEX% in the url with the match
+   */
 
-  addRightClick (name, action) {
+  /**
+   * Add a value action set
+   * @params {string} name - The globally unique name of this action, not shown to user
+   * @params {WISESourceAPI~ValueAction} action - The action
+   */
+  addValueAction (name, action) {
     internals.valueActions[name] = action;
   }
 

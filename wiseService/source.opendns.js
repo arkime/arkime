@@ -52,9 +52,9 @@ class OpenDNSSource extends WISESource {
       "    +arrayList(session.opendns, 'contentCategory', 'Content Cat', 'opendns.domain.content')\n"
     );
 
-    this.api.addRightClick('opendnsip', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/ip-view/%TEXT%', category: 'ip' });
-    this.api.addRightClick('opendnsasn', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/as-view/%REGEX%', category: 'asn', regex: '^[Aa][Ss](\\d+)' });
-    this.api.addRightClick('opendnshost', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/domain-view/name/%HOST%/view', category: 'host' });
+    this.api.addValueAction('opendnsip', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/ip-view/%TEXT%', category: 'ip' });
+    this.api.addValueAction('opendnsasn', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/as-view/%REGEX%', category: 'asn', regex: '^[Aa][Ss](\\d+)' });
+    this.api.addValueAction('opendnshost', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/domain-view/name/%HOST%/view', category: 'host' });
   }
 
   // ----------------------------------------------------------------------------

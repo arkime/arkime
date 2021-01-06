@@ -113,12 +113,12 @@ class ThreatStreamSource extends WISESource {
     this.api.addView('threatstream',
       'require:threatstream;title:Threatstream;fields:threatstream.severity,threatstream.confidence,threatstream.id,threatstream.importId,threatstream.type,threatstream.maltype,threatstream.source');
 
-    this.api.addRightClick('threatstreamip', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/ip/%TEXT%', category: 'ip' });
-    this.api.addRightClick('threatstreamhost', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/domain/%HOST%', category: 'host' });
-    this.api.addRightClick('threatstreamemail', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/email/%TEXT%', category: 'user' });
-    this.api.addRightClick('threatstreammd5', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/md5/%TEXT%', category: 'md5' });
-    this.api.addRightClick('threatstreamimportid', { name: 'Threatstream Import Lookup', url: 'https://ui.threatstream.com/import/review/%TEXT%', fields: 'threatstream.importId' });
-    this.api.addRightClick('threatstreamid', { name: 'Threatstream Id Lookup', url: 'https://api.threatstream.com/api/v1/intelligence/%TEXT%/', fields: 'threatstream.id' });
+    this.api.addValueAction('threatstreamip', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/ip/%TEXT%', category: 'ip' });
+    this.api.addValueAction('threatstreamhost', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/domain/%HOST%', category: 'host' });
+    this.api.addValueAction('threatstreamemail', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/email/%TEXT%', category: 'user' });
+    this.api.addValueAction('threatstreammd5', { name: 'Threatstream', url: 'https://ui.threatstream.com/detail/md5/%TEXT%', category: 'md5' });
+    this.api.addValueAction('threatstreamimportid', { name: 'Threatstream Import Lookup', url: 'https://ui.threatstream.com/import/review/%TEXT%', fields: 'threatstream.importId' });
+    this.api.addValueAction('threatstreamid', { name: 'Threatstream Id Lookup', url: 'https://api.threatstream.com/api/v1/intelligence/%TEXT%/', fields: 'threatstream.id' });
   }
 
   // ----------------------------------------------------------------------------

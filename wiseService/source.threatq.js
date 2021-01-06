@@ -58,10 +58,10 @@ class ThreatQSource extends WISESource {
       "    +arrayList(session.threatq, 'campaign', 'Campaign', 'threatq.campaign')\n"
     );
 
-    this.api.addRightClick('threatqip', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'ip' });
-    this.api.addRightClick('threatqhost', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%HOST%`, category: 'host' });
-    this.api.addRightClick('threatqmd5', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'md5' });
-    this.api.addRightClick('threatqid', { name: 'ThreatQ', url: `https://${this.host}/network/%TEXT%`, fields: 'threatq.id' });
+    this.api.addValueAction('threatqip', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'ip' });
+    this.api.addValueAction('threatqhost', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%HOST%`, category: 'host' });
+    this.api.addValueAction('threatqmd5', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'md5' });
+    this.api.addValueAction('threatqid', { name: 'ThreatQ', url: `https://${this.host}/network/%TEXT%`, fields: 'threatq.id' });
 
     setImmediate(this.loadFile.bind(this));
     setInterval(this.loadFile.bind(this), 24 * 60 * 60 * 1000); // Reload file every 24 hours
