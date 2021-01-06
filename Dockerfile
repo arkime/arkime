@@ -21,7 +21,6 @@ COPY . /src
 WORKDIR /src
 
 RUN \
-  scl enable devtoolset-9 rh-python36 'make clean' && \
   scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring --kafka' && \
   echo "build ok" && \
   scl enable devtoolset-9 rh-python36 'make install'
