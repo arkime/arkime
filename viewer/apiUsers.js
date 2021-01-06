@@ -9,6 +9,98 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   // --------------------------------------------------------------------------
   // HELPERS
   // --------------------------------------------------------------------------
+  function saveSharedView (req, res, user, view, endpoint, successMessage, errorMessage) {
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (!sharedUser || !sharedUser.found) {
+        // sharing for the first time
+        sharedUser = {
+          userId: '_moloch_shared',
+          userName: '_moloch_shared',
+          enabled: false,
+          webEnabled: false,
+          emailSearch: false,
+          headerAuthEnabled: false,
+          createEnabled: false,
+          removeEnabled: false,
+          packetSearch: false,
+          views: {}
+        };
+      } else {
+        sharedUser = sharedUser._source;
+      }
+
+      sharedUser.views = sharedUser.views || {};
+
+      if (sharedUser.views[req.body.name]) {
+        console.log('Trying to add duplicate shared view', sharedUser);
+        return res.molochError(403, 'Shared view already exists');
+      }
+
+      sharedUser.views[req.body.name] = view;
+
+      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+        if (err) {
+          console.log(endpoint, 'failed', err, info);
+          return res.molochError(500, errorMessage);
+        }
+        return res.send(JSON.stringify({
+          success: true,
+          text: successMessage,
+          viewName: req.body.name,
+          view: view
+        }));
+      });
+    });
+  }
+
+  // removes a view from the user that created the view and adds it to the shared user
+  function shareView (req, res, user, endpoint, successMessage, errorMessage) {
+    const view = user.views[req.body.name];
+    view.shared = true;
+
+    delete user.views[req.body.name]; // remove the view from the
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log(endpoint, 'failed', err, info);
+        return res.molochError(500, errorMessage);
+      }
+      // save the view on the shared user
+      return saveSharedView(req, res, user, view, endpoint, successMessage, errorMessage);
+    });
+  }
+
+  // removes a view from the shared user and adds it to the user that created the view
+  function unshareView (req, res, user, sharedUser, endpoint, successMessage, errorMessage) {
+    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      if (err) {
+        console.log(endpoint, 'failed', err, info);
+        return res.molochError(500, errorMessage);
+      }
+
+      if (user.views[req.body.name]) { // the user already has a view with this name
+        return res.molochError(403, 'A view already exists with this name.');
+      }
+
+      user.views[req.body.name] = {
+        expression: req.body.expression,
+        user: req.body.user, // keep the user so we know who created it
+        shared: false,
+        sessionsColConfig: req.body.sessionsColConfig
+      };
+
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log(endpoint, 'failed', err, info);
+          return res.molochError(500, errorMessage);
+        }
+        return res.send(JSON.stringify({
+          success: true,
+          text: successMessage
+        }));
+      });
+    });
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -99,7 +191,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
     if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
 
     // Use settingsDefaults for any settings that are missing
-    for (let item in internals.settingDefaults) {
+    for (const item in internals.settingDefaults) {
       if (clone.settings[item] === undefined) {
         clone.settings[item] = internals.settingDefaults[item];
       }
@@ -129,7 +221,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       return res.molochError(403, 'User ID cannot be the same as the shared moloch user');
     }
 
-    Db.getUser(req.body.userId, function (err, user) {
+    Db.getUser(req.body.userId, (err, user) => {
       if (!user || user.found) {
         console.log('Trying to add duplicate user', err, user);
         return res.molochError(403, 'User already exists');
@@ -169,6 +261,103 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
           console.log('ERROR - add user', err, info);
           return res.molochError(403, err);
         }
+      });
+    });
+  };
+
+  /**
+   * DELETE - /api/user
+   *
+   * Deletes an Arkime user (admin only).
+   * @name /user
+   * @returns {boolean} success - Whether the delete user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteUser = (req, res) => {
+    if (req.body.userId === req.user.userId) {
+      return res.molochError(403, 'Can not delete yourself');
+    }
+
+    Db.deleteUser(req.body.userId, (err, data) => {
+      setTimeout(() => {
+        res.send(JSON.stringify({
+          success: true, text: 'User deleted successfully'
+        }));
+      }, 200);
+    });
+  };
+
+  /**
+   * POST - /api/user/:id
+   *
+   * Updates an Arkime user (admin only).
+   * @name /user/:id
+   * @returns {boolean} success - Whether the update user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUser = (req, res) => {
+    const userId = req.body.userId || req.params.id;
+
+    if (!userId) {
+      return res.molochError(403, 'Missing userId');
+    }
+
+    if (userId === '_moloch_shared') {
+      return res.molochError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+    }
+
+    Db.getUser(userId, (err, user) => {
+      if (err || !user.found) {
+        console.log('update user failed', err, user);
+        return res.molochError(403, 'User not found');
+      }
+
+      user = user._source;
+
+      user.enabled = req.body.enabled === true;
+
+      if (req.body.expression !== undefined) {
+        if (req.body.expression.match(/^\s*$/)) {
+          delete user.expression;
+        } else {
+          user.expression = req.body.expression;
+        }
+      }
+
+      if (req.body.userName !== undefined) {
+        if (req.body.userName.match(/^\s*$/)) {
+          console.log('ERROR - empty username', req.body);
+          return res.molochError(403, 'Username can not be empty');
+        } else {
+          user.userName = req.body.userName;
+        }
+      }
+
+      user.webEnabled = req.body.webEnabled === true;
+      user.emailSearch = req.body.emailSearch === true;
+      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+      user.removeEnabled = req.body.removeEnabled === true;
+      user.packetSearch = req.body.packetSearch === true;
+      user.hideStats = req.body.hideStats === true;
+      user.hideFiles = req.body.hideFiles === true;
+      user.hidePcap = req.body.hidePcap === true;
+      user.disablePcapDownload = req.body.disablePcapDownload === true;
+      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+
+      // Can only change createEnabled if it is currently turned on
+      if (req.body.createEnabled !== undefined && req.user.createEnabled) {
+        user.createEnabled = req.body.createEnabled === true;
+      }
+
+      Db.setUser(userId, user, (err, info) => {
+        if (Config.debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User ${userId} updated successfully`
+        }));
       });
     });
   };
@@ -232,7 +421,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       style.define('colorSrc', new stylus.nodes.Literal(colors[13]));
       style.define('colorDst', new stylus.nodes.Literal(colors[14]));
 
-      style.render(function (err, css) {
+      style.render((err, css) => {
         if (err) { return error(err); }
         return res.send(css);
       });
@@ -240,7 +429,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/users
+   * GET - /api/users
    *
    * Retrieves a list of Arkime users (admin only).
    * @name /users
@@ -305,6 +494,459 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
     }).catch((err) => {
       console.log('ERROR - /user/list', err);
       return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+    });
+  };
+
+  /**
+   * GET - /api/user/settings
+   *
+   * Retrieves an Arkime user's settings.
+   * @name /user/settings
+   * @returns {ArkimeSettings} settings - The user's configured settings
+   */
+  module.getUserSettings = (req, res) => {
+    const settings = (req.settingUser.settings)
+      ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
+      : JSON.parse(JSON.stringify(internals.settingDefaults));
+
+    const cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
+    if (Config.isHTTPS()) { cookieOptions.secure = true; }
+
+    res.cookie(
+      'MOLOCH-COOKIE',
+      Config.obj2auth({
+        date: Date.now(), pid: process.pid, userId: req.user.userId
+      }, true),
+      cookieOptions
+    );
+
+    return res.send(settings);
+  };
+
+  /**
+   * POST - /api/user/settings
+   *
+   * Updates an Arkime user's settings.
+   * @name /user/settings
+   * @returns {boolean} success - Whether the update user settings operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserSettings = (req, res) => {
+    req.settingUser.settings = req.body;
+    delete req.settingUser.settings.token;
+
+    Db.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
+      if (err) {
+        console.log('/user/settings/update error', err, info);
+        return res.molochError(500, 'User settings update failed');
+      }
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Updated user settings successfully'
+      }));
+    });
+  };
+
+  /**
+   * GET - /api/user/views
+   *
+   * Retrieves an Arkime user's views.
+   * @name /user/views
+   * @returns {Array} views - A list of views a user has configured or has been shared.
+   */
+  module.getUserViews = (req, res) => {
+    if (!req.settingUser) { return res.send({}); }
+
+    // Clone the views so we don't modify that cached user
+    const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
+
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        for (const viewName in sharedUser.views) {
+          // check for views with the same name as a shared view so user specific views don't get overwritten
+          let sharedViewName = viewName;
+          if (views[sharedViewName] && !views[sharedViewName].shared) {
+            sharedViewName = `shared:${sharedViewName}`;
+          }
+          views[sharedViewName] = sharedUser.views[viewName];
+        }
+      }
+
+      return res.send(views);
+    });
+  };
+
+  /**
+   * POST - /api/user/view
+   *
+   * Creates an Arkime view for a user.
+   * @name /user/view
+   * @returns {boolean} success - Whether the create view operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} viewName - The name of the new view.
+   * @returns {object} view - The new view data.
+   */
+  module.createUserView = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing view name');
+    }
+
+    if (!req.body.expression) {
+      return res.molochError(403, 'Missing view expression');
+    }
+
+    const user = req.settingUser;
+    user.views = user.views || {};
+
+    const newView = {
+      expression: req.body.expression,
+      user: user.userId
+    };
+
+    if (req.body.shared) {
+      // save the view on the shared user
+      newView.shared = true;
+      saveSharedView(req, res, user, newView, '/user/views/create', 'Created shared view successfully', 'Create shared view failed');
+    } else {
+      newView.shared = false;
+      if (user.views[req.body.name]) {
+        return res.molochError(403, 'A view already exists with this name.');
+      } else {
+        user.views[req.body.name] = newView;
+      }
+
+      if (req.body.sessionsColConfig) {
+        user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
+      } else if (user.views[req.body.name].sessionsColConfig && !req.body.sessionsColConfig) {
+        user.views[req.body.name].sessionsColConfig = undefined;
+      }
+
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log('/api/user/views/create error', err, info);
+          return res.molochError(500, 'Create view failed');
+        }
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Created view successfully',
+          viewName: req.body.name,
+          view: newView
+        }));
+      });
+    }
+  };
+
+  /**
+   * DELETE - /api/user/view
+   *
+   * Deletes an Arkime view for a user.
+   * @name /user/view
+   * @returns {boolean} success - Whether the delete view operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteUserView = (req, res) => {
+    if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
+
+    const user = req.settingUser;
+    user.views = user.views || {};
+
+    if (req.body.shared) {
+      Db.getUser('_moloch_shared', (err, sharedUser) => {
+        if (sharedUser && sharedUser.found) {
+          sharedUser = sharedUser._source;
+          sharedUser.views = sharedUser.views || {};
+          if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+          // only admins or the user that created the view can delete the shared view
+          if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+            return res.molochError(401, `Need admin privelages to delete another user's shared view`);
+          }
+          delete sharedUser.views[req.body.name];
+        }
+
+        Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+          if (err) {
+            console.log('/user/views/delete failed', err, info);
+            return res.molochError(500, 'Delete shared view failed');
+          }
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Deleted shared view successfully'
+          }));
+        });
+      });
+    } else {
+      if (user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+      delete user.views[req.body.name];
+
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log('/user/views/delete failed', err, info);
+          return res.molochError(500, 'Delete view failed');
+        }
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Deleted view successfully'
+        }));
+      });
+    }
+  };
+
+  /**
+   * POST - /api/user/view/toggleshare
+   *
+   * Toggles sharing an Arkime view for a user.
+   * @name /user/view/toggleshare
+   * @returns {boolean} success - Whether the share view operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.userViewToggleShare = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing view name');
+    }
+
+    if (!req.body.expression) {
+      return res.molochError(403, 'Missing view expression');
+    }
+
+    const share = req.body.shared;
+    const user = req.settingUser;
+    user.views = user.views || {};
+
+    if (share && user.views[req.body.name] === undefined) {
+      return res.molochError(404, 'View not found');
+    }
+
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (!sharedUser || !sharedUser.found) {
+        // the shared user has not been created yet so there is no chance of duplicate views
+        if (share) { // add the view to the shared user
+          return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
+        }
+        // if it not already a shared view and it's trying to be unshared, something went wrong, can't do it
+        return res.molochError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
+      }
+
+      sharedUser = sharedUser._source;
+      sharedUser.views = sharedUser.views || {};
+
+      if (share) { // if sharing, make sure the view doesn't already exist
+        if (sharedUser.views[req.body.name]) { // duplicate detected
+          return res.molochError(403, 'A shared view already exists with this name.');
+        }
+        return shareView(req, res, user, '/api/user/view/toggleshare', 'Shared view successfully', 'Sharing view failed');
+      } else {
+        // if unsharing, remove it from shared user and add it to current user
+        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+        // only admins or the user that created the view can update the shared view
+        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
+        }
+        // delete the shared view
+        delete sharedUser.views[req.body.name];
+        return unshareView(req, res, user, sharedUser, '/api/user/view/toggleshare', 'Unshared view successfully', 'Unsharing view failed');
+      }
+    });
+  };
+
+  /**
+   * POST - /api/user/view
+   *
+   * Updates an Arkime view for a user.
+   * @name /user/view
+   * @returns {boolean} success - Whether the update view operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserView = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing view name');
+    }
+
+    if (!req.body.expression) {
+      return res.molochError(403, 'Missing view expression');
+    }
+
+    if (!req.body.key) {
+      return res.molochError(403, 'Missing view key');
+    }
+
+    const user = req.settingUser;
+    user.views = user.views || {};
+
+    if (req.body.shared) {
+      Db.getUser('_moloch_shared', (err, sharedUser) => {
+        if (sharedUser && sharedUser.found) {
+          sharedUser = sharedUser._source;
+          sharedUser.views = sharedUser.views || {};
+          if (sharedUser.views[req.body.key] === undefined) {
+            return res.molochError(404, 'View not found');
+          }
+          // only admins or the user that created the view can update the shared view
+          if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+            return res.molochError(401, `Need admin privelages to update another user's shared view`);
+          }
+          sharedUser.views[req.body.name] = {
+            expression: req.body.expression,
+            user: user.userId,
+            shared: true,
+            sessionsColConfig: req.body.sessionsColConfig
+          };
+          // delete the old one if the key (view name) has changed
+          if (sharedUser.views[req.body.key] && req.body.name !== req.body.key) {
+            sharedUser.views[req.body.key] = null;
+            delete sharedUser.views[req.body.key];
+          }
+        }
+
+        Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+          if (err) {
+            console.log('/api/user/view failed', err, info);
+            return res.molochError(500, 'Update shared view failed');
+          }
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Updated shared view successfully'
+          }));
+        });
+      });
+    } else {
+      if (user.views[req.body.name]) {
+        user.views[req.body.name].expression = req.body.expression;
+        user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
+      } else { // the name has changed, so create a new entry
+        user.views[req.body.name] = {
+          expression: req.body.expression,
+          user: user.userId,
+          shared: false,
+          sessionsColConfig: req.body.sessionsColConfig
+        };
+      }
+
+      // delete the old one if the key (view name) has changed
+      if (user.views[req.body.key] && req.body.name !== req.body.key) {
+        user.views[req.body.key] = null;
+        delete user.views[req.body.key];
+      }
+
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log('/api/user/view error', err, info);
+          return res.molochError(500, 'Updating view failed');
+        }
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Updated view successfully'
+        }));
+      });
+    }
+  };
+
+  /**
+   * GET - /api/user/crons
+   *
+   * Retrieves cron queries for a user.
+   * @name /user/crons
+   * @returns {object} queries - A list of cron query objects.
+   */
+  module.getUserCron = (req, res) => {
+    if (!req.settingUser) {
+      return res.molochError(403, 'Unknown user');
+    }
+
+    const user = req.settingUser;
+    if (user.settings === undefined) { user.settings = {}; }
+
+    const query = { size: 1000, query: { term: { creator: user.userId } } };
+
+    Db.search('queries', 'query', query, (err, data) => {
+      if (err || data.error) {
+        console.log('/api/user/cron error', err || data.error);
+      }
+
+      const queries = {};
+
+      if (data && data.hits && data.hits.hits) {
+        data.hits.hits.forEach(function (item) {
+          queries[item._id] = item._source;
+        });
+      }
+
+      res.send(queries);
+    });
+  };
+
+  /**
+   * POSt - /api/user/cron
+   *
+   * Create a new cron query for a user.
+   * @name /user/cron
+   * @returns {boolean} success - Whether the add user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} key - The cron query id
+   */
+  module.createUserCron = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing cron query name');
+    }
+    if (!req.body.query) {
+      return res.molochError(403, 'Missing cron query expression');
+    }
+    if (!req.body.action) {
+      return res.molochError(403, 'Missing cron query action');
+    }
+    if (!req.body.tags) {
+      return res.molochError(403, 'Missing cron query tag(s)');
+    }
+
+    const document = {
+      doc: {
+        enabled: true,
+        name: req.body.name,
+        query: req.body.query,
+        tags: req.body.tags,
+        action: req.body.action
+      }
+    };
+
+    if (req.body.notifier) {
+      document.doc.notifier = req.body.notifier;
+    }
+
+    const userId = req.settingUser.userId;
+
+    Db.getMinValue('sessions2-*', 'timestamp', (err, minTimestamp) => {
+      if (err || minTimestamp === 0 || minTimestamp === null) {
+        minTimestamp = Math.floor(Date.now() / 1000);
+      } else {
+        minTimestamp = Math.floor(minTimestamp / 1000);
+      }
+
+      if (+req.body.since === -1) {
+        document.doc.lpValue = document.doc.lastRun = minTimestamp;
+      } else {
+        document.doc.lpValue = document.doc.lastRun =
+           Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
+      }
+
+      document.doc.count = 0;
+      document.doc.creator = userId || 'anonymous';
+
+      Db.indexNow('queries', 'query', null, document.doc, (err, info) => {
+        if (err) {
+          console.log('/user/cron/create error', err, info);
+          return res.molochError(500, 'Create cron query failed');
+        }
+
+        if (Config.get('cronQueries', false)) {
+          ViewerUtils.processCronQueries();
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Created cron query successfully',
+          key: info._id
+        }));
+      });
     });
   };
 
