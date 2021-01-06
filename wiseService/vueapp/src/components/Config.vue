@@ -152,7 +152,7 @@
               v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
               :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
               class="input-box"
-              :value="currConfig[selectedSourceKey][field.name].split(field.multiline).join('\n')"
+              :value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"

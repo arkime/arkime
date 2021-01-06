@@ -108,9 +108,9 @@ exports.initSource = function (api) {
     types: ['ip'],
     fields: [
       { name: 'field', required: true, help: 'The field to set with the hostname' },
-      { name: 'ips', required: true, help: 'Semicolon separated list of IPs or CIDRs to lookups. IPs that don’t match this list will NOT be reverse lookuped' },
-      { name: 'servers', required: false, help: 'If set, the reversedns source will use the semicolon separated list of ip addresses to reverse lookuped' },
-      { name: 'stripDomains', required: false, help: 'If EMPTY then all domains are stripped after the FIRST period. When set ONLY domains that match the semicolon separated list of domain names are modified, and only the matching part is removed. Those that don’t match will be saved in full. The list is checked in order. A leading dot is recommended' }
+      { name: 'ips', required: true, multiline: ';', help: 'List of IPs or CIDRs that WISE will attempt to reverse lookup. IPs that don’t match this list will NOT be reverse lookup' },
+      { name: 'servers', required: false, multiline: ';', help: 'List of ip addresses to use as the resolver. Default is to just use the OS configuration.' },
+      { name: 'stripDomains', required: false, multiline: ';', help: 'If EMPTY then all domains are stripped after the FIRST period. When set ONLY domains that match the list of domain names are modified, and only the matching part is removed. Those that don’t match will be saved in full. The list is checked in order. A leading dot is recommended.' }
     ]
   });
 

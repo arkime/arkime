@@ -596,8 +596,8 @@ class WISESourceAPI {
           excludeName = 'excludeURLs';
         } else if (type === 'ip') {
           configDef.fields = configDef.fields.concat([
-            { name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' },
-            { name: 'onlyIPs', required: false, help: 'If set, only ips that match the semicolon separated list of IPs or CIDRs will be looked up' }
+            { name: 'excludeIPs', required: false, multiline: ';', help: 'List of IPs or CIDRs to exclude in WISE lookups' },
+            { name: 'onlyIPs', required: false, multiline: ';', help: 'If set, only IPs that match the list of IPs or CIDRs will be looked up by WISE' }
           ]);
           if (configDef.singleton === false && types.length > 0) {
             Object.assign(configDef.fields[configDef.fields.length - 2], { ifField: 'type', ifValue: type });
@@ -609,7 +609,7 @@ class WISESourceAPI {
         }
 
         configDef.fields = configDef.fields.concat(
-          [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+          [{ name: excludeName, required: false, multiline: ';', help: 'List of modified glob patterns to exclude in WISE lookups' }]
         );
 
         if (configDef.singleton === false && types.length > 0) {
@@ -625,8 +625,8 @@ class WISESourceAPI {
 
       if (configDef.singleton === false && types.length > 0) {
         configDef.fields = configDef.fields.concat([
-          { name: 'fields', required: false, multiline: '\\n', help: 'A list of fields that this source will add, one per line. Some wise sources automatically set for you. See Tagger Format in the docs for more information on the parts of a field entry.' },
-          { name: 'view', required: false, multiline: '\\n', help: 'The view to show in session detail when opening up a session with unique fields. The value for view can either be written in simplified format or in more powerful pug format. For the pug format see Tagger Format in the docs for more information. Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
+          { name: 'fields', required: false, multiline: '\\n', help: 'Create a list of fields in Arkime, this may also be defined in the input file. See the Tagger Format docs for more information. In general they look like field:[EXPRESSION];db:[ES FIELD NAME];kind:[FIELD TYPE];friendly:[UI NAME];help:[HELP TEXT];shortcut:[JSON FIELD PATH or CSV column number]' },
+          { name: 'view', required: false, multiline: '\\n', help: 'The view to show in session detail when opening up a session with unique fields, this also may be done in the input file. The value for view can either be written in simplified format or in more powerful pug format. For the pug format see Tagger Format in the docs for more information. Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
         ]);
       }
 
@@ -677,7 +677,7 @@ function loadSources () {
       excludeName = 'excludeURLs';
     } else if (type === 'ip') {
       internals.configDefs.wiseService.fields = internals.configDefs.wiseService.fields.concat(
-        [{ name: 'excludeIPs', required: false, help: 'Semicolon separated list of IPs or CIDRs to exclude in lookups' }]
+        [{ name: 'excludeIPs', required: false, multiline: ';', help: 'List of IPs or CIDRs to exclude in lookups across ALL WISE sources' }]
       );
       continue;
     } else {
@@ -685,7 +685,7 @@ function loadSources () {
     }
 
     internals.configDefs.wiseService.fields = internals.configDefs.wiseService.fields.concat(
-      [{ name: excludeName, required: false, help: 'Semicolon separated list of modified glob patterns to exclude in lookups' }]
+      [{ name: excludeName, required: false, multiline: ';', help: 'List of modified glob patterns to exclude in lookups across ALL WISE sources' }]
     );
   }
 }
