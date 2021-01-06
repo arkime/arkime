@@ -75,7 +75,7 @@ exports.initSource = function (api) {
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
       { name: 'url', required: true, help: 'The URL to load' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
-      { name: 'headers', required: false, multiline: ';' , help: 'List of headers to send in the URL request' }
+      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
     ]
   });
 
