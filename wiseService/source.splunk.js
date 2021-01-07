@@ -83,6 +83,11 @@ class SplunkSource extends WISESource {
         return;
       }
 
+      if (results === undefined || results.results === undefined) {
+        console.log(this.section, '- No results - ', results);
+        return;
+      }
+
       let cache;
       if (this.type === 'ip') {
         cache = { items: new Map(), trie: new iptrie.IPTrie() };
