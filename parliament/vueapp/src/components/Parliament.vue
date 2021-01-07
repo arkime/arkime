@@ -369,7 +369,7 @@
                   :href="`${cluster.url}/stats?statsTab=2`"
                   :class="{'badge-success':cluster.status === 'green','badge-warning':cluster.status === 'yellow','badge-danger':cluster.status === 'red'}"
                   v-b-tooltip.hover.top
-                  :title="`Moloch ES Status: ${cluster.healthError || cluster.status}`">
+                  :title="`Arkime ES Status: ${cluster.healthError || cluster.status}`">
                   <span v-if="cluster.status">
                     {{ cluster.status }}
                   </span>
@@ -446,10 +446,10 @@
                           @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
                         />
                         <strong class="d-inline-block">
-                          {{ cluster.deltaBPS | commaString }}
+                          {{ cluster.deltaBPS | humanReadableBits }}
                         </strong>
                         <small class="d-inline-block">
-                          Bytes/Sec
+                          Bits/Sec
                         </small>
                       </label>
                     </div>

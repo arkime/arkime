@@ -5,7 +5,7 @@
     <div v-if="parseInt(recordsTotal) === 0">
       <span class="fa fa-3x text-muted-more fa-exclamation-triangle">
       </span>&nbsp;
-      Oh no, Moloch is empty! There is no data to search.
+      Oh no, Arkime is empty! There is no data to search.
     </div>
 
     <div v-else-if="!recordsTotal || recordsTotal > 0">

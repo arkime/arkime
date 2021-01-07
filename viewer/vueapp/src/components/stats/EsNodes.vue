@@ -15,12 +15,13 @@
         class="mt-1 ml-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
+        :records-filtered="filteredStats.length">
       </moloch-paging>
 
       <moloch-table
         id="esNodesTable"
-        :data="stats"
+        v-on:toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
+        :data="filteredStats"
         :loadData="loadData"
         :columns="columns"
         :no-results="true"
@@ -108,10 +109,10 @@ export default {
   data: function () {
     return {
       error: '',
+      showOnlyDataNodes: false,
       initialLoading: true,
       stats: null,
       recordsTotal: null,
-      recordsFiltered: null,
       query: {
         filter: this.searchTerm || undefined,
         sortField: 'nodeName',
@@ -143,6 +144,8 @@ export default {
         { id: 'writesQueueSize', name: 'Write Tasks Q Limit', sort: 'writesQueueSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.writesQueueSize); } },
         { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
         { id: 'molochzone', name: 'Zone', sort: 'molochzone', doStats: false, width: 100 },
+        { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.shards); } },
+        { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segments); } },
         { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 }
       ]
     };
@@ -155,6 +158,12 @@ export default {
       set: function (newValue) {
         this.$store.commit('setLoadingData', newValue);
       }
+    },
+    filteredStats: function () {
+      if (this.showOnlyDataNodes) {
+        return this.stats.filter(s => s.roles.indexOf('data') > -1);
+      }
+      return this.stats;
     }
   },
   watch: {
@@ -186,7 +195,7 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     exclude: function (type, column) {
-      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
@@ -198,7 +207,7 @@ export default {
         });
     },
     include: function (type, column) {
-      this.$http.post(`esshard/include/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/include`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = false;
@@ -234,7 +243,6 @@ export default {
           this.initialLoading = false;
           this.stats = response.data.data;
           this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
         }, (error) => {
           respondedAt = undefined;
           this.loading = false;

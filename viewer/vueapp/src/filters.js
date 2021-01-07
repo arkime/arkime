@@ -88,6 +88,33 @@ Vue.filter('protocol', (protocolCode) => {
 });
 
 /**
+ * Modifies a number to display the <=4 char human readable version of bits
+ * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+ *
+ * @example
+ * '{{ 1524680821 | humanReadableBits }}'
+ * this.$options.filters.humanReadableBits(1524680821);
+ *
+ * @param {int} fileSizeInBits The number to make human readable
+ * @returns {string}           The <=4 char human readable number
+ */
+Vue.filter('humanReadableBits', (fileSizeInBits) => {
+  fileSizeInBits = parseInt(fileSizeInBits);
+  let i = 0;
+  let bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  while (fileSizeInBits >= 1024) {
+    fileSizeInBits = fileSizeInBits / 1024;
+    i++;
+  }
+
+  if (i === 0 || fileSizeInBits >= 10) {
+    return fileSizeInBits.toFixed(0) + bitUnits[i];
+  } else {
+    return fileSizeInBits.toFixed(1) + bitUnits[i];
+  }
+});
+
+/**
  * Modifies a number to display the <=4 char human readable version of bytes
  * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
  *
@@ -310,12 +337,32 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
 Vue.filter('buildExpression', function (field, value, op) {
   // for values required to be strings in the search expression
   /* eslint-disable no-useless-escape */
-  const needQuotes = value !== 'EXISTS!' && !value.startsWith('[') &&
-    /[^-+a-zA-Z0-9_.@:*?/,\[\]]+/.test(value);
+  const needQuotes = value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
+    /[^-+a-zA-Z0-9_.@:*?/,]+/.test(value);
 
   // escape unescaped quotes
   value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');
   if (needQuotes) { value = `"${value}"`; }
 
   return `${field} ${op} ${value}`;
+});
+
+/**
+ * Searches cluster for a term
+ * Looks for the term in a list of cluster
+ *
+ * @example
+ * '{{ searchTerm | searchCluster(cluster) }}'
+ * this.$options.filters.searchCluster('ES1', ['ES1', 'ES2', 'ES3']);
+ *
+ * @param {string} searchTerm       The string to search for within the fields
+ * @param {array} clusters          The list of cluster to search
+ * @returns {array}                 An array of cluster that match the search term
+ */
+Vue.filter('searchCluster', function (searchTerm, clusters) {
+  if (!searchTerm) { searchTerm = ''; }
+  return clusters.filter((cluster) => {
+    searchTerm = searchTerm.toLowerCase();
+    return cluster.toLowerCase().includes(searchTerm);
+  });
 });

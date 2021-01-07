@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <errno.h>
+#include "pcap.h"
 
 //#define DEBUG_PACKET
 
@@ -62,15 +63,15 @@ extern MolochFieldOps_t      readerFieldOps[256];
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 LOCAL MolochPacketEnqueue_cb ipCbs[MOLOCH_IPPROTO_MAX];
 
-int tcpMProtocol;
-int udpMProtocol;
+int                          tcpMProtocol;
+int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 MolochProtocol_t             mProtocols[0x100];
 
 /******************************************************************************/
 
-LOCAL uint64_t               packetStats[MOLOCH_PACKET_MAX];
+uint64_t                     packetStats[MOLOCH_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  MolochPacketHead_t    packetQ[MOLOCH_MAX_PACKET_THREADS];
@@ -303,7 +304,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
     if (session->packets[packet->direction] <= 10) {
         const uint8_t *pcapData = packet->pkt;
 
-        if (pcapFileHeader.linktype == 1) {
+        if (pcapFileHeader.dlt == DLT_EN10MB) {
             if (packet->direction == 1) {
                 moloch_field_macoui_add(session, mac1Field, oui1Field, pcapData+0);
                 moloch_field_macoui_add(session, mac2Field, oui2Field, pcapData+6);
@@ -622,7 +623,7 @@ LOCAL void moloch_packet_log(SessionTypes ses)
 
     uint32_t wql = moloch_writer_queue_length();
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
       totalPackets,
       moloch_session_watch_count(ses),
       moloch_session_monitoring(),
@@ -642,7 +643,8 @@ LOCAL void moloch_packet_log(SessionTypes ses)
       packetStats[MOLOCH_PACKET_OVERLOAD_DROPPED],
       packetStats[MOLOCH_PACKET_CORRUPT],
       packetStats[MOLOCH_PACKET_UNKNOWN],
-      packetStats[MOLOCH_PACKET_IPPORT_DROPPED]
+      packetStats[MOLOCH_PACKET_IPPORT_DROPPED],
+      packetStats[MOLOCH_PACKET_DUPLICATE_DROPPED]
       );
 
       if (config.debug > 0) {
@@ -803,6 +805,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
             return MOLOCH_PACKET_IPPORT_DROPPED;
         }
 
+        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct tcphdr)))
+            return MOLOCH_PACKET_DUPLICATE_DROPPED;
+
         moloch_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->mProtocol = tcpMProtocol;
@@ -835,6 +840,9 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
                 return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
             }
         }
+
+        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
+            return MOLOCH_PACKET_DUPLICATE_DROPPED;
 
         moloch_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport);
@@ -968,6 +976,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
                 return MOLOCH_PACKET_IPPORT_DROPPED;
             }
 
+            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct tcphdr)))
+                return MOLOCH_PACKET_DUPLICATE_DROPPED;
+
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
             packet->mProtocol = tcpMProtocol;
@@ -991,6 +1002,9 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
                     return moloch_packet_ip_gtp(batch, packet, buf, rem);
                 }
             }
+
+            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
+                return MOLOCH_PACKET_DUPLICATE_DROPPED;
 
             packet->mProtocol = udpMProtocol;
             done = 1;
@@ -1189,12 +1203,12 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
     MolochPacketRC rc;
 
 #ifdef DEBUG_PACKET
-    LOG("enter %p %u %d", packet, pcapFileHeader.linktype, packet->pktlen);
+    LOG("enter %p %u %d", packet, pcapFileHeader.dlt, packet->pktlen);
     moloch_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
-    switch(pcapFileHeader.linktype) {
-    case 0: // NULL
+    switch(pcapFileHeader.dlt) {
+    case DLT_NULL: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
                 rc = moloch_packet_ip6(batch, packet, packet->pkt+4, packet->pktlen-4);
@@ -1207,36 +1221,41 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
             rc = MOLOCH_PACKET_CORRUPT;
         }
         break;
-    case 1: // Ether
+    case DLT_EN10MB: // Ether
         rc = moloch_packet_ether(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 12: // LOOP
-    case 101: // RAW
-        rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
+    case DLT_RAW: // RAW
+        if ((packet->pkt[0] & 0xF0) == 0x60)
+            rc = moloch_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
+        else
+            rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 107: // Frame Relay
+    case DLT_FRELAY: // Frame Relay
         rc = moloch_packet_frame_relay(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 113: // SLL
+    case DLT_LINUX_SLL: // SLL
         if (packet->pkt[0] == 0 && packet->pkt[1] <= 4)
             rc = moloch_packet_sll(batch, packet, packet->pkt, packet->pktlen);
         else
             rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 127: // radiotap
+    case DLT_IEEE802_11_RADIO: // radiotap
         rc = moloch_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 228: //RAW IPv4
+    case DLT_IPV4: //RAW IPv4
         rc = moloch_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case 239: // NFLOG
+    case DLT_IPV6: //RAW IPv6
+        rc = moloch_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
+        break;
+    case DLT_NFLOG: // NFLOG
         rc = moloch_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
     default:
         if (config.ignoreErrors)
             rc = MOLOCH_PACKET_CORRUPT;
         else
-            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.linktype);
+            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.dlt);
     }
 
     if (likely(rc == MOLOCH_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
@@ -1290,7 +1309,7 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         MOLOCH_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1) {
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://molo.ch/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
         packet->pkt = 0;
         MOLOCH_COND_SIGNAL(packetQ[thread].lock);
@@ -1329,13 +1348,12 @@ int moloch_packet_outstanding()
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-SUPPRESS_SIGNED_INTEGER_OVERFLOW
 LOCAL uint32_t moloch_packet_frag_hash(const void *key)
 {
     int i;
     uint32_t n = 0;
     for (i = 0; i < 10; i++) {
-        n = (n << 5) - n + ((char*)key)[i];
+        n = (n << 5) - n + ((unsigned char*)key)[i];
     }
     return n;
 }
@@ -1573,6 +1591,7 @@ void moloch_packet_init()
 
 
     moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_ETHER, moloch_packet_ether);
+    moloch_packet_set_ethernet_cb(0x6558, moloch_packet_ether); // ETH_P_TEB - Trans Ether Bridging
     moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);
@@ -1631,11 +1650,44 @@ void moloch_packet_add_packet_ip(char *ipstr, int mode)
     node->data = (void *)(long)mode;
 }
 /******************************************************************************/
-void moloch_packet_set_linksnap(int linktype, int snaplen)
+void moloch_packet_set_dltsnap(int dlt, int snaplen)
 {
-    pcapFileHeader.linktype = linktype;
+    pcapFileHeader.dlt = dlt;
     pcapFileHeader.snaplen = snaplen;
     moloch_rules_recompile();
+}
+/******************************************************************************/
+void moloch_packet_set_linksnap(int linktype, int snaplen)
+{
+    // In theory you might need to do some mapping here, but we don't
+    moloch_packet_set_dltsnap(linktype, snaplen);
+}
+/******************************************************************************/
+// PCAP Header needs linktype when written
+// Code based on https://github.com/aol/moloch/issues/1303#issuecomment-554684749
+// Values from libpcap pcap-common.c
+uint32_t moloch_packet_dlt_to_linktype(int dlt)
+{
+    if (dlt <= 10 || dlt >= 104)
+        return dlt;
+
+    switch (dlt)
+    {
+#ifdef DLT_FR
+    case DLT_FR: return 107; // LINKTYPE_FRELAY;
+#endif
+    case DLT_ATM_RFC1483: return 100; // LINKTYPE_ATM_RFC1483;
+    case DLT_RAW: return 101; // LINKTYPE_RAW;
+    case DLT_SLIP_BSDOS: return 102; // LINKTYPE_SLIP_BSDOS;
+    case DLT_PPP_BSDOS: return 103; // LINKTYPE_PPP_BSDOS;
+    case DLT_C_HDLC: return 104; // LINKTYPE_C_HDLC;
+    case DLT_ATM_CLIP: return 106; // LINKTYPE_ATM_CLIP;
+    case DLT_PPP_SERIAL: return 50; // LINKTYPE_PPP_HDLC
+    case DLT_PPP_ETHER: return 51; // LINKTYPE_PPP_ETHER;
+    case DLT_PFSYNC: return 246; // LINKTYPE_PFSYNC;
+    case DLT_PKTAP: return 258; // LINKTYPE_PKTAP
+    }
+    return dlt;
 }
 /******************************************************************************/
 void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)

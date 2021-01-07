@@ -4,13 +4,30 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/master"
+    "core-js": "^3.6.5",
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
+    "serve-favicon": "^2.5.0"
   },
   "scripts": {
-    "lint": "jshint *.js"
+    "bundle": "cd ../ && npm run wise:bundle",
+    "bundle:min": "cd ../ && npm run wise:build",
+    "doc": "cd ../ && npm run wise:doc",
+    "dev": "cd ../ && npm run wise:dev",
+    "devdebug": "cd ../ && npm run wise:dev",
+    "lint": "cd ../ && npm run wise:lint"
   },
-  "devDependencies": {
-    "jshint": "^2.9.5",
-    "lodash": "^4.17.13"
-  }
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules/*"
+    ]
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
 }

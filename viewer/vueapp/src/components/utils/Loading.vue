@@ -1,7 +1,7 @@
 <template>
 
   <div class="loading">
-    <img src="watching.gif" />
+    <img src="assets/Arkime_Logo_Mark_FullGradient.png" />
     <div class="loader circles"></div>
     <div class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">
@@ -40,10 +40,9 @@ export default {
   position: fixed;
   top: 50%;
   left: 50%;
-  height: 70px;
-  margin-top: -35px;
-  margin-left: -30px;
-  opacity: .8;
+  height: 80px;
+  margin-top: -38px;
+  margin-left: -22px;
 }
 
 .loading .im-hootin {

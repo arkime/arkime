@@ -24,12 +24,11 @@ $ENV{'TZ'} = 'US/Eastern';
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        # Certs are hard MKAY
-        system("wget --no-check-certificate https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("wget --no-check-certificate -O oui.txt https://raw.githubusercontent.com/wireshark/wireshark/master/manuf");
+        system("wget https://s3.amazonaws.com/files.molo.ch/testing/oui.txt");
     }
 
     if (! -f "GeoLite2-Country.mmdb") {
@@ -121,7 +120,7 @@ sub doTests {
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
 
 
-        my $cmd = "../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
@@ -174,7 +173,7 @@ my ($json) = @_;
         my $body = $session->{body};
 
         # Keep as session for now
-        $session->{header}->{index}->{_type} = "session" if ($session->{header}->{index}->{_type} eq "_doc");
+        $session->{header}->{index}->{_type} = "session";
 
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {
@@ -234,9 +233,9 @@ sub doMake {
     foreach my $filename (@ARGV) {
         $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
         if ($main::debug) {
-          print("../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/moloch-capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################
@@ -279,7 +278,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8123/flushCache");
         print ("Starting viewer\n");
         if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
@@ -287,7 +286,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
             system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
@@ -319,9 +318,9 @@ my ($cmd) = @_;
 
         # Start Wise
         if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /tmp/moloch.wise &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
         } else {
-            system("cd ../wiseService ; node wiseService.js -c ../tests/config.test.ini > /dev/null &");
+            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
         }
 
         waitFor($MolochTest::host, 8081, 1);
@@ -331,7 +330,7 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $mcmd = "../capture/moloch-capture $main::copy -c config.test.ini -n test -R pcap --flush";
+        my $mcmd = "../capture/capture $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
@@ -452,7 +451,7 @@ if ($main::cmd eq "--fix") {
     print "  --viewerstart         Viewer tests without reloading pcap\n";
     print "  --fuzz [fuzzoptions]  Run fuzzloch\n";
     print "  --fuzz2pcap           Convert a fuzzloch crash file into a pcap file\n";
-    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/moloch-capture and compare to .test file\n";
+    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

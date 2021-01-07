@@ -17,61 +17,71 @@
  */
 'use strict';
 
-var util           = require('util')
-  , simpleSource   = require('./simpleSource.js')
-  , request        = require('request')
-  ;
+const SimpleSource = require('./simpleSource.js');
+const request = require('request');
 
-//////////////////////////////////////////////////////////////////////////////////
-function URLSource (api, section) {
-  URLSource.super_.call(this, api, section);
-  this.url          = api.getConfig(section, "url");
-  this.reload       = +api.getConfig(section, "reload", -1);
-  this.headers      = {};
-  var headers       = api.getConfig(section, "headers");
-  this.cacheTimeout = -1;
+class URLSource extends SimpleSource {
+// ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { reload: true });
+    this.url = api.getConfig(section, 'url');
+    this.headers = {};
+    const headers = api.getConfig(section, 'headers');
 
-  if (this.url === undefined) {
-    console.log(this.section, "- ERROR not loading since no url specified in config file");
-    return;
+    if (this.url === undefined) {
+      console.log(this.section, '- ERROR not loading since no url specified in config file');
+      return;
+    }
+
+    if (headers) {
+      headers.split(';').forEach((header) => {
+        const parts = header.split(':').map(item => item.trim());
+        if (parts.length === 2) {
+          this.headers[parts[0]] = parts[1];
+        }
+      });
+    }
   }
 
-  if (headers) {
-    headers.split(";").forEach((header) => {
-      var parts = header.split(":").map(item => item.trim());
-      if (parts.length === 2) {
-        this.headers[parts[0]] = parts[1];
+  // ----------------------------------------------------------------------------
+  simpleSourceLoad (cb) {
+    if (!this.url) {
+      return;
+    }
+
+    request(this.url, { headers: this.headers }, (err, response, body) => {
+      if (!err && response.statusCode === 200) {
+        cb(null, body);
+      } else {
+        cb(err);
       }
     });
   }
-
-  if (!this.initSimple()) {
-    return;
-  }
-
-  setImmediate(this.load.bind(this));
-
-  // Reload url every so often
-  if (this.reload > 0) {
-    setInterval(this.load.bind(this), this.reload*1000*60);
-  }
 }
-util.inherits(URLSource, simpleSource);
-//////////////////////////////////////////////////////////////////////////////////
-URLSource.prototype.simpleSourceLoad = function(setFunc, cb) {
-  request(this.url, {headers: this.headers}, (error, response, body) => {
-    if (!error && response.statusCode === 200) {
-      this.parse(body, setFunc, cb);
-    } else {
-      cb(error);
-    }
+
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  api.addSourceConfigDef('url', {
+    singleton: false,
+    name: 'url',
+    description: 'Use a web url to load data into wise. The url can be periodically reloaded.',
+    cacheable: false,
+    fields: [
+      { name: 'type', required: true, help: 'The wise query type this source supports' },
+      { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
+      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
+      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'url', required: true, help: 'The URL to load' },
+      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
+      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
+    ]
   });
-};
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  var sections = api.getConfigSections().filter((e) => {return e.match(/^url:/);});
+
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^url:/); });
   sections.forEach((section) => {
     return new URLSource(api, section);
   });
 };
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

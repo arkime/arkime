@@ -23,7 +23,7 @@ var Stream = require('stream');
 var Readable = Stream.Readable;
 var Transform = Stream.Transform;
 var Writable = Stream.Writable;
-var HTTPParser = process.binding('http_parser').HTTPParser;
+var HTTPParser = process.version.startsWith('v12') ? process.binding('http_parser_llhttp').HTTPParser : process.binding('http_parser').HTTPParser;
 var zlib = require('zlib');
 var through = require('through2');
 var peek = require('peek-stream');
@@ -61,44 +61,44 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
 
   var self = this;
   switch (self._itemTransform.state) {
-    case 0:
-      self._itemTransform.items.push(item);
-      if (self._shouldProcess(item)) {
-        self._itemTransform.state = 1;
-        async.each(self._itemTransform.items, function (item, cb) {
-          try {
-            self._process(item, function (err, data) {
-              if (data) {
-                self.push(data);
-              }
-              return cb();
-            });
-          } catch (err) {
-            cb(err);
-            console.log("Couldn't decode", err);
-          };
-        }, function (err) {
-          self._itemTransform.items = [];
-          return callback();
-        });
-        return;
-      }
-      if (self._itemTransform.items.length === self._itemTransform.max) {
-        self._itemTransform.state = 2;
-        while ((item = self._itemTransform.items.shift())) {
-          self.push(item);
-        }
+  case 0:
+    self._itemTransform.items.push(item);
+    if (self._shouldProcess(item)) {
+      self._itemTransform.state = 1;
+      async.each(self._itemTransform.items, function (item, cb) {
+        try {
+          self._process(item, function (err, data) {
+            if (data) {
+              self.push(data);
+            }
+            return cb();
+          });
+        } catch (err) {
+          cb(err);
+          console.log("Couldn't decode", err);
+        };
+      }, function (err) {
         self._itemTransform.items = [];
+        return callback();
+      });
+      return;
+    }
+    if (self._itemTransform.items.length === self._itemTransform.max) {
+      self._itemTransform.state = 2;
+      while ((item = self._itemTransform.items.shift())) {
+        self.push(item);
       }
-      return callback();
-    case 1:
-      try {
-        return self._process(item, callback);
-      } catch (err) {
-        return callback(err);
-      }
-    case 2:
-      return callback(null, item);
+      self._itemTransform.items = [];
+    }
+    return callback();
+  case 1:
+    try {
+      return self._process(item, callback);
+    } catch (err) {
+      return callback(err);
+    }
+  case 2:
+    return callback(null, item);
   }
 };
 
@@ -343,126 +343,126 @@ ItemSMTPStream.prototype._process = function (item, callback) {
   linesloop:
   for (var l = 0, llen = lines.length; l < llen; l++) {
     switch (state) {
-      case ItemSMTPStream.STATES.cmd:
-        this.buffers.push(lines[l]);
+    case ItemSMTPStream.STATES.cmd:
+      this.buffers.push(lines[l]);
 
-        if (lines[l].toUpperCase() === 'DATA') {
-          state = ItemSMTPStream.STATES.header;
-          header = '';
-          boundaries = {};
-        } else if (lines[l].toUpperCase() === 'STARTTLS') {
-          state = ItemSMTPStream.STATES.ignore;
+      if (lines[l].toUpperCase() === 'DATA') {
+        state = ItemSMTPStream.STATES.header;
+        header = '';
+        boundaries = {};
+      } else if (lines[l].toUpperCase() === 'STARTTLS') {
+        state = ItemSMTPStream.STATES.ignore;
+      }
+      break;
+    case ItemSMTPStream.STATES.header:
+      this.buffers.push(lines[l]);
+      if (lines[l][0] === ' ' || lines[l][0] === '\t') {
+        header += lines[l];
+        continue;
+      }
+      if (header.substr(0, 13).toLowerCase() === 'content-type:') {
+        if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+          boundaries[matches[2]] = 1;
         }
-        break;
-      case ItemSMTPStream.STATES.header:
-        this.buffers.push(lines[l]);
-        if (lines[l][0] === ' ' || lines[l][0] === '\t') {
-          header += lines[l];
-          continue;
-        }
-        if (header.substr(0, 13).toLowerCase() === 'content-type:') {
-          if ((matches = header.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-            boundaries[matches[2]] = 1;
-          }
-        }
-        if (lines[l] === '') {
-          state = ItemSMTPStream.STATES.data;
-          continue;
-        }
-        header = lines[l];
-        break;
-      case ItemSMTPStream.STATES.data:
-        this.buffers.push(lines[l]);
-        if (lines[l] === '.') {
-          state = ItemSMTPStream.STATES.cmd;
-          continue;
-        }
+      }
+      if (lines[l] === '') {
+        state = ItemSMTPStream.STATES.data;
+        continue;
+      }
+      header = lines[l];
+      break;
+    case ItemSMTPStream.STATES.data:
+      this.buffers.push(lines[l]);
+      if (lines[l] === '.') {
+        state = ItemSMTPStream.STATES.cmd;
+        continue;
+      }
 
-        if (lines[l][0] === '-') {
-          boundary = lines[l].substr(2);
-          if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
-            addBuffer(ItemSMTPStream.STATES.data, false);
-            this.buffers.push(lines[l]);
-            mime = { line: '', base64: 0, doit: 0 };
-            continue linesloop;
-          } else if (boundaries[boundary]) {
-            addBuffer(ItemSMTPStream.STATES.mime, false);
-            this.buffers.push(lines[l]);
-            mime = { line: '', base64: 0, doit: 0 };
-            continue linesloop;
-          }
-        }
-        break;
-      case ItemSMTPStream.STATES.mime:
-        if (lines[l] === '.') {
-          state = ItemSMTPStream.STATES.cmd;
+      if (lines[l][0] === '-') {
+        boundary = lines[l].substr(2);
+        if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
+          addBuffer(ItemSMTPStream.STATES.data, false);
           this.buffers.push(lines[l]);
-          continue;
-        }
-
-        this.buffers.push(lines[l]);
-
-        if (lines[l][0] === ' ' || lines[l][0] === '\t') {
-          mime.line += lines[l];
-          continue;
-        }
-        if (!mime) {
           mime = { line: '', base64: 0, doit: 0 };
-        }
-
-        if (mime.line.substr(0, 13).toLowerCase() === 'content-type:') {
-          if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
-            boundaries[matches[2]] = 1;
-          }
-          if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
-            bodyName = matches[2];
-          }
-
-          if (mime.line.match(/content-type: image/i)) {
-            bodyType = 'image';
-          } else if (mime.line.match(/content-type: text/i)) {
-            bodyType = 'text';
-          } else {
-            bodyType = 'file';
-          }
-        } else if (mime.line.match(/content-disposition:/i)) {
-          if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
-            bodyName = matches[2];
-          }
-        } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
-          mime.base64 = 1;
-          mime.doit = 1;
-        }
-        if (lines[l] === '') {
-          addBuffer(ItemSMTPStream.STATES.mimedata, false);
-          continue;
-        }
-        mime.line = lines[l];
-        break;
-      case ItemSMTPStream.STATES.mimedata:
-        if (lines[l] === '.') {
-          addBuffer(ItemSMTPStream.STATES.cmd, true);
+          continue linesloop;
+        } else if (boundaries[boundary]) {
+          addBuffer(ItemSMTPStream.STATES.mime, false);
           this.buffers.push(lines[l]);
-          continue;
+          mime = { line: '', base64: 0, doit: 0 };
+          continue linesloop;
         }
-
-        if (lines[l][0] === '-') {
-          boundary = lines[l].substr(2);
-          if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
-            addBuffer(ItemSMTPStream.STATES.data, mime.doit === 1);
-            this.buffers.push(lines[l]);
-            mime = { line: '', base64: 0, doit: 0 };
-            continue linesloop;
-          } else if (boundaries[boundary]) {
-            addBuffer(ItemSMTPStream.STATES.mime, mime.doit === 1);
-            this.buffers.push(lines[l]);
-            mime = { line: '', base64: 0, doit: 0 };
-            continue linesloop;
-          }
-        }
-
+      }
+      break;
+    case ItemSMTPStream.STATES.mime:
+      if (lines[l] === '.') {
+        state = ItemSMTPStream.STATES.cmd;
         this.buffers.push(lines[l]);
-        break;
+        continue;
+      }
+
+      this.buffers.push(lines[l]);
+
+      if (lines[l][0] === ' ' || lines[l][0] === '\t') {
+        mime.line += lines[l];
+        continue;
+      }
+      if (!mime) {
+        mime = { line: '', base64: 0, doit: 0 };
+      }
+
+      if (mime.line.substr(0, 13).toLowerCase() === 'content-type:') {
+        if ((matches = mime.line.match(/boundary\s*=\s*("?)([^"]*)\1/))) {
+          boundaries[matches[2]] = 1;
+        }
+        if ((matches = mime.line.match(/name\s*=\s*("?)([^"]*)\1/))) {
+          bodyName = matches[2];
+        }
+
+        if (mime.line.match(/content-type: image/i)) {
+          bodyType = 'image';
+        } else if (mime.line.match(/content-type: text/i)) {
+          bodyType = 'text';
+        } else {
+          bodyType = 'file';
+        }
+      } else if (mime.line.match(/content-disposition:/i)) {
+        if ((matches = mime.line.match(/filename\s*=\s*("?)([^"]*)\1/))) {
+          bodyName = matches[2];
+        }
+      } else if (mime.line.match(/content-transfer-encoding:.*base64/i)) {
+        mime.base64 = 1;
+        mime.doit = 1;
+      }
+      if (lines[l] === '') {
+        addBuffer(ItemSMTPStream.STATES.mimedata, false);
+        continue;
+      }
+      mime.line = lines[l];
+      break;
+    case ItemSMTPStream.STATES.mimedata:
+      if (lines[l] === '.') {
+        addBuffer(ItemSMTPStream.STATES.cmd, true);
+        this.buffers.push(lines[l]);
+        continue;
+      }
+
+      if (lines[l][0] === '-') {
+        boundary = lines[l].substr(2);
+        if (boundary.substr(-2) === '--' && boundaries[boundary.slice(0, -2)]) {
+          addBuffer(ItemSMTPStream.STATES.data, mime.doit === 1);
+          this.buffers.push(lines[l]);
+          mime = { line: '', base64: 0, doit: 0 };
+          continue linesloop;
+        } else if (boundaries[boundary]) {
+          addBuffer(ItemSMTPStream.STATES.mime, mime.doit === 1);
+          this.buffers.push(lines[l]);
+          mime = { line: '', base64: 0, doit: 0 };
+          continue linesloop;
+        }
+      }
+
+      this.buffers.push(lines[l]);
+      break;
     }
   }
   this.states[item.client] = state;
@@ -553,8 +553,12 @@ ItemHTTPStream.prototype._process = function (item, callback) {
   if (this.parsers === undefined) {
     if (item.data.slice(0, 4).toString() === 'HTTP') {
       this.parsers = [new HTTPParser(HTTPParser.RESPONSE), new HTTPParser(HTTPParser.REQUEST)];
+      this.parsers[0].initialize(HTTPParser.RESPONSE, {});
+      this.parsers[1].initialize(HTTPParser.REQUEST, {});
     } else {
       this.parsers = [new HTTPParser(HTTPParser.REQUEST), new HTTPParser(HTTPParser.RESPONSE)];
+      this.parsers[0].initialize(HTTPParser.REQUEST, {});
+      this.parsers[1].initialize(HTTPParser.RESPONSE, {});
     }
     this.parsers[0].httpstream = this.parsers[1].httpstream = this;
     this.parsers[0][HTTPParser.kOnBody] = this.parsers[1][HTTPParser.kOnBody] = ItemHTTPStream.onBody;
@@ -766,7 +770,7 @@ exports.register('ITEM-LINKBODY', through.ctor({ objectMode: true }, function (i
   if (item.bodyType === undefined || item.bodyType === 'text') {
     return callback(null, item);
   }
-  var url = this.options.nodeName + '/' +
+  const url = this.options.nodeName + '/' +
             this.options.id + '/body/' +
             item.bodyType + '/' +
             item.bodyNum + '/' +

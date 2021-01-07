@@ -54,13 +54,10 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.smtp-hello ==\"Localhost\""));
     countTest(6, "date=-1&expression=" . uri_escape("$files&&email.smtp-hello.cnt==1"));
 
-SKIP: {
-    skip "Upgrade test", 6 if ($ENV{MOLOCH_REINDEX_TEST}); # reindex doesn't have email.has-header
 # email.has-header
     countTest(6, "date=-1&expression=" . uri_escape("$files&&email.has-header==\"to\""));
     countTest(6, "date=-1&expression=" . uri_escape("$files&&email.has-header==\"To\""));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.has-header.cnt==3"));
-}
 
 # email.bodymagic
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.bodymagic==\"application/zip\""));

@@ -22,12 +22,12 @@ foreach my $setting (keys (%settings)) {
     }
     my $lcsetting = lc($setting);
 
-    my $output = `egrep  '(id="$lcsetting"|^$setting\\|)' ../../molochweb/settings.html ../../molochweb/_wiki/wise.md`;
+    my $output = `egrep  '(id="$lcsetting"|^$setting\\|)' ../../arkimeweb/settings.html ../../arkimeweb/_wiki/wise.md`;
     if ($output eq "") {
         print "MISSING id tag id=\"$lcsetting\" => $settings{$setting}\n";
     }
 
-    $output = `egrep  '( $setting\$|>$setting<|^$setting\\|)' ../../molochweb/settings.html ../../molochweb/_wiki/wise.md`;
+    $output = `egrep  '( $setting\$|>$setting<|^$setting\\|)' ../../arkimeweb/settings.html ../../arkimeweb/_wiki/wise.md`;
     if ($output eq "") {
         print "MISSING $setting\n";
     }

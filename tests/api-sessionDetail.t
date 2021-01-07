@@ -17,7 +17,7 @@ my $pwd = "*/pcap";
     ok($sd =~ m{sessionid.*\Q$id\E}s, "/detail");
     ok($sd =~ m{Tags.*md5taggertest1}s, "/detail Tags");
 
-    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8125/test/session/$id/detail")->content;
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8125/api/session/test/$id/detail")->content;
     ok($sd =~ m{sessionid.*\Q$id\E}s, "multi /detail");
     ok($sd =~ m{Tags.*md5taggertest1}s, "multi /detail Tags");
 
@@ -38,7 +38,7 @@ my $pwd = "*/pcap";
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=hex")->content;
     ok($sd =~ /636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*0800 0000 0000 02ff/s, "encoding:hex");
 
-    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=true&ts=false&base=hex")->content;
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/test/$id/packets?line=true&ts=false&base=hex")->content;
     ok($sd =~ /00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*00000000:.*0800 0000 0000 02ff/s, "encoding:hex line:true");
 
 # http gzip:true
@@ -51,22 +51,22 @@ my $pwd = "*/pcap";
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=hex&gzip=true")->content;
     ok($sd =~ /636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*3c3f 786d 6c20 7665 7273 696f 6e3d 2231.*&lt;\?xml.version=&quot;1/s, "encoding:hex gzip:true");
 
-    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=true&ts=false&base=hex&gzip=true")->content;
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/api/session/test/$id/packets?line=true&ts=false&base=hex&gzip=true")->content;
     ok($sd =~ /00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*00000000:.*3c3f 786d 6c20 7665 7273 696f 6e3d 2231.*&lt;\?xml.version=&quot;1/s, "encoding:hex gzip:true");
 
 
 # http image:true
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=natural&image=true")->content;
-    ok($sd =~ m{col:.80:quic.*\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:natural image:true");
+    ok($sd =~ m{col:.80:quic.*test/\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:natural image:true");
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii&image=true")->content;
-    ok($sd =~ m{col:.80:quic.*\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:ascii image:true");
+    ok($sd =~ m{col:.80:quic.*test/\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:ascii image:true");
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=hex&image=true")->content;
-    ok($sd =~ m{636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:hex image:true");
+    ok($sd =~ m{636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*test/\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:hex image:true");
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=true&ts=false&base=hex&image=true")->content;
-    ok($sd =~ m{00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:hex line:true image:true");
+    ok($sd =~ m{00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*test/\Q$id\E/body/file/1/crossdomain.xml.pellet}s, "encoding:hex line:true image:true");
 
 # smtp
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"));

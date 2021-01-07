@@ -49,6 +49,7 @@
                 <option value="frags">Active Fragments</option>
                 <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
                 <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
+                <option value="deltaDupDroppedPerSec">Duplicate Dropped/Sec</option>
                 <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
                 <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
                 <option value="sessionSizePerSec">ES Session Size/Sec</option>
@@ -190,7 +191,7 @@
                 v-model="recoveryShow"
                 v-on:change="recoveryShowChange">
                 <option value="all">All</option>
-                <option value="notdone">Not Done</option>
+                <option value="notdone">Active</option>
               </select>
             </div> <!-- /graph hide select -->
 
@@ -594,13 +595,13 @@ export default {
     onOffFocus: function () {
       this.focusInput = false;
     },
-    debounceSearchInput () {
+    debounceSearchInput: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
       // debounce the input so it only issues a request after keyups cease for 400ms
       searchInputTimeout = setTimeout(() => {
         searchInputTimeout = null;
         this.loadData();
-      }, 400);
+      }, 800);
     },
     loadData: function () {
       this.refreshData = true;
@@ -648,7 +649,7 @@ export default {
       this.shrinkError = undefined;
     },
     executeShrink: function (index) {
-      this.$http.post(`esindices/${index.index}/shrink`, {
+      this.$http.post(`/api/esindices/${index.index}/shrink`, {
         target: this.temporaryNode,
         numShards: this.shrinkFactor
       }).then((response) => {

@@ -128,14 +128,14 @@
         About
       </h3>
       <p class="lead"><strong>
-        Moloch is a large scale, open source, full packet capturing, indexing,
+        Arkime is a large scale, open source, full packet capturing, indexing,
         and database system.
       </strong></p>
       <p class="lead">
-        Moloch is not meant to replace Intrusion Detection Systems (IDS).
-        Moloch augments your current security infrastructure by storing and
+        Arkime is not meant to replace Intrusion Detection Systems (IDS).
+        Arkime augments your current security infrastructure by storing and
         indexing network traffic in standard PCAP format, while also providing
-        fast indexed access. Moloch is built with an intuitive UI/UX which
+        fast indexed access. Arkime is built with an intuitive UI/UX which
         reduces the analysis time of suspected incidents.
       </p>
 
@@ -147,11 +147,11 @@
       </h3>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-link" href="https://molo.ch">Home Page</a> |
-          <a class="btn btn-link" href="https://molo.ch/faq">FAQ</a> |
-          <a class="btn btn-link" href="https://molo.ch/learn">Docs</a> |
+          <a class="btn btn-link" href="https://arkime.com">Home Page</a> |
+          <a class="btn btn-link" href="https://arkime.com/faq">FAQ</a> |
+          <a class="btn btn-link" href="https://arkime.com/learn">Docs</a> |
           <a class="btn btn-link" href="https://github.com/aol/moloch">GitHub</a> |
-          <a class="btn btn-link" href="https://slackinvite.molo.ch/">Request Slack Invite</a>
+          <a class="btn btn-link" href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>
 
@@ -162,8 +162,8 @@
         Search Bar
       </h3>
       <p>
-        Most Moloch tabs have a search bar on the top of the page.
-        Moloch uses a very simple query language for building expressions. It
+        Most Arkime tabs have a search bar on the top of the page.
+        Arkime uses a very simple query language for building expressions. It
         supports grouping using parenthesis as well as logical AND and OR statements using
         <code>&amp;&amp;</code> and <code>||</code> respectively.
         Fields can be accessed directly using the field names
@@ -175,7 +175,7 @@
       <p>
         All queries are bounded by a start and stop time. The bounded start and stop times can be
         set either by selecting a choice from a quick relative drop down or by entering exact time sections.
-        Since every session has a first packet, last packet, and database timestamp, Moloch offers
+        Since every session has a first packet, last packet, and database timestamp, Arkime offers
         a choice on how to select the sessions:
       </p>
       <dl class="dl-horizontal">
@@ -197,7 +197,7 @@
           String Search
         </h6>
         <p>
-          In Moloch, string fields are special since they can be searched in several different
+          In Arkime, string fields are special since they can be searched in several different
           ways. When fields are indexed, their case may or may not be normalized,
           which is documented in the
           <a href="help#fields" class="no-decoration">fields table below</a>.
@@ -227,7 +227,7 @@
           </dd>
           <dt>Lists</dt>
           <dd>
-            In Moloch, lists are used as a short hand method for doing multiple OR queries. For example
+            In Arkime, lists are used as a short hand method for doing multiple OR queries. For example
             <code>protocols == [http,ssh]</code>. This query will search for any sessions containing either http OR ssh.
             <strong>Note:</strong> A list containing wildcard or regex strings will be processed as normal strings instead
             of wildcards and regexes.
@@ -351,7 +351,7 @@
         Sessions
       </h3>
       <p>
-        The Sessions page within Moloch is where an analyst will find the bulk of the details regarding
+        The Sessions page within Arkime is where an analyst will find the bulk of the details regarding
         the sessions being investigated.
       </p>
       <div class="ml-4">
@@ -386,10 +386,50 @@
           Views
         </h6>
         <p>
-          A "View" is an expression that gets added to existing queries. It limits the session set and is analogous to a database view.
-          The eyeball icon ( <span class="fa fa-eye"></span> ) button allows an analyst to: overlay a saved "View" onto their current query,
-          save the current query as a new "View", update a "View" preset to match the current query, or delete a "View" preset.
-          "View"s should be used for common search queries that an analyst regularly finds themselves running.
+          A "View" is a search expression that gets added to existing queries.
+          It limits the session set and is analogous to a database view.
+          Views should be used for common search queries that an analyst regularly finds themselves running.
+        </p>
+        <p>
+          A user can save the current Sessions column configuration alongside a view.
+          If a view is saved with a column configuration, when the view is applied,
+          the Sessions table columns are updated as well.
+        </p>
+        <p>
+          Additionally, a user can easily save a search expression as a view by clicking the save
+          button ( <span class="fa fa-save"></span> ) to the right of the search expression input.
+        </p>
+        <p>
+          To view your views, click the eyeball button
+          ( <span class="fa fa-eye"></span> ). This menu allows an analyst to:
+          <ul>
+            <li>
+              Apply a view by clicking its name. This overlays the view onto the current query and issues a search.
+              If the Session's table colums were saved with the view, the table columns are updated.
+            </li>
+            <li>
+              Click "New View" to add the current query as a new view.
+            </li>
+            <li>
+              Update a view by clicking the edit button.
+              ( <span class="fa fa-edit"></span> )
+            </li>
+            <li>
+              Delete a view by clicking the delete button.
+              ( <span class="fa fa-trash-o"></span> )
+            </li>
+
+            <li>
+              Put the view's search expression into the search expression input
+              by clicking the apply expression button. ( <span class="fa fa-share fa-flip-horizontal"></span> )
+              Note: this does not issue a search.
+            </li>
+            <li>
+              Apply this view's column configuration to the sessions table by clicking
+              the apply column button. ( <span class="fa fa-columns"></span> )
+              Note: this will issue a search and update the sessions table columns.
+            </li>
+          </ul>
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
@@ -413,9 +453,37 @@
           Visualizations
         </h6>
         <p>
-          The section above the Sessions table contains a visualisation of the query's output. This quick glance visualization may be viewed by Session count, Packets count, or Databytes count.
-          Clicking and dragging over bars within the chart will drill into the selected time frame so only it is selected.
-          Additionally, a user can click the "+" or "-" magnifying glasses to quickly zoom out or zoom in the time window being observed.
+          The timeline graphs on the Sessions, SPIView, and SPIGraph pages
+          contain a visualisation of the query's output.
+          <ul>
+            <li>
+              View by Session count, Packets count, Bytes count, or Databytes count.
+              Packets, Bytes and Databytes show source and destination separated
+              by color.
+            </li>
+            <li>
+              Select between a line or bar chart.
+            </li>
+            <li>
+              Click and drag over sections of the chart to drill into the
+              selected time frame. Note: this issues a new query.
+            </li>
+            <li>
+              Click the + or - magnifying glass buttons to quickly zoom in or
+              out of the time window being observed. Note: this issues a new query.
+            </li>
+            <li>
+              Click the &lt; or &gt; buttons to move backwards or forwards in
+              time. Use the dropdown to select how far this shift is. Note: this
+              issues a new query.
+            </li>
+            <li>
+              View the last times capture nodes were started (shown by a vertical
+              line). Use this indicator to avoid incorrect assumptions about sessions.
+              When a capture process restarts there is a loss of protocol state
+              awareness and segment counts are restarted.
+            </li>
+          </ul>
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
@@ -492,9 +560,106 @@
       </h3>
       <p>
         The Connections page allows a user to view a tree force graph based on a source node and destination node of their choosing. Relationships may be visually determined using this method.
-        For example, set your Src node to ip.src, Dst node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
-        Those who prefer to analyze session data visually may rely heavily on these graphs. The default settings for this page may be set in the settings page.
+        For example, set your source node to ip.src, destination node to ip.dst:port and you will be able to visualize the relationship of source IP addresses to destination IP address / port combinations.
+        Those who prefer to analyze session data visually may rely heavily on these graphs.
       </p>
+      <p>
+        <em>
+          <strong>Note:</strong>
+          The default settings for the source and destination nodes may be set in the settings general page.
+        </em>
+      </p>
+      <div class="ml-4">
+        <h6>
+          <span class="fa fa-mouse-pointer fa-fw"></span>&nbsp;
+          Node/Link Info
+        </h6>
+        <p>
+          Hover over a link or a node to view more information about it. You can configure the fields that you see in these information
+          popups by clicking the <span class="fa fa-circle-o"></span> button to configure the node popups and the
+          <span class="fa fa-link"></span> button to configure link popups.
+          <br>
+          <em>
+            <strong>Tip:</strong>
+            Click the escape button to easily close a popup.
+          </em>
+        </p>
+        <h6>
+          <span class="fa fa-link fa-fw"></span>&nbsp;
+          Node/Link Weight
+        </h6>
+        <p>
+          You can change the weight of the links and nodes in the graph by selecting a different option in the
+          "Node/Link Weight" dropdown menu.
+        </p>
+        <h6>
+          <span class="fa fa-lock fa-fw"></span>&nbsp;
+          Lock Nodes
+        </h6>
+        <p>
+          Click and drag nodes to lock them into place. Click the <span class="fa fa-unlock"></span>
+          button in the top right of the graph to unlock nodes.
+        </p>
+        <h6>
+          <span class="fa fa-download fa-fw"></span>&nbsp;
+          Download Graph
+        </h6>
+        <p>
+          Click the <span class="fa fa-download fa-fw"></span> button in the top right
+          of the graph to download a png of the visible parts of the graph.
+        </p>
+        <h6>
+          <span class="fa fa-arrows-v fa-fw"></span>&nbsp;
+          Link Length
+        </h6>
+        <p>
+          Click the <span class="fa fa-plus"></span><span class="fa fa-arrows-v"></span> and
+          <span class="fa fa-minus"></span><span class="fa fa-arrows-v"></span> buttons to increase or decrease the
+          distance between the nodes.
+        </p>
+        <h6>
+          <span class="fa fa-text-width fa-fw"></span>&nbsp;
+          Text Size
+        </h6>
+        <p>
+          Click the <span class="fa fa-long-arrow-up"></span><span class="fa fa-font"></span> and
+          <span class="fa fa-long-arrow-down"></span><span class="fa fa-font"></span> buttons to increase or decrease the
+          size of the labels beside each node.
+        </p>
+        <h6>
+          <span class="fa fa-search fa-fw"></span>&nbsp;
+          Zoom
+        </h6>
+        <p>
+          Scroll up or down, or click the <span class="fa fa-search-plus"></span> and
+          <span class="fa fa-search-minus"></span> buttons to zoom in an out.
+        </p>
+        <h6>
+          <span class="fa fa-magic fa-fw"></span>&nbsp;
+          Baseline
+        </h6>
+        <p>
+          You can specify a "Baseline" time range to show changes in the network by
+          highlighting new or old conections appearing in and disappearing from the network.
+          You'll see indications next to each node label and in node popups to describe the state of each node:
+          <ul>
+            <li>New nodes ( ✨) - in actual but not baseline results.</li>
+            <li>Old nodes ( 🚫) - only in baseline results.</li>
+            <li>Both nodes - in both actual and baseline results.</li>
+          </ul>
+        </p>
+        <p>
+          Once you have selected a time range as your baseline, you will see a new control called "Baseline Visibility"
+          that allows you to choose from these options:
+          <ul>
+            <li>All Nodes - all nodes are visible</li>
+            <li>Actual Nodes - nodes present in the "current" timeframe query results are visible</li>
+            <li>Baseline Nodes - nodes present in the "baseline" timeframe query results are visible</li>
+            <li>New Nodes Only - nodes present in the "current" but NOT the "baseline" timeframe are visible</li>
+            <li>Baseline Nodes Only - nodes present in the "baseline" but NOT the "current" timeframe are visible</li>
+          </ul>
+        </p>
+      </div>
 
       <hr>
 
@@ -515,12 +680,16 @@
           <dd>The name of the hunt (multiple hunts can have the same name)</dd>
           <dt>Max number of packets to examine per session</dt>
           <dd>The maximum number of packets that the hunt will search within each session</dd>
+          <dt>Notify</dt>
+          <dd>An otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
           <dt>Search</dt>
           <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
           <dt>Search src/dst packets</dt>
-          <dd>Whether to search source or destination packets, or both</dd>
+          <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
           <dt>Search raw/reassembled packets</dt>
           <dd>Whether to search raw or reassembled packets</dd>
+          <dt>Users</dt>
+          <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
         </dl>
       <p>
         Once the hunt has been created, it will be added to the <strong>hunt job queue</strong>. Hunts run one at a time and
@@ -592,9 +761,9 @@
           <dt>Free Space</dt>
           <dd>Percentage of free space across all configured disks</dd>
           <dt>CPU</dt>
-          <dd>CPU percentage that Moloch is using</dd>
+          <dd>CPU percentage that Arkime is using</dd>
           <dt>Memory %</dt>
-          <dd>Perentage of memory that Moloch is using</dd>
+          <dd>Perentage of memory that Arkime is using</dd>
           <dt>Packet Q</dt>
           <dd>Number of packets that are waiting to processed</dd>
           <dt>Packets/s</dt>
@@ -604,7 +773,7 @@
           <dt>Sessions/s</dt>
           <dd>Number of sessions sent to Elasticsearch per second</dd>
           <dt>Packet Drops/s</dt>
-          <dd>Number of dropped packets as reported by the OS or network card (Moloch never sees these) per second</dd>
+          <dd>Number of dropped packets as reported by the OS or network card (Arkime never sees these) per second</dd>
           <dt>Overload Drops/s</dt>
           <dd>Number of packets dropped because there was no packet queue that was free to process them on</dd>
           <dt>ES Drops/s</dt>
@@ -612,23 +781,23 @@
           <dt>Bits/Sec</dt>
           <dd>Same as Bytes/Sec but in bits per second</dd>
           <dt>Sessions</dt>
-          <dd>Number of sessions Moloch is currently monitoring</dd>
+          <dd>Number of sessions Arkime is currently monitoring</dd>
           <dt>Active TCP Sessions</dt>
-          <dd>Number of TCP sessions Moloch is currently monitoring</dd>
+          <dd>Number of TCP sessions Arkime is currently monitoring</dd>
           <dt>Active UDP Sessions</dt>
-          <dd>Number of UDP sessions Moloch is currently monitoring</dd>
+          <dd>Number of UDP sessions Arkime is currently monitoring</dd>
           <dt>Active ICMP Sessions</dt>
-          <dd>Number of ICMP sessions Moloch is currently monitoring</dd>
+          <dd>Number of ICMP sessions Arkime is currently monitoring</dd>
           <dt>Free Space</dt>
           <dd>Free space across all configured disks</dd>
           <dt>Memory</dt>
-          <dd>Amount of memory that Moloch is using</dd>
+          <dd>Amount of memory that Arkime is using</dd>
           <dt>Disk Q</dt>
           <dd>Number of blocks of data that are waiting to be written to disk</dd>
           <dt>ES Q</dt>
           <dd>Number of elasticsearch requests that are waiting to be sent</dd>
           <dt>Closing Q</dt>
-          <dd>Number of TCP sessions that have received a FIN and Moloch is waiting to see if actually closed</dd>
+          <dd>Number of TCP sessions that have received a FIN and Arkime is waiting to see if actually closed</dd>
           <dt>Waiting Q</dt>
           <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
           <dt>Active Fragments</dt>
@@ -638,9 +807,9 @@
           <dt>Total Dropped/Sec</dt>
           <dd>Sum of the inputs dropped and overload metrics</dd>
           <dt>Written Bytes/Sec</dt>
-          <dd>The size of all the packets that Moloch is going write to disk</dd>
+          <dd>The size of all the packets that Arkime is going write to disk</dd>
           <dt>Unritten Bytes/Sec</dt>
-          <dd>The size of all the packets that Moloch isn't going to write to disk, but that we processed</dd>
+          <dd>The size of all the packets that Arkime isn't going to write to disk, but that we processed</dd>
         </dl>
         <p>
           <em>
@@ -830,7 +999,7 @@
         History
       </h3>
       <p>
-        The History page provides the ability to view Moloch actions/queries to
+        The History page provides the ability to view Arkime actions/queries to
         ES. It is usable both as a history for a user and for auditing abilities
         for an admin. A non-admin user can only view their own actions. An admin
         user can view all users' actions.
@@ -1018,9 +1187,9 @@
         <br>
         <code>'C'</code> - jump to the Connections page
         <br>
-        <code>'H'</code> - jump to the Moloch Help page
+        <code>'H'</code> - jump to the Arkime Help page
         <br>
-        <code>'U'</code> - jump to the Moloch Hunt page
+        <code>'U'</code> - jump to the Arkime Hunt page
         <br>
         <code>'shift + enter'</code> - issue search/refresh
         <br>

@@ -43,8 +43,7 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="Select a field for the source nodes">
-                  <span class="input-group-text"
-                    :style="{'background-color': primaryColor + '!important'}">
+                  <span class="input-group-text primary-legend">
                     Src:
                   </span>
                 </span>
@@ -65,8 +64,7 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="Select a field for the destination nodes">
-                  <span class="input-group-text"
-                    :style="{'background-color': tertiaryColor + '!important'}">
+                  <span class="input-group-text tertiary-legend">
                     Dst:
                   </span>
                 </span>
@@ -86,10 +84,8 @@
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover
                   title="This is the color of a node that is both a source and destination node">
-                  <span class="input-group-text"
-                    style="border-radius: 4px"
-                    :style="{'background-color': secondaryColor + '!important'}">
-                    Src & Dst
+                  <span class="input-group-text secondary-legend">
+                    Src &amp; Dst
                   </span>
                 </span>
               </div>
@@ -595,7 +591,8 @@ export default {
       closePopups: closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
-      weight: 'sessions'
+      weight: 'sessions',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -615,7 +612,8 @@ export default {
         baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -711,8 +709,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -866,6 +866,19 @@ export default {
     loadData: function () {
       this.error = '';
       this.loading = true;
+
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          this.getFields({ nodes: [], links: [] });
+          this.recordsFiltered = 0;
+          pendingPromise = null;
+          this.error = selection.error;
+          this.loading = false;
+          return;
+        }
+      }
 
       if (!this.$route.query.srcField) {
         this.query.srcField = this.user.settings.connSrcField;
@@ -1216,14 +1229,14 @@ export default {
       let val = 'normal';
       if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = 'lighter';
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = 'bold';
-            break;
+        case 2:
+          // "old" (in baseline, not in actual result set)
+          val = 'lighter';
+          break;
+        case 1:
+          // "new" (in actual, not in baseline result set)
+          val = 'bold';
+          break;
         }
       }
       return val;
@@ -1236,14 +1249,14 @@ export default {
       let val = '';
       if (this.query.baselineDate !== '0') {
         switch (n.inresult) {
-          case 2:
-            // "old" (in baseline, not in actual result set)
-            val = ' 🚫';
-            break;
-          case 1:
-            // "new" (in actual, not in baseline result set)
-            val = ' ✨';
-            break;
+        case 2:
+          // "old" (in baseline, not in actual result set)
+          val = ' 🚫';
+          break;
+        case 1:
+          // "new" (in actual, not in baseline result set)
+          val = ' ✨';
+          break;
         }
       }
       return val;
@@ -1255,18 +1268,18 @@ export default {
         let inActualSet = ((n.inresult & 0x1) !== 0);
         let inBaselineSet = ((n.inresult & 0x2) !== 0);
         switch (this.query.baselineVis) {
-          case 'actual':
-            val = inActualSet ? 'visible' : 'hidden';
-            break;
-          case 'actualold':
-            val = inBaselineSet ? 'visible' : 'hidden';
-            break;
-          case 'new':
-            val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
-            break;
-          case 'old':
-            val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
-            break;
+        case 'actual':
+          val = inActualSet ? 'visible' : 'hidden';
+          break;
+        case 'actualold':
+          val = inBaselineSet ? 'visible' : 'hidden';
+          break;
+        case 'new':
+          val = (inActualSet && !inBaselineSet) ? 'visible' : 'hidden';
+          break;
+        case 'old':
+          val = (!inActualSet && inBaselineSet) ? 'visible' : 'hidden';
+          break;
         }
       }
 
@@ -1543,25 +1556,28 @@ export default {
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
     d3.zoom().on('zoom', null);
-    simulation.on('tick', null);
+    if (simulation) { simulation.on('tick', null); }
     d3.drag()
       .on('start', null)
       .on('drag', null)
       .on('end', null);
-    node.on('mouseover', null)
-      .on('mouseout', null);
-    link.on('mouseover', null)
-      .on('mouseout', null);
 
-    // remove svg elements
-    node.exit().remove();
-    link.exit().remove();
-    nodeLabel.exit().remove();
-    svg.selectAll('.link').remove();
-    svg.selectAll('.node').remove();
-    svg.selectAll('.node-label').remove();
-    container.remove();
-    svg.remove();
+    if (svg) {
+      node.on('mouseover', null)
+        .on('mouseout', null);
+      link.on('mouseover', null)
+        .on('mouseout', null);
+
+      // remove svg elements
+      node.exit().remove();
+      link.exit().remove();
+      nodeLabel.exit().remove();
+      svg.selectAll('.link').remove();
+      svg.selectAll('.node').remove();
+      svg.selectAll('.node-label').remove();
+      container.remove();
+      svg.remove();
+    }
 
     // destroy child component
     $('.connections-popup').remove();
@@ -1612,7 +1628,17 @@ export default {
 /* make the color for legend areas white */
 .connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
   font-weight: 700;
-  color: white !important;
+  color: var(--color-button, #FFF) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .primary-legend {
+  background-color: var(--color-primary) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .tertiary-legend {
+  background-color: var(--color-tertiary) !important;
+}
+.connections-page form.connections-form .input-group-prepend.legend > .secondary-legend {
+  border-radius: 4px;
+  background-color: var(--color-secondary) !important;
 }
 
 /* apply foreground theme color */

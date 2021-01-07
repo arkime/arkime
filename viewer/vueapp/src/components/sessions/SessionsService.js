@@ -26,7 +26,8 @@ export default {
         bounding: true,
         interval: true,
         cancelId: true,
-        expression: true
+        expression: true,
+        cluster: true
       };
 
       if (query) {
@@ -62,15 +63,15 @@ export default {
       }
 
       let options = {
-        url: 'sessions.json',
-        method: 'GET',
-        params: params,
+        url: 'api/sessions',
+        method: 'POST',
+        data: params,
         cancelToken: cancelToken
       };
 
       Vue.axios(options)
         .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
+          if (response.data.error) { reject(response.data.error); }
           resolve(response);
         }, (error) => {
           if (!Vue.axios.isCancel(error)) {
@@ -84,12 +85,21 @@ export default {
    * Gets details about the session
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster that the session belongs to
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node) {
+  getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`${node}/session/${id}/detail`)
+      let options = {
+        method: 'GET',
+        params: {
+          cluster: cluster
+        },
+        url: `api/session/${node}/${id}/detail`
+      };
+
+      Vue.axios(options)
         .then((response) => {
           resolve(response);
         }, (error) => {
@@ -102,18 +112,22 @@ export default {
    * Gets session packets
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster that the session belongs to
    * @param {Object} params     The params to send with the request
    * @returns {Object} { promise, source } An object including a promise object
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
    */
-  getPackets: function (id, node, params) {
+  getPackets: function (id, node, cluster, params) {
     let source = Vue.axios.CancelToken.source();
 
     let promise = new Promise((resolve, reject) => {
       let options = {
         method: 'GET',
-        params: params,
+        params: {
+          ...params,
+          cluster: cluster
+        },
         cancelToken: source.token,
         url: `${node}/session/${id}/packets`
       };
@@ -143,7 +157,7 @@ export default {
     getDecodingsQIP = new Promise((resolve, reject) => {
       if (_decodingsCache) { resolve(_decodingsCache); }
 
-      Vue.axios.get('decodings')
+      Vue.axios.get('api/sessions/decodings')
         .then((response) => {
           getDecodingsQIP = undefined;
           _decodingsCache = response.data;
@@ -167,7 +181,8 @@ export default {
    */
   tag: function (addTags, params, routeParams) {
     return new Promise((resolve, reject) => {
-      let url = addTags ? 'addTags' : 'removeTags';
+      let url = 'api/sessions';
+      addTags ? url += '/addtags' : url += '/removetags';
       let options = this.getReqOptions(url, 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); }
@@ -223,7 +238,7 @@ export default {
    */
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('sendSessions', 'POST', params, routeParams);
+      let options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
@@ -253,7 +268,7 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.pcap/${params.filename}`;
+      let baseUrl = `api/sessions/pcap/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -287,7 +302,7 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `sessions.csv/${params.filename}`;
+      let baseUrl = `api/sessions/csv/${params.filename}`;
       // save segments for later because getReqOptions deletes it
       let segments = params.segments;
 
@@ -327,8 +342,9 @@ export default {
     params.stopTime = clonedParams.stopTime;
     params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
+    params.cluster = clonedParams.cluster;
 
-    let url = `multiunique.txt?${qs.stringify(params)}`;
+    let url = `api/multiunique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -349,10 +365,11 @@ export default {
       date: clonedParams.date,
       stopTime: clonedParams.stopTime,
       startTime: clonedParams.startTime,
-      expression: clonedParams.expression
+      expression: clonedParams.expression,
+      cluster: clonedParams.cluster
     };
 
-    let url = `unique.txt?${qs.stringify(params)}`;
+    let url = `api/unique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },

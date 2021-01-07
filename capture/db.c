@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 #include "moloch.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <uuid/uuid.h>
@@ -32,7 +32,7 @@
 LOCAL MMDB_s           *geoCountry;
 LOCAL MMDB_s           *geoASN;
 
-#define MOLOCH_MIN_DB_VERSION 50
+#define MOLOCH_MIN_DB_VERSION 66
 
 extern uint64_t         totalPackets;
 LOCAL  uint64_t         totalSessions = 0;
@@ -65,6 +65,8 @@ LOCAL uint64_t          esHealthMS;
 LOCAL int               dbExit;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
+
+extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
 
 /******************************************************************************/
 extern MolochConfig_t        config;
@@ -512,9 +514,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_type\": \"_doc\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -669,10 +671,38 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_sprintf(jbsb, "\"rootId\":\"%s\",", session->rootId);
     }
     BSB_EXPORT_cstr(jbsb, "\"packetPos\":[");
-    for(i = 0; i < session->filePosArray->len; i++) {
-        if (i != 0)
-            BSB_EXPORT_u08(jbsb, ',');
-        BSB_EXPORT_sprintf(jbsb, "%" PRId64, (uint64_t)g_array_index(session->filePosArray, uint64_t, i));
+    if (config.gapPacketPos) {
+        /* Very simple gap encoding, with a gap the same as previous gap represented as 0.
+         * Negative numbers, and numbers after the negative number are not encoded.
+         * This should reduce the saved size by over 50%.
+         * Future work of switching to binary varint with base64 might help more.
+         */
+        int64_t last = 0;
+        int64_t lastgap = 0;
+        for(i = 0; i < session->filePosArray->len; i++) {
+            if (i != 0)
+                BSB_EXPORT_u08(jbsb, ',');
+            int64_t fpos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
+            if (fpos < 0) {
+                last = 0;
+                lastgap = 0;
+                BSB_EXPORT_sprintf(jbsb, "%" PRId64, fpos);
+            } else {
+                if (fpos - last == lastgap) {
+                    BSB_EXPORT_u08(jbsb, '0');
+                } else {
+                    lastgap = fpos - last;
+                    BSB_EXPORT_sprintf(jbsb, "%" PRId64, lastgap);
+                }
+                last = fpos;
+            }
+        }
+    } else {
+        for(i = 0; i < session->filePosArray->len; i++) {
+            if (i != 0)
+                BSB_EXPORT_u08(jbsb, ',');
+            BSB_EXPORT_sprintf(jbsb, "%" PRId64, (int64_t)g_array_index(session->filePosArray, int64_t, i));
+        }
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
@@ -1226,6 +1256,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     static uint64_t       lastFragsDropped[NUMBER_OF_STATS];
     static uint64_t       lastOverloadDropped[NUMBER_OF_STATS];
     static uint64_t       lastESDropped[NUMBER_OF_STATS];
+    static uint64_t       lastDupDropped[NUMBER_OF_STATS];
     static struct rusage  lastUsage[NUMBER_OF_STATS];
     static struct timeval lastTime[NUMBER_OF_STATS];
     static int            intervals[NUMBER_OF_STATS] = {1, 5, 60, 600};
@@ -1250,6 +1281,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     uint64_t overloadDropped = moloch_packet_dropped_overload();
     uint64_t totalDropped    = moloch_packet_dropped_packets();
     uint64_t fragsDropped    = moloch_packet_dropped_frags();
+    uint64_t dupDropped      = packetStats[MOLOCH_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = moloch_http_dropped_count(esServer);
     uint64_t totalBytes      = moloch_packet_total_bytes();
 
@@ -1303,47 +1335,49 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
 
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE,
         "{"
-        "\"ver\": \"%s\", "
-        "\"nodeName\": \"%s\", "
-        "\"hostname\": \"%s\", "
-        "\"interval\": %d, "
-        "\"currentTime\": %" PRIu64 ", "
-        "\"usedSpaceM\": %" PRIu64 ", "
-        "\"freeSpaceM\": %" PRIu64 ", "
-        "\"freeSpaceP\": %.2f, "
-        "\"monitoring\": %u, "
-        "\"memory\": %" PRIu64 ", "
-        "\"memoryP\": %.2f, "
-        "\"cpu\": %" PRIu64 ", "
-        "\"diskQueue\": %u, "
-        "\"esQueue\": %u, "
-        "\"packetQueue\": %u, "
-        "\"fragsQueue\": %u, "
-        "\"frags\": %u, "
-        "\"needSave\": %u, "
-        "\"closeQueue\": %u, "
-        "\"totalPackets\": %" PRIu64 ", "
-        "\"totalK\": %" PRIu64 ", "
-        "\"totalSessions\": %" PRIu64 ", "
-        "\"totalDropped\": %" PRIu64 ", "
-        "\"tcpSessions\": %u, "
-        "\"udpSessions\": %u, "
-        "\"icmpSessions\": %u, "
-        "\"sctpSessions\": %u, "
-        "\"espSessions\": %u, "
-        "\"otherSessions\": %u, "
-        "\"deltaPackets\": %" PRIu64 ", "
-        "\"deltaBytes\": %" PRIu64 ", "
-        "\"deltaWrittenBytes\": %" PRIu64 ", "
-        "\"deltaUnwrittenBytes\": %" PRIu64 ", "
-        "\"deltaSessions\": %" PRIu64 ", "
-        "\"deltaSessionBytes\": %" PRIu64 ", "
-        "\"deltaDropped\": %" PRIu64 ", "
-        "\"deltaFragsDropped\": %" PRIu64 ", "
-        "\"deltaOverloadDropped\": %" PRIu64 ", "
-        "\"deltaESDropped\": %" PRIu64 ", "
-        "\"esHealthMS\": %" PRIu64 ", "
-        "\"deltaMS\": %" PRIu64
+        "\"ver\": \"%s\","
+        "\"nodeName\": \"%s\","
+        "\"hostname\": \"%s\","
+        "\"interval\": %d,"
+        "\"currentTime\": %" PRIu64 ","
+        "\"usedSpaceM\": %" PRIu64 ","
+        "\"freeSpaceM\": %" PRIu64 ","
+        "\"freeSpaceP\": %.2f,"
+        "\"monitoring\": %u,"
+        "\"memory\": %" PRIu64 ","
+        "\"memoryP\": %.2f,"
+        "\"cpu\": %" PRIu64 ","
+        "\"diskQueue\": %u,"
+        "\"esQueue\": %u,"
+        "\"packetQueue\": %u,"
+        "\"fragsQueue\": %u,"
+        "\"frags\": %u,"
+        "\"needSave\": %u,"
+        "\"closeQueue\": %u,"
+        "\"totalPackets\": %" PRIu64 ","
+        "\"totalK\": %" PRIu64 ","
+        "\"totalSessions\": %" PRIu64 ","
+        "\"totalDropped\": %" PRIu64 ","
+        "\"tcpSessions\": %u,"
+        "\"udpSessions\": %u,"
+        "\"icmpSessions\": %u,"
+        "\"sctpSessions\": %u,"
+        "\"espSessions\": %u,"
+        "\"otherSessions\": %u,"
+        "\"deltaPackets\": %" PRIu64 ","
+        "\"deltaBytes\": %" PRIu64 ","
+        "\"deltaWrittenBytes\": %" PRIu64 ","
+        "\"deltaUnwrittenBytes\": %" PRIu64 ","
+        "\"deltaSessions\": %" PRIu64 ","
+        "\"deltaSessionBytes\": %" PRIu64 ","
+        "\"deltaDropped\": %" PRIu64 ","
+        "\"deltaFragsDropped\": %" PRIu64 ","
+        "\"deltaOverloadDropped\": %" PRIu64 ","
+        "\"deltaESDropped\": %" PRIu64 ","
+        "\"deltaDupDropped\": %" PRIu64 ","
+        "\"esHealthMS\": %" PRIu64 ","
+        "\"deltaMS\": %" PRIu64 ","
+        "\"startTime\": %" PRIu64
         "}",
         VERSION,
         config.nodeName,
@@ -1384,8 +1418,10 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
         (fragsDropped - lastFragsDropped[n]),
         (overloadDropped - lastOverloadDropped[n]),
         (esDropped - lastESDropped[n]),
+        (dupDropped - lastDupDropped[n]),
         esHealthMS,
-        diffms);
+        diffms,
+        (uint64_t)startTime.tv_sec);
 
     lastTime[n]            = currentTime;
     lastBytes[n]           = totalBytes;
@@ -1398,6 +1434,7 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
     lastESDropped[n]       = esDropped;
+    lastDupDropped[n]      = dupDropped;
     lastUsage[n]           = usage;
 
     if (n == 0) {
@@ -1555,7 +1592,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
                 continue;
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("You have most likely run out of space on an elasticsearch node, see https://molo.ch/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
+                LOG("You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
             free(data);
             continue;
@@ -1686,7 +1723,8 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         strcpy(filename, config.pcapDir[config.pcapDirPos]);
 
-        struct tm *tmp = localtime(&firstPacket);
+        struct tm tmp;
+        localtime_r(&firstPacket, &tmp);
 
         if (config.pcapDirTemplate) {
             int tlen;
@@ -1695,7 +1733,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             if (filename[flen-1] == '/')
                 flen--;
 
-            if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, tmp)) == 0) {
+            if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, &tmp)) == 0) {
                 LOGEXIT("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
             }
             flen += tlen;
@@ -1754,7 +1792,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             moloch_db_mkpath(filename);
         }
 
-        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, num);
+        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, num);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
@@ -1811,7 +1849,7 @@ LOCAL void moloch_db_check()
 
     snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
 
-    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta&include_type_name=true", tname);
+    key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
 
     if (!data || data_len == 0) {
@@ -1834,18 +1872,10 @@ LOCAL void moloch_db_check()
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
 
-    uint32_t           session_len;
-    unsigned char     *session = 0;
-
-    session = moloch_js0n_get(mappings, mappings_len, "session", &session_len);
-    if(!session || session_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
     uint32_t           meta_len;
     unsigned char     *meta = 0;
 
-    meta = moloch_js0n_get(session, session_len, "_meta", &meta_len);
+    meta = moloch_js0n_get(mappings, mappings_len, "_meta", &meta_len);
     if(!meta || meta_len == 0) {
         LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
     }
@@ -1868,7 +1898,7 @@ LOCAL void moloch_db_check()
 LOCAL void moloch_db_free_mmdb(MMDB_s *geo)
 {
     MMDB_close(geo);
-    g_free(geo);
+    free(geo);
 }
 /******************************************************************************/
 LOCAL void moloch_db_load_geo_country(char *name)
@@ -2081,7 +2111,7 @@ LOCAL void moloch_db_load_fields()
 
     uint32_t out[2*8000];
     memset(out, 0, sizeof(out));
-    js0n(ahits, ahits_len, out);
+    js0n(ahits, ahits_len, out, sizeof(out));
     int i;
     for (i = 0; out[i]; i+= 2) {
         uint32_t           id_len;
@@ -2255,7 +2285,7 @@ int moloch_db_can_quit()
 
             moloch_db_flush_gfunc((gpointer)1);
             if (config.debug)
-                LOG ("Can't quit, sJson[%d] %ld", thread, BSB_LENGTH(dbInfo[thread].bsb));
+                LOG ("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
         MOLOCH_UNLOCK(dbInfo[thread].lock);
@@ -2347,7 +2377,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2Country[i]) {
-            LOG("WARNING - No Geo Country file could be loaded, see https://molo.ch/settings#geolite2country");
+            LOG("WARNING - No Geo Country file could be loaded, see https://arkime.com/settings#geolite2country");
         }
     }
     if (config.geoLite2ASN && config.geoLite2ASN[0]) {
@@ -2358,7 +2388,7 @@ void moloch_db_init()
             }
         }
         if (!config.geoLite2ASN[i]) {
-            LOG("WARNING - No Geo ASN file could be loaded, see https://molo.ch/settings#geolite2asn");
+            LOG("WARNING - No Geo ASN file could be loaded, see https://arkime.com/settings#geolite2asn");
         }
     }
     if (config.ouiFile)

@@ -69,51 +69,51 @@ function main () {
   var i;
   for (i = 5; i < process.argv.length; i++) {
     switch (process.argv[i]) {
-      case '--admin':
-      case '-admin':
-        nuser.createEnabled = true;
-        break;
+    case '--admin':
+    case '-admin':
+      nuser.createEnabled = true;
+      break;
 
-      case '--remove':
-      case '-remove':
-        nuser.removeEnabled = true;
-        break;
+    case '--remove':
+    case '-remove':
+      nuser.removeEnabled = true;
+      break;
 
-      case '--noweb':
-      case '-noweb':
-      case '--apionly':
-        nuser.webEnabled = false;
-        break;
+    case '--noweb':
+    case '-noweb':
+    case '--apionly':
+      nuser.webEnabled = false;
+      break;
 
-      case '--webauthonly':
-      case '-webauthonly':
-        nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
-        break;
+    case '--webauthonly':
+    case '-webauthonly':
+      nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
+      break;
 
-      case '--webauth':
-      case '-webauth':
-        nuser.headerAuthEnabled = true;
-        break;
+    case '--webauth':
+    case '-webauth':
+      nuser.headerAuthEnabled = true;
+      break;
 
-      case '--email':
-      case '-email':
-        nuser.emailSearch = true;
-        break;
+    case '--email':
+    case '-email':
+      nuser.emailSearch = true;
+      break;
 
-      case '--expression':
-      case '-expression':
-        nuser.expression = process.argv[i + 1];
-        i++;
-        break;
+    case '--expression':
+    case '-expression':
+      nuser.expression = process.argv[i + 1];
+      i++;
+      break;
 
-      case '--packetSearch':
-      case '-packetSearch':
-        nuser.packetSearch = true;
-        break;
+    case '--packetSearch':
+    case '-packetSearch':
+      nuser.packetSearch = true;
+      break;
 
-      default:
-        console.log('Unknown option', process.argv[i]);
-        help();
+    default:
+      console.log('Unknown option', process.argv[i]);
+      help();
     }
   }
 

@@ -1,0 +1,118 @@
+{
+ "wiseService": {
+  "usersPrefix": "tests",
+  "userNameHeader": "anonymous",
+  "usersElasticsearch": "http://localhost:9200"
+ },
+ "file:email": {
+  "file": "../tests/email.wise",
+  "tags": "emailwise",
+  "type": "email",
+  "format": "tagger"
+ },
+ "file:ip": {
+  "file": "../tests/ip.wise",
+  "tags": "ipwise",
+  "type": "ip",
+  "format": "tagger"
+ },
+ "file:mac": {
+  "file": "../tests/mac.wise",
+  "tags": "macwise",
+  "type": "mac",
+  "format": "tagger"
+ },
+ "file:ipcsv": {
+  "file": "../tests/ip.wise.csv",
+  "tags": "ipwisecsv",
+  "type": "ip",
+  "column": "1"
+ },
+ "file:ipjson": {
+  "file": "../tests/ip.wise.json",
+  "tags": "ipwisejson",
+  "type": "ip",
+  "format": "json",
+  "keyPath": "ip",
+  "fields": "field:tags;shortcut:tag"
+ },
+ "file:md5": {
+  "file": "../tests/md5.wise",
+  "tags": "md5wise",
+  "type": "md5",
+  "format": "tagger"
+ },
+ "file:ja3": {
+  "file": "../tests/ja3.wise",
+  "tags": "ja3wise",
+  "type": "ja3",
+  "format": "tagger"
+ },
+ "file:sha256": {
+  "file": "../tests/sha256.wise",
+  "tags": "sha256wise",
+  "type": "sha256",
+  "format": "tagger"
+ },
+ "file:domain": {
+  "file": "../tests/domain.wise",
+  "tags": "domainwise",
+  "type": "domain",
+  "format": "tagger"
+ },
+ "file:url": {
+  "file": "../tests/uri.wise",
+  "tags": "urlwise",
+  "type": "url",
+  "format": "tagger"
+ },
+ "reversedns": {
+  "ips": "0.0.0.0/32",
+  "field": "asset"
+ },
+ "cache": {
+  "type": "memory"
+ },
+ "url:aws-ips": {
+  "type": "ip",
+  "format": "json",
+  "url": "https://ip-ranges.amazonaws.com/ip-ranges.json",
+  "arrayPath": "prefixes",
+  "keyPath": "ip_prefix",
+  "fields": "field:cloud.service;db:cloud.service;kind:lotermfield;friendly:Service;shortcut:service\\nfield:cloud.region;db:cloud.region;kind:lotermfield;friendly:Region;shortcut:region",
+  "view": "require:cloud;title:Public Cloud;section:cloud;fields:cloud.service,cloud.region",
+  "reload": 120
+ },
+ "url:azure-ips": {
+  "type": "ip",
+  "format": "json",
+  "url": "https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20201228.json",
+  "arrayPath": "values",
+  "keyPath": "properties.addressPrefixes",
+  "fields": "field:cloud.service;db:cloud.service;kind:lotermfield;friendly:Service;shortcut:name\\nfield:cloud.region;db:cloud.region;kind:lotermfield;friendly:Region;shortcut:properties.region",
+  "view": "require:cloud;title:Public Cloud;section:cloud;fields:cloud.service,cloud.region",
+  "reload": 120
+ },
+ "url:gcloud-ips4": {
+  "type": "ip",
+  "format": "json",
+  "url": "https://www.gstatic.com/ipranges/cloud.json",
+  "arrayPath": "prefixes",
+  "keyPath": "ipv4Prefix",
+  "fields": "field:cloud.service;db:cloud.service;kind:lotermfield;friendly:Service;shortcut:service\\nfield:cloud.region;db:cloud.kind:lotermfield;friendly:Region;shortcut:scope",
+  "view": "require:cloud;title:Public Cloud;section:cloud;fields:cloud.service,cloud.region",
+  "reload": 120
+ },
+ "url:gcloud-ips6": {
+  "type": "ip",
+  "format": "json",
+  "url": "https://www.gstatic.com/ipranges/cloud.json",
+  "arrayPath": "prefixes",
+  "keyPath": "ipv6Prefix",
+  "fields": "field:cloud.service;kind:lotermfield;friendly:Service;shortcut:service\\nfield:cloud.region;kind:lotermfield;friendly:Region;shortcut:scope",
+  "reload": 120
+ },
+ "valueactions:test": {
+  "file": "../tests/valueactions.ini"
+ }
+}

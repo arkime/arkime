@@ -39,7 +39,7 @@ int reader_daq_stats(MolochReaderStats_t *stats)
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         int err = daq_get_stats(module, handles[i], &daq_stats);
 
-        if (err) 
+        if (err)
             continue;
         stats->dropped += daq_stats.hw_packets_dropped;
         stats->total += daq_stats.hw_packets_received;
@@ -91,7 +91,7 @@ void reader_daq_start() {
     int err;
 
     //ALW - Bug: assumes all linktypes are the same
-    moloch_packet_set_linksnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
+    moloch_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -115,12 +115,21 @@ void reader_daq_start() {
     }
 }
 /******************************************************************************/
-void reader_daq_stop() 
+void reader_daq_stop()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         if (handles[i])
             daq_breakloop(module, handles[i]);
+    }
+}
+/******************************************************************************/
+void reader_daq_exit()
+{
+    int i;
+    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        if (handles[i])
+            daq_shutdown(module, handles[i]);
     }
 }
 /******************************************************************************/
@@ -163,6 +172,7 @@ void reader_daq_init(char *UNUSED(name))
     moloch_reader_start         = reader_daq_start;
     moloch_reader_stop          = reader_daq_stop;
     moloch_reader_stats         = reader_daq_stats;
+    moloch_reader_exit          = reader_daq_exit;
 }
 /******************************************************************************/
 void moloch_plugin_init()

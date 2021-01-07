@@ -1,4 +1,4 @@
-use Test::More tests => 67;
+use Test::More tests => 71;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,26 +9,49 @@ use strict;
 
 my $pwd = "*/pcap";
 
+sub testMulti {
+   my ($json, $mjson, $url) = @_;
+
+   my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
+   my @mitems = sort({$a->{name} cmp $b->{name}} @{$mjson->{items}});
+
+   eq_or_diff($mjson->{map}, $json->{map}, "single doesn't match multi map for $url", { context => 3 });
+   eq_or_diff($mjson->{graph}, $json->{graph}, "single doesn't match multi graph for $url", { context => 3 });
+   eq_or_diff(\@mitems, \@items, "single doesn't match multi graph for $url", { context => 3 });
+
+   return $json;
+}
+
 sub get {
 my ($url) = @_;
 
     my $json = viewerGet($url);
     my $mjson = multiGet($url);
 
-    my @items = sort({$a->{name} cmp $b->{name}} @{$json->{items}});
-    my @mitems = sort({$a->{name} cmp $b->{name}} @{$mjson->{items}});
-
-    eq_or_diff($mjson->{map}, $json->{map}, "single doesn't match multi map for $url", { context => 3 });
-    eq_or_diff($mjson->{graph}, $json->{graph}, "single doesn't match multi graph for $url", { context => 3 });
-    eq_or_diff(\@mitems, \@items, "single doesn't match multi graph for $url", { context => 3 });
+    $json = testMulti($json, $mjson, $url);
 
     return $json
 }
 
-my ($json, $mjson);
+sub post {
+    my ($url, $content) = @_;
+
+    my $json = viewerPost($url, $content);
+    my $mjson = multiPost($url, $content);
+
+    $json = testMulti($json, $mjson, $url);
+
+    return $json;
+}
+
+esGet("/_refresh");
+
+my ($json, $mjson, $pjson);
 
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field":"node", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map field: no");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "sessionsHisto field: node");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000, 3]]'), "srcPacketsHisto field: node");
@@ -67,7 +90,8 @@ my ($json, $mjson);
     cmp_ok ($json->{recordsFiltered}, '==', 6);
 
 #http.requestHeader
-    $json = get("/spigraph.json?map=true&date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    # $json = get("/spigraph.json?map=true&date=-1&field=http.requestHeader&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = post("/api/spigraph", '{"map":true, "date":-1, "field":"http.requestHeader", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map field: http.requestHeader");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "sessionsHisto field: h1");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000, 3]]'), "srcPacketsHisto field: h1");
@@ -96,5 +120,5 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
 
 # file field works
-    $json = get("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = post("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     cmp_ok ($json->{recordsFiltered}, '==', 6);

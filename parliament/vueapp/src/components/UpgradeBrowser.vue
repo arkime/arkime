@@ -4,7 +4,7 @@
 
   <div class="center-area">
 
-    <img src="../assets/watching.gif"
+    <img src="assets/watching.gif"
       alt="hoot" />
 
     <div class="well well-lg">
@@ -15,7 +15,7 @@
     <br/>
 
     <div class="mb-2 mt-2">
-      <a href="https://molo.ch/faq#what-browsers-are-supported"
+      <a href="https://arkime.com/faq#what-browsers-are-supported"
         class="no-decoration">
         Which browsers are supported?
       </a>

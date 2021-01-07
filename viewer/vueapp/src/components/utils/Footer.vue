@@ -3,8 +3,8 @@
   <div class="footer">
     <p>
       <small>
-        Moloch v{{molochVersion}} |
-        <a href="https://molo.ch">molo.ch</a>
+        Arkime v{{molochVersion}} |
+        <a href="https://arkime.com">arkime.com</a>
         <span v-if="responseTime && !loadingData">
           | {{ responseTime | commaString }}ms
         </span>

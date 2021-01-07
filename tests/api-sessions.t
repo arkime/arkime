@@ -1,4 +1,4 @@
-use Test::More tests => 54;
+use Test::More tests => 60;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,13 +9,10 @@ use strict;
 
 my $pwd = "*/pcap";
 
-sub get {
-my ($url) = @_;
+sub testMulti {
+    my ($json, $mjson, $url) = @_;
 
-    my $json = viewerGet($url);
-    my $mjson = multiGet($url);
-
-    # Health might be different
+    # health might be different
     delete $json->{health};
     delete $mjson->{health};
 
@@ -23,9 +20,33 @@ my ($url) = @_;
     delete $json->{recordsTotal};
     delete $mjson->{recordsTotal};
 
+    for (my $i=0; $i < scalar(@{$mjson->{data}}); $i++) { delete $mjson->{data}->[$i]->{cluster}; }
+
     eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
 
     return $json
+}
+
+sub get {
+    my ($url) = @_;
+
+    my $json = viewerGet($url);
+    my $mjson = multiGet($url);
+
+    $json = testMulti($json, $mjson, $url);
+
+    return $json;
+}
+
+sub post {
+    my ($url, $content) = @_;
+
+    my $json = viewerPost($url, $content);
+    my $mjson = multiPost($url, $content);
+
+    $json = testMulti($json, $mjson, $url);
+
+    return $json;
 }
 
 sub getBinary {
@@ -87,14 +108,16 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
-# Check ip.protocol=blah
+# Check ip.protocol=blah (GET and POST)
     my $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
-    is($json->{bsqErr}, "Unknown protocol string blah", "ip.protocol==blah");
+    is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
+    my $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression":"file=' . $pwd . '/bigendian.pcap&&ip.protocol==blah"}');
+    is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
 
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
+    eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 tcp,1386004312331,1386004312384,10.180.156.185,53534,US,10.180.156.249,1080,US,2780,1770,15,test
 tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2905,1763,17,test
@@ -104,13 +127,13 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
     $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id})->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv,
-'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Moloch Node
+'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
     my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,srcIp,srcGEO,dstIp,dstGEO,totPackets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Moloch Node, TCP Flag RST, TCP Flag PSH,  ASN
+    eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Arkime Node, TCP Flag RST, TCP Flag PSH,  ASN
 1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
 1386004312331,1386004312384,10.180.156.185,US,10.180.156.249,US,15,test,0,4,
 1386004317979,1386004317989,10.180.156.185,US,10.180.156.249,US,17,test,0,6,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
@@ -132,9 +155,17 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # Check file != blah.pcap
     my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     is ($json->{recordsFiltered}, 6, "file ==");
-    my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file!=$pwd/bigendian.pcap&&file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    my $json = post("/api/sessions", '{"date": -1, "expression": "file!=' . $pwd . '/bigendian.pcap&&file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
     is ($json->{recordsFiltered}, 5, "file !=");
 
 # Check file == EXISTS!
     my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     is ($json->{recordsFiltered}, 6, "file == EXISTS!");
+
+# buildquery should return a query and indices for GET and POST
+    $json = viewerGet("/api/buildquery");
+    ok (exists $json->{esquery}, "buildquery returns esquery");
+    ok (exists $json->{indices}, "buildquery returns indices");
+    $json = viewerPost("/api/buildquery");
+    ok (exists $json->{esquery}, "buildquery returns esquery");
+    ok (exists $json->{indices}, "buildquery returns indices");

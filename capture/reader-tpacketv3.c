@@ -143,7 +143,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len)) {
                 LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d\n"
-                    "See https://molo.ch/faq#moloch_requires_full_packet_captures_error",
+                    "See https://arkime.com/faq#moloch_requires_full_packet_captures_error",
                     th->tp_snaplen, th->tp_len);
             }
 
@@ -181,7 +181,7 @@ void reader_tpacketv3_start() {
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_stop()
+void reader_tpacketv3_exit()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -203,9 +203,9 @@ void reader_tpacketv3_init(char *UNUSED(name))
         LOGEXIT("block size %d not divisible by %u", blocksize, config.snapLen);
     }
 
-    moloch_packet_set_linksnap(1, config.snapLen);
+    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.linktype, pcapFileHeader.snaplen);
+    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
 
     if (config.bpf) {
         if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -287,7 +287,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     moloch_reader_start         = reader_tpacketv3_start;
-    moloch_reader_stop          = reader_tpacketv3_stop;
+    moloch_reader_exit          = reader_tpacketv3_exit;
     moloch_reader_stats         = reader_tpacketv3_stats;
 }
 #endif // TPACKET_V3

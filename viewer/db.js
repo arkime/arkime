@@ -21,6 +21,7 @@
 var ESC = require('elasticsearch');
 var os = require('os');
 var fs = require('fs');
+const { Client } = require('@elastic/elasticsearch');
 
 var internals = { fileId2File: {},
   fileName2File: {},
@@ -34,12 +35,14 @@ var internals = { fileId2File: {},
   nodesInfoCache: {},
   masterCache: {},
   qInProgress: 0,
-  apiVersion: '6.8',
+  apiVersion: '7.7',
   q: [] };
 
 exports.initialize = function (info, cb) {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
+  internals.getSessionBySearch = info.getSessionBySearch || false;
+
   delete info.multiES;
   delete info.debug;
 
@@ -59,6 +62,8 @@ exports.initialize = function (info, cb) {
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
+  internals.hostName = info.hostName;
+  delete info.hostName;
 
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
@@ -86,24 +91,28 @@ exports.initialize = function (info, cb) {
     if (err) {
       console.log(err, data);
     }
-    if (data.version.number.match(/^(6.[0-7]|[0-5]|8)/)) {
-      console.log('ERROR - ES', data.version.number, 'not supported, ES 6.8.x or later required.');
+    if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
+      console.log('ERROR - ES', data.version.number, 'not supported, ES 7.7.1 or later required.');
       process.exit();
       throw new Error('Exiting');
     }
 
+    internals.client7 = new Client({
+      node: internals.info.host,
+      maxRetries: 2,
+      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+      ssl: esSSLOptions
+    });
+
     if (info.usersHost) {
-      internals.usersElasticSearchClient = new ESC.Client({
-        host: internals.info.usersHost,
-        apiVersion: internals.apiVersion,
-        requestTimeout: info.requestTimeout * 1000 || 300000,
-        keepAlive: true,
-        minSockets: 5,
-        maxSockets: 6,
+      internals.usersClient7 = new Client({
+        node: internals.info.usersHost,
+        maxRetries: 2,
+        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
         ssl: esSSLOptions
       });
     } else {
-      internals.usersElasticSearchClient = internals.elasticSearchClient;
+      internals.usersClient7 = internals.client7;
     }
     return cb();
   });
@@ -114,7 +123,7 @@ exports.initialize = function (info, cb) {
     internals.prefix = 'MULTIPREFIX_';
   }
 
-  // Update aliases cache so -shrink works
+  // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*', () => {});
     setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
@@ -149,6 +158,11 @@ function fixIndex (index) {
     index += '-shrink';
   }
 
+  // If the index doesn't exist but the reindex version does exist, add -reindex
+  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
+    index += '-reindex';
+  }
+
   return index;
 }
 
@@ -159,21 +173,71 @@ exports.merge = function (to, from) {
 };
 
 exports.get = function (index, type, id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex(index), type: '_doc', id: id }, cb);
+  return internals.elasticSearchClient.get({ index: fixIndex(index), id: id }, cb);
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
-  var params = { index: fixIndex(index), type: '_doc', id: id };
+  var params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.get(params, cb);
 };
 
+// Get a session from ES and decode packetPos if requested
+exports.getSession = function (id, options, cb) {
+  function fixPacketPos (session, fields) {
+    if (!fields.packetPos || fields.packetPos.length === 0) {
+      return cb(null, session);
+    }
+    exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+      if (fileInfo && fileInfo.packetPosEncoding === 'gap0') {
+        let last = 0;
+        let lastgap = 0;
+        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            last = 0;
+          } else {
+            if (fields.packetPos[i] === 0) {
+              fields.packetPos[i] = last + lastgap;
+            } else {
+              lastgap = fields.packetPos[i];
+              fields.packetPos[i] += last;
+            }
+            last = fields.packetPos[i];
+          }
+        }
+      }
+      return cb(null, session);
+    });
+  }
+
+  if (internals.getSessionBySearch) {
+    exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
+      if (err) { return cb(err); }
+      if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+      let session = results.hits.hits[0];
+      session.found = true;
+      if (options && options._source && !options._source.includes('packetPos')) {
+        return cb(null, session);
+      }
+      return fixPacketPos(session, session._source || session.fields);
+    });
+  } else {
+    exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options, (err, session) => {
+      if (err || (options && options._source && !options._source.includes('packetPos'))) {
+        return cb(err, session);
+      }
+      return fixPacketPos(session, session._source || session.fields);
+    });
+  }
+};
+
 exports.index = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), type: '_doc', body: document, id: id }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex(index), body: document, id: id }, cb);
 };
 
 exports.indexNow = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), type: '_doc', body: document, id: id, refresh: true }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex(index), body: document, id: id, refresh: true }, cb);
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -334,7 +398,7 @@ exports.bulk = function (params, callback) {
 };
 
 exports.deleteByQuery = function (index, type, query, cb) {
-  return internals.elasticSearchClient.deleteByQuery({ index: fixIndex(index), type: type, body: query }, cb);
+  return internals.elasticSearchClient.deleteByQuery({ index: fixIndex(index), body: query }, cb);
 };
 
 exports.deleteDocument = function (index, type, id, options, cb) {
@@ -342,7 +406,7 @@ exports.deleteDocument = function (index, type, id, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: fixIndex(index), type: '_doc', id: id };
+  var params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.delete(params, cb);
 };
@@ -456,12 +520,20 @@ exports.setIndexSettings = (index, options, cb) => {
   );
 };
 
+exports.clearCache = function (cb) {
+  return internals.elasticSearchClient.indices.clearCache({}, cb);
+};
+
 exports.shards = function (cb) {
   return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
 };
 
-exports.recovery = function (sortField, cb) {
-  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField }, cb);
+exports.allocation = function (cb) {
+  return internals.elasticSearchClient.cat.allocation({ format: 'json', bytes: 'b' }, cb);
+};
+
+exports.recovery = function (sortField, activeOnly, cb) {
+  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField, active_only: activeOnly }, cb);
 };
 
 exports.master = function (cb) {
@@ -502,7 +574,7 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = { index: fixIndex(index), type: '_doc', body: document, id: id, timeout: '10m' };
+  var params = { index: fixIndex(index), body: document, id: id, timeout: '10m' };
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
@@ -511,7 +583,6 @@ exports.updateSession = function (index, id, document, cb) {
   let params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
-    type: '_doc',
     body: document,
     id: id,
     timeout: '10m'
@@ -547,21 +618,21 @@ exports.reroute = function (cb) {
 
 exports.flush = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.flush({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.flush({ index: fixIndex(index) }, cb);
   }
 };
 
 exports.refresh = function (index, cb) {
   if (index === 'users') {
-    return internals.usersElasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.refresh({ index: fixIndex(index) }, cb);
   } else {
-    return internals.elasticSearchClient.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.refresh({ index: fixIndex(index) }, cb);
   }
 };
 
-exports.addTagsToSession = function (index, id, tags, node, cb) {
+exports.addTagsToSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -578,7 +649,7 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
 
   let body = {
     script: {
-      inline: script,
+      source: script,
       lang: 'painless',
       params: {
         tags: tags
@@ -586,12 +657,12 @@ exports.addTagsToSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { body._node = node; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };
 
-exports.removeTagsFromSession = function (index, id, tags, node, cb) {
+exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
   let script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -608,7 +679,7 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
 
   let body = {
     script: {
-      inline: script,
+      source: script,
       lang: 'painless',
       params: {
         tags: tags
@@ -616,7 +687,7 @@ exports.removeTagsFromSession = function (index, id, tags, node, cb) {
     }
   };
 
-  if (node) { body._node = node; }
+  if (cluster) { body.cluster = cluster; }
 
   exports.updateSession(index, id, body, cb);
 };
@@ -637,7 +708,7 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
 
   let body = {
     script: {
-      inline: script,
+      source: script,
       lang: 'painless',
       params: {
         huntId: huntId,
@@ -661,14 +732,23 @@ exports.flushCache = function () {
   internals.lookupsCache = {};
   delete internals.aliasesCache;
 };
+// search against user index, promise only
 exports.searchUsers = function (query, cb) {
-  return internals.usersElasticSearchClient.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true }, cb);
+  return new Promise((resolve, reject) => {
+    internals.usersClient7.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true })
+      .then((results) => { resolve(results.body); })
+      .catch((error) => { reject(error); });
+  });
 };
 
+// Return a user from DB, callback only
 exports.getUser = function (name, cb) {
-  return internals.usersElasticSearchClient.get({ index: internals.usersPrefix + 'users', type: '_doc', id: name }, cb);
+  internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: name }, (err, result) => {
+    cb(err, result.body || { found: false });
+  });
 };
 
+// Return a user from cache, callback only
 exports.getUserCache = function (name, cb) {
   if (internals.usersCache[name] && internals.usersCache[name]._timeStamp > Date.now() - 5000) {
     return cb(null, internals.usersCache[name]);
@@ -686,30 +766,37 @@ exports.getUserCache = function (name, cb) {
   });
 };
 
-exports.numberOfUsers = function (cb) {
-  return internals.usersElasticSearchClient.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true }, cb);
+// Return a user from cache, promise only
+exports.numberOfUsers = function () {
+  return new Promise((resolve, reject) => {
+    internals.usersClient7.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true })
+      .then((results) => { resolve({ count: results.body.count }); })
+      .catch((error) => { reject(error); });
+  });
 };
 
+// Delete user, callback only
 exports.deleteUser = function (name, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.delete({ index: internals.usersPrefix + 'users', type: '_doc', id: name, refresh: true }, (err) => {
+  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: name, refresh: true }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
+// Set user, callback only
 exports.setUser = function (name, doc, cb) {
   delete internals.usersCache[name];
-  return internals.usersElasticSearchClient.index({ index: internals.usersPrefix + 'users', type: '_doc', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
+  internals.usersClient7.index({ index: internals.usersPrefix + 'users', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
 exports.setLastUsed = function (name, now, cb) {
-  var params = { index: internals.usersPrefix + 'users', type: '_doc', body: { doc: { lastUsed: now } }, id: name };
+  var params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
 
-  return internals.usersElasticSearchClient.update(params, cb);
+  return internals.usersClient7.update(params, cb);
 };
 
 function twoDigitString (value) {
@@ -723,32 +810,35 @@ exports.historyIt = function (doc, cb) {
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return internals.elasticSearchClient.index({ index: iname, type: '_doc', body: doc, refresh: true, timeout: '10m' }, cb);
+  return internals.elasticSearchClient.index({ index: iname, body: doc, refresh: true, timeout: '10m' }, cb);
 };
 exports.searchHistory = function (query, cb) {
   return internals.elasticSearchClient.search({ index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true }, cb);
 };
 exports.numberOfLogs = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('history_v1-*'), type: '_doc', ignoreUnavailable: true }, cb);
+  return internals.elasticSearchClient.count({ index: fixIndex('history_v1-*'), ignoreUnavailable: true }, cb);
 };
 exports.deleteHistoryItem = function (id, index, cb) {
-  return internals.elasticSearchClient.delete({ index: index, type: '_doc', id: id, refresh: true }, cb);
+  return internals.elasticSearchClient.delete({ index: index, id: id, refresh: true }, cb);
 };
 
 exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), type: '_doc', body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
 };
 exports.searchHunt = function (query, cb) {
   return internals.elasticSearchClient.search({ index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true }, cb);
 };
 exports.numberOfHunts = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('hunts'), type: '_doc' }, cb);
+  return internals.elasticSearchClient.count({ index: fixIndex('hunts') }, cb);
 };
 exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({ index: fixIndex('hunts'), type: '_doc', id: id, refresh: true }, cb);
+  return internals.elasticSearchClient.delete({ index: fixIndex('hunts'), id: id, refresh: true }, cb);
 };
 exports.setHunt = function (id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), type: '_doc', body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+};
+exports.getHunt = function (id, cb) {
+  return internals.elasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
 };
 
 exports.searchLookups = function (query, cb) {
@@ -756,18 +846,18 @@ exports.searchLookups = function (query, cb) {
 };
 exports.createLookup = function (doc, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), type: '_doc', body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
 };
 exports.deleteLookup = function (id, username, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.delete({ index: fixIndex('lookups'), type: '_doc', id: id, refresh: true }, cb);
+  return internals.elasticSearchClient.delete({ index: fixIndex('lookups'), id: id, refresh: true }, cb);
 };
 exports.setLookup = function (id, username, doc, cb) {
   internals.lookupsCache = {};
-  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), type: '_doc', body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
 };
 exports.getLookup = function (id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex('lookups'), type: '_doc', id: id }, cb);
+  return internals.elasticSearchClient.get({ index: fixIndex('lookups'), id: id }, cb);
 };
 exports.getLookupsCache = function (name, cb) {
   if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
@@ -846,11 +936,11 @@ exports.healthCache = function (cb) {
       return cb(err, null);
     }
 
-    internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta', include_type_name: true }, (err, doc) => {
+    internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
       if (err) {
         return cb(null, health);
       }
-      health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings.session._meta.molochDbVersion;
+      health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
       cb(null, health);
@@ -1046,10 +1136,12 @@ exports.getSequenceNumber = function (name, cb) {
   });
 };
 
-exports.numberOfDocuments = function (index, cb) {
+exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    return internals.elasticSearchClient.count({ index: fixIndex(index), ignoreUnavailable: true });
+    let params = { index: fixIndex(index), ignoreUnavailable: true };
+    exports.merge(params, options);
+    return internals.elasticSearchClient.count(params);
   }
 
   return new Promise((resolve, reject) => {
@@ -1089,13 +1181,13 @@ exports.checkVersion = function (minVersion, checkUsers) {
     });
   });
 
-  internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta', include_type_name: true }, (err, doc) => {
+  internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
     if (err) {
       console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
       process.exit(0);
     }
     try {
-      var version = doc[fixIndex('sessions2_template')].mappings.session._meta.molochDbVersion;
+      var version = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
 
       if (version < minVersion) {
         console.log(`ERROR - Current database version (${version}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
@@ -1128,14 +1220,14 @@ exports.isLocalView = function (node, yesCB, noCB) {
   }
 
   exports.molochNodeStatsCache(node, (err, stat) => {
-    if (err || stat.hostname !== os.hostname()) {
+    if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
       if (internals.debug > 1) {
-        console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()}`);
+        console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
       noCB();
     } else {
       if (internals.debug > 1) {
-        console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()}`);
+        console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()} or --host ${internals.hostName}`);
       }
       yesCB();
     }
@@ -1204,6 +1296,9 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }
+      if (index.endsWith('-reindex')) {
+        index = index.substring(0, index.length - 8);
+      }
       index = index.substring(internals.prefix.length + 10);
       let year; let month; let day = 0; let hour = 0; let length;
 
@@ -1236,20 +1331,20 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       let stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
 
       switch (bounding) {
-        default:
-        case 'last':
-          if (stop >= startTime && start <= stopTime) {
-            indices.push(iname);
-          }
-          break;
-        case 'first':
-        case 'both':
-        case 'either':
-        case 'database':
-          if (stop >= (startTime - length) && start <= (stopTime + length)) {
-            indices.push(iname);
-          }
-          break;
+      default:
+      case 'last':
+        if (stop >= startTime && start <= stopTime) {
+          indices.push(iname);
+        }
+        break;
+      case 'first':
+      case 'both':
+      case 'either':
+      case 'database':
+        if (stop >= (startTime - length) && start <= (stopTime + length)) {
+          indices.push(iname);
+        }
+        break;
       }
     }
 
@@ -1266,5 +1361,35 @@ exports.getMinValue = function (index, field, cb) {
   return internals.elasticSearchClient.search(params, (err, data) => {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);
+  });
+};
+
+exports.getClusterDetails = function (cb) {
+  return internals.elasticSearchClient.get({ index: '_cluster', id: 'details' }, cb);
+};
+
+exports.getILMPolicy = function () {
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
+      if (err) {
+        resolve({});
+      } else {
+        resolve(data.body);
+      }
+    });
+  });
+};
+
+exports.setILMPolicy = function (name, policy) {
+  console.log('name', name, 'policy', policy);
+  return new Promise((resolve, reject) => {
+    internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
+      if (err) {
+        console.log('ERROR', err, 'data', data);
+        reject(err);
+      } else {
+        resolve(data.body);
+      }
+    });
   });
 };

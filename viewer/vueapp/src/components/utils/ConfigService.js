@@ -18,7 +18,7 @@ export default {
     getMolochClustersQIP = new Promise((resolve, reject) => {
       if (_molochClustersCache) { resolve(_molochClustersCache); }
 
-      Vue.axios.get('molochclusters')
+      Vue.axios.get('remoteclusters')
         .then((response) => {
           getMolochClustersQIP = undefined;
           _molochClustersCache = response.data;
@@ -43,7 +43,7 @@ export default {
     getMolochClickablesQIP = new Promise((resolve, reject) => {
       if (_molochClickablesCache) { resolve(_molochClickablesCache); }
 
-      Vue.axios.get('molochRightClick')
+      Vue.axios.get('api/valueActions')
         .then((response) => {
           getMolochClickablesQIP = undefined;
 
@@ -74,13 +74,23 @@ export default {
    */
   cancelEsTask: function (cancelId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('estask/cancelById', { cancelId: cancelId })
+      Vue.axios.post(`api/estasks/${cancelId}/cancelwith`)
         .then((response) => {
           resolve(response);
         }, (error) => {
           reject(error);
         });
     });
-  }
+  },
 
+  getClusters: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('clusters')
+        .then((response) => {
+          resolve(response.data);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  }
 };

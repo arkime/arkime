@@ -16,7 +16,7 @@ use strict;
     ok (!exists $json->{persistent}->{'cluster.max_shards_per_node'});
 
 # fail permission tests
-    $json = viewerGet("/esadmin/list?molochRegressionUser=notadmin");
+    $json = viewerGet("/api/esadmin?molochRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
     $json = viewerPost("/esadmin/set?molochRegressionUser=notadmin");
@@ -32,16 +32,16 @@ use strict;
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
 # Missing token
-    $json = viewerPost("/esadmin/set?molochRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/set?molochRegressionUser=adminuser1");
     eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
-    $json = viewerPost("/esadmin/reroute?molochRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/reroute?molochRegressionUser=adminuser1");
     eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
-    $json = viewerPost("/esadmin/flush?molochRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/flush?molochRegressionUser=adminuser1");
     eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
-    $json = viewerPost("/esadmin/unflood?molochRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/unflood?molochRegressionUser=adminuser1");
     eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
 
 # good
@@ -52,7 +52,7 @@ use strict;
     eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
 
     $json = viewerPostToken("/esadmin/unflood?molochRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Unflood", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
 
 # set tests
     $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "", $token);

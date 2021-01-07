@@ -137,7 +137,7 @@ Pcap.prototype.unref = function () {
 };
 
 Pcap.prototype.createDecipher = function (pos) {
-  this.iv.writeInt32BE(pos, 12);
+  this.iv.writeUInt32BE(pos, 12);
   return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
 };
 
@@ -255,24 +255,24 @@ Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
     len -= 16;
   } else {
     switch (packet.ip.p) {
-      case 1:
-        pos += (packet.icmp._pos + 8);
-        len -= (packet.icmp._pos + 8);
-        break;
-      case 6:
-        pos += (packet.tcp._pos + 4 * packet.tcp.off);
-        len -= (packet.tcp._pos + 4 * packet.tcp.off);
-        break;
-      case 17:
-        pos += (packet.udp._pos + 8);
-        len -= (packet.udp._pos + 8);
-        break;
-      case 132:
-        pos += (packet.sctp._pos + 8);
-        len -= (packet.sctp._pos + 8);
-        break;
-      default:
-        throw new Error("Unknown packet type, can't scrub");
+    case 1:
+      pos += (packet.icmp._pos + 8);
+      len -= (packet.icmp._pos + 8);
+      break;
+    case 6:
+      pos += (packet.tcp._pos + 4 * packet.tcp.off);
+      len -= (packet.tcp._pos + 4 * packet.tcp.off);
+      break;
+    case 17:
+      pos += (packet.udp._pos + 8);
+      len -= (packet.udp._pos + 8);
+      break;
+    case 132:
+      pos += (packet.sctp._pos + 8);
+      len -= (packet.sctp._pos + 8);
+      break;
+    default:
+      throw new Error("Unknown packet type, can't scrub");
     }
   }
 
@@ -355,6 +355,9 @@ Pcap.prototype.udp = function (buffer, obj, pos) {
   };
 
   obj.udp.data = buffer.slice(8);
+  if ((obj.udp.dport === 0x12b5) && (obj.udp.data.length > 8) && ((obj.udp.data[0] & 0x77) === 0) && ((obj.udp.data[1] & 0xb7) === 0)) {
+    this.ether(buffer.slice(16), obj, pos + 16);
+  }
 };
 
 Pcap.prototype.sctp = function (buffer, obj, pos) {
@@ -415,23 +418,29 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
   }
 
   switch (obj.gre.type) {
-    case 0x0800:
-      this.ip4(buffer.slice(bpos), obj, pos + bpos);
-      break;
-    case 0x86dd:
-      this.ip6(buffer.slice(bpos), obj, pos + bpos);
-      break;
-    case 0x6559:
-      this.framerelay(buffer.slice(bpos), obj, pos + bpos);
-      break;
-    case 0x880b:
-      this.ppp(buffer.slice(bpos), obj, pos + bpos);
-      break;
-    case 0x88be:
-      this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
-      break;
-    default:
-      console.log('gre Unknown type', obj.gre.type);
+  case 0x0800:
+    this.ip4(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  case 0x86dd:
+    this.ip6(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  case 0x6558:
+    this.ether(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  case 0x6559:
+    this.framerelay(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  case 0x880b:
+    this.ppp(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  case 0x88be:
+    this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
+    break;
+  case 0x8847:
+    this.mpls(buffer.slice(bpos), obj, pos + bpos);
+    break;
+  default:
+    console.log('gre Unknown type', obj.gre.type);
   }
 };
 
@@ -452,30 +461,30 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
   };
 
   switch (obj.ip.p) {
-    case 1:
-      this.icmp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 6:
-      this.tcp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 17:
-      this.udp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 41: // IPPROTO_IPV6
-      this.ip6(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 50: // IPPROTO_ESP
-      this.esp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 47:
-      this.gre(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    case 132:
-      this.sctp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
-      break;
-    default:
-      obj.ip.data = buffer.slice(obj.ip.hl * 4, obj.ip.len);
-    // console.log("v4 Unknown ip.p", obj);
+  case 1:
+    this.icmp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 6:
+    this.tcp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 17:
+    this.udp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 41: // IPPROTO_IPV6
+    this.ip6(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 50: // IPPROTO_ESP
+    this.esp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 47:
+    this.gre(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  case 132:
+    this.sctp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+    break;
+  default:
+    obj.ip.data = buffer.slice(obj.ip.hl * 4, obj.ip.len);
+  // console.log("v4 Unknown ip.p", obj);
   }
 };
 
@@ -495,38 +504,38 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
   var offset = 40;
   while (offset < buffer.length) {
     switch (obj.ip.p) {
-      case 0: // IPPROTO_HOPOPTS:
-      case 60: // IPPROTO_DSTOPTS:
-      case 43: // IPPROTO_ROUTING:
-        obj.ip.p = buffer[offset];
-        offset += ((buffer[offset + 1] + 1) << 3);
-        break;
-      case 1:
-      case 58:
-        this.icmp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 4: // IPPROTO_IPV4
-        this.ip4(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 6:
-        this.tcp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 17:
-        this.udp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 47:
-        this.gre(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 50: // IPPROTO_ESP
-        this.esp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      case 132:
-        this.sctp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
-        return;
-      default:
-        obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
-        // console.log("v6 Unknown ip.p", obj);
-        return;
+    case 0: // IPPROTO_HOPOPTS:
+    case 60: // IPPROTO_DSTOPTS:
+    case 43: // IPPROTO_ROUTING:
+      obj.ip.p = buffer[offset];
+      offset += ((buffer[offset + 1] + 1) << 3);
+      break;
+    case 1:
+    case 58:
+      this.icmp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 4: // IPPROTO_IPV4
+      this.ip4(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 6:
+      this.tcp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 17:
+      this.udp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 47:
+      this.gre(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 50: // IPPROTO_ESP
+      this.esp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    case 132:
+      this.sctp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+      return;
+    default:
+      obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+      // console.log("v6 Unknown ip.p", obj);
+      return;
     }
   }
 };
@@ -538,14 +547,14 @@ Pcap.prototype.pppoe = function (buffer, obj, pos) {
   };
 
   switch (obj.pppoe.type) {
-    case 0x21:
-      this.ip4(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
-      return;
-    case 0x57:
-      this.ip6(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
-      return;
-    default:
-      console.log('Unknown pppoe.type', obj);
+  case 0x21:
+    this.ip4(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
+    return;
+  case 0x57:
+    this.ip6(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
+    return;
+  default:
+    console.log('Unknown pppoe.type', obj);
   }
 };
 
@@ -555,33 +564,33 @@ Pcap.prototype.ppp = function (buffer, obj, pos) {
   };
 
   switch (obj.pppoe.type) {
-    case 0x21:
-      this.ip4(buffer.slice(4), obj, pos + 4);
-      return;
-    case 0x57:
-      this.ip6(buffer.slice(4), obj, pos + 4);
-      return;
-    default:
-      console.log('Unknown ppp.type', obj);
+  case 0x21:
+    this.ip4(buffer.slice(4), obj, pos + 4);
+    return;
+  case 0x57:
+    this.ip6(buffer.slice(4), obj, pos + 4);
+    return;
+  default:
+    console.log('Unknown ppp.type', obj);
   }
 };
 
 Pcap.prototype.mpls = function (buffer, obj, pos) {
   let offset = 0;
   while (offset + 5 < buffer.length) {
-    let S = buffer[3] & 0x1;
+    let S = buffer[offset + 2] & 0x1;
     offset += 4;
     if (S) {
       switch (buffer[offset] >> 4) {
-        case 4:
-          this.ip4(buffer.slice(offset), obj, pos + offset);
-          return;
-        case 6:
-          this.ip6(buffer.slice(offset), obj, pos + offset);
-          return;
-        default:
-          console.log('Unknown mpls.type', obj, offset);
-          return;
+      case 4:
+        this.ip4(buffer.slice(offset), obj, pos + offset);
+        return;
+      case 6:
+        this.ip6(buffer.slice(offset), obj, pos + offset);
+        return;
+      default:
+        console.log('Unknown mpls.type', buffer[offset] >> 4, obj, offset);
+        return;
       }
     }
   }
@@ -591,25 +600,25 @@ Pcap.prototype.ethertype = function (buffer, obj, pos) {
   obj.ether.type = buffer.readUInt16BE(0);
 
   switch (obj.ether.type) {
-    case 0x0800:
-      this.ip4(buffer.slice(2), obj, pos + 2);
-      break;
-    case 0x86dd:
-      this.ip6(buffer.slice(2), obj, pos + 2);
-      break;
-    case 0x8864:
-      this.pppoe(buffer.slice(2), obj, pos + 2);
-      break;
-    case 0x8847:
-      this.mpls(buffer.slice(2), obj, pos + 2);
-      break;
-    case 0x8100: // VLAN
-      this.ethertype(buffer.slice(4), obj, pos + 4);
-      break;
-    default:
-      obj.ether.data = buffer.slice(2);
-      // console.trace("Unknown ether.type", obj);
-      break;
+  case 0x0800:
+    this.ip4(buffer.slice(2), obj, pos + 2);
+    break;
+  case 0x86dd:
+    this.ip6(buffer.slice(2), obj, pos + 2);
+    break;
+  case 0x8864:
+    this.pppoe(buffer.slice(2), obj, pos + 2);
+    break;
+  case 0x8847:
+    this.mpls(buffer.slice(2), obj, pos + 2);
+    break;
+  case 0x8100: // VLAN
+    this.ethertype(buffer.slice(4), obj, pos + 4);
+    break;
+  default:
+    obj.ether.data = buffer.slice(2);
+    // console.trace("Unknown ether.type", obj);
+    break;
   }
 };
 
@@ -678,38 +687,38 @@ Pcap.prototype.pcap = function (buffer, obj) {
   }
 
   switch (this.linkType) {
-    case 0: // NULL
-      if (buffer[16] === 30) {
-        this.ip6(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
-      } else {
-        this.ip4(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
-      }
-      break;
-    case 1: // Ether
-      this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    case 12: // LOOP
-    case 101: // RAW
-      this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    case 107: // Frame Relay
-      this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    case 113: // SLL
-      this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);
-      break;
-    case 127: // radiotap
-      this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    case 228: // RAW
-      this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    case 239: // NFLOG
-      this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
-      break;
-    default:
-      console.log('Unsupported pcap file', this.filename, 'link type', this.linkType);
-      break;
+  case 0: // NULL
+    if (buffer[16] === 30) {
+      this.ip6(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
+    } else {
+      this.ip4(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
+    }
+    break;
+  case 1: // Ether
+    this.ether(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 12: // LOOP
+  case 101: // RAW
+    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 107: // Frame Relay
+    this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 113: // SLL
+    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);
+    break;
+  case 127: // radiotap
+    this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 228: // RAW
+    this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  case 239: // NFLOG
+    this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+    break;
+  default:
+    console.log('Unsupported pcap file', this.filename, 'link type', this.linkType);
+    break;
   }
 };
 
@@ -914,7 +923,6 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
       packets2.push(packets[i]);
     }
     packets = packets2;
-    packets2 = [];
 
     if (packets.length === 0) {
       return cb(null, packets);
@@ -1050,33 +1058,33 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
       result.data = item.ether.data;
     } else {
       switch (item.ip.p) {
-        case 1:
-        case 58:
-          result.data = item.icmp.data;
-          break;
-        case 6:
-          result.data = item.tcp.data;
-          result.tcpflags = {
-            syn: item.tcp.synflag,
-            ack: item.tcp.ackflag,
-            psh: item.tcp.pshflag,
-            rst: item.tcp.rstflag,
-            fin: item.tcp.finflag,
-            urg: item.tcp.urgflag
-          };
-          break;
-        case 17:
-          result.data = item.udp.data;
-          break;
-        case 132:
-          result.data = item.sctp.data;
-          break;
-        case 50:
-          result.data = item.esp.data;
-          break;
-        default:
-          result.data = item.ip.data;
-          break;
+      case 1:
+      case 58:
+        result.data = item.icmp.data;
+        break;
+      case 6:
+        result.data = item.tcp.data;
+        result.tcpflags = {
+          syn: item.tcp.synflag,
+          ack: item.tcp.ackflag,
+          psh: item.tcp.pshflag,
+          rst: item.tcp.rstflag,
+          fin: item.tcp.finflag,
+          urg: item.tcp.urgflag
+        };
+        break;
+      case 17:
+        result.data = item.udp.data;
+        break;
+      case 132:
+        result.data = item.sctp.data;
+        break;
+      case 50:
+        result.data = item.esp.data;
+        break;
+      default:
+        result.data = item.ip.data;
+        break;
       }
     }
 
@@ -1091,27 +1099,27 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 exports.key = function (packet) {
   if (!packet.ip) { return packet.ether.addr1; }
   switch (packet.ip.p) {
-    case 6: // tcp
-      return packet.ip.addr1 + ':' + packet.tcp.sport;
-    case 17: // udp
-      return packet.ip.addr1 + ':' + packet.udp.sport;
-    case 132: // sctp
-      return packet.ip.addr1 + ':' + packet.sctp.sport;
-    default:
-      return packet.ip.addr1;
+  case 6: // tcp
+    return packet.ip.addr1 + ':' + packet.tcp.sport;
+  case 17: // udp
+    return packet.ip.addr1 + ':' + packet.udp.sport;
+  case 132: // sctp
+    return packet.ip.addr1 + ':' + packet.sctp.sport;
+  default:
+    return packet.ip.addr1;
   }
 };
 
 exports.keyFromSession = function (session) {
   switch (session.ipProtocol) {
-    case 6: // tcp
-    case 'tcp':
-    case 17: // udp
-    case 'udp':
-    case 132: // sctp
-    case 'sctp':
-      return session.srcIp + ':' + session.srcPort;
-    default:
-      return session.srcIp;
+  case 6: // tcp
+  case 'tcp':
+  case 17: // udp
+  case 'udp':
+  case 132: // sctp
+  case 'sctp':
+    return session.srcIp + ':' + session.srcPort;
+  default:
+    return session.srcIp;
   }
 };

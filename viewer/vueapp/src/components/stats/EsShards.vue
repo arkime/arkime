@@ -228,7 +228,7 @@ export default {
       this.loadData();
     },
     exclude: function (type, column) {
-      this.$http.post(`esshard/exclude/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = true;
@@ -240,7 +240,7 @@ export default {
         });
     },
     include: function (type, column) {
-      this.$http.post(`esshard/include/${type}/${column[type]}`)
+      this.$http.post(`api/esshards/${type}/${column[type]}/include`)
         .then((response) => {
           if (type === 'name') {
             column.nodeExcluded = false;
@@ -271,7 +271,7 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('esshard/list', { params: this.query })
+      this.$http.get('api/esshards', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';

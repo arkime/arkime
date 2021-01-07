@@ -3,10 +3,11 @@
   <head>
     <base href="{{ path }}">
     <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta property="csp-nonce" content="{{ serverNonce }}">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
-    <title>Moloch</title>
+    <title>Arkime</title>
     <link rel="stylesheet" href="{{ themeUrl }}">
     <script nonce="{{ serverNonce }}">
       const MOLOCH_TITLE_CONFIG = '{{ titleConfig }}';
@@ -17,6 +18,10 @@
       const MOLOCH_MULTIVIEWER = {{ multiViewer }};
       const MOLOCH_HUNTWARN = {{ huntWarn }};
       const MOLOCH_HUNTLIMIT = {{ huntLimit }};
+      const MOLOCH_ANONYMOUS_MODE = {{ anonymousMode }};
+      const MOLOCH_BUSINESS_DAY_START = {{ businesDayStart }};
+      const MOLOCH_BUSINESS_DAY_END = {{ businessDayEnd }};
+      const MOLOCH_BUSINESS_DAYS = '{{ businessDays }}';
     </script>
   </head>
   <body class="{{ theme }}">

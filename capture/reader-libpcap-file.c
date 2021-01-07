@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include "pcap.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 #include <pwd.h>
 #include <grp.h>
 #include <sys/stat.h>
@@ -238,7 +238,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
             gr = getgrgid (stats.st_gid);
             pw = getpwuid (stats.st_uid);
 
-            if (stats.st_mode & S_IROTH)  {
+            if (stats.st_mode & S_IROTH) {
               // world readable
             } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
               // group readable and dropGroup matches file group
@@ -557,7 +557,6 @@ LOCAL gboolean reader_libpcapfile_read()
 /******************************************************************************/
 LOCAL void reader_libpcapfile_opened()
 {
-    int dlt_to_linktype(int dlt);
     int moloch_db_can_quit();
 
     if (config.flushBetween) {
@@ -574,11 +573,11 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    moloch_packet_set_linksnap(dlt_to_linktype(pcap_datalink(pcap)) | pcap_datalink_ext(pcap), pcap_snapshot(pcap));
+    moloch_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
 
     offlineFile = pcap_file(pcap);
 
-    if (config.bpf && pcapFileHeader.linktype != 239) {
+    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {

@@ -68,8 +68,7 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
     uint32_t           out[4*100]; // Can have up to 100 elements at any level
     int                disabled = 0;
 
-    memset(out, 0, sizeof(out));
-    if (js0n(data, data_len, out) != 0) {
+    if (js0n(data, data_len, out, sizeof(out)) != 0) {
         LOGEXIT("ERROR: Parse error for >%.*s<\n", data_len, data);
     }
 
@@ -627,11 +626,13 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
         host = g_hostname_to_unicode(string);
         string[len] = ch;
     }
-
-    // If g_hostname_to_unicode fails, just use the input
-    if (!host) {
-        host = g_strndup(string, len);
-        moloch_session_add_tag(session, "bad-punycode");
+    if (!host || g_utf8_validate(host, -1, NULL) == 0) {
+        if (len > 4 && moloch_memstr((const char *)string, len, "xn--", 4)) {
+            moloch_session_add_tag(session, "bad-punycode");
+        } else {
+            moloch_session_add_tag(session, "bad-hostname");
+        }
+        return FALSE;
     }
 
     if (!moloch_field_string_add(pos, session, host, -1, FALSE)) {
@@ -798,12 +799,11 @@ gboolean moloch_field_ip_equal (gconstpointer v1, gconstpointer v2)
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-SUPPRESS_SIGNED_INTEGER_OVERFLOW
 guint moloch_field_ip_hash (gconstpointer v)
 {
-  const signed char *p;
+  const unsigned char *p;
   guint32 h = 5381;
-  int i;
+  unsigned int i;
 
   for (i = 0, p = v; i < 16; i++, p++) {
     h = (h << 5) + h + *p;

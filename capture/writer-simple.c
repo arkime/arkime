@@ -73,6 +73,7 @@ LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
+LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
@@ -173,7 +174,7 @@ LOCAL void writer_simple_process_buf(int thread, int closing)
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
     if (DLL_COUNT(simple_, &simpleQ) > 100 && lastSave[thread].tv_sec > lastError + 60) {
         lastError = lastSave[thread].tv_sec;
-        LOG("WARNING - Disk Q of %d is too large, check the Moloch FAQ about (https://molo.ch/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
+        LOG("WARNING - Disk Q of %d is too large, check the Moloch FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
     }
     MOLOCH_COND_SIGNAL(simpleQ);
     MOLOCH_UNLOCK(simpleQ);
@@ -266,7 +267,7 @@ LOCAL char *writer_simple_get_kekId ()
         {
             int namelen = strlen(config.nodeName);
             int bufboundary = j + namelen;
-            
+
             if(bufboundary >= (int) sizeof(okek)) {
                 LOGEXIT("ERROR - node name '%s' is too long", config.nodeName);
             }
@@ -282,15 +283,15 @@ LOCAL char *writer_simple_get_kekId ()
 /******************************************************************************/
 LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPacket_t * const packet)
 {
-    static uint32_t lastError;
-    static uint32_t notSaved;
 
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
+        static uint32_t lastError;
+        static uint32_t notSaved;
         packet->writerFilePos = 0;
         notSaved++;
         if (packet->ts.tv_sec > lastError + 60) {
             lastError = packet->ts.tv_sec;
-            LOG("WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Moloch FAQ about (https://molo.ch/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
+            LOG("WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Moloch FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
         }
         return;
     }
@@ -305,17 +306,30 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
             break;
         case MOLOCH_SIMPLE_XOR2048:
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "xor-2048",
-                                              "dek", dekhex,
-                                              "kekId", kekId,
-                                              (char *)NULL);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "xor-2048",
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "xor-2048",
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  (char *)NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -329,12 +343,21 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             moloch_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                              "encoding", "aes-256-ctr",
-                                              "iv", ivhex,
-                                              "dek", dekhex,
-                                              "kekId", kekId,
-                                              (char *)NULL);
+            if (config.gapPacketPos)
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "aes-256-ctr",
+                                                  "iv", ivhex,
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+            else
+                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                                  "encoding", "aes-256-ctr",
+                                                  "iv", ivhex,
+                                                  "dek", dekhex,
+                                                  "kekId", kekId,
+                                                  (char *)NULL);
             break;
         }
         default:
@@ -348,13 +371,18 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         }
         if (currentInfo[thread]->file->fd < 0) {
-            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://molo.ch/settings#pcapwritemethod", name, strerror(errno), errno);
+            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
         info->file->pos = currentInfo[thread]->bufpos = 24;
-        memcpy(info->buf, &pcapFileHeader, 24);
+
+        memcpy(info->buf, &pcapFileHeader, 20);
+        uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+        memcpy(info->buf+20, &linktype, 4);
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
+
+        gettimeofday(&fileAge[thread], NULL);
     }
 
     packet->writerFileNum = currentInfo[thread]->file->id;
@@ -470,6 +498,11 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
         return;
     }
 
+    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM*60) {
+        writer_simple_process_buf(session->thread, 1);
+        return;
+    }
+
     // Last add must be 10 seconds ago and have more then pageSize bytes
     if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
         return;
@@ -546,6 +579,8 @@ void writer_simple_init(char *name)
         LOG("Not using O_DIRECT by config");
     }
 
+    config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
+
     DLL_INIT(simple_, &simpleQ);
 
     struct timeval now;
@@ -554,6 +589,7 @@ void writer_simple_init(char *name)
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         lastSave[thread] = now;
+        fileAge[thread] = now;
         DLL_INIT(simple_, &freeList[thread]);
         MOLOCH_LOCK_INIT(freeList[thread].lock);
     }

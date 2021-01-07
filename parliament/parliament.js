@@ -81,53 +81,53 @@ let invalidTokens = {};
 
   for (let i = 0, len = appArgs.length; i < len; i++) {
     switch (appArgs[i]) {
-      case '-c':
-      case '--config':
-        file = appArgs[i + 1];
-        i++;
-        break;
+    case '-c':
+    case '--config':
+      file = appArgs[i + 1];
+      i++;
+      break;
 
-      case '--pass':
-        bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
-        i++;
-        break;
+    case '--pass':
+      bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
+      i++;
+      break;
 
-      case '--port':
-        port = appArgs[i + 1];
-        i++;
-        break;
+    case '--port':
+      port = appArgs[i + 1];
+      i++;
+      break;
 
-      case '--cert':
-        app.set('certFile', appArgs[i + 1]);
-        i++;
-        break;
+    case '--cert':
+      app.set('certFile', appArgs[i + 1]);
+      i++;
+      break;
 
-      case '--key':
-        app.set('keyFile', appArgs[i + 1]);
-        i++;
-        break;
+    case '--key':
+      app.set('keyFile', appArgs[i + 1]);
+      i++;
+      break;
 
-      case '--dashboardOnly':
-        app.set('dashboardOnly', true);
-        break;
+    case '--dashboardOnly':
+      app.set('dashboardOnly', true);
+      break;
 
-      case '--regressionTests':
-        app.set('regressionTests', 1);
-        break;
+    case '--regressionTests':
+      app.set('regressionTests', 1);
+      break;
 
-      case '--debug':
-        debug++;
-        break;
+    case '--debug':
+      debug++;
+      break;
 
-      case '-h':
-      case '--help':
-        help();
-        break;
+    case '-h':
+    case '--help':
+      help();
+      break;
 
-      default:
-        console.log(`Unknown option ${appArgs[i]}`);
-        help();
-        break;
+    default:
+      console.log(`Unknown option ${appArgs[i]}`);
+      help();
+      break;
     }
   }
 
@@ -237,6 +237,8 @@ app.use('/parliament/static', express.static(`${__dirname}/vueapp/dist/static`))
 app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
 
 app.use('/parliament/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
+
+app.use('/parliament/assets', express.static(`${__dirname}/../assets`, { maxAge: 600 * 1000 }));
 
 // log requests
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));

@@ -21,7 +21,7 @@
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         v-on:changePaging="changePaging"
-        length-default=100>
+        length-default=200>
       </moloch-paging>
 
       <div id="statsGraph" style="width:1440px;"></div>
@@ -64,7 +64,7 @@ export default {
       context: null,
       stats: null,
       query: {
-        length: parseInt(this.$route.query.length) || 100,
+        length: parseInt(this.$route.query.length) || 200,
         start: 0,
         filter: this.searchTerm || undefined,
         desc: this.graphSort === 'desc',
@@ -157,7 +157,7 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('stats.json', { params: this.query })
+      this.$http.get('api/stats', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
@@ -193,7 +193,7 @@ export default {
         return context.metric((startV, stopV, stepV, callback) => {
           let config = {
             method: 'GET',
-            url: 'dstats.json',
+            url: 'api/dstats',
             params: {
               nodeName: name,
               start: startV / 1000,

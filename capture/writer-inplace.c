@@ -54,7 +54,14 @@ LOCAL long writer_inplace_create(MolochPacket_t * const packet)
     if (config.pcapReprocess) {
         moloch_db_file_exists(readerName, &outputId);
     } else {
-        char *filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId);
+        char *filename;
+        if (config.gapPacketPos)
+            filename = moloch_db_create_file_full(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId,
+                                                  "packetPosEncoding", "gap0",
+                                                  (char *)NULL);
+        else
+            filename = moloch_db_create_file(packet->ts.tv_sec, readerName, st.st_size, !config.noLockPcap, &outputId);
+
         g_free(filename);
     }
     readerOutputIds[packet->readerPos] = outputId;
@@ -82,6 +89,7 @@ LOCAL void writer_inplace_write_dryrun(const MolochSession_t * const UNUSED(sess
 /******************************************************************************/
 void writer_inplace_init(char *UNUSED(name))
 {
+    config.gapPacketPos        = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
     moloch_writer_queue_length = writer_inplace_queue_length;
     moloch_writer_exit         = writer_inplace_exit;
     if (config.dryRun)

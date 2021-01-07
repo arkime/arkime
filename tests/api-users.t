@@ -1,4 +1,4 @@
-use Test::More tests => 92;
+use Test::More tests => 94;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -32,6 +32,8 @@ my $pwd = "*/pcap";
     # This will set a lastUsed time, make sure DB is updated with sleep
     my $test1Token = getTokenCookie("test1");
     sleep(1);
+    esGet("/_flush");
+    esGet("/_refresh");
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #2");
@@ -270,9 +272,16 @@ my $pwd = "*/pcap";
     $users = viewerPost("/user/list", "");
     eq_or_diff($users->{data}->[1]->{timeLimit}, 72, "time limit updated");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=-1");
-    eq_or_diff($json->{bsqErr}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
+    eq_or_diff($json->{error}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
+
+# valueActions tests
+    $json = viewerGet("/api/valueActions?molochRegressionUser=test1");
+    eq_or_diff($json->{reverseDNS}, from_json('{"url": "reverseDNS.txt?ip=%TEXT%", "name": "Get Reverse DNS", "actionType": "fetch", "category": "ip"}'), 'test1 valueActions');
+
+    $json = viewerGet("/api/valueActions?molochRegressionUser=test2");
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
 
 # Delete Users
     $json = viewerPostToken("/user/delete", "userId=test1", $token);

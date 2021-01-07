@@ -146,12 +146,13 @@
     </MolochCollapsible>
 
     <!-- main visualization -->
-    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj">
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length">
       <moloch-visualizations
         id="primary"
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
+        :cap-start-times="capStartTimes"
         :timezone="user.settings.timezone"
         :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
@@ -291,6 +292,7 @@ export default {
       filtered: 0,
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       refresh: 0,
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -299,7 +301,8 @@ export default {
       fieldTypeahead: 'node',
       baseField: this.$route.query.field || 'node',
       sortBy: this.$route.query.sort || 'graph',
-      spiGraphType: this.$route.query.spiGraphType || 'default'
+      spiGraphType: this.$route.query.spiGraphType || 'default',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -328,7 +331,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     fieldObj: function () {
@@ -370,6 +374,8 @@ export default {
       this.changeRefreshInterval();
     });
 
+    this.getCaptureStats();
+
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
@@ -404,8 +410,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -499,6 +507,22 @@ export default {
       this.loading = true;
       this.error = false;
 
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          this.items = [];
+          this.mapData = undefined;
+          this.graphData = undefined;
+          this.recordsTotal = 0;
+          this.recordsFiltered = 0;
+          pendingPromise = null;
+          this.error = selection.error;
+          this.loading = false;
+          return;
+        }
+      }
+
       // set whether map is open on the sessions page
       if (localStorage.getItem('spigraph-open-map') === 'true') {
         this.query.map = true;
@@ -530,6 +554,24 @@ export default {
         this.loading = false;
         this.error = error.text || error;
       });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('api/stats')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     }
   },
   beforeDestroy: function () {

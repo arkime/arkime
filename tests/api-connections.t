@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -28,7 +28,7 @@ my ($json, $mjson);
 
 
 # srcIp to ip.dst
-    $json = viewerGet("/connections.json?date=-1&dstField=ip.dst:port&expression=" . uri_escape("$files"));
+    $json = viewerPost("/api/connections", '{"date":-1, "dstField":"ip.dst:port", "expression":"' . $files . '"}');
     delete $json->{health};
     eq_or_diff($json, from_json('{ "nodes": [
             { "id": "10.0.0.1", "dstPort": [21477, 8855], "node": [ "test" ], "totDataBytes": 25707, "totBytes": 29487, "totPackets": 66, "cnt": 2, "sessions": 2, "type": 1, "pos": 0, "inresult": 1 },
@@ -61,6 +61,8 @@ my ($json, $mjson);
 
 # ip.protocol unknown
     $json = viewerGet("/connections.json?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
+    my $pjson = viewerPost("/api/connections", '{"date":-1, "expression":"ip.protocol==blah"}');
+    eq_or_diff($json, $pjson, "GET and POST versions of connections endpoint are not the same");
     delete $json->{health};
     eq_or_diff($json, from_json('{ "success": false,  "text": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });
 

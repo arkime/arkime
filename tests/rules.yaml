@@ -59,7 +59,7 @@ rules:
     ops:
       "protocols": "socksipset"
 
-  - name: "ip4 test"
+  - name: "ip test"
     when: "fieldSet"
     fields:
       ip.src:

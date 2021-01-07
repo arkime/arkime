@@ -66,7 +66,7 @@
                 v-b-tooltip.hover
                 @click.stop.prevent="loadFieldConfiguration(-1)"
                 title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
-                Moloch Default
+                Arkime Default
               </b-dropdown-item>
               <b-dropdown-item
                 v-for="(config, key) in fieldConfigs"
@@ -136,10 +136,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData"
+      v-if="mapData && graphData && capStartTimes.length"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="fetchMapData">
@@ -382,6 +383,9 @@ import MolochSearch from '../search/Search';
 import MolochVisualizations from '../visualizations/Visualizations';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 
+// import utils
+import Utils from '../utils/utils';
+
 const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
 
 let newQuery = true;
@@ -416,13 +420,15 @@ export default {
       fieldConfigs: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       categoryList: [],
       categoryObjects: {},
       spiQuery: this.$route.query.spi,
       // field config vars
       newFieldConfigName: '',
       fieldConfigError: '',
-      fieldConfigSuccess: ''
+      fieldConfigSuccess: '',
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   computed: {
@@ -435,7 +441,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -447,6 +454,7 @@ export default {
     }
   },
   mounted: function () {
+    this.getCaptureStats();
     if (!this.spiQuery) {
       // get what's saved in the db
       UserService.getState('spiview')
@@ -799,7 +807,7 @@ export default {
 
       this.get(query).promise
         .then((response) => {
-          if (response.bsqErr) { this.error = response.bsqErr; }
+          if (response.error) { this.error = response.error; }
           this.mapData = response.map;
         })
         .catch((error) => {
@@ -817,7 +825,8 @@ export default {
         expression: this.query.expression,
         bounding: this.query.bounding,
         interval: this.query.interval,
-        view: this.query.view
+        view: this.query.view,
+        cluster: this.query.cluster
       };
     },
     get: function (query) {
@@ -830,10 +839,10 @@ export default {
 
       let promise = new Promise((resolve, reject) => {
         let options = {
-          method: 'GET',
+          method: 'POST',
           params: query,
           cancelToken: source.token,
-          url: 'spiview.json'
+          url: 'api/spiview'
         };
 
         Vue.axios(options)
@@ -897,6 +906,17 @@ export default {
     getSpiData: function (spiQuery) {
       if (!spiQuery) { return; }
 
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          pendingPromise = null;
+          this.error = selection.error;
+          this.dataLoading = false;
+          return;
+        }
+      }
+
       // reset loading counts for categories
       categoryLoadingCounts = {};
 
@@ -959,8 +979,8 @@ export default {
         // start processing tasks serially
         this.serial(tasks)
           .then((response) => { // returns the last result in the series
-            if (response && response.bsqErr) {
-              this.error = response.bsqErr;
+            if (response && response.error) {
+              this.error = response.error;
             }
             this.dataLoading = false;
             pendingPromise = null;
@@ -1002,7 +1022,7 @@ export default {
         .then((response) => {
           this.countCategoryFieldsLoading(category, false);
 
-          if (response.bsqErr) { spiData.error = response.bsqErr; }
+          if (response.error) { spiData.error = response.error; }
 
           // only update the requested spi data
           Vue.set(spiData, 'loading', false);
@@ -1041,6 +1061,24 @@ export default {
         })
         .catch((error) => {
           this.fieldConfigError = error.text;
+        });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('api/stats')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
         });
     },
     /**
@@ -1082,8 +1120,7 @@ export default {
         if (this.categoryObjects.hasOwnProperty(key)) {
           let category = this.categoryObjects[key];
 
-          let fields = category.fields;
-          fields = this.sortFields(category.fields);
+          let fields = this.sortFields(category.fields);
           Vue.set(category, 'filteredFields', fields);
 
           if (localStorage && localStorage['spiview-collapsible']) {

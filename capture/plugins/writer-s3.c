@@ -80,6 +80,7 @@ LOCAL  char                   s3WriteGzip;
 LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
+LOCAL  char                   s3UseHttp;
 
 LOCAL  int                    inprogress;
 
@@ -294,7 +295,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char           datetime[17];
     char           objectkey[1000];
     char           fullpath[2000];
-    char           bodyHash[1000];
+    char           bodyHash[65];
     char           storageClassHeader[1000];
     char           tokenHeader[4200];
     struct timeval outputFileTime;
@@ -302,7 +303,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     gettimeofday(&outputFileTime, 0);
     struct tm         *gm = gmtime(&outputFileTime.tv_sec);
     snprintf(datetime, sizeof(datetime),
-            "%04d%02d%02dT%02d%02d%02dZ",
+            "%04u%02u%02uT%02u%02u%02uZ",
             gm->tm_year + 1900,
             gm->tm_mon+1,
             gm->tm_mday,
@@ -373,35 +374,35 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char kSecret[1000];
     snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
 
-    char  kDate[1000];
+    char  kDate[65];
     gsize kDateLen = sizeof(kDate);
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSecret, strlen(kSecret));
     g_hmac_update(hmac, (guchar*)datetime, 8);
     g_hmac_get_digest(hmac, (guchar*)kDate, &kDateLen);
     g_hmac_unref(hmac);
 
-    char  kRegion[1000];
+    char  kRegion[65];
     gsize kRegionLen = sizeof(kRegion);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kDate, kDateLen);
     g_hmac_update(hmac, (guchar*)s3Region, -1);
     g_hmac_get_digest(hmac, (guchar*)kRegion, &kRegionLen);
     g_hmac_unref(hmac);
 
-    char  kService[1000];
+    char  kService[65];
     gsize kServiceLen = sizeof(kService);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kRegion, kRegionLen);
     g_hmac_update(hmac, (guchar*)"s3", 2);
     g_hmac_get_digest(hmac, (guchar*)kService, &kServiceLen);
     g_hmac_unref(hmac);
 
-    char kSigning[1000];
+    char kSigning[65];
     gsize kSigningLen = sizeof(kSigning);
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kService, kServiceLen);
     g_hmac_update(hmac, (guchar*)"aws4_request", 12);
     g_hmac_get_digest(hmac, (guchar*)kSigning, &kSigningLen);
     g_hmac_unref(hmac);
 
-    char signature[1000];
+    char signature[65];
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSigning, kSigningLen);
     g_hmac_update(hmac, (guchar*)stringToSign, -1);
     strcpy(signature, g_hmac_get_string(hmac));
@@ -627,7 +628,9 @@ void writer_s3_create(const MolochPacket_t *packet)
 
     outputBuffer = moloch_http_get_buffer(config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN);
     outputPos = 0;
-    append_to_output(&pcapFileHeader, 24, FALSE, 0);
+    uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    append_to_output(&pcapFileHeader, 20, FALSE, 0);
+    append_to_output(&linktype, 4, FALSE, 0);
     make_new_block();                   // So we can read the header in a small amount of data fetched
 
     if (config.debug)
@@ -691,6 +694,7 @@ void writer_s3_init(char *UNUSED(name))
     s3StorageClass        = moloch_config_str(NULL, "s3StorageClass", "STANDARD");
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
+    s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
     s3Token               = NULL;
     s3TokenTime           = 0;
     s3Role                = NULL;
@@ -756,7 +760,11 @@ void writer_s3_init(char *UNUSED(name))
     }
 
     char host[200];
-    snprintf(host, sizeof(host), "https://%s", s3Host);
+    if (s3UseHttp) {
+        snprintf(host, sizeof(host), "http://%s", s3Host);
+    } else {
+        snprintf(host, sizeof(host), "https://%s", s3Host);
+    }
     s3Server = moloch_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
     moloch_http_set_print_errors(s3Server);
     moloch_http_set_header_cb(s3Server, writer_s3_header_cb);

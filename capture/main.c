@@ -27,7 +27,7 @@
 #include <sched.h>
 #endif
 #include "pcap.h"
-#include "molochconfig.h"
+#include "arkimeconfig.h"
 
 #ifndef BUILD_VERSION
 #define BUILD_VERSION "unkn"
@@ -90,7 +90,7 @@ gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpo
 
 LOCAL  GOptionEntry entries[] =
 {
-    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '/data/moloch/etc/config.ini'", NULL },
+    { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
@@ -161,10 +161,10 @@ void parse_args(int argc, char **argv)
     config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs || config.pcapFileLists);
 
     if (!config.configFile)
-        config.configFile = g_strdup("/data/moloch/etc/config.ini");
+        config.configFile = g_strdup(CONFIG_PREFIX "/etc/config.ini");
 
     if (showVersion || config.debug) {
-        printf("moloch-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
+        printf("arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(MolochSession_t), (int)sizeof(MolochPacket_t), MOLOCH_API_VERSION);
     }
 
     if (showVersion) {
@@ -223,22 +223,22 @@ void parse_args(int argc, char **argv)
         config.dryRun = 1;
     }
 
-    if (config.pcapSkip && config.copyPcap)  {
+    if (config.pcapSkip && config.copyPcap) {
         printf("Can't skip and copy pcap files\n");
         exit(1);
     }
 
-    if (config.pcapDelete && !config.copyPcap)  {
+    if (config.pcapDelete && !config.copyPcap) {
         printf("--delete requires --copy\n");
         exit(1);
     }
 
-    if (config.copyPcap && !config.pcapReadOffline)  {
+    if (config.copyPcap && !config.pcapReadOffline) {
         printf("--copy requires -r or -R\n");
         exit(1);
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs)  {
+    if (config.pcapMonitor && !config.pcapReadDirs) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
@@ -259,15 +259,15 @@ void moloch_free_later(void *ptr, GDestroyNotify cb)
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
 
     MOLOCH_LOCK(freeLaterList);
-    if ((freeLaterBack + 1 ) % FREE_LATER_SIZE == freeLaterFront) {
+    if ((freeLaterBack + 1) % FREE_LATER_SIZE == freeLaterFront) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
 
     freeLaterList[freeLaterBack].sec = currentTime.tv_sec + 7;
     freeLaterList[freeLaterBack].ptr = ptr;
     freeLaterList[freeLaterBack].cb  = cb;
-    freeLaterBack = (freeLaterBack + 1 ) % FREE_LATER_SIZE;
+    freeLaterBack = (freeLaterBack + 1) % FREE_LATER_SIZE;
     MOLOCH_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
@@ -282,7 +282,7 @@ LOCAL gboolean moloch_free_later_check (gpointer UNUSED(user_data))
     while (freeLaterFront != freeLaterBack &&
            freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1 ) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
     }
     MOLOCH_UNLOCK(freeLaterList);
     return TRUE;
@@ -330,16 +330,45 @@ void reload(int UNUSED(sig))
     moloch_plugins_reload();
 }
 /******************************************************************************/
+uint32_t moloch_get_next_prime(uint32_t v)
+{
+    static uint32_t primes[] = {1009, 10007, 49999, 99991, 199799, 400009, 500009, 732209,
+                                1092757, 1299827, 1500007, 1987411, 2999999, 4000037,
+                                5000011, 6000011, 7000003, 8000009, 9000011, 10000019,
+                                11000027, 12000017, 13000027, 14000029, 15000017, 16000057,
+                                17000023, 18000041, 19000013, 20000003, 21000037, 22000001,
+                                0};
+
+    int p;
+    for (p = 0; primes[p]; p++) {
+        if (primes[p] > v)
+            return primes[p];
+    }
+    return primes[p-1];
+}
+/******************************************************************************/
+//https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+uint32_t moloch_get_next_powerof2(uint32_t v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v++;
+    return v;
+}
+/******************************************************************************/
 unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
     uint32_t out[4*100]; // Can have up to 100 elements at any level
 
-    memset(out, 0, sizeof(out));
     *olen = 0;
     int rc;
-    if ((rc = js0n(data, len, out)) != 0) {
+    if ((rc = js0n(data, len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d for >%s< in >%.*s<\n", rc, key, len, data);
         fflush(stdout);
         return 0;
@@ -577,7 +606,6 @@ LOCAL gboolean writerExit   = TRUE;
         readerExit = FALSE;
         if (moloch_reader_stop)
             moloch_reader_stop();
-        moloch_readers_exit();
         moloch_packet_exit();
         moloch_session_exit();
         if (config.debug)
@@ -653,8 +681,8 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
         }
     }
     moloch_reader_start();
-    if (!config.pcapReadOffline && (pcapFileHeader.linktype == 0 || pcapFileHeader.snaplen == 0))
-        LOGEXIT("Reader didn't call moloch_packet_set_linksnap");
+    if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
+        LOGEXIT("Reader didn't call moloch_packet_set_dltsnap");
     return FALSE;
 }
 /******************************************************************************/
@@ -737,7 +765,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.nodeName = strdup("fuzz");
 
     hashSalt = 0;
-    pcapFileHeader.linktype = 1;
+    pcapFileHeader.dlt = DLT_EN10MB;
 
     moloch_free_later_init();
     moloch_hex_init();
@@ -808,6 +836,7 @@ int main(int argc, char **argv)
     moloch_free_later_init();
     moloch_hex_init();
     moloch_config_init();
+    arkime_dedup_init();
     moloch_writers_init();
     moloch_readers_init();
     moloch_plugins_init();
@@ -843,6 +872,8 @@ int main(int argc, char **argv)
     moloch_db_exit();
     moloch_http_exit();
     moloch_field_exit();
+    moloch_readers_exit();
+    arkime_dedup_exit();
     moloch_config_exit();
     moloch_rules_exit();
     moloch_yara_exit();

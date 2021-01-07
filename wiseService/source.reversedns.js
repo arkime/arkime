@@ -17,87 +17,103 @@
  */
 'use strict';
 
-var Dns            = require('dns')
-  , iptrie         = require('iptrie')
-  , wiseSource     = require('./wiseSource.js')
-  , util           = require('util')
-  ;
-var resolver       = Dns;
-//////////////////////////////////////////////////////////////////////////////////
-function removeArray(arr, value) {
-  var pos = 0;
+const Dns = require('dns');
+const iptrie = require('iptrie');
+const WISESource = require('./wiseSource.js');
+let resolver;
+
+// ----------------------------------------------------------------------------
+function removeArray (arr, value) {
+  let pos = 0;
   while ((pos = arr.indexOf(value, pos)) !== -1) {
     arr.splice(pos, 1);
   }
   return arr;
 }
-//////////////////////////////////////////////////////////////////////////////////
-function ReverseDNSSource (api, section) {
-  ReverseDNSSource.super_.call(this, api, section);
-  this.field        = api.getConfig("reversedns", "field");
-  this.ips          = api.getConfig("reversedns", "ips");
-  this.servers      = api.getConfig("reversedns", "servers");
-  if (this.servers !== undefined) {
-    resolver = new Dns();
-    resolver.setServers(this.servers.split(";"));
-  }
-  this.stripDomains = removeArray(api.getConfig("reversedns", "stripDomains", "").split(";").map(item => item.trim()), "");
 
-  if (this.field === undefined) {
-    console.log(this.section, "- No field defined");
-    return;
-  }
+class ReverseDNSSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { });
+    this.field = api.getConfig('reversedns', 'field');
+    this.ips = api.getConfig('reversedns', 'ips');
+    this.servers = api.getConfig('reversedns', 'servers');
+    resolver = new Dns.Resolver({ timeout: 2000 });
+    if (this.servers !== undefined) {
+      resolver.setServers(this.servers.split(';'));
+    }
+    this.stripDomains = removeArray(api.getConfig('reversedns', 'stripDomains', '').split(';').map(item => item.trim()), '');
 
-  if (this.ips === undefined) {
-    console.log(this.section, "- No ips defined");
-    return;
-  }
-
-  this.theField = this.api.addField(`field:${this.field}`);
-  this.trie = new iptrie.IPTrie();
-  this.ips.split(";").forEach((item) => {
-    if (item === "") {
+    if (this.field === undefined) {
+      console.log(this.section, '- No field defined');
       return;
     }
-    var parts = item.split("/");
-    this.trie.add(parts[0], +parts[1] || (parts[0].includes(':')?128:32), true);
-  });
 
-  this.api.addSource("reversedns", this);
-}
-util.inherits(ReverseDNSSource, wiseSource);
-//////////////////////////////////////////////////////////////////////////////////
-ReverseDNSSource.prototype.getIp = function(ip, cb) {
-  if (!this.trie.find(ip)) {
-    return cb(null, undefined);
+    if (this.ips === undefined) {
+      console.log(this.section, '- No ips defined');
+      return;
+    }
+
+    this.theField = this.api.addField(`field:${this.field}`);
+    this.trie = new iptrie.IPTrie();
+    this.ips.split(';').forEach((item) => {
+      if (item === '') {
+        return;
+      }
+      const parts = item.split('/');
+      this.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
+    });
+
+    this.api.addSource('reversedns', this);
   }
 
-  resolver.reverse(ip, (err, domains) => {
-    //console.log("answer", ip, err, domains);
-    if (err || domains.length === 0) {
-      return cb(null, wiseSource.emptyResult);
+  // ----------------------------------------------------------------------------
+  getIp (ip, cb) {
+    if (!this.trie.find(ip)) {
+      return cb(null, undefined);
     }
-    var args = [];
-    for (var i = 0; i < domains.length; i++) {
-      var domain = domains[i];
-      if (this.stripDomains.length === 0) {
-        var parts = domain.split(".");
-        args.push(this.theField, parts[0].toLowerCase());
-      } else {
-        for (var j = 0; j < this.stripDomains.length; j++) {
-          var stripDomain = this.stripDomains[j];
-          if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
-            args.push(this.theField, domain.slice(0, domain.length - stripDomain.length));
+
+    resolver.reverse(ip, (err, domains) => {
+      // console.log("answer", ip, err, domains);
+      if (err || domains.length === 0) {
+        return cb(null, WISESource.emptyResult);
+      }
+      const args = [];
+      for (let i = 0; i < domains.length; i++) {
+        const domain = domains[i];
+        if (this.stripDomains.length === 0) {
+          const parts = domain.split('.');
+          args.push(this.theField, parts[0].toLowerCase());
+        } else {
+          for (let j = 0; j < this.stripDomains.length; j++) {
+            const stripDomain = this.stripDomains[j];
+            if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
+              args.push(this.theField, domain.slice(0, domain.length - stripDomain.length));
+            }
           }
         }
       }
-    }
-    var wiseResult = {num: args.length/2, buffer: wiseSource.encode.apply(null, args)};
-    cb(null, wiseResult);
+      const wiseResult = WISESource.encodeResult.apply(null, args);
+      cb(null, wiseResult);
+    });
+  };
+}
+
+// ----------------------------------------------------------------------------
+exports.initSource = function (api) {
+  api.addSourceConfigDef('reversedns', {
+    singleton: true,
+    name: 'reversedns',
+    description: 'For IPs that are included by the ips setting, do a reverse lookup and place everything before the first dot in the field specified',
+    types: ['ip'],
+    fields: [
+      { name: 'field', required: true, help: 'The field to set with the hostname' },
+      { name: 'ips', required: true, multiline: ';', help: 'List of IPs or CIDRs that WISE will attempt to reverse lookup. IPs that don’t match this list will NOT be reverse lookup' },
+      { name: 'servers', required: false, multiline: ';', help: 'List of ip addresses to use as the resolver. Default is to just use the OS configuration.' },
+      { name: 'stripDomains', required: false, multiline: ';', help: 'If EMPTY then all domains are stripped after the FIRST period. When set ONLY domains that match the list of domain names are modified, and only the matching part is removed. Those that don’t match will be saved in full. The list is checked in order. A leading dot is recommended.' }
+    ]
   });
+
+  return new ReverseDNSSource(api, 'reversedns');
 };
-//////////////////////////////////////////////////////////////////////////////////
-exports.initSource = function(api) {
-  return new ReverseDNSSource(api, "reversedns");
-};
-//////////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------

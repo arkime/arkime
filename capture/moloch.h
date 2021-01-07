@@ -271,11 +271,11 @@ typedef struct {
 #define MOLOCH_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1);
 #define MOLOCH_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1);
 #define MOLOCH_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
-#define MOLOCH_THREAD_INCR_NUM(var, num) __sync_fetch_and_add(&var, num);
+#define MOLOCH_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
- * https://molo.ch/faq#why-am-i-dropping-packets
+ * https://arkime.com/faq#why-am-i-dropping-packets
  */
 #define MOLOCH_MAX_PACKET_THREADS 24
 
@@ -442,7 +442,6 @@ typedef struct moloch_config {
     uint32_t  snapLen;
     uint32_t  maxMemPercentage;
     uint32_t  maxReqBody;
-
     int       packetThreads;
 
     char      logUnknownProtocols;
@@ -469,6 +468,8 @@ typedef struct moloch_config {
     char      autoGenerateId;
     char      ignoreErrors;
     char      enablePacketLen;
+    char      gapPacketPos;
+    char      enablePacketDedup;
 } MolochConfig_t;
 
 typedef struct {
@@ -706,7 +707,7 @@ typedef struct {
 	int32_t  thiszone;	/* gmt to local correction */
 	uint32_t sigfigs;	/* accuracy of timestamps */
 	uint32_t snaplen;	/* max length saved portion of each pkt */
-	uint32_t linktype;	/* data link type (LINKTYPE_*) */
+	uint32_t dlt;	        /* data link type - see https://github.com/aol/moloch/issues/1303#issuecomment-554684749 */
 } MolochPcapFileHdr_t;
 
 #ifndef likely
@@ -791,6 +792,9 @@ void moloch_add_can_quit(MolochCanQuitFunc func, const char *name);
 
 void moloch_quit();
 
+uint32_t moloch_get_next_prime(uint32_t v);
+uint32_t moloch_get_next_powerof2(uint32_t v);
+
 
 /******************************************************************************/
 /*
@@ -844,6 +848,15 @@ gchar   *moloch_db_community_id(MolochSession_t *session);
 // The implementation must either call a moloch_http_free_buffer or another moloch_http routine that frees the buffer
 typedef void (* MolochDbSendBulkFunc) (char *json, int len);
 void     moloch_db_set_send_bulk(MolochDbSendBulkFunc func);
+
+/******************************************************************************/
+/*
+ * dedup.c
+ */
+
+void arkime_dedup_init();
+void arkime_dedup_exit();
+int arkime_dedup_should_drop(const MolochPacket_t *packet, int headerLen);
 
 /******************************************************************************/
 /*
@@ -1012,6 +1025,7 @@ typedef enum {
   MOLOCH_PACKET_IPPORT_DROPPED,
   MOLOCH_PACKET_DONT_PROCESS,
   MOLOCH_PACKET_DONT_PROCESS_OR_FREE,
+  MOLOCH_PACKET_DUPLICATE_DROPPED,
   MOLOCH_PACKET_MAX
 } MolochPacketRC;
 
@@ -1039,7 +1053,9 @@ void     moloch_packet_batch_flush(MolochPacketBatch_t *batch);
 void     moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const packet);
 void     moloch_packet_batch_process(MolochPacketBatch_t * batch, MolochPacket_t * const packet, int thread);
 
-void     moloch_packet_set_linksnap(int linktype, int snaplen);
+void     moloch_packet_set_dltsnap(int dlt, int snaplen);
+void     moloch_packet_set_linksnap(int linktype, int snaplen); // Don't use, backwards compat
+uint32_t moloch_packet_dlt_to_linktype(int dlt);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 void     moloch_packet_save_ethernet(MolochPacket_t * const packet, uint16_t type);
@@ -1266,11 +1282,12 @@ typedef void (*MolochReaderInit)(char *name);
 typedef int  (*MolochReaderStats)(MolochReaderStats_t *stats);
 typedef void (*MolochReaderStart)();
 typedef void (*MolochReaderStop)();
+typedef void (*MolochReaderExit)();
 
 extern MolochReaderStart moloch_reader_start;
 extern MolochReaderStats moloch_reader_stats;
-extern MolochReaderStop moloch_reader_stop;
-
+extern MolochReaderStop  moloch_reader_stop;
+extern MolochReaderExit  moloch_reader_exit;
 
 void moloch_readers_init();
 void moloch_readers_set(char *name);
@@ -1338,5 +1355,5 @@ void moloch_pq_flush();
 /*
  * js0n.c
  */
-int js0n(unsigned char *js, unsigned int len, unsigned int *out);
+int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned int olen);
 

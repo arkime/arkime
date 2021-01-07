@@ -1,6 +1,7 @@
 INCLUDE_PCAP  = @PCAP_CFLAGS@
 
 INCLUDE_OTHER = -I.. -I../thirdparty \
+	        @NGHTTP2_CFLAGS@ \
                 @GLIB2_CFLAGS@
 
 install_sh = @install_sh@
@@ -15,6 +16,9 @@ SOS=$(SRCS:.c=.so)
 	$(CC) -pthread @SHARED_FLAGS@ $(SANITIZE_FLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
 
 all:$(SOS)
+
+sanitize:
+	$(MAKE) SANITIZE_FLAGS="-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability"
 
 install:
 	@mkdir -p "$(PARSERSDIR)"

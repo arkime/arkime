@@ -14,7 +14,8 @@
           :start="query.start"
           :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)"
-          @setView="loadNewView()">
+          @setView="loadNewView"
+          @setColumns="loadColumns">
         </moloch-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -33,10 +34,11 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData"
+      v-if="mapData && graphData && capStartTimes.length"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
+      :cap-start-times="capStartTimes"
       :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
@@ -181,7 +183,7 @@
                   <b-dropdown-item
                     id="coldefault"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
-                    Moloch Default
+                    Arkime Default
                   </b-dropdown-item>
                   <b-tooltip target="coldefault"
                     placement="right"
@@ -251,7 +253,7 @@
                       <b-dropdown-item
                         id="infodefault"
                         @click.stop.prevent="resetInfoVisibility">
-                        Moloch Default
+                        Arkime Default
                       </b-dropdown-item>
                       <b-tooltip target="infodefault"
                         placement="left"
@@ -589,6 +591,7 @@ export default {
       fields: [],
       graphData: undefined,
       mapData: undefined,
+      capStartTimes: [],
       colQuery: '', // query for columns to toggle visibility
       newColConfigName: '', // name of new custom column config
       viewChanged: false,
@@ -597,10 +600,12 @@ export default {
       infoFieldVisMenuOpen: false,
       stickyHeader: false,
       tableHeaderOverflow: undefined,
-      showFitButton: false
+      showFitButton: false,
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
   },
   created: function () {
+    this.getCaptureStats();
     this.getColumnWidths();
     this.getTableState(); // IMPORTANT: kicks off the initial search query!
     this.getCustomColumnConfigurations();
@@ -631,7 +636,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined
+        expression: this.$store.state.expression || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     sorts: {
@@ -681,6 +687,10 @@ export default {
         this.loadData(true);
       });
     },
+    loadColumns: function (colConfig) {
+      this.tableState = colConfig;
+      this.loadData(true);
+    },
     /* show the overflow when a dropdown in a column header is shown. otherwise,
      * the dropdown is cut off and scrolls vertically in the column header */
     dropdownShowListener: function (bvEvent) {
@@ -714,8 +724,10 @@ export default {
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
+            if (pendingPromise) {
+              pendingPromise.source.cancel();
+              pendingPromise = null;
+            }
 
             if (!runNewQuery) {
               this.loading = false;
@@ -725,7 +737,6 @@ export default {
               }
               return;
             }
-
             this.loadData(updateTable);
           });
       } else if (runNewQuery) {
@@ -777,7 +788,6 @@ export default {
 
       this.stickySessions = [];
     },
-
     /* TABLE SORTING */
     /**
      * Determines if the table is being sorted by specified column
@@ -1353,6 +1363,18 @@ export default {
       this.loading = true;
       this.error = '';
 
+      if (this.multiviewer) {
+        var availableCluster = this.$store.state.esCluster.availableCluster.active;
+        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        if (!selection.valid) { // invlaid selection
+          pendingPromise = null;
+          this.sessions.data = undefined;
+          this.error = selection.error;
+          this.dataLoading = false;
+          return;
+        }
+      }
+
       // save expanded sessions
       let expandedSessions = [];
       for (let session of this.stickySessions) {
@@ -1445,6 +1467,24 @@ export default {
         this.error = error.text || error;
         this.loading = false;
       });
+    },
+    /* Fetches capture stats to show the last time each capture node started */
+    getCaptureStats: function () {
+      this.$http.get('api/stats')
+        .then((response) => {
+          for (let data of response.data.data) {
+            this.capStartTimes.push({
+              nodeName: data.nodeName,
+              startTime: data.startTime * 1000
+            });
+          }
+        })
+        .catch((error) => {
+          this.capStartTimes = [{
+            nodeName: 'none',
+            startTime: 1
+          }];
+        });
     },
     /**
      * Saves the table state

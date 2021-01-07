@@ -20,13 +20,14 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        @YARA_LIBS@ \
 	        @MAXMINDDB_LIBS@ \
 	        @CURL_LIBS@ \
+	        @NGHTTP2_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-disk.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c packet.c session.c rules.c drophash.c pq.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c trie.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c reader-pcapoverip.c packet.c session.c rules.c drophash.c pq.c dedup.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
@@ -41,7 +42,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) -rdynamic -ggdb -pthread $(O_FILES) -o moloch-capture \
+	$(CC) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
@@ -54,7 +55,7 @@ sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 	    $(INCLUDE_PCAP) \
 	    $(INCLUDE_OTHER) \
 	    -DBUILD_VERSION='"$(BUILD_VERSION)"'
-	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o moloch-capture \
+	$(CC) $(SANITIZE_FLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
@@ -89,7 +90,7 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 install: installdirs
 	@mkdir -p $(installinclude)
 	$(INSTALL) *.h thirdparty/http_parser.h $(installinclude)
-	$(INSTALL) moloch-capture $(bindir)/moloch-capture
+	$(INSTALL) capture $(bindir)/capture
 
 installdirs:
 	$(INSTALL) -d $(bindir)
@@ -100,7 +101,7 @@ check:
 	(cd plugins; $(MAKE) check)
 
 distclean realclean clean:
-	rm -f *.o moloch-capture */*.o */*.so
+	rm -f *.o moloch-capture capture */*.o */*.so
 
 cppcheck:
-	cppcheck --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c
+	cppcheck -q --enable=all --std=c99 -I. -Ithirdparty *.c plugins/*.c parsers/*.c

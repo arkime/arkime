@@ -108,7 +108,7 @@ void tcp_packet_finish(MolochSession_t *session)
                 session->firstBytesLen[which] += copy;
             }
 
-            if (session->totalDatabytes[which] == session->consumed[which])  {
+            if (session->totalDatabytes[which] == session->consumed[which]) {
                 moloch_parsers_classify_tcp(session, data, len, which);
             }
 
@@ -192,7 +192,11 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
 
     if (tcphdr->th_flags & TH_RST) {
         session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]++;
-        if (tcp_sequence_diff(seq, session->tcpSeq[packet->direction]) <= 0) {
+        int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
+        if (diff  <= 0) {
+            if (diff == 0 && !session->closingQ) {
+                moloch_session_mark_for_close(session, SESSION_TCP);
+            }
             return 1;
         }
 

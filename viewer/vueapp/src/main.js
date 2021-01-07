@@ -9,7 +9,7 @@ import VueAxios from 'vue-axios';
 import VueMoment from 'vue-moment';
 import moment from 'moment-timezone';
 import VueClipboard from 'vue-clipboard2';
-import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
+import BootstrapVue from 'bootstrap-vue';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
@@ -24,12 +24,14 @@ import './filters.js';
 // bootstrap overrides
 import './overrides.css';
 // themed css deps
-import './themes/default.css';
+import './themes/purp.css';
 import './themes/blue.css';
 import './themes/green.css';
 import './themes/cotton-candy.css';
 import './themes/dark-2.css';
 import './themes/dark-3.css';
+import './themes/arkime-light.css';
+import './themes/arkime-dark.css';
 
 Vue.config.productionTip = false;
 
@@ -62,7 +64,11 @@ new Vue({
       MOLOCH_PATH: MOLOCH_PATH,
       MOLOCH_MULTIVIEWER: MOLOCH_MULTIVIEWER,
       MOLOCH_HUNTWARN: MOLOCH_HUNTWARN,
-      MOLOCH_HUNTLIMIT: MOLOCH_HUNTLIMIT
+      MOLOCH_HUNTLIMIT: MOLOCH_HUNTLIMIT,
+      MOLOCH_ANONYMOUS_MODE: MOLOCH_ANONYMOUS_MODE,
+      MOLOCH_BUSINESS_DAY_START: MOLOCH_BUSINESS_DAY_START,
+      MOLOCH_BUSINESS_DAY_END: MOLOCH_BUSINESS_DAY_END,
+      MOLOCH_BUSINESS_DAYS: MOLOCH_BUSINESS_DAYS
     };
   }
 });

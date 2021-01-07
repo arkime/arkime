@@ -540,7 +540,7 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
         tm.tm_mon  = str2num(value+4) - 1;
         tm.tm_mday = str2num(value+6);
         tm.tm_hour = str2num(value+8);
-        if (len < 10 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
+        if (value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }
@@ -735,6 +735,7 @@ void moloch_parsers_init()
 
             if (!parser) {
                 LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
+                g_free(filenames[i]);
                 g_free (path);
                 continue;
             }
@@ -744,6 +745,7 @@ void moloch_parsers_init()
             if (!g_module_symbol(parser, "moloch_parser_init", (gpointer *)(char*)&parser_init) || parser_init == NULL) {
                 LOG("ERROR - Module %s doesn't have a moloch_parser_init", filenames[i]);
                 g_free(filenames[i]);
+                g_free (path);
                 continue;
             }
 

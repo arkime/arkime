@@ -32,6 +32,7 @@ module.exports = {
     'standard/no-callback-literal': 'off',
     'no-labels': ['error', { 'allowLoop': true }],
     'no-new-func': 'off',
-    'indent': 'off'
+    'indent': ['error', 2, {'SwitchCase': 0}],
+    'no-useless-return': 'off'
   }
 }

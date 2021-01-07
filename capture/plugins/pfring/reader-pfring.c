@@ -88,9 +88,7 @@ LOCAL void *reader_pfring_thread(void *posv)
 }
 /******************************************************************************/
 void reader_pfring_start() {
-    int dlt_to_linktype(int dlt);
-
-    moloch_packet_set_linksnap(1, config.snapLen);
+    moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -100,13 +98,24 @@ void reader_pfring_start() {
     }
 }
 /******************************************************************************/
-void reader_pfring_stop() 
+void reader_pfring_stop()
 {
 
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         if (rings[i])
             pfring_breakloop(rings[i]);
+    }
+}
+/******************************************************************************/
+void reader_pfring_exit()
+{
+
+    int i;
+    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+        if (rings[i]) {
+            pfring_close(rings[i]);
+        }
     }
 }
 /******************************************************************************/
@@ -133,7 +142,7 @@ void reader_pfring_init(char *UNUSED(name))
         }
 
         pfring_set_cluster(rings[i], clusterId, cluster_per_flow_5_tuple);
-        pfring_set_application_name(rings[i], "moloch-capture");
+        pfring_set_application_name(rings[i], "arkime-capture");
         pfring_set_poll_watermark(rings[i], 64);
         pfring_enable_rss_rehash(rings[i]);
     }
@@ -141,6 +150,7 @@ void reader_pfring_init(char *UNUSED(name))
     moloch_reader_start         = reader_pfring_start;
     moloch_reader_stop          = reader_pfring_stop;
     moloch_reader_stats         = reader_pfring_stats;
+    moloch_reader_exit          = reader_pfring_exit;
 }
 /******************************************************************************/
 void moloch_plugin_init()

@@ -551,6 +551,8 @@ void moloch_parser_init()
 
     moloch_parsers_classifier_register_port("whois",  "whois", 43, MOLOCH_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
+    SIMPLE_CLASSIFY_TCP("rtsp", "RTSP/1.0 ");
+
     userField = moloch_field_by_db("user");
 }
 

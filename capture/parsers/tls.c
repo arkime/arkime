@@ -54,9 +54,9 @@ LOCAL void tls_certinfo_process(MolochCertInfo_t *ci, BSB *bsb)
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
             tls_certinfo_process(ci, &tbsb);
-        } else if (atag  == 6)  {
+        } else if (atag  == 6) {
             moloch_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
-        } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12))  {
+        } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
             /* 20 == BER_UNI_TAG_TeletexString
              * 19 == BER_UNI_TAG_PrintableString
              * 12 == BER_UNI_TAG_UTF8String
@@ -131,7 +131,7 @@ LOCAL void tls_key_usage (MolochCertsInfo_t *certs, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void tls_alt_names(MolochSession_t *session, MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
 {
     uint32_t apc, atag, alen;
 
@@ -144,11 +144,11 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
             if (certs->alt.s_count > 0) {
                 return;
             }
-        } else if (atag == 6)  {
+        } else if (atag == 6) {
             moloch_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {
                 tls_key_usage(certs, bsb);
@@ -158,14 +158,19 @@ LOCAL void tls_alt_names(MolochCertsInfo_t *certs, BSB *bsb, char *lastOid)
         } else if (lastOid[0] && atag == 4) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
             return;
         } else if (lastOid[0] && atag == 2) {
             MolochString_t *element = MOLOCH_TYPE_ALLOC0(MolochString_t);
-            element->str = g_ascii_strdown((char*)value, alen);
-            element->len = alen;
-            element->utf8 = 1;
-            DLL_PUSH_TAIL(s_, &certs->alt, element);
+
+            if (g_utf8_validate((char *)value, alen, NULL)) {
+                element->str = g_ascii_strdown((char *)value, alen);
+                element->len = alen;
+                element->utf8 = 1;
+                DLL_PUSH_TAIL(s_, &certs->alt, element);
+            } else {
+                moloch_session_add_tag(session, "bad-altname");
+            }
         }
     }
     lastOid[0] = 0;
@@ -226,7 +231,6 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if(BSB_IS_ERROR(bsb))
         return;
 
-    char str[100];
     int  add12Later = FALSE;
 
     // If ver is 0x303 that means there should be an extended header with actual version
@@ -261,6 +265,7 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
     if (cipherStr)
         moloch_field_string_add(cipherField, session, cipherStr, -1, TRUE);
     else {
+        char str[100];
         snprintf(str, sizeof(str), "0x%04x", cipher);
         moloch_field_string_add(cipherField, session, str, 6, TRUE);
     }
@@ -303,6 +308,12 @@ LOCAL void tls_process_server_hello(MolochSession_t *session, const unsigned cha
                 if (supported_version == 0x0304) {
                     tls_session_version(session, supported_version);
                     add12Later = FALSE;
+                }
+            }
+
+            if (etype == 0x10) { // etype 0x10 is alpn
+                if (elen == 5 && BSB_REMAINING(ebsb) >= 5 && memcmp(BSB_WORK_PTR(ebsb), "\x00\x03\x02\x68\x32", 5) == 0) {
+                    moloch_session_add_protocol(session, "http2");
                 }
             }
 
@@ -440,7 +451,7 @@ LOCAL void tls_process_server_certificate(MolochSession_t *session, const unsign
             BSB_INIT(tbsb, value, alen);
             char lastOid[100];
             lastOid[0] = 0;
-            tls_alt_names(certs, &tbsb, lastOid);
+            tls_alt_names(session, certs, &tbsb, lastOid);
         }
 
         // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName

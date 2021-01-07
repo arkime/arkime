@@ -129,49 +129,41 @@
                   <input v-model="listUser.userName"
                     class="form-control form-control-sm"
                     type="text"
-                    @input="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.enabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.createEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.webEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.headerAuthEnabled"
-                    @change="userChanged(listUser);"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.emailSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.removeEnabled"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
                   <input type="checkbox"
                     v-model="listUser.packetSearch"
-                    @change="userChanged(listUser)"
                   />
                 </td>
                 <td class="no-wrap">
@@ -186,7 +178,7 @@
                 </td>
                 <td class="no-wrap">
                   <span class="pull-right">
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-success"
                       @click="updateUser(listUser)"
@@ -195,10 +187,10 @@
                       <span class="fa fa-save">
                       </span>
                     </button>
-                    <button v-if="listUser.changed"
+                    <button v-if="userHasChanged(listUser.userId)"
                       type="button"
                       class="btn btn-sm btn-warning"
-                      @click="loadData"
+                      @click="cancelEdits(listUser.userId)"
                       v-b-tooltip.hover
                       :title="`Cancel changed settings for ${listUser.userId}`">
                       <span class="fa fa-ban">
@@ -253,7 +245,6 @@
                             type="checkbox"
                             :id="listUser.id + 'stats'"
                             v-model="listUser[columns[12].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'stats'">
@@ -266,7 +257,6 @@
                             type="checkbox"
                             :id="listUser.id + 'files'"
                             v-model="listUser[columns[13].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'files'">
@@ -279,7 +269,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcap'"
                             v-model="listUser[columns[14].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcap'">
@@ -292,7 +281,6 @@
                             type="checkbox"
                             :id="listUser.id + 'pcapDownload'"
                             v-model="listUser[columns[15].sort]"
-                            @change="userChanged(listUser)"
                           />
                           <label class="form-check-label"
                             :for="listUser.id + 'pcapDownload'">
@@ -315,7 +303,6 @@
                         <input v-model="listUser[columns[10].sort]"
                           class="form-control form-control-sm"
                           type="text"
-                          @input="userChanged(listUser)"
                         />
                       </div>
                     </div>
@@ -355,9 +342,14 @@
           </transition-group>
         </table> <!-- /user table -->
 
+        <div v-if="createError"
+          class="alert alert-sm alert-danger p-3  mt-4 text-break">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          {{ createError }}
+        </div>
         <!-- new user form -->
-        <div class="row new-user-form mr-1 ml-1 mt-4">
-
+        <div class="row new-user-form mr-1 ml-1">
           <div class="col-sm-7">
             <div class="row mb-3">
               <div class="col-sm-9 offset-sm-3">
@@ -418,7 +410,8 @@
                 <div class="col-sm-9">
                   <select :id="columns[11].sort"
                     class="form-control form-control-sm"
-                    v-model="newuser[columns[11].sort]">
+                    v-model="newuser[columns[11].sort]"
+                    @change="changeTimeLimit(newuser)">
                     <option value="1">1 hour</option>
                     <option value="6">6 hours</option>
                     <option value="24">24 hours</option>
@@ -455,12 +448,6 @@
                   </span>&nbsp;
                   Create
                 </button>
-                <span v-if="createError"
-                  class="pull-right alert alert-sm alert-danger mr-3">
-                  <span class="fa fa-exclamation-triangle">
-                  </span>&nbsp;
-                  {{ createError }}
-                </span>
               </div>
             </form>
           </div>
@@ -640,6 +627,7 @@ export default {
       error: '',
       loading: true,
       users: null,
+      dbUserList: null,
       createError: '',
       newuser: {
         enabled: true,
@@ -665,8 +653,8 @@ export default {
         { name: 'Email Search', sort: 'emailSearch', help: 'Can perform email searches' },
         { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
         { name: 'Can Create Hunts', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
-        { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Moloch' },
-        { additional: true, name: 'Forced Expression', sort: 'expression', help: 'A Moloch search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
+        { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Arkime' },
+        { additional: true, name: 'Forced Expression', sort: 'expression', help: 'A Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
         { additional: true, name: 'Query Time Limit', sort: 'timeLimit', help: 'Restrict the maximum time window of a user\'s query' },
         { additional: true, name: 'Hide Stats Page', sort: 'hideStats', help: 'Hide the Stats page from this user' },
         { additional: true, name: 'Hide Files Page', sort: 'hideFiles', help: 'Hide the Files page from this user' },
@@ -728,7 +716,7 @@ export default {
     columnClick (name) {
       this.query.sortField = name;
       this.query.desc = !this.query.desc;
-      this.loadData();
+      this.reloadData();
     },
     /* remove the message when user is done with it or duration ends */
     messageDone: function () {
@@ -741,10 +729,20 @@ export default {
       } else {
         user.timeLimit = parseInt(user.timeLimit);
       }
-      this.userChanged(user);
     },
-    userChanged: function (user) {
-      this.$set(user, 'changed', true);
+    cancelEdits: function (userId) {
+      let canceledUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      Object.assign(canceledUser, oldUser);
+    },
+    userHasChanged: function (userId) {
+      let newUser = this.users.data.find(u => u.userId === userId);
+      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
+
+      // Iterate over user keys that come from store.
+      // The newUser is populated with other values like "expanded" that we dont need to check for
+      return !Object.keys(oldUser).every(key => oldUser[key] === newUser[key]);
     },
     updateUser: function (user) {
       this.$set(user, 'expanded', undefined);
@@ -752,6 +750,7 @@ export default {
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.reloadData();
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
             // update all the fields
@@ -764,7 +763,6 @@ export default {
             // time limit is special because it can be undefined
             this.user.timeLimit = user.timeLimit || undefined;
           }
-          this.$set(user, 'changed', false);
         }, (error) => {
           this.msg = error.text;
           this.msgType = 'danger';
@@ -802,7 +800,7 @@ export default {
       this.$http.post('user/create', this.newuser)
         .then((response) => {
           this.newuser = { enabled: true, packetSearch: true };
-          this.loadData();
+          this.reloadData();
 
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -846,7 +844,30 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.users = response.data;
+          this.users = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
+        }, (error) => {
+          this.loading = false;
+          this.error = error.text;
+        });
+    },
+    reloadData: function () {
+      this.$http.post('user/list', this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          let userData = JSON.parse(JSON.stringify(response.data));
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data;
+
+          // Dont update users that have edits. Update dbUserList first to compare against
+          // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
+          this.users.data = userData.data.map(u => {
+            let matchedUser = this.users.data.find(item => item.userId === u.userId);
+            // If user already exists and is still being edited, keep user obj
+            return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
+          });
         }, (error) => {
           this.loading = false;
           this.error = error.text;

@@ -29,7 +29,7 @@ export default {
         resolve(_fieldsMapCache);
       }
 
-      let url = 'fields';
+      let url = 'api/fields';
       if (array) { url += '?array=true'; }
 
       Vue.axios.get(url)
@@ -63,7 +63,7 @@ export default {
     let promise = new Promise((resolve, reject) => {
       let options = { params: params, cancelToken: source.token };
 
-      Vue.axios.get('unique.txt', options)
+      Vue.axios.get('api/unique', options)
         .then((response) => {
           resolve(response.data);
         })

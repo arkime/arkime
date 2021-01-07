@@ -164,7 +164,7 @@
               </div>
               <div class="row">
                 <!-- packet search text & text type -->
-                <div class="form-group col-lg-6 col-md-12">
+                <div class="form-group col-12">
                   <div class="input-group input-group-sm">
                     <span class="input-group-prepend cursor-help"
                       v-b-tooltip.hover
@@ -263,6 +263,8 @@
                     </a>
                   </div>
                 </div> <!-- /packet search text & text type -->
+              </div>
+              <div class="row">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -323,6 +325,25 @@
                     </label>
                   </div>
                 </div> <!-- /packet search type -->
+                <!-- users -->
+                <div class="form-group col-lg-6 col-md-12"
+                  v-if="!anonymousMode">
+                  <div class="input-group input-group-sm mt-">
+                    <span class="input-group-prepend cursor-help"
+                      v-b-tooltip.hover
+                      title="Let these users view the results of this hunt">
+                      <span class="input-group-text">
+                        <span class="fa fa-user">
+                        </span>
+                      </span>
+                    </span>
+                    <input type="text"
+                      v-model="jobUsers"
+                      placeholder="Comma separated list of additional users that can view the hunt"
+                      class="form-control"
+                    />
+                  </div>
+                </div> <!-- /users -->
               </div>
               <div class="row">
                 <div class="col-12 mt-1">
@@ -365,9 +386,8 @@
               Running Hunt Job:
               {{ runningJob.name }} by
               {{ runningJob.userId }}
-              <span class="pull-right"
-                v-if="user.userId === runningJob.userId || user.createEnabled">
-                <button
+              <span class="pull-right">
+                <button v-if="user.userId === runningJob.userId || user.createEnabled"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
@@ -381,22 +401,25 @@
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button type="button"
-                  @click="openSessions(runningJob)"
-                  v-if="runningJob.matchedSessions"
-                  :id="`openresults${runningJob.id}`"
-                  class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                  <span class="fa fa-folder-open fa-fw">
-                  </span>
-                </button>
-                <b-tooltip v-if="runningJob.matchedSessions"
-                  :target="`openresults${runningJob.id}`">
-                  Open <strong>partial</strong> results in a new Sessions tab.
-                  <br>
-                  <strong>Note:</strong> ES takes a while to update sessions, so your results
-                  might take a minute to show up.
-                </b-tooltip>
-                <button @click="pauseJob(runningJob)"
+                <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
+                  <button type="button"
+                    @click="openSessions(runningJob)"
+                    v-if="runningJob.matchedSessions"
+                    :id="`openresults${runningJob.id}`"
+                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
+                    <span class="fa fa-folder-open fa-fw">
+                    </span>
+                  </button>
+                  <b-tooltip v-if="runningJob.matchedSessions"
+                    :target="`openresults${runningJob.id}`">
+                    Open <strong>partial</strong> results in a new Sessions tab.
+                    <br>
+                    <strong>Note:</strong> ES takes a while to update sessions, so your results
+                    might take a minute to show up.
+                  </b-tooltip>
+                </span>
+                <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                  @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
                   v-b-tooltip.hover
@@ -415,7 +438,7 @@
               <div class="row">
                 <div class="col">
                   <toggle-btn
-                    v-if="user.userId === runningJob.userId || user.createEnabled"
+                    v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1"
                     :opened="runningJob.expanded"
                     @toggle="toggleJobDetail(runningJob)">
                   </toggle-btn>
@@ -423,7 +446,7 @@
                     id="runningJob"
                     v-b-tooltip.hover
                     style="height:26px;"
-                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled}">
+                    :class="{'progress-toggle':user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                       role="progressbar"
                       :style="{width: runningJob.progress + '%'}"
@@ -436,15 +459,25 @@
                   <b-tooltip target="runningJob">
                     <div class="mt-2">
                       Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="user.userId === runningJob.userId || user.createEnabled">
+                      <span v-if="user.userId === runningJob.userId || user.createEnabled || runningJob.users.indexOf(user.userId) > -1">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
-                      out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                      sessions searched.
-                      (Still need to search
-                      <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                      of <strong>{{ runningJob.totalSessions }}</strong>
-                      total sessions.)
+                      <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
+                        out of <strong>{{ runningJob.searchedSessions - runningJob.failedSessionIds.length | commaString }}</strong>
+                        sessions searched.
+                        (Still need to search
+                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
+                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        total sessions.)
+                      </span>
+                      <span v-else>
+                        out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
+                        sessions searched.
+                        (Still need to search
+                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
+                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        total sessions.)
+                      </span>
                     </div>
                   </b-tooltip>
                 </div>
@@ -452,47 +485,6 @@
               <transition name="grow">
                 <div v-if="runningJob.expanded"
                   class="mt-3">
-                  <div class="mt-2">
-                    <span class="fa fa-eye">
-                    </span>&nbsp;
-                    Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                    matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                    out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                    sessions searched.
-                    (Still need to search
-                    <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                    of <strong>{{ runningJob.totalSessions }}</strong>
-                    total sessions.)
-                  </div>
-                  <div class="row">
-                    <div class="col-12">
-                      <span class="fa fa-clock-o fa-fw">
-                      </span>&nbsp;
-                      Created:
-                      <strong>
-                        {{ runningJob.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </strong>
-                    </div>
-                  </div>
-                  <div v-if="runningJob.lastUpdated"
-                    class="row">
-                    <div class="col-12">
-                      <span class="fa fa-clock-o fa-fw">
-                      </span>&nbsp;
-                      Last Updated:
-                      <strong>
-                        {{ runningJob.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </strong>
-                    </div>
-                  </div>
-                  <div class="row"
-                    v-if="runningJob.notifier">
-                    <div class="col-12">
-                      <span class="fa fa-bell fa-fw">
-                      </span>&nbsp;
-                      Notifying: {{ runningJob.notifier }}
-                    </div>
-                  </div>
                   <div class="row">
                     <div class="col-12">
                       <span class="fa fa-id-card fa-fw">
@@ -500,70 +492,11 @@
                       Hunt Job ID: {{ runningJob.id }}
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col-12">
-                      <span class="fa fa-search fa-fw">
-                      </span>&nbsp;
-                      Examining
-                      <strong v-if="runningJob.size > 0">{{ runningJob.size }}</strong>
-                      <strong v-else>all</strong>
-                      <strong>{{ runningJob.type }}</strong>
-                      <strong v-if="runningJob.src">source</strong>
-                      <span v-if="runningJob.src && runningJob.dst">
-                        and
-                      </span>
-                      <strong v-if="runningJob.dst">destination</strong>
-                      packets per session
-                    </div>
-                  </div>
-                  <div v-if="runningJob.query.expression"
-                    class="row">
-                    <div class="col-12">
-                      <span class="fa fa-search fa-fw">
-                      </span>&nbsp;
-                      The sessions query expression was:
-                      <strong>{{ runningJob.query.expression }}</strong>
-                    </div>
-                  </div>
-                  <div v-if="runningJob.query.view"
-                    class="row">
-                    <div class="col-12">
-                      <span class="fa fa-search fa-fw">
-                      </span>&nbsp;
-                      The sessions query view was:
-                      <strong>{{ runningJob.query.view }}</strong>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-12">
-                      <span class="fa fa-clock-o fa-fw">
-                      </span>&nbsp;
-                      The sessions query time range was from
-                      <strong>{{ runningJob.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                      to
-                      <strong>{{ runningJob.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                    </div>
-                  </div>
-                  <template v-if="runningJob.errors">
-                    <div v-for="(error, index) in runningJob.errors"
-                      :key="index"
-                      class="row text-danger">
-                      <div class="col-12">
-                        <span class="fa fa-exclamation-triangle">
-                        </span>&nbsp;
-                        <span v-if="error.time">
-                          {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                        </span>
-                        <span v-if="error.node">
-                          ({{ error.node }} node)
-                        </span>
-                        <span v-if="error.time || error.node">
-                          -
-                        </span>
-                        {{ error.value }}
-                      </div>
-                    </div>
-                  </template>
+                  <hunt-data :job="runningJob"
+                    @removeUser="removeUser"
+                    @addUsers="addUsers"
+                    :user="user">
+                  </hunt-data>
                 </div>
               </transition>
             </div>
@@ -624,225 +557,23 @@
           tag="tbody">
           <!-- packet search jobs -->
           <template v-for="job in results">
-            <tr :key="`${job.id}-row`">
-              <td>
-                <toggle-btn
-                  v-if="user.userId === job.userId || user.createEnabled"
-                  :opened="job.expanded"
-                  @toggle="toggleJobDetail(job)">
-                </toggle-btn>
-              </td>
-              <td>
-                <span v-if="job.status === 'running'"
-                  v-b-tooltip.hover
-                  title="Starting"
-                  class="fa fa-play-circle fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'paused'"
-                  v-b-tooltip.hover
-                  title="Paused"
-                  class="fa fa-pause fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'queued'"
-                  v-b-tooltip.hover
-                  :title="`Queued (#${job.queueCount} in the queue)`"
-                  class="fa fa-clock-o fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'finished'"
-                  v-b-tooltip.hover
-                  title="Finished"
-                  class="fa fa-check fa-fw cursor-help">
-                </span>
-                &nbsp;
-                <span class="badge badge-secondary cursor-help"
-                  :id="`jobmatches${job.id}`">
-                  {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
-                </span>
-                <b-tooltip :target="`jobmatches${job.id}`">
-                  Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
-                  <div v-if="job.status !== 'finished'">
-                    Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
-                  </div>
-                </b-tooltip>
-                <span v-if="job.errors && job.errors.length"
-                  class="badge badge-danger cursor-help">
-                  <span class="fa fa-exclamation-triangle"
-                    v-b-tooltip.hover
-                    title="Errors were encountered while running this hunt job. Open the job to view the error details.">
-                  </span>
-                </span>
-              </td>
-              <td>
-                {{ job.matchedSessions | commaString }}
-              </td>
-              <td>
-                {{ job.name }}
-              </td>
-              <td>
-                {{ job.userId }}
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  {{ job.search }} ({{ job.searchType }})
-                </span>
-              </td>
-              <td>
-                {{ job.notifier }}
-              </td>
-              <td>
-                {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  {{ job.id }}
-                </span>
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  <button
-                    @click="removeJob(job, 'results')"
-                    :disabled="job.loading"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Remove this job from history"
-                    class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span v-if="!job.loading"
-                      class="fa fa-trash-o fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
-                  <button type="button"
-                    @click="openSessions(job)"
-                    v-if="job.matchedSessions"
-                    :id="`openresults${job.id}`"
-                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                    <span class="fa fa-folder-open fa-fw">
-                    </span>
-                  </button>
-                  <b-tooltip v-if="job.matchedSessions"
-                    :target="`openresults${job.id}`">
-                    Open <strong>partial</strong> results in a new Sessions tab.
-                    <br>
-                    <strong>Note:</strong> ES takes a while to update sessions, so your results
-                    might take a minute to show up.
-                  </b-tooltip>
-                  <button v-if="job.status === 'running' || job.status === 'queued'"
-                    :disabled="job.loading"
-                    @click="pauseJob(job)"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Pause this job"
-                    class="pull-right btn btn-sm btn-warning">
-                    <span v-if="!job.loading"
-                      class="fa fa-pause fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
-                  <button v-else-if="job.status === 'paused'"
-                    :disabled="job.loading"
-                    @click="playJob(job)"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Play this job"
-                    class="pull-right btn btn-sm btn-theme-secondary">
-                    <span v-if="!job.loading"
-                      class="fa fa-play fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
-                </span>
-              </td>
-            </tr>
+            <hunt-row :key="`${job.id}-row`"
+              :job="job"
+              :user="user"
+              @playJob="playJob"
+              @pauseJob="pauseJob"
+              @removeJob="removeJob"
+              @toggle="toggleJobDetail"
+              @openSessions="openSessions">
+            </hunt-row>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
               <td colspan="10">
-                <div class="row">
-                  <div class="col-12">
-                    This hunt is
-                    <strong>{{ job.status }}</strong>
-                  </div>
-                </div>
-                <div v-if="job.lastUpdated"
-                  class="row">
-                  <div class="col-12">
-                    This hunt was last updated at:
-                    <strong>
-                      {{ job.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                    </strong>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    Examining
-                    <strong v-if="job.size > 0">{{ job.size }}</strong>
-                    <strong v-else>all</strong>
-                    <strong>{{ job.type }}</strong>
-                    <strong v-if="job.src">source</strong>
-                    <span v-if="job.src && job.dst">
-                      and
-                    </span>
-                    <strong v-if="job.dst">destination</strong>
-                    packets per session
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    Found
-                    <strong>{{ job.matchedSessions | commaString }}</strong> of
-                    <strong>{{ job.searchedSessions | commaString }}</strong>
-                    searched sessions out of
-                    <strong>{{ job.totalSessions }}</strong>
-                    total sessions to search
-                  </div>
-                </div>
-                <div v-if="job.query.expression"
-                  class="row">
-                  <div class="col-12">
-                    The sessions query expression was:
-                    <strong>{{ job.query.expression }}</strong>
-                  </div>
-                </div>
-                <div v-if="job.query.view"
-                  class="row">
-                  <div class="col-12">
-                    The sessions query view was:
-                    <strong>{{ job.query.view }}</strong>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    The sessions query time range was from
-                    <strong>{{ job.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                    to
-                    <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                  </div>
-                </div>
-                <template v-if="job.errors">
-                  <div v-for="(error, index) in job.errors"
-                    :key="index"
-                    class="row text-danger">
-                    <div class="col-12">
-                      <span class="fa fa-exclamation-triangle">
-                      </span>&nbsp;
-                      <span v-if="error.time">
-                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </span>
-                      <span v-if="error.node">
-                        ({{ error.node }} node)
-                      </span>
-                      <span v-if="error.time || error.node">
-                        -
-                      </span>
-                      {{ error.value }}
-                    </div>
-                  </div>
-                </template>
+                <hunt-data :job="job"
+                  @removeUser="removeUser"
+                  @addUsers="addUsers"
+                  :user="user">
+                </hunt-data>
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -953,214 +684,29 @@
         <transition-group name="list"
           tag="tbody">
           <!-- packet search jobs -->
-          <template v-for="(job, index) in historyResults.data">
-            <tr :key="`${job.id}-row`">
-              <td>
-                <toggle-btn
-                  v-if="user.userId === job.userId || user.createEnabled"
-                  :opened="job.expanded"
-                  @toggle="toggleJobDetail(job)">
-                </toggle-btn>
-              </td>
-              <td>
-                <span v-if="job.status === 'running'"
-                  v-b-tooltip.hover
-                  title="Running"
-                  class="fa fa-spinner fa-spin fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'paused'"
-                  v-b-tooltip.hover
-                  title="Paused"
-                  class="fa fa-pause fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'queued'"
-                  v-b-tooltip.hover
-                  title="Queued"
-                  class="fa fa-clock-o fa-fw cursor-help">
-                </span>
-                <span v-else-if="job.status === 'finished'"
-                  v-b-tooltip.hover
-                  title="Finished"
-                  class="fa fa-check fa-fw cursor-help">
-                </span>
-                &nbsp;
-                <span class="badge badge-secondary cursor-help"
-                  :id="`jobmatches${job.id}`">
-                  {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
-                </span>
-                <b-tooltip :target="`jobmatches${job.id}`">
-                  Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
-                  <div v-if="job.status !== 'finished'">
-                    Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
-                  </div>
-                </b-tooltip>
-                <span v-if="job.errors && job.errors.length"
-                  class="badge badge-danger cursor-help">
-                  <span class="fa fa-exclamation-triangle"
-                    v-b-tooltip.hover
-                    title="Errors were encountered while running this hunt job. Open the job to view the error details.">
-                  </span>
-                </span>
-              </td>
-              <td>
-                {{ job.matchedSessions | commaString }}
-              </td>
-              <td>
-                {{ job.name }}
-              </td>
-              <td>
-                {{ job.userId }}
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  {{ job.search }} ({{ job.searchType }})
-                </span>
-              </td>
-              <td>
-                {{ job.notifier }}
-              </td>
-              <td>
-                {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  {{ job.id }}
-                </span>
-              </td>
-              <td>
-                <span v-if="user.userId === job.userId || user.createEnabled">
-                  <button
-                    @click="removeJob(job, 'historyResults')"
-                    :disabled="job.loading"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Remove this job from history"
-                    class="ml-1 pull-right btn btn-sm btn-danger">
-                    <span v-if="!job.loading"
-                      class="fa fa-trash-o fa-fw">
-                    </span>
-                    <span v-else
-                      class="fa fa-spinner fa-spin fa-fw">
-                    </span>
-                  </button>
-                  <button type="button"
-                    @click="openSessions(job)"
-                    v-if="job.matchedSessions"
-                    :id="`openresults${index}`"
-                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                    <span class="fa fa-folder-open fa-fw">
-                    </span>
-                  </button>
-                  <b-tooltip v-if="job.matchedSessions"
-                    :target="`openresults${index}`">
-                    Open results in a new Sessions tab.
-                    <br>
-                    <strong>Note:</strong> ES takes a while to update sessions, so your results
-                    might take a minute to show up.
-                  </b-tooltip>
-                  <button type="button"
-                    @click="rerunJob(job)"
-                    v-b-tooltip.hover
-                    title="Rerun this hunt job using the current time frame and search criteria."
-                    class="ml-1 pull-right btn btn-sm btn-theme-secondary">
-                    <span class="fa fa-refresh fa-fw">
-                    </span>
-                  </button>
-                  <button type="button"
-                    @click="repeatJob(job)"
-                    v-b-tooltip.hover
-                    title="Repeat this hunt job using its time frame and search criteria."
-                    class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
-                    <span class="fa fa-repeat fa-fw">
-                    </span>
-                  </button>
-                </span>
-              </td>
-            </tr>
+          <template v-for="job in historyResults.data">
+            <hunt-row :key="`${job.id}-row`"
+              :job="job"
+              :user="user"
+              :canRerun="true"
+              :canRepeat="true"
+              @playJob="playJob"
+              @pauseJob="pauseJob"
+              @rerunJob="rerunJob"
+              @repeatJob="repeatJob"
+              @removeJob="removeJob"
+              @toggle="toggleJobDetail"
+              @openSessions="openSessions">
+            </hunt-row>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
               <td colspan="10">
-                <div class="row">
-                  <div class="col-12">
-                    This hunt is
-                    <strong>{{ job.status }}</strong>
-                  </div>
-                </div>
-                <div v-if="job.lastUpdated"
-                  class="row">
-                  <div class="col-12">
-                    This hunt was last updated at:
-                    <strong>
-                      {{ job.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                    </strong>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    Examining
-                    <strong v-if="job.size > 0">{{ job.size }}</strong>
-                    <strong v-else>all</strong>
-                    <strong>{{ job.type }}</strong>
-                    <strong v-if="job.src">source</strong>
-                    <span v-if="job.src && job.dst">
-                      and
-                    </span>
-                    <strong v-if="job.dst">destination</strong>
-                    packets per session
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    Found
-                    <strong>{{ job.matchedSessions | commaString }}</strong> of
-                    <strong>{{ job.searchedSessions | commaString }}</strong>
-                    searched sessions out of
-                    <strong>{{ job.totalSessions | commaString }}</strong>
-                    total sessions to search
-                  </div>
-                </div>
-                <div v-if="job.query.expression"
-                  class="row">
-                  <div class="col-12">
-                    The sessions query expression was:
-                    <strong>{{ job.query.expression }}</strong>
-                  </div>
-                </div>
-                <div v-if="job.query.view"
-                  class="row">
-                  <div class="col-12">
-                    The sessions query view was:
-                    <strong>{{ job.query.view }}</strong>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12">
-                    The sessions query time range was from
-                    <strong>{{ job.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                    to
-                    <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
-                  </div>
-                </div>
-                <template v-if="job.errors">
-                  <div v-for="(error, index) in job.errors"
-                    :key="index"
-                    class="row text-danger">
-                    <div class="col-12">
-                      <span class="fa fa-exclamation-triangle">
-                      </span>&nbsp;
-                      <span v-if="error.time">
-                        {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                      </span>
-                      <span v-if="error.node">
-                        ({{ error.node }} node)
-                      </span>
-                      <span v-if="error.time || error.node">
-                        -
-                      </span>
-                      {{ error.value }}
-                    </div>
-                  </div>
-                </template>
+                <hunt-data :job="job"
+                  @removeJob="removeJob"
+                  @removeUser="removeUser"
+                  @addUsers="addUsers"
+                  :user="user">
+                </hunt-data>
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -1190,6 +736,27 @@
 
     </div> <!-- /packet search jobs content -->
 
+    <!-- floating error -->
+    <transition name="slide-fade">
+      <div v-if="floatingError"
+        class="card floating-msg">
+        <div class="card-body">
+          <a @click="floatingError = !floatingError"
+            class="no-decoration cursor-pointer pull-right"
+            v-b-tooltip.hover
+            title="Dismiss">
+            <span class="fa fa-close">
+            </span>
+          </a>
+          <span class="text-danger">
+            <span class="fa fa-exclamation-triangle">
+            </span>&nbsp;
+            {{ floatingError }}
+          </span>
+        </div>
+      </div>
+    </transition> <!-- /floating error -->
+
   </div>
 
 </template>
@@ -1207,6 +774,8 @@ import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
+import HuntData from './HuntData';
+import HuntRow from './HuntRow';
 // import utils
 import Utils from '../utils/utils';
 
@@ -1222,7 +791,9 @@ export default {
     MolochSearch,
     MolochLoading,
     MolochCollapsible,
-    MolochPaging
+    MolochPaging,
+    HuntData,
+    HuntRow
   },
   directives: { FocusInput },
   data: function () {
@@ -1231,6 +802,7 @@ export default {
       queuedListLoadingError: '',
       historyListError: '',
       historyListLoadingError: '',
+      floatingError: '',
       loading: true,
       results: [], // running/queued/paused hunt jobs
       historyResults: { // finished hunt jobs
@@ -1254,11 +826,13 @@ export default {
       jobDst: true,
       jobType: 'raw',
       jobNotifier: undefined,
+      jobUsers: '',
       // notifiers
       notifiers: undefined,
       // hunt limits
       huntWarn: this.$constants.MOLOCH_HUNTWARN,
-      huntLimit: this.$constants.MOLOCH_HUNTLIMIT
+      huntLimit: this.$constants.MOLOCH_HUNTLIMIT,
+      anonymousMode: this.$constants.MOLOCH_ANONYMOUS_MODE
     };
   },
   computed: {
@@ -1335,6 +909,7 @@ export default {
     },
     cancelCreateForm: function () {
       this.jobName = '';
+      this.jobUsers = '';
       this.jobSearch = '';
       this.createFormError = '';
       this.createFormOpened = false;
@@ -1373,13 +948,15 @@ export default {
         dst: this.jobDst,
         totalSessions: this.sessions.recordsFiltered,
         query: this.sessionsQuery,
-        notifier: this.jobNotifier
+        notifier: this.jobNotifier,
+        users: this.jobUsers
       };
 
-      this.axios.post('hunt', { hunt: newJob })
+      this.axios.post('api/hunt', newJob)
         .then((response) => {
           this.createFormOpened = false;
           this.jobName = '';
+          this.jobUsers = '';
           this.jobSearch = '';
           this.createFormError = '';
           this.jobNotifier = undefined;
@@ -1394,7 +971,7 @@ export default {
       this.setErrorForList(arrayName, '');
       this.$set(job, 'loading', true);
 
-      this.axios.delete(`hunt/${job.id}`)
+      this.axios.delete(`api/hunt/${job.id}`)
         .then((response) => {
           let array = this.results;
           if (arrayName === 'historyResults') {
@@ -1418,7 +995,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`hunt/${job.id}/pause`)
+      this.axios.put(`api/hunt/${job.id}/pause`)
         .then((response) => {
           if (job.status === 'running') {
             this.loadData();
@@ -1438,7 +1015,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`hunt/${job.id}/play`)
+      this.axios.put(`api/hunt/${job.id}/play`)
         .then((response) => {
           this.$set(job, 'status', 'queued');
           this.$set(job, 'loading', false);
@@ -1508,6 +1085,26 @@ export default {
       this.$store.commit('setIssueSearch', true);
       this.rerunJob(job);
     },
+    removeUser: function (user, job) {
+      this.$set(this, 'floatingError', '');
+
+      this.axios.delete(`api/hunt/${job.id}/user/${user}`)
+        .then((response) => {
+          this.$set(job, 'users', response.data.users);
+        }, (error) => {
+          this.$set(this, 'floatingError', error.text || error);
+        });
+    },
+    addUsers: function (users, job) {
+      this.$set(this, 'floatingError', '');
+
+      this.axios.post(`api/hunt/${job.id}/users`, { users: users })
+        .then((response) => {
+          this.$set(job, 'users', response.data.users);
+        }, (error) => {
+          this.$set(this, 'floatingError', error.text || error);
+        });
+    },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
       let errorArea = 'queuedListError';
@@ -1556,7 +1153,7 @@ export default {
       }
 
       // get the hunt history
-      let historyReq = this.axios.get('hunt/list', { params: { ...this.query, history: true } });
+      let historyReq = this.axios.get('api/hunts', { params: { ...this.query, history: true } });
       historyReq.then((response) => {
         this.historyListLoadingError = '';
 
@@ -1587,7 +1184,7 @@ export default {
       queuedQuery.desc = false;
       queuedQuery.length = undefined;
       queuedQuery.start = 0;
-      let queueReq = this.axios.get('hunt/list', { params: queuedQuery });
+      let queueReq = this.axios.get('api/hunts', { params: queuedQuery });
       queueReq.then((response) => {
         this.queuedListLoadingError = '';
 
@@ -1613,10 +1210,14 @@ export default {
         if (this.runningJob) {
           this.$set(this.runningJob, 'loading', runningJobLoading);
           this.$set(this.runningJob, 'expanded', runningJobExpanded);
+          let searchedSessions = this.runningJob.searchedSessions;
+          if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
+            searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
+          }
           this.$set(
             this.runningJob,
             'progress',
-            this.runningJob.searchedSessions / this.runningJob.totalSessions * 100
+            (searchedSessions / this.runningJob.totalSessions) * 100
           );
         }
         this.calculateQueue();
@@ -1680,7 +1281,6 @@ export default {
 </script>
 
 <style scoped>
-
 .packet-search-content {
   margin-top: 10px;
 }
@@ -1764,5 +1364,36 @@ form.hunt-create-navbar {
 .regex-help {
   margin-top: 3px;
   margin-left: 6px;
+}
+
+/* floating message */
+.floating-msg {
+  position: fixed;
+  bottom: 15px;
+  left: 10px;
+  z-index: 999;
+  width: 350px;
+}
+
+.floating-msg .card {
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  -webkit-box-shadow: 4px 4px 16px -2px black;
+     -moz-box-shadow: 4px 4px 16px -2px black;
+          box-shadow: 4px 4px 16px -2px black;
+}
+.floating-msg .card > .card-body {
+  padding: 0.8rem;
+}
+
+.slide-fade-enter-active {
+  transition: all .8s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(-365px);
+  opacity: 0;
 }
 </style>

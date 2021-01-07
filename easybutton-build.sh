@@ -1,26 +1,27 @@
 #!/bin/sh
-# Use this script to install OS dependencies, downloading and compile moloch dependencies, compile moloch capture, optionally install
+# Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
 
 # This script will
 # * use apt-get/yum to install OS dependancies
-# * download known working versions of moloch dependancies
+# * download known working versions of arkime dependancies
 # * build them statically
 # * configure moloch-capture to use them
 # * build moloch-capture
 # * install node unless --nonode
-# * install moloch if --install
+# * install arkime if --install
 
 
-GLIB=2.56.2
-YARA=3.11.0
-MAXMIND=1.3.2
+GLIB=2.66.4
+YARA=4.0.2
+MAXMIND=1.4.3
 PCAP=1.9.1
-CURL=7.68.0
-LUA=5.3.5
+CURL=7.74.0
+LUA=5.3.6
 DAQ=2.0.7
-NODE=10.21.0
+NODE=12.20.1
+NGHTTP2=1.42.0
 
-TDIR="/data/moloch"
+TDIR="/opt/arkime"
 DOPFRING=0
 DODAQ=0
 DOCLEAN=0
@@ -60,8 +61,8 @@ do
     shift
     ;;
   --help)
-    echo "Make it easier to build Moloch!  This will download and build thirdparty libraries plus build Moloch."
-    echo "--dir <directory>   = The directory to install everything into [/data/moloch]"
+    echo "Make it easier to build Arkime!  This will download and build thirdparty libraries plus build Arkime."
+    echo "--dir <directory>   = The directory to install everything into [$TDIR]"
     echo "--clean             = Do a 'make clean' first"
     echo "--rminstall         = Do a 'rm -rf <dir>' first"
     echo "--install           = Do a 'make install' at the end, adding our node to the path"
@@ -82,32 +83,32 @@ done
 
 # Warn users
 echo ""
-echo "This script is for building Moloch from source and meant for people who enjoy pain. The prebuilt versions at https://molo.ch/#download are recommended for installation."
+echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
 echo ""
 
 # Check the existance of sudo
-command -v sudo >/dev/null 2>&1 || { echo >&2 "MOLOCH: sudo is required to be installed"; exit 1; }
+command -v sudo >/dev/null 2>&1 || { echo >&2 "ARKIME: sudo is required to be installed"; exit 1; }
 
 # Check if in right directory
-[ -f "./easybutton-build.sh" ] || { echo >&2 "MOLOCH: must run from moloch directory"; exit 1; }
+[ -f "./easybutton-build.sh" ] || { echo >&2 "ARKIME: must run from arkime directory"; exit 1; }
 
 MAKE=make
 UNAME="$(uname)"
 
 # Installing dependencies
-echo "MOLOCH: Installing Dependencies"
+echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   sudo yum -y install wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences
   if [ $? -ne 0 ]; then
-    echo "MOLOCH: yum failed"
+    echo "ARKIME: yum failed"
     exit 1
   fi
 fi
 
 if [ -f "/etc/debian_version" ]; then
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf python libsocket6-perl libtest-differences-perl
+  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   if [ $? -ne 0 ]; then
-    echo "MOLOCH: apt-get failed"
+    echo "ARKIME: apt-get failed"
     exit 1
   fi
 fi
@@ -122,24 +123,28 @@ fi
 
 if [ "$UNAME" = "Darwin" ]; then
   if [ -x "/opt/local/bin/port" ]; then
-    sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget
+    sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget libnghttp2
 
-    echo "MOLOCH: Building capture"
-    echo './configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
-    ./configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
+    echo "ARKIME: Building capture"
+    echo './configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
+    ./configure --with-libpcap=/opt/local --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include" GLIB2_LIBS="-L/opt/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
   elif [ -x "/usr/local/bin/brew" ]; then
-    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake
+    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake nghttp2
 
-    echo "MOLOCH: Building capture"
-    echo './configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua'
-    ./configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua"
+    echo "ARKIME: Building capture"
+    echo './configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua'
+    ./configure --with-libpcap=/usr/local/opt/libpcap --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" --with-pfring=no --with-curl=yes --with-nghttp2=yes --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua"
 
   else
-      echo "MOLOCH: Please install MacPorts or Homebrew"
+      echo "ARKIME: Please install MacPorts or Homebrew"
       exit 1
   fi
+elif [ -f "/etc/arch-release" ]; then
+    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl-test-differences sudo wget gawk ntop lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6
+    echo './configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"'
+    ./configure --with-libpcap=no --with-yara=no --with-glib2=no --with-pfring=no --with-curl=no --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0"
 else
-  echo "MOLOCH: Downloading and building static thirdparty libraries"
+  echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
     mkdir thirdparty
   fi
@@ -158,15 +163,18 @@ else
       wget "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
-    if [ ! -f "glib-$GLIB/gio/.libs/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/glib/.libs/libglib-2.0.a" ]; then
+    if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
+      pip3 install meson
+      git clone git://github.com/ninja-build/ninja.git
+      (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
-      (cd glib-$GLIB ; ./configure --disable-xattr --disable-shared --enable-static --disable-libelf --disable-selinux --disable-libmount --with-pcre=internal; $MAKE)
+      (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled -Dinternal_pcre=true; ninja -C _build)
       if [ $? -ne 0 ]; then
-        echo "MOLOCH: $MAKE failed"
+        echo "ARKIME: $MAKE failed"
         exit 1
       fi
     else
-      echo "MOLOCH: Not rebuilding glib"
+      echo "ARKIME: Not rebuilding glib"
     fi
   fi
 
@@ -180,11 +188,11 @@ else
     (cd yara ; tar zxf yara-$YARA.tar.gz)
     (cd yara/yara-$YARA; ./bootstrap.sh ; ./configure --enable-static; $MAKE)
     if [ $? -ne 0 ]; then
-      echo "MOLOCH: $MAKE failed"
+      echo "ARKIME: $MAKE failed"
       exit 1
     fi
   else
-    echo "MOLOCH: Not rebuilding yara"
+    echo "ARKIME: Not rebuilding yara"
   fi
 
   # Maxmind
@@ -197,11 +205,11 @@ else
 
     (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
     if [ $? -ne 0 ]; then
-      echo "MOLOCH: $MAKE failed"
+      echo "ARKIME: $MAKE failed"
       exit 1
     fi
   else
-    echo "MOLOCH: Not rebuilding libmaxmind"
+    echo "ARKIME: Not rebuilding libmaxmind"
   fi
 
   # libpcap
@@ -210,14 +218,14 @@ else
   fi
   if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
     tar zxf libpcap-$PCAP.tar.gz
-    echo "MOLOCH: Building libpcap";
+    echo "ARKIME: Building libpcap";
     (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
     if [ $? -ne 0 ]; then
-      echo "MOLOCH: $MAKE failed"
+      echo "ARKIME: $MAKE failed"
       exit 1
     fi
   else
-    echo "MOLOCH: NOT rebuilding libpcap";
+    echo "ARKIME: NOT rebuilding libpcap";
   fi
   PCAPDIR=$TPWD/libpcap-$PCAP
   PCAPBUILD="--with-libpcap=$PCAPDIR"
@@ -231,11 +239,27 @@ else
     tar zxf curl-$CURL.tar.gz
     ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss; $MAKE)
     if [ $? -ne 0 ]; then
-      echo "MOLOCH: $MAKE failed"
+      echo "ARKIME: $MAKE failed"
       exit 1
     fi
   else
-    echo "MOLOCH: Not rebuilding curl"
+    echo "ARKIME: Not rebuilding curl"
+  fi
+
+  # nghttp2
+  if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
+    wget https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
+  fi
+
+  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
+    tar zxf nghttp2-$NGHTTP2.tar.gz
+    ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
+    if [ $? -ne 0 ]; then
+      echo "ARKIME: $MAKE failed"
+      exit 1
+    fi
+  else
+    echo "ARKIME: Not rebuilding nghttp2"
   fi
 
   # lua
@@ -247,11 +271,11 @@ else
     tar zxf lua-$LUA.tar.gz
     ( cd lua-$LUA; make MYCFLAGS=-fPIC linux)
     if [ $? -ne 0 ]; then
-      echo "MOLOCH: $MAKE failed"
+      echo "ARKIME: $MAKE failed"
       exit 1
     fi
   else
-    echo "MOLOCH: Not rebuilding lua"
+    echo "ARKIME: Not rebuilding lua"
   fi
 
   # daq
@@ -264,20 +288,20 @@ else
       tar zxf daq-$DAQ.tar.gz
       ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
       if [ $? -ne 0 ]; then
-        echo "MOLOCH: $MAKE failed"
+        echo "ARKIME: $MAKE failed"
         exit 1
       fi
     else
-      echo "MOLOCH: Not rebuilding daq"
+      echo "ARKIME: Not rebuilding daq"
     fi
   fi
 
 
-  # Now build moloch
-  echo "MOLOCH: Building capture"
+  # Now build arkime
+  echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA"
-  ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-lua=thirdparty/lua-$LUA
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB --with-curl=thirdparty/curl-$CURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -286,7 +310,7 @@ fi
 
 $MAKE
 if [ $? -ne 0 ]; then
-  echo "MOLOCH: $MAKE failed"
+  echo "ARKIME: $MAKE failed"
   exit 1
 fi
 
@@ -321,7 +345,7 @@ case "$(uname -m)" in
 esac
 
 if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
-    echo "MOLOCH: Installing node $NODE"
+    echo "ARKIME: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
     if [ ! -f node-v$NODE-linux-x64.tar.xz ] ; then
         wget https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-$ARCH.tar.xz
@@ -332,9 +356,9 @@ fi
 
 if [ $DOINSTALL -eq 1 ]; then
     sudo env "PATH=$TDIR/bin:$PATH" make install
-    echo "MOLOCH: Installed, now type sudo make config'"
+    echo "ARKIME: Installed, now type sudo make config'"
 else
-    echo "MOLOCH: Now type 'sudo make install' and 'sudo make config'"
+    echo "ARKIME: Now type 'sudo make install' and 'sudo make config'"
 fi
 
 

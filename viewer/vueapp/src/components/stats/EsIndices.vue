@@ -36,7 +36,7 @@
           slot-scope="{ item }">
           <b-dropdown size="sm"
             class="row-actions-btn"
-            v-has-permission="'createEnabled'">
+            v-has-permission="'createEnabled,removeEnabled'">
             <b-dropdown-item
               @click.stop.prevent="confirmDeleteIndex(item.index)">
               Delete Index {{ item.index }}
@@ -126,7 +126,8 @@ export default {
         { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 },
         { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
         { id: 'shardsPerNode', name: 'Shards/Node', sort: 'shardsPerNode', doStats: false, width: 100 },
-        { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 }
+        { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 },
+        { id: 'docSize', name: 'Disk Per Doc', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docSize']); } }
       ]
     };
   },
@@ -177,7 +178,7 @@ export default {
       this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
     deleteIndex (indexName) {
-      this.$http.delete(`esindices/${indexName}`)
+      this.$http.delete(`api/esindices/${indexName}`)
         .then((response) => {
           for (let i = 0; i < this.stats.length; i++) {
             if (this.stats[i].index === indexName) {
@@ -190,21 +191,21 @@ export default {
         });
     },
     optimizeIndex (indexName) {
-      this.$http.post(`esindices/${indexName}/optimize`)
+      this.$http.post(`api/esindices/${indexName}/optimize`)
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
     },
     closeIndex (indexName) {
-      this.$http.post(`esindices/${indexName}/close`)
+      this.$http.post(`api/esindices/${indexName}/close`)
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
     },
     openIndex (indexName) {
-      this.$http.post(`esindices/${indexName}/open`)
+      this.$http.post(`api/esindices/${indexName}/open`)
         .then((response) => {
         }, (error) => {
           this.$emit('errored', error.text || error);
@@ -230,7 +231,7 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('esindices/list', { params: this.query })
+      this.$http.get('api/esindices', { params: this.query })
         .then((response) => {
           respondedAt = Date.now();
           this.error = '';

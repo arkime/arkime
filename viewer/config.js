@@ -26,12 +26,13 @@ var ini = require('iniparser');
 var os = require('os');
 var fs = require('fs');
 var crypto = require('crypto');
+var version = require('./version');
 
 exports.debug = 0;
 exports.insecure = false;
 exports.esProfile = false;
 var internals = {
-  configFile: '/data/moloch/etc/config.ini',
+  configFile: `${version.config_prefix}/etc/config.ini`,
   hostName: os.hostname(),
   fields: [],
   fieldsMap: {},
@@ -556,7 +557,7 @@ exports.loadFields = function (data) {
 // Globals
 /// ///////////////////////////////////////////////////////////////////////////////
 internals.s2sSignedAuth = exports.getFull('default', 's2sSignedAuth', true);
-internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', false);
+internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', true);
 
 // If passwordSecret isn't set, viewer will treat accounts as anonymous
 internals.passwordSecret = exports.getFull('default', 'passwordSecret', 'password');
