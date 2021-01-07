@@ -1,4 +1,4 @@
-use Test::More tests => 41;
+use Test::More tests => 45;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -64,8 +64,10 @@ is($json->{var}->{value}, "10.0.0.1", "shortcut value updated");
 
 # verify shortcut works
 esGet("/_refresh");
-countTestToken($token, 1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
-countTestToken($token, 2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 
 # create shortcut by another user
 $json = viewerPostToken("/lookups?molochRegressionUser=user2", '{"var":{"name":"other_test_shortcut","type":"string","value":"udp"}}', $otherToken);
