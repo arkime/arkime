@@ -23,7 +23,7 @@
         <template #tabs-end>
           <li role="presentation"
             class="nav-item align-self-center startup-time">
-            WISE UI started at
+            Started at
             <strong>{{ startTime }}</strong>
           </li>
         </template>
