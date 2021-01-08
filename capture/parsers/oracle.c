@@ -42,8 +42,9 @@ LOCAL char *oracle_get_item(const unsigned char *data, char *needle, int needle_
 /******************************************************************************/
 LOCAL void oracle_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
 {
-    if (which != 0 || len <= 27 || len != data[1] || (data[25] + data[27] != len))
+    if (which != 0 || len <= 27 || len != (data[0] << 8 | data[1]) || (data[25] + data[27] != len)) {
         return;
+    }
 
     char *buf;  // can't be more then 1 byte big
     int  blen;
