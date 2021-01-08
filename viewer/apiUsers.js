@@ -159,6 +159,26 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    */
 
   /**
+   * A database view that can be applied to any search.
+   *
+   * @typedef ArkimeView
+   * @type {object}
+   * @param {string} expression - The search expression to filter sessions.
+   * @param {ArkimeColumnConfig} sessionsColConfig - The Sessions column configuration to apply to the Sessions table when applying the view.
+   * @param {boolean} shared - Whether the view is shared with other users in the Arkime cluster.
+   * @param {string} user - The user ID of the user who created the view.
+   */
+
+   /**
+    * A database view that can be applied to any search.
+    *
+    * @typedef ArkimeColumnConfig
+    * @type {object}
+    * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
+    * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"] - The list of Sessions table columns.
+    */
+
+  /**
    * GET - /api/user
    *
    * Retrieves the currently logged in user.
@@ -558,7 +578,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    *
    * Retrieves an Arkime user's views.
    * @name /user/views
-   * @returns {Array} views - A list of views a user has configured or has been shared.
+   * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
   module.getUserViews = (req, res) => {
     if (!req.settingUser) { return res.send({}); }
@@ -591,7 +611,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the create view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} viewName - The name of the new view.
-   * @returns {object} view - The new view data.
+   * @returns {ArkimeView} view - The new view data.
    */
   module.createUserView = (req, res) => {
     if (!req.body.name) {
@@ -1094,7 +1114,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    *
    * Retrieves user configured custom Sessions column configurations.
    * @name /user/columns
-   * @returns {Array} columnConfigs - The custom Sessions column configurations.
+   * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
   module.getUserColumns = (req, res) => {
     if (!req.settingUser) { return res.send([]); }
@@ -1175,7 +1195,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    * @name /user/column/:name
    * @returns {boolean} success - Whether the update column configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {object} colConfig - The udpated custom Sessions column configuration.
+   * @returns {ArkimeColumnConfig} colConfig - The udpated custom Sessions column configuration.
    */
   module.updateUserColumns = (req, res) => {
     const name = req.body.name || req.params.name;
