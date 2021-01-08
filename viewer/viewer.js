@@ -94,7 +94,7 @@ let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, 
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
-let userAPIs = require('./apiUsers')(app, Config, Db, internals, ViewerUtils); // TODO ECR
+let userAPIs = require('./apiUsers')(app, Config, Db, internals, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1435,73 +1435,68 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
 // APIS
 // ============================================================================
 // user apis ------------------------------------------------------------------
-app.get( // current user endpoint TODO ECR - update UI
+app.get( // current user endpoint
   ['/api/user', '/user/current'],
   checkPermissions(['webEnabled']),
   userAPIs.getUser
 );
 
-app.post( // create user endpoint TODO ECR - udpate UI
+app.post( // create user endpoint
   ['/api/user', '/user/create'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   userAPIs.createUser
 );
 
-app.deletepost( // user delete endpoint TODO ECR - update UI
-  ['/api/user', '/user/delete'],
+app.delete( // user delete endpoint
+  ['/api/user/:id', '/user/delete'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.deleteUser
+);
+app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
+  ['/user/delete'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   userAPIs.deleteUser
 );
 
-app.post( // update user endpoint TODO ECR - update UI
-  ['/api/user/:id', '/user/update'],
-  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
-  userAPIs.updateUser
-);
-
-app.get( // user css endpoint TODO ECR - update UI
+app.get( // user css endpoint
   ['/api/user.css', '/user.css'],
   checkPermissions(['webEnabled']),
   userAPIs.getUserCSS
 );
 
-app.getpost( // user list endpoint TODO ECR - update UI
+app.getpost( // user list endpoint
   ['/api/users', '/user/list'],
   [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
   userAPIs.getUsers
 );
 
-app.get( // user settings endpoint TODO ECR - update UI
+app.get( // user settings endpoint
   ['/api/user/settings', '/user/settings'],
   [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie],
   userAPIs.getUserSettings
 );
 
-app.post( // udpate user settings endpoint TODO ECR - update UI
+app.post( // udpate user settings endpoint
   ['/api/user/settings', '/user/settings/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.updateUserSettings
 );
 
-app.get( // user views endpoint TODO ECR - update UI
+app.get( // user views endpoint
   ['/api/user/views', '/user/views'],
   [noCacheJson, getSettingUserCache],
   userAPIs.getUserViews
 );
 
-app.post( // create user view endpoint TODO ECR - update UI
+app.post( // create user view endpoint
   ['/api/user/view', '/user/views/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.createUserView
 );
 
-app.delete( // delete user view endpoint TODO ECR - update UI
-  ['/api/user/view', '/user/views/delete'],
-  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
-  userAPIs.deleteUserView
-);
-app.post( // delete user view endpoint for backwards compatibility with API 0.x-2.x
-  '/user/views/delete',
+// TODO ECR - make this like update user view DELETE /api/user/view/:key
+app.post( // delete user view endpoint
+  ['/api/user/view/delete', '/user/views/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
@@ -1512,7 +1507,7 @@ app.post( // (un)share a user view endpoint TODO ECR - udpate UI
   userAPIs.userViewToggleShare
 );
 
-app.post( // update user view endpoint TODO ECR - update UI
+app.post( // update user view endpoint
   ['/api/user/view/:key', '/user/views/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
@@ -1605,6 +1600,12 @@ app.put( // acknowledge message endoint TODO ECR - update UI
   ['/api/user/:userId/acknowledgeMsg', '/user/:userId/acknowledgeMsg'],
   [noCacheJson, logAction(), checkCookieToken],
   userAPIs.acknowledgeMsg
+);
+
+app.post( // update user endpoint
+  ['/api/user/:id', '/user/update'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.updateUser
 );
 
 // notifier apis --------------------------------------------------------------
@@ -2925,7 +2926,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
-    themeUrl: theme === 'custom-theme' ? 'user.css' : '',
+    themeUrl: theme === 'custom-theme' ? 'api/user.css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     serverNonce: res.locals.nonce,

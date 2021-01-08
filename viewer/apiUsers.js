@@ -289,19 +289,20 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * DELETE - /api/user
+   * DELETE - /api/user/:id
    *
    * Deletes an Arkime user (admin only).
-   * @name /user
+   * @name /user/:id
    * @returns {boolean} success - Whether the delete user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.deleteUser = (req, res) => {
-    if (req.body.userId === req.user.userId) {
+    const userId = req.body.userId || req.params.userId;
+    if (userId === req.user.userId) {
       return res.molochError(403, 'Can not delete yourself');
     }
 
-    Db.deleteUser(req.body.userId, (err, data) => {
+    Db.deleteUser(userId, (err, data) => {
       setTimeout(() => {
         res.send(JSON.stringify({
           success: true, text: 'User deleted successfully'

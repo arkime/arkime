@@ -26,10 +26,84 @@ export default {
    */
   getCurrent: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('user/current')
+      Vue.axios.get('api/user')
         .then((response) => {
           store.commit('setUser', response.data);
           resolve(response.data);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Gets a list of users
+   * @param {Object} query      Parameters to query the server for specific users
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getUsers: function (query) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        url: 'api/users',
+        method: 'GET',
+        params: query
+      };
+
+      Vue.axios(options)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Creates a new user
+   * @param {Object} newuser    The new user object
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  createUser: function (newuser) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post('api/user', newuser)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Deletes a user
+   * @param {Object} user       The user to delete
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  deleteUser: function (user) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.delete(`api/user/${user.id}`, user)
+        .then((response) => {
+          resolve(response);
+        }, (error) => {
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Updates a user
+   * @param {Object} user       The user to update
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  updateUser: function (user) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.post(`api/user/${user.id}`, user)
+        .then((response) => {
+          resolve(response);
         }, (error) => {
           reject(error);
         });
@@ -72,7 +146,7 @@ export default {
    */
   getSettings: function (userId) {
     return new Promise((resolve, reject) => {
-      let url = 'user/settings';
+      let url = 'api/user/settings';
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.get(url)
@@ -100,12 +174,11 @@ export default {
   saveSettings: function (settings, userId) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'user/settings/update',
+        url: 'api/user/settings',
         method: 'POST',
-        data: settings
+        data: settings,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       // update user settings
       if (!userId || store.state.user.userId === userId) {
@@ -148,7 +221,7 @@ export default {
    */
   getViews: function (userId) {
     return new Promise((resolve, reject) => {
-      let url = 'user/views';
+      let url = 'api/user/views';
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.get(url)
@@ -172,7 +245,7 @@ export default {
    */
   createView: function (params, userId) {
     return new Promise((resolve, reject) => {
-      let url = 'user/views/create';
+      let url = 'api/user/view';
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.post(url, params)
@@ -194,7 +267,7 @@ export default {
    */
   deleteView: function (view, userId) {
     return new Promise((resolve, reject) => {
-      let url = 'user/views/delete';
+      let url = 'api/user/view/delete';
       if (userId) { url += `?userId=${userId}`; }
 
       Vue.axios.post(url, view)
@@ -217,12 +290,11 @@ export default {
   updateView: function (data, userId) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'user/views/update',
+        url: `api/user/view/${data.key}`,
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -245,7 +317,7 @@ export default {
   toggleShareView: function (data, userId) {
     return new Promise((resolve, reject) => {
       let options = {
-        url: 'user/views/toggleShare',
+        url: 'api/user/view/toggleshare',
         method: 'POST',
         data: data
       };
