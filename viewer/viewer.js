@@ -1435,448 +1435,177 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
 // APIS
 // ============================================================================
 // user apis ------------------------------------------------------------------
-app.get( // current user endpoint (GET) TODO ECR - update UI
+app.get( // current user endpoint TODO ECR - update UI
   ['/api/user', '/user/current'],
   checkPermissions(['webEnabled']),
   userAPIs.getUser
 );
 
-app.post( // create user endpoint (POST) TODO ECR - udpate UI
+app.post( // create user endpoint TODO ECR - udpate UI
   ['/api/user', '/user/create'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   userAPIs.createUser
 );
 
-app.deletepost( // user delete endpoint (POST or DELETE) TODO ECR - update UI
+app.deletepost( // user delete endpoint TODO ECR - update UI
   ['/api/user', '/user/delete'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   userAPIs.deleteUser
 );
 
-app.post( // update user endpoint (POST) TODO ECR - update UI
+app.post( // update user endpoint TODO ECR - update UI
   ['/api/user/:id', '/user/update'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   userAPIs.updateUser
 );
 
-app.get( // user css endpoint (GET) TODO ECR - update UI
+app.get( // user css endpoint TODO ECR - update UI
   ['/api/user.css', '/user.css'],
   checkPermissions(['webEnabled']),
   userAPIs.getUserCSS
 );
 
-app.getpost( // user list endpoint (POST or GET) TODO ECR - update UI
+app.getpost( // user list endpoint TODO ECR - update UI
   ['/api/users', '/user/list'],
   [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
   userAPIs.getUsers
 );
 
-app.get( // user settings endpoint (GET) TODO ECR - update UI
+app.get( // user settings endpoint TODO ECR - update UI
   ['/api/user/settings', '/user/settings'],
   [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie],
   userAPIs.getUserSettings
 );
 
-app.post( // udpate user settings endpoint (POST) TODO ECR - update UI
+app.post( // udpate user settings endpoint TODO ECR - update UI
   ['/api/user/settings', '/user/settings/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.updateUserSettings
 );
 
-app.get( // user views endpoint (GET) TODO ECR - update UI
+app.get( // user views endpoint TODO ECR - update UI
   ['/api/user/views', '/user/views'],
   [noCacheJson, getSettingUserCache],
   userAPIs.getUserViews
 );
 
-app.post( // create user view endpoint (POST) TODO ECR - update UI
+app.post( // create user view endpoint TODO ECR - update UI
   ['/api/user/view', '/user/views/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.createUserView
 );
 
-app.delete( // delete user view endpoint (DELETE) TODO ECR - update UI
+app.delete( // delete user view endpoint TODO ECR - update UI
   ['/api/user/view', '/user/views/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
-app.post( // delete user view endpoint (POST) for backwards compatibility with API 0.x-2.x
+app.post( // delete user view endpoint for backwards compatibility with API 0.x-2.x
   '/user/views/delete',
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
 
-app.post( // (un)share a user view endpoint (POST) TODO ECR - udpate UI
+app.post( // (un)share a user view endpoint TODO ECR - udpate UI
   ['/api/user/view/toggleshare', '/user/views/toggleShare'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.userViewToggleShare
 );
 
-app.post( // update user view endpoint (POST) TODO ECR - update UI
-  ['/api/user/view', '/user/views/update'],
+app.post( // update user view endpoint TODO ECR - update UI
+  ['/api/user/view/:key', '/user/views/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
 
-app.get( // user cron queries endpoint (GET) TODO ECR - udpate UI
+app.get( // user cron queries endpoint TODO ECR - udpate UI
   ['/api/user/crons', '/user/cron'],
   [noCacheJson, getSettingUserCache],
   userAPIs.getUserCron
 );
 
-// TODO ECR - test that crons work
-app.post( // create user cron query (POST) TODO ECR - update UI
+app.post( // create user cron query TODO ECR - update UI
   ['/api/user/cron', '/user/cron/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.createUserCron
 );
 
-// deletes a user's specified cron query
-app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function (req, res) {
-  if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
+app.delete( // delete user cron endpoint TODO ECR - update UI
+  ['/api/user/cron/:key', '/user/cron/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.deleteUserCron
+);
+app.post( // delete user cron endpoint for backwards compatibility with API 0.x-2.x
+  '/user/cron/delete',
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.deleteUserCron
+);
 
-  Db.deleteDocument('queries', 'query', req.body.key, { refresh: true }, function (err, sq) {
-    if (err) {
-      console.log('/user/cron/delete error', err, sq);
-      return res.molochError(500, 'Delete cron query failed');
-    }
-    res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted cron query successfully'
-    }));
-  });
-});
+app.post( // update user cron endpoint TODO ECR - udpate UI
+  ['/api/user/cron/:key', '/user/cron/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.updateUserCron
+);
 
-// updates a user's specified cron query
-app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function (req, res) {
-  if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
-  if (!req.body.name) { return res.molochError(403, 'Missing cron query name'); }
-  if (!req.body.query) { return res.molochError(403, 'Missing cron query expression'); }
-  if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
-  if (!req.body.tags) { return res.molochError(403, 'Missing cron query tag(s)'); }
+app.post( // update user password endpoint TODO ECR - update UI
+  ['/api/user/password', '/user/password/change'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserPassword
+);
 
-  var document = {
-    doc: {
-      enabled: req.body.enabled,
-      name: req.body.name,
-      query: req.body.query,
-      tags: req.body.tags,
-      action: req.body.action,
-      notifier: undefined
-    }
-  };
+app.get( // user custom columns endpoint TODO ECR - update UI
+  ['/api/user/columns', '/user/columns'],
+  [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  userAPIs.getUserColumns
+);
 
-  if (req.body.notifier) {
-    document.doc.notifier = req.body.notifier;
-  }
+app.post( // create user custom columns endpoint TODO ECR - update UI
+  ['/api/user/column', '/user/columns/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.createUserColumns
+);
 
-  Db.get('queries', 'query', req.body.key, function (err, sq) {
-    if (err || !sq.found) {
-      console.log('/user/cron/update failed', err, sq);
-      return res.molochError(403, 'Unknown query');
-    }
+app.put( // update user custom column endpoint TODO ECR - update UI
+  ['/api/user/column/:name', '/user/columns/:name'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserColumns
+);
 
-    Db.update('queries', 'query', req.body.key, document, { refresh: true }, function (err, data) {
-      if (err) {
-        console.log('/user/cron/update error', err, document, data);
-        return res.molochError(500, 'Cron query update failed');
-      }
-      if (Config.get('cronQueries', false)) {
-        app.processCronQueries();
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Updated cron query successfully'
-      }));
-    });
-  });
-});
+app.deletepost( // delete user custom column endpoint (DELETE and POST) TODO ECR - udpate UI
+  ['/api/user/column/:name', '/user/columns/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.deleteUserColumns
+);
 
-// changes a user's password
-app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return res.molochError(403, 'New password needs to be at least 3 characters');
-  }
+app.get( // user spiview fields endpoint TODO ECR - update UI
+  ['/api/user/spiview', '/user/spiview/fields'],
+  [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  userAPIs.getUserSpiviewFields
+);
 
-  if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
-     Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
-     req.token.userId !== req.user.userId)) {
-    return res.molochError(403, 'Current password mismatch');
-  }
+app.post( // create spiview fields endpoint TODO ECR - update UI
+  ['/api/user/spiview', '/user/spiview/fields/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.createUserSpiviewFields
+);
 
-  var user = req.settingUser;
-  user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+app.put( // update user spiview fields endpoint TODO ECR - update UI
+  ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserSpiviewFields
+);
 
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/password/change error', err, info);
-      return res.molochError(500, 'Update failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Changed password successfully'
-    }));
-  });
-});
+app.deletepost( // delete user spiview fields endpoint (DELETE and POST) TODO ECR - update UI
+  ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.deleteUserSpiviewFields
+);
 
-// gets custom column configurations for a user
-app.get('/user/columns', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.settingUser) { return res.send([]); }
-
-  // Fix for new names
-  if (req.settingUser.columnConfigs) {
-    for (var key in req.settingUser.columnConfigs) {
-      let item = req.settingUser.columnConfigs[key];
-      item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
-      if (item.order && item.order.length > 0) {
-        item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-      }
-    }
-  }
-
-  return res.send(req.settingUser.columnConfigs || []);
-});
-
-// udpates custom column configurations for a user
-app.put('/user/columns/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-  if (!req.body.columns) { return res.molochError(403, 'Missing columns'); }
-  if (!req.body.order) { return res.molochError(403, 'Missing sort order'); }
-
-  let user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  // find the custom column configuration to update
-  let found = false;
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      found = true;
-      user.columnConfigs[i] = req.body;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Custom column configuration not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns udpate error', err, info);
-      return res.molochError(500, 'Update custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Updated column configuration',
-      colConfig: req.body
-    }));
-  });
-});
-
-// creates a new custom column configuration for a user
-app.post('/user/columns/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-  if (!req.body.columns) { return res.molochError(403, 'Missing columns'); }
-  if (!req.body.order) { return res.molochError(403, 'Missing sort order'); }
-
-  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-  if (req.body.name.length < 1) {
-    return res.molochError(403, 'Invalid custom column configuration name');
-  }
-
-  var user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  // don't let user use duplicate names
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      return res.molochError(403, 'There is already a custom column with that name');
-    }
-  }
-
-  user.columnConfigs.push({
-    name: req.body.name,
-    columns: req.body.columns,
-    order: req.body.order
-  });
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns/create error', err, info);
-      return res.molochError(500, 'Create custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Created custom column configuration successfully',
-      name: req.body.name
-    }));
-  });
-});
-
-// deletes a user's specified custom column configuration
-app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-
-  var user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  var found = false;
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      user.columnConfigs.splice(i, 1);
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Column not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns/delete failed', err, info);
-      return res.molochError(500, 'Delete custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted custom column configuration successfully'
-    }));
-  });
-});
-
-// gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.settingUser) { return res.send([]); }
-
-  return res.send(req.settingUser.spiviewFieldConfigs || []);
-});
-
-// udpates custom spiview field configuration for a user
-app.put('/user/spiview/fields/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview field configuration name'); }
-  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
-
-  let user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  // find the custom spiview field configuration to update
-  let found = false;
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      found = true;
-      user.spiviewFieldConfigs[i] = req.body;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Custom spiview field configuration not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields udpate error', err, info);
-      return res.molochError(500, 'Update spiview field configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Updated spiview field configuration',
-      colConfig: req.body
-    }));
-  });
-});
-
-// creates a new custom spiview fields configuration for a user
-app.post('/user/spiview/fields/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview field configuration name'); }
-  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
-
-  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-
-  if (req.body.name.length < 1) {
-    return res.molochError(403, 'Invalid custom spiview fields configuration name');
-  }
-
-  var user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  // don't let user use duplicate names
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      return res.molochError(403, 'There is already a custom spiview fields configuration with that name');
-    }
-  }
-
-  user.spiviewFieldConfigs.push({
-    name: req.body.name,
-    fields: req.body.fields
-  });
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields/create error', err, info);
-      return res.molochError(500, 'Create custom spiview fields configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Created custom spiview fields configuration successfully',
-      name: req.body.name
-    }));
-  });
-});
-
-// deletes a user's specified custom spiview fields configuration
-app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview fields configuration name'); }
-
-  var user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  var found = false;
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      user.spiviewFieldConfigs.splice(i, 1);
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Spiview fields not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields/delete failed', err, info);
-      return res.molochError(500, 'Delete custom spiview fields configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted custom spiview fields configuration successfully'
-    }));
-  });
-});
-
-app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieToken], function (req, res) {
-  if (!req.body.msgNum) {
-    return res.molochError(403, 'Message number required');
-  }
-
-  if (req.params.userId !== req.user.userId) {
-    return res.molochError(403, 'Can not change other users msg');
-  }
-
-  Db.getUser(req.params.userId, function (err, user) {
-    if (err || !user.found) {
-      console.log('update user failed', err, user);
-      return res.molochError(403, 'User not found');
-    }
-    user = user._source;
-
-    user.welcomeMsgNum = parseInt(req.body.msgNum);
-
-    Db.setUser(req.params.userId, user, function (err, info) {
-      if (Config.debug) {
-        console.log('setUser', user, err, info);
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
-      }));
-    });
-  });
-});
+app.put( // acknowledge message endoint TODO ECR - update UI
+  ['/api/user/:userId/acknowledgeMsg', '/user/:userId/acknowledgeMsg'],
+  [noCacheJson, logAction(), checkCookieToken],
+  userAPIs.acknowledgeMsg
+);
 
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
@@ -2287,140 +2016,140 @@ app.get('/parliament.json', [noCacheJson], (req, res) => {
 });
 
 // stats apis -----------------------------------------------------------------
-app.get( // stats endpoint (GET)
+app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getStats
 );
 
-app.get( // detailed stats endpoint (GET)
+app.get( // detailed stats endpoint
   ['/api/dstats', '/dstats.json'],
   [noCacheJson, checkPermissions(['hideStats'])],
   statsAPIs.getDetailedStats
 );
 
-app.get( // elasticsearch stats endpoint (GET)
+app.get( // elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESStats
 );
 
-app.get( // elasticsearch indices endpoint (GET)
+app.get( // elasticsearch indices endpoint
   ['/api/esindices', '/esindices/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESIndices
 );
 
-app.delete( // delete elasticsearch index endpoint (DELETE)
+app.delete( // delete elasticsearch index endpoint
   ['/api/esindices/:index', '/esindices/:index'],
   [noCacheJson, recordResponseTime, checkPermissions(['createEnabled', 'removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
-app.post( // optimize elasticsearch index endpoint (POST)
+app.post( // optimize elasticsearch index endpoint
   ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.optimizeESIndex
 );
 
-app.post( // close elasticsearch index endpoint (POST)
+app.post( // close elasticsearch index endpoint
   ['/api/esindices/:index/close', '/esindices/:index/close'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.closeESIndex
 );
 
-app.post( // open elasticsearch index endpoint (POST)
+app.post( // open elasticsearch index endpoint
   ['/api/esindices/:index/open', '/esindices/:index/open'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.openESIndex
 );
 
-app.post( // shrink elasticsearch index endpoint (POST)
+app.post( // shrink elasticsearch index endpoint
   ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.shrinkESIndex
 );
 
-app.get( // elasticsearch tasks endpoint (GET)
+app.get( // elasticsearch tasks endpoint
   ['/api/estasks', '/estask/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESTasks
 );
 
-app.post( // cancel elasticsearch task endpoint (POST)
+app.post( // cancel elasticsearch task endpoint
   ['/api/estasks/:id/cancel', '/estask/cancel'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.cancelESTask
 );
 
-app.post( // cancel elasticsearch task by opaque id endpoint (POST)
+app.post( // cancel elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
   // should not have createEnabled check so users can use, each user is name spaced
   [noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
-app.post( // cancel all elasticsearch tasks endpoint (POST)
+app.post( // cancel all elasticsearch tasks endpoint
   ['/api/estasks/cancelall', '/estask/cancelAll'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.cancelAllESTasks
 );
 
-app.get( // elasticsearch admin settings endpoint (GET)
+app.get( // elasticsearch admin settings endpoint
   ['/api/esadmin', '/esadmin/list'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
   statsAPIs.getESAdminSettings
 );
 
-app.post( // set elasticsearch admin setting endpoint (POST)
+app.post( // set elasticsearch admin setting endpoint
   ['/api/esadmin/set', '/esadmin/set'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.setESAdminSettings
 );
 
-app.post( // reroute elasticsearch admin endpoint (POST)
+app.post( // reroute elasticsearch admin endpoint
   ['/api/esadmin/reroute', '/esadmin/reroute'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.rerouteES
 );
 
-app.post( // flush elasticsearch admin endpoint (POST)
+app.post( // flush elasticsearch admin endpoint
   ['/api/esadmin/flush', '/esadmin/flush'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.flushES
 );
 
-app.post( // unflood elasticsearch admin endpoint (POST)
+app.post( // unflood elasticsearch admin endpoint
   ['/api/esadmin/unflood', '/esadmin/unflood'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.unfloodES
 );
 
-app.post( // unflood elasticsearch admin endpoint (POST)
+app.post( // unflood elasticsearch admin endpoint
   ['/api/esadmin/clearcache', '/esadmin/clearcache'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.clearCacheES
 );
 
-app.get( // elasticsearch shards endpoint (GET)
+app.get( // elasticsearch shards endpoint
   ['/api/esshards', '/esshard/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESShards
 );
 
-app.post( // exclude elasticsearch shard endpoint (POST)
+app.post( // exclude elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.excludeESShard
 );
 
-app.post( // include elasticsearch shard endpoint (POST)
+app.post( // include elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.includeESShard
 );
 
-app.get( // elasticsearch recovery endpoint (GET)
+app.get( // elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery

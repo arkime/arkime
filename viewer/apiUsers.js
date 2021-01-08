@@ -43,6 +43,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
           console.log(endpoint, 'failed', err, info);
           return res.molochError(500, errorMessage);
         }
+
         return res.send(JSON.stringify({
           success: true,
           text: successMessage,
@@ -65,6 +66,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         console.log(endpoint, 'failed', err, info);
         return res.molochError(500, errorMessage);
       }
+
       // save the view on the shared user
       return saveSharedView(req, res, user, view, endpoint, successMessage, errorMessage);
     });
@@ -94,6 +96,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
           console.log(endpoint, 'failed', err, info);
           return res.molochError(500, errorMessage);
         }
+
         return res.send(JSON.stringify({
           success: true,
           text: successMessage
@@ -492,8 +495,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         data: results.results
       });
     }).catch((err) => {
-      console.log('ERROR - /user/list', err);
-      return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+      console.log('/api/users failed', err);
+      return res.send({
+        recordsTotal: 0, recordsFiltered: 0, data: []
+      });
     });
   };
 
@@ -537,9 +542,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {
-        console.log('/user/settings/update error', err, info);
+        console.log('/api/user/settings update error', err, info);
         return res.molochError(500, 'User settings update failed');
       }
+
       return res.send(JSON.stringify({
         success: true,
         text: 'Updated user settings successfully'
@@ -607,7 +613,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
     if (req.body.shared) {
       // save the view on the shared user
       newView.shared = true;
-      saveSharedView(req, res, user, newView, '/user/views/create', 'Created shared view successfully', 'Create shared view failed');
+      saveSharedView(req, res, user, newView, '/api/user/view', 'Created shared view successfully', 'Create shared view failed');
     } else {
       newView.shared = false;
       if (user.views[req.body.name]) {
@@ -624,9 +630,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/api/user/views/create error', err, info);
+          console.log('/api/user/view create error', err, info);
           return res.molochError(500, 'Create view failed');
         }
+
         return res.send(JSON.stringify({
           success: true,
           text: 'Created view successfully',
@@ -666,9 +673,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
-            console.log('/user/views/delete failed', err, info);
+            console.log('/api/user/view delete failed', err, info);
             return res.molochError(500, 'Delete shared view failed');
           }
+
           return res.send(JSON.stringify({
             success: true,
             text: 'Deleted shared view successfully'
@@ -681,9 +689,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/user/views/delete failed', err, info);
+          console.log('/api/user/view delete failed', err, info);
           return res.molochError(500, 'Delete view failed');
         }
+
         return res.send(JSON.stringify({
           success: true,
           text: 'Deleted view successfully'
@@ -721,7 +730,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       if (!sharedUser || !sharedUser.found) {
         // the shared user has not been created yet so there is no chance of duplicate views
         if (share) { // add the view to the shared user
-          return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
+          return shareView(req, res, user, '/api/user/views/toggleshare', 'Shared view successfully', 'Sharing view failed');
         }
         // if it not already a shared view and it's trying to be unshared, something went wrong, can't do it
         return res.molochError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
@@ -750,24 +759,26 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/user/view
+   * POST - /api/user/view/:key
    *
    * Updates an Arkime view for a user.
-   * @name /user/view
+   * @name /user/view/:key
    * @returns {boolean} success - Whether the update view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.updateUserView = (req, res) => {
+    const key = req.body.key || req.params.key;
+
+    if (!key) {
+      return res.molochError(403, 'Missing view key');
+    }
+
     if (!req.body.name) {
       return res.molochError(403, 'Missing view name');
     }
 
     if (!req.body.expression) {
       return res.molochError(403, 'Missing view expression');
-    }
-
-    if (!req.body.key) {
-      return res.molochError(403, 'Missing view key');
     }
 
     const user = req.settingUser;
@@ -778,7 +789,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         if (sharedUser && sharedUser.found) {
           sharedUser = sharedUser._source;
           sharedUser.views = sharedUser.views || {};
-          if (sharedUser.views[req.body.key] === undefined) {
+          if (sharedUser.views[key] === undefined) {
             return res.molochError(404, 'View not found');
           }
           // only admins or the user that created the view can update the shared view
@@ -792,17 +803,18 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
             sessionsColConfig: req.body.sessionsColConfig
           };
           // delete the old one if the key (view name) has changed
-          if (sharedUser.views[req.body.key] && req.body.name !== req.body.key) {
-            sharedUser.views[req.body.key] = null;
-            delete sharedUser.views[req.body.key];
+          if (sharedUser.views[key] && req.body.name !== key) {
+            sharedUser.views[key] = null;
+            delete sharedUser.views[key];
           }
         }
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
-            console.log('/api/user/view failed', err, info);
+            console.log('/api/user/view update failed', err, info);
             return res.molochError(500, 'Update shared view failed');
           }
+
           return res.send(JSON.stringify({
             success: true,
             text: 'Updated shared view successfully'
@@ -823,16 +835,17 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       }
 
       // delete the old one if the key (view name) has changed
-      if (user.views[req.body.key] && req.body.name !== req.body.key) {
-        user.views[req.body.key] = null;
-        delete user.views[req.body.key];
+      if (user.views[key] && req.body.name !== key) {
+        user.views[key] = null;
+        delete user.views[key];
       }
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/api/user/view error', err, info);
+          console.log('/api/user/view update failed', err, info);
           return res.molochError(500, 'Updating view failed');
         }
+
         return res.send(JSON.stringify({
           success: true,
           text: 'Updated view successfully'
@@ -860,13 +873,13 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
     Db.search('queries', 'query', query, (err, data) => {
       if (err || data.error) {
-        console.log('/api/user/cron error', err || data.error);
+        console.log('/api/user/crons error', err || data.error);
       }
 
       const queries = {};
 
       if (data && data.hits && data.hits.hits) {
-        data.hits.hits.forEach(function (item) {
+        data.hits.hits.forEach((item) => {
           queries[item._id] = item._source;
         });
       }
@@ -876,11 +889,11 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POSt - /api/user/cron
+   * POST - /api/user/cron
    *
    * Create a new cron query for a user.
    * @name /user/cron
-   * @returns {boolean} success - Whether the add user operation was successful.
+   * @returns {boolean} success - Whether the create cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} key - The cron query id
    */
@@ -933,7 +946,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
       Db.indexNow('queries', 'query', null, document.doc, (err, info) => {
         if (err) {
-          console.log('/user/cron/create error', err, info);
+          console.log('/api/user/cron create error', err, info);
           return res.molochError(500, 'Create cron query failed');
         }
 
@@ -945,6 +958,500 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
           success: true,
           text: 'Created cron query successfully',
           key: info._id
+        }));
+      });
+    });
+  };
+
+  /**
+   * DELETE - /api/user/cron/:key
+   *
+   * Delete a cron query for a user.
+   * @name /user/cron/:key
+   * @returns {boolean} success - Whether the delete cron operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteUserCron = (req, res) => {
+    const key = req.body.key || req.params.key;
+    if (!key) {
+      return res.molochError(403, 'Missing cron query key');
+    }
+
+    Db.deleteDocument('queries', 'query', key, { refresh: true }, (err, sq) => {
+      if (err) {
+        console.log('/api/user/cron delete error', err, sq);
+        return res.molochError(500, 'Delete cron query failed');
+      }
+      res.send(JSON.stringify({
+        success: true,
+        text: 'Deleted cron query successfully'
+      }));
+    });
+  };
+
+  /**
+   * POST - /api/user/cron/:key
+   *
+   * Update a cron query for a user.
+   * @name /user/cron/:key
+   * @returns {boolean} success - Whether the update cron operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserCron = (req, res) => {
+    const key = req.body.key || req.params.key;
+    if (!key) {
+      return res.molochError(403, 'Missing cron query key');
+    }
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing cron query name');
+    }
+    if (!req.body.query) {
+      return res.molochError(403, 'Missing cron query expression');
+    }
+    if (!req.body.action) {
+      return res.molochError(403, 'Missing cron query action');
+    }
+    if (!req.body.tags) {
+      return res.molochError(403, 'Missing cron query tag(s)');
+    }
+
+    const document = {
+      doc: {
+        enabled: req.body.enabled,
+        name: req.body.name,
+        query: req.body.query,
+        tags: req.body.tags,
+        action: req.body.action,
+        notifier: undefined
+      }
+    };
+
+    if (req.body.notifier) {
+      document.doc.notifier = req.body.notifier;
+    }
+
+    Db.get('queries', 'query', key, (err, sq) => {
+      if (err || !sq.found) {
+        console.log('/user/cron update failed', err, sq);
+        return res.molochError(403, 'Unknown query');
+      }
+
+      Db.update('queries', 'query', key, document, { refresh: true }, (err, data) => {
+        if (err) {
+          console.log('/user/cron update error', err, document, data);
+          return res.molochError(500, 'Cron query update failed');
+        }
+
+        if (Config.get('cronQueries', false)) {
+          app.processCronQueries();
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Updated cron query successfully'
+        }));
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user/password
+   *
+   * Update user password.
+   * @name /user/password
+   * @returns {boolean} success - Whether the update password operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserPassword = (req, res) => {
+    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+      return res.molochError(403, 'New password needs to be at least 3 characters');
+    }
+
+    if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
+      Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
+      req.token.userId !== req.user.userId)) {
+      return res.molochError(403, 'New password mismatch');
+    }
+
+    const user = req.settingUser;
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/password update error', err, info);
+        return res.molochError(500, 'Password update failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Changed password successfully'
+      }));
+    });
+  };
+
+  /**
+   * GET - /api/user/columns
+   *
+   * Retrieves user configured custom Sessions column configurations.
+   * @name /user/columns
+   * @returns {Array} columnConfigs - The custom Sessions column configurations.
+   */
+  module.getUserColumns = (req, res) => {
+    if (!req.settingUser) { return res.send([]); }
+
+    // Fix for new names
+    if (req.settingUser.columnConfigs) {
+      for (const key in req.settingUser.columnConfigs) {
+        let item = req.settingUser.columnConfigs[key];
+        item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
+        if (item.order && item.order.length > 0) {
+          item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
+        }
+      }
+    }
+
+    return res.send(req.settingUser.columnConfigs || []);
+  };
+
+  /**
+   * POST - /api/user/column
+   *
+   * Creates a new user configured custom Sessions column configuration.
+   * @name /user/column
+   * @returns {boolean} success - Whether the create column configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new custom Sessions column configuration.
+   */
+  module.createUserColumns = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing custom column configuration name');
+    }
+    if (!req.body.columns) {
+      return res.molochError(403, 'Missing columns');
+    }
+    if (!req.body.order) {
+      return res.molochError(403, 'Missing sort order');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (req.body.name.length < 1) {
+      return res.molochError(403, 'Invalid custom column configuration name');
+    }
+
+    const user = req.settingUser;
+    user.columnConfigs = user.columnConfigs || [];
+
+    // don't let user use duplicate names
+    for (const config of user.columnConfigs) {
+      if (req.body.name === config.name) {
+        return res.molochError(403, 'There is already a custom column with that name');
+      }
+    }
+
+    user.columnConfigs.push({
+      name: req.body.name,
+      columns: req.body.columns,
+      order: req.body.order
+    });
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/column error', err, info);
+        return res.molochError(500, 'Create custom column configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Created custom column configuration successfully',
+        name: req.body.name
+      }));
+    });
+  };
+
+  /**
+   * PUT - /api/user/column/:name
+   *
+   * Updates a user configured custom Sessions column configuration.
+   * @name /user/column/:name
+   * @returns {boolean} success - Whether the update column configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {object} colConfig - The udpated custom Sessions column configuration.
+   */
+  module.updateUserColumns = (req, res) => {
+    const name = req.body.name || req.params.name;
+    if (!name) {
+      return res.molochError(403, 'Missing custom column configuration name');
+    }
+    if (!req.body.columns) {
+      return res.molochError(403, 'Missing columns');
+    }
+    if (!req.body.order) {
+      return res.molochError(403, 'Missing sort order');
+    }
+
+    const user = req.settingUser;
+    user.columnConfigs = user.columnConfigs || [];
+
+    // find the custom column configuration to update
+    let found = false;
+    for (let config of user.columnConfigs) {
+      if (name === config.name) {
+        found = true;
+        config = req.body;
+      }
+    }
+
+    if (!found) {
+      return res.molochError(200, 'Custom column configuration not found');
+    }
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/column udpate error', err, info);
+        return res.molochError(500, 'Update custom column configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Updated column configuration',
+        colConfig: req.body
+      }));
+    });
+  };
+
+  /**
+   * DELETE - /api/user/column/:name
+   *
+   * Deletes a user configured custom Sessions column configuration.
+   * @name /user/column/:name
+   * @returns {boolean} success - Whether the delete Sessions column configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteUserColumns = (req, res) => {
+    const name = req.body.name || req.params.name;
+    if (!name) {
+      return res.molochError(403, 'Missing custom column configuration name');
+    }
+
+    const user = req.settingUser;
+    user.columnConfigs = user.columnConfigs || [];
+
+    let found = false;
+    for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
+      if (name === user.columnConfigs[i].name) {
+        user.columnConfigs.splice(i, 1);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return res.molochError(200, 'Custom column configuration not found');
+    }
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/column delete error', err, info);
+        return res.molochError(500, 'Delete custom column configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Deleted custom column configuration successfully'
+      }));
+    });
+  };
+
+  /**
+   * GET - /api/user/spiview
+   *
+   * Retrieves a user configured SPI View fields configuration.
+   * @name /user/spiview
+   * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
+   */
+  module.getUserSpiviewFields = (req, res) => {
+    if (!req.settingUser) { return res.send([]); }
+
+    return res.send(req.settingUser.spiviewFieldConfigs || []);
+  };
+
+  /**
+   * POST - /api/user/spiview
+   *
+   * Create a user configured SPI View fields configuration.
+   * @name /user/spiview
+   * @returns {boolean} success - Whether the update SPI View fields configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new SPI View fields configuration.
+   */
+  module.createUserSpiviewFields = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+    }
+    if (!req.body.fields) {
+      return res.molochError(403, 'Missing fields');
+    }
+
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+
+    if (req.body.name.length < 1) {
+      return res.molochError(403, 'Invalid custom SPI View fields configuration name');
+    }
+
+    const user = req.settingUser;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    // don't let user use duplicate names
+    for (const config of user.spiviewFieldConfigs) {
+      if (req.body.name === config.name) {
+        return res.molochError(403, 'There is already a custom SPI View fieldss configuration with that name');
+      }
+    }
+
+    user.spiviewFieldConfigs.push({
+      name: req.body.name,
+      fields: req.body.fields
+    });
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/spiview create error', err, info);
+        return res.molochError(500, 'Create custom SPI View fields configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Created custom SPI View fieldss configuration successfully',
+        name: req.body.name
+      }));
+    });
+  };
+
+  /**
+   * PUT - /api/user/spiview/:name
+   *
+   * Updates a user configured SPI View fields configuration.
+   * @name /user/spiview/:name
+   * @returns {boolean} success - Whether the update SPI View fields configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {object} colConfig - The udpated SPI View fields configuration.
+   */
+  module.updateUserSpiviewFields = (req, res) => {
+    const name = req.body.name || req.params.name;
+    if (!name) {
+      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+    }
+    if (!req.body.fields) {
+      return res.molochError(403, 'Missing fields');
+    }
+
+    const user = req.settingUser;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    // find the custom SPI View fields configuration to update
+    let found = false;
+    for (let config of user.spiviewFieldConfigs) {
+      if (name === config.name) {
+        found = true;
+        config = req.body;
+      }
+    }
+
+    if (!found) {
+      return res.molochError(200, 'Custom SPI View fields configuration not found');
+    }
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/spiview udpate error', err, info);
+        return res.molochError(500, 'Update SPI View fields configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Updated SPI View fields configuration',
+        colConfig: req.body
+      }));
+    });
+  };
+
+  /**
+   * DELETE - /api/user/spiview/:name
+   *
+   * Deletes a user configured SPI View fields configuration.
+   * @name /user/spiview/:name
+   * @returns {boolean} success - Whether the delete SPI View fields configuration operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.deleteUserSpiviewFields = (req, res) => {
+    if (!req.body.name) {
+      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+    }
+
+    const user = req.settingUser;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    let found = false;
+    for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
+      if (req.body.name === user.spiviewFieldConfigs[i].name) {
+        user.spiviewFieldConfigs.splice(i, 1);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return res.molochError(200, 'SPI View fields not found');
+    }
+
+    Db.setUser(user.userId, user, function (err, info) {
+      if (err) {
+        console.log('/api/user/spiview delete failed', err, info);
+        return res.molochError(500, 'Delete custom SPI View fields configuration failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Deleted custom SPI View fields configuration successfully'
+      }));
+    });
+  };
+
+  /**
+   * PUT - /api/user/:userId/acknowledgeMsg
+   *
+   * Acknowledges a UI message for a user. Used to display help popups.
+   * @name /user/:userId/acknowledgeMsg
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.acknowledgeMsg = (req, res) => {
+    if (!req.body.msgNum) {
+      return res.molochError(403, 'Message number required');
+    }
+
+    if (req.params.userId !== req.user.userId) {
+      return res.molochError(403, 'Can not change other users msg');
+    }
+
+    Db.getUser(req.params.userId, (err, user) => {
+      if (err || !user.found) {
+        console.log('update user failed', err, user);
+        return res.molochError(403, 'User not found');
+      }
+
+      user = user._source;
+
+      user.welcomeMsgNum = parseInt(req.body.msgNum);
+
+      Db.setUser(req.params.userId, user, (err, info) => {
+        if (Config.debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
         }));
       });
     });
