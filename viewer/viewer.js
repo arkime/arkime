@@ -1524,7 +1524,8 @@ app.get( // user cron queries endpoint (GET) TODO ECR - udpate UI
   userAPIs.getUserCron
 );
 
-app.post( // create user cron query (POST)
+// TODO ECR - test that crons work
+app.post( // create user cron query (POST) TODO ECR - update UI
   ['/api/user/cron', '/user/cron/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.createUserCron
@@ -1581,7 +1582,7 @@ app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), getSe
         return res.molochError(500, 'Cron query update failed');
       }
       if (Config.get('cronQueries', false)) {
-        ViewerUtils.processCronQueries();
+        app.processCronQueries();
       }
       return res.send(JSON.stringify({
         success: true,
@@ -3097,7 +3098,7 @@ if (Config.get('regressionTests')) {
     res.send('{}');
   });
   app.get('/processCronQueries', function (req, res) {
-    ViewerUtils.processCronQueries();
+    app.processCronQueries();
     res.send('{}');
   });
 
@@ -3225,6 +3226,252 @@ app.use(cspHeader, setCookie, (req, res) => {
 });
 
 // ============================================================================
+// CRON QUERIES
+// ============================================================================
+/* Process a single cron query.  At max it will process 24 hours worth of data
+ * to give other queries a chance to run.  Because its timestamp based and not
+ * lastPacket based since 1.0 it now search all indices each time.
+ */
+function processCronQuery (cq, options, query, endTime, cb) {
+  if (Config.debug > 2) {
+    console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
+  }
+
+  let singleEndTime;
+  let count = 0;
+  async.doWhilst((whilstCb) => {
+    // Process at most 24 hours
+    singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
+    query.query.bool.filter[0] = { range: { timestamp: { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
+
+    if (Config.debug > 2) {
+      console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
+    }
+
+    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+      function doNext () {
+        count += result.hits.hits.length;
+
+        // No more data, all done
+        if (result.hits.hits.length === 0) {
+          Db.clearScroll({ body: { scroll_id: result._scroll_id } });
+          return setImmediate(whilstCb, 'DONE');
+        } else {
+          var document = { doc: { count: (query.count || 0) + count } };
+          Db.update('queries', 'query', options.qid, document, { refresh: true }, function () {});
+        }
+
+        query = {
+          body: {
+            scroll_id: result._scroll_id
+          },
+          scroll: internals.esScrollTimeout
+        };
+
+        Db.scroll(query, getMoreUntilDone);
+      }
+
+      if (err || result.error) {
+        console.log('cronQuery error', err, (result ? result.error : null), 'for', cq);
+        return setImmediate(whilstCb, 'ERR');
+      }
+
+      let ids = [];
+      const hits = result.hits.hits;
+      let i, ilen;
+      if (cq.action.indexOf('forward:') === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push({ id: hits[i]._id, node: hits[i]._source.node });
+        }
+
+        sendSessionsListQL(options, ids, doNext);
+      } else if (cq.action.indexOf('tag') === 0) {
+        for (i = 0, ilen = hits.length; i < ilen; i++) {
+          ids.push(hits[i]._id);
+        }
+
+        if (Config.debug > 1) {
+          console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
+        }
+
+        const tags = options.tags.split(',');
+        sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
+          sessionAPIs.addTagsList(tags, list, doNext);
+        });
+      } else {
+        console.log('Unknown action', cq);
+        doNext();
+      }
+    });
+  }, () => {
+    if (Config.debug > 1) {
+      console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
+    }
+    return singleEndTime !== endTime;
+  }, (err) => {
+    cb(count, singleEndTime);
+  });
+}
+
+app.processCronQueries = () => {
+  if (internals.cronRunning) {
+    console.log('processQueries already running', qlworking);
+    return;
+  }
+  internals.cronRunning = true;
+  if (Config.debug) {
+    console.log('CRON - cronRunning set to true');
+  }
+
+  let repeat;
+  async.doWhilst(function (whilstCb) {
+    repeat = false;
+    Db.search('queries', 'query', { size: 1000 }, (err, data) => {
+      if (err) {
+        internals.cronRunning = false;
+        console.log('processCronQueries', err);
+        return setImmediate(whilstCb, err);
+      }
+
+      const queries = {};
+      data.hits.hits.forEach(function (item) {
+        queries[item._id] = item._source;
+      });
+
+      // Delayed by the max Timeout
+      const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
+
+      // Go thru the queries, fetch the user, make the query
+      async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
+        const cq = queries[qid];
+        let cluster = null;
+
+        if (Config.debug > 1) {
+          console.log('CRON - Running', qid, cq);
+        }
+
+        if (!cq.enabled || endTime < cq.lpValue) {
+          return forQueriesCb();
+        }
+
+        if (cq.action.indexOf('forward:') === 0) {
+          cluster = cq.action.substring(8);
+        }
+
+        ViewerUtils.getUserCacheIncAnon(cq.creator, (err, user) => {
+          if (err && !user) {
+            return forQueriesCb();
+          }
+          if (!user || !user.found) {
+            console.log(`User ${cq.creator} doesn't exist`);
+            return forQueriesCb(null);
+          }
+          if (!user.enabled) {
+            console.log(`User ${cq.creator} not enabled`);
+            return forQueriesCb();
+          }
+
+          const options = {
+            user: user,
+            cluster: cluster,
+            saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
+            tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
+            qid: qid
+          };
+
+          Db.getLookupsCache(cq.creator, (err, lookups) => {
+            molochparser.parser.yy = {
+              emailSearch: user.emailSearch === true,
+              fieldsMap: Config.getFieldsMap(),
+              dbFieldsMap: Config.getDBFieldsMap(),
+              prefix: internals.prefix,
+              lookups: lookups,
+              lookupTypeMap: internals.lookupTypeMap
+            };
+
+            const query = {
+              from: 0,
+              size: 1000,
+              query: { bool: { filter: [{}] } },
+              _source: ['_id', 'node']
+            };
+
+            try {
+              query.query.bool.filter.push(molochparser.parse(cq.query));
+            } catch (e) {
+              console.log("Couldn't compile cron query expression", cq, e);
+              return forQueriesCb();
+            }
+
+            if (user.expression && user.expression.length > 0) {
+              try {
+                // Expression was set by admin, so assume email search ok
+                molochparser.parser.yy.emailSearch = true;
+                var userExpression = molochparser.parse(user.expression);
+                query.query.bool.filter.push(userExpression);
+              } catch (e) {
+                console.log("Couldn't compile user forced expression", user.expression, e);
+                return forQueriesCb();
+              }
+            }
+
+            ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+              processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+                if (Config.debug > 1) {
+                  console.log('CRON - setting lpValue', new Date(lpValue * 1000));
+                }
+                // Do the ES update
+                const document = {
+                  doc: {
+                    lpValue: lpValue,
+                    lastRun: Math.floor(Date.now() / 1000),
+                    count: (queries[qid].count || 0) + count
+                  }
+                };
+
+                function continueProcess () {
+                  Db.update('queries', 'query', qid, document, { refresh: true }, function () {
+                    // If there is more time to catch up on, repeat the loop, although other queries
+                    // will get processed first to be fair
+                    if (lpValue !== endTime) { repeat = true; }
+                    return forQueriesCb();
+                  });
+                }
+
+                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                if (cq.notifier && count && queries[qid].count !== document.doc.count &&
+                  (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
+                  const newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+                  const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+                  notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
+                } else {
+                  return continueProcess();
+                }
+              });
+            });
+          });
+        });
+      }, (err) => {
+        if (Config.debug > 1) {
+          console.log('CRON - Finished one pass of all crons');
+        }
+        return setImmediate(whilstCb, err);
+      });
+    });
+  }, () => {
+    if (Config.debug > 1) {
+      console.log('CRON - Process again: ', repeat);
+    }
+    return repeat;
+  }, (err) => {
+    if (Config.debug) {
+      console.log('CRON - Should be up to date');
+    }
+    internals.cronRunning = false;
+  });
+};
+
+// ============================================================================
 // MAIN
 // ============================================================================
 function main () {
@@ -3259,8 +3506,8 @@ function main () {
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Cron Queries, delayed by', internals.cronTimeout, 'seconds');
-    setInterval(ViewerUtils.processCronQueries, 60 * 1000);
-    setTimeout(ViewerUtils.processCronQueries, 1000);
+    setInterval(app.processCronQueries, 60 * 1000);
+    setTimeout(app.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
   }
 

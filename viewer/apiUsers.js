@@ -938,7 +938,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         }
 
         if (Config.get('cronQueries', false)) {
-          ViewerUtils.processCronQueries();
+          app.processCronQueries();
         }
 
         return res.send(JSON.stringify({
