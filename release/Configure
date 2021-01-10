@@ -198,7 +198,7 @@ fi
 
 ARKIME_INET=not-set
 until [ "$ARKIME_INET" == "yes" ] || [ "$ARKIME_INET" == "no" ] || [ "$ARKIME_INET" == "" ]; do
-    echo -n "Download GEO files? (yes or no) [yes] "
+    echo -n "Download GEO files? You'll need a MaxMind account https://arkime.com/faq#maxmind (yes or no) [yes] "
     read -r ARKIME_INET
 done
 
