@@ -632,6 +632,8 @@ gboolean moloch_field_string_add_host(int pos, MolochSession_t *session, char *s
         } else {
             moloch_session_add_tag(session, "bad-hostname");
         }
+        if (host)
+            g_free(host);
         return FALSE;
     }
 
