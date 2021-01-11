@@ -387,10 +387,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * GET - /api/user.css
+   * GET - /api/user/css OR /api/user.css
    *
    * Retrieves custom user css for the user's custom theme.
-   * @name "/user.css"
+   * @name /user/css
    * @returns {css} css - The css file that includes user configured styles.
    */
   module.getUserCSS = (req, res) => {

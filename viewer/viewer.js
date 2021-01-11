@@ -1459,7 +1459,7 @@ app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
 );
 
 app.get( // user css endpoint
-  ['/api/user.css', '/user.css'],
+  ['/api/user[/.]css', '/user.css'],
   checkPermissions(['webEnabled']),
   userAPIs.getUserCSS
 );
@@ -2930,7 +2930,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
-    themeUrl: theme === 'custom-theme' ? 'api/user.css' : '',
+    themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     serverNonce: res.locals.nonce,
