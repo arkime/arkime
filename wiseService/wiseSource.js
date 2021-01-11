@@ -256,72 +256,76 @@ class WISESource {
    * @param {function} endCB - all done parsing
    */
   parseJSON (body, setCb, endCb) {
-    let json = JSON.parse(body);
+    try {
+      let json = JSON.parse(body);
 
-    if (this.keyPath === undefined) {
-      return endCb('No keyPath set');
-    }
-
-    if (this.arrayPath !== undefined) {
-      let arrayPath = this.arrayPath.split('.');
-      for (let i = 0; i < arrayPath.length; i++) {
-        json = json[arrayPath[i]];
-        if (!json) {
-          return endCb(`Couldn't find ${arrayPath[i]} in results`);
-        }
-      }
-    }
-
-    let keyPath = this.keyPath.split('.');
-
-    // Convert shortcuts into array of key path
-    let shortcuts = [];
-    let shortcutsValue = [];
-    for (const k in this.shortcuts) {
-      shortcuts.push(k.split('.'));
-      shortcutsValue.push(this.shortcuts[k]);
-    }
-
-    for (let i = 0; i < json.length; i++) {
-      // Walk the key path
-      let key = json[i];
-      for (let j = 0; key && j < keyPath.length; j++) {
-        key = key[keyPath[j]];
+      if (this.keyPath === undefined) {
+        return endCb('No keyPath set');
       }
 
-      if (key === undefined || key === null) {
-        continue;
-      }
-
-      const args = [];
-      // Check each shortcut
-      for (let k = 0; k < shortcuts.length; k++) {
-        let obj = json[i];
-        // Walk the shortcut path
-        for (let j = 0; obj && j < shortcuts[k].length; j++) {
-          obj = obj[shortcuts[k][j]];
-        }
-        if (obj !== undefined && obj !== null && obj !== '') {
-          args.push(shortcutsValue[k].pos);
-          if (shortcutsValue[k].mod === 1) {
-            args.push(obj.toLowerCase());
-          } else if (shortcutsValue[k].mod === 2) {
-            args.push(obj.toUpperCase());
-          } else {
-            args.push(obj);
+      if (this.arrayPath !== undefined) {
+        let arrayPath = this.arrayPath.split('.');
+        for (let i = 0; i < arrayPath.length; i++) {
+          json = json[arrayPath[i]];
+          if (!json) {
+            return endCb(`Couldn't find ${arrayPath[i]} in results`);
           }
         }
       }
 
-      if (Array.isArray(key)) {
-        key.forEach((part) => {
-          setCb(part, WISESource.encodeResult.apply(null, args));
-        });
-      } else {
-        setCb(key, WISESource.encodeResult.apply(null, args));
+      let keyPath = this.keyPath.split('.');
+
+      // Convert shortcuts into array of key path
+      let shortcuts = [];
+      let shortcutsValue = [];
+      for (const k in this.shortcuts) {
+        shortcuts.push(k.split('.'));
+        shortcutsValue.push(this.shortcuts[k]);
       }
+
+      for (let i = 0; i < json.length; i++) {
+        // Walk the key path
+        let key = json[i];
+        for (let j = 0; key && j < keyPath.length; j++) {
+          key = key[keyPath[j]];
+        }
+
+        if (key === undefined || key === null) {
+          continue;
+        }
+
+        const args = [];
+        // Check each shortcut
+        for (let k = 0; k < shortcuts.length; k++) {
+          let obj = json[i];
+          // Walk the shortcut path
+          for (let j = 0; obj && j < shortcuts[k].length; j++) {
+            obj = obj[shortcuts[k][j]];
+          }
+          if (obj !== undefined && obj !== null && obj !== '') {
+            args.push(shortcutsValue[k].pos);
+            if (shortcutsValue[k].mod === 1) {
+              args.push(obj.toLowerCase());
+            } else if (shortcutsValue[k].mod === 2) {
+              args.push(obj.toUpperCase());
+            } else {
+              args.push(obj);
+            }
+          }
+        }
+
+        if (Array.isArray(key)) {
+          key.forEach((part) => {
+            setCb(part, WISESource.encodeResult.apply(null, args));
+          });
+        } else {
+          setCb(key, WISESource.encodeResult.apply(null, args));
+        }
+      }
+      endCb(null);
+    } catch (e) {
+      endCb(e);
     }
-    endCb(null);
   }
 
   /** The encoded tags result if options.tagsSetting was set to true */
