@@ -1507,7 +1507,7 @@ app.deletepost( // delete user view endpoint
 );
 
 app.post( // (un)share a user view endpoint
-  ['/api/user/view/toggleshare', '/user/views/toggleShare'],
+  ['/api/user/view/:name/toggleshare', '/user/views/toggleShare'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.userViewToggleShare
 );

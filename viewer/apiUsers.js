@@ -297,7 +297,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.deleteUser = (req, res) => {
-    const userId = req.body.userId || req.params.userId;
+    const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
       return res.molochError(403, 'Can not delete yourself');
     }
@@ -730,15 +730,16 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/user/view/toggleshare
+   * POST - /api/user/view/:name/toggleshare
    *
    * Toggles sharing an Arkime view for a user.
-   * @name /user/view/toggleshare
+   * @name /user/view/:name/toggleshare
    * @returns {boolean} success - Whether the share view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.userViewToggleShare = (req, res) => {
-    if (!req.body.name) {
+    const name = req.params.name || req.body.name;
+    if (!name) {
       return res.molochError(403, 'Missing view name');
     }
 
@@ -750,7 +751,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
     const user = req.settingUser;
     user.views = user.views || {};
 
-    if (share && user.views[req.body.name] === undefined) {
+    if (share && user.views[name] === undefined) {
       return res.molochError(404, 'View not found');
     }
 
@@ -768,19 +769,19 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       sharedUser.views = sharedUser.views || {};
 
       if (share) { // if sharing, make sure the view doesn't already exist
-        if (sharedUser.views[req.body.name]) { // duplicate detected
+        if (sharedUser.views[name]) { // duplicate detected
           return res.molochError(403, 'A shared view already exists with this name.');
         }
         return shareView(req, res, user, '/api/user/view/toggleshare', 'Shared view successfully', 'Sharing view failed');
       } else {
         // if unsharing, remove it from shared user and add it to current user
-        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+        if (sharedUser.views[name] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
-        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+        if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
           return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
         }
         // delete the shared view
-        delete sharedUser.views[req.body.name];
+        delete sharedUser.views[name];
         return unshareView(req, res, user, sharedUser, '/api/user/view/toggleshare', 'Unshared view successfully', 'Unsharing view failed');
       }
     });
@@ -1414,7 +1415,8 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.deleteUserSpiviewFields = (req, res) => {
-    if (!req.body.name) {
+    const name = req.params.name || req.body.name;
+    if (!name) {
       return res.molochError(403, 'Missing custom SPI View fields configuration name');
     }
 
@@ -1423,7 +1425,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
     let found = false;
     for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-      if (req.body.name === user.spiviewFieldConfigs[i].name) {
+      if (name === user.spiviewFieldConfigs[i].name) {
         user.spiviewFieldConfigs.splice(i, 1);
         found = true;
         break;
@@ -1434,7 +1436,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       return res.molochError(200, 'SPI View fields not found');
     }
 
-    Db.setUser(user.userId, user, function (err, info) {
+    Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/spiview delete failed', err, info);
         return res.molochError(500, 'Delete custom SPI View fields configuration failed');

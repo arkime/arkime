@@ -333,7 +333,7 @@ export default {
   toggleShareView (data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/user/view/toggleshare',
+        url: `api/user/view/${data.name}/toggleshare`,
         method: 'POST',
         data: data,
         params: { userId: userId }
