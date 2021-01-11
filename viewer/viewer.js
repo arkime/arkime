@@ -1470,6 +1470,12 @@ app.getpost( // user list endpoint
   userAPIs.getUsers
 );
 
+app.post( // update user password endpoint
+  ['/api/user/password', '/user/password/change'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserPassword
+);
+
 app.get( // user settings endpoint
   ['/api/user/settings', '/user/settings'],
   [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie],
@@ -1494,38 +1500,42 @@ app.post( // create user view endpoint
   userAPIs.createUserView
 );
 
-// TODO ECR - make this like update user view DELETE /api/user/view/:key
-app.post( // delete user view endpoint
-  ['/api/user/view/delete', '/user/views/delete'],
+app.deletepost( // delete user view endpoint
+  ['/api/user/view/:name', '/user/views/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
 
-app.post( // (un)share a user view endpoint TODO ECR - udpate UI
+app.post( // (un)share a user view endpoint
   ['/api/user/view/toggleshare', '/user/views/toggleShare'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.userViewToggleShare
 );
 
-app.post( // update user view endpoint
+app.put( // update user view endpoint
   ['/api/user/view/:key', '/user/views/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
+app.post( // update user view endpoint for backwards compatibility with API 0.x-2.x
+  ['/user/views/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.updateUserView
+);
 
-app.get( // user cron queries endpoint TODO ECR - udpate UI
+app.get( // user cron queries endpoint
   ['/api/user/crons', '/user/cron'],
   [noCacheJson, getSettingUserCache],
   userAPIs.getUserCron
 );
 
-app.post( // create user cron query TODO ECR - update UI
+app.post( // create user cron query
   ['/api/user/cron', '/user/cron/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.createUserCron
 );
 
-app.delete( // delete user cron endpoint TODO ECR - update UI
+app.delete( // delete user cron endpoint
   ['/api/user/cron/:key', '/user/cron/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
   userAPIs.deleteUserCron
@@ -1536,68 +1546,62 @@ app.post( // delete user cron endpoint for backwards compatibility with API 0.x-
   userAPIs.deleteUserCron
 );
 
-app.post( // update user cron endpoint TODO ECR - udpate UI
+app.post( // update user cron endpoint
   ['/api/user/cron/:key', '/user/cron/update'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
   userAPIs.updateUserCron
 );
 
-app.post( // update user password endpoint TODO ECR - update UI
-  ['/api/user/password', '/user/password/change'],
-  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
-  userAPIs.updateUserPassword
-);
-
-app.get( // user custom columns endpoint TODO ECR - update UI
+app.get( // user custom columns endpoint
   ['/api/user/columns', '/user/columns'],
   [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
   userAPIs.getUserColumns
 );
 
-app.post( // create user custom columns endpoint TODO ECR - update UI
+app.post( // create user custom columns endpoint
   ['/api/user/column', '/user/columns/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.createUserColumns
 );
 
-app.put( // update user custom column endpoint TODO ECR - update UI
+app.put( // update user custom column endpoint
   ['/api/user/column/:name', '/user/columns/:name'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.updateUserColumns
 );
 
-app.deletepost( // delete user custom column endpoint (DELETE and POST) TODO ECR - udpate UI
+app.deletepost( // delete user custom column endpoint (DELETE and POST)
   ['/api/user/column/:name', '/user/columns/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.deleteUserColumns
 );
 
-app.get( // user spiview fields endpoint TODO ECR - update UI
+app.get( // user spiview fields endpoint
   ['/api/user/spiview', '/user/spiview/fields'],
   [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
   userAPIs.getUserSpiviewFields
 );
 
-app.post( // create spiview fields endpoint TODO ECR - update UI
+app.post( // create spiview fields endpoint
   ['/api/user/spiview', '/user/spiview/fields/create'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.createUserSpiviewFields
 );
 
-app.put( // update user spiview fields endpoint TODO ECR - update UI
+app.put( // update user spiview fields endpoint
   ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.updateUserSpiviewFields
 );
 
-app.deletepost( // delete user spiview fields endpoint (DELETE and POST) TODO ECR - update UI
+app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
   ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
   [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
   userAPIs.deleteUserSpiviewFields
 );
 
-app.put( // acknowledge message endoint TODO ECR - update UI
-  ['/api/user/:userId/acknowledgeMsg', '/user/:userId/acknowledgeMsg'],
+app.put( // acknowledge message endoint
+  ['/api/user/:userId/acknowledge', '/user/:userId/acknowledgeMsg'],
   [noCacheJson, logAction(), checkCookieToken],
   userAPIs.acknowledgeMsg
 );

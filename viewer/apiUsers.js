@@ -666,15 +666,18 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * DELETE - /api/user/view
+   * DELETE - /api/user/view/:name
    *
    * Deletes an Arkime view for a user.
-   * @name /user/view
+   * @name /user/view/:name
    * @returns {boolean} success - Whether the delete view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.deleteUserView = (req, res) => {
-    if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
+    const name = req.body.name || req.params.name;
+    if (!name) {
+      return res.molochError(403, 'Missing view name');
+    }
 
     const user = req.settingUser;
     user.views = user.views || {};
@@ -684,12 +687,14 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         if (sharedUser && sharedUser.found) {
           sharedUser = sharedUser._source;
           sharedUser.views = sharedUser.views || {};
-          if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
+          if (sharedUser.views[name] === undefined) {
+            return res.molochError(404, 'View not found');
+          }
           // only admins or the user that created the view can delete the shared view
-          if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
             return res.molochError(401, `Need admin privelages to delete another user's shared view`);
           }
-          delete sharedUser.views[req.body.name];
+          delete sharedUser.views[name];
         }
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
@@ -705,8 +710,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         });
       });
     } else {
-      if (user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
-      delete user.views[req.body.name];
+      if (user.views[name] === undefined) {
+        return res.molochError(404, 'View not found');
+      }
+      delete user.views[name];
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
@@ -780,7 +787,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * POST - /api/user/view/:key
+   * PUT - /api/user/view/:key
    *
    * Updates an Arkime view for a user.
    * @name /user/view/:key
@@ -1215,10 +1222,11 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
     // find the custom column configuration to update
     let found = false;
-    for (let config of user.columnConfigs) {
-      if (name === config.name) {
+    for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
+      if (name === user.columnConfigs[i].name) {
+        user.columnConfigs[i] = req.body;
         found = true;
-        config = req.body;
+        break;
       }
     }
 
@@ -1371,10 +1379,11 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
 
     // find the custom SPI View fields configuration to update
     let found = false;
-    for (let config of user.spiviewFieldConfigs) {
-      if (name === config.name) {
+    for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
+      if (name === user.spiviewFieldConfigs[i].name) {
+        user.spiviewFieldConfigs[i] = req.body;
         found = true;
-        config = req.body;
+        break;
       }
     }
 
@@ -1439,10 +1448,10 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * PUT - /api/user/:userId/acknowledgeMsg
+   * PUT - /api/user/:userId/acknowledge
    *
    * Acknowledges a UI message for a user. Used to display help popups.
-   * @name /user/:userId/acknowledgeMsg
+   * @name /user/:userId/acknowledge
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */

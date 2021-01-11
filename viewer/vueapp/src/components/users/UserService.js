@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import store from '../../store';
 
-// default settings also in view.js
+// default settings also in internals.js
 const defaultSettings = {
   connDstField: 'ip.dst:port',
   connSrcField: 'srcIp',
@@ -24,7 +24,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCurrent: function () {
+  getCurrent () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/user')
         .then((response) => {
@@ -42,7 +42,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getUsers: function (query) {
+  getUsers (query) {
     return new Promise((resolve, reject) => {
       const options = {
         url: 'api/users',
@@ -65,7 +65,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createUser: function (newuser) {
+  createUser (newuser) {
     return new Promise((resolve, reject) => {
       Vue.axios.post('api/user', newuser)
         .then((response) => {
@@ -82,7 +82,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteUser: function (user) {
+  deleteUser (user) {
     return new Promise((resolve, reject) => {
       Vue.axios.delete(`api/user/${user.id}`, user)
         .then((response) => {
@@ -99,7 +99,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateUser: function (user) {
+  updateUser (user) {
     return new Promise((resolve, reject) => {
       Vue.axios.post(`api/user/${user.id}`, user)
         .then((response) => {
@@ -119,7 +119,7 @@ export default {
    * @returns {boolean}   A promise object that signals the completion
    *                            or rejection of the request.
    */
-  hasPermission: function (priv) {
+  hasPermission (priv) {
     let user = store.state.user;
     if (!user) { return false; }
     let privs = priv.split(',');
@@ -144,12 +144,15 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getSettings: function (userId) {
+  getSettings (userId) {
     return new Promise((resolve, reject) => {
-      let url = 'api/user/settings';
-      if (userId) { url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/settings',
+        method: 'GET',
+        params: { userId: userId }
+      };
 
-      Vue.axios.get(url)
+      Vue.axios(options)
         .then((response) => {
           let settings = response.data;
           // if the settings are empty, set smart default
@@ -171,9 +174,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  saveSettings: function (settings, userId) {
+  saveSettings (settings, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: 'api/user/settings',
         method: 'POST',
         data: settings,
@@ -203,12 +206,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  resetSettings: function (userId, theme) {
+  resetSettings (userId, theme) {
     let settings = JSON.parse(JSON.stringify(defaultSettings));
 
     if (theme) {
       settings.theme = theme;
     }
+
     return this.saveSettings(settings, userId);
   },
 
@@ -219,12 +223,15 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getViews: function (userId) {
+  getViews (userId) {
     return new Promise((resolve, reject) => {
-      let url = 'api/user/views';
-      if (userId) { url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/views',
+        method: 'GET',
+        params: { userId: userId }
+      };
 
-      Vue.axios.get(url)
+      Vue.axios(options)
         .then((response) => {
           response.data = this.parseViews(response.data);
           resolve(response.data);
@@ -236,19 +243,23 @@ export default {
 
   /**
    * Creates a specified view for a user
-   * @param {Object} params     The params to pass as data to the server
+   * @param {Object} data       The new view data to the server
    *                            { name: 'specialview', expression: 'something == somethingelse'}
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createView: function (params, userId) {
+  createView (data, userId) {
     return new Promise((resolve, reject) => {
-      let url = 'api/user/view';
-      if (userId) { url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/view',
+        method: 'POST',
+        data: data,
+        params: { userId: userId }
+      };
 
-      Vue.axios.post(url, params)
+      Vue.axios(options)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
@@ -260,17 +271,22 @@ export default {
   /**
    * Deletes a user's specified view
    * @param {Object} view       The view object to be deleted
+   * @param {string} name       The name of the view to delete
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteView: function (view, userId) {
+  deleteView (view, userId) {
     return new Promise((resolve, reject) => {
-      let url = 'api/user/view/delete';
-      if (userId) { url += `?userId=${userId}`; }
+      const options = {
+        url: `api/user/view/${view.name}`,
+        method: 'DELETE',
+        data: view,
+        params: { userId: userId }
+      };
 
-      Vue.axios.post(url, view)
+      Vue.axios(options)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
@@ -287,11 +303,11 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateView: function (data, userId) {
+  updateView (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: `api/user/view/${data.key}`,
-        method: 'POST',
+        method: 'PUT',
         data: data,
         params: { userId: userId }
       };
@@ -314,15 +330,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  toggleShareView: function (data, userId) {
+  toggleShareView (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: 'api/user/view/toggleshare',
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -340,11 +355,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCronQueries: function (userId) {
+  getCronQueries (userId) {
     return new Promise((resolve, reject) => {
-      let options = { url: 'user/cron', method: 'GET' };
-
-      if (userId) { options.url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/crons',
+        method: 'GET',
+        params: { userId: userId }
+      };
 
       Vue.axios(options)
         .then((response) => {
@@ -363,15 +380,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createCronQuery: function (data, userId) {
+  createCronQuery (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/cron/create',
+      const options = {
+        url: 'api/user/cron',
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -390,15 +406,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteCronQuery: function (key, userId) {
+  deleteCronQuery (key, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/cron/delete',
-        method: 'POST',
-        data: { key: key }
+      const options = {
+        url: `api/user/cron/${key}`,
+        method: 'DELETE',
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -417,15 +431,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateCronQuery: function (data, userId) {
+  updateCronQuery (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/cron/update',
+      const options = {
+        url: `api/user/cron/${data.key}`,
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -443,12 +456,15 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getColumnConfigs: function (userId) {
+  getColumnConfigs (userId) {
     return new Promise((resolve, reject) => {
-      let url = 'user/columns';
-      if (userId) { url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/columns',
+        method: 'GET',
+        params: { userId: userId }
+      };
 
-      Vue.axios.get(url)
+      Vue.axios(options)
         .then((response) => {
           resolve(response.data);
         }, (error) => {
@@ -466,15 +482,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createColumnConfig: function (data, userId) {
+  createColumnConfig (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/columns/create',
+      const options = {
+        url: 'api/user/column',
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -493,15 +508,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteColumnConfig: function (name, userId) {
+  deleteColumnConfig (name, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/columns/delete',
-        method: 'POST',
-        data: { name: name }
+      const options = {
+        url: `api/user/column/${name}`,
+        method: 'DELETE',
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -520,15 +533,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateColumnConfig: function (data, userId) {
+  updateColumnConfig (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: `user/columns/${data.name}`,
+      const options = {
+        url: `api/user/column/${data.name}`,
         method: 'PUT',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -546,11 +558,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getSpiviewFields: function (userId) {
+  getSpiviewFields (userId) {
     return new Promise((resolve, reject) => {
-      let options = { url: 'user/spiview/fields', method: 'GET' };
-
-      if (userId) { options.url += `?userId=${userId}`; }
+      const options = {
+        url: 'api/user/spiview',
+        method: 'GET',
+        params: { userId: userId }
+      };
 
       Vue.axios(options)
         .then((response) => {
@@ -570,15 +584,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createSpiviewFieldConfig: function (data, userId) {
+  createSpiviewFieldConfig (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/spiview/fields/create',
+      const options = {
+        url: 'api/user/spiview',
         method: 'POST',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -597,15 +610,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteSpiviewFieldConfig: function (name, userId) {
+  deleteSpiviewFieldConfig (name, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/spiview/fields/delete',
+      const options = {
+        url: `api/user/spiview/${name}`,
         method: 'POST',
-        data: { name: name }
+        data: { name: name },
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -624,15 +636,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateSpiviewFieldConfig: function (data, userId) {
+  updateSpiviewFieldConfig (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: `user/spiview/fields/${data.name}`,
+      const options = {
+        url: `api/user/spiview/${data.name}`,
         method: 'PUT',
-        data: data
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) { options.url += `?userId=${userId}`; }
 
       Vue.axios(options)
         .then((response) => {
@@ -652,17 +663,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  changePassword: function (data, userId) {
+  changePassword (data, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: 'user/password/change',
-        method: 'POST'
+      const options = {
+        url: 'api/user/password',
+        method: 'POST',
+        data: data,
+        params: { userId: userId }
       };
-
-      if (userId) {
-        options.url += `?userId=${userId}`;
-        options.data = { newPassword: data.newPassword };
-      } else { options.data = data; }
 
       Vue.axios(options)
         .then((response) => {
@@ -679,7 +687,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getState: function (name) {
+  getState (name) {
     return new Promise((resolve, reject) => {
       Vue.axios.get(`state/${name}`)
         .then((response) => {
@@ -697,9 +705,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  saveState: function (state, name) {
+  saveState (state, name) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: `state/${name}`,
         method: 'POST',
         data: state
@@ -723,10 +731,10 @@ export default {
   * @returns {Promise} Promise A promise object that signals the completion
   *                            or rejection of the request.
    */
-  acknowledgeMsg: function (msgNum, userId) {
+  acknowledgeMsg (msgNum, userId) {
     return new Promise((resolve, reject) => {
-      let options = {
-        url: `user/${userId}/acknowledgeMsg`,
+      const options = {
+        url: `api/user/${userId}/acknowledge`,
         method: 'PUT',
         data: { msgNum: msgNum }
       };
@@ -747,7 +755,7 @@ export default {
    * @returns {object} views  The object containing views, now with name
    *                          properties on each view object
    */
-  parseViews: function (views) {
+  parseViews (views) {
     for (var name in views) {
       if (views.hasOwnProperty(name)) {
         views[name].name = name;
