@@ -169,14 +169,14 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
    * @param {string} user - The user ID of the user who created the view.
    */
 
-   /**
-    * A database view that can be applied to any search.
-    *
-    * @typedef ArkimeColumnConfig
-    * @type {object}
-    * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
-    * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"] - The list of Sessions table columns.
-    */
+  /**
+   * A database view that can be applied to any search.
+   *
+   * @typedef ArkimeColumnConfig
+   * @type {object}
+   * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
+   * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"] - The list of Sessions table columns.
+   */
 
   /**
    * GET - /api/user
@@ -979,7 +979,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         }
 
         if (Config.get('cronQueries', false)) {
-          app.processCronQueries();
+          internals.processCronQueries();
         }
 
         return res.send(JSON.stringify({
@@ -1071,7 +1071,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
         }
 
         if (Config.get('cronQueries', false)) {
-          app.processCronQueries();
+          internals.processCronQueries();
         }
 
         return res.send(JSON.stringify({

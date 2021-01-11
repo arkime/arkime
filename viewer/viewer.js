@@ -2832,7 +2832,7 @@ if (Config.get('regressionTests')) {
     res.send('{}');
   });
   app.get('/processCronQueries', function (req, res) {
-    app.processCronQueries();
+    internals.processCronQueries();
     res.send('{}');
   });
 
@@ -3047,7 +3047,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
   });
 }
 
-app.processCronQueries = () => {
+internals.processCronQueries = () => {
   if (internals.cronRunning) {
     console.log('processQueries already running', qlworking);
     return;
@@ -3240,8 +3240,8 @@ function main () {
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Cron Queries, delayed by', internals.cronTimeout, 'seconds');
-    setInterval(app.processCronQueries, 60 * 1000);
-    setTimeout(app.processCronQueries, 1000);
+    setInterval(internals.processCronQueries, 60 * 1000);
+    setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
   }
 
