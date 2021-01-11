@@ -25,6 +25,10 @@ class URLSource extends SimpleSource {
   constructor (api, section) {
     super(api, section, { reload: true });
     this.url = api.getConfig(section, 'url');
+    this.urlScrapeRedirect = api.getConfig(section, 'urlScrapeRedirect');
+    if (this.urlScrapeRedirect) {
+      this.urlScrapeRedirect = new RegExp(this.urlScrapeRedirect);
+    }
     this.headers = {};
     const headers = api.getConfig(section, 'headers');
 
@@ -50,10 +54,25 @@ class URLSource extends SimpleSource {
     }
 
     request(this.url, { headers: this.headers }, (err, response, body) => {
-      if (!err && response.statusCode === 200) {
-        cb(null, body);
+      if (err || response.statusCode !== 200) {
+        return cb(err);
+      }
+
+      if (this.urlScrapeRedirect) {
+        const match = body.match(this.urlScrapeRedirect);
+        if (!match) {
+          return cb('URL Scrape not found');
+        }
+
+        request(match[0], { headers: this.headers }, (err, response, body) => {
+          if (err || response.statusCode !== 200) {
+            return cb(err);
+          }
+
+          return cb(null, body);
+        });
       } else {
-        cb(err);
+        return cb(null, body);
       }
     });
   }
@@ -74,6 +93,7 @@ exports.initSource = function (api) {
       { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
       { name: 'url', required: true, help: 'The URL to load' },
+      { name: 'urlScrapeRedirect', required: false, help: 'If set this is a redirect to match against the results of URL to find the url with the real data' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
       { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
     ]
