@@ -746,7 +746,7 @@ export default {
     },
     updateUser: function (user) {
       this.$set(user, 'expanded', undefined);
-      this.$http.post('user/update', user)
+      UserService.updateUser(user)
         .then((response) => {
           this.msg = response.data.text;
           this.msgType = 'success';
@@ -763,18 +763,20 @@ export default {
             // time limit is special because it can be undefined
             this.user.timeLimit = user.timeLimit || undefined;
           }
-        }, (error) => {
+        })
+        .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
         });
     },
     deleteUser: function (user, index) {
-      this.$http.post('user/delete', user)
+      UserService.deleteUser(user)
         .then((response) => {
           this.users.data.splice(index, 1);
           this.msg = response.data.text;
           this.msgType = 'success';
-        }, (error) => {
+        })
+        .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
         });
@@ -797,7 +799,7 @@ export default {
         return;
       }
 
-      this.$http.post('user/create', this.newuser)
+      UserService.createUser(this.newuser)
         .then((response) => {
           this.newuser = { enabled: true, packetSearch: true };
           this.reloadData();
@@ -840,20 +842,21 @@ export default {
         });
     },
     loadData: function () {
-      this.$http.post('user/list', this.query)
+      UserService.getUsers(this.query)
         .then((response) => {
           this.error = '';
           this.loading = false;
           this.users = JSON.parse(JSON.stringify(response.data));
           // Dont modify original list. Used for comparing
           this.dbUserList = response.data;
-        }, (error) => {
+        })
+        .catch((error) => {
           this.loading = false;
           this.error = error.text;
         });
     },
     reloadData: function () {
-      this.$http.post('user/list', this.query)
+      UserService.getUsers(this.query)
         .then((response) => {
           this.error = '';
           this.loading = false;
@@ -868,7 +871,8 @@ export default {
             // If user already exists and is still being edited, keep user obj
             return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
           });
-        }, (error) => {
+        })
+        .catch((error) => {
           this.loading = false;
           this.error = error.text;
         });
