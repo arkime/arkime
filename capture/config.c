@@ -146,7 +146,10 @@ gchar *moloch_config_str(GKeyFile *keyfile, char *key, char *d)
         keyfile = molochKeyFile;
 
     if (config.override && keyfile == molochKeyFile && (result = g_hash_table_lookup(config.override, key))) {
-        result = g_strdup(result);
+        if (result[0] == 0)
+            result = NULL;
+        else
+            result = g_strdup(result);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
@@ -395,7 +398,10 @@ void moloch_config_load()
 
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 
-    if (strcmp(rotateIndex, "hourly") == 0)
+    if (!rotateIndex) {
+        printf("rotateIndex can't be empty if in config file\n");
+        exit(1);
+    } else if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
     else if (strcmp(rotateIndex, "hourly2") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY2;
@@ -933,8 +939,8 @@ void moloch_config_init()
         exit (1);
     }
 
-    if (!config.pcapDir) {
-        printf("Must set a pcapDir to save files to\n");
+    if (!config.pcapDir || !config.pcapDir[0]) {
+        printf("Must set a non empty pcapDir to save files to\n");
         exit(1);
     }
 
