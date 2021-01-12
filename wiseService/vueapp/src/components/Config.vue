@@ -246,7 +246,10 @@
       v-model="showImportConfigModal"
       title="Import Config">
       <b-container fluid>
-        <b-alert variant="warning" :show="!!importConfigError">{{importConfigError}}</b-alert>
+        <b-alert variant="danger"
+          :show="!!importConfigError">
+          {{ importConfigError }}
+        </b-alert>
         <b-form-textarea
           v-model="importConfigText"
           placeholder="Paste your JSON or INI config here..."
@@ -260,7 +263,7 @@
             variant="warning"
             size="sm"
             class="float-left"
-            @click="showImportConfigModal = false">
+            @click="cancelImportConfig">
             Cancel
           </b-button>
           <b-button
@@ -413,7 +416,7 @@ export default {
           }
           this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
         } catch (e) {
-          this.importConfigError = `Not valid JSON`;
+          this.importConfigError = 'Not valid JSON';
           return; // Don't clear
         }
       } else if (text.startsWith('[')) {
@@ -424,9 +427,15 @@ export default {
         this.importConfigError = `Doesn't look like JSON or INI`;
         return; // Don't clear
       }
+
       this.showImportConfigModal = false;
-      this.importConfigText = '';
       this.importConfigError = '';
+      this.importConfigText = '';
+    },
+    cancelImportConfig: function () {
+      this.showImportConfigModal = false;
+      this.importConfigError = '';
+      this.importConfigText = '';
     },
     inputChanged: function (val, field) {
       if (val) {
