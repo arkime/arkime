@@ -1,4 +1,4 @@
-use Test::More tests => 94;
+use Test::More tests => 100;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -71,13 +71,13 @@ my $pwd = "*/pcap";
     eq_or_diff($users->{data}->[0], from_json('{"createEnabled": true, "userId": "test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Add User 2
-    my $json = viewerPostToken2("/user/create", '{"userId": "test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
+    my $json = viewerPostToken2("/api/user", '{"userId": "test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
 
-    $users = viewerPost("/user/list", "");
+    $users = viewerGet("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #1");
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
 
-    $users = viewerPost2("/user/list", "");
+    $users = viewerGet("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #2");
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
 
@@ -143,49 +143,63 @@ my $pwd = "*/pcap";
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
-    $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
+    $info = viewerPostToken("/api/user/column?molochRegressionUser=test1", '{"name": "column2", "columns": ["a1","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
+    ok($info->{success}, "column: create success");
+    is($info->{name}, "column2", "column: create name");
+
+    $info = viewerGet("/api/user/columns?molochRegressionUser=test1");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
     $info = viewerGet("/user/columns?molochRegressionUser=anonymous&userId=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
 
     $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(! $info->{success}, "column: delete not found");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
+    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
-    $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column1', $test1Token);
+    $info = viewerPutToken("/api/user/column/column1?molochRegressionUser=test1", '{"name": "column1", "columns": ["srcIp","dstIp","info"], "order": [["lastPacket","asc"]]}', $test1Token);
+    ok($info->{success}, "column: update");
+
+    $info = viewerDeleteToken("/api/user/column/column1?molochRegressionUser=test1", $test1Token);
+    ok($info->{success}, "column: delete found");
+
+    $info = viewerPostToken("/user/columns/delete?molochRegressionUser=test1", 'name=column2', $test1Token);
     ok($info->{success}, "column: delete found");
 
     $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
+
 # Current
-    $info = viewerGet("/user/current?molochRegressionUser=test1");
+    $info = viewerGet("/api/user?molochRegressionUser=test1");
     ok(!exists $info->{passStore}, "current: no passtore");
 
 # spiview fields
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
-    $info = viewerPostToken("/user/spiview/fields/create?molochRegressionUser=test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
+    $info = viewerPostToken("/api/user/spiview?molochRegressionUser=test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
     ok($info->{success}, "spiview fields: create success");
     is($info->{name}, "sfields1", "spiview fields: create name");
 
-    $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
+    $info = viewerGet("/api/user/spiview?molochRegressionUser=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=anonymous&userId=test1");
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item admin");
 
+    $info = viewerPutToken("/api/user/spiview/sfields1?molochRegressionUser=test1", '{"name": "sfields1", "fields": ["srcIp","dstIp","node"]}', $test1Token);
+    ok($info->{success}, "spiview fields: update success");
+
     $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=fred', $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp","node"]}]'), "spiview fields: 1 item");
 
-    $info = viewerPostToken("/user/spiview/fields/delete?molochRegressionUser=test1", 'name=sfields1', $test1Token);
+    $info = viewerDeleteToken("/api/user/spiview/sfields1?molochRegressionUser=test1", $test1Token);
     ok($info->{success}, "spiview fields: delete found");
 
     $info = viewerGet("/user/spiview/fields?molochRegressionUser=test1");
@@ -208,12 +222,12 @@ my $pwd = "*/pcap";
 
 
     # Fail duplicate create
-    $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.5"}', $test1Token);
+    $info = viewerPostToken("/api/user/view?molochRegressionUser=test1", '{"name": "view1", "expression": "ip == 1.2.3.5"}', $test1Token);
     ok(!$info->{success}, "view: create failure with same view name");
 
 
     # As admin see test1 views
-    $info = viewerGet("/user/views?molochRegressionUser=anonymous&userId=test1");
+    $info = viewerGet("/api/user/views?molochRegressionUser=anonymous&userId=test1");
     eq_or_diff($info, from_json('{"view1":{"expression":"ip == 1.2.3.4","user":"test1","shared":false}}'), "view: 1 item admin");
 
 
@@ -240,7 +254,7 @@ my $pwd = "*/pcap";
     $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.8","user":"test1","shared":false,"name":"view1"}', $test1Token);
     ok($info->{success}, "view: unshare");
 
-    $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view1"}', $test1Token);
+    $info = viewerDeleteToken("/api/user/view/view1?molochRegressionUser=test1", $test1Token);
     ok($info->{success}, "view: delete found");
 
     $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.10", "shared": true}', $test1Token);
@@ -252,28 +266,31 @@ my $pwd = "*/pcap";
     $info = viewerPostToken("/user/views/create?molochRegressionUser=test1", '{"name": "view2", "expression": "ip == 1.2.3.4", "shared": true}', $test1Token);
     ok(!$info->{success}, "view2: create failure with same shared view name");
 
-    $info = viewerPostToken("/user/views/toggleShare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
+    $info = viewerPostToken("/api/user/view/view2/toggleshare?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
     ok($info->{success}, "view2: unshare");
     $info = viewerPostToken("/user/views/delete?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
 
     $info = viewerGet("/user/views?molochRegressionUser=test1");
     eq_or_diff($info, from_json("{}"), "view: empty");
 
+    $info = viewerPutToken("/api/user/view/view2?molochRegressionUser=test1", '{"expression":"ip == 1.2.3.4","user":"test1","shared":false,"name":"view2"}', $test1Token);
+    ok($info->{success}, "view: update");
+
 # Messages
     $info = viewerPutToken("/user/test1/acknowledgeMsg", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
-    $info = viewerPutToken("/user/test1/acknowledgeMsg?molochRegressionUser=test1", '{"msgNum":2}', $token3);
+    $info = viewerPutToken("/api/user/test1/acknowledge?molochRegressionUser=test1", '{"msgNum":2}', $token3);
     ok($info->{success}, "update welcome message number");
     $info = viewerGet("/user/current?molochRegressionUser=test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
 
 # user time limit
-    $json = viewerPostToken2("/user/update", '{"userId":"test2", "timeLimit":"72"}', $token2);
+    $json = viewerPostToken2("/api/user/test2", '{"timeLimit":"72"}', $token2);
     $users = viewerPost("/user/list", "");
     eq_or_diff($users->{data}->[1]->{timeLimit}, 72, "time limit updated");
     $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=-1");
     eq_or_diff($json->{error}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
-    $json = viewerGet("/sessions.json?molochRegressionUser=test2&date=72");
+    $json = viewerGet("/api/sessions?molochRegressionUser=test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
 
 # valueActions tests
@@ -284,7 +301,7 @@ my $pwd = "*/pcap";
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
 
 # Delete Users
-    $json = viewerPostToken("/user/delete", "userId=test1", $token);
+    $json = viewerDeleteToken("/api/user/test1", $token);
     $json = viewerPostToken2("/user/delete", "userId=test2", $token2);
     esGet("/_refresh");
     $users = viewerPost("/user/list", "");

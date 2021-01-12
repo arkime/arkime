@@ -5,7 +5,7 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-module.exports = (app, Config, Db, molochparser, internals) => {
+module.exports = (Config, Db, molochparser, internals) => {
   let module = {};
 
   module.addAuth = (info, user, node, secret) => {
@@ -593,7 +593,7 @@ module.exports = (app, Config, Db, molochparser, internals) => {
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
   module.getUserCacheIncAnon = (userId, cb) => {
-    if (app.locals.noPasswordSecret) { // user is anonymous
+    if (internals.noPasswordSecret) { // user is anonymous
       Db.getUserCache('anonymous', (err, anonUser) => {
         let anon = internals.anonymousUser;
 
@@ -626,7 +626,7 @@ module.exports = (app, Config, Db, molochparser, internals) => {
       };
 
       // don't even bother searching for users if in anonymous mode
-      if (!!app.locals.noPasswordSecret && !Config.get('regressionTests', false)) {
+      if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
         resolve({ validUsers: [], invalidUsers: [] });
       }
 

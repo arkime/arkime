@@ -25,7 +25,6 @@ const MIN_DB_VERSION = 66;
 try {
   var Config = require('./config.js');
   var express = require('express');
-  var stylus = require('stylus');
   var fs = require('fs');
   var fse = require('fs-ext');
   var async = require('async');
@@ -89,24 +88,20 @@ var compression = require('compression');
 
 // internal app deps
 let { internals } = require('./internals')(app, Config);
-let ViewerUtils = require('./viewerUtils')(app, Config, Db, molochparser, internals);
+let ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
 let notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
 let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
+let userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
+app.deletepost = (route, mw, func) => { app.delete(route, mw, func); app.post(route, mw, func); };
 app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
-
-app.locals.isIndex = false;
-app.locals.basePath = Config.basePath();
-app.locals.elasticBase = internals.elasticBase[0];
-app.locals.allowUploads = Config.get('uploadCommand') !== undefined;
-internals.remoteClusters = Config.configMap('remote-clusters', Config.configMap('moloch-clusters'));
 
 app.use(passport.initialize());
 app.use(bodyParser.json());
@@ -213,7 +208,6 @@ app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 60
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
-  app.locals.alwaysShowESStatus = false;
   app.use(function (req, res, next) {
     // 200 for NS
     if (req.url === '/_ns_/nstest.html') {
@@ -326,8 +320,7 @@ if (Config.get('passwordSecret')) {
   });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
-  app.locals.alwaysShowESStatus = true;
-  app.locals.noPasswordSecret = true;
+  internals.noPasswordSecret = true;
   app.use(function (req, res, next) {
     var username = req.query.molochRegressionUser || 'anonymous';
     req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
@@ -342,8 +335,7 @@ if (Config.get('passwordSecret')) {
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
-  app.locals.alwaysShowESStatus = true;
-  app.locals.noPasswordSecret = true;
+  internals.noPasswordSecret = true;
   app.use(function (req, res, next) {
     req.user = internals.anonymousUser;
     Db.getUserCache('anonymous', (err, suser) => {
@@ -506,7 +498,7 @@ function checkProxyRequest (req, res, next) {
 
 function setCookie (req, res, next) {
   let cookieOptions = {
-    path: app.locals.basePath,
+    path: Config.basePath(),
     sameSite: 'Strict',
     overwrite: true
   };
@@ -764,7 +756,7 @@ function getSettingUserCache (req, res, next) {
 
   Db.getUserCache(req.query.userId, function (err, user) {
     if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
+      if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
       } else {
@@ -798,7 +790,7 @@ function getSettingUserDb (req, res, next) {
 
   Db.getUser(userId, function (err, user) {
     if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
+      if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
       } else {
@@ -829,8 +821,8 @@ function sanitizeViewName (req, res, next) {
 function setFieldLocals () {
   ViewerUtils.loadFields()
     .then((result) => {
-      app.locals.fieldsMap = result.fieldsMap;
-      app.locals.fieldsArr = result.fieldsArr;
+      internals.fieldsMap = result.fieldsMap;
+      internals.fieldsArr = result.fieldsArr;
       createSessionDetail();
     });
 }
@@ -916,99 +908,6 @@ function userCleanup (suser) {
       }
     });
   }
-}
-
-function saveSharedView (req, res, user, view, endpoint, successMessage, errorMessage) {
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      // sharing for the first time
-      sharedUser = {
-        userId: '_moloch_shared',
-        userName: '_moloch_shared',
-        enabled: false,
-        webEnabled: false,
-        emailSearch: false,
-        headerAuthEnabled: false,
-        createEnabled: false,
-        removeEnabled: false,
-        packetSearch: false,
-        views: {}
-      };
-    } else {
-      sharedUser = sharedUser._source;
-    }
-
-    sharedUser.views = sharedUser.views || {};
-
-    if (sharedUser.views[req.body.name]) {
-      console.log('Trying to add duplicate shared view', sharedUser);
-      return res.molochError(403, 'Shared view already exists');
-    }
-
-    sharedUser.views[req.body.name] = view;
-
-    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-      if (err) {
-        console.log(endpoint, 'failed', err, info);
-        return res.molochError(500, errorMessage);
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: successMessage,
-        viewName: req.body.name,
-        view: view
-      }));
-    });
-  });
-}
-
-// removes a view from the user that created the view and adds it to the shared user
-function shareView (req, res, user, endpoint, successMessage, errorMessage) {
-  let view = user.views[req.body.name];
-  view.shared = true;
-
-  delete user.views[req.body.name]; // remove the view from the
-
-  Db.setUser(user.userId, user, (err, info) => {
-    if (err) {
-      console.log(endpoint, 'failed', err, info);
-      return res.molochError(500, errorMessage);
-    }
-    // save the view on the shared user
-    return saveSharedView(req, res, user, view, endpoint, successMessage, errorMessage);
-  });
-}
-
-// removes a view from the shared user and adds it to the user that created the view
-function unshareView (req, res, user, sharedUser, endpoint, successMessage, errorMessage) {
-  Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-    if (err) {
-      console.log(endpoint, 'failed', err, info);
-      return res.molochError(500, errorMessage);
-    }
-
-    if (user.views[req.body.name]) { // the user already has a view with this name
-      return res.molochError(403, 'A view already exists with this name.');
-    }
-
-    user.views[req.body.name] = {
-      expression: req.body.expression,
-      user: req.body.user, // keep the user so we know who created it
-      shared: false,
-      sessionsColConfig: req.body.sessionsColConfig
-    };
-
-    Db.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(endpoint, 'failed', err, info);
-        return res.molochError(500, errorMessage);
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: successMessage
-      }));
-    });
-  });
 }
 
 // session helpers ------------------------------------------------------------
@@ -1518,985 +1417,182 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
 // APIS
 // ============================================================================
 // user apis ------------------------------------------------------------------
-// custom user css - used for custom user theme
-app.get('/user.css', checkPermissions(['webEnabled']), (req, res) => {
-  fs.readFile('./views/user.styl', 'utf8', function (err, str) {
-    function error (msg) {
-      console.log('ERROR - user.css -', msg);
-      return res.status(404).end();
-    }
-
-    let date = new Date().toUTCString();
-    res.setHeader('Content-Type', 'text/css');
-    res.setHeader('Date', date);
-    res.setHeader('Cache-Control', 'public, max-age=0');
-    res.setHeader('Last-Modified', date);
-
-    if (err) { return error(err); }
-    if (!req.user.settings.theme) { return error('no custom theme defined'); }
-
-    let theme = req.user.settings.theme.split(':');
-
-    if (!theme[1]) { return error('custom theme corrupted'); }
-
-    let style = stylus(str);
-
-    let colors = theme[1].split(',');
-
-    if (!colors) { return error('custom theme corrupted'); }
-
-    style.define('colorBackground', new stylus.nodes.Literal(colors[0]));
-    style.define('colorForeground', new stylus.nodes.Literal(colors[1]));
-    style.define('colorForegroundAccent', new stylus.nodes.Literal(colors[2]));
-
-    style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
-    style.define('colorBlack', new stylus.nodes.Literal('#333333'));
-    style.define('colorGray', new stylus.nodes.Literal('#CCCCCC'));
-    style.define('colorGrayDark', new stylus.nodes.Literal('#777777'));
-    style.define('colorGrayDarker', new stylus.nodes.Literal('#555555'));
-    style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
-    style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
-
-    style.define('colorPrimary', new stylus.nodes.Literal(colors[3]));
-    style.define('colorPrimaryLightest', new stylus.nodes.Literal(colors[4]));
-    style.define('colorSecondary', new stylus.nodes.Literal(colors[5]));
-    style.define('colorSecondaryLightest', new stylus.nodes.Literal(colors[6]));
-    style.define('colorTertiary', new stylus.nodes.Literal(colors[7]));
-    style.define('colorTertiaryLightest', new stylus.nodes.Literal(colors[8]));
-    style.define('colorQuaternary', new stylus.nodes.Literal(colors[9]));
-    style.define('colorQuaternaryLightest', new stylus.nodes.Literal(colors[10]));
-
-    style.define('colorWater', new stylus.nodes.Literal(colors[11]));
-    style.define('colorLand', new stylus.nodes.Literal(colors[12]));
-    style.define('colorSrc', new stylus.nodes.Literal(colors[13]));
-    style.define('colorDst', new stylus.nodes.Literal(colors[14]));
-
-    style.render(function (err, css) {
-      if (err) { return error(err); }
-      return res.send(css);
-    });
-  });
-});
-
-app.get('/user/current', checkPermissions(['webEnabled']), (req, res) => {
-  let userProps = [ 'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-    'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-    'lastUsed', 'timeLimit' ];
-
-  let clone = {};
-
-  for (let i = 0, ilen = userProps.length; i < ilen; ++i) {
-    let prop = userProps[i];
-    if (req.user.hasOwnProperty(prop)) {
-      clone[prop] = req.user[prop];
-    }
-  }
-
-  clone.canUpload = app.locals.allowUploads;
-
-  // If esAdminUser is set use that, other wise use createEnable privilege
-  if (internals.esAdminUsersSet) {
-    clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
-  } else {
-    clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
-  }
-
-  // If no settings, use defaults
-  if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
-
-  // Use settingsDefaults for any settings that are missing
-  for (let item in internals.settingDefaults) {
-    if (clone.settings[item] === undefined) {
-      clone.settings[item] = internals.settingDefaults[item];
-    }
-  }
-
-  return res.send(clone);
-});
-
-app.post('/user/list', [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])], (req, res) => {
-  let columns = [ 'userId', 'userName', 'expression', 'enabled', 'createEnabled',
-    'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-    'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-    'lastUsed', 'timeLimit' ];
-
-  let query = {
-    _source: columns,
-    sort: {},
-    from: +req.body.start || 0,
-    size: +req.body.length || 10000,
-    query: { // exclude the shared user from results
-      bool: { must_not: { term: { userId: '_moloch_shared' } } }
-    }
-  };
-
-  if (req.body.filter) {
-    query.query.bool.should = [
-      { wildcard: { userName: '*' + req.body.filter + '*' } },
-      { wildcard: { userId: '*' + req.body.filter + '*' } }
-    ];
-  }
-
-  req.body.sortField = req.body.sortField || 'userId';
-  query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc' : 'asc' };
-  query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
-
-  Promise.all([Db.searchUsers(query),
-    Db.numberOfUsers()
-  ])
-    .then(([users, total]) => {
-      if (users.error) { throw users.error; }
-      let results = { total: users.hits.total, results: [] };
-      for (let i = 0, ilen = users.hits.hits.length; i < ilen; i++) {
-        let fields = users.hits.hits[i]._source || users.hits.hits[i].fields;
-        fields.id = users.hits.hits[i]._id;
-        fields.expression = fields.expression || '';
-        fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-        fields.emailSearch = fields.emailSearch || false;
-        fields.removeEnabled = fields.removeEnabled || false;
-        fields.userName = ViewerUtils.safeStr(fields.userName || '');
-        fields.packetSearch = fields.packetSearch || false;
-        fields.timeLimit = fields.timeLimit || undefined;
-        results.results.push(fields);
-      }
-
-      let r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results
-      };
-
-      res.send(r);
-    }).catch((err) => {
-      console.log('ERROR - /user/list', err);
-      return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-    });
-});
-
-app.post('/user/create', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-    return res.molochError(403, 'Missing/Empty required fields');
-  }
-
-  if (req.body.userId.match(/[^@\w.-]/)) {
-    return res.molochError(403, 'User ID must be word characters');
-  }
-
-  if (req.body.userId === '_moloch_shared') {
-    return res.molochError(403, 'User ID cannot be the same as the shared moloch user');
-  }
-
-  Db.getUser(req.body.userId, function (err, user) {
-    if (!user || user.found) {
-      console.log('Trying to add duplicate user', err, user);
-      return res.molochError(403, 'User already exists');
-    }
-
-    let nuser = {
-      userId: req.body.userId,
-      userName: req.body.userName,
-      expression: req.body.expression,
-      passStore: Config.pass2store(req.body.userId, req.body.password),
-      enabled: req.body.enabled === true,
-      webEnabled: req.body.webEnabled === true,
-      emailSearch: req.body.emailSearch === true,
-      headerAuthEnabled: req.body.headerAuthEnabled === true,
-      createEnabled: req.body.createEnabled === true,
-      removeEnabled: req.body.removeEnabled === true,
-      packetSearch: req.body.packetSearch === true,
-      timeLimit: req.body.timeLimit,
-      hideStats: req.body.hideStats === true,
-      hideFiles: req.body.hideFiles === true,
-      hidePcap: req.body.hidePcap === true,
-      disablePcapDownload: req.body.disablePcapDownload === true,
-      welcomeMsgNum: 0
-    };
-
-    // console.log('Creating new user', nuser);
-    Db.setUser(req.body.userId, nuser, function (err, info) {
-      if (!err) {
-        return res.send(JSON.stringify({ success: true, text: 'User created succesfully' }));
-      } else {
-        console.log('ERROR - add user', err, info);
-        return res.molochError(403, err);
-      }
-    });
-  });
-});
-
-app.put('/user/:userId/acknowledgeMsg', [noCacheJson, logAction(), checkCookieToken], function (req, res) {
-  if (!req.body.msgNum) {
-    return res.molochError(403, 'Message number required');
-  }
-
-  if (req.params.userId !== req.user.userId) {
-    return res.molochError(403, 'Can not change other users msg');
-  }
-
-  Db.getUser(req.params.userId, function (err, user) {
-    if (err || !user.found) {
-      console.log('update user failed', err, user);
-      return res.molochError(403, 'User not found');
-    }
-    user = user._source;
-
-    user.welcomeMsgNum = parseInt(req.body.msgNum);
-
-    Db.setUser(req.params.userId, user, function (err, info) {
-      if (Config.debug) {
-        console.log('setUser', user, err, info);
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: `User, ${req.params.userId}, dismissed message ${req.body.msgNum}`
-      }));
-    });
-  });
-});
-
-app.post('/user/delete', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (req.body.userId === req.user.userId) {
-    return res.molochError(403, 'Can not delete yourself');
-  }
-
-  Db.deleteUser(req.body.userId, function (err, data) {
-    setTimeout(function () {
-      res.send(JSON.stringify({ success: true, text: 'User deleted successfully' }));
-    }, 200);
-  });
-});
-
-app.post('/user/update', [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])], (req, res) => {
-  if (req.body.userId === undefined) {
-    return res.molochError(403, 'Missing userId');
-  }
-
-  if (req.body.userId === '_moloch_shared') {
-    return res.molochError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
-  }
-
-  /* if (req.params.userId === req.user.userId && req.query.createEnabled !== undefined && req.query.createEnabled !== "true") {
-    return res.send(JSON.stringify({success: false, text: "Can not turn off your own admin privileges"}));
-  } */
-
-  Db.getUser(req.body.userId, function (err, user) {
-    if (err || !user.found) {
-      console.log('update user failed', err, user);
-      return res.molochError(403, 'User not found');
-    }
-    user = user._source;
-
-    user.enabled = req.body.enabled === true;
-
-    if (req.body.expression !== undefined) {
-      if (req.body.expression.match(/^\s*$/)) {
-        delete user.expression;
-      } else {
-        user.expression = req.body.expression;
-      }
-    }
-
-    if (req.body.userName !== undefined) {
-      if (req.body.userName.match(/^\s*$/)) {
-        console.log('ERROR - empty username', req.body);
-        return res.molochError(403, 'Username can not be empty');
-      } else {
-        user.userName = req.body.userName;
-      }
-    }
-
-    user.webEnabled = req.body.webEnabled === true;
-    user.emailSearch = req.body.emailSearch === true;
-    user.headerAuthEnabled = req.body.headerAuthEnabled === true;
-    user.removeEnabled = req.body.removeEnabled === true;
-    user.packetSearch = req.body.packetSearch === true;
-    user.hideStats = req.body.hideStats === true;
-    user.hideFiles = req.body.hideFiles === true;
-    user.hidePcap = req.body.hidePcap === true;
-    user.disablePcapDownload = req.body.disablePcapDownload === true;
-    user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
-
-    // Can only change createEnabled if it is currently turned on
-    if (req.body.createEnabled !== undefined && req.user.createEnabled) {
-      user.createEnabled = req.body.createEnabled === true;
-    }
-
-    Db.setUser(req.body.userId, user, function (err, info) {
-      if (Config.debug) {
-        console.log('setUser', user, err, info);
-      }
-      return res.send(JSON.stringify({ success: true, text: 'User "' + req.body.userId + '" updated successfully' }));
-    });
-  });
-});
-
-// gets a user's settings
-app.get('/user/settings', [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie], (req, res) => {
-  let settings = (req.settingUser.settings)
-    ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
-    : JSON.parse(JSON.stringify(internals.settingDefaults));
-
-  let cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
-  if (Config.isHTTPS()) { cookieOptions.secure = true; }
-
-  res.cookie(
-    'MOLOCH-COOKIE',
-    Config.obj2auth({ date: Date.now(), pid: process.pid, userId: req.user.userId }, true),
-    cookieOptions
-  );
-
-  return res.send(settings);
-});
-
-// updates a user's settings
-app.post('/user/settings/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  req.settingUser.settings = req.body;
-  delete req.settingUser.settings.token;
-
-  Db.setUser(req.settingUser.userId, req.settingUser, function (err, info) {
-    if (err) {
-      console.log('/user/settings/update error', err, info);
-      return res.molochError(500, 'Settings update failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Updated settings successfully'
-    }));
-  });
-});
-
-// gets a user's views
-app.get('/user/views', [noCacheJson, getSettingUserCache], function (req, res) {
-  if (!req.settingUser) { return res.send({}); }
-
-  // Clone the views so we don't modify that cached user
-  let views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
-
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (sharedUser && sharedUser.found) {
-      sharedUser = sharedUser._source;
-      for (let viewName in sharedUser.views) {
-        // check for views with the same name as a shared view so user specific views don't get overwritten
-        let sharedViewName = viewName;
-        if (views[sharedViewName] && !views[sharedViewName].shared) {
-          sharedViewName = `shared:${sharedViewName}`;
-        }
-        views[sharedViewName] = sharedUser.views[viewName];
-      }
-    }
-
-    return res.send(views);
-  });
-});
-
-// creates a new view for a user
-app.post('/user/views/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
-  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
-
-  let user = req.settingUser;
-  user.views = user.views || {};
-
-  let newView = {
-    expression: req.body.expression,
-    user: user.userId
-  };
-
-  if (req.body.shared) {
-    // save the view on the shared user
-    newView.shared = true;
-    saveSharedView(req, res, user, newView, '/user/views/create', 'Created shared view successfully', 'Create shared view failed');
-  } else {
-    newView.shared = false;
-    if (user.views[req.body.name]) {
-      return res.molochError(403, 'A view already exists with this name.');
-    } else {
-      user.views[req.body.name] = newView;
-    }
-
-    if (req.body.sessionsColConfig) {
-      user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
-    } else if (user.views[req.body.name].sessionsColConfig && !req.body.sessionsColConfig) {
-      user.views[req.body.name].sessionsColConfig = undefined;
-    }
-
-    Db.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log('/user/views/create error', err, info);
-        return res.molochError(500, 'Create view failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Created view successfully',
-        viewName: req.body.name,
-        view: newView
-      }));
-    });
-  }
-});
-
-// deletes a user's specified view
-app.post('/user/views/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
-
-  let user = req.settingUser;
-  user.views = user.views || {};
-
-  if (req.body.shared) {
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser && sharedUser.found) {
-        sharedUser = sharedUser._source;
-        sharedUser.views = sharedUser.views || {};
-        if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
-        // only admins or the user that created the view can delete the shared view
-        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, `Need admin privelages to delete another user's shared view`);
-        }
-        delete sharedUser.views[req.body.name];
-      }
-
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-        if (err) {
-          console.log('/user/views/delete failed', err, info);
-          return res.molochError(500, 'Delete shared view failed');
-        }
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Deleted shared view successfully'
-        }));
-      });
-    });
-  } else {
-    if (user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
-    delete user.views[req.body.name];
-
-    Db.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log('/user/views/delete failed', err, info);
-        return res.molochError(500, 'Delete view failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Deleted view successfully'
-      }));
-    });
-  }
-});
-
-// shares/unshares a view
-app.post('/user/views/toggleShare', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
-  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
-
-  let share = req.body.shared;
-  let user = req.settingUser;
-  user.views = user.views || {};
-
-  if (share && user.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
-
-  Db.getUser('_moloch_shared', (err, sharedUser) => {
-    if (!sharedUser || !sharedUser.found) {
-      // the shared user has not been created yet so there is no chance of duplicate views
-      if (share) { // add the view to the shared user
-        return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
-      }
-      // if it not already a shared view and it's trying to be unshared, something went wrong, can't do it
-      return res.molochError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
-    }
-
-    sharedUser = sharedUser._source;
-    sharedUser.views = sharedUser.views || {};
-
-    if (share) { // if sharing, make sure the view doesn't already exist
-      if (sharedUser.views[req.body.name]) { // duplicate detected
-        return res.molochError(403, 'A shared view already exists with this name.');
-      }
-      return shareView(req, res, user, '/user/views/toggleShare', 'Shared view successfully', 'Sharing view failed');
-    } else {
-      // if unsharing, remove it from shared user and add it to current user
-      if (sharedUser.views[req.body.name] === undefined) { return res.molochError(404, 'View not found'); }
-      // only admins or the user that created the view can update the shared view
-      if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-        return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
-      }
-      // delete the shared view
-      delete sharedUser.views[req.body.name];
-      return unshareView(req, res, user, sharedUser, '/user/views/toggleShare', 'Unshared view successfully', 'Unsharing view failed');
-    }
-  });
-});
-
-// updates a user's specified view
-app.post('/user/views/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing view name'); }
-  if (!req.body.expression) { return res.molochError(403, 'Missing view expression'); }
-  if (!req.body.key) { return res.molochError(403, 'Missing view key'); }
-
-  let user = req.settingUser;
-  user.views = user.views || {};
-
-  if (req.body.shared) {
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser && sharedUser.found) {
-        sharedUser = sharedUser._source;
-        sharedUser.views = sharedUser.views || {};
-        if (sharedUser.views[req.body.key] === undefined) { return res.molochError(404, 'View not found'); }
-        // only admins or the user that created the view can update the shared view
-        if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-          return res.molochError(401, `Need admin privelages to update another user's shared view`);
-        }
-        sharedUser.views[req.body.name] = {
-          expression: req.body.expression,
-          user: user.userId,
-          shared: true,
-          sessionsColConfig: req.body.sessionsColConfig
-        };
-        // delete the old one if the key (view name) has changed
-        if (sharedUser.views[req.body.key] && req.body.name !== req.body.key) {
-          sharedUser.views[req.body.key] = null;
-          delete sharedUser.views[req.body.key];
-        }
-      }
-
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
-        if (err) {
-          console.log('/user/views/delete failed', err, info);
-          return res.molochError(500, 'Update shared view failed');
-        }
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Updated shared view successfully'
-        }));
-      });
-    });
-  } else {
-    if (user.views[req.body.name]) {
-      user.views[req.body.name].expression = req.body.expression;
-      user.views[req.body.name].sessionsColConfig = req.body.sessionsColConfig;
-    } else { // the name has changed, so create a new entry
-      user.views[req.body.name] = {
-        expression: req.body.expression,
-        user: user.userId,
-        shared: false,
-        sessionsColConfig: req.body.sessionsColConfig
-      };
-    }
-
-    // delete the old one if the key (view name) has changed
-    if (user.views[req.body.key] && req.body.name !== req.body.key) {
-      user.views[req.body.key] = null;
-      delete user.views[req.body.key];
-    }
-
-    Db.setUser(user.userId, user, function (err, info) {
-      if (err) {
-        console.log('/user/views/update error', err, info);
-        return res.molochError(500, 'Updating view failed');
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Updated view successfully'
-      }));
-    });
-  }
-});
-
-// gets a user's cron queries
-app.get('/user/cron', [noCacheJson, getSettingUserCache], function (req, res) {
-  if (!req.settingUser) { return res.molochError(403, 'Unknown user'); }
-
-  var user = req.settingUser;
-  if (user.settings === undefined) { user.settings = {}; }
-  Db.search('queries', 'query', { size: 1000, query: { term: { creator: user.userId } } }, function (err, data) {
-    if (err || data.error) {
-      console.log('/user/cron error', err || data.error);
-    }
-
-    let queries = {};
-
-    if (data && data.hits && data.hits.hits) {
-      data.hits.hits.forEach(function (item) {
-        queries[item._id] = item._source;
-      });
-    }
-
-    res.send(queries);
-  });
-});
-
-// creates a new cron query for a user
-app.post('/user/cron/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing cron query name'); }
-  if (!req.body.query) { return res.molochError(403, 'Missing cron query expression'); }
-  if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
-  if (!req.body.tags) { return res.molochError(403, 'Missing cron query tag(s)'); }
-
-  var document = {
-    doc: {
-      enabled: true,
-      name: req.body.name,
-      query: req.body.query,
-      tags: req.body.tags,
-      action: req.body.action
-    }
-  };
-
-  if (req.body.notifier) {
-    document.doc.notifier = req.body.notifier;
-  }
-
-  var userId = req.settingUser.userId;
-
-  Db.getMinValue('sessions2-*', 'timestamp', (err, minTimestamp) => {
-    if (err || minTimestamp === 0 || minTimestamp === null) {
-      minTimestamp = Math.floor(Date.now() / 1000);
-    } else {
-      minTimestamp = Math.floor(minTimestamp / 1000);
-    }
-
-    if (+req.body.since === -1) {
-      document.doc.lpValue = document.doc.lastRun = minTimestamp;
-    } else {
-      document.doc.lpValue = document.doc.lastRun =
-         Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
-    }
-    document.doc.count = 0;
-    document.doc.creator = userId || 'anonymous';
-
-    Db.indexNow('queries', 'query', null, document.doc, function (err, info) {
-      if (err) {
-        console.log('/user/cron/create error', err, info);
-        return res.molochError(500, 'Create cron query failed');
-      }
-      if (Config.get('cronQueries', false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Created cron query successfully',
-        key: info._id
-      }));
-    });
-  });
-});
-
-// deletes a user's specified cron query
-app.post('/user/cron/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function (req, res) {
-  if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
-
-  Db.deleteDocument('queries', 'query', req.body.key, { refresh: true }, function (err, sq) {
-    if (err) {
-      console.log('/user/cron/delete error', err, sq);
-      return res.molochError(500, 'Delete cron query failed');
-    }
-    res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted cron query successfully'
-    }));
-  });
-});
-
-// updates a user's specified cron query
-app.post('/user/cron/update', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess], function (req, res) {
-  if (!req.body.key) { return res.molochError(403, 'Missing cron query key'); }
-  if (!req.body.name) { return res.molochError(403, 'Missing cron query name'); }
-  if (!req.body.query) { return res.molochError(403, 'Missing cron query expression'); }
-  if (!req.body.action) { return res.molochError(403, 'Missing cron query action'); }
-  if (!req.body.tags) { return res.molochError(403, 'Missing cron query tag(s)'); }
-
-  var document = {
-    doc: {
-      enabled: req.body.enabled,
-      name: req.body.name,
-      query: req.body.query,
-      tags: req.body.tags,
-      action: req.body.action,
-      notifier: undefined
-    }
-  };
-
-  if (req.body.notifier) {
-    document.doc.notifier = req.body.notifier;
-  }
-
-  Db.get('queries', 'query', req.body.key, function (err, sq) {
-    if (err || !sq.found) {
-      console.log('/user/cron/update failed', err, sq);
-      return res.molochError(403, 'Unknown query');
-    }
-
-    Db.update('queries', 'query', req.body.key, document, { refresh: true }, function (err, data) {
-      if (err) {
-        console.log('/user/cron/update error', err, document, data);
-        return res.molochError(500, 'Cron query update failed');
-      }
-      if (Config.get('cronQueries', false)) {
-        processCronQueries();
-      }
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Updated cron query successfully'
-      }));
-    });
-  });
-});
-
-// changes a user's password
-app.post('/user/password/change', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.newPassword || req.body.newPassword.length < 3) {
-    return res.molochError(403, 'New password needs to be at least 3 characters');
-  }
-
-  if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
-     Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
-     req.token.userId !== req.user.userId)) {
-    return res.molochError(403, 'Current password mismatch');
-  }
-
-  var user = req.settingUser;
-  user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/password/change error', err, info);
-      return res.molochError(500, 'Update failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Changed password successfully'
-    }));
-  });
-});
-
-// gets custom column configurations for a user
-app.get('/user/columns', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.settingUser) { return res.send([]); }
-
-  // Fix for new names
-  if (req.settingUser.columnConfigs) {
-    for (var key in req.settingUser.columnConfigs) {
-      let item = req.settingUser.columnConfigs[key];
-      item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
-      if (item.order && item.order.length > 0) {
-        item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-      }
-    }
-  }
-
-  return res.send(req.settingUser.columnConfigs || []);
-});
-
-// udpates custom column configurations for a user
-app.put('/user/columns/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-  if (!req.body.columns) { return res.molochError(403, 'Missing columns'); }
-  if (!req.body.order) { return res.molochError(403, 'Missing sort order'); }
-
-  let user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  // find the custom column configuration to update
-  let found = false;
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      found = true;
-      user.columnConfigs[i] = req.body;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Custom column configuration not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns udpate error', err, info);
-      return res.molochError(500, 'Update custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Updated column configuration',
-      colConfig: req.body
-    }));
-  });
-});
-
-// creates a new custom column configuration for a user
-app.post('/user/columns/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-  if (!req.body.columns) { return res.molochError(403, 'Missing columns'); }
-  if (!req.body.order) { return res.molochError(403, 'Missing sort order'); }
-
-  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-  if (req.body.name.length < 1) {
-    return res.molochError(403, 'Invalid custom column configuration name');
-  }
-
-  var user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  // don't let user use duplicate names
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      return res.molochError(403, 'There is already a custom column with that name');
-    }
-  }
-
-  user.columnConfigs.push({
-    name: req.body.name,
-    columns: req.body.columns,
-    order: req.body.order
-  });
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns/create error', err, info);
-      return res.molochError(500, 'Create custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Created custom column configuration successfully',
-      name: req.body.name
-    }));
-  });
-});
-
-// deletes a user's specified custom column configuration
-app.post('/user/columns/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom column configuration name'); }
-
-  var user = req.settingUser;
-  user.columnConfigs = user.columnConfigs || [];
-
-  var found = false;
-  for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.columnConfigs[i].name) {
-      user.columnConfigs.splice(i, 1);
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Column not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/columns/delete failed', err, info);
-      return res.molochError(500, 'Delete custom column configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted custom column configuration successfully'
-    }));
-  });
-});
-
-// gets custom spiview fields configurations for a user
-app.get('/user/spiview/fields', [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.settingUser) { return res.send([]); }
-
-  return res.send(req.settingUser.spiviewFieldConfigs || []);
-});
-
-// udpates custom spiview field configuration for a user
-app.put('/user/spiview/fields/:name', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview field configuration name'); }
-  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
-
-  let user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  // find the custom spiview field configuration to update
-  let found = false;
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      found = true;
-      user.spiviewFieldConfigs[i] = req.body;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Custom spiview field configuration not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields udpate error', err, info);
-      return res.molochError(500, 'Update spiview field configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Updated spiview field configuration',
-      colConfig: req.body
-    }));
-  });
-});
-
-// creates a new custom spiview fields configuration for a user
-app.post('/user/spiview/fields/create', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview field configuration name'); }
-  if (!req.body.fields) { return res.molochError(403, 'Missing fields'); }
-
-  req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-
-  if (req.body.name.length < 1) {
-    return res.molochError(403, 'Invalid custom spiview fields configuration name');
-  }
-
-  var user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  // don't let user use duplicate names
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      return res.molochError(403, 'There is already a custom spiview fields configuration with that name');
-    }
-  }
-
-  user.spiviewFieldConfigs.push({
-    name: req.body.name,
-    fields: req.body.fields
-  });
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields/create error', err, info);
-      return res.molochError(500, 'Create custom spiview fields configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Created custom spiview fields configuration successfully',
-      name: req.body.name
-    }));
-  });
-});
-
-// deletes a user's specified custom spiview fields configuration
-app.post('/user/spiview/fields/delete', [noCacheJson, checkCookieToken, logAction(), getSettingUserDb], function (req, res) {
-  if (!req.body.name) { return res.molochError(403, 'Missing custom spiview fields configuration name'); }
-
-  var user = req.settingUser;
-  user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-  var found = false;
-  for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-    if (req.body.name === user.spiviewFieldConfigs[i].name) {
-      user.spiviewFieldConfigs.splice(i, 1);
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) { return res.molochError(200, 'Spiview fields not found'); }
-
-  Db.setUser(user.userId, user, function (err, info) {
-    if (err) {
-      console.log('/user/spiview/fields/delete failed', err, info);
-      return res.molochError(500, 'Delete custom spiview fields configuration failed');
-    }
-    return res.send(JSON.stringify({
-      success: true,
-      text: 'Deleted custom spiview fields configuration successfully'
-    }));
-  });
-});
+app.get( // current user endpoint
+  ['/api/user', '/user/current'],
+  checkPermissions(['webEnabled']),
+  userAPIs.getUser
+);
+
+app.post( // create user endpoint
+  ['/api/user', '/user/create'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.createUser
+);
+
+app.delete( // user delete endpoint
+  ['/api/user/:id', '/user/delete'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.deleteUser
+);
+app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
+  ['/user/delete'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.deleteUser
+);
+
+app.get( // user css endpoint
+  ['/api/user[/.]css', '/user.css'],
+  checkPermissions(['webEnabled']),
+  userAPIs.getUserCSS
+);
+
+app.getpost( // user list endpoint
+  ['/api/users', '/user/list'],
+  [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
+  userAPIs.getUsers
+);
+
+app.post( // update user password endpoint
+  ['/api/user/password', '/user/password/change'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserPassword
+);
+
+app.get( // user settings endpoint
+  ['/api/user/settings', '/user/settings'],
+  [noCacheJson, recordResponseTime, getSettingUserDb, checkPermissions(['webEnabled']), setCookie],
+  userAPIs.getUserSettings
+);
+
+app.post( // udpate user settings endpoint
+  ['/api/user/settings', '/user/settings/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserSettings
+);
+
+app.get( // user views endpoint
+  ['/api/user/views', '/user/views'],
+  [noCacheJson, getSettingUserCache],
+  userAPIs.getUserViews
+);
+
+app.post( // create user view endpoint
+  ['/api/user/view', '/user/views/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.createUserView
+);
+
+app.deletepost( // delete user view endpoint
+  ['/api/user/view/:name', '/user/views/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.deleteUserView
+);
+
+app.post( // (un)share a user view endpoint
+  ['/api/user/view/:name/toggleshare', '/user/views/toggleShare'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.userViewToggleShare
+);
+
+app.put( // update user view endpoint
+  ['/api/user/view/:key', '/user/views/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.updateUserView
+);
+app.post( // update user view endpoint for backwards compatibility with API 0.x-2.x
+  ['/user/views/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  userAPIs.updateUserView
+);
+
+app.get( // user cron queries endpoint
+  ['/api/user/crons', '/user/cron'],
+  [noCacheJson, getSettingUserCache],
+  userAPIs.getUserCron
+);
+
+app.post( // create user cron query
+  ['/api/user/cron', '/user/cron/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.createUserCron
+);
+
+app.delete( // delete user cron endpoint
+  ['/api/user/cron/:key', '/user/cron/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.deleteUserCron
+);
+app.post( // delete user cron endpoint for backwards compatibility with API 0.x-2.x
+  '/user/cron/delete',
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.deleteUserCron
+);
+
+app.post( // update user cron endpoint
+  ['/api/user/cron/:key', '/user/cron/update'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  userAPIs.updateUserCron
+);
+
+app.get( // user custom columns endpoint
+  ['/api/user/columns', '/user/columns'],
+  [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  userAPIs.getUserColumns
+);
+
+app.post( // create user custom columns endpoint
+  ['/api/user/column', '/user/columns/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.createUserColumns
+);
+
+app.put( // update user custom column endpoint
+  ['/api/user/column/:name', '/user/columns/:name'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserColumns
+);
+
+app.deletepost( // delete user custom column endpoint (DELETE and POST)
+  ['/api/user/column/:name', '/user/columns/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.deleteUserColumns
+);
+
+app.get( // user spiview fields endpoint
+  ['/api/user/spiview', '/user/spiview/fields'],
+  [noCacheJson, getSettingUserCache, checkPermissions(['webEnabled'])],
+  userAPIs.getUserSpiviewFields
+);
+
+app.post( // create spiview fields endpoint
+  ['/api/user/spiview', '/user/spiview/fields/create'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.createUserSpiviewFields
+);
+
+app.put( // update user spiview fields endpoint
+  ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.updateUserSpiviewFields
+);
+
+app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
+  ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
+  [noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  userAPIs.deleteUserSpiviewFields
+);
+
+app.put( // acknowledge message endoint
+  ['/api/user/:userId/acknowledge', '/user/:userId/acknowledgeMsg'],
+  [noCacheJson, logAction(), checkCookieToken],
+  userAPIs.acknowledgeMsg
+);
+
+app.post( // update user endpoint
+  ['/api/user/:id', '/user/update'],
+  [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
+  userAPIs.updateUser
+);
 
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
@@ -2666,15 +1762,15 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
  * @returns {array/map} The map or list of database fields
  */
 app.get('/api/fields', (req, res) => {
-  if (!app.locals.fieldsMap) {
+  if (!internals.fieldsMap) {
     res.status(404);
     res.send('Cannot locate fields');
   }
 
   if (req.query && req.query.array) {
-    res.send(app.locals.fieldsArr);
+    res.send(internals.fieldsArr);
   } else {
-    res.send(app.locals.fieldsMap);
+    res.send(internals.fieldsMap);
   }
 });
 
@@ -2907,140 +2003,140 @@ app.get('/parliament.json', [noCacheJson], (req, res) => {
 });
 
 // stats apis -----------------------------------------------------------------
-app.get( // stats endpoint (GET)
+app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getStats
 );
 
-app.get( // detailed stats endpoint (GET)
+app.get( // detailed stats endpoint
   ['/api/dstats', '/dstats.json'],
   [noCacheJson, checkPermissions(['hideStats'])],
   statsAPIs.getDetailedStats
 );
 
-app.get( // elasticsearch stats endpoint (GET)
+app.get( // elasticsearch stats endpoint
   ['/api/esstats', '/esstats.json'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESStats
 );
 
-app.get( // elasticsearch indices endpoint (GET)
+app.get( // elasticsearch indices endpoint
   ['/api/esindices', '/esindices/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESIndices
 );
 
-app.delete( // delete elasticsearch index endpoint (DELETE)
+app.delete( // delete elasticsearch index endpoint
   ['/api/esindices/:index', '/esindices/:index'],
   [noCacheJson, recordResponseTime, checkPermissions(['createEnabled', 'removeEnabled']), setCookie],
   statsAPIs.deleteESIndex
 );
 
-app.post( // optimize elasticsearch index endpoint (POST)
+app.post( // optimize elasticsearch index endpoint
   ['/api/esindices/:index/optimize', '/esindices/:index/optimize'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.optimizeESIndex
 );
 
-app.post( // close elasticsearch index endpoint (POST)
+app.post( // close elasticsearch index endpoint
   ['/api/esindices/:index/close', '/esindices/:index/close'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.closeESIndex
 );
 
-app.post( // open elasticsearch index endpoint (POST)
+app.post( // open elasticsearch index endpoint
   ['/api/esindices/:index/open', '/esindices/:index/open'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.openESIndex
 );
 
-app.post( // shrink elasticsearch index endpoint (POST)
+app.post( // shrink elasticsearch index endpoint
   ['/api/esindices/:index/shrink', '/esindices/:index/shrink'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.shrinkESIndex
 );
 
-app.get( // elasticsearch tasks endpoint (GET)
+app.get( // elasticsearch tasks endpoint
   ['/api/estasks', '/estask/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESTasks
 );
 
-app.post( // cancel elasticsearch task endpoint (POST)
+app.post( // cancel elasticsearch task endpoint
   ['/api/estasks/:id/cancel', '/estask/cancel'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.cancelESTask
 );
 
-app.post( // cancel elasticsearch task by opaque id endpoint (POST)
+app.post( // cancel elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
   // should not have createEnabled check so users can use, each user is name spaced
   [noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
 
-app.post( // cancel all elasticsearch tasks endpoint (POST)
+app.post( // cancel all elasticsearch tasks endpoint
   ['/api/estasks/cancelall', '/estask/cancelAll'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.cancelAllESTasks
 );
 
-app.get( // elasticsearch admin settings endpoint (GET)
+app.get( // elasticsearch admin settings endpoint
   ['/api/esadmin', '/esadmin/list'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
   statsAPIs.getESAdminSettings
 );
 
-app.post( // set elasticsearch admin setting endpoint (POST)
+app.post( // set elasticsearch admin setting endpoint
   ['/api/esadmin/set', '/esadmin/set'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.setESAdminSettings
 );
 
-app.post( // reroute elasticsearch admin endpoint (POST)
+app.post( // reroute elasticsearch admin endpoint
   ['/api/esadmin/reroute', '/esadmin/reroute'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.rerouteES
 );
 
-app.post( // flush elasticsearch admin endpoint (POST)
+app.post( // flush elasticsearch admin endpoint
   ['/api/esadmin/flush', '/esadmin/flush'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.flushES
 );
 
-app.post( // unflood elasticsearch admin endpoint (POST)
+app.post( // unflood elasticsearch admin endpoint
   ['/api/esadmin/unflood', '/esadmin/unflood'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.unfloodES
 );
 
-app.post( // unflood elasticsearch admin endpoint (POST)
+app.post( // unflood elasticsearch admin endpoint
   ['/api/esadmin/clearcache', '/esadmin/clearcache'],
   [noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   statsAPIs.clearCacheES
 );
 
-app.get( // elasticsearch shards endpoint (GET)
+app.get( // elasticsearch shards endpoint
   ['/api/esshards', '/esshard/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESShards
 );
 
-app.post( // exclude elasticsearch shard endpoint (POST)
+app.post( // exclude elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude', '/esshard/exclude/:type/:value'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.excludeESShard
 );
 
-app.post( // include elasticsearch shard endpoint (POST)
+app.post( // include elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include', '/esshard/include/:type/:value'],
   [noCacheJson, logAction(), checkCookieToken, checkPermissions(['createEnabled'])],
   statsAPIs.includeESShard
 );
 
-app.get( // elasticsearch recovery endpoint (GET)
+app.get( // elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
@@ -3718,7 +2814,7 @@ if (Config.get('regressionTests')) {
     res.send('{}');
   });
   app.get('/processCronQueries', function (req, res) {
-    processCronQueries();
+    internals.processCronQueries();
     res.send('{}');
   });
 
@@ -3811,16 +2907,16 @@ app.use(cspHeader, setCookie, (req, res) => {
   const appContext = {
     theme: theme,
     titleConfig: titleConfig,
-    path: app.locals.basePath,
+    path: Config.basePath(),
     version: version.version,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
-    themeUrl: theme === 'custom-theme' ? 'user.css' : '',
+    themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     serverNonce: res.locals.nonce,
-    anonymousMode: !!app.locals.noPasswordSecret && !Config.get('regressionTests', false),
+    anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5')
@@ -3857,9 +2953,9 @@ function processCronQuery (cq, options, query, endTime, cb) {
     console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
   }
 
-  var singleEndTime;
-  var count = 0;
-  async.doWhilst(function (whilstCb) {
+  let singleEndTime;
+  let count = 0;
+  async.doWhilst((whilstCb) => {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
     query.query.bool.filter[0] = { range: { timestamp: { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
@@ -3896,9 +2992,9 @@ function processCronQuery (cq, options, query, endTime, cb) {
         return setImmediate(whilstCb, 'ERR');
       }
 
-      var ids = [];
-      var hits = result.hits.hits;
-      var i, ilen;
+      let ids = [];
+      const hits = result.hits.hits;
+      let i, ilen;
       if (cq.action.indexOf('forward:') === 0) {
         for (i = 0, ilen = hits.length; i < ilen; i++) {
           ids.push({ id: hits[i]._id, node: hits[i]._source.node });
@@ -3914,8 +3010,8 @@ function processCronQuery (cq, options, query, endTime, cb) {
           console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
         }
 
-        var tags = options.tags.split(',');
-        sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], function (err, list) {
+        const tags = options.tags.split(',');
+        sessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
           sessionAPIs.addTagsList(tags, list, doNext);
         });
       } else {
@@ -3923,17 +3019,17 @@ function processCronQuery (cq, options, query, endTime, cb) {
         doNext();
       }
     });
-  }, function () {
+  }, () => {
     if (Config.debug > 1) {
       console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
     }
     return singleEndTime !== endTime;
-  }, function (err) {
+  }, (err) => {
     cb(count, singleEndTime);
   });
 }
 
-function processCronQueries () {
+internals.processCronQueries = () => {
   if (internals.cronRunning) {
     console.log('processQueries already running', qlworking);
     return;
@@ -3943,27 +3039,28 @@ function processCronQueries () {
     console.log('CRON - cronRunning set to true');
   }
 
-  var repeat;
+  let repeat;
   async.doWhilst(function (whilstCb) {
     repeat = false;
-    Db.search('queries', 'query', { size: 1000 }, function (err, data) {
+    Db.search('queries', 'query', { size: 1000 }, (err, data) => {
       if (err) {
         internals.cronRunning = false;
         console.log('processCronQueries', err);
         return setImmediate(whilstCb, err);
       }
-      var queries = {};
+
+      const queries = {};
       data.hits.hits.forEach(function (item) {
         queries[item._id] = item._source;
       });
 
       // Delayed by the max Timeout
-      var endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
+      const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
 
       // Go thru the queries, fetch the user, make the query
-      async.eachSeries(Object.keys(queries), function (qid, forQueriesCb) {
-        var cq = queries[qid];
-        var cluster = null;
+      async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
+        const cq = queries[qid];
+        let cluster = null;
 
         if (Config.debug > 1) {
           console.log('CRON - Running', qid, cq);
@@ -3990,7 +3087,7 @@ function processCronQueries () {
             return forQueriesCb();
           }
 
-          let options = {
+          const options = {
             user: user,
             cluster: cluster,
             saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
@@ -4008,7 +3105,7 @@ function processCronQueries () {
               lookupTypeMap: internals.lookupTypeMap
             };
 
-            let query = {
+            const query = {
               from: 0,
               size: 1000,
               query: { bool: { filter: [{}] } },
@@ -4034,13 +3131,13 @@ function processCronQueries () {
               }
             }
 
-            ViewerUtils.lookupQueryItems(query.query.bool.filter, function (lerr) {
-              processCronQuery(cq, options, query, endTime, function (count, lpValue) {
+            ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+              processCronQuery(cq, options, query, endTime, (count, lpValue) => {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
                 // Do the ES update
-                let document = {
+                const document = {
                   doc: {
                     lpValue: lpValue,
                     lastRun: Math.floor(Date.now() / 1000),
@@ -4060,8 +3157,8 @@ function processCronQueries () {
                 // issue alert via notifier if the count has changed and it has been at least 10 minutes
                 if (cq.notifier && count && queries[qid].count !== document.doc.count &&
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                  let newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
-                  let message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+                  const newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
+                  const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
                   notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
                 } else {
                   return continueProcess();
@@ -4070,25 +3167,25 @@ function processCronQueries () {
             });
           });
         });
-      }, function (err) {
+      }, (err) => {
         if (Config.debug > 1) {
           console.log('CRON - Finished one pass of all crons');
         }
         return setImmediate(whilstCb, err);
       });
     });
-  }, function () {
+  }, () => {
     if (Config.debug > 1) {
       console.log('CRON - Process again: ', repeat);
     }
     return repeat;
-  }, function (err) {
+  }, (err) => {
     if (Config.debug) {
       console.log('CRON - Should be up to date');
     }
     internals.cronRunning = false;
   });
-}
+};
 
 // ============================================================================
 // MAIN
@@ -4125,8 +3222,8 @@ function main () {
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Cron Queries, delayed by', internals.cronTimeout, 'seconds');
-    setInterval(processCronQueries, 60 * 1000);
-    setTimeout(processCronQueries, 1000);
+    setInterval(internals.processCronQueries, 60 * 1000);
+    setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
   }
 

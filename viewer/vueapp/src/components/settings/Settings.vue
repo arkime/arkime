@@ -2499,11 +2499,11 @@ export default {
 
           if (updateTheme) {
             let now = Date.now();
-            if ($('link[href^="user.css"]').length) {
-              $('link[href^="user.css"]').remove();
+            if ($('link[href^="api/user/css"]').length) {
+              $('link[href^="api/user/css"]').remove();
             }
             $('head').append(`<link rel="stylesheet"
-                              href="user.css?v${now}"
+                              href="api/user/css?v${now}"
                               type="text/css" />`);
           }
         })
