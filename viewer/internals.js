@@ -11,8 +11,10 @@ module.exports = (app, Config) => {
   // build internals
   module.internals = {
     isProduction: app.get('env') === 'production',
+    basePath: Config.basePath(),
     CYBERCHEFVERSION: '9.16.2',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
+    remoteClusters: Config.configMap('remote-clusters', Config.configMap('moloch-clusters')),
     esQueryTimeout: Config.get('elasticsearchTimeout', 300) + 's',
     esScrollTimeout: Config.get('elasticsearchScrollTimeout', 900) + 's',
     userNameHeader: Config.get('userNameHeader'),
@@ -32,7 +34,7 @@ module.exports = (app, Config) => {
     oldDBFields: {},
     isLocalViewRegExp: Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined,
     uploadLimits: {},
-
+    allowUploads: Config.get('uploadCommand') !== undefined,
     cronTimeout: +Config.get('dbFlushTimeout', 5) + // How long capture holds items
                  60 + // How long before ES reindexs
                  20, // Transmit and extra time

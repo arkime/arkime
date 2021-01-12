@@ -94,7 +94,7 @@ let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, 
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
-let userAPIs = require('./apiUsers')(app, Config, Db, internals, ViewerUtils);
+let userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -102,12 +102,6 @@ app.deletepost = (route, mw, func) => { app.delete(route, mw, func); app.post(ro
 app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
-
-app.locals.isIndex = false;
-app.locals.basePath = Config.basePath();
-app.locals.elasticBase = internals.elasticBase[0];
-app.locals.allowUploads = Config.get('uploadCommand') !== undefined;
-internals.remoteClusters = Config.configMap('remote-clusters', Config.configMap('moloch-clusters'));
 
 app.use(passport.initialize());
 app.use(bodyParser.json());
@@ -223,7 +217,6 @@ app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 60
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
-  app.locals.alwaysShowESStatus = false;
   app.use(function (req, res, next) {
     // 200 for NS
     if (req.url === '/_ns_/nstest.html') {
@@ -336,8 +329,7 @@ if (Config.get('passwordSecret')) {
   });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
-  app.locals.alwaysShowESStatus = true;
-  app.locals.noPasswordSecret = true;
+  internals.noPasswordSecret = true;
   app.use(function (req, res, next) {
     var username = req.query.molochRegressionUser || 'anonymous';
     req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
@@ -352,8 +344,7 @@ if (Config.get('passwordSecret')) {
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
-  app.locals.alwaysShowESStatus = true;
-  app.locals.noPasswordSecret = true;
+  internals.noPasswordSecret = true;
   app.use(function (req, res, next) {
     req.user = internals.anonymousUser;
     Db.getUserCache('anonymous', (err, suser) => {
@@ -516,7 +507,7 @@ function checkProxyRequest (req, res, next) {
 
 function setCookie (req, res, next) {
   let cookieOptions = {
-    path: app.locals.basePath,
+    path: internals.basePath,
     sameSite: 'Strict',
     overwrite: true
   };
@@ -774,7 +765,7 @@ function getSettingUserCache (req, res, next) {
 
   Db.getUserCache(req.query.userId, function (err, user) {
     if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
+      if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
       } else {
@@ -808,7 +799,7 @@ function getSettingUserDb (req, res, next) {
 
   Db.getUser(userId, function (err, user) {
     if (err || !user || !user.found) {
-      if (app.locals.noPasswordSecret) {
+      if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
       } else {
@@ -839,8 +830,8 @@ function sanitizeViewName (req, res, next) {
 function setFieldLocals () {
   ViewerUtils.loadFields()
     .then((result) => {
-      app.locals.fieldsMap = result.fieldsMap;
-      app.locals.fieldsArr = result.fieldsArr;
+      internals.fieldsMap = result.fieldsMap;
+      internals.fieldsArr = result.fieldsArr;
       createSessionDetail();
     });
 }
@@ -1780,15 +1771,15 @@ app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions
  * @returns {array/map} The map or list of database fields
  */
 app.get('/api/fields', (req, res) => {
-  if (!app.locals.fieldsMap) {
+  if (!internals.fieldsMap) {
     res.status(404);
     res.send('Cannot locate fields');
   }
 
   if (req.query && req.query.array) {
-    res.send(app.locals.fieldsArr);
+    res.send(internals.fieldsArr);
   } else {
-    res.send(app.locals.fieldsMap);
+    res.send(internals.fieldsMap);
   }
 });
 
@@ -2925,7 +2916,7 @@ app.use(cspHeader, setCookie, (req, res) => {
   const appContext = {
     theme: theme,
     titleConfig: titleConfig,
-    path: app.locals.basePath,
+    path: internals.basePath,
     version: version.version,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
@@ -2934,7 +2925,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     serverNonce: res.locals.nonce,
-    anonymousMode: !!app.locals.noPasswordSecret && !Config.get('regressionTests', false),
+    anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5')

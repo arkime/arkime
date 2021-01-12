@@ -3,7 +3,7 @@
 const fs = require('fs');
 const stylus = require('stylus');
 
-module.exports = (app, Config, Db, internals, ViewerUtils) => {
+module.exports = (Config, Db, internals, ViewerUtils) => {
   const module = {};
 
   // --------------------------------------------------------------------------
@@ -201,7 +201,7 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       }
     }
 
-    clone.canUpload = app.locals.allowUploads;
+    clone.canUpload = internals.allowUploads;
 
     // If esAdminUser is set use that, other wise use createEnable privilege
     if (internals.esAdminUsersSet) {
@@ -387,6 +387,41 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
   };
 
   /**
+   * POST - /api/user/password
+   *
+   * Update user password.
+   * @name /user/password
+   * @returns {boolean} success - Whether the update password operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserPassword = (req, res) => {
+    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+      return res.molochError(403, 'New password needs to be at least 3 characters');
+    }
+
+    if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
+      Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
+      req.token.userId !== req.user.userId)) {
+      return res.molochError(403, 'New password mismatch');
+    }
+
+    const user = req.settingUser;
+    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+
+    Db.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log('/api/user/password update error', err, info);
+        return res.molochError(500, 'Password update failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Changed password successfully'
+      }));
+    });
+  };
+
+  /**
    * GET - /api/user/css OR /api/user.css
    *
    * Retrieves custom user css for the user's custom theme.
@@ -535,7 +570,11 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
       ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
       : JSON.parse(JSON.stringify(internals.settingDefaults));
 
-    const cookieOptions = { path: app.locals.basePath, sameSite: 'Strict' };
+    const cookieOptions = {
+      path: internals.basePath,
+      sameSite: 'Strict'
+    };
+
     if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
     res.cookie(
@@ -1080,41 +1119,6 @@ module.exports = (app, Config, Db, internals, ViewerUtils) => {
           text: 'Updated cron query successfully'
         }));
       });
-    });
-  };
-
-  /**
-   * POST - /api/user/password
-   *
-   * Update user password.
-   * @name /user/password
-   * @returns {boolean} success - Whether the update password operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  module.updateUserPassword = (req, res) => {
-    if (!req.body.newPassword || req.body.newPassword.length < 3) {
-      return res.molochError(403, 'New password needs to be at least 3 characters');
-    }
-
-    if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
-      Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
-      req.token.userId !== req.user.userId)) {
-      return res.molochError(403, 'New password mismatch');
-    }
-
-    const user = req.settingUser;
-    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
-
-    Db.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log('/api/user/password update error', err, info);
-        return res.molochError(500, 'Password update failed');
-      }
-
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Changed password successfully'
-      }));
     });
   };
 
