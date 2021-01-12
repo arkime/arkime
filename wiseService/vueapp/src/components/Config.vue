@@ -242,7 +242,7 @@
     </b-modal> <!-- /add source modal -->
 
     <!-- import config modal -->
-    <b-modal
+    <b-modal size="xl"
       v-model="showImportConfigModal"
       title="Import Config">
       <b-container fluid>
@@ -263,7 +263,7 @@
             Cancel
           </b-button>
           <b-button
-            :disabled="false"
+            :disabled="!importConfigText"
             variant="success"
             size="sm"
             class="float-right mr-2"
@@ -371,7 +371,6 @@ export default {
       this.newSourceName = '';
     },
     importConfig: function () {
-      // TODO call backend parse function?
       this.showImportConfigModal = false;
       let text = this.importConfigText.trim();
       if (text[0] === '"' || text[0] === '{') {
