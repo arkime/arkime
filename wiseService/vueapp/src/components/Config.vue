@@ -42,7 +42,19 @@
 
         <span class="px-3">
           <hr/>
-          <b-button variant="success" class="text-nowrap" @click="showSourceModal = true">
+          <b-button
+            block
+            variant="warning"
+            class="text-nowrap"
+            @click="showImportConfigModal = true">
+            <b-icon icon="download" scale="1"></b-icon>
+            <span>Import Config</span>
+          </b-button>
+          <b-button
+            block
+            variant="success"
+            class="text-nowrap"
+            @click="showSourceModal = true">
             <b-icon icon="plus" scale="1"></b-icon>
             <span>Add Source</span>
           </b-button>
@@ -165,6 +177,7 @@
       </div><!-- /Selected Source Inputs Fields-->
     </div>
 
+    <!-- add source modal -->
     <b-modal
       v-model="showSourceModal"
       title="New Source"
@@ -208,12 +221,12 @@
       <template v-slot:modal-footer>
         <div class="w-100">
           <b-button
-            variant="primary"
+            variant="warning"
             size="sm"
-            class="float-right"
+            class="float-left"
             @click="showSourceModal = false"
           >
-            Close
+            Cancel
           </b-button>
           <b-button
             :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
@@ -226,7 +239,41 @@
           </b-button>
         </div>
       </template>
-    </b-modal>
+    </b-modal> <!-- /add source modal -->
+
+    <!-- import config modal -->
+    <b-modal size="xl"
+      v-model="showImportConfigModal"
+      title="Import Config">
+      <b-container fluid>
+        <b-form-textarea
+          v-model="importConfigText"
+          placeholder="Paste your config here..."
+          rows="10"
+          max-rows="20"
+        />
+      </b-container>
+      <template v-slot:modal-footer>
+        <div class="w-100">
+          <b-button
+            variant="warning"
+            size="sm"
+            class="float-left"
+            @click="showImportConfigModal = false">
+            Cancel
+          </b-button>
+          <b-button
+            :disabled="!importConfigText"
+            variant="success"
+            size="sm"
+            class="float-right mr-2"
+            @click="importConfig">
+            Parse
+          </b-button>
+        </div>
+      </template>
+    </b-modal> <!-- /import config modal -->
+
   </div>
 </template>
 
@@ -262,7 +309,9 @@ export default {
         { text: 'Config', value: 'config' },
         { text: 'Edit', value: 'edit' }
       ],
-      configCode: ''
+      configCode: '',
+      showImportConfigModal: false,
+      importConfigText: ''
     };
   },
   computed: {
@@ -320,6 +369,38 @@ export default {
       this.showSourceModal = false;
       this.newSource = '';
       this.newSourceName = '';
+    },
+    importConfig: function () {
+      this.showImportConfigModal = false;
+      let text = this.importConfigText.trim();
+      if (text[0] === '"' || text[0] === '{') {
+        // JSON input
+        try {
+          let json;
+          if (text[0] === '"') {
+            json = JSON.parse('{' + text + '}');
+          } else {
+            json = JSON.parse(text);
+          }
+          this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
+        } catch (e) {
+          this.alertState = {
+            text: 'Not valid JSON',
+            variant: 'alert-danger'
+          };
+          return; // Don't clear
+        }
+      } else if (text.startsWith('[')) {
+        // INI Input
+        // TODO
+      } else {
+        this.alertState = {
+          text: `Doesn't look like JSON or ini`,
+          variant: 'alert-danger'
+        };
+        return; // Don't clear
+      }
+      this.importConfigText = '';
     },
     inputChanged: function (val, field) {
       if (val) {
