@@ -246,9 +246,10 @@
       v-model="showImportConfigModal"
       title="Import Config">
       <b-container fluid>
+        <b-alert variant="warning" :show="!!importConfigError">{{importConfigError}}</b-alert>
         <b-form-textarea
           v-model="importConfigText"
-          placeholder="Paste your config here..."
+          placeholder="Paste your JSON or INI config here..."
           rows="10"
           max-rows="20"
         />
@@ -311,7 +312,8 @@ export default {
       ],
       configCode: '',
       showImportConfigModal: false,
-      importConfigText: ''
+      importConfigText: '',
+      importConfigError: ''
     };
   },
   computed: {
@@ -370,8 +372,35 @@ export default {
       this.newSource = '';
       this.newSourceName = '';
     },
+    parseINI: function (data) {
+      // This code is from node-iniparser, MIT license
+      const regex = {
+        section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+        param: /^\s*([\w.\-_]+)\s*=\s*(.*?)\s*$/,
+        comment: /^\s*[;#].*$/
+      };
+      let value = {};
+      let lines = data.split(/\r\n|\r|\n/);
+      let section = null;
+      lines.forEach(function (line) {
+        if (regex.comment.test(line)) {
+          return;
+        } else if (regex.param.test(line)) {
+          const match = line.match(regex.param);
+          if (section) {
+            value[section][match[1]] = match[2];
+          } else {
+            value[match[1]] = match[2];
+          }
+        } else if (regex.section.test(line)) {
+          const match = line.match(regex.section);
+          value[match[1]] = {};
+          section = match[1];
+        };
+      });
+      return value;
+    },
     importConfig: function () {
-      this.showImportConfigModal = false;
       let text = this.importConfigText.trim();
       if (text[0] === '"' || text[0] === '{') {
         // JSON input
@@ -384,23 +413,20 @@ export default {
           }
           this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
         } catch (e) {
-          this.alertState = {
-            text: 'Not valid JSON',
-            variant: 'alert-danger'
-          };
+          this.importConfigError = `Not valid JSON`;
           return; // Don't clear
         }
       } else if (text.startsWith('[')) {
         // INI Input
-        // TODO
+        let json = this.parseINI(text);
+        this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
       } else {
-        this.alertState = {
-          text: `Doesn't look like JSON or ini`,
-          variant: 'alert-danger'
-        };
+        this.importConfigError = `Doesn't look like JSON or INI`;
         return; // Don't clear
       }
+      this.showImportConfigModal = false;
       this.importConfigText = '';
+      this.importConfigError = '';
     },
     inputChanged: function (val, field) {
       if (val) {
