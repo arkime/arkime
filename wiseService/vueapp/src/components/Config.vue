@@ -373,6 +373,34 @@ export default {
     importConfig: function () {
       // TODO call backend parse function?
       this.showImportConfigModal = false;
+      let text = this.importConfigText.trim();
+      if (text[0] === '"' || text[0] === '{') {
+        // JSON input
+        try {
+          let json;
+          if (text[0] === '"') {
+            json = JSON.parse('{' + text + '}');
+          } else {
+            json = JSON.parse(text);
+          }
+          this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
+        } catch (e) {
+          this.alertState = {
+            text: 'Not valid JSON',
+            variant: 'alert-danger'
+          };
+          return; // Don't clear
+        }
+      } else if (text.startsWith('[')) {
+        // INI Input
+        // TODO
+      } else {
+        this.alertState = {
+          text: `Doesn't look like JSON or ini`,
+          variant: 'alert-danger'
+        };
+        return; // Don't clear
+      }
       this.importConfigText = '';
     },
     inputChanged: function (val, field) {
