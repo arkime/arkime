@@ -571,7 +571,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       : JSON.parse(JSON.stringify(internals.settingDefaults));
 
     const cookieOptions = {
-      path: internals.basePath,
+      path: Config.basePath(),
       sameSite: 'Strict'
     };
 

@@ -5,7 +5,7 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-module.exports = (app, Config, Db, molochparser, internals) => {
+module.exports = (Config, Db, molochparser, internals) => {
   let module = {};
 
   module.addAuth = (info, user, node, secret) => {

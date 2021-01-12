@@ -88,7 +88,7 @@ var compression = require('compression');
 
 // internal app deps
 let { internals } = require('./internals')(app, Config);
-let ViewerUtils = require('./viewerUtils')(app, Config, Db, molochparser, internals);
+let ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
 let notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
 let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
 let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
@@ -507,7 +507,7 @@ function checkProxyRequest (req, res, next) {
 
 function setCookie (req, res, next) {
   let cookieOptions = {
-    path: internals.basePath,
+    path: Config.basePath(),
     sameSite: 'Strict',
     overwrite: true
   };
@@ -2916,7 +2916,7 @@ app.use(cspHeader, setCookie, (req, res) => {
   const appContext = {
     theme: theme,
     titleConfig: titleConfig,
-    path: internals.basePath,
+    path: Config.basePath(),
     version: version.version,
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),

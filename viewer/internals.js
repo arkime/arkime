@@ -11,7 +11,6 @@ module.exports = (app, Config) => {
   // build internals
   module.internals = {
     isProduction: app.get('env') === 'production',
-    basePath: Config.basePath(),
     CYBERCHEFVERSION: '9.16.2',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
     remoteClusters: Config.configMap('remote-clusters', Config.configMap('moloch-clusters')),
