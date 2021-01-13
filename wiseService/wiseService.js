@@ -735,7 +735,7 @@ app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-len
 app.use(timeout(5 * 1000));
 
 // Serve vue app
-app.get('/', (req, res, next) => {
+app.get(['/', '/config', '/statistics'], (req, res, next) => {
   res.sendFile(`${__dirname}/vueapp/dist/index.html`);
 });
 app.use(favicon(`${__dirname}/favicon.ico`));
@@ -1603,7 +1603,7 @@ function printStats () {
 // ----------------------------------------------------------------------------
 // Error handling
 app.use((req, res, next) => {
-  res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
+  res.status(404).send('Not found');
 });
 
 // ----------------------------------------------------------------------------
