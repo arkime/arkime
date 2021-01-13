@@ -540,17 +540,18 @@ uint64_t moloch_parsers_asn_parse_time(MolochSession_t *session, int tag, unsign
         tm.tm_mon  = str2num(value+4) - 1;
         tm.tm_mday = str2num(value+6);
         tm.tm_hour = str2num(value+8);
-        if (value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
+        if (len < 12 || value[10] == 'Z' || value[10] == '+' || value[10] == '-') {
             pos = 10;
             goto gtdone;
         }
+
         tm.tm_min  = str2num(value+10);
-        if (len < 12 || value[12] == 'Z' || value[12] == '+' || value[12] == '-') {
+        if (len < 14 || value[12] == 'Z' || value[12] == '+' || value[12] == '-') {
             pos = 12;
             goto gtdone;
         }
         tm.tm_sec  = str2num(value+12);
-        if (len < 14 || value[14] == 'Z' || value[14] == '+' || value[14] == '-') {
+        if (len < 15 || value[14] == 'Z' || value[14] == '+' || value[14] == '-') {
             pos = 14;
             goto gtdone;
         }

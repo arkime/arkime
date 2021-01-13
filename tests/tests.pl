@@ -58,7 +58,7 @@ sub doFuzz2Pcap {
 
         my $len = length($buf);
 
-        syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000000000000"));
+        syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000001000000"));
         syswrite($out, pack('H*VV', "1234567800000000", $len, $len));
 
         syswrite($out, $buf);
