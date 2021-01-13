@@ -16,7 +16,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define HTTPDEBUG 1
+//#define HTTPDEBUG 1
 
 #define MAX_URL_LENGTH 4096
 
