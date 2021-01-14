@@ -13,7 +13,7 @@ module.exports = (Db) => {
   /**
    * The history object to describe user client requests.
    *
-   * @typedef ArkimeHistory
+   * @typedef History
    * @type {object}
    * @param {string} uiPage - The client application page that the user accessed to make the request.
    * @param {string} userId - The ID of the user that made the request.
@@ -46,7 +46,7 @@ module.exports = (Db) => {
    * @param {string} sortField=timestamp - The field to sort the results by.
    * @param {string} desc=true - Whether to sort the results descending or ascending. Default is descending.
    * @param {string} userId - The ID of a user to request history results for. Admin can retrieve all users. Normal users can only retrieve their own.
-   * @returns {ArkimeHistory[]}
+   * @returns {History[]} data - The list of history results.
    * @returns {number} recordsTotal - The total number of history results stored.
    * @returns {number} recordsFiltered - The number of history items returned in this result.
    */
