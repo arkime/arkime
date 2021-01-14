@@ -25,7 +25,7 @@ let source;
 class VirusTotalSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { });
+    super(api, section, { fullQuery: true });
     this.waiting = [];
     this.processing = {};
 
@@ -45,9 +45,8 @@ class VirusTotalSource extends WISESource {
     this.dataSources = this.api.getConfig('virustotal', 'dataSources', 'McAfee,Symantec,Microsoft,Kaspersky').split(',').map(item => item.trim());
     this.dataSourcesLC = this.dataSources.map((x) => { return x.toLowerCase(); });
     this.dataFields = [];
-    this.fullQuery = true;
 
-    this.api.addSource('virustotal', this);
+    this.api.addSource('virustotal', this, ['md5']);
     setInterval(this.performQuery.bind(this), 60000 / this.queriesPerMinute);
 
     let str =

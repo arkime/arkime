@@ -62,7 +62,7 @@ class WiseProxySource extends WISESource {
     this.updateInfo();
     setTimeout(this.updateInfo.bind(this), 5 * 60 * 1000);
 
-    this.api.addSource(this.section, this);
+    this.api.addSource(this.section, this, ['domain', 'email', 'ip', 'md5', 'url']);
     setInterval(this.performQuery.bind(this), 500);
   }
 

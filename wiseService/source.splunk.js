@@ -65,7 +65,7 @@ class SplunkSource extends WISESource {
       console.log('Login was successful: ' + success);
     });
 
-    api.addSource(section, this);
+    api.addSource(section, this, [this.type]);
 
     this.sourceFields = [this.esResultField];
     for (const k in this.shortcuts) {

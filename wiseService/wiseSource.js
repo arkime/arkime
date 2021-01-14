@@ -37,6 +37,7 @@ class WISESource {
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting
+   * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
    */
   constructor (api, section, options) {
     this.api = api;
@@ -56,6 +57,7 @@ class WISESource {
     this.cacheDroppedStat = 0;
     this.average100MS = 0;
     this.srcInProgress = {};
+    this.fullQuery = !!options.fullQuery;
 
     if (options.typeSetting) {
       this.typeSetting();
@@ -376,11 +378,6 @@ class WISESource {
       throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
     }
     this.typeFunc = this.api.funcName(this.type);
-    if (this.getTypes === undefined) {
-      this.getTypes = function () {
-        return [this.type];
-      };
-    }
   };
 
   // ----------------------------------------------------------------------------
@@ -560,17 +557,10 @@ class WISESource {
  * @param {object} res - The express res object
  * @abstract
  */
-/**
- * Get the types this source supports.
- * @returns {string|array} the array of types this source supports, by default the type setting from config file if option.typeSetting was set
- *
- * @method
- * @name WISESource#getTypes
- * @abstract
- */
 
 /**
- * Every source needs to implement this method, usually with
+ * Every source needs to implement this method. If a singleton it will just create the source object direction.
+ * If not it should loop thru all keys that start with sourcekind:
  * @method
  * @name WISESource.initSource
  * @param {WISESourceAPI} api - The api back into the WISE Service

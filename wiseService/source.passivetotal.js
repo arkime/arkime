@@ -39,7 +39,7 @@ class PassiveTotalSource extends WISESource {
     this.waiting = [];
     this.processing = {};
 
-    this.api.addSource('passivetotal', this);
+    this.api.addSource('passivetotal', this, ['domain', 'ip']);
 
     setInterval(this.performQuery.bind(this), 500);
 

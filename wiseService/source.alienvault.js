@@ -32,7 +32,7 @@ class AlienVaultSource extends WISESource {
     }
     this.ips = new Map();
 
-    this.api.addSource('alienvault', this);
+    this.api.addSource('alienvault', this, ['ip']);
 
     this.idField = this.api.addField('field:alienvault.id;db:alienvault.id;kind:integer;friendly:Id;help:Alien Vault ID;count:true');
     this.reliabilityField = this.api.addField('field:alienvault.reliability;db:alienvault.reliability;kind:integer;friendly:Reliability;help:Alien Vault Reliability;count:true');

@@ -48,7 +48,7 @@ class ElasticsearchSource extends WISESource {
       apiVersion: '7.7'
     });
 
-    api.addSource(section, this);
+    api.addSource(section, this, [this.type]);
 
     this.sourceFields = [this.esResultField];
     for (const k in this.shortcuts) {

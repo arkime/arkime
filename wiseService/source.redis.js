@@ -41,7 +41,7 @@ class RedisSource extends WISESource {
       this[this.typeFunc] = RedisSource.prototype.fetch;
     }
 
-    this.api.addSource(this.section, this);
+    this.api.addSource(this.section, this, [this.type]);
   }
 
   // ----------------------------------------------------------------------------
