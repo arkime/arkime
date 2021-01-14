@@ -50,7 +50,7 @@ my ($url) = @_;
     cmp_ok ($item->{recordsTotal}, '>=', 80, "recordsTotal");
 
 # Check Multi
-    my $mjson = multiGet("/history/list?molochRegressionUser=historytest1");
+    my $mjson = multiGet("/api/histories?molochRegressionUser=historytest1");
     my $index = $json->{data}->[0]->{index};
     delete $json->{data}->[0]->{index};
     delete $mjson->{data}->[0]->{index};
@@ -66,7 +66,7 @@ my ($url) = @_;
     $json = get("/history/list?molochRegressionUser=historytest2&userId=historytest1");
 
 # An admin user should see everything, find it
-    $json = viewerGet("/history/list");
+    $json = viewerGet("/api/histories");
     cmp_ok ($json->{recordsFiltered}, ">=", 1, "Test3: recordsFiltered");
 
     my $found = 0;
@@ -91,9 +91,9 @@ my ($url) = @_;
 # Should be able to filter by time range
     my $current = time;
     my $pastHour = $current - 3600;
-    $json = viewerGet("/history/list?userId=historytest1&startTime=$pastHour&stopTime=$current");
+    $json = viewerGet("/api/histories?userId=historytest1&startTime=$pastHour&stopTime=$current");
     is ($json->{recordsFiltered}, 1, "Test5: recordsFiltered");
-    $json = viewerGet("/history/list?userId=historytest1&startTime=18000&stopTime=$pastHour");
+    $json = viewerGet("/api/histories?userId=historytest1&startTime=18000&stopTime=$pastHour");
     is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
 
 # Can't delete items when not admin
@@ -101,16 +101,16 @@ my ($url) = @_;
     eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
 # Delete item no index
-    $json = viewerDeleteToken("/history/list/$item->{id}", $token);
+    $json = viewerDeleteToken("/api/history/$item->{id}", $token);
     eq_or_diff($json, from_json('{"success": false, "text": "Missing history index"}', {relaxed => 1}), "Test Delete No Index", { context => 3 });
 
 # Delete item
-    $json = viewerDeleteToken("/history/list/$item->{id}?index=$item->{index}", $token);
+    $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
     eq_or_diff($json, from_json('{"success": true, "text": "Deleted history item successfully"}', {relaxed => 1}), "Test Delete", { context => 3 });
     esGet("/_refresh");
 
 # Make sure gone
-    $json = get("/history/list?molochRegressionUser=historytest1");
+    $json = get("/api/histories?molochRegressionUser=historytest1");
     is ($json->{recordsFiltered}, 0, "Should be no items");
 
 # An admin user should see forced expressions for users
@@ -170,7 +170,7 @@ my ($url) = @_;
     esGet("/_flush");
 
 # Check history for delete
-    $json = viewerGet("/history/list?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
+    $json = viewerGet("/api/histories?molochRegressionUser=anonymous&sortField=timestamp&desc=true");
     is ($json->{recordsFiltered}, 2, "Delete: recordsFiltered");
     $item = $json->{data}->[0];
     is ($item->{api}, "/user/delete", "Delete: api");
