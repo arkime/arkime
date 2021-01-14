@@ -969,7 +969,7 @@ function processQuery (req, query, cb) {
         // First query for this value
         src.srcInProgress[query.typeName][query.value] = [cb];
         let startTime = Date.now();
-        src[typeInfo.funcName](src.fullQuery=== true ? query : query.value, (err, result) => {
+        src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
           src.average100MS = (99.0 * src.average100MS + (Date.now() - startTime)) / 100.0;
 
           if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
