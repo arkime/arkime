@@ -95,6 +95,7 @@ let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessio
 let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
 let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
 let userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
+let historyAPIs = require('./apiHistory')(Db);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -630,8 +631,8 @@ function noCacheJson (req, res, next) {
 
 // log middleware -------------------------------------------------------------
 function logAction (uiPage) {
-  return function (req, res, next) {
-    var log = {
+  return (req, res, next) => {
+    const log = {
       timestamp: Math.floor(Date.now() / 1000),
       method: req.method,
       userId: req.user.userId,
@@ -653,7 +654,7 @@ function logAction (uiPage) {
     }
 
     if (req.query.view && req.user.views) {
-      var view = req.user.views[req.query.view];
+      const view = req.user.views[req.query.view];
       if (view) {
         log.view = {
           name: req.query.view,
@@ -663,10 +664,12 @@ function logAction (uiPage) {
     }
 
     // save the request body
-    var avoidProps = { password: true, newPassword: true, currentPassword: true };
-    var bodyClone = {};
+    const avoidProps = {
+      password: true, newPassword: true, currentPassword: true
+    };
+    const bodyClone = {};
 
-    for (var key in req.body) {
+    for (const key in req.body) {
       if (req.body.hasOwnProperty(key) && !avoidProps[key]) {
         bodyClone[key] = req.body[key];
       }
@@ -676,10 +679,10 @@ function logAction (uiPage) {
       log.body = bodyClone;
     }
 
-    res.logCounts = function (recordsReturned, recordsFiltered, recordsTotal) {
+    res.logCounts = (recordsReturned, recordsFiltered, recordsTotal) => {
+      log.recordsTotal = recordsTotal;
       log.recordsReturned = recordsReturned;
       log.recordsFiltered = recordsFiltered;
-      log.recordsTotal = recordsTotal;
     };
 
     req._molochStartTime = new Date();
@@ -1632,125 +1635,17 @@ app.post( // test notifier endpoint
 );
 
 // history apis ---------------------------------------------------------------
-app.get('/history/list', [noCacheJson, recordResponseTime, setCookie], (req, res) => {
-  let userId;
-  if (req.user.createEnabled) { // user is an admin, they can view all logs
-    // if the admin has requested a specific user
-    if (req.query.userId) { userId = req.query.userId; }
-  } else { // user isn't an admin, so they can only view their own logs
-    if (req.query.userId && req.query.userId !== req.user.userId) { return res.molochError(403, 'Need admin privileges'); }
-    userId = req.user.userId;
-  }
+app.get( // get histories endpoint
+  ['/api/histories', '/history/list'],
+  [noCacheJson, recordResponseTime, setCookie],
+  historyAPIs.getHistories
+);
 
-  let query = {
-    sort: {},
-    from: +req.query.start || 0,
-    size: +req.query.length || 1000
-  };
-
-  query.sort[req.query.sortField || 'timestamp'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
-
-  if (req.query.searchTerm || userId) {
-    query.query = { bool: { must: [] } };
-
-    if (req.query.searchTerm) { // apply search term
-      query.query.bool.must.push({
-        query_string: {
-          query: req.query.searchTerm,
-          fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
-        }
-      });
-    }
-
-    if (userId) { // filter on userId
-      query.query.bool.must.push({
-        wildcard: { userId: '*' + userId + '*' }
-      });
-    }
-  }
-
-  if (req.query.api) { // filter on api endpoint
-    if (!query.query) { query.query = { bool: { must: [] } }; }
-    query.query.bool.must.push({
-      wildcard: { api: '*' + req.query.api + '*' }
-    });
-  }
-
-  if (req.query.exists) {
-    if (!query.query) { query.query = { bool: { must: [] } }; }
-    let existsArr = req.query.exists.split(',');
-    for (let i = 0, len = existsArr.length; i < len; ++i) {
-      query.query.bool.must.push({
-        exists: { field: existsArr[i] }
-      });
-    }
-  }
-
-  // filter history table by a time range
-  if (req.query.startTime && req.query.stopTime) {
-    if (!/^[0-9]+$/.test(req.query.startTime)) {
-      req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
-    } else {
-      req.query.startTime = parseInt(req.query.startTime, 10);
-    }
-
-    if (!/^[0-9]+$/.test(req.query.stopTime)) {
-      req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
-    } else {
-      req.query.stopTime = parseInt(req.query.stopTime, 10);
-    }
-
-    if (!query.query) { query.query = { bool: {} }; }
-    query.query.bool.filter = [{
-      range: { timestamp: {
-        gte: req.query.startTime,
-        lte: req.query.stopTime
-      } }
-    }];
-  }
-
-  Promise.all([Db.searchHistory(query),
-    Db.numberOfLogs()
-  ])
-    .then(([logs, total]) => {
-      if (logs.error) { throw logs.error; }
-
-      let results = { total: logs.hits.total, results: [] };
-      for (let i = 0, ilen = logs.hits.hits.length; i < ilen; i++) {
-        let hit = logs.hits.hits[i];
-        let log = hit._source;
-        log.id = hit._id;
-        log.index = hit._index;
-        if (!req.user.createEnabled) {
-        // remove forced expression for reqs made by nonadmin users
-          log.forcedExpression = undefined;
-        }
-        results.results.push(log);
-      }
-      let r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results
-      };
-      res.send(r);
-    }).catch(err => {
-      console.log('ERROR - /history/logs', err);
-      return res.molochError(500, 'Error retrieving log history - ' + err);
-    });
-});
-
-app.delete('/history/list/:id', [noCacheJson, checkCookieToken, checkPermissions(['createEnabled', 'removeEnabled'])], (req, res) => {
-  if (!req.query.index) { return res.molochError(403, 'Missing history index'); }
-
-  Db.deleteHistoryItem(req.params.id, req.query.index, function (err, result) {
-    if (err || result.error) {
-      console.log('ERROR - deleting history item', err || result.error);
-      return res.molochError(500, 'Error deleting history item');
-    } else {
-      res.send(JSON.stringify({ success: true, text: 'Deleted history item successfully' }));
-    }
-  });
-});
+app.delete( // delete history endpoint
+  ['/api/history/:id', '/history/list/:id'],
+  [noCacheJson, checkCookieToken, checkPermissions(['createEnabled', 'removeEnabled'])],
+  historyAPIs.deleteHistory
+);
 
 // field apis -----------------------------------------------------------------
 /**

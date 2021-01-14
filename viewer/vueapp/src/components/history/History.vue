@@ -450,7 +450,7 @@ export default {
       }
     },
     deleteLog: function (log, index) {
-      this.$http.delete(`history/list/${log.id}`, { params: { index: log.index } })
+      this.$http.delete(`api/history/${log.id}`, { params: { index: log.index } })
         .then((response) => {
           this.msg = response.data.text || 'Successfully deleted history item';
           this.msgType = 'success';
@@ -493,7 +493,7 @@ export default {
       this.query.sortField = this.sortField;
       this.query.searchTerm = this.searchTerm;
 
-      this.$http.get('history/list', { params: this.query })
+      this.$http.get('api/histories', { params: this.query })
         .then((response) => {
           this.error = '';
           this.loading = false;
