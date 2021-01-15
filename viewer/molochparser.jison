@@ -381,28 +381,28 @@ function formatQuery(yy, field, op, value)
     }
 
     value = value.substr(1); /* remove $ */
-    if (!yy.lookups || !yy.lookups[value]) {
+    if (!yy.shortcuts || !yy.shortcuts[value]) {
       throw value + ' - Shortcut not found';
     }
 
-    var lookup = yy.lookups[value];
+    var shortcut = yy.shortcuts[value];
 
     obj = { terms: {} };
     obj.terms[info.dbField] = {
       index : `${yy.prefix}lookups`,
-      id : lookup._id,
+      id : shortcut._id,
       type: 'lookup'
     };
 
     var type = info.type2 || info.type;
-    var lookupType = yy.lookupTypeMap[type];
+    var shortcutType = yy.shortcutTypeMap[type];
 
-    if (!lookupType) {
+    if (!shortcutType) {
       throw "Unsupported field type: " + type
     }
 
-    if (!lookup._source[lookupType]) {
-      throw 'lookup must be of type ' + lookupType;
+    if (!shortcut._source[shortcutType]) {
+      throw 'shortcut must be of type ' + shortcutType;
     }
 
     switch (type) {

@@ -45,7 +45,7 @@ module.exports = (app, Config) => {
     proccessHuntJobsInitialized: false,
     notifiers: undefined,
     prefix: Config.get('prefix', ''),
-    lookupTypeMap: {
+    shortcutTypeMap: {
       ip: 'ip',
       integer: 'number',
       termfield: 'string',
