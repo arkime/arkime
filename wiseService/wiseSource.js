@@ -51,11 +51,13 @@ class WISESource {
     } else {
       this.cacheTimeout = 60 * +this.api.getConfig(section, 'cacheAgeMin', '60'); // Default an hour
     }
+    this.requestStat = 0;
     this.cacheHitStat = 0;
     this.cacheMissStat = 0;
     this.cacheRefreshStat = 0;
-    this.cacheDroppedStat = 0;
-    this.average100MS = 0;
+    this.requestDroppedStat = 0;
+    this.directHitStat = 0;
+    this.recentAverageMS = 0;
     this.srcInProgress = {};
     this.fullQuery = !!options.fullQuery;
 

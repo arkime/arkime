@@ -948,8 +948,11 @@ function processQuery (req, query, cb) {
         return setImmediate(cb, undefined);
       }
 
+      src.requestStat++;
       if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
-        if (cacheResult[src.section] === undefined) {
+        if (src.cacheTimeout === -1) {
+          // Don't count as hit or miss
+        } else if (cacheResult[src.section] === undefined) {
           src.cacheMissStat++;
           typeInfo.cacheSrcMissStats++;
         } else {
@@ -970,14 +973,17 @@ function processQuery (req, query, cb) {
         src.srcInProgress[query.typeName][query.value] = [cb];
         let startTime = Date.now();
         src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
-          src.average100MS = (99.0 * src.average100MS + (Date.now() - startTime)) / 100.0;
+          src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
 
-          if (!err && src.cacheTimeout !== -1 && result !== undefined) { // If err or cacheTimeout is -1 then don't cache
-            cacheResult[src.section] = { ts: now, result: result };
-            cacheChanged = true;
+          if (!err && result !== undefined) {
+            src.directHitStat++;
+            if (src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
+              cacheResult[src.section] = { ts: now, result: result };
+              cacheChanged = true;
+            }
           }
           if (err === 'dropped') {
-            src.cacheDroppedStat++;
+            src.requestDroppedStat++;
             err = null;
             result = undefined;
           }
@@ -1467,11 +1473,13 @@ app.get('/stats', [noCacheJson], function (req, res) {
     let src = internals.sources[section];
     stats.sources.push({
       source: section,
+      request: src.requestStat,
       cacheHit: src.cacheHitStat,
       cacheMiss: src.cacheMissStat,
       cacheRefresh: src.cacheRefreshStat,
-      cacheDropped: src.cacheDroppedStat,
-      averageMS: src.average100MS.toFixed(4),
+      directHit: src.directHitStat,
+      requestDropped: src.requestDroppedStat,
+      recentAverageMS: src.recentAverageMS.toFixed(4),
       items: src.itemCount()
     });
   }
@@ -1578,7 +1586,7 @@ function printStats () {
   for (const section in internals.sources) {
     let src = internals.sources[section];
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
-      section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.cacheDroppedStat, src.average100MS));
+      section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
   }
 }
 
