@@ -73,11 +73,11 @@ my $pwd = "*/pcap";
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
 
-    $users = viewerGet("/api/users", "");
+    $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #1");
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
 
-    $users = viewerGet("/api/users", "");
+    $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #2");
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
 
