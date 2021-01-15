@@ -2023,7 +2023,7 @@
                     <input type="checkbox"
                       :disabled="(!user.createEnabled && item.userId !== user.userId) || item.locked"
                       v-model="item.shared"
-                      @input="toggleShortcutShared(item)"
+                      @input="toggleShortcutShared(item, index)"
                     />
                   </td>
                   <td>
@@ -2057,7 +2057,7 @@
                           <span class="fa fa-trash-o fa-fw">
                           </span>
                         </button>
-                        <span v-if="!item.newValue">
+                        <span v-if="!item.editing">
                           <div v-if="item.locked"
                             v-b-tooltip.hover
                             style="display:inline-block"
@@ -2090,7 +2090,7 @@
                           </button>
                           <button type="button"
                             v-b-tooltip.hover
-                            @click="updateShortcut(item)"
+                            @click="updateShortcut(item, index)"
                             title="Save changes to this shortcut's value"
                             class="btn btn-sm btn-theme-tertiary">
                             <span class="fa fa-save fa-fw">
@@ -2101,16 +2101,67 @@
                     </span>
                   </td>
                 </tr>
+                <!-- edit shortcut -->
                 <tr :key="`${item.id}-edit`"
-                  v-if="item.newValue">
+                  v-if="item.editing">
                   <td colspan="6">
-                    <textarea rows="5"
-                      type="text"
-                      class="form-control form-control-sm m-1"
-                      v-model="item.newValue">
-                    </textarea>
+                    <div class="form-group row mt-2">
+                      <label for="updateShortcutName"
+                        class="col-2 col-form-label text-right">
+                        Name<sup>*</sup>
+                      </label>
+                      <div class="col-10">
+                        <input id="updateShortcutName"
+                          type="text"
+                          class="form-control form-control-sm"
+                          v-model="item.newName"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="updateShortcutDescription"
+                        class="col-2 col-form-label text-right">
+                        Description
+                      </label>
+                      <div class="col-10">
+                        <input id="updateShortcutDescription"
+                          type="text"
+                          class="form-control form-control-sm"
+                          v-model="item.newDescription"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="updateShortcutValue"
+                        class="col-2 col-form-label text-right">
+                        Value(s)<sup>*</sup>
+                      </label>
+                      <div class="col-10">
+                        <textarea id="updateShortcutValue"
+                          type="text"
+                          rows="5"
+                          class="form-control form-control-sm"
+                          v-model="item.newValue">
+                        </textarea>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="updateShortcutType"
+                        class="col-2 col-form-label text-right">
+                        Type<sup>*</sup>
+                      </label>
+                      <div class="col-10">
+                        <select id="updateShortcutType"
+                          v-model="item.newType"
+                          class="form-control form-control-sm">
+                          <option value="ip">IP(s)</option>
+                          <option value="string">String(s)</option>
+                          <option value="number">Number(s)</option>
+                        </select>
+                      </div>
+                    </div>
                   </td>
-                </tr>
+                </tr> <!-- /edit shortcut -->
               </template> <!-- /shortcuts -->
               <!-- no shortcuts -->
               <tr v-if="shortcuts.data && shortcuts.data.length === 0">
@@ -3175,17 +3226,18 @@ export default {
       this.getShortcuts();
     },
     /* toggles shared var on a shortcut and saves the shortcut */
-    toggleShortcutShared: function (shortcut) {
+    toggleShortcutShared: function (shortcut, index) {
       this.$set(shortcut, 'shared', !shortcut.shared);
-      this.updateShortcut(shortcut);
+      this.updateShortcut(shortcut, index);
     },
     /* opens up text area to edit shortcut value */
     toggleEditShortcut: function (shortcut) {
-      if (!shortcut.newValue) {
-        this.$set(shortcut, 'newValue', shortcut.value);
-      } else {
-        this.$set(shortcut, 'newValue', undefined);
-      }
+      const editingShortcut = !shortcut.editing;
+      this.$set(shortcut, 'editing', editingShortcut);
+      this.$set(shortcut, 'newValue', shortcut.value);
+      this.$set(shortcut, 'newName', shortcut.name);
+      this.$set(shortcut, 'newType', shortcut.type);
+      this.$set(shortcut, 'newDescription', shortcut.description);
     },
     /* creates a new shortcut */
     createShortcut: function () {
@@ -3227,29 +3279,22 @@ export default {
         });
     },
     /* updates a specified shortcut (only shared and value are editable) */
-    updateShortcut: function (shortcut) {
-      let data = {
-        name: shortcut.name,
-        type: shortcut.type,
-        value: shortcut.value,
+    updateShortcut: function (shortcut, index) {
+      const data = {
         shared: shortcut.shared,
         userId: shortcut.userId,
-        description: shortcut.description
+        name: shortcut.newName || shortcut.name,
+        type: shortcut.newType || shortcut.type,
+        value: shortcut.newValue || shortcut.value,
+        description: shortcut.newDescription || shortcut.description
       };
-
-      if (shortcut.newValue) {
-        data.value = shortcut.newValue;
-      }
 
       this.$http.put(`api/shortcut/${shortcut.id}`, data)
         .then((response) => {
-          // update value and clear out new value
-          // so it can be used to determine editing
-          if (shortcut.newValue) {
-            this.$set(shortcut, 'value', response.data.shortcut.value);
-            this.$set(shortcut, 'newValue', undefined);
-            delete shortcut.newValue;
-          }
+          response.data.shortcut.id = shortcut.id;
+          response.data.shortcut.type = shortcut.newType || shortcut.type;
+          this.$set(this.shortcuts.data, index, response.data.shortcut);
+
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
