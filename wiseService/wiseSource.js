@@ -36,7 +36,8 @@ class WISESource {
    * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
-   * @param {boolean} [options.formatSetting=false] - load the format setting
+   * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
+   * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
    */
   constructor (api, section, options) {
     this.api = api;
@@ -50,12 +51,15 @@ class WISESource {
     } else {
       this.cacheTimeout = 60 * +this.api.getConfig(section, 'cacheAgeMin', '60'); // Default an hour
     }
+    this.requestStat = 0;
     this.cacheHitStat = 0;
     this.cacheMissStat = 0;
     this.cacheRefreshStat = 0;
-    this.cacheDroppedStat = 0;
-    this.average100MS = 0;
+    this.requestDroppedStat = 0;
+    this.directHitStat = 0;
+    this.recentAverageMS = 0;
     this.srcInProgress = {};
+    this.fullQuery = !!options.fullQuery;
 
     if (options.typeSetting) {
       this.typeSetting();
@@ -66,7 +70,7 @@ class WISESource {
     }
 
     if (options.formatSetting) {
-      this.formatSetting();
+      this.formatSetting(options.formatSetting);
     }
 
     // Domain and Email wildcards to exclude from source
@@ -353,8 +357,8 @@ class WISESource {
   parse;
 
   // ----------------------------------------------------------------------------
-  formatSetting () {
-    this.format = this.api.getConfig(this.section, 'format', 'csv');
+  formatSetting (d) {
+    this.format = this.api.getConfig(this.section, 'format', d);
     if (this.format === 'csv') {
       this.parse = this.parseCSV;
     } else if (this.format === 'tagger') {
@@ -376,11 +380,6 @@ class WISESource {
       throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
     }
     this.typeFunc = this.api.funcName(this.type);
-    if (this.getTypes === undefined) {
-      this.getTypes = function () {
-        return [this.type];
-      };
-    }
   };
 
   // ----------------------------------------------------------------------------
@@ -560,17 +559,10 @@ class WISESource {
  * @param {object} res - The express res object
  * @abstract
  */
-/**
- * Get the types this source supports.
- * @returns {string|array} the array of types this source supports, by default the type setting from config file if option.typeSetting was set
- *
- * @method
- * @name WISESource#getTypes
- * @abstract
- */
 
 /**
- * Every source needs to implement this method, usually with
+ * Every source needs to implement this method. If a singleton it will just create the source object direction.
+ * If not it should loop thru all keys that start with sourcekind:
  * @method
  * @name WISESource.initSource
  * @param {WISESourceAPI} api - The api back into the WISE Service

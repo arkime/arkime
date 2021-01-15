@@ -54,7 +54,7 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getIp = ThreatStreamSource.prototype.getIpApi;
       ThreatStreamSource.prototype.getMd5 = ThreatStreamSource.prototype.getMd5Api;
       ThreatStreamSource.prototype.getEmail = ThreatStreamSource.prototype.getEmailApi;
-      this.loadTypes();
+      this.loadTypes(false);
       break;
     case 'zip':
       this.ips = new Map();
@@ -70,7 +70,7 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getEmail = ThreatStreamSource.prototype.getEmailZip;
       ThreatStreamSource.prototype.getURL = ThreatStreamSource.prototype.getURLZip;
       ThreatStreamSource.prototype.dump = ThreatStreamSource.prototype.dumpZip;
-      api.addSource('threatstream', this);
+      api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5', 'url']);
       api.app.get('/threatstream/_reload', (req, res) => {
         this.loadFile.bind(this);
         res.send('Ok');
@@ -91,7 +91,7 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getMd5 = ThreatStreamSource.prototype.getMd5Sqlite3;
       ThreatStreamSource.prototype.getEmail = ThreatStreamSource.prototype.getEmailSqlite3;
       ThreatStreamSource.prototype.getURL = ThreatStreamSource.prototype.getURLSqlite3;
-      this.loadTypes();
+      this.loadTypes(true);
       api.app.get('/threatstream/_reload', (req, res) => {
         this.openDB.bind(this);
         res.send('Ok');
@@ -393,7 +393,7 @@ class ThreatStreamSource extends WISESource {
   }
 
   // ----------------------------------------------------------------------------
-  loadTypes () {
+  loadTypes (includeUrl) {
     // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
     this.types = {};
     this.typesWithQuotes = {};
@@ -417,7 +417,11 @@ class ThreatStreamSource extends WISESource {
       }
 
       // Wait to register until request is done
-      this.api.addSource('threatstream', this);
+      if (includeUrl) {
+        this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5', 'url']);
+      } else {
+        this.api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5']);
+      }
     });
   };
 

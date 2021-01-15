@@ -65,7 +65,7 @@ class SplunkSource extends WISESource {
       console.log('Login was successful: ' + success);
     });
 
-    api.addSource(section, this);
+    api.addSource(section, this, [this.type]);
 
     this.sourceFields = [this.esResultField];
     for (const k in this.shortcuts) {
@@ -200,6 +200,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'splunk',
     description: 'This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server',
+    displayable: true,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },

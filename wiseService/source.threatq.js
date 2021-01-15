@@ -66,7 +66,7 @@ class ThreatQSource extends WISESource {
     setImmediate(this.loadFile.bind(this));
     setInterval(this.loadFile.bind(this), 24 * 60 * 60 * 1000); // Reload file every 24 hours
 
-    this.api.addSource('threatq', this);
+    this.api.addSource('threatq', this, ['domain', 'email', 'ip', 'md5']);
   }
 
   // ----------------------------------------------------------------------------
@@ -179,6 +179,7 @@ exports.initSource = function (api) {
     description: 'ThreatQ source',
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
+    displayable: true,
     fields: [
       { name: 'key', password: true, required: true, help: 'The API key' },
       { name: 'host', required: true, help: 'Server hostname location' }

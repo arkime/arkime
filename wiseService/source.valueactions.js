@@ -43,7 +43,7 @@ class ValueActionsSource extends WISESource {
       return;
     }
 
-    this.api.addSource(section, this);
+    this.api.addSource(section, this, []);
 
     setImmediate(this.load.bind(this));
 

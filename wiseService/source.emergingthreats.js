@@ -36,7 +36,7 @@ class EmergingThreatsSource extends WISESource {
     this.domains = new Map();
     this.categories = {};
 
-    this.api.addSource('emergingthreats', this);
+    this.api.addSource('emergingthreats', this, ['ip', 'domain']);
 
     this.scoreField = this.api.addField('field:emergingthreats.score;db:et.score;kind:integer;friendly:Score;help:Emerging Threats Score;count:true');
     this.categoryField = this.api.addField('field:emergingthreats.category;db:et.category;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true');
@@ -161,6 +161,7 @@ exports.initSource = function (api) {
     description: 'Link to the emergingthreats data',
     types: ['ip', 'domain'],
     cacheable: false,
+    displayable: true,
     fields: [
       { name: 'key', password: true, required: true, help: 'The API key' }
     ]

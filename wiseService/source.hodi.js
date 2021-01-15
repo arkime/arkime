@@ -24,7 +24,7 @@ const LRU = require('lru-cache');
 class HODISource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { });
+    super(api, section, { fullQuery: true });
 
     this.contentTypes = {};
     const contentTypes = this.api.getConfig(section, 'contentTypes',
@@ -34,7 +34,6 @@ class HODISource extends WISESource {
 
     this.esHost = api.getConfig('hodi', 'esHost');
     this.bulk = [];
-    this.fullQuery = true;
 
     if (this.esHost === undefined) {
       console.log(this.section, '- No esHost defined');
@@ -97,7 +96,7 @@ class HODISource extends WISESource {
       });
     });
 
-    this.api.addSource('hodi', this);
+    this.api.addSource('hodi', this, ['domain', 'email', 'ip', 'md5']);
     setInterval(this.sendBulk.bind(this), 1000);
   }
 

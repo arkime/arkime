@@ -23,7 +23,7 @@ const redis = require('ioredis');
 class HODIRedisSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { dontCache: true });
+    super(api, section, { dontCache: true, fullQuery: true });
 
     this.contentTypes = {};
     const contentTypes = this.api.getConfig(section, 'contentTypes',
@@ -36,9 +36,8 @@ class HODIRedisSource extends WISESource {
       return;
     }
 
-    this.fullQuery = true;
     this.client = redis.createClient({ url: this.url });
-    this.api.addSource(section, this);
+    this.api.addSource(section, this, ['domain', 'email', 'ip', 'md5']);
 
     const tagsField = this.api.addField('field:tags');
     this.tagsDomain = WISESource.encodeResult(tagsField, 'nbs-domain');

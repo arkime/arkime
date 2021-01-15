@@ -45,7 +45,9 @@ class SimpleSource extends WISESource {
   constructor (api, section, options) {
     options.typeSetting = true;
     options.tagsSetting = true;
-    options.formatSetting = true;
+    if (options.formatSetting === undefined) {
+      options.formatSetting = 'csv';
+    }
     options.dontCache = true;
     super(api, section, options);
     this.reload = options.reload ? parseInt(api.getConfig(section, 'reload', -1)) : -1;
@@ -117,11 +119,6 @@ class SimpleSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
-  getTypes () {
-    return [this.type];
-  };
-
-  // ----------------------------------------------------------------------------
   /**
    * This loads the data for the simple source. SimpleSource will call on creation and on reloads.
    * It can also be called by the source to force a reload of the data.
@@ -174,7 +171,7 @@ class SimpleSource extends WISESource {
         if (this.reload > 0) {
           setInterval(this.load.bind(this), this.reload * 1000 * 60);
         }
-        this.api.addSource(this.section, this);
+        this.api.addSource(this.section, this, [this.type]);
       }
 
       // Process results

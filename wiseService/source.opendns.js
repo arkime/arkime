@@ -34,7 +34,7 @@ class OpenDNSSource extends WISESource {
     this.processing = {};
     this.statuses = { '-1': 'malicious', '0': 'unknown', '1': 'benign' };
 
-    this.api.addSource('opendns', this);
+    this.api.addSource('opendns', this, ['domain']);
     this.getCategories();
     setInterval(this.getCategories.bind(this), 10 * 60 * 1000);
     setInterval(this.performQuery.bind(this), 500);
