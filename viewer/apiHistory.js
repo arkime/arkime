@@ -4,10 +4,6 @@ module.exports = (Db) => {
   const module = {};
 
   // --------------------------------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------------------------------
-
-  // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
   /**
@@ -41,7 +37,7 @@ module.exports = (Db) => {
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
    * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
    * @param {string} searchTerm - The search text to filter the history list by.
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
+   * @param {number} length=100 - The number of items to return. Defaults to 1,000.
    * @param {number} start=0 - The entry to start at. Defaults to 0.
    * @param {string} sortField=timestamp - The field to sort the results by.
    * @param {string} desc=true - Whether to sort the results descending or ascending. Default is descending.

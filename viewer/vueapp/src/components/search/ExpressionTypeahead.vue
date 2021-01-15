@@ -586,7 +586,7 @@ export default {
       // autocomplete variables
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
-        let url = 'lookups?fieldFormat=true&map=true';
+        let url = 'api/shortcuts?fieldFormat=true&map=true';
         if (field && field.type) {
           url += `&fieldType=${field.type}`;
         }

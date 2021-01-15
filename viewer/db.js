@@ -30,7 +30,7 @@ var internals = { fileId2File: {},
   indicesCache: {},
   indicesSettingsCache: {},
   usersCache: {},
-  lookupsCache: {},
+  shortcutsCache: {},
   nodesStatsCache: {},
   nodesInfoCache: {},
   masterCache: {},
@@ -729,7 +729,7 @@ exports.flushCache = function () {
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
   internals.usersCache = {};
-  internals.lookupsCache = {};
+  internals.shortcutsCache = {};
   delete internals.aliasesCache;
 };
 // search against user index, promise only
@@ -841,30 +841,30 @@ exports.getHunt = function (id, cb) {
   return internals.elasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
 };
 
-exports.searchLookups = function (query, cb) {
+exports.searchShortcuts = function (query, cb) {
   return internals.elasticSearchClient.search({ index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true }, cb);
 };
-exports.createLookup = function (doc, username, cb) {
-  internals.lookupsCache = {};
+exports.createShortcut = function (doc, username, cb) {
+  internals.shortcutsCache = {};
   return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
 };
-exports.deleteLookup = function (id, username, cb) {
-  internals.lookupsCache = {};
+exports.deleteShortcut = function (id, username, cb) {
+  internals.shortcutsCache = {};
   return internals.elasticSearchClient.delete({ index: fixIndex('lookups'), id: id, refresh: true }, cb);
 };
-exports.setLookup = function (id, username, doc, cb) {
-  internals.lookupsCache = {};
+exports.setShortcut = function (id, username, doc, cb) {
+  internals.shortcutsCache = {};
   return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
 };
-exports.getLookup = function (id, cb) {
+exports.getShortcut = function (id, cb) {
   return internals.elasticSearchClient.get({ index: fixIndex('lookups'), id: id }, cb);
 };
-exports.getLookupsCache = function (name, cb) {
-  if (internals.lookupsCache[name] && internals.lookupsCache._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.lookupsCache[name]);
+exports.getShortcutsCache = function (name, cb) {
+  if (internals.shortcutsCache[name] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.shortcutsCache[name]);
   }
 
-  // only get lookups for this user or shared
+  // only get shortcuts for this user or shared
   const query = {
     query: {
       bool: {
@@ -876,19 +876,19 @@ exports.getLookupsCache = function (name, cb) {
     }
   };
 
-  exports.searchLookups(query, (err, lookups) => {
-    if (err) { return cb(err, lookups); }
+  exports.searchShortcuts(query, (err, shortcuts) => {
+    if (err) { return cb(err, shortcuts); }
 
-    let lookupsMap = {};
-    for (let lookup of lookups.hits.hits) {
+    let shortcutsMap = {};
+    for (let shortcut of shortcuts.hits.hits) {
       // need the whole object to test for type mismatch
-      lookupsMap[lookup._source.name] = lookup;
+      shortcutsMap[shortcut._source.name] = shortcut;
     }
 
-    internals.lookupsCache[name] = lookupsMap;
-    internals.lookupsCache._timeStamp = Date.now();
+    internals.shortcutsCache[name] = shortcutsMap;
+    internals.shortcutsCache._timeStamp = Date.now();
 
-    cb(null, lookupsMap);
+    cb(null, shortcutsMap);
   });
 };
 

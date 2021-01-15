@@ -496,7 +496,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return;
       }
 
-      Db.getLookupsCache(hunt.userId, (err, lookups) => {
+      Db.getShortcutsCache(hunt.userId, (err, shortcuts) => {
         const fakeReq = {
           user: user,
           query: {

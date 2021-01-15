@@ -84,7 +84,7 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return $$[$0-1];
+ return $$[$0-1]; 
 break;
 case 2:
 this.$ = 'lt'
@@ -128,7 +128,7 @@ break;
 case 19:
  this.$ = formatQuery(yy, $$[$0-2], $$[$0-1], $$[$0]);
           //console.log(util.inspect(this.$, false, 50));
-
+        
 break;
 }
 },
@@ -580,28 +580,28 @@ function formatQuery(yy, field, op, value)
     }
 
     value = value.substr(1); /* remove $ */
-    if (!yy.lookups || !yy.lookups[value]) {
+    if (!yy.shortcuts || !yy.shortcuts[value]) {
       throw value + ' - Shortcut not found';
     }
 
-    var lookup = yy.lookups[value];
+    var shortcut = yy.shortcuts[value];
 
     obj = { terms: {} };
     obj.terms[info.dbField] = {
       index : `${yy.prefix}lookups`,
-      id : lookup._id,
+      id : shortcut._id,
       type: 'lookup'
     };
 
     var type = info.type2 || info.type;
-    var lookupType = yy.lookupTypeMap[type];
+    var shortcutType = yy.shortcutTypeMap[type];
 
-    if (!lookupType) {
+    if (!shortcutType) {
       throw "Unsupported field type: " + type
     }
 
-    if (!lookup._source[lookupType]) {
-      throw 'lookup must be of type ' + lookupType;
+    if (!shortcut._source[shortcutType]) {
+      throw 'shortcut must be of type ' + shortcutType;
     }
 
     switch (type) {
@@ -1469,7 +1469,7 @@ case 22:console.log(yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?\/$]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?/$]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
 });
 return lexer;

@@ -3207,10 +3207,10 @@ export default {
         description: this.newShortcutDescription
       };
 
-      this.$http.post('lookups', { var: data })
+      this.$http.post('api/shortcut', data)
         .then((response) => {
           // add it to the list
-          this.shortcuts.data.push(response.data.var);
+          this.shortcuts.data.push(response.data.shortcut);
           // clear the inputs and any error
           this.shortcutFormError = false;
           this.newShortcutName = '';
@@ -3241,12 +3241,12 @@ export default {
         data.value = shortcut.newValue;
       }
 
-      this.$http.put(`lookups/${shortcut.id}`, { var: data })
+      this.$http.put(`api/shortcut/${shortcut.id}`, data)
         .then((response) => {
           // update value and clear out new value
           // so it can be used to determine editing
           if (shortcut.newValue) {
-            this.$set(shortcut, 'value', response.data.var.value);
+            this.$set(shortcut, 'value', response.data.shortcut.value);
             this.$set(shortcut, 'newValue', undefined);
             delete shortcut.newValue;
           }
@@ -3261,7 +3261,7 @@ export default {
     },
     /* deletes a shortcut and removes it from the shortcuts array */
     deleteShortcut: function (shortcut, index) {
-      this.$http.delete(`lookups/${shortcut.id}`)
+      this.$http.delete(`api/shortcut/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
           this.shortcuts.data.splice(index, 1);
@@ -3524,9 +3524,7 @@ export default {
         });
     },
     getShortcuts: function () {
-      let url = 'lookups';
-
-      let queryParams = {
+      const queryParams = {
         length: this.shortcutsSize,
         start: this.shortcutsStart,
         desc: this.shortcutsQuery.desc,
@@ -3536,7 +3534,7 @@ export default {
       if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
       if (this.userId) { queryParams.userId = this.userId; }
 
-      this.$http.get(url, { params: queryParams })
+      this.$http.get('api/shortcuts', { params: queryParams })
         .then((response) => {
           this.shortcuts = response.data;
           this.shortcutsListError = '';

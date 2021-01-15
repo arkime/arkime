@@ -87,15 +87,16 @@ var methodOverride = require('method-override');
 var compression = require('compression');
 
 // internal app deps
-let { internals } = require('./internals')(app, Config);
-let ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
-let notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
-let sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
-let connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
-let statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-let huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
-let userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
-let historyAPIs = require('./apiHistory')(Db);
+const { internals } = require('./internals')(app, Config);
+const ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
+const notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
+const sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
+const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
+const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
+const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
+const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
+const historyAPIs = require('./apiHistory')(Db);
+const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -861,34 +862,6 @@ function loadPlugins () {
       console.log("WARNING - Couldn't find plugin", plugin, 'in', dirs);
     }
   });
-}
-
-// https://stackoverflow.com/a/48569020
-class Mutex {
-  constructor () {
-    this.queue = [];
-    this.locked = false;
-  }
-
-  lock () {
-    return new Promise((resolve, reject) => {
-      if (this.locked) {
-        this.queue.push(resolve);
-      } else {
-        this.locked = true;
-        resolve();
-      }
-    });
-  }
-
-  unlock () {
-    if (this.queue.length > 0) {
-      const resolve = this.queue.shift();
-      resolve();
-    } else {
-      this.locked = false;
-    }
-  }
 }
 
 // user helpers ---------------------------------------------------------------
@@ -2319,251 +2292,30 @@ app.get( // remote hunt endpoint
   huntAPIs.remoteHunt
 );
 
-// lookup apis ----------------------------------------------------------------
-let lookupMutex = new Mutex();
-app.get('/lookups', [noCacheJson, getSettingUserCache, recordResponseTime], function (req, res) {
-  // return nothing if we can't find the user
-  const user = req.settingUser;
-  if (!user) { return res.send({}); }
+// shortcut apis ----------------------------------------------------------------
+app.get( // get shortcuts endpoint
+  ['/api/shortcuts', '/lookups'],
+  [noCacheJson, getSettingUserCache, recordResponseTime],
+  shortcutAPIs.getShortcuts
+);
 
-  const map = req.query.map && req.query.map === 'true';
+app.post( // create shortcut endpoint
+  ['/api/shortcut', '/lookups'],
+  [noCacheJson, getSettingUserDb, logAction('shortcut'), checkCookieToken],
+  shortcutAPIs.createShortcut
+);
 
-  // only get lookups for setting user or shared
-  let query = {
-    query: {
-      bool: {
-        must: [
-          {
-            bool: {
-              should: [
-                { term: { shared: true } },
-                { term: { userId: req.settingUser.userId } }
-              ]
-            }
-          }
-        ]
+app.put( // update shortcut endpoint
+  ['/api/shortcut/:id', '/lookups/:id'],
+  [noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  shortcutAPIs.updateShortcut
+);
 
-      }
-    },
-    sort: {},
-    size: req.query.length || 50,
-    from: req.query.start || 0
-  };
-
-  query.sort[req.query.sort || 'name'] = {
-    order: req.query.desc === 'true' ? 'desc' : 'asc'
-  };
-
-  if (req.query.searchTerm) {
-    query.query.bool.must.push({
-      wildcard: { name: '*' + req.query.searchTerm + '*' }
-    });
-  }
-
-  // if fieldType exists, filter it
-  if (req.query.fieldType) {
-    const fieldType = internals.lookupTypeMap[req.query.fieldType];
-
-    if (fieldType) {
-      query.query.bool.must.push({
-        exists: { field: fieldType }
-      });
-    }
-  }
-
-  Promise.all([
-    Db.searchLookups(query),
-    Db.numberOfDocuments('lookups')
-  ]).then(([lookups, total]) => {
-    if (lookups.error) { throw lookups.error; }
-
-    let results = { list: [], map: {} };
-    for (const hit of lookups.hits.hits) {
-      let lookup = hit._source;
-      lookup.id = hit._id;
-
-      if (lookup.number) {
-        lookup.type = 'number';
-      } else if (lookup.ip) {
-        lookup.type = 'ip';
-      } else {
-        lookup.type = 'string';
-      }
-
-      const values = lookup[lookup.type];
-
-      if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
-        const name = `$${lookup.name}`;
-        lookup.exp = name;
-        lookup.dbField = name;
-        lookup.help = lookup.description
-          ? `${lookup.description}: ${values.join(', ')}`
-          : `${values.join(',')}`;
-      }
-
-      lookup.value = values.join('\n');
-      delete lookup[lookup.type];
-
-      if (map) {
-        results.map[lookup.id] = lookup;
-      } else {
-        results.list.push(lookup);
-      }
-    }
-
-    const sendResults = map ? results.map : {
-      recordsTotal: total.count,
-      recordsFiltered: lookups.hits.total,
-      data: results.list
-    };
-
-    res.send(sendResults);
-  }).catch((err) => {
-    console.log('ERROR - /lookups', err);
-    return res.molochError(500, 'Error retrieving lookups - ' + err);
-  });
-});
-
-app.post('/lookups', [noCacheJson, getSettingUserDb, logAction('lookups'), checkCookieToken], function (req, res) {
-  // make sure all the necessary data is included in the post body
-  if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
-  if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
-  if (!req.body.var.type) { return res.molochError(403, 'Missing shortcut type'); }
-  if (!req.body.var.value) { return res.molochError(403, 'Missing shortcut value'); }
-
-  req.body.var.name = req.body.var.name.replace(/[^-a-zA-Z0-9_]/g, '');
-
-  // return nothing if we can't find the user
-  const user = req.settingUser;
-  if (!user) { return res.send({}); }
-
-  const query = {
-    query: {
-      bool: {
-        must: [
-          { term: { name: req.body.var.name } }
-        ]
-      }
-    }
-  };
-
-  lookupMutex.lock().then(() => {
-    Db.searchLookups(query)
-      .then((lookups) => {
-        // search for lookup name collision
-        for (const hit of lookups.hits.hits) {
-          let lookup = hit._source;
-          if (lookup.name === req.body.var.name) {
-            lookupMutex.unlock();
-            return res.molochError(403, `A shortcut with the name, ${req.body.var.name}, already exists`);
-          }
-        }
-
-        let variable = req.body.var;
-        variable.userId = user.userId;
-
-        // comma/newline separated value -> array of values
-        const values = ViewerUtils.commaStringToArray(variable.value);
-        variable[variable.type] = values;
-
-        const type = variable.type;
-        delete variable.type;
-        delete variable.value;
-
-        Db.createLookup(variable, user.userId, function (err, result) {
-          if (err) {
-            console.log('shortcut create failed', err, result);
-            lookupMutex.unlock();
-            return res.molochError(500, 'Creating shortcut failed');
-          }
-          variable.id = result._id;
-          variable.type = type;
-          variable.value = values.join('\n');
-          delete variable.ip;
-          delete variable.string;
-          delete variable.number;
-          lookupMutex.unlock();
-          return res.send(JSON.stringify({ success: true, var: variable }));
-        });
-      }).catch((err) => {
-        console.log('ERROR - /lookups', err);
-        lookupMutex.unlock();
-        return res.molochError(500, 'Error creating lookup - ' + err);
-      });
-  });
-});
-
-app.put('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id'), checkCookieToken], function (req, res) {
-  // make sure all the necessary data is included in the post body
-  if (!req.body.var) { return res.molochError(403, 'Missing shortcut'); }
-  if (!req.body.var.name) { return res.molochError(403, 'Missing shortcut name'); }
-  if (!req.body.var.type) { return res.molochError(403, 'Missing shortcut type'); }
-  if (!req.body.var.value) { return res.molochError(403, 'Missing shortcut value'); }
-
-  let sentVar = req.body.var;
-
-  Db.getLookup(req.params.id, (err, fetchedVar) => { // fetch variable
-    if (err) {
-      console.log('fetching shortcut to update failed', err, fetchedVar);
-      return res.molochError(500, 'Fetching shortcut to update failed');
-    }
-
-    if (fetchedVar._source.locked) {
-      return res.molochError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
-    }
-
-    // only allow admins or lookup creator to update lookup item
-    if (!req.user.createEnabled && req.settingUser.userId !== fetchedVar._source.userId) {
-      return res.molochError(403, 'Permission denied');
-    }
-
-    // comma/newline separated value -> array of values
-    const values = ViewerUtils.commaStringToArray(sentVar.value);
-    sentVar[sentVar.type] = values;
-    sentVar.userId = fetchedVar._source.userId;
-
-    delete sentVar.type;
-    delete sentVar.value;
-
-    Db.setLookup(req.params.id, fetchedVar.userId, sentVar, (err, info) => {
-      if (err) {
-        console.log('shortcut update failed', err, info);
-        return res.molochError(500, 'Updating shortcut failed');
-      }
-
-      sentVar.value = values.join('\n');
-
-      return res.send(JSON.stringify({
-        success: true,
-        var: sentVar,
-        text: 'Successfully updated shortcut'
-      }));
-    });
-  });
-});
-
-app.delete('/lookups/:id', [noCacheJson, getSettingUserDb, logAction('lookups/:id'), checkCookieToken], function (req, res) {
-  Db.getLookup(req.params.id, (err, variable) => { // fetch variable
-    if (err) {
-      console.log('fetching shortcut to delete failed', err, variable);
-      return res.molochError(500, 'Fetching shortcut to delete failed');
-    }
-
-    // only allow admins or lookup creator to delete lookup item
-    if (!req.user.createEnabled && req.settingUser.userId !== variable._source.userId) {
-      return res.molochError(403, 'Permission denied');
-    }
-
-    Db.deleteLookup(req.params.id, variable.userId, function (err, result) {
-      if (err || result.error) {
-        console.log('ERROR - deleting shortcut', err || result.error);
-        return res.molochError(500, 'Error deleting shortcut');
-      } else {
-        res.send(JSON.stringify({ success: true, text: 'Deleted shortcut successfully' }));
-      }
-    });
-  });
-});
+app.delete( // delete shortcut endpoint
+  ['/api/shortcut/:id', '/lookups/:id'],
+  [noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  shortcutAPIs.deleteShortcut
+);
 
 // packet/spi scrub apis ------------------------------------------------------
 app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest, checkPermissions(['removeEnabled'])], (req, res) => {
@@ -2990,14 +2742,14 @@ internals.processCronQueries = () => {
             qid: qid
           };
 
-          Db.getLookupsCache(cq.creator, (err, lookups) => {
+          Db.getShortcutsCache(cq.creator, (err, shortcuts) => {
             molochparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
               dbFieldsMap: Config.getDBFieldsMap(),
               prefix: internals.prefix,
-              lookups: lookups,
-              lookupTypeMap: internals.lookupTypeMap
+              shortcuts: shortcuts,
+              shortcutTypeMap: internals.shortcutTypeMap
             };
 
             const query = {

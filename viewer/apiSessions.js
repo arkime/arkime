@@ -1008,7 +1008,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     addSortToQuery(query, reqQuery, 'firstPacket');
 
-    Db.getLookupsCache(req.user.userId, (lerr, lookups) => {
+    Db.getShortcutsCache(req.user.userId, (lerr, shortcuts) => {
       let err = null;
       molochparser.parser.yy = {
         views: req.user.views,
@@ -1016,8 +1016,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         dbFieldsMap: Config.getDBFieldsMap(),
         prefix: internals.prefix,
         emailSearch: req.user.emailSearch === true,
-        lookups: lookups || {},
-        lookupTypeMap: internals.lookupTypeMap
+        shortcuts: shortcuts || {},
+        shortcutTypeMap: internals.shortcutTypeMap
       };
 
       if (reqQuery.expression) {
