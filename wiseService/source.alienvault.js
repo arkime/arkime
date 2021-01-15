@@ -161,6 +161,7 @@ exports.initSource = function (api) {
     description: 'Link to the alienvault data',
     types: ['ip'],
     cacheable: false,
+    displayable: true,
     fields: [
       { name: 'key', password: true, required: true, help: 'The API key' }
     ]

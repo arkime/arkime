@@ -92,7 +92,7 @@
             {{ configDefs[selectedSourceSplit].description }}
           </div>
 
-          <div v-if="configDefs[selectedSourceSplit].editable">
+          <div v-if="configDefs[selectedSourceSplit].editable || configDefs[selectedSourceSplit].displayable">
             <b-form-radio-group
               v-model="configViewSelected"
               :options="configViews"
@@ -134,7 +134,16 @@
                </div>
              </span>
            </span>
-        </div>
+        </div> <!-- edit -->
+
+        <div v-if="configViewSelected === 'display'">
+          <b-form-textarea
+             v-model="displayData"
+             rows="18"
+           >
+           </b-form-textarea>
+        </div> <!-- display -->
+
         <div v-else>
           <div
             class="input-group mb-3"
@@ -305,14 +314,11 @@ export default {
       currConfigBefore: {}, // Used to determine if changes have been made
       currFile: '',
       currFileBefore: '', // Used to determine if changes have been made
+      displayData: '',
       filePath: '',
       newSource: '',
       newSourceName: '',
       configViewSelected: 'config',
-      configViews: [
-        { text: 'Config', value: 'config' },
-        { text: 'Edit', value: 'edit' }
-      ],
       configCode: '',
       showImportConfigModal: false,
       importConfigText: '',
@@ -349,6 +355,19 @@ export default {
     },
     fileSaveDisabled: function () {
       return this.currFile === this.currFileBefore;
+    },
+    configViews: function () {
+      let views = [ { text: 'Config', value: 'config' } ];
+
+      if (this.configDefs[this.selectedSourceSplit].editable) {
+        views.push({ text: 'Edit', value: 'edit' });
+      }
+
+      if (this.configDefs[this.selectedSourceSplit].displayable) {
+        views.push({ text: 'Display', value: 'display' });
+      }
+
+      return views;
     }
   },
   watch: {
@@ -356,10 +375,14 @@ export default {
       this.configViewSelected = 'config';
       this.currFile = '';
       this.currFileBefore = '';
+      this.displayData = '';
     },
     configViewSelected: function () {
       if (this.configViewSelected === 'edit') {
         this.loadSourceFile();
+      }
+      if (this.configViewSelected === 'display') {
+        this.loadSourceDisplay();
       }
     }
   },
@@ -599,6 +622,18 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || `Error saving wise source file for ${this.selectedSourceKey}.`,
+            variant: 'alert-danger'
+          };
+        });
+    },
+    loadSourceDisplay: function () {
+      WiseService.getSourceDisplay(this.selectedSourceKey)
+        .then((data) => {
+          this.displayData = data;
+        })
+        .catch((err) => {
+          this.alertState = {
+            text: err.text || `Error fetching source display from wise.`,
             variant: 'alert-danger'
           };
         });

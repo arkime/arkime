@@ -36,7 +36,7 @@ class WISESource {
    * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
-   * @param {boolean} [options.formatSetting=false] - load the format setting
+   * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
    * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
    */
   constructor (api, section, options) {
@@ -70,7 +70,7 @@ class WISESource {
     }
 
     if (options.formatSetting) {
-      this.formatSetting();
+      this.formatSetting(options.formatSetting);
     }
 
     // Domain and Email wildcards to exclude from source
@@ -357,8 +357,8 @@ class WISESource {
   parse;
 
   // ----------------------------------------------------------------------------
-  formatSetting () {
-    this.format = this.api.getConfig(this.section, 'format', 'csv');
+  formatSetting (d) {
+    this.format = this.api.getConfig(this.section, 'format', d);
     if (this.format === 'csv') {
       this.parse = this.parseCSV;
     } else if (this.format === 'tagger') {

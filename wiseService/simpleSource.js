@@ -45,7 +45,9 @@ class SimpleSource extends WISESource {
   constructor (api, section, options) {
     options.typeSetting = true;
     options.tagsSetting = true;
-    options.formatSetting = true;
+    if (options.formatSetting === undefined) {
+      options.formatSetting = 'csv';
+    }
     options.dontCache = true;
     super(api, section, options);
     this.reload = options.reload ? parseInt(api.getConfig(section, 'reload', -1)) : -1;

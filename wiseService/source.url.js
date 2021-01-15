@@ -85,6 +85,7 @@ exports.initSource = function (api) {
     name: 'url',
     description: 'Use a web url to load data into wise. The url can be periodically reloaded.',
     cacheable: false,
+    displayable: true,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },

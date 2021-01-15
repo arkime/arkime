@@ -86,6 +86,18 @@ export default {
         });
     });
   },
+  getSourceDisplay: function (sourceName) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('dump/' + sourceName)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.log('service error', error);
+          reject(error);
+        });
+    });
+  },
   saveCurrConfig: function (config, configCode) {
     return new Promise((resolve, reject) => {
       Vue.axios.put('config/save', { config: config, configCode: configCode })

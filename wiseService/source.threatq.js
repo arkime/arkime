@@ -179,6 +179,7 @@ exports.initSource = function (api) {
     description: 'ThreatQ source',
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
+    displayable: true,
     fields: [
       { name: 'key', password: true, required: true, help: 'The API key' },
       { name: 'host', required: true, help: 'Server hostname location' }

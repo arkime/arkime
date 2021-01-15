@@ -79,6 +79,7 @@ class FileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
   putSourceRaw (body, cb) {
     fs.writeFile(this.file, body, (err) => {
+      this.load();
       return cb(err);
     });
   }
@@ -92,6 +93,7 @@ exports.initSource = function (api) {
     description: 'Use a local file to load data into wise. The file is automatically reloaded if it changes.',
     cacheable: false,
     editable: true,
+    displayable: true,
     fields: [
       { name: 'file', required: true, help: 'The path of the file to load' },
       { name: 'type', required: false, help: 'The wise query type this source supports' },
