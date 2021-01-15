@@ -136,7 +136,7 @@
            </span>
         </div> <!-- edit -->
 
-        <div v-if="configViewSelected === 'display'">
+        <div v-else-if="configViewSelected === 'display'">
           <b-form-textarea
              v-model="displayData"
              rows="18"
@@ -182,7 +182,7 @@
             <b-icon icon="trash" scale="1"></b-icon>
             Delete Source
           </b-button>
-        </div>
+        </div> <!-- else -->
       </div><!-- /Selected Source Inputs Fields-->
     </div>
 
