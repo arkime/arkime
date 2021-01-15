@@ -1422,7 +1422,7 @@ app.get( // user css endpoint
   userAPIs.getUserCSS
 );
 
-app.getpost( // user list endpoint
+app.post( // get users endpoint
   ['/api/users', '/user/list'],
   [noCacheJson, recordResponseTime, logAction('users'), checkPermissions(['createEnabled'])],
   userAPIs.getUsers

@@ -46,8 +46,8 @@ export default {
     return new Promise((resolve, reject) => {
       const options = {
         url: 'api/users',
-        method: 'GET',
-        params: query
+        method: 'POST',
+        data: query
       };
 
       Vue.axios(options)

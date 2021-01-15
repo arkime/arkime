@@ -488,7 +488,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   };
 
   /**
-   * GET - /api/users
+   * POST - /api/users
    *
    * Retrieves a list of Arkime users (admin only).
    * @name /users
