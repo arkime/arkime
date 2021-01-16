@@ -21,7 +21,8 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-3.0.0 2021/01/xx
+3.0.0 2021/02/xx
+  - BREAKING - elasticsearch - ES 7.7.1 or later required
   - BREAKING - multies - multiESNodes requires a name: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
   - BREAKING - wise - redis urls have a new standard format
@@ -29,6 +30,12 @@ NOTICE: Restart wiseService before capture when upgrading
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
   - release - curl 7.74.0, node 12.20.1, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
+  - capture - fixed possible ABR with time parsing
+  - capture - fixed memory leak with dns bad hostname parsing
+  - capture - new classifier for nfs and several rpc protocols
+  - capture - handle larger oracle connect msgs better
+  - capture - parse small http basic auth headers correctly
+  - capture - rule matches can now be logged
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize some APIs
@@ -37,9 +44,13 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - can find nodes for pcap based on --host
   - viewer - in multiviewer mode can now select which clusters to search (PR #1325)
   - viewer - fix addTag/removeTag with multiviewer (PR #1556)
+  - viewer - can modify some sessions2 template from esadmin tab
+  - viewer - can modify entire shortcuts now
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse
+  - wise - new elasticsearchfile type
+  - wise - threatstream results now cached
   - all - renamed rightclicks to valueactions
   - esproxy - first version, see https://arkime.com/esproxy
 

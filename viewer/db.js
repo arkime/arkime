@@ -1393,3 +1393,11 @@ exports.setILMPolicy = function (name, policy) {
     });
   });
 };
+
+exports.getTemplate = function (name) {
+  return internals.elasticSearchClient.indices.getTemplate({ name: fixIndex(name), flat_settings: true });
+};
+
+exports.putTemplate = function (name, body) {
+  return internals.elasticSearchClient.indices.putTemplate({ name: fixIndex(name), body: body });
+};
