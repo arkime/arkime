@@ -1,4 +1,4 @@
-use Test::More tests => 43;
+use Test::More tests => 47;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -58,6 +58,14 @@ $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_upd
 is($json->{shortcut}->{name}, "test_shortcut_updated", "shortcut name updated");
 is($json->{shortcut}->{value}, "10.0.0.1", "shortcut value updated");
 
+# can update all fields of a shortcut
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"string","value":"test","description":"test description"}', $token);
+is($json->{shortcut}->{string}->[0], "test", "shortcut type updated");
+is($json->{shortcut}->{value}, "test", "shortcut value updated");
+is($json->{shortcut}->{description}, "test description", "shortcut description updated");
+# turn it back to ip type for following tests to search for ip shortcuts
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"ip","value":"10.0.0.1","description":"test description"}', $token);
+
 # verify shortcut works
 esGet("/_refresh");
 countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
@@ -84,6 +92,10 @@ my $shortcut3Id = $json->{shortcut}->{id}; # save id for cleanup later
 $shortcuts = viewerGet("/lookups?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 2, "2 shortcuts for this user");
 
+# can't update shortcut and duplicate name
+$json = viewerPutToken("/api/shortcut/$shortcut3Id", '{"name":"test_shortcut_updated","type":"ip","value":"10.0.0.1"}', $token);
+ok(!$json->{success}, "unique shortcut names");
+
 # unshared shortcut can't be seen by nonadmin users
 $shortcuts = viewerGet('/api/shortcuts?molochRegressionUser=user3');
 is(@{$shortcuts->{data}}, 1, "nonadmin user can only see shared shortcuts");
@@ -93,7 +105,7 @@ $shortcuts = viewerGet("/lookups?fieldType=string");
 is(@{$shortcuts->{data}}, 2, "should be 2 shortcuts of type string");
 is($shortcuts->{data}->[0]->{type}, 'string', 'shortcut should be of type string');
 $shortcuts = viewerGet("/api/shortcuts?fieldType=ip");
-is(@{$shortcuts->{data}}, 1, "should be 2 shortcuts of type ip");
+is(@{$shortcuts->{data}}, 1, "should be 1 shortcuts of type ip");
 is($shortcuts->{data}->[0]->{type}, 'ip', 'shortcut should be of type ip');
 
 # get shortcuts map
