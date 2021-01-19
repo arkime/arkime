@@ -857,12 +857,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.getESAdminSettings = (req, res) => {
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
-      Db.getILMPolicy()
-    ]).then(([settings, ilm]) => {
+      Db.getILMPolicy(),
+      Db.getTemplate('sessions2_template')
+    ]).then(([settings, ilm, template]) => {
       let rsettings = [];
 
-      function addSetting (key, type, name, url, regex) {
-        let current = settings.transient[key];
+      function addSetting (key, type, name, url, regex, current) {
+        if (current === undefined) { current = settings.transient[key]; }
         if (current === undefined) { current = settings.persistent[key]; }
         if (current === undefined) { current = settings.defaults[key]; }
         if (current === undefined) { return; }
@@ -934,26 +935,44 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/circuit-breaker.html',
         '^(|null|\\d+%)$');
 
+      addSetting('arkime.sessions.shards', 'Integer',
+        'Sessions - Number of shards for FUTURE sessions2 indices',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-shards',
+        '^\\d+$',
+        template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards']);
+
+      addSetting('arkime.sessions.replicas', 'Integer',
+        'Sessions - Number of replicas for FUTURE sessions2 indices',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-replicas',
+        '^\\d+$',
+        template[`${internals.prefix}sessions2_template`].settings['index.number_of_replicas'] || 0);
+
+      addSetting('arkime.sessions.shards_per_node', 'Empty or Integer',
+        'Sessions - Number of shards_per_node for FUTURE sessions2 indices',
+        'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-total-shards.html',
+        '^(|\\d+)$',
+        template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
+
       function addIlm (key, current, name, type, regex) {
         rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
       }
 
       if (ilm[`${internals.prefix}molochsessions`]) {
         const silm = ilm[`${internals.prefix}molochsessions`];
-        addIlm('moloch.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
-          'ILM - Sessions Force Time', 'Time String', '^\\d+[hd]$');
-        addIlm('moloch.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
-          'ILM - Sessions Replicas', 'Integer', '^\\d$');
-        addIlm('moloch.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
-          'ILM - Sessions Merge Segments ', 'Integer', '^\\d$');
-        addIlm('moloch.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
-          'ILM - Sessions Delete Time', 'Time String', '^\\d+[hd]$');
+        addIlm('arkime.ilm.sessions.forceTime', silm.policy.phases.warm.min_age,
+          'ILM - Move to warm after', 'Time String', '^\\d+[hd]$');
+        addIlm('arkime.ilm.sessions.replicas', silm.policy.phases.warm.actions.allocate.number_of_replicas,
+          'ILM - Number of replicas after setting to warm', 'Integer', '^\\d$');
+        addIlm('arkime.ilm.sessions.segments', silm.policy.phases.warm.actions.forcemerge.max_num_segments,
+          'ILM - Number of segments after setting to warm', 'Integer', '^\\d$');
+        addIlm('arkime.ilm.sessions.deleteTime', silm.policy.phases.delete.min_age,
+          'ILM - Delete session index after', 'Time String', '^\\d+[hd]$');
       }
 
       if (ilm[`${internals.prefix}molochhistory`]) {
         const hilm = ilm[`${internals.prefix}molochhistory`];
-        addIlm('moloch.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
-          'ILM - History Delete Time', 'Time String', '^\\d+[hd]$');
+        addIlm('arkime.ilm.history.deleteTime', hilm.policy.phases.delete.min_age,
+          'ILM - Delete History index after', 'Time String', '^\\d+[hd]$');
       }
 
       return res.send(rsettings);
@@ -975,7 +994,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
 
-    if (req.body.key.startsWith('moloch.ilm')) {
+    if (req.body.key.startsWith('arkime.ilm')) {
       Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
         const silm = ilm[`${internals.prefix}molochsessions`];
         const hilm = ilm[`${internals.prefix}molochhistory`];
@@ -985,29 +1004,54 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
 
         switch (req.body.key) {
-        case 'moloch.ilm.sessions.forceTime':
+        case 'arkime.ilm.sessions.forceTime':
           silm.policy.phases.warm.min_age = req.body.value;
           break;
-        case 'moloch.ilm.sessions.replicas':
+        case 'arkime.ilm.sessions.replicas':
           silm.policy.phases.warm.actions.allocate.number_of_replicas = parseInt(req.body.value || 0, 10);
           break;
-        case 'moloch.ilm.sessions.segments':
+        case 'arkime.ilm.sessions.segments':
           silm.policy.phases.warm.actions.forcemerge.max_num_segments = parseInt(req.body.value || 0, 10);
           break;
-        case 'moloch.ilm.sessions.deleteTime':
+        case 'arkime.ilm.sessions.deleteTime':
           silm.policy.phases.delete.min_age = req.body.value;
           break;
-        case 'moloch.ilm.history.deleteTime':
+        case 'arkime.ilm.history.deleteTime':
           hilm.policy.phases.delete.min_age = req.body.value;
           break;
         default:
           return res.molochError(500, 'Unknown field');
         }
-        if (req.body.key.startsWith('moloch.ilm.history')) {
+        if (req.body.key.startsWith('arkime.ilm.history')) {
           Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
         } else {
           Db.setILMPolicy(`${internals.prefix}molochsessions`, silm);
         }
+        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+      });
+      return;
+    }
+
+    if (req.body.key.startsWith('arkime.sessions')) {
+      Promise.all([Db.getTemplate('sessions2_template')]).then(([template]) => {
+        switch (req.body.key) {
+        case 'arkime.sessions.shards':
+          template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards'] = req.body.value;
+          break;
+        case 'arkime.sessions.replicas':
+          template[`${internals.prefix}sessions2_template`].settings['index.number_of_replicas'] = req.body.value;
+          break;
+        case 'arkime.sessions.shards_per_node':
+          if (req.body.value === '') {
+            delete template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'];
+          } else {
+            template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
+          }
+          break;
+        default:
+          return res.molochError(500, 'Unknown field');
+        }
+        Db.putTemplate('sessions2_template', template[`${internals.prefix}sessions2_template`]);
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
       });
       return;
