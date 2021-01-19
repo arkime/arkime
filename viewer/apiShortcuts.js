@@ -213,52 +213,51 @@ module.exports = (Db, internals, ViewerUtils) => {
     };
 
     shortcutMutex.lock().then(() => {
-      Db.searchShortcuts(query)
-        .then((shortcuts) => {
-          // search for shortcut name collision
-          for (const hit of shortcuts.hits.hits) {
-            const shortcut = hit._source;
-            if (shortcut.name === req.body.name) {
-              shortcutMutex.unlock();
-              return res.molochError(403, `A shortcut with the name, ${req.body.name}, already exists`);
-            }
-          }
-
-          const newShortcut = req.body;
-          newShortcut.userId = user.userId;
-
-          // comma/newline separated value -> array of values
-          const values = ViewerUtils.commaStringToArray(newShortcut.value);
-          newShortcut[newShortcut.type] = values;
-
-          const type = newShortcut.type;
-          delete newShortcut.type;
-          delete newShortcut.value;
-
-          Db.createShortcut(newShortcut, user.userId, (err, result) => {
-            if (err) {
-              console.log('shortcut create failed', err, result);
-              shortcutMutex.unlock();
-              return res.molochError(500, 'Creating shortcut failed');
-            }
-            newShortcut.id = result._id;
-            newShortcut.type = type;
-            newShortcut.value = values.join('\n');
-            delete newShortcut.ip;
-            delete newShortcut.string;
-            delete newShortcut.number;
+      Db.searchShortcuts(query).then((shortcuts) => {
+        // search for shortcut name collision
+        for (const hit of shortcuts.hits.hits) {
+          const shortcut = hit._source;
+          if (shortcut.name === req.body.name) {
             shortcutMutex.unlock();
+            return res.molochError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+          }
+        }
 
-            return res.send(JSON.stringify({
-              success: true,
-              shortcut: newShortcut
-            }));
-          });
-        }).catch((err) => {
-          console.log('ERROR - /api/shortcut', err);
+        const newShortcut = req.body;
+        newShortcut.userId = user.userId;
+
+        // comma/newline separated value -> array of values
+        const values = ViewerUtils.commaStringToArray(newShortcut.value);
+        newShortcut[newShortcut.type] = values;
+
+        const type = newShortcut.type;
+        delete newShortcut.type;
+        delete newShortcut.value;
+
+        Db.createShortcut(newShortcut, user.userId, (err, result) => {
+          if (err) {
+            console.log('shortcut create failed', err, result);
+            shortcutMutex.unlock();
+            return res.molochError(500, 'Creating shortcut failed');
+          }
+          newShortcut.id = result._id;
+          newShortcut.type = type;
+          newShortcut.value = values.join('\n');
+          delete newShortcut.ip;
+          delete newShortcut.string;
+          delete newShortcut.number;
           shortcutMutex.unlock();
-          return res.molochError(500, 'Error creating shortcut - ' + err);
+
+          return res.send(JSON.stringify({
+            success: true,
+            shortcut: newShortcut
+          }));
         });
+      }).catch((err) => {
+        console.log('ERROR - /api/shortcut', err);
+        shortcutMutex.unlock();
+        return res.molochError(500, 'Error creating shortcut - ' + err);
+      });
     });
   };
 
@@ -303,27 +302,59 @@ module.exports = (Db, internals, ViewerUtils) => {
         return res.molochError(403, 'Permission denied');
       }
 
-      // comma/newline separated value -> array of values
-      const values = ViewerUtils.commaStringToArray(sentShortcut.value);
-      sentShortcut[sentShortcut.type] = values;
-      sentShortcut.userId = fetchedShortcut._source.userId;
-
-      delete sentShortcut.type;
-      delete sentShortcut.value;
-
-      Db.setShortcut(req.params.id, fetchedShortcut.userId, sentShortcut, (err, info) => {
-        if (err) {
-          console.log('shortcut update failed', err, info);
-          return res.molochError(500, 'Updating shortcut failed');
+      const query = {
+        query: {
+          bool: {
+            must: [
+              { term: { name: req.body.name } } // same name
+            ],
+            must_not: [
+              { ids: { values: [ req.params.id ] } } // but different ID
+            ]
+          }
         }
+      };
 
-        sentShortcut.value = values.join('\n');
+      shortcutMutex.lock().then(() => {
+        Db.searchShortcuts(query).then((shortcuts) => {
+          // search for shortcut name collision
+          for (const hit of shortcuts.hits.hits) {
+            const shortcut = hit._source;
+            if (shortcut.name === req.body.name) {
+              shortcutMutex.unlock();
+              return res.molochError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+            }
+          }
 
-        return res.send(JSON.stringify({
-          success: true,
-          shortcut: sentShortcut,
-          text: 'Successfully updated shortcut'
-        }));
+          // comma/newline separated value -> array of values
+          const values = ViewerUtils.commaStringToArray(sentShortcut.value);
+          sentShortcut[sentShortcut.type] = values;
+          sentShortcut.userId = fetchedShortcut._source.userId;
+
+          delete sentShortcut.type;
+          delete sentShortcut.value;
+
+          Db.setShortcut(req.params.id, fetchedShortcut.userId, sentShortcut, (err, info) => {
+            shortcutMutex.unlock();
+
+            if (err) {
+              console.log('shortcut update failed', err, info);
+              return res.molochError(500, 'Updating shortcut failed');
+            }
+
+            sentShortcut.value = values.join('\n');
+
+            return res.send(JSON.stringify({
+              success: true,
+              shortcut: sentShortcut,
+              text: 'Successfully updated shortcut'
+            }));
+          });
+        }).catch((err) => {
+          console.log('ERROR - /api/shortcut', err);
+          shortcutMutex.unlock();
+          return res.molochError(500, 'Error updating shortcut - ' + err);
+        });
       });
     });
   };
