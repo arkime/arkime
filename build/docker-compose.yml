@@ -1,0 +1,7 @@
+version: "3"
+services:
+  moloch:
+    image: docker.sqooba.io/metis/moloch:v2.4.2
+    build:
+      context: ..
+      dockerfile: build/Dockerfile

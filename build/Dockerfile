@@ -26,7 +26,6 @@ RUN \
   scl enable devtoolset-9 rh-python36 'make install'
 
 
-
 FROM centos:7 as run
 
 RUN mkdir -p /data
@@ -42,6 +41,8 @@ RUN \
 COPY --from=build /usr/local/lib/librdkafka* /usr/local/lib/
 COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
 
-COPY ulimit-entrypoint.sh /ulimit-entrypoint.sh
+COPY build/ulimit-entrypoint.sh /ulimit-entrypoint.sh
 
 ENTRYPOINT ["/ulimit-entrypoint.sh"]
+
+# docker.sqooba.io/metis/moloch:v2.4.2
