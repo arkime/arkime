@@ -74,7 +74,7 @@ class WISERedisCache extends WISECache {
         if (err || reply === null) {
           return cb(null, undefined);
         }
-        const result = BSON.deserialize(reply.value, { promoteBuffers: true });
+        const result = BSON.deserialize(reply, { promoteBuffers: true });
 
         for (const source in result) {
           // Redis uses old encoding, convert old to new when needed
