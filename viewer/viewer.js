@@ -29,7 +29,6 @@ try {
   var fse = require('fs-ext');
   var async = require('async');
   var url = require('url');
-  var dns = require('dns');
   var Pcap = require('./pcap.js');
   var Db = require('./db.js');
   var molochparser = require('./molochparser.js');
@@ -97,6 +96,7 @@ const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap
 const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 const historyAPIs = require('./apiHistory')(Db);
 const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);
+const miscAPIs = require('./apiMisc')(Config, Db, internals); // TODO ECR
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1620,149 +1620,6 @@ app.delete( // delete history endpoint
   historyAPIs.deleteHistory
 );
 
-// field apis -----------------------------------------------------------------
-/**
- * GET - /api/fields
- *
- * Gets available database field objects pertaining to sessions.
- * @name /fields
- * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
- * @returns {array/map} The map or list of database fields
- */
-app.get('/api/fields', (req, res) => {
-  if (!internals.fieldsMap) {
-    res.status(404);
-    res.send('Cannot locate fields');
-  }
-
-  if (req.query && req.query.array) {
-    res.send(internals.fieldsArr);
-  } else {
-    res.send(internals.fieldsMap);
-  }
-});
-
-// file apis ------------------------------------------------------------------
-/**
- * GET - /api/files
- *
- * Gets a list of PCAP files that Arkime knows about.
- * @name /files
- * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
- * @param {number} start=0 - The entry to start at. Defaults to 0
- * @returns {Array} data - The list of files
- * @returns {number} recordsTotal - The total number of files Arkime knows about
- * @returns {number} recordsFiltered - The number of files returned in this result
- */
-app.get(['/api/files', '/file/list'], [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
-  const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
-
-  let query = {
-    _source: columns,
-    from: +req.query.start || 0,
-    size: +req.query.length || 10,
-    sort: {}
-  };
-
-  query.sort[req.query.sortField || 'num'] = {
-    order: req.query.desc === 'true' ? 'desc' : 'asc'
-  };
-
-  if (req.query.filter) {
-    query.query = { wildcard: { name: `*${req.query.filter}*` } };
-  }
-
-  Promise.all([
-    Db.search('files', 'file', query),
-    Db.numberOfDocuments('files')
-  ])
-    .then(([files, total]) => {
-      if (files.error) { throw files.error; }
-
-      let results = { total: files.hits.total, results: [] };
-      for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
-        let fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
-        if (fields.locked === undefined) {
-          fields.locked = 0;
-        }
-        fields.id = files.hits.hits[i]._id;
-        results.results.push(fields);
-      }
-
-      const r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results
-      };
-
-      res.logCounts(r.data.length, r.recordsFiltered, r.total);
-      res.send(r);
-    }).catch((err) => {
-      console.log('ERROR - /file/list', err);
-      return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-    });
-});
-
-app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson, checkPermissions(['hideFiles'])], (req, res) => {
-  Db.fileIdToFile(req.params.nodeName, req.params.fileNum, (file) => {
-    if (!file) {
-      return res.send({ filesize: -1 });
-    }
-
-    fs.stat(file.name, (err, stats) => {
-      if (err || !stats) {
-        return res.send({ filesize: -1 });
-      } else {
-        return res.send({ filesize: stats.size });
-      }
-    });
-  });
-});
-
-// misc apis ------------------------------------------------------------------
-app.get('/titleconfig', checkPermissions(['webEnabled']), (req, res) => {
-  var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
-
-  titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
-    .replace(/_userId_/g, req.user ? req.user.userId : '-')
-    .replace(/_userName_/g, req.user ? req.user.userName : '-');
-
-  res.send(titleConfig);
-});
-
-/**
- * GET - /api/valueActions
- *
- * Retrive the actions that can be preformed at meta data values
- * @name /api/valueActions
- * @returns {object} - The actions that can be preformed on spi data values
- */
-app.get(['/molochRightClick', '/api/valueActions'], [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.user || !req.user.userId) {
-    return res.send({});
-  }
-
-  var actions = {};
-
-  actions.httpAuthorizationDecode = { fields: 'http.authorization', func: `{
-    if (value.substring(0,5) === "Basic")
-      return {name: "Decoded:", value: atob(value.substring(6))};
-    return undefined;
-  }` };
-  actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-  actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-
-  for (var key in internals.rightClicks) {
-    var rc = internals.rightClicks[key];
-    if (!rc.users || rc.users[req.user.userId]) {
-      actions[key] = rc;
-    }
-  }
-
-  return res.send(actions);
-});
-
 /**
  * The Elasticsearch cluster health status and information.
  * @typedef ESHealth
@@ -1798,22 +1655,15 @@ app.get(['/molochRightClick', '/api/valueActions'], [noCacheJson, checkPermissio
  * @name /eshealth
  * @returns {ESHealth} health - The elasticsearch cluster health status and info
  */
+// TODO ECR - in stats
 app.get(['/api/eshealth', '/eshealth.json'], [noCacheJson], (req, res) => {
   Db.healthCache(function (err, health) {
     res.send(health);
   });
 });
 
-app.get('/reverseDNS.txt', [noCacheJson, logAction()], (req, res) => {
-  dns.reverse(req.query.ip, (err, data) => {
-    if (err) {
-      return res.send('reverse error');
-    }
-    return res.send(data.join(', '));
-  });
-});
-
 // parliament apis ------------------------------------------------------------
+// TODO ECR STATS
 // No auth necessary for parliament.json
 app.get('/parliament.json', [noCacheJson], (req, res) => {
   let query = {
@@ -2202,6 +2052,7 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
 );
 
 // state apis ----------------------------------------------------------------
+// TODO ECR - put in users
 app.post('/state/:name', [noCacheJson, checkCookieToken, logAction()], (req, res) => {
   Db.getUser(req.user.userId, function (err, user) {
     if (err || !user.found) {
@@ -2318,6 +2169,7 @@ app.delete( // delete shortcut endpoint
 );
 
 // packet/spi scrub apis ------------------------------------------------------
+// TODO ECR - in sessions
 app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest, checkPermissions(['removeEnabled'])], (req, res) => {
   ViewerUtils.noCache(req, res);
 
@@ -2357,6 +2209,7 @@ app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermission
 });
 
 // upload apis ----------------------------------------------------------------
+// TODO ECR - in misc
 app.post('/upload', [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')], function (req, res) {
   var exec = require('child_process').exec;
 
@@ -2393,6 +2246,7 @@ app.post('/upload', [checkCookieToken, multer({ dest: '/tmp', limits: internals.
 });
 
 // cyberchef apis -------------------------------------------------------------
+// TODO ECR - in misc
 // loads the src or dst packets for a session and sends them to cyberchef
 app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
   sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, function (err, session, results) {
@@ -2446,6 +2300,45 @@ app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
       }
     });
 });
+
+// misc apis ------------------------------------------------------------------
+app.get( // fields endpoint
+  ['/api/fields', '/fields'],
+  miscAPIs.getFields
+);
+
+app.get( // files endpoint
+  ['/api/files', '/file/list'],
+  [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie],
+  miscAPIs.getFiles
+);
+
+app.get( // filesize endpoint
+  ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
+  [noCacheJson, checkPermissions(['hideFiles'])],
+  miscAPIs.getFileSize
+);
+
+// TODO ECR update UI
+app.get( // titleconfig endpoint
+  ['/api/title', '/titleconfig'],
+  checkPermissions(['webEnabled']),
+  miscAPIs.getPageTitle
+);
+
+// TODO ECR update UI
+app.get( // value actions endpoint
+  ['/api/valueactions', '/molochRightClick'],
+  [noCacheJson, checkPermissions(['webEnabled'])],
+  miscAPIs.getValueActions
+);
+
+// TODO ECR update UI
+app.get( // reverse dns endpoint
+  ['/api/reversedns', '/reverseDNS.txt'],
+  [noCacheJson, logAction()],
+  miscAPIs.getReverseDNS
+);
 
 // ============================================================================
 // REGRESSION TEST CONFIGURATION
