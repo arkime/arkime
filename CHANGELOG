@@ -51,6 +51,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - for json data can now set arrayPath for start of where to parse
   - wise - new elasticsearchfile type
   - wise - threatstream results now cached
+  - wise - support memcached for cache
   - all - renamed rightclicks to valueactions
   - esproxy - first version, see https://arkime.com/esproxy
 

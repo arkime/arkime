@@ -22,122 +22,147 @@ const Bson = require('bson');
 const BSON = new Bson();
 
 /******************************************************************************/
-// Memory Cache
+// Base Cache
 /******************************************************************************/
-
-function WISEMemoryCache (options) {
-  this.cacheSize = +options.cacheSize || 100000;
-  this.cache = {};
-}
-
-// ----------------------------------------------------------------------------
-WISEMemoryCache.prototype.get = function (query, cb) {
-  const cache = this.cache[query.typeName];
-  cb(null, cache ? cache.get(query.value) : undefined);
-};
-
-// ----------------------------------------------------------------------------
-WISEMemoryCache.prototype.set = function (query, result) {
-  let cache = this.cache[query.typeName];
-  if (!cache) {
-    cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
+class WISECache {
+  constructor (api) {
+    this.cacheSize = +api.cacheSize || 100000;
+    this.cacheTimeout = api.getConfig('cache', 'cacheTimeout') * 60 || 24 * 60 * 60;
+    this.cache = {};
   }
-  cache.set(query.value, result);
-};
 
-exports.WISEMemoryCache = WISEMemoryCache;
+  // ----------------------------------------------------------------------------
+  get (query, cb) {
+    const cache = this.cache[query.typeName];
+    cb(null, cache ? cache.get(query.value) : undefined);
+  }
+
+  // ----------------------------------------------------------------------------
+  set (query, result) {
+    let cache = this.cache[query.typeName];
+    if (!cache) {
+      cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
+    }
+    cache.set(query.value, result);
+  }
+}
 
 /******************************************************************************/
 // Redis Cache
 /******************************************************************************/
-function WISERedisCache (options) {
-  options = options || {};
-  this.cacheSize = +options.cacheSize || 10000;
-  this.cacheTimeout = options.getConfig('cache', 'cacheTimeout') * 60 || 24 * 60 * 60;
-  this.redisFormat = parseInt(options.getConfig('cache', 'redisFormat', '2'));
-  if (this.redisFormat !== 3) {
-    this.redisFormat = 2;
-  }
-  this.cache = {};
+class WISERedisCache extends WISECache {
+  constructor (api) {
+    super(api);
 
-  this.client = options.createRedisClient(options.getConfig('cache', 'redisURL'), 'cache');
-}
-
-// ----------------------------------------------------------------------------
-WISERedisCache.prototype.get = function (query, cb) {
-  // Check memory cache first
-  let cache = this.cache[query.typeName];
-
-  if (cache) {
-    const result = cache.get(query.value);
-    if (result !== undefined) {
-      return cb(null, result);
+    this.redisFormat = parseInt(api.getConfig('cache', 'redisFormat', '2'));
+    if (this.redisFormat !== 3) {
+      this.redisFormat = 2;
     }
-  } else {
-    cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
+    this.client = api.createRedisClient(api.getConfig('cache', 'redisURL'), 'cache');
   }
 
-  // Check redis
-  this.client.getBuffer(query.typeName + '-' + query.value, (err, reply) => {
-    if (reply === null) {
-      return cb(null, undefined);
-    }
-    const result = BSON.deserialize(reply, { promoteBuffers: true });
+  // ----------------------------------------------------------------------------
+  get (query, cb) {
+    // Check memory cache first
+    super.get(query, (err, result) => {
+      if (err || result) {
+        return cb(err, result);
+      }
 
-    for (const source in result) {
-      // Redis uses old encoding, convert old to new when needed
-      if (!Buffer.isBuffer(result[source].result)) {
-        const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
-        newResult[0] = result[source].result.num;
-        result[source].result.buffer.copy(newResult, 1);
-        result[source].result = newResult;
+      // Check redis
+      this.client.getBuffer(query.typeName + '-' + query.value, (err, reply) => {
+        if (err || reply === null) {
+          return cb(null, undefined);
+        }
+        const result = BSON.deserialize(reply.value, { promoteBuffers: true });
+
+        for (const source in result) {
+          // Redis uses old encoding, convert old to new when needed
+          if (!Buffer.isBuffer(result[source].result)) {
+            const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
+            newResult[0] = result[source].result.num;
+            result[source].result.buffer.copy(newResult, 1);
+            result[source].result = newResult;
+          }
+        }
+        super.set(query.value, result); // Set memory cache
+        cb(null, result);
+      });
+    });
+  };
+
+  // ----------------------------------------------------------------------------
+  set (query, result) {
+    super.set(query, result);
+
+    let newResult;
+    if (this.redisFormat === 3) {
+      newResult = result;
+    } else {
+      // Redis uses old encoding, convert new to old
+      newResult = {};
+      for (const source in result) {
+        newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
       }
     }
-    cb(null, result);
 
-    cache.set(query.value, result); // Set memory cache
-  });
+    const data = BSON.serialize(newResult, false, true, false);
+    this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
+  };
 };
 
-// ----------------------------------------------------------------------------
-WISERedisCache.prototype.set = function (query, result) {
-  let cache = this.cache[query.typeName];
+/******************************************************************************/
+// Memcached Cache
+/******************************************************************************/
+class WISEMemcachedCache extends WISECache {
+  constructor (api) {
+    super(api);
 
-  if (!cache) {
-    cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
+    this.client = api.createMemcachedClient(api.getConfig('cache', 'memcachedURL'), 'cache');
   }
 
-  cache.set(query.value, result);
+  // ----------------------------------------------------------------------------
+  get (query, cb) {
+    // Check memory cache first
+    super.get(query, (err, result) => {
+      if (err || result) {
+        return cb(err, result);
+      }
 
-  let newResult;
-  if (this.redisFormat === 3) {
-    newResult = result;
-  } else {
-    // Redis uses old encoding, convert new to old
-    newResult = {};
-    for (const source in result) {
-      newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
-    }
-  }
+      // Check memcache
+      this.client.get(query.typeName + '-' + query.value, (err, reply) => {
+        if (err || reply === null) {
+          return cb(err, undefined);
+        }
+        const result = BSON.deserialize(reply, { promoteBuffers: true });
+        super.set(query.value, result); // Set memory cache
+        cb(null, result);
+      });
+    });
+  };
 
-  const data = BSON.serialize(newResult, false, true, false);
-  this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
+  // ----------------------------------------------------------------------------
+  set (query, result) {
+    super.set(query, result);
+
+    const data = BSON.serialize(result, false, true, false);
+    this.client.set(query.typeName + '-' + query.value, data, { expires: this.cacheTimeout }, () => {});
+  };
 };
-
-exports.WISERedisCache = WISERedisCache;
 
 /******************************************************************************/
 // Load Cache
 /******************************************************************************/
-exports.createCache = function (options) {
-  const type = options.getConfig('cache', 'type', 'memory');
-  options.cacheSize = options.getConfig('cache', 'cacheSize');
+exports.createCache = function (api) {
+  const type = api.getConfig('cache', 'type', 'memory');
 
   switch (type) {
   case 'memory':
-    return new WISEMemoryCache(options);
+    return new WISECache(api);
   case 'redis':
-    return new WISERedisCache(options);
+    return new WISERedisCache(api);
+  case 'memcached':
+    return new WISEMemcachedCache(api);
   default:
     console.log('Unknown cache type', type);
     process.exit(1);

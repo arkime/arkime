@@ -32,6 +32,7 @@ const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
 const crypto = require('crypto');
 const Redis = require('ioredis');
+const memjs = require('memjs');
 const favicon = require('serve-favicon');
 const uuid = require('uuidv4').default;
 const helmet = require('helmet');
@@ -76,10 +77,11 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis)$', help: 'Where to cache results: memory (default) or redis' },
+        { name: 'type', required: false, regex: '^(memory|redis|memcached)$', help: 'Where to cache results: memory (default), redis, memcached' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
-        { name: 'redisFormat', required: false, help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' }
+        { name: 'redisFormat', required: false, ifField: 'type', ifValue: 'redis', help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' },
+        { name: 'memcachedURL', password: true, required: false, ifField: 'type', ifValue: 'memcached', help: 'Format is memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...' }
       ]
     }
   },
@@ -643,12 +645,22 @@ class WISESourceAPI {
 
   // ----------------------------------------------------------------------------
   /**
-   * Create a redis client from the info in a section
+   * Create a redis client from the provided url
    * @params {string} url - The redis url to connect to.
    * @params {string} section - The section this redis client is being created for
    */
   createRedisClient (url, section) {
     return createRedisClient(url, section);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Create a memcached client from the provided url
+   * @params {string} url - The memcached url to connect to.
+   * @params {string} section - The section this memcached client is being created for
+   */
+  createMemcachedClient (url, section) {
+    return createMemcachedClient(url, section);
   }
 
   // ----------------------------------------------------------------------------
@@ -1559,6 +1571,20 @@ function createRedisClient (url, section) {
 }
 
 // ----------------------------------------------------------------------------
+function createMemcachedClient (url, section) {
+  // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
+  if (url.startsWith('memcached://')) {
+    if (internals.debug > 0) {
+      console.log('MEMCACHED:', url);
+    }
+    return memjs.Client.create(url.substring(12));
+  }
+
+  console.log(`Unknown memcached url '${url}'`);
+  process.exit(1);
+}
+
+// ----------------------------------------------------------------------------
 function printStats () {
   const keys = Object.keys(internals.types).sort();
   const lines = [];
@@ -1828,7 +1854,11 @@ internals.configSchemes['ini'] = {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
-  internals.cache = wiseCache.createCache({ getConfig: getConfig, createRedisClient: createRedisClient });
+  internals.cache = wiseCache.createCache({
+    getConfig: getConfig,
+    createRedisClient: createRedisClient,
+    createMemcachedClient: createMemcachedClient
+  });
 
   internals.sourceApi = new WISESourceAPI();
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
