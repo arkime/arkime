@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://arkime.slack.com/
+    about: Ask (and answer) questions on Slack.
+  - name: Security Vulnerability
+    url: https://arkime.com/security
+    about: Send security vulnerability reports
