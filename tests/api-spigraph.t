@@ -51,6 +51,8 @@ my ($json, $mjson, $pjson);
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field":"node", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    delete $json->{health}->{_timeStamp};
+    delete $pjson->{health}->{_timeStamp};
     eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map field: no");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "sessionsHisto field: node");
