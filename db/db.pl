@@ -3570,14 +3570,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printf "ES Data Nodes:       %17s/%s\n", commify($dataNodes), commify($totalNodes);
     printf "Sessions2 Indices:   %17s\n", commify(scalar(@sessions));
     printf "Sessions:            %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
-    if (scalar(@sessions) > 0) {
+    if (scalar(@sessions) > 0 && $dataNodes > 0) {
         printf "Sessions Density:    %17s (%s bytes)\n", commify(int($sessions/($dataNodes*scalar(@sessions)))),
                                                        commify(int($sessionsBytes/($dataNodes*scalar(@sessions))));
         my $days =  (int($minMax->{aggregations}->{max}->{value}) - int($minMax->{aggregations}->{min}->{value}))/(24*60*60*1000);
 
-        printf "MB per Day:          %17s\n", commify(int($sessionsTotalBytes/($days*1000*1000)));
+        printf "MB per Day:          %17s\n", commify(int($sessionsTotalBytes/($days*1000*1000))) if ($days > 0);
         printf "Sessions Days:       %17.2f (%s - %s)\n", $days, $minMax->{aggregations}->{min}->{value_as_string}, $minMax->{aggregations}->{max}->{value_as_string};
-        printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days);
+        printf "Possible Sessions Days:  %13.2f\n", (0.95*$diskTotal)/($sessionsTotalBytes/$days) if ($days > 0);
 
         if (exists $ilm->{molochsessions} && exists $ilm->{molochsessions}->{policy}->{phases}->{delete}) {
             printf "ILM Delete Age:      %17s\n", $ilm->{molochsessions}->{policy}->{phases}->{delete}->{min_age};
@@ -3585,7 +3585,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     printf "History Indices:     %17s\n", commify(scalar(@historys));
     printf "Histories:           %17s (%s bytes)\n", commify($historys), commify($historysBytes);
-    if (scalar(@historys) > 0) {
+    if (scalar(@historys) > 0 && $dataNodes > 0) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
                                                        commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
