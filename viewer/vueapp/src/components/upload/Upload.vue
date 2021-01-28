@@ -138,7 +138,7 @@ export default {
       formData.append('tags', this.tags);
 
       Vue.axios.post(
-        'upload',
+        'api/upload',
         formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         }

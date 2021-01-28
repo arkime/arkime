@@ -124,7 +124,7 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$recovery->{data}}, "==", 0, "tasks array size");
 
 # parliament.json
-    my $stats = viewerGet("/parliament.json");
+    my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");
     is ($stats->{recordsTotal}, 1, "parliament.json recordsTotal");
     is ($stats->{data}->[0]->{id}, "test", "parliament.json name");

@@ -1493,5 +1493,68 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
+  /**
+   * GET - /api/user/state/:name
+   *
+   * Retrieves a user table state object. These are used to save the states of tables within the UI (sessions, files, stats, etc).
+   * @name /user/state/:name
+   * @returns {object} tableState - The table state requested.
+   */
+  module.getUserState = (req, res) => {
+    if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
+      return res.send('{}');
+    }
+
+    // Fix for new names
+    if (req.params.name === 'sessionsNew' && req.user.tableStates && req.user.tableStates.sessionsNew) {
+      const item = req.user.tableStates.sessionsNew;
+      if (item.visibleHeaders) {
+        item.visibleHeaders = item.visibleHeaders.map(ViewerUtils.oldDB2newDB);
+      }
+      if (item.order && item.order.length > 0) {
+        item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
+      }
+    }
+
+    return res.send(req.user.tableStates[req.params.name]);
+  };
+
+  /**
+   * POST - /api/user/state/:name
+   *
+   * Updates or creates a user table state object. These are used to save the states of tables within the UI (sessions, files, stats, etc).
+   * @name /user/state/:name
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  module.updateUserState = (req, res) => {
+    Db.getUser(req.user.userId, (err, user) => {
+      if (err || !user.found) {
+        console.log('save state failed', err, user);
+        return res.molochError(403, 'Unknown user');
+      }
+
+      user = user._source;
+
+      if (!user.tableStates) {
+        user.tableStates = {};
+      }
+
+      user.tableStates[req.params.name] = req.body;
+
+      Db.setUser(user.userId, user, (err, info) => {
+        if (err) {
+          console.log('state error', err, info);
+          return res.molochError(403, 'state update failed');
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'updated state successfully'
+        }));
+      });
+    });
+  };
+
   return module;
 };

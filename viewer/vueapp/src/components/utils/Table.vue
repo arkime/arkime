@@ -262,11 +262,11 @@ export default {
       type: Boolean,
       required: true
     },
-    tableStateName: { // api endpoint to save table state (/state/:tableStateName)
+    tableStateName: { // api endpoint to save table state (api/user/state/:tableStateName)
       type: String,
       required: true
     },
-    tableWidthsStateName: { // api endpoint to save table state (/state/:tableWidthsStateName)
+    tableWidthsStateName: { // api endpoint to save table state (api/user/state/:tableWidthsStateName)
       type: String,
       required: true
     },

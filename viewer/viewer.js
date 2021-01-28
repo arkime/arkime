@@ -29,7 +29,6 @@ try {
   var fse = require('fs-ext');
   var async = require('async');
   var url = require('url');
-  var dns = require('dns');
   var Pcap = require('./pcap.js');
   var Db = require('./db.js');
   var molochparser = require('./molochparser.js');
@@ -39,7 +38,6 @@ try {
   var http = require('http');
   var https = require('https');
   var onHeaders = require('on-headers');
-  var unzipper = require('unzipper');
   var helmet = require('helmet');
   var uuid = require('uuidv4').default;
   var path = require('path');
@@ -97,6 +95,7 @@ const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap
 const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 const historyAPIs = require('./apiHistory')(Db);
 const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);
+const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1066,134 +1065,6 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
   });
 }
 
-// packet/spi scrub helpers ---------------------------------------------------
-function pcapScrub (req, res, sid, whatToRemove, endCb) {
-  if (pcapScrub.scrubbingBuffers === undefined) {
-    pcapScrub.scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
-    pcapScrub.scrubbingBuffers[0].fill(0);
-    pcapScrub.scrubbingBuffers[1].fill(1);
-    const str = 'Scrubbed! Hoot! ';
-    for (let i = 0; i < 5000;) {
-      i += pcapScrub.scrubbingBuffers[2].write(str, i);
-    }
-  }
-
-  function processFile (pcap, pos, i, nextCb) {
-    pcap.ref();
-    pcap.readPacket(pos, function (packet) {
-      pcap.unref();
-      if (packet) {
-        if (packet.length > 16) {
-          try {
-            let obj = {};
-            pcap.decode(packet, obj);
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], whatToRemove === 'all');
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
-            pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], whatToRemove === 'all');
-          } catch (e) {
-            console.log(`Couldn't scrub packet at ${pos} -`, e);
-          }
-          return nextCb(null);
-        } else {
-          console.log(`Couldn't scrub packet at ${pos}`);
-          return nextCb(null);
-        }
-      }
-    });
-  }
-
-  Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, function (err, session) {
-    let fileNum;
-    let itemPos = 0;
-    const fields = session._source || session.fields;
-
-    if (whatToRemove === 'spi') { // just removing es data for session
-      Db.deleteDocument(session._index, 'session', session._id, function (err, data) {
-        return endCb(err, fields);
-      });
-    } else { // scrub the pcap
-      async.eachLimit(fields.packetPos, 10, function (pos, nextCb) {
-        if (pos < 0) {
-          fileNum = pos * -1;
-          return nextCb(null);
-        }
-
-        // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-        let opcap = Pcap.get(`write${fields.node}:${fileNum}`);
-        if (!opcap.isOpen()) {
-          Db.fileIdToFile(fields.node, fileNum, function (file) {
-            if (!file) {
-              console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
-              return nextCb(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
-            }
-
-            let ipcap = Pcap.get(`write${fields.node}:${file.num}`);
-
-            try {
-              ipcap.openReadWrite(file.name, file);
-            } catch (err) {
-              const errorMsg = `Couldn't open file for writing: ${err}`;
-              console.log(`Error - ${errorMsg}`);
-              return nextCb(errorMsg);
-            }
-            processFile(ipcap, pos, itemPos++, nextCb);
-          });
-        } else {
-          processFile(opcap, pos, itemPos++, nextCb);
-        }
-      },
-      function (pcapErr, results) {
-        if (whatToRemove === 'all') { // also remove the session data
-          Db.deleteDocument(session._index, 'session', session._id, function (err, data) {
-            return endCb(pcapErr, fields);
-          });
-        } else { // just set who/when scrubbed the pcap
-          // Do the ES update
-          const document = {
-            doc: {
-              scrubby: req.user.userId || '-',
-              scrubat: new Date().getTime()
-            }
-          };
-          Db.updateSession(session._index, session._id, document, function (err, data) {
-            return endCb(pcapErr, fields);
-          });
-        }
-      });
-    }
-  });
-}
-
-function scrubList (req, res, whatToRemove, list) {
-  if (!list) { return res.molochError(200, 'Missing list of sessions'); }
-
-  async.eachLimit(list, 10, function (item, nextCb) {
-    const fields = item._source || item.fields;
-
-    sessionAPIs.isLocalView(fields.node, function () {
-      // Get from our DISK
-      pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
-    },
-    function () {
-      // Get from remote DISK
-      let path = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
-      ViewerUtils.makeRequest(fields.node, path, req.user, function (err, response) {
-        setImmediate(nextCb);
-      });
-    });
-  }, function (err) {
-    let text;
-    if (whatToRemove === 'all') {
-      text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
-    } else if (whatToRemove === 'spi') {
-      text = `Deletion SPI of ${list.length} sessions complete. Give Elasticsearch 60 seconds to complete SPI deletion.`;
-    } else {
-      text = `Scrubbing PCAP of ${list.length} sessions complete`;
-    }
-    return res.end(JSON.stringify({ success: true, text: text }));
-  });
-}
-
 // ============================================================================
 // EXPIRING
 // ============================================================================
@@ -1570,6 +1441,18 @@ app.post( // update user endpoint
   userAPIs.updateUser
 );
 
+app.get( // user state endpoint
+  ['/api/user/state/:name', '/state/:name'],
+  [noCacheJson, checkCookieToken, logAction()],
+  userAPIs.getUserState
+);
+
+app.post( // update/create user state endpoint
+  ['/api/user/state/:name', '/state/:name'],
+  [noCacheJson, checkCookieToken, logAction()],
+  userAPIs.updateUserState
+);
+
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],
@@ -1620,257 +1503,12 @@ app.delete( // delete history endpoint
   historyAPIs.deleteHistory
 );
 
-// field apis -----------------------------------------------------------------
-/**
- * GET - /api/fields
- *
- * Gets available database field objects pertaining to sessions.
- * @name /fields
- * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
- * @returns {array/map} The map or list of database fields
- */
-app.get('/api/fields', (req, res) => {
-  if (!internals.fieldsMap) {
-    res.status(404);
-    res.send('Cannot locate fields');
-  }
-
-  if (req.query && req.query.array) {
-    res.send(internals.fieldsArr);
-  } else {
-    res.send(internals.fieldsMap);
-  }
-});
-
-// file apis ------------------------------------------------------------------
-/**
- * GET - /api/files
- *
- * Gets a list of PCAP files that Arkime knows about.
- * @name /files
- * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
- * @param {number} start=0 - The entry to start at. Defaults to 0
- * @returns {Array} data - The list of files
- * @returns {number} recordsTotal - The total number of files Arkime knows about
- * @returns {number} recordsFiltered - The number of files returned in this result
- */
-app.get(['/api/files', '/file/list'], [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie], (req, res) => {
-  const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
-
-  let query = {
-    _source: columns,
-    from: +req.query.start || 0,
-    size: +req.query.length || 10,
-    sort: {}
-  };
-
-  query.sort[req.query.sortField || 'num'] = {
-    order: req.query.desc === 'true' ? 'desc' : 'asc'
-  };
-
-  if (req.query.filter) {
-    query.query = { wildcard: { name: `*${req.query.filter}*` } };
-  }
-
-  Promise.all([
-    Db.search('files', 'file', query),
-    Db.numberOfDocuments('files')
-  ])
-    .then(([files, total]) => {
-      if (files.error) { throw files.error; }
-
-      let results = { total: files.hits.total, results: [] };
-      for (let i = 0, ilen = files.hits.hits.length; i < ilen; i++) {
-        let fields = files.hits.hits[i]._source || files.hits.hits[i].fields;
-        if (fields.locked === undefined) {
-          fields.locked = 0;
-        }
-        fields.id = files.hits.hits[i]._id;
-        results.results.push(fields);
-      }
-
-      const r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.total,
-        data: results.results
-      };
-
-      res.logCounts(r.data.length, r.recordsFiltered, r.total);
-      res.send(r);
-    }).catch((err) => {
-      console.log('ERROR - /file/list', err);
-      return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-    });
-});
-
-app.get('/:nodeName/:fileNum/filesize.json', [noCacheJson, checkPermissions(['hideFiles'])], (req, res) => {
-  Db.fileIdToFile(req.params.nodeName, req.params.fileNum, (file) => {
-    if (!file) {
-      return res.send({ filesize: -1 });
-    }
-
-    fs.stat(file.name, (err, stats) => {
-      if (err || !stats) {
-        return res.send({ filesize: -1 });
-      } else {
-        return res.send({ filesize: stats.size });
-      }
-    });
-  });
-});
-
-// misc apis ------------------------------------------------------------------
-app.get('/titleconfig', checkPermissions(['webEnabled']), (req, res) => {
-  var titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
-
-  titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
-    .replace(/_userId_/g, req.user ? req.user.userId : '-')
-    .replace(/_userName_/g, req.user ? req.user.userName : '-');
-
-  res.send(titleConfig);
-});
-
-/**
- * GET - /api/valueActions
- *
- * Retrive the actions that can be preformed at meta data values
- * @name /api/valueActions
- * @returns {object} - The actions that can be preformed on spi data values
- */
-app.get(['/molochRightClick', '/api/valueActions'], [noCacheJson, checkPermissions(['webEnabled'])], (req, res) => {
-  if (!req.user || !req.user.userId) {
-    return res.send({});
-  }
-
-  var actions = {};
-
-  actions.httpAuthorizationDecode = { fields: 'http.authorization', func: `{
-    if (value.substring(0,5) === "Basic")
-      return {name: "Decoded:", value: atob(value.substring(6))};
-    return undefined;
-  }` };
-  actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'reverseDNS.txt?ip=%TEXT%', actionType: 'fetch' };
-  actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-  actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-
-  for (var key in internals.rightClicks) {
-    var rc = internals.rightClicks[key];
-    if (!rc.users || rc.users[req.user.userId]) {
-      actions[key] = rc;
-    }
-  }
-
-  return res.send(actions);
-});
-
-/**
- * The Elasticsearch cluster health status and information.
- * @typedef ESHealth
- * @type {object}
- * @property {number} active_primary_shards - The number of active primary shards.
- * @property {number} active_shards - The total number of active primary and replica shards.
- * @property {number} active_shards_percent_as_number - The ratio of active shards in the cluster expressed as a percentage.
- * @property {string} cluster_name - The name of the arkime cluster
- * @property {number} delayed_unassigned_shards - The number of shards whose allocation has been delayed by the timeout settings.
- * @property {number} initializing_shards - The number of shards that are under initialization.
- * @property {number} molochDbVersion - The arkime database version
- * @property {number} number_of_data_nodes - The number of nodes that are dedicated data nodes.
- * @property {number} number_of_in_flight_fetch - The number of unfinished fetches.
- * @property {number} number_of_nodes - The number of nodes within the cluster.
- * @property {number} number_of_pending_tasks - The number of cluster-level changes that have not yet been executed.
- * @property {number} relocating_shards - The number of shards that are under relocation.
- * @property {string} status - Health status of the cluster, based on the state of its primary and replica shards. Statuses are:
-    "green" - All shards are assigned.
-    "yellow" - All primary shards are assigned, but one or more replica shards are unassigned. If a node in the cluster fails, some data could be unavailable until that node is repaired.
-    "red" - One or more primary shards are unassigned, so some data is unavailable. This can occur briefly during cluster startup as primary shards are assigned.
- * @property {number} task_max_waiting_in_queue_millis - The time expressed in milliseconds since the earliest initiated task is waiting for being performed.
- * @property {boolean} timed_out - If false the response returned within the period of time that is specified by the timeout parameter (30s by default).
- * @property {number} unassigned_shards - The number of shards that are not allocated.
- * @property {string} version - the elasticsearch version number
- * @property {number} _timeStamp - timestamps in ms from unix epoc
- */
-
-/**
- * GET - /api/eshealth
- *
- * Retrive Elasticsearch health and stats
- * There is no auth necessary to retrieve eshealth
- * @name /eshealth
- * @returns {ESHealth} health - The elasticsearch cluster health status and info
- */
-app.get(['/api/eshealth', '/eshealth.json'], [noCacheJson], (req, res) => {
-  Db.healthCache(function (err, health) {
-    res.send(health);
-  });
-});
-
-app.get('/reverseDNS.txt', [noCacheJson, logAction()], (req, res) => {
-  dns.reverse(req.query.ip, (err, data) => {
-    if (err) {
-      return res.send('reverse error');
-    }
-    return res.send(data.join(', '));
-  });
-});
-
-// parliament apis ------------------------------------------------------------
-// No auth necessary for parliament.json
-app.get('/parliament.json', [noCacheJson], (req, res) => {
-  let query = {
-    size: 1000,
-    query: {
-      bool: {
-        must_not: [
-          { term: { hide: true } }
-        ]
-      }
-    },
-    _source: [
-      'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes', 'deltaPackets', 'deltaMS',
-      'deltaESDropped', 'deltaDropped', 'deltaOverloadDropped'
-    ]
-  };
-
-  Promise.all([Db.search('stats', 'stat', query), Db.numberOfDocuments('stats')])
-    .then(([stats, total]) => {
-      if (stats.error) { throw stats.error; }
-
-      let results = { total: stats.hits.total, results: [] };
-
-      for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
-        let fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
-
-        if (stats.hits.hits[i]._source) {
-          ViewerUtils.mergeUnarray(fields, stats.hits.hits[i].fields);
-        }
-        fields.id = stats.hits.hits[i]._id;
-
-        // make sure necessary fields are not undefined
-        let keys = [ 'deltaOverloadDropped', 'monitoring', 'deltaESDropped' ];
-        for (const key of keys) {
-          fields[key] = fields[key] || 0;
-        }
-
-        fields.deltaBytesPerSec = Math.floor(fields.deltaBytes * 1000.0 / fields.deltaMS);
-        fields.deltaPacketsPerSec = Math.floor(fields.deltaPackets * 1000.0 / fields.deltaMS);
-        fields.deltaESDroppedPerSec = Math.floor(fields.deltaESDropped * 1000.0 / fields.deltaMS);
-        fields.deltaTotalDroppedPerSec = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0 / fields.deltaMS);
-
-        results.results.push(fields);
-      }
-
-      res.send({
-        data: results.results,
-        recordsTotal: total.count,
-        recordsFiltered: results.total
-      });
-    }).catch((err) => {
-      console.log('ERROR - /parliament.json', err);
-      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-    });
-});
-
 // stats apis -----------------------------------------------------------------
+app.get( // es health endpoint
+  ['/api/eshealth', '/eshealth.json'],
+  statsAPIs.getESHealth
+);
+
 app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
@@ -2008,6 +1646,13 @@ app.get( // elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
+);
+
+// parliament apis ------------------------------------------------------------
+app.get( // parliament endpoint (no auth necessary)
+  ['/api/parliament', '/parliament.json'],
+  [noCacheJson],
+  statsAPIs.getParliament
 );
 
 // session apis ---------------------------------------------------------------
@@ -2186,6 +1831,12 @@ app.post( // sessions recieve endpoint
   sessionAPIs.receiveSession
 );
 
+app.post( // delete data endpoint
+  ['/api/delete', '/delete'],
+  [noCacheJson, checkCookieToken, logAction(), checkPermissions(['removeEnabled'])],
+  sessionAPIs.deleteData
+);
+
 // connections apis -----------------------------------------------------------
 app.getpost( // connections endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
@@ -2200,48 +1851,6 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
   [logAction('connections.csv'), fillQueryFromBody],
   connectionAPIs.getConnectionsCSV
 );
-
-// state apis ----------------------------------------------------------------
-app.post('/state/:name', [noCacheJson, checkCookieToken, logAction()], (req, res) => {
-  Db.getUser(req.user.userId, function (err, user) {
-    if (err || !user.found) {
-      console.log('save state failed', err, user);
-      return res.molochError(403, 'Unknown user');
-    }
-    user = user._source;
-
-    if (!user.tableStates) {
-      user.tableStates = {};
-    }
-    user.tableStates[req.params.name] = req.body;
-    Db.setUser(user.userId, user, function (err, info) {
-      if (err) {
-        console.log('state error', err, info);
-        return res.molochError(403, 'state update failed');
-      }
-      return res.send(JSON.stringify({ success: true, text: 'updated state successfully' }));
-    });
-  });
-});
-
-app.get('/state/:name', [noCacheJson], function (req, res) {
-  if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
-    return res.send('{}');
-  }
-
-  // Fix for new names
-  if (req.params.name === 'sessionsNew' && req.user.tableStates && req.user.tableStates.sessionsNew) {
-    let item = req.user.tableStates.sessionsNew;
-    if (item.visibleHeaders) {
-      item.visibleHeaders = item.visibleHeaders.map(ViewerUtils.oldDB2newDB);
-    }
-    if (item.order && item.order.length > 0) {
-      item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-    }
-  }
-
-  return res.send(req.user.tableStates[req.params.name]);
-});
 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
@@ -2317,135 +1926,70 @@ app.delete( // delete shortcut endpoint
   shortcutAPIs.deleteShortcut
 );
 
-// packet/spi scrub apis ------------------------------------------------------
-app.get('/:nodeName/delete/:whatToRemove/:sid', [checkProxyRequest, checkPermissions(['removeEnabled'])], (req, res) => {
-  ViewerUtils.noCache(req, res);
+// file apis ------------------------------------------------------------------
+app.get( // fields endpoint
+  ['/api/fields', '/fields'],
+  miscAPIs.getFields
+);
 
-  res.statusCode = 200;
+app.get( // files endpoint
+  ['/api/files', '/file/list'],
+  [noCacheJson, recordResponseTime, logAction('files'), checkPermissions(['hideFiles']), setCookie],
+  miscAPIs.getFiles
+);
 
-  pcapScrub(req, res, req.params.sid, req.params.whatToRemove, (err) => {
-    res.end();
-  });
-});
+app.get( // filesize endpoint
+  ['/api/:nodeName/:fileNum/filesize', '/:nodeName/:fileNum/filesize.json'],
+  [noCacheJson, checkPermissions(['hideFiles'])],
+  miscAPIs.getFileSize
+);
 
-app.post('/delete', [noCacheJson, checkCookieToken, logAction(), checkPermissions(['removeEnabled'])], (req, res) => {
-  if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
-    return res.molochError(403, `You can't delete nothing`);
-  }
+// title apis -----------------------------------------------------------------
+app.get( // titleconfig endpoint
+  ['/api/title', '/titleconfig'],
+  checkPermissions(['webEnabled']),
+  miscAPIs.getPageTitle
+);
 
-  let whatToRemove;
-  if (req.query.removeSpi === 'true' && req.query.removePcap === 'true') {
-    whatToRemove = 'all';
-  } else if (req.query.removeSpi === 'true') {
-    whatToRemove = 'spi';
-  } else {
-    whatToRemove = 'pcap';
-  }
+// value actions apis ---------------------------------------------------------
+app.get( // value actions endpoint
+  ['/api/valueactions', '/api/valueActions', '/molochRightClick'],
+  [noCacheJson, checkPermissions(['webEnabled'])],
+  miscAPIs.getValueActions
+);
 
-  if (req.body.ids) {
-    const ids = ViewerUtils.queryValueToArray(req.body.ids);
-    sessionAPIs.sessionsListFromIds(req, ids, ['node'], function (err, list) {
-      scrubList(req, res, whatToRemove, list);
-    });
-  } else if (req.query.expression) {
-    sessionAPIs.sessionsListFromQuery(req, res, ['node'], function (err, list) {
-      scrubList(req, res, whatToRemove, list);
-    });
-  } else {
-    return res.molochError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
-  }
-});
+// reverse dns apis -----------------------------------------------------------
+app.get( // reverse dns endpoint
+  ['/api/reversedns', '/reverseDNS.txt'],
+  [noCacheJson, logAction()],
+  miscAPIs.getReverseDNS
+);
 
-// upload apis ----------------------------------------------------------------
-app.post('/upload', [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')], function (req, res) {
-  var exec = require('child_process').exec;
+// uploads apis ---------------------------------------------------------------
+app.post(
+  ['/api/updload', '/upload'],
+  [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
+  miscAPIs.upload
+);
 
-  var tags = '';
-  if (req.body.tags) {
-    var t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-    t.forEach(function (tag) {
-      if (tag.length > 0) {
-        tags += ' --tag ' + tag;
-      }
-    });
-  }
-
-  var cmd = Config.get('uploadCommand')
-    .replace('{TAGS}', tags)
-    .replace('{NODE}', Config.nodeName())
-    .replace('{TMPFILE}', req.file.path)
-    .replace('{CONFIG}', Config.getConfigFile());
-
-  console.log('upload command: ', cmd);
-  exec(cmd, function (error, stdout, stderr) {
-    if (error !== null) {
-      console.log('<b>exec error: ' + error);
-      res.status(500);
-      res.write('<b>Upload command failed:</b><br>');
-    }
-    res.write(ViewerUtils.safeStr(cmd));
-    res.write('<br>');
-    res.write('<pre>');
-    res.write(stdout);
-    res.end('</pre>');
-    fs.unlinkSync(req.file.path);
-  });
-});
+// clusters apis --------------------------------------------------------------
+app.get(
+  ['/api/clusters', '/clusters'],
+  miscAPIs.getClusters
+);
 
 // cyberchef apis -------------------------------------------------------------
-// loads the src or dst packets for a session and sends them to cyberchef
-app.get('/cyberchef/:nodeName/session/:id', checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader, (req, res) => {
-  sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, function (err, session, results) {
-    if (err) {
-      console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
-      return res.end('Error - ' + err);
-    }
+app.get( // cyberchef endpoint
+  '/cyberchef/:nodeName/session/:id',
+  [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
+  miscAPIs.cyberChef
+);
 
-    let data = '';
-    for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
-      data += results[i].data.toString('hex');
-    }
-
-    res.send({ data: data });
-  });
-});
-
-app.use(['/cyberchef/', '/modules/'], unsafeInlineCspHeader, (req, res) => {
-  let found = false;
-  let path = req.path.substring(1);
-
-  if (req.baseUrl === '/modules') {
-    res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
-    path = 'modules/' + path;
-  }
-  if (path === '') {
-    path = `CyberChef_v${internals.CYBERCHEFVERSION}.html`;
-  }
-
-  if (path === 'assets/main.js') {
-    res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
-  } else if (path === 'assets/main.css') {
-    res.setHeader('Content-Type', 'text/css');
-  } else if (path.endsWith('.png')) {
-    res.setHeader('Content-Type', 'image/png');
-  }
-
-  fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`)
-    .pipe(unzipper.Parse())
-    .on('entry', function (entry) {
-      if (entry.path === path) {
-        entry.pipe(res);
-        found = true;
-      } else {
-        entry.autodrain();
-      }
-    })
-    .on('finish', function () {
-      if (!found) {
-        res.status(404).end('Page not found');
-      }
-    });
-});
+app.use( // cyberchef UI endpoint
+  ['/cyberchef/', '/modules/'],
+  unsafeInlineCspHeader,
+  miscAPIs.getCyberChefUI
+);
 
 // ============================================================================
 // REGRESSION TEST CONFIGURATION
@@ -2485,26 +2029,6 @@ if (Config.get('regressionTests')) {
     }, 1000);
   });
 }
-
-// ----------------------------------------------------------------------------
-// MultiES
-// ----------------------------------------------------------------------------
-app.get('/clusters', (req, res) => {
-  var clusters = { active: [], inactive: [] };
-  if (Config.get('multiES', false)) {
-    Db.getClusterDetails((err, results) => {
-      if (err) {
-        console.log('Error: ' + err);
-      } else if (results) {
-        clusters.active = results.active;
-        clusters.inactive = results.inactive;
-      }
-      res.send(clusters);
-    });
-  } else {
-    res.send(clusters);
-  }
-});
 
 // ============================================================================
 // VUE APP

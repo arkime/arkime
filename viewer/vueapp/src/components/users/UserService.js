@@ -689,7 +689,7 @@ export default {
    */
   getState (name) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`state/${name}`)
+      Vue.axios.get(`api/user/state/${name}`)
         .then((response) => {
           resolve(response);
         }, (error) => {
@@ -708,7 +708,7 @@ export default {
   saveState (state, name) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `state/${name}`,
+        url: `api/user/state/${name}`,
         method: 'POST',
         data: state
       };

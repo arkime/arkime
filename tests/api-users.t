@@ -1,4 +1,4 @@
-use Test::More tests => 100;
+use Test::More tests => 104;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -294,11 +294,20 @@ my $pwd = "*/pcap";
     is (exists $json->{data}, 1, "user can make a query within their time range");
 
 # valueActions tests
-    $json = viewerGet("/api/valueActions?molochRegressionUser=test1");
-    eq_or_diff($json->{reverseDNS}, from_json('{"url": "reverseDNS.txt?ip=%TEXT%", "name": "Get Reverse DNS", "actionType": "fetch", "category": "ip"}'), 'test1 valueActions');
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test1");
+    eq_or_diff($json->{reverseDNS}, from_json('{"url": "api/reversedns?ip=%TEXT%", "name": "Get Reverse DNS", "actionType": "fetch", "category": "ip"}'), 'test1 valueActions');
 
-    $json = viewerGet("/api/valueActions?molochRegressionUser=test2");
+    $json = viewerGet("/api/valueactions?molochRegressionUser=test2");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'), 'test2 valueActions');
+
+# state tests
+    $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);
+    ok($json->{success}, "state create success");
+    $json = viewerPostToken("/api/user/state/state1?molochRegressionUser=test1", '{"order":[["firstPacket","asc"]],"visibleHeaders":["firstPacket","lastPacket"]}', $test1Token);
+    ok($json->{success}, "state update success");
+    $json = viewerGetToken("/api/user/state/state1?molochRegressionUser=test1", $test1Token);
+    eq_or_diff($json->{order}, from_json('[["firstPacket","asc"]]'), "share fetch success");
+    eq_or_diff($json->{visibleHeaders}, from_json('["firstPacket","lastPacket"]'), "share fetch success");
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);

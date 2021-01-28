@@ -43,7 +43,7 @@ export default {
     getMolochClickablesQIP = new Promise((resolve, reject) => {
       if (_molochClickablesCache) { resolve(_molochClickablesCache); }
 
-      Vue.axios.get('api/valueActions')
+      Vue.axios.get('api/valueactions')
         .then((response) => {
           getMolochClickablesQIP = undefined;
 
@@ -83,9 +83,14 @@ export default {
     });
   },
 
+  /**
+   * Retrieves a list of active and inactive Arkime clusters.
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
   getClusters: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('clusters')
+      Vue.axios.get('api/clusters')
         .then((response) => {
           resolve(response.data);
         }, (error) => {
