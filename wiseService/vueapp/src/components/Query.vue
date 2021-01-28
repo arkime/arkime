@@ -67,6 +67,7 @@
             class="form-control"
             placeholder="Search wise data"
             @input="debounceSearch"
+            @keyup.enter="sendSearchQuery"
           />
           <span class="input-group-append">
             <button type="button"
