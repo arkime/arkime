@@ -132,6 +132,10 @@ rirFile = ARKIME_INSTALL_DIR/etc/ipv4-address-space.csv
 #  https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
 ouiFile = ARKIME_INSTALL_DIR/etc/oui.txt
 
+# Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state. 
+# See https://arkime.com/rulesformat
+#rulesFiles=ARKIME_INSTALL_DIR/etc/arkime.rules
+
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=nobody
 
