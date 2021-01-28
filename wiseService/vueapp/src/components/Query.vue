@@ -138,19 +138,14 @@ export default {
       alertMessage: '',
       loading: false,
       hasMadeASearch: false,
-      searchTerm: '',
       searchResult: [],
       tableFields: [],
-      chosenSource: '',
-      chosenType: '',
+      searchTerm: this.$route.query.searchTerm || '',
+      chosenType: this.$route.query.searchType || localStorage.getItem('search-type') || 'ip',
+      chosenSource: this.$route.query.searchSource || localStorage.getItem('search-source') || '',
       sources: [],
       types: []
     };
-  },
-  computed: {
-    // loggedIn: function () {
-    //   return this.$store.state.loggedIn;
-    // }
   },
   watch: {
     chosenSource: function () {
@@ -161,10 +156,7 @@ export default {
     this.loadSourceOptions();
     this.loadTypeOptions();
 
-    if (this.$route.query.searchTerm) {
-      this.chosenSource = this.$route.query.searchSource;
-      this.chosenType = this.$route.query.searchType;
-      this.searchTerm = this.$route.query.searchTerm;
+    if (this.searchTerm) {
       this.debounceSearch();
     }
   },
@@ -235,6 +227,10 @@ export default {
           searchTerm: this.searchTerm
         }
       });
+
+      // save chosen type and source in localstorage
+      localStorage.setItem('search-type', this.chosenType);
+      localStorage.setItem('search-source', this.chosenSource);
 
       this.hasMadeASearch = true;
 
