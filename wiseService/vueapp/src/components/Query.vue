@@ -216,10 +216,12 @@ export default {
     },
     sendSearchQuery: function () {
       if (!this.searchTerm) {
-        this.alertMessage = 'Search term is empty';
-        this.searchResult = [];
-        this.tableFields = [];
-        this.hasMadeASearch = false;
+        if (this.hasMadeASearch) {
+          this.alertMessage = 'Search term is empty';
+          this.searchResult = [];
+          this.tableFields = [];
+          this.hasMadeASearch = false;
+        }
         return;
       }
 
