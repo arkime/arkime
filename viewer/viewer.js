@@ -1831,12 +1831,6 @@ app.post( // sessions recieve endpoint
   sessionAPIs.receiveSession
 );
 
-app.get( // scrub pcap endpoint
-  ['/api/:nodeName/delete/:whatToRemove/:sid', '/:nodeName/delete/:whatToRemove/:sid'],
-  [checkProxyRequest, checkPermissions(['removeEnabled'])],
-  sessionAPIs.scrubPcap
-);
-
 app.post( // delete data endpoint
   ['/api/delete', '/delete'],
   [noCacheJson, checkCookieToken, logAction(), checkPermissions(['removeEnabled'])],
@@ -1988,13 +1982,13 @@ app.get(
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
   [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
-  miscAPIs.cyberchef
+  miscAPIs.cyberChef
 );
 
 app.use( // cyberchef UI endpoint
   ['/cyberchef/', '/modules/'],
   unsafeInlineCspHeader,
-  miscAPIs.getCyberchefUI
+  miscAPIs.getCyberChefUI
 );
 
 // ============================================================================

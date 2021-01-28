@@ -261,7 +261,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
    * @name /cyberchef/:nodeName/session/:id
    * @param {string} type=src - Whether to send the source (src) or destination (dst) packets.
    */
-  module.cyberchef = (req, res) => {
+  module.cyberChef = (req, res) => {
     sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
         console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
@@ -283,7 +283,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
    * Loads the CyberChef UI.
    * @name /cyberchef
    */
-  module.getCyberchefUI = (req, res) => {
+  module.getCyberChefUI = (req, res) => {
     let found = false;
     let path = req.path.substring(1);
 

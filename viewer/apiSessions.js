@@ -2938,22 +2938,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   };
 
   /**
-   * GET - /api/:nodeName/delete/:whatToRemove/:sid
-   *
-   * Scrub packet data by overwriting the packets (remove persmission required).
-   * @name /session/:nodeName/delete/:whatToRemove/:sid
-   */
-  module.scrubPcap = (req, res) => {
-    ViewerUtils.noCache(req, res);
-
-    res.statusCode = 200;
-
-    pcapScrub(req, res, req.params.sid, req.params.whatToRemove, (err) => {
-      res.end();
-    });
-  };
-
-  /**
    * GET - /api/delete
    *
    * Delete SPI and/or scrub PCAP data (remove persmission required).
