@@ -1986,12 +1986,12 @@ app.get(
 
 // cyberchef apis -------------------------------------------------------------
 app.get( // cyberchef endpoint
-  ['/api/cyberchef/:nodeName/session/:id', '/cyberchef/:nodeName/session/:id'],
+  '/cyberchef/:nodeName/session/:id',
   [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
   miscAPIs.cyberchef
 );
 
-app.get( // cyberchef UI endpoint
+app.use( // cyberchef UI endpoint
   ['/cyberchef/', '/modules/'],
   unsafeInlineCspHeader,
   miscAPIs.getCyberchefUI

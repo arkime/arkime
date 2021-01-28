@@ -231,7 +231,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
    * GET - /api/clusters
    *
    * Retrieves a list of known configured Arkime clusters (if in
-   * <a href="https://arkime.com/settings#multi-viewer-settings">Mulit ES mode</a>).
+   * <a href="https://arkime.com/settings#multi-viewer-settings">Mulit Viewer mode</a>).
    * @name /clusters
    * @returns {Array} active - The active Arkime clusters.
    * @returns {Array} inactive - The inactive Arkime clusters.
@@ -255,10 +255,9 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
 
   // cyberchef apis -----------------------------------------------------------
   /**
-   * GET - /api/cyberchef/:nodeName/session/:id
+   * @ignore
    *
-   * Loads the src or dst packets for a session and sends them to
-   * <a href="https://github.com/gchq/CyberChef">CyberChef</a> for analysis.
+   * Retrieves the source or destination packets for a session for CyberChef.
    * @name /cyberchef/:nodeName/session/:id
    * @param {string} type=src - Whether to send the source (src) or destination (dst) packets.
    */
