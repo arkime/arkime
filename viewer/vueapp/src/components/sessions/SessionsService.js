@@ -212,7 +212,7 @@ export default {
    */
   remove: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('delete', 'POST', params, routeParams);
+      const options = this.getReqOptions('api/delete', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); }
 

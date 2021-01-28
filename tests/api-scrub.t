@@ -37,7 +37,7 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==/Anon.*mous/"));
 
 # scrub expression
-    viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+    viewerPostToken("/api/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
 
     esGet("/_refresh");
     esGet("/_flush");
