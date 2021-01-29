@@ -17,8 +17,9 @@
           :key="sourceKey + '-tab'"
         >
           <button
-            @click="selectedSourceKey = sourceKey"
             type="button"
+            @click="selectedSourceKey = sourceKey"
+            :active="selectedSourceKey === sourceKey"
             class="btn btn-light source-btn btn-outline-dark"
           >
             {{ sourceKey }}
@@ -32,8 +33,9 @@
           :key="sourceKey + '-tab'"
         >
           <button
-            @click="selectedSourceKey = sourceKey"
             type="button"
+            @click="selectedSourceKey = sourceKey"
+            :active="selectedSourceKey === sourceKey"
             class="btn btn-light source-btn btn-outline-dark"
           >
             {{ sourceKey }}
@@ -45,7 +47,7 @@
           <b-button
             block
             variant="warning"
-            class="text-nowrap"
+            class="text-nowrap mt-3"
             @click="showImportConfigModal = true">
             <b-icon icon="download" scale="1"></b-icon>
             <span>Import Config</span>
@@ -103,46 +105,61 @@
               name="radio-btn-outline"
             >
             </b-form-radio-group>
+            <b-form-checkbox
+              switch
+              v-model="showPrettyJSON"
+              v-if="configViewSelected === 'display' && displayJSON">
+              Format JSON
+            </b-form-checkbox>
           </div>
         </div>
 
         <div v-if="configViewSelected === 'edit'">
+          <!-- text area input for non json -->
           <b-form-textarea
-             v-model="currFile"
-             rows="18"
-           >
-           </b-form-textarea>
-
-           <span class="d-flex justify-content-between mt-4">
-             <b-button
+            v-if="!currJSONFile"
+            v-model="currFile"
+            rows="18"
+          />
+          <!-- json editor -->
+          <vue-json-editor
+            v-else
+            v-model="currJSONFile"
+            :mode="'code'"
+            :show-btns="false"
+            :expandedOnStart="true"
+            @json-change="onJsonChange"
+          />
+          <span class="d-flex justify-content-between mt-4">
+            <b-button
               variant="warning"
               :disabled="fileResetDisabled"
-              @click="loadSourceFile()">
-               Reset File
-             </b-button>
-
-             <span class="float-right">
-               <div class="input-group">
-                 <div class="input-group-append">
-                   <b-button
-                    variant="primary"
-                    :disabled="fileSaveDisabled"
-                    @click="saveSourceFile()">
-                     Save File
-                   </b-button>
-                 </div>
-               </div>
-             </span>
-           </span>
+              @click="loadSourceFile">
+              Reset File
+            </b-button>
+            <b-button
+              variant="primary"
+              class="float-right"
+              :disabled="fileSaveDisabled"
+              @click="saveSourceFile">
+              Save File
+            </b-button>
+          </span>
         </div> <!-- edit -->
 
+        <!-- display -->
         <div v-else-if="configViewSelected === 'display'">
-          <b-form-textarea
-             v-model="displayData"
-             rows="18"
-           >
-           </b-form-textarea>
-        </div> <!-- display -->
+          <template v-if="showPrettyJSON">
+            <vue-json-pretty
+              :data="displayJSON"
+              :show-line="true"
+              :show-double-quotes="false"
+            />
+          </template>
+          <template v-else>
+            <pre>{{ displayData }}</pre>
+          </template>
+       </div> <!-- /display -->
 
         <div v-else>
           <div
@@ -291,13 +308,21 @@
 </template>
 
 <script>
+import vueJsonEditor from 'vue-json-editor';
+import VueJsonPretty from 'vue-json-pretty';
+import 'vue-json-pretty/lib/styles.css';
+
 import WiseService from './wise.service';
 import Alert from './Alert';
+
+let timeout;
 
 export default {
   name: 'Config',
   components: {
-    Alert
+    Alert,
+    vueJsonEditor,
+    VueJsonPretty
   },
   mounted: function () {
     this.loadConfigDefs();
@@ -314,7 +339,10 @@ export default {
       currConfigBefore: {}, // Used to determine if changes have been made
       currFile: '',
       currFileBefore: '', // Used to determine if changes have been made
+      currJSONFile: null,
       displayData: '',
+      displayJSON: null,
+      showPrettyJSON: false,
       filePath: '',
       newSource: '',
       newSourceName: '',
@@ -471,6 +499,12 @@ export default {
         this.$delete(this.currConfig[this.selectedSourceKey], field.name);
       }
     },
+    onJsonChange: function (value) {
+      if (timeout) { clearTimeout(timeout); }
+      timeout = setTimeout(() => {
+        this.currFile = JSON.stringify(value, null, 4);
+      }, 1000);
+    },
     deleteSource: function () {
       this.$delete(this.currConfig, this.selectedSourceKey);
       this.selectedSourceKey = 'wiseService';
@@ -580,6 +614,8 @@ export default {
         });
     },
     loadSourceFile: function () {
+      this.currJSONFile = null;
+
       WiseService.getSourceFile(this.selectedSourceKey)
         .then((data) => {
           if (!data.success) {
@@ -588,6 +624,12 @@ export default {
 
           this.currFile = data.raw;
           this.currFileBefore = data.raw;
+
+          try { // if it's json, allow it to be
+            this.currJSONFile = JSON.parse(data.raw);
+          } catch (err) {
+            this.currJSONFile = null;
+          }
         })
         .catch((err) => {
           this.alertState = {
@@ -630,10 +672,15 @@ export default {
       WiseService.getSourceDisplay(this.selectedSourceKey)
         .then((data) => {
           this.displayData = data;
+          try {
+            this.displayJSON = JSON.parse(this.displayData);
+          } catch (err) {
+            this.displayJSON = null;
+          }
         })
         .catch((err) => {
           this.alertState = {
-            text: err.text || `Error fetching source display from wise.`,
+            text: err.text || 'Error fetching source display from wise.',
             variant: 'alert-danger'
           };
         });
@@ -652,13 +699,31 @@ export default {
   background-color: transparent;
   box-shadow: none !important; /* Covers all css states that has this defined in boostrap */
 }
-.source-btn:hover {
-  color: #fff;
-  border-color: transparent;
-  background-color: #343a40;
+.source-btn[active] {
+  color: #222;
+  background-color: #C3C3C3;
 }
+.source-btn:hover {
+  color: #222;
+  border-color: transparent;
+  background-color: #DEDEDE;
+}
+
 .input-label {
   height: 54px;
   justify-content: center;
+}
+</style>
+
+<style>
+.jsoneditor-poweredBy {
+  visibility: hidden !important;
+}
+
+.jsoneditor-vue {
+  height: 500px;
+}
+.editor {
+  height: 500px;
 }
 </style>
