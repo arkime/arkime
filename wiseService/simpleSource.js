@@ -84,7 +84,7 @@ class SimpleSource extends WISESource {
   dump (res) {
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
     cache.forEach((result, key) => {
-      const str = `{key: "${key}", ops:\n` +
+      const str = `{"key": "${key}", "ops":\n` +
         `${WISESource.result2JSON(WISESource.combineResults([this.tagsResult, result]))}},\n`;
       res.write(str);
     });

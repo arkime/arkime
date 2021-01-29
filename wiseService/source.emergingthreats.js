@@ -144,7 +144,7 @@ class EmergingThreatsSource extends WISESource {
     ['ips', 'domains'].forEach((ckey) => {
       res.write(`${ckey}:\n`);
       this[ckey].forEach((value, key) => {
-        const str = `{key: "${key}", ops:\n` +
+        const str = `{"key": "${key}", "ops":\n` +
           WISESource.result2JSON(value) + '},\n';
         res.write(str);
       });

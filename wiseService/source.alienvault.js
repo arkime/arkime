@@ -146,7 +146,7 @@ class AlienVaultSource extends WISESource {
   // ----------------------------------------------------------------------------
   dump (res) {
     this.ips.forEach((value, key) => {
-      const str = '{key: "' + key + '", ops:\n' +
+      const str = '{"key": "' + key + '", "ops":\n' +
                  WISESource.result2JSON(value) + '},\n';
       res.write(str);
     });

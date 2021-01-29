@@ -65,46 +65,46 @@ eq_or_diff($wise, '[{"field":"tags","len":12,"value":"ipwise-comma"},
 
 # IP File Dump
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ip")->content . "]";
-@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise,
 from_json('[
-{key:"10.0.0.3",ops:
+{"key":"10.0.0.3","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":9,"value":"wisebyip1"},
 {"field":"irc.channel","len":16,"value":"wisebyip1channel"},
 {"field":"email.x-priority","len":3,"value":"999"}]
 },
-{key:"128.128.128.0/24",ops:
+{"key":"128.128.128.0/24","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
 {"field":"test.ip","len":11,"value":"21.21.21.21"}]
 },
-{key:"192.168.177.160",ops:
+{"key":"192.168.177.160","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
 {"field":"test.ip","len":11,"value":"21.21.21.21"}]
 },
-{key:"fe80::211:25ff:fe82:95b5",ops:
+{"key":"fe80::211:25ff:fe82:95b5","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
 {"field":"tags","len":9,"value":"wisebyip3"},
 {"field":"mysql.ver","len":21,"value":"wisebyip3mysqlversion"},
 {"field":"test.ip","len":11,"value":"22.22.22.22"}]
 }
-]', {relaxed=>1, allow_barekey=>1}), "file:ip dump");
+]', {relaxed=>1}), "file:ip dump");
 
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:ipcsv")->content . "]";
-@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise,
 from_json('[
-{key:"10.0.0.2",ops:
+{"key":"10.0.0.2","ops":
 [{"field":"tags","len":9,"value":"ipwisecsv"}]
 },
-{key:"10.0.0.3",ops:
+{"key":"10.0.0.3","ops":
 [{"field":"tags","len":9,"value":"ipwisecsv"}]
 }
-]', {relaxed=>1, allow_barekey=>1}), "file:ipcsv dump");
+]', {relaxed=>1}), "file:ipcsv dump");
 
 # Email Query
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/email/fudge\@aol.com")->content;
@@ -169,18 +169,18 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/6-4-gre-ppp-udp-4-dns.pcap||file=$pwd/http-wrapped-header.pcap)&&tags=wisebymac2"));
 
 $wise = "[" . $MolochTest::userAgent->get("http://$MolochTest::host:8081/dump/file:mac")->content . "]";
-my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1, allow_barekey=>1})};
+my @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise,
 from_json('[
-{key:"00:12:1e:f2:61:3d",ops:
+{"key":"00:12:1e:f2:61:3d","ops":
 [{"field":"tags","len":7,"value":"macwise"},
 {"field":"tags","len":10,"value":"wisebymac1"}]
 },
-{key:"00:19:06:e6:82:c4",ops:
+{"key":"00:19:06:e6:82:c4","ops":
 [{"field":"tags","len":7,"value":"macwise"},
 {"field":"tags","len":10,"value":"wisebymac2"}]
 }
-]', {relaxed=>1, allow_barekey=>1}), "file:mac dump");
+]', {relaxed=>1}), "file:mac dump");
 
 $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/mac/00:12:1e:f2:61:3d")->content;
 eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
