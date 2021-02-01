@@ -55,181 +55,47 @@
     <!-- /treemap area -->
 
     <!-- table area -->
-    <div v-show="spiGraphType === 'table' && tableData.length"
+    <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
       class="mt-2 pt-5"
-      :class="{'container-fluid':fieldTypeaheadList.length > 1, 'container': fieldTypeaheadList.length <=1}">
+      :class="{'container-fluid':fieldList && fieldList.length > 2, 'container':fieldList && fieldList.length <= 2}">
       <table class="table table-bordered table-condensed table-sm">
         <thead>
           <tr>
-            <th colspan="2">
-              {{ getFieldObj(baseField).friendlyName }}
-            </th>
             <th colspan="2"
-              v-for="field in fieldTypeaheadList"
-              :key="field.exp">
-              {{ field.friendlyName }}
+              v-for="(field, index) in fieldList"
+              :key="index">
+              <span v-if="field">
+                {{ field.friendlyName }}
+              </span>
             </th>
           </tr>
           <tr>
-            <template v-if="!fieldTypeaheadList.length">
+            <template v-for="(item, index) in fieldList">
               <th class="cursor-pointer"
-                @click="columnClick(0, 'name')">
+                :key="`${index}-name`"
+                @click="columnClick(index, 'name')">
                 Value
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
+                <span v-show="tableSortField !== index || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick(0, 'size')">
+                :key="`${index}-size`"
+                @click="columnClick(index, 'size')">
                 Count
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-            </template>
-            <!-- TODO ECR make this dynamic for more than 2 extra fields -->
-            <template v-if="fieldTypeaheadList.length === 1">
-              <th class="cursor-pointer"
-                @click="columnClick(1, 'name')">
-                Value
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(1, 'size')">
-                Count
-                <span v-show="tableSortField === 1 && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(0, 'name')">
-                Value
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(0, 'size')">
-                Count
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-            </template>
-            <template v-if="fieldTypeaheadList.length === 2">
-              <th class="cursor-pointer"
-                @click="columnClick(2, 'name')">
-                Value
-                <span v-show="tableSortField === 2 && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 2 && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 2 || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(2, 'size')">
-                Count
-                <span v-show="tableSortField === 2 && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 2 && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 2 || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(1, 'name')">
-                Value
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(1, 'size')">
-                Count
-                <span v-show="tableSortField === 1 && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 1 && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 1 || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(0, 'name')">
-                Value
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick(0, 'size')">
-                Count
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
+                <span v-show="tableSortField !== index || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
@@ -239,32 +105,44 @@
         <tbody>
           <template v-for="(item, key) in tableData">
             <tr :key="key">
-              <template v-for="(parent, key) in item.parents">
-                <td :key="`${key}-${parent.name}-0`">
+              <template v-if="item.parents && item.parents.length">
+                <template v-for="(parent, index) in item.parents">
+                  <td :key="`${index}-${parent.name}-0`">
+                    <moloch-session-field
+                      :field="fieldList[index]"
+                      :value="parent.name"
+                      :expr="fieldList[index].exp"
+                      :parse="true"
+                      :session-btn="true">
+                    </moloch-session-field>
+                  </td>
+                  <td :key="`${index}-${parent.name}-1`">
+                    {{ parent.size | commaString }}
+                  </td>
+                </template>
+              </template>
+              <td>
+                <span class="color-swatch"
+                  :style="{ backgroundColor: item.color }">
+                </span>
+                <template v-if="item.parents && item.parents.length && fieldList[item.parents.length]">
                   <moloch-session-field
-                    :field="fieldList[key]"
-                    :value="parent.name"
-                    :expr="fieldList[key].exp"
+                    :field="fieldList[item.parents.length]"
+                    :value="item.name"
+                    :expr="fieldList[item.parents.length].exp"
                     :parse="true"
                     :session-btn="true">
                   </moloch-session-field>
-                </td>
-                <td :key="`${key}-${parent.name}-1`">
-                  {{ parent.size | commaString }}
-                </td>
-              </template>
-              <td>
-                <!-- TODO ECR - fix color squares -->
-                <!-- <span class="color-swatch"
-                  :style="{ backgroundColor: item.color }">
-                </span> -->
-                <moloch-session-field
-                  :field="fieldList[item.parents.length]"
-                  :value="item.name"
-                  :expr="fieldList[item.parents.length].exp"
-                  :parse="true"
-                  :session-btn="true">
-                </moloch-session-field>
+                </template>
+                <template v-else>
+                  <moloch-session-field
+                    :field="fieldList[0]"
+                    :value="item.name"
+                    :expr="fieldList[0].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </template>
               </td>
               <td>
                 {{ item.size | commaString }}
@@ -456,8 +334,9 @@ export default {
       this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
     } else { // otherwise load the data for the additional fields
       this.initializeGraphs();
-      this.loadData();
     }
+
+    this.loadData();
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
@@ -525,13 +404,14 @@ export default {
      * @param {Object} field The field the add to the pie graph
      */
     changeField: function (field) {
+      // TODO ECR - allow only 2 for tree/pie?
       // only allow max 2 items in this array
-      if (this.fieldTypeaheadList.length > 1) {
-        this.$set(this.fieldTypeaheadList, 1, field);
-      } else {
-        this.fieldTypeaheadList.push(field);
-      }
-
+      // if (this.fieldTypeaheadList.length > 1) {
+      //   this.$set(this.fieldTypeaheadList, 1, field);
+      // } else {
+      //   this.fieldTypeaheadList.push(field);
+      // }
+      this.fieldTypeaheadList.push(field);
       this.applyFieldListToUrl();
     },
     /**
@@ -608,7 +488,10 @@ export default {
     /**
      * Sorts the table data based on the existing sort field and type vars
      */
+    // TODO ECR this is sorting incorrect columns
     sortTable: function () {
+      console.log(this.tableSortField);
+      console.log(this.tableData);
       this.tableData.sort((a, b) => {
         let result = false;
         if (this.tableSortField === 0) {
@@ -618,10 +501,11 @@ export default {
             result = b[this.tableSortType] > a[this.tableSortType];
           }
         } else {
+          const sortField = this.tableSortField - 1;
           if (!this.tableDesc) {
-            result = a[this.tableSortField][this.tableSortType] > b[this.tableSortField][this.tableSortType];
+            result = a.parents[sortField][this.tableSortType] > b.parents[sortField][this.tableSortType];
           } else {
-            result = b[this.tableSortField][this.tableSortType] > a[this.tableSortField][this.tableSortType];
+            result = b.parents[sortField][this.tableSortType] > a.parents[sortField][this.tableSortType];
           }
         }
         return result ? 1 : -1;
@@ -687,14 +571,12 @@ export default {
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
      */
-    applyColorsToTableData: function (data) { // TODO ECR - don't use parent/grandparent, find top parent?
+    applyColorsToTableData: function (data) {
       let parentMap = {};
-      for (let item of data) {
-        if (item.grandparent && !parentMap[item.grandparent.name]) { // count grandparents
-          parentMap[item.grandparent.name] = true;
-        } else if (!item.grandparent && item.parent && !parentMap[item.parent.name]) { // count parents
-          parentMap[item.parent.name] = true;
-        } else if (!item.grandparent && !item.parent && !parentMap[item.name]) {
+      for (let item of data) { // count top level parents
+        if (item.parents && item.parents.length) {
+          parentMap[item.parents[0].name] = true;
+        } else {
           parentMap[item.name] = true;
         }
       }
@@ -702,10 +584,8 @@ export default {
       let tableColors = this.generateColors(parentCount);
       for (let item of data) {
         let key = item.name;
-        if (item.grandparent) {
-          key = item.grandparent.name;
-        } else if (item.parent) {
-          key = item.parent.name;
+        if (item.parents && item.parents.length) {
+          key = item.parents[0].name;
         }
         item.color = tableColors(key);
       }

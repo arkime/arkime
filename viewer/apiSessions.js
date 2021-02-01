@@ -2191,30 +2191,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        // let grandparent;
-        // const tableResults = [];
-        // // assumes only 3 levels deep
-        // function addDataToTable (buckets, parent) {
-        //   for (let i = 0; i < buckets.length; i++) {
-        //     const bucket = buckets[i];
-        //     if (bucket.field) {
-        //       if (parent) { grandparent = parent; }
-        //       addDataToTable(bucket.field.buckets, {
-        //         name: bucket.key,
-        //         size: bucket.doc_count
-        //       });
-        //     } else {
-        //       tableResults.push({
-        //         parent: parent,
-        //         grandparent: grandparent,
-        //         name: bucket.key,
-        //         size: bucket.doc_count
-        //       });
-        //     }
-        //   }
-        // }
-
-        // TODO ECR - go infinity levels deep
         let parent;
         let hierarchy = {};
         let leavesLength = 0;
@@ -2231,7 +2207,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               parent = {
                 name: bucket.key,
                 size: bucket.doc_count
-              }
+              };
               addDataToTable(bucket.field.buckets);
             } else { // we're at the bottom, add the data to the results
               leavesLength++;
@@ -2256,8 +2232,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children); // TODO ECR
-        addDataToTable(result.aggregations.field.buckets); // TODO ECR
+        // TODO ECR - go infinity levels deep here too?
+        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
+        addDataToTable(result.aggregations.field.buckets);
 
         return res.send({
           success: true,
