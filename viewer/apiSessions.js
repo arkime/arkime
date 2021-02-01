@@ -2214,7 +2214,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         //   }
         // }
 
-        console.log('buckets', JSON.stringify(result.aggregations.field.buckets, null, 2));
         // TODO ECR - go infinity levels deep
         let parent;
         let hierarchy = {};
@@ -2236,7 +2235,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               addDataToTable(bucket.field.buckets);
             } else { // we're at the bottom, add the data to the results
               leavesLength++;
-              console.log('at the end of a branch with value', bucket.key);
               const data = {
                 name: bucket.key,
                 size: bucket.doc_count,
@@ -2246,14 +2244,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 data.parents.push(hierarchy[key]);
               }
               tableResults.push(data);
-              // TODO ECR
+
               // we're at the end of the tree, but not the end of the leaves
-              // figure out when we're at the end of the leaves
-              // and reset everything
-              console.log('length', buckets.length, leavesLength);
+              // figure out when we're at the end of the leaves & reset everything
               if (leavesLength >= buckets.length) {
-                console.log(hierarchy);
-                console.log('flush hierarchy!!!!!!!!!!');
                 leavesLength = 0;
                 hierarchy = {};
                 parent = null;

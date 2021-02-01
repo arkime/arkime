@@ -237,7 +237,7 @@
           </tr>
         </thead>
         <tbody>
-          <template v-if="fieldTypeaheadList.length">
+          <!-- <template v-if="fieldTypeaheadList.length">
             <template v-for="(item, key) in tableData">
               <tr :key="key" v-if="item.grandparent">
                 <td>
@@ -327,6 +327,41 @@
                   :parse="true"
                   :session-btn="true">
                 </moloch-session-field>
+              </td>
+              <td>
+                {{ item.size | commaString }}
+              </td>
+            </tr>
+          </template> -->
+          <template v-for="(item, key) in tableData">
+            <tr :key="key">
+              <template v-for="(parent, key) in item.parents">
+                <td :key="`${key}-${parent.name}-0`">
+                  <!-- <moloch-session-field
+                    :field="fieldTypeaheadList[key]"
+                    :value="parent.name"
+                    :expr="fieldTypeaheadList[key].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field> -->
+                  {{ parent.name }}
+                </td>
+                <td :key="`${key}-${parent.name}-1`">
+                  {{ parent.size | commaString }}
+                </td>
+              </template>
+              <td>
+                <span class="color-swatch"
+                  :style="{ backgroundColor: item.color }">
+                </span>
+                <!-- <moloch-session-field
+                  :field="baseFieldObj"
+                  :value="item.name"
+                  :expr="baseFieldObj.exp"
+                  :parse="true"
+                  :session-btn="true">
+                </moloch-session-field> -->
+                {{ item.name }}
               </td>
               <td>
                 {{ item.size | commaString }}
