@@ -56,181 +56,180 @@
 
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length"
-      class="container mt-2 pt-5">
+      class="mt-2 pt-5"
+      :class="{'container-fluid':fieldTypeaheadList.length > 1, 'container': fieldTypeaheadList.length <=1}">
       <table class="table table-bordered table-condensed table-sm">
         <thead>
           <tr>
             <th colspan="2">
               {{ getFieldObj(baseField).friendlyName }}
             </th>
-            <th v-if="fieldTypeaheadList.length > 0"
-              colspan="2">
-              {{ fieldTypeaheadList[0].friendlyName }}
-            </th>
-            <th v-if="fieldTypeaheadList.length === 2"
-              colspan="2">
-              {{ fieldTypeaheadList[1].friendlyName }}
+            <th colspan="2"
+              v-for="field in fieldTypeaheadList"
+              :key="field.exp">
+              {{ field.friendlyName }}
             </th>
           </tr>
           <tr>
             <template v-if="!fieldTypeaheadList.length">
               <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
+                @click="columnClick(0, 'name')">
                 Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
+                @click="columnClick(0, 'size')">
                 Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
             </template>
+            <!-- TODO ECR make this dynamic for more than 2 extra fields -->
             <template v-if="fieldTypeaheadList.length === 1">
               <th class="cursor-pointer"
-                @click="columnClick('parent', 'name')">
+                @click="columnClick(1, 'name')">
                 Value
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('parent', 'size')">
+                @click="columnClick(1, 'size')">
                 Count
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
+                @click="columnClick(0, 'name')">
                 Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
+                @click="columnClick(0, 'size')">
                 Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
             </template>
             <template v-if="fieldTypeaheadList.length === 2">
               <th class="cursor-pointer"
-                @click="columnClick('grandparent', 'name')">
+                @click="columnClick(2, 'name')">
                 Value
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 2 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 2 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 2 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('grandparent', 'size')">
+                @click="columnClick(2, 'size')">
                 Count
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 2 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 2 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 2 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('parent', 'name')">
+                @click="columnClick(1, 'name')">
                 Value
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('parent', 'size')">
+                @click="columnClick(1, 'size')">
                 Count
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 1 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 1 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
+                @click="columnClick(0, 'name')">
                 Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
+                @click="columnClick(0, 'size')">
                 Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === 0 && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== 0 || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
@@ -491,7 +490,7 @@ export default {
       tableData: [],
       outerData: false,
       tableSortType: 'size',
-      tableSortField: 'child',
+      tableSortField: 0,
       tableDesc: true,
       closeInfo: closeInfo,
       fieldTypeaheadList: [],
@@ -670,7 +669,7 @@ export default {
     sortTable: function () {
       this.tableData.sort((a, b) => {
         let result = false;
-        if (this.tableSortField === 'child') {
+        if (this.tableSortField === 0) {
           if (!this.tableDesc) {
             result = a[this.tableSortType] > b[this.tableSortType];
           } else {
@@ -746,7 +745,7 @@ export default {
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
      */
-    applyColorsToTableData: function (data) {
+    applyColorsToTableData: function (data) { // TODO ECR - maybe just fuck this?
       let parentMap = {};
       for (let item of data) {
         if (item.grandparent && !parentMap[item.grandparent.name]) { // count grandparents
@@ -1010,7 +1009,6 @@ export default {
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SpigraphService.getHierarchy(this.query, source.token);
 
       // setup the query params
       let params = this.query;
@@ -1021,6 +1019,8 @@ export default {
       }
 
       params.exp = exps.toString(',');
+
+      const cancellablePromise = SpigraphService.getHierarchy(params, source.token);
 
       // set pending promise info so it can be cancelled
       pendingPromise = { cancellablePromise, source, cancelId };

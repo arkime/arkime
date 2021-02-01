@@ -2191,31 +2191,74 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        let grandparent;
+        // let grandparent;
+        // const tableResults = [];
+        // // assumes only 3 levels deep
+        // function addDataToTable (buckets, parent) {
+        //   for (let i = 0; i < buckets.length; i++) {
+        //     const bucket = buckets[i];
+        //     if (bucket.field) {
+        //       if (parent) { grandparent = parent; }
+        //       addDataToTable(bucket.field.buckets, {
+        //         name: bucket.key,
+        //         size: bucket.doc_count
+        //       });
+        //     } else {
+        //       tableResults.push({
+        //         parent: parent,
+        //         grandparent: grandparent,
+        //         name: bucket.key,
+        //         size: bucket.doc_count
+        //       });
+        //     }
+        //   }
+        // }
+
+        console.log('buckets', JSON.stringify(result.aggregations.field.buckets, null, 2));
+        // TODO ECR - go infinity levels deep
+        let leavesLength = 0;
         const tableResults = [];
-        // assumes only 3 levels deep
-        function addDataToTable (buckets, parent) {
-          for (let i = 0; i < buckets.length; i++) {
-            const bucket = buckets[i];
-            if (bucket.field) {
-              if (parent) { grandparent = parent; }
-              addDataToTable(bucket.field.buckets, {
+        function addDataToTable (buckets, hierarchy, parent) {
+          for (let bucket of buckets) {
+            if (parent) {
+              hierarchy[parent.name] = {
+                name: parent.name,
+                size: parent.size
+              };
+            }
+            if (bucket.field) { // keep adding levels
+              parent = {
                 name: bucket.key,
                 size: bucket.doc_count
-              });
-            } else {
-              tableResults.push({
-                parent: parent,
-                grandparent: grandparent,
+              }
+              addDataToTable(bucket.field.buckets, hierarchy, parent);
+            } else { // we're at the bottom, add the data to the results
+              leavesLength++;
+              const data = {
                 name: bucket.key,
-                size: bucket.doc_count
-              });
+                size: bucket.doc_count,
+                parents: []
+              };
+              for (const key in hierarchy) {
+                data.parents.push(hierarchy[key]);
+              }
+              tableResults.push(data);
+              // TODO ECR
+              // we're at the end of the tree, but not the end of the leaves
+              // figure out when we're at the end of the leaves
+              // and reset everything
+              console.log('length', buckets.length, leavesLength);
+              console.log('--------');
+              if (leavesLength >= buckets.length) {
+                leavesLength = 0;
+                hierarchy = {};
+              }
             }
           }
         }
 
-        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
-        addDataToTable(result.aggregations.field.buckets);
+        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children); // TODO ECR
+        addDataToTable(result.aggregations.field.buckets, {}); // TODO ECR
 
         return res.send({
           success: true,

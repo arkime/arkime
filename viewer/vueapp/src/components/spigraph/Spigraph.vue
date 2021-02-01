@@ -486,7 +486,7 @@ export default {
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
-      this.query.exp = field.dbField;
+      this.query.exp = field.exp;
       this.baseField = field.exp;
       this.$router.push({
         query: {
