@@ -2216,9 +2216,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         console.log('buckets', JSON.stringify(result.aggregations.field.buckets, null, 2));
         // TODO ECR - go infinity levels deep
+        let hierarchy = {};
         let leavesLength = 0;
         const tableResults = [];
-        function addDataToTable (buckets, hierarchy, parent) {
+        function addDataToTable (buckets, parent) {
           for (let bucket of buckets) {
             if (parent) {
               hierarchy[parent.name] = {
@@ -2231,9 +2232,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 name: bucket.key,
                 size: bucket.doc_count
               }
-              addDataToTable(bucket.field.buckets, hierarchy, parent);
+              addDataToTable(bucket.field.buckets, parent);
             } else { // we're at the bottom, add the data to the results
               leavesLength++;
+              console.log('at the end of a branch with value', bucket.key);
               const data = {
                 name: bucket.key,
                 size: bucket.doc_count,
@@ -2248,8 +2250,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               // figure out when we're at the end of the leaves
               // and reset everything
               console.log('length', buckets.length, leavesLength);
-              console.log('--------');
               if (leavesLength >= buckets.length) {
+                console.log(hierarchy);
+                console.log('flush hierarchy!!!!!!!!!!');
                 leavesLength = 0;
                 hierarchy = {};
               }
@@ -2258,7 +2261,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         }
 
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children); // TODO ECR
-        addDataToTable(result.aggregations.field.buckets, {}); // TODO ECR
+        addDataToTable(result.aggregations.field.buckets); // TODO ECR
 
         return res.send({
           success: true,
