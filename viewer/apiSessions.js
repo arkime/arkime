@@ -2216,10 +2216,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         console.log('buckets', JSON.stringify(result.aggregations.field.buckets, null, 2));
         // TODO ECR - go infinity levels deep
+        let parent;
         let hierarchy = {};
         let leavesLength = 0;
         const tableResults = [];
-        function addDataToTable (buckets, parent) {
+        function addDataToTable (buckets) {
           for (let bucket of buckets) {
             if (parent) {
               hierarchy[parent.name] = {
@@ -2232,7 +2233,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 name: bucket.key,
                 size: bucket.doc_count
               }
-              addDataToTable(bucket.field.buckets, parent);
+              addDataToTable(bucket.field.buckets);
             } else { // we're at the bottom, add the data to the results
               leavesLength++;
               console.log('at the end of a branch with value', bucket.key);
@@ -2255,6 +2256,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 console.log('flush hierarchy!!!!!!!!!!');
                 leavesLength = 0;
                 hierarchy = {};
+                parent = null;
               }
             }
           }
