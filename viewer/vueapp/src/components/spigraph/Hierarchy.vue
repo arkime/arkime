@@ -237,131 +237,34 @@
           </tr>
         </thead>
         <tbody>
-          <!-- <template v-if="fieldTypeaheadList.length">
-            <template v-for="(item, key) in tableData">
-              <tr :key="key" v-if="item.grandparent">
-                <td>
-                  <moloch-session-field
-                    :field="baseFieldObj"
-                    :value="item.grandparent.name"
-                    :expr="baseFieldObj.exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                  <span class="color-swatch"
-                    :style="{ backgroundColor: item.color }">
-                  </span>
-                </td>
-                <td>
-                  {{ item.grandparent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    :field="fieldTypeaheadList[0]"
-                    :value="item.parent.name"
-                    :expr="fieldTypeaheadList[0].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.parent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    v-if="fieldTypeaheadList[1]"
-                    :field="fieldTypeaheadList[1]"
-                    :value="item.name"
-                    :expr="fieldTypeaheadList[1].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.size | commaString }}
-                </td>
-              </tr>
-              <tr :key="key" v-else-if="item.parent">
-                <td>
-                  <moloch-session-field
-                    :field="baseFieldObj"
-                    :value="item.parent.name"
-                    :expr="baseFieldObj.exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                  <span class="color-swatch"
-                    :style="{ backgroundColor: item.color }">
-                  </span>
-                </td>
-                <td>
-                  {{ item.parent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    v-if="fieldTypeaheadList[0]"
-                    :field="fieldTypeaheadList[0]"
-                    :value="item.name"
-                    :expr="fieldTypeaheadList[0].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.size | commaString }}
-                </td>
-              </tr>
-            </template>
-          </template>
-          <template v-else
-            v-for="(item, key) in tableData">
-            <tr :key="key">
-              <td>
-                <span class="color-swatch"
-                  :style="{ backgroundColor: item.color }">
-                </span>
-                <moloch-session-field
-                  :field="baseFieldObj"
-                  :value="item.name"
-                  :expr="baseFieldObj.exp"
-                  :parse="true"
-                  :session-btn="true">
-                </moloch-session-field>
-              </td>
-              <td>
-                {{ item.size | commaString }}
-              </td>
-            </tr>
-          </template> -->
           <template v-for="(item, key) in tableData">
             <tr :key="key">
               <template v-for="(parent, key) in item.parents">
                 <td :key="`${key}-${parent.name}-0`">
-                  <!-- <moloch-session-field
-                    :field="fieldTypeaheadList[key]"
+                  <moloch-session-field
+                    :field="fieldList[key]"
                     :value="parent.name"
-                    :expr="fieldTypeaheadList[key].exp"
+                    :expr="fieldList[key].exp"
                     :parse="true"
                     :session-btn="true">
-                  </moloch-session-field> -->
-                  {{ parent.name }}
+                  </moloch-session-field>
                 </td>
                 <td :key="`${key}-${parent.name}-1`">
                   {{ parent.size | commaString }}
                 </td>
               </template>
               <td>
-                <span class="color-swatch"
+                <!-- TODO ECR - fix color squares -->
+                <!-- <span class="color-swatch"
                   :style="{ backgroundColor: item.color }">
-                </span>
-                <!-- <moloch-session-field
-                  :field="baseFieldObj"
+                </span> -->
+                <moloch-session-field
+                  :field="fieldList[item.parents.length]"
                   :value="item.name"
-                  :expr="baseFieldObj.exp"
+                  :expr="fieldList[item.parents.length].exp"
                   :parse="true"
                   :session-btn="true">
-                </moloch-session-field> -->
-                {{ item.name }}
+                </moloch-session-field>
               </td>
               <td>
                 {{ item.size | commaString }}
@@ -590,6 +493,10 @@ export default {
     // Boolean in the store will remember chosen toggle state for all pages
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    fieldList: function () {
+      let fieldList = [ this.baseFieldObj ];
+      return fieldList.concat(this.fieldTypeaheadList);
     }
   },
   methods: {
@@ -780,7 +687,7 @@ export default {
      * Adds a color variable to every table data item using the outer bucket
      * @param {Object} data The data to generate the colors from
      */
-    applyColorsToTableData: function (data) { // TODO ECR - maybe just fuck this?
+    applyColorsToTableData: function (data) { // TODO ECR - don't use parent/grandparent, find top parent?
       let parentMap = {};
       for (let item of data) {
         if (item.grandparent && !parentMap[item.grandparent.name]) { // count grandparents
