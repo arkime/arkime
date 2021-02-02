@@ -58,7 +58,7 @@
     <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
       class="mt-2 pt-5"
       :class="{'container-fluid':fieldList && fieldList.length > 2, 'container':fieldList && fieldList.length <= 2}">
-      <table class="table table-bordered table-condensed table-sm">
+      <table class="table table-bordered table-condensed table-sm table-hover">
         <thead>
           <tr>
             <th colspan="2"
@@ -290,6 +290,8 @@ function fillColor (d) {
   return colors(d.data.name);
 }
 
+// TODO ECR - fix treemap
+// TODO ECR - allow infinite levels deep for pie/treemap
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'MolochPie',
@@ -404,13 +406,6 @@ export default {
      * @param {Object} field The field the add to the pie graph
      */
     changeField: function (field) {
-      // TODO ECR - allow only 2 for tree/pie?
-      // only allow max 2 items in this array
-      // if (this.fieldTypeaheadList.length > 1) {
-      //   this.$set(this.fieldTypeaheadList, 1, field);
-      // } else {
-      //   this.fieldTypeaheadList.push(field);
-      // }
       this.fieldTypeaheadList.push(field);
       this.applyFieldListToUrl();
     },
@@ -488,24 +483,22 @@ export default {
     /**
      * Sorts the table data based on the existing sort field and type vars
      */
-    // TODO ECR this is sorting incorrect columns
     sortTable: function () {
-      console.log(this.tableSortField);
-      console.log(this.tableData);
       this.tableData.sort((a, b) => {
-        let result = false;
-        if (this.tableSortField === 0) {
+        let result = -1;
+        if (this.tableSortField === this.fieldList.length - 1) {
+          // sort on child field
           if (!this.tableDesc) {
             result = a[this.tableSortType] > b[this.tableSortType];
           } else {
             result = b[this.tableSortType] > a[this.tableSortType];
           }
         } else {
-          const sortField = this.tableSortField - 1;
+          // sort on one of the parent fields
           if (!this.tableDesc) {
-            result = a.parents[sortField][this.tableSortType] > b.parents[sortField][this.tableSortType];
+            result = a.parents[this.tableSortField][this.tableSortType] > b.parents[this.tableSortField][this.tableSortType];
           } else {
-            result = b.parents[sortField][this.tableSortType] > a.parents[sortField][this.tableSortType];
+            result = b.parents[this.tableSortField][this.tableSortType] > a.parents[this.tableSortField][this.tableSortType];
           }
         }
         return result ? 1 : -1;

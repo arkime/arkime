@@ -40,7 +40,7 @@
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
                   v-b-tooltip.hover
-                  title="Max Elements Shown">
+                  title="Maximum number of elements returned (for the first field selected)">
                   <span class="input-group-text">
                     Max Elements:
                   </span>
