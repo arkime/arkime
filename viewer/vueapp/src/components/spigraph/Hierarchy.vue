@@ -37,10 +37,15 @@
     </div> <!-- /field select -->
 
     <!-- info area -->
-    <span ref="infoPopup">
-      <div class="pie-popup">
-      </div>
-    </span> <!-- /info area -->
+    <div class="pie-popup"
+      v-show="popupInfo">
+      <popup
+        v-if="popupInfo"
+        :popup-info="popupInfo"
+        :field-list="fieldList"
+        @closeInfo="closeInfo"
+      />
+    </div> <!-- /info area -->
 
     <!-- pie chart area -->
     <div id="pie-area"
@@ -68,7 +73,7 @@
                 <span v-if="field">
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right btn-link no-decoration cursor-pointer"
+                    class="pull-right btn-link no-decoration cursor-pointer small ml-2 mt-1"
                     @click="showHiddenColumns">
                     Show hidden columns
                   </a>
@@ -107,7 +112,7 @@
                   class="fa fa-sort ml-2">
                 </span>
                 <a @click="hideColumn(item)"
-                  class="pull-right btn-link no-decoration"
+                  class="pull-right btn-link no-decoration small ml-2 mt-1"
                   v-if="index !== fieldList.length - 1">
                   Hide
                 </a>
@@ -188,6 +193,7 @@ import SpigraphService from './SpigraphService';
 // import internal
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import Popup from './Popup';
 // import utils
 import Utils from '../utils/utils';
 
@@ -256,7 +262,7 @@ function mouseleave (d, self) {
 function getUid (d) {
   let id = '';
   while (d.parent) {
-    id += `-${d.data.name.replace(/\s/g, '')}`;
+    id += `-${d.data.name.toString().replace(/\s/g, '')}`;
     d = d.parent;
   }
   return id;
@@ -285,32 +291,20 @@ function fillBoxText (d) {
 }
 
 // common functions -------------------------------------------------------- //
-// close popups helper
-function closeInfo () {
-  if (popupVue) { popupVue.$destroy(); }
-  popupVue = undefined;
-  $('.pie-popup').hide();
-}
-
-// close popup on escape press
-function closeInfoOnEsc (keyCode) {
-  if (event.keyCode === 27) { // esc
-    closeInfo();
-  }
-}
-
 // color based on largest parent
 function fillColor (d) {
   while (d.depth > 1) { d = d.parent; }
   return colors(d.data.name);
 }
 
-// TODO ECR - fix treemap
-// TODO ECR - allow infinite levels deep for pie/treemap
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'MolochPie',
-  components: { MolochNoResults, MolochFieldTypeahead },
+  components: {
+    MolochNoResults,
+    MolochFieldTypeahead,
+    Popup
+  },
   props: {
     spiGraphType: String,
     baseField: String,
@@ -325,11 +319,11 @@ export default {
       tableSortType: 'size',
       tableSortField: 0,
       tableDesc: true,
-      closeInfo: closeInfo,
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
       vizData: undefined,
-      hiddenColumns: false
+      hiddenColumns: false,
+      popupInfo: undefined
     };
   },
   mounted: function () {
@@ -359,7 +353,7 @@ export default {
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
     // close info popup if the user presses escape
-    window.addEventListener('keyup', closeInfoOnEsc);
+    window.addEventListener('keyup', this.closeInfoOnEsc);
   },
   watch: {
     'graphData': function (newVal, oldVal) {
@@ -901,171 +895,15 @@ export default {
      * @param {Object} d The pie slice data
      */
     showInfo: function (d) {
-      closeInfo(); // close open info section
-      // create the vue template
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="pie-popup">
-              <table class="table table-borderless table-condensed table-sm">
-                <thead>
-                  <tr>
-                    <th>
-                      Field
-                    </th>
-                    <th>
-                      Value
-                    </th>
-                    <th>
-                      <a class="pull-right cursor-pointer no-decoration"
-                        @click="closeInfo">
-                        <span class="fa fa-close"></span>
-                      </a>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template v-if="level2FieldObj && sliceData.parent.parent && sliceData.parent.parent.data && sliceData.parent.parent.data.sizeValue">
-                    <tr>
-                      <td>
-                        {{ level2FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level2FieldObj"
-                          :value="sliceData.data.name"
-                          :expr="level2FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ level1FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level1FieldObj"
-                          :value="sliceData.parent.data.name"
-                          :expr="level1FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.data.size || sliceData.parent.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ baseFieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="baseFieldObj"
-                          :value="sliceData.parent.parent.data.name"
-                          :expr="baseFieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.parent.data.sizeValue }}
-                        </strong>
-                      </td>
-                    </tr>
-                  </template>
-                  <template v-else-if="level1FieldObj && sliceData.parent.data && sliceData.parent.data.sizeValue">
-                    <tr>
-                      <td>
-                        {{ level1FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level1FieldObj"
-                          :value="sliceData.data.name"
-                          :expr="level1FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ baseFieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="baseFieldObj"
-                          :value="sliceData.parent.data.name"
-                          :expr="baseFieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.data.sizeValue }}
-                        </strong>
-                      </td>
-                    </tr>
-                  </template>
-                  <tr v-else-if="baseFieldObj">
-                    <td>
-                      {{ baseFieldObj.friendlyName }}
-                    </td>
-                    <td>
-                      <moloch-session-field
-                        :field="baseFieldObj"
-                        :value="sliceData.data.name"
-                        :expr="baseFieldObj.exp"
-                        :parse="true"
-                        :session-btn="true">
-                      </moloch-session-field>
-                    </td>
-                    <td>
-                      <strong>
-                        {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                      </strong>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          `,
-          parent: this,
-          data: {
-            sliceData: d,
-            baseFieldObj: this.getFieldObj(this.baseField),
-            level1FieldObj: this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : undefined,
-            level2FieldObj: this.fieldTypeaheadList.length > 1 ? this.fieldTypeaheadList[1] : undefined
-          },
-          methods: {
-            addExpression: function (slice, op) {
-              this.$parent.addExpression(slice, op);
-            },
-            closeInfo: function () {
-              this.$parent.closeInfo();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      this.popupInfo = d;
+    },
+    closeInfo () {
+      this.popupInfo = undefined;
+    },
+    closeInfoOnEsc (event) {
+      if (event.keyCode === 27) { // esc
+        this.popupInfo = undefined;
       }
-      // display the pie popup area
-      $('.pie-popup').show();
     }
   },
   beforeDestroy: function () {
@@ -1076,7 +914,7 @@ export default {
 
     // remove listeners
     window.removeEventListener('resize', this.resize);
-    window.removeEventListener('keyup', closeInfoOnEsc);
+    window.removeEventListener('keyup', this.closeInfoOnEsc);
 
     // remove elements
     if (newSlice) {
@@ -1139,7 +977,6 @@ export default {
   position: absolute;
   right: 5px;
   max-height: 500px;
-  display: none;
   padding: 4px 8px;
   max-width: 400px;
   min-width: 280px;
@@ -1167,5 +1004,11 @@ export default {
 .spigraph-table > tbody > tr > th {
   padding-left: .15rem !important;
   padding-right: .15rem !important;
+}
+
+/* make sure field dropdowns are visible in the table */
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  overflow: visible;
 }
 </style>
