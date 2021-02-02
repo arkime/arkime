@@ -2191,50 +2191,33 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        let parent;
-        let hierarchy = {};
-        let leavesLength = 0;
+        // There is 1 entry per table, the entry is determine by the leafs, with an array of parents.
+        // This requires a depth first search.
         const tableResults = [];
-        function addDataToTable (buckets) {
+        function addDataToTable (parents, buckets) {
           for (let bucket of buckets) {
-            if (parent) {
-              hierarchy[parent.name] = {
-                name: parent.name,
-                size: parent.size
-              };
-            }
-            if (bucket.field) { // keep adding levels
-              parent = {
+            if (bucket.field) {
+              // Not leaf - add this one to parents list, recurse, and remove from parents list
+              parents.push({
                 name: bucket.key,
                 size: bucket.doc_count
-              };
-              addDataToTable(bucket.field.buckets);
-            } else { // we're at the bottom, add the data to the results
-              leavesLength++;
-              const data = {
+              });
+              addDataToTable(parents, bucket.field.buckets);
+              parents.pop();
+            } else {
+              // Leaf - add an entry to tableResults, copy parents since calling will modify
+              tableResults.push({
                 name: bucket.key,
                 size: bucket.doc_count,
-                parents: []
-              };
-              for (const key in hierarchy) {
-                data.parents.push(hierarchy[key]);
-              }
-              tableResults.push(data);
-
-              // we're at the end of the tree, but not the end of the leaves
-              // figure out when we're at the end of the leaves & reset everything
-              if (leavesLength >= buckets.length) {
-                leavesLength = 0;
-                hierarchy = {};
-                parent = null;
-              }
+                parents: JSON.parse(JSON.stringify(parents))
+              });
             }
           }
         }
 
         // TODO ECR - go infinity levels deep here too?
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
-        addDataToTable(result.aggregations.field.buckets);
+        addDataToTable([], result.aggregations.field.buckets);
 
         return res.send({
           success: true,
