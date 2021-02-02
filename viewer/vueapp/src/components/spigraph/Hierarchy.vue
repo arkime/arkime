@@ -56,9 +56,9 @@
 
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
-      class="mt-2 pt-5"
-      :class="{'container-fluid':fieldList && fieldList.length > 2, 'container':fieldList && fieldList.length <= 2}">
-      <table class="table table-bordered table-condensed table-sm table-hover">
+      class="m-1 pt-5">
+      <table class="table-bordered table-hover spigraph-table"
+        id="spigraphTable">
         <thead>
           <tr>
             <template v-for="(field, index) in fieldList">
@@ -182,6 +182,7 @@
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
+import '../../../../public/colResizable.js';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
@@ -442,12 +443,14 @@ export default {
     hideColumn: function (col) {
       this.$set(col, 'hide', true);
       this.hiddenColumns = true;
+      this.initializeColResizable();
     },
     showHiddenColumns: function () {
       for (const field of this.fieldList) {
         this.$set(field, 'hide', false);
       }
       this.hiddenColumns = false;
+      this.initializeColResizable();
     },
     /* event functions ----------------------------------------------------- */
     /**
@@ -872,10 +875,24 @@ export default {
         this.tableData = response.data.tableResults;
         this.sortTable();
         this.applyColorsToTableData(this.tableData);
+        this.initializeColResizable();
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
         this.$emit('toggleError', error.text || error);
+      });
+    },
+    initializeColResizable: function () {
+      $('#spigraphTable').colResizable({ disable: true });
+
+      setTimeout(() => {
+        $('#spigraphTable').colResizable({
+          minWidth: 50,
+          headerOnly: true,
+          removePadding: false,
+          resizeMode: 'overflow',
+          hoverCursor: 'col-resize'
+        });
       });
     },
     /**
@@ -1140,5 +1157,15 @@ export default {
   border-radius: 4px;
   float: right;
   margin-top: 4px;
+}
+
+/* add padding to spigraph table since we can't use bootstrap's .table
+/* without messing up the colresizable stuff */
+.spigraph-table td,
+.spigraph-table th,
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  padding-left: .15rem !important;
+  padding-right: .15rem !important;
 }
 </style>
