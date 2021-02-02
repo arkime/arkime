@@ -61,13 +61,20 @@
       <table class="table table-bordered table-condensed table-sm table-hover">
         <thead>
           <tr>
-            <th colspan="2"
-              v-for="(field, index) in fieldList"
-              :key="index">
-              <span v-if="field">
-                {{ field.friendlyName }}
-              </span>
-            </th>
+            <template v-for="(field, index) in fieldList">
+              <th v-if="field"
+                :colspan="field.hide ? 1 : 2"
+                :key="index">
+                <span v-if="field">
+                  {{ field.friendlyName }}
+                  <a v-if="index === fieldList.length - 1 && hiddenColumns"
+                    class="pull-right btn-link no-decoration cursor-pointer"
+                    @click="showHiddenColumns">
+                    Show hidden columns
+                  </a>
+                </span>
+              </th>
+            </template>
           </tr>
           <tr>
             <template v-for="(item, index) in fieldList">
@@ -87,7 +94,8 @@
               </th>
               <th class="cursor-pointer"
                 :key="`${index}-size`"
-                @click="columnClick(index, 'size')">
+                @click="columnClick(index, 'size')"
+                v-if="item && !item.hide">
                 Count
                 <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
@@ -98,6 +106,11 @@
                 <span v-show="tableSortField !== index || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
+                <a @click="hideColumn(item)"
+                  class="pull-right btn-link no-decoration"
+                  v-if="index !== fieldList.length - 1">
+                  Hide
+                </a>
               </th>
             </template>
           </tr>
@@ -116,7 +129,8 @@
                       :session-btn="true">
                     </moloch-session-field>
                   </td>
-                  <td :key="`${index}-${parent.name}-1`">
+                  <td :key="`${index}-${parent.name}-1`"
+                    v-if="fieldList[index] && !fieldList[index].hide">
                     {{ parent.size | commaString }}
                   </td>
                 </template>
@@ -313,7 +327,8 @@ export default {
       closeInfo: closeInfo,
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
-      vizData: undefined
+      vizData: undefined,
+      hiddenColumns: false
     };
   },
   mounted: function () {
@@ -423,6 +438,16 @@ export default {
       this.tableSortType = type;
       this.tableSortField = sort;
       this.sortTable();
+    },
+    hideColumn: function (col) {
+      this.$set(col, 'hide', true);
+      this.hiddenColumns = true;
+    },
+    showHiddenColumns: function () {
+      for (const field of this.fieldList) {
+        this.$set(field, 'hide', false);
+      }
+      this.hiddenColumns = false;
     },
     /* event functions ----------------------------------------------------- */
     /**
