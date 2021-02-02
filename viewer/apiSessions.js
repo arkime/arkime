@@ -2191,8 +2191,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        // There is 1 entry per table, the entry is determine by the leafs, with an array of parents.
-        // This requires a depth first search.
+        // There is 1 entry per row, the entry is determine by the leafs, with an array of parents.
+        // This uses a depth first search.
         const tableResults = [];
         function addDataToTable (parents, buckets) {
           for (let bucket of buckets) {
@@ -2202,14 +2202,15 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 name: bucket.key,
                 size: bucket.doc_count
               });
-              addDataToTable(parents, bucket.field.buckets);
+              // Make a copy of parents since the callee saves and we modified after calling
+              addDataToTable(JSON.parse(JSON.stringify(parents)), bucket.field.buckets);
               parents.pop();
             } else {
-              // Leaf - add an entry to tableResults, copy parents since calling will modify
+              // Leaf - add an entry to tableResults
               tableResults.push({
                 name: bucket.key,
                 size: bucket.doc_count,
-                parents: JSON.parse(JSON.stringify(parents))
+                parents: parents
               });
             }
           }
