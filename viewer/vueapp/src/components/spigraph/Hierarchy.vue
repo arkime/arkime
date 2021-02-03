@@ -20,20 +20,11 @@
           </moloch-field-typeahead>
         </div>
       </div>
-      <template v-for="(field, index) in fieldTypeaheadList">
-        <label class="badge badge-secondary mr-1 mb-1 help-cursor"
-          :title="field.help"
-          v-b-tooltip.hover
-          v-if="field"
-          :key="`${field.dbField}-${index}`">
-          {{ field.friendlyName }}
-          <button class="close ml-2"
-            style="margin-top:-8px"
-            @click="removeField(index)">
-            <span>&times;</span>
-          </button>
-        </label>
-      </template>
+      <drag-list
+        :list="this.fieldTypeaheadList"
+        @reorder="reorderFields"
+        @remove="removeField"
+      />
     </div> <!-- /field select -->
 
     <!-- info area -->
@@ -198,6 +189,7 @@ import SpigraphService from './SpigraphService';
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import Popup from './Popup';
+import DragList from '../utils/DragList';
 // import utils
 import Utils from '../utils/utils';
 
@@ -307,7 +299,8 @@ export default {
   components: {
     MolochNoResults,
     MolochFieldTypeahead,
-    Popup
+    Popup,
+    DragList
   },
   props: {
     spiGraphType: String,
@@ -330,7 +323,7 @@ export default {
       popupInfo: undefined
     };
   },
-  mounted: function () {
+  mounted () {
     // set colors to match the background
     const styles = window.getComputedStyle(document.body);
     background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
@@ -413,6 +406,14 @@ export default {
      */
     removeField: function (index) {
       this.fieldTypeaheadList.splice(index, 1);
+      this.applyFieldListToUrl();
+    },
+    /**
+     * Reorders the fields from the field typeahead list and loads the data
+     * @param {Array} list The reordered list
+     */
+    reorderFields: function (list) {
+      this.fieldTypeaheadList = list;
       this.applyFieldListToUrl();
     },
     /**
