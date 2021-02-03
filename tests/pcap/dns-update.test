@@ -5,7 +5,7 @@
             "communityId" : "1:nCsje+yaeICYCDFyASWqz9jhGJE=",
             "dns" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
@@ -30,7 +30,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 170,
             "dstDataBytes" : 124,
             "dstGEO" : "CA",
@@ -62,12 +62,12 @@
                210
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 170,
             "srcDataBytes" : 124,
             "srcGEO" : "RU",
@@ -91,7 +91,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

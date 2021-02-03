@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:5dijFYynZSTRexmiBqLOCUhge4k=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 863,
             "dstDataBytes" : 569,
             "dstGEO" : "CA",
@@ -58,12 +58,12 @@
                ],
                "request-refererCnt" : 1,
                "requestHeader" : [
-                  "user-agent",
-                  "x-forwarded-for",
-                  "referer",
                   "accept-encoding",
                   "connection",
-                  "host"
+                  "host",
+                  "referer",
+                  "user-agent",
+                  "x-forwarded-for"
                ],
                "requestHeaderCnt" : 6,
                "requestHeaderField" : [
@@ -71,40 +71,40 @@
                   "connection"
                ],
                "requestHeaderValue" : [
-                  "gzip",
-                  "close"
+                  "close",
+                  "gzip"
                ],
                "requestHeaderValueCnt" : 2,
                "responseHeader" : [
-                  "content-type",
-                  "transfer-encoding",
                   "cf-ray",
-                  "date",
-                  "content-encoding",
                   "connection",
+                  "content-encoding",
+                  "content-type",
+                  "date",
                   "server",
-                  "set-cookie"
+                  "set-cookie",
+                  "transfer-encoding"
                ],
                "responseHeaderCnt" : 8,
                "responseHeaderField" : [
-                  "date",
-                  "content-type",
-                  "transfer-encoding",
-                  "connection",
-                  "set-cookie",
-                  "server",
                   "cf-ray",
-                  "content-encoding"
+                  "connection",
+                  "content-encoding",
+                  "content-type",
+                  "date",
+                  "server",
+                  "set-cookie",
+                  "transfer-encoding"
                ],
                "responseHeaderValue" : [
-                  "wed, 03 feb 2016 15:27:08 gmt",
-                  "text/html",
+                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=thu, 02-feb-17 15:27:08 gmt; path=/; domain=.xxxxxxxxx.xx; httponly",
                   "chunked",
                   "close",
-                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=thu, 02-feb-17 15:27:08 gmt; path=/; domain=.xxxxxxxxx.xx; httponly",
+                  "gzip",
+                  "text/html",
+                  "wed, 03 feb 2016 15:27:08 gmt",
                   "xxxxxxxxxxxxxxxx",
-                  "xxxxxxxxxxxxxxxx-iad",
-                  "gzip"
+                  "xxxxxxxxxxxxxxxx-iad"
                ],
                "responseHeaderValueCnt" : 8,
                "serverVersion" : [
@@ -132,7 +132,7 @@
                ],
                "valueCnt" : 1,
                "xffASN" : [
-                  "AS0002 Hmm!@#$%^&*()"
+                  "AS2"
                ],
                "xffGEO" : [
                   "---"
@@ -182,7 +182,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 680,
             "srcDataBytes" : 312,
             "srcGEO" : "RU",
@@ -216,7 +216,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

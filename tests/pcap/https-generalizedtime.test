@@ -63,7 +63,7 @@
             ],
             "certCnt" : 2,
             "communityId" : "1:1Vhwrjwo6Dp0JRtAPwmn/2IaaTw=",
-            "dstASN" : "AS0001",
+            "dstASN" : "AS1",
             "dstBytes" : 5216,
             "dstDataBytes" : 5036,
             "dstGEO" : "CA",
@@ -118,7 +118,7 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 697,
             "srcDataBytes" : 517,
             "srcGEO" : "RU",
@@ -152,7 +152,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:ftwOpS8UBn84dir7iu6Ny6t7pV8=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 1250,
             "dstDataBytes" : 478,
             "dstGEO" : "CA",
@@ -63,69 +63,69 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
-                  "if-none-match",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "if-none-match",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 9,
                "requestHeaderField" : [
-                  "connection",
                   "accept",
                   "accept-encoding",
                   "accept-language",
+                  "connection",
                   "cookie",
                   "if-none-match"
                ],
                "requestHeaderValue" : [
-                  "keep-alive",
+                  "\"vccp3q\"",
                   "*/*",
-                  "gzip,deflate,sdch",
                   "en-us,en;q=0.8",
-                  "xxxxxxxxxx=xxx",
-                  "\"vccp3q\""
+                  "gzip,deflate,sdch",
+                  "keep-alive",
+                  "xxxxxxxxxx=xxx"
                ],
                "requestHeaderValueCnt" : 6,
                "responseHeader" : [
-                  "expires",
-                  "content-type",
+                  "age",
                   "alternate-protocol",
                   "cache-control",
-                  "content-length",
-                  "etag",
-                  "date",
                   "content-encoding",
-                  "server",
-                  "age"
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "server"
                ],
                "responseHeaderCnt" : 10,
                "responseHeaderField" : [
-                  "etag",
-                  "date",
-                  "expires",
-                  "content-type",
-                  "content-encoding",
-                  "server",
-                  "cache-control",
-                  "content-length",
                   "age",
-                  "alternate-protocol"
+                  "alternate-protocol",
+                  "cache-control",
+                  "content-encoding",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "server"
                ],
                "responseHeaderValue" : [
                   "\"a2fyaa\"",
-                  "tue, 05 aug 2014 12:34:05 gmt",
-                  "tue, 05 aug 2014 12:44:05 gmt",
-                  "application/xml",
-                  "gzip",
-                  "google frontend",
-                  "public, max-age=600",
-                  "190",
                   "179",
-                  "80:quic"
+                  "190",
+                  "80:quic",
+                  "application/xml",
+                  "google frontend",
+                  "gzip",
+                  "public, max-age=600",
+                  "tue, 05 aug 2014 12:34:05 gmt",
+                  "tue, 05 aug 2014 12:44:05 gmt"
                ],
                "responseHeaderValueCnt" : 10,
                "serverVersion" : [
@@ -188,7 +188,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 843,
             "srcDataBytes" : 417,
             "srcGEO" : "RU",
@@ -222,7 +222,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

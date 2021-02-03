@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:FjsyR6OWh6MqgDDUvtPR73EKFnQ=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 1026,
             "dstDataBytes" : 744,
             "dstGEO" : "CA",
@@ -62,71 +62,71 @@
                "requestHeader" : [
                   "accept",
                   "accept-charset",
-                  "user-agent",
+                  "accept-encoding",
+                  "accept-language",
+                  "connection",
+                  "cookie",
+                  "host",
                   "keep-alive",
                   "referer",
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "accept-language"
+                  "user-agent"
                ],
                "requestHeaderCnt" : 10,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
-                  "accept-encoding",
                   "accept-charset",
-                  "keep-alive",
+                  "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "cookie"
+                  "cookie",
+                  "keep-alive"
                ],
                "requestHeaderValue" : [
                   "*/*",
+                  "115",
                   "en-us,en;q=0.5",
                   "gzip,deflate",
                   "iso-8859-1,utf-8;q=0.7,*;q=0.7",
-                  "115",
                   "keep-alive",
                   "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                ],
                "requestHeaderValueCnt" : 7,
                "responseHeader" : [
-                  "pragma",
-                  "expires",
-                  "content-type",
                   "cache-control",
-                  "date",
-                  "last-modified",
                   "connection",
+                  "content-type",
+                  "date",
+                  "expires",
+                  "last-modified",
                   "p3p",
+                  "pragma",
                   "server",
                   "set-cookie"
                ],
                "responseHeaderCnt" : 10,
                "responseHeaderField" : [
-                  "date",
-                  "server",
+                  "cache-control",
+                  "connection",
                   "content-type",
+                  "date",
                   "expires",
                   "last-modified",
-                  "cache-control",
-                  "pragma",
                   "p3p",
-                  "set-cookie",
-                  "connection"
+                  "pragma",
+                  "server",
+                  "set-cookie"
                ],
                "responseHeaderValue" : [
-                  "mon, 10 may 2010 08:31:02 gmt",
                   "apache",
                   "application/x-javascript",
-                  "thu, 11 jan 1973 16:00:00 gmt",
+                  "close",
                   "mon, 10 may 2010 08:31:02 gmt",
-                  "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+                  "mon, 10 may 2010 08:31:02 gmt",
                   "no-cache",
+                  "no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
                   "policyref=\"/w3c/p3p.xml\", cp=\"all ind dsp cor adm cono cur ivao ivdo psa psd tai telo our samo cnt com int nav onl phy pre pur uni\"",
-                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=sun, 11-jan-2037 14:00:00 gmt; path=/; domain=.xxxxxx.xx",
-                  "close"
+                  "thu, 11 jan 1973 16:00:00 gmt",
+                  "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=sun, 11-jan-2037 14:00:00 gmt; path=/; domain=.xxxxxx.xx"
                ],
                "responseHeaderValueCnt" : 10,
                "serverVersion" : [
@@ -185,7 +185,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 734,
             "srcDataBytes" : 452,
             "srcGEO" : "RU",
@@ -219,7 +219,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

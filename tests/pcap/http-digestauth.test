@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:6EZ0y1VNTROJYrhnFw+IN3bG61U=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 62,
             "dstDataBytes" : 0,
             "dstGEO" : "CA",
@@ -49,23 +49,23 @@
                ],
                "request-authorizationCnt" : 1,
                "requestHeader" : [
+                  "authorization",
+                  "cache-control",
+                  "host",
                   "pragma",
                   "user-agent",
-                  "cache-control",
-                  "xxxxxxxxxxxxxxxxxx",
-                  "host",
-                  "authorization"
+                  "xxxxxxxxxxxxxxxxxx"
                ],
                "requestHeaderCnt" : 6,
                "requestHeaderField" : [
-                  "xxxxxxxxxxxxxxxxxx",
                   "cache-control",
-                  "pragma"
+                  "pragma",
+                  "xxxxxxxxxxxxxxxxxx"
                ],
                "requestHeaderValue" : [
-                  "product=xxxxxxxxxx;xxxxxxxxxx=xxxxxxxxx;xx=xxxxx;xxxxxxxxx;xxxxxxxxxx",
+                  "no-cache",
                   "no-store,no-cache",
-                  "no-cache"
+                  "product=xxxxxxxxxx;xxxxxxxxxx=xxxxxxxxx;xx=xxxxx;xxxxxxxxx;xxxxxxxxxx"
                ],
                "requestHeaderValueCnt" : 3,
                "uri" : [
@@ -104,7 +104,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 757,
             "srcDataBytes" : 581,
             "srcGEO" : "RU",
@@ -138,7 +138,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

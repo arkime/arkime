@@ -28,6 +28,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - BREAKING - wise - redis urls have a new standard format
   - BREAKING - wise - for json data keyColumn has been renamed keyPath
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
+  - BREAKING - capture - override-ips will no longer have leading 0s for ASN
   - release - curl 7.74.0, node 12.20.1, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - capture - fixed possible ABR with time parsing

@@ -194,7 +194,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 1220,
             "srcDataBytes" : 420,
             "srcGEO" : "RU",
@@ -227,7 +227,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

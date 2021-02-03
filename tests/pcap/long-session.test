@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:bxgYvMUY0ltITBt7nM0O9T/w9hI=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 66,
             "dstDataBytes" : 0,
             "dstGEO" : "CA",
@@ -46,7 +46,7 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 187,
             "srcDataBytes" : 5,
             "srcGEO" : "RU",
@@ -80,7 +80,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
@@ -113,7 +113,7 @@
       {
          "body" : {
             "communityId" : "1:bxgYvMUY0ltITBt7nM0O9T/w9hI=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 60,
             "dstDataBytes" : 0,
             "dstGEO" : "CA",
@@ -149,7 +149,7 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 2,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 0,
             "srcDataBytes" : 0,
             "srcGEO" : "RU",
@@ -183,7 +183,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

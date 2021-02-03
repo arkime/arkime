@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:gshOd5KSApHI+qhTp8G9bLg5K1I=",
-            "dstASN" : "AS0000 This is neat",
+            "dstASN" : "AS0",
             "dstBytes" : 427,
             "dstDataBytes" : 253,
             "dstGEO" : "RU",
@@ -33,22 +33,22 @@
                ],
                "clientVersionCnt" : 1,
                "cookieKey" : [
-                  "langedit",
-                  "lang",
                   "cprelogin",
                   "cpsession",
+                  "lang",
+                  "langedit",
                   "zzzzzzzzzzzzzzzzzz"
                ],
                "cookieKeyCnt" : 5,
                "cookieValue" : [
-                  "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
                   "auto",
-                  "no"
+                  "no",
+                  "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
                ],
                "cookieValueCnt" : 3,
                "host" : [
-                  "10.000.000.001:1234",
-                  "10.000.000.001"
+                  "10.000.000.001",
+                  "10.000.000.001:1234"
                ],
                "hostCnt" : 2,
                "method" : [
@@ -69,61 +69,61 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
-                  "connection",
-                  "host",
-                  "cookie",
-                  "if-modified-since",
                   "accept-language",
-                  "authorization"
+                  "authorization",
+                  "connection",
+                  "cookie",
+                  "host",
+                  "if-modified-since",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 10,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
-                  "cookie",
+                  "accept-language",
                   "connection",
+                  "cookie",
                   "if-modified-since"
                ],
                "requestHeaderValue" : [
                   "*/*",
                   "en-gb,en;q=0.5",
                   "gzip, deflate",
-                  "zzzzzzzzzzzzzzzzzz=auto; cprelogin=no; cpsession=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz; langedit=; lang=",
                   "keep-alive",
-                  "wed, 29 oct 2014 01:11:13 gmt"
+                  "wed, 29 oct 2014 01:11:13 gmt",
+                  "zzzzzzzzzzzzzzzzzz=auto; cprelogin=no; cpsession=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz; langedit=; lang="
                ],
                "requestHeaderValueCnt" : 6,
                "responseHeader" : [
+                  "cache-control",
+                  "connection",
+                  "date",
                   "expires",
                   "keep-alive",
-                  "cache-control",
-                  "date",
-                  "connection",
-                  "x-keep-alive-count",
-                  "server"
+                  "server",
+                  "x-keep-alive-count"
                ],
                "responseHeaderCnt" : 7,
                "responseHeaderField" : [
-                  "server",
-                  "x-keep-alive-count",
-                  "connection",
-                  "keep-alive",
-                  "date",
                   "cache-control",
-                  "expires"
+                  "connection",
+                  "date",
+                  "expires",
+                  "keep-alive",
+                  "server",
+                  "x-keep-alive-count"
                ],
                "responseHeaderValue" : [
-                  "cpsrvd/11.44.1.19",
                   "1",
+                  "cpsrvd/11.44.1.19",
                   "keep-alive",
-                  "timeout=70, max=200",
-                  "wed, 29 oct 2014 17:35:08 gmt",
                   "max-age=5184000, public",
-                  "sun, 28 dec 2014 17:35:07 gmt"
+                  "sun, 28 dec 2014 17:35:07 gmt",
+                  "timeout=70, max=200",
+                  "wed, 29 oct 2014 17:35:08 gmt"
                ],
                "responseHeaderValueCnt" : 7,
                "serverVersion" : [
@@ -174,7 +174,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS1",
             "srcBytes" : 884,
             "srcDataBytes" : 692,
             "srcGEO" : "CA",

@@ -10,9 +10,9 @@ my $files = "(file=$pwd/smtp-subject-8859-b.pcap||file=$pwd/smtp-data-250.pcap||
 countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # asn.email
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001 Cool Beans!\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS0001*\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS0001*\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS1 Cool Beans!\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.email==\"AS1*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.email==\"aS1*\""));
 
 # ip.email
     countTest(2, "date=-1&expression=" . uri_escape("$files&&ip.email==10.0.0.4"));

@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:00y2N2+TsH6kM7On9rU3DFGgzZ8=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 352,
             "dstDataBytes" : 14,
             "dstGEO" : "CA",
@@ -63,12 +63,12 @@
                "user" : "foo"
             },
             "protocol" : [
-               "tcp",
-               "postgresql"
+               "postgresql",
+               "tcp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 622,
             "srcDataBytes" : 82,
             "srcGEO" : "RU",
@@ -104,7 +104,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

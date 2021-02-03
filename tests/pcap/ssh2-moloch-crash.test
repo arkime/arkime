@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:eCGZrs2oS78hdxeW5zAzN+gSTUc=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 2037,
             "dstDataBytes" : 1407,
             "dstGEO" : "CA",
@@ -82,7 +82,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 1715,
             "srcDataBytes" : 1109,
             "srcGEO" : "RU",
@@ -131,7 +131,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

@@ -37,7 +37,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 166,
             "srcDataBytes" : 124,
             "srcGEO" : "RU",
@@ -59,7 +59,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
@@ -521,7 +521,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001",
+            "srcASN" : "AS1",
             "srcBytes" : 13804,
             "srcDataBytes" : 0,
             "srcGEO" : "CA",
@@ -688,7 +688,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001",
+            "srcASN" : "AS1",
             "srcBytes" : 4876,
             "srcDataBytes" : 0,
             "srcGEO" : "CA",
@@ -2761,7 +2761,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 744,
             "srcDataBytes" : 576,
             "srcGEO" : "RU",
@@ -2783,7 +2783,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
@@ -2907,7 +2907,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 188,
             "srcDataBytes" : 0,
             "srcGEO" : "RU",
@@ -2930,7 +2930,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

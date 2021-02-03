@@ -25,7 +25,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS0000 This is neat",
+            "dstASN" : "AS0",
             "dstBytes" : 82,
             "dstDataBytes" : 40,
             "dstGEO" : "RU",
@@ -56,12 +56,12 @@
                122
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS1",
             "srcBytes" : 82,
             "srcDataBytes" : 40,
             "srcGEO" : "CA",

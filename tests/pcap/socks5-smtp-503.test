@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:KdO+JlWkJWvdDSYy6M4JQxSc4yY=",
-            "dstASN" : "AS0000 This is neat",
+            "dstASN" : "AS0",
             "dstBytes" : 854,
             "dstDataBytes" : 280,
             "dstGEO" : "RU",
@@ -79,8 +79,8 @@
                1760
             ],
             "protocol" : [
-               "socks",
                "smtp",
+               "socks",
                "tcp"
             ],
             "protocolCnt" : 3,
@@ -89,7 +89,7 @@
                "host" : "010.000.00.003",
                "port" : 25
             },
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS1",
             "srcBytes" : 638,
             "srcDataBytes" : 47,
             "srcGEO" : "CA",
