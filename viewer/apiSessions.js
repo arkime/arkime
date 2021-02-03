@@ -2191,31 +2191,34 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        let grandparent;
+        // There is 1 entry per row, the entry is determine by the leafs, with an array of parents.
+        // This uses a depth first search.
         const tableResults = [];
-        // assumes only 3 levels deep
-        function addDataToTable (buckets, parent) {
-          for (let i = 0; i < buckets.length; i++) {
-            const bucket = buckets[i];
+        function addDataToTable (parents, buckets) {
+          for (let bucket of buckets) {
             if (bucket.field) {
-              if (parent) { grandparent = parent; }
-              addDataToTable(bucket.field.buckets, {
+              // Not leaf - add this one to parents list, recurse, and remove from parents list
+              parents.push({
                 name: bucket.key,
                 size: bucket.doc_count
               });
+              // Make a copy of parents since the callee saves and we modified after calling
+              addDataToTable(JSON.parse(JSON.stringify(parents)), bucket.field.buckets);
+              parents.pop();
             } else {
+              // Leaf - add an entry to tableResults
               tableResults.push({
-                parent: parent,
-                grandparent: grandparent,
                 name: bucket.key,
-                size: bucket.doc_count
+                size: bucket.doc_count,
+                parents: parents
               });
             }
           }
         }
 
+        // TODO ECR - go infinity levels deep here too?
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
-        addDataToTable(result.aggregations.field.buckets);
+        addDataToTable([], result.aggregations.field.buckets);
 
         return res.send({
           success: true,

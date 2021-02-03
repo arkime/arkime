@@ -283,7 +283,7 @@ body {
 .no-overflow-y  { overflow-y: hidden; }
 
 /* anchor tag no decoration */
-a.no-decoration { text-decoration: none; }
+a.no-decoration { text-decoration: none !important; }
 
 /* extra small buttons */
 .btn-xs, .btn-group-xs > .btn {

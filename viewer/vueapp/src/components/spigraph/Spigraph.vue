@@ -40,7 +40,7 @@
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
                   v-b-tooltip.hover
-                  title="Max Elements Shown">
+                  title="Maximum number of elements returned (for the first field selected)">
                   <span class="input-group-text">
                     Max Elements:
                   </span>
@@ -486,7 +486,7 @@ export default {
     /* event functions ----------------------------------------------------- */
     changeField: function (field) {
       this.fieldTypeahead = field.friendlyName;
-      this.query.exp = field.dbField;
+      this.query.exp = field.exp;
       this.baseField = field.exp;
       this.$router.push({
         query: {
