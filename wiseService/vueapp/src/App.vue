@@ -288,14 +288,9 @@ body.dark .btn-outline-dark {
   border-color: #222;
   background-color: #222;
 }
-body.dark .btn-outline-dark:hover {
-  color: #222;
-  background-color: #ADB5BD;
-  border-color: #ADB5BD;
-}
+
 hr {
-  background-color: #00000008;
-  margin-top: 0 !important;
+  margin: 0.5rem !important;
 }
 body.dark hr {
   background-color: #ADB5BD;
