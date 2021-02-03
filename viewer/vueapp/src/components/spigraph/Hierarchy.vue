@@ -20,27 +20,23 @@
           </moloch-field-typeahead>
         </div>
       </div>
-      <template v-for="(field, index) in fieldTypeaheadList">
-        <label class="badge badge-secondary mr-1 mb-1 help-cursor"
-          :title="field.help"
-          v-b-tooltip.hover
-          v-if="field"
-          :key="`${field.dbField}-${index}`">
-          {{ field.friendlyName }}
-          <button class="close ml-2"
-            style="margin-top:-8px"
-            @click="removeField(index)">
-            <span>&times;</span>
-          </button>
-        </label>
-      </template>
+      <drag-list
+        :list="this.fieldTypeaheadList"
+        @reorder="reorderFields"
+        @remove="removeField"
+      />
     </div> <!-- /field select -->
 
     <!-- info area -->
-    <span ref="infoPopup">
-      <div class="pie-popup">
-      </div>
-    </span> <!-- /info area -->
+    <div class="pie-popup"
+      v-show="popupInfo">
+      <popup
+        v-if="popupInfo"
+        :popup-info="popupInfo"
+        :field-list="fieldList"
+        @closeInfo="closeInfo"
+      />
+    </div> <!-- /info area -->
 
     <!-- pie chart area -->
     <div id="pie-area"
@@ -55,279 +51,112 @@
     <!-- /treemap area -->
 
     <!-- table area -->
-    <div v-show="spiGraphType === 'table' && tableData.length"
-      class="container mt-2 pt-5">
-      <table class="table table-bordered table-condensed table-sm">
+    <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
+      class="m-1 pt-5">
+      <table class="table-bordered table-hover spigraph-table"
+        id="spigraphTable">
         <thead>
           <tr>
-            <th colspan="2">
-              {{ getFieldObj(baseField).friendlyName }}
-            </th>
-            <th v-if="fieldTypeaheadList.length > 0"
-              colspan="2">
-              {{ fieldTypeaheadList[0].friendlyName }}
-            </th>
-            <th v-if="fieldTypeaheadList.length === 2"
-              colspan="2">
-              {{ fieldTypeaheadList[1].friendlyName }}
-            </th>
+            <template v-for="(field, index) in fieldList">
+              <th v-if="field"
+                :colspan="field.hide ? 1 : 2"
+                :key="index">
+                <span v-if="field">
+                  {{ field.friendlyName }}
+                  <a v-if="index === fieldList.length - 1 && hiddenColumns"
+                    class="pull-right cursor-pointer ml-2"
+                    v-b-tooltip.hover
+                    title="Show hidden column(s)"
+                    @click="showHiddenColumns">
+                    <span class="fa fa-plus-square" />
+                  </a>
+                </span>
+              </th>
+            </template>
           </tr>
           <tr>
-            <template v-if="!fieldTypeaheadList.length">
+            <template v-for="(item, index) in fieldList">
               <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
+                :key="`${index}-name`"
+                @click="columnClick(index, 'name')">
                 Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
+                <span v-show="tableSortField !== index || tableSortType !== 'name'"
                   class="fa fa-sort ml-2">
                 </span>
               </th>
               <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
+                :key="`${index}-size`"
+                @click="columnClick(index, 'size')"
+                v-if="item && !item.hide">
                 Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ml-2">
                 </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
+                <span v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
                   class="fa fa-sort-desc ml-2">
                 </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
+                <span v-show="tableSortField !== index || tableSortType !== 'size'"
                   class="fa fa-sort ml-2">
                 </span>
-              </th>
-            </template>
-            <template v-if="fieldTypeaheadList.length === 1">
-              <th class="cursor-pointer"
-                @click="columnClick('parent', 'name')">
-                Value
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('parent', 'size')">
-                Count
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
-                Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
-                Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-            </template>
-            <template v-if="fieldTypeaheadList.length === 2">
-              <th class="cursor-pointer"
-                @click="columnClick('grandparent', 'name')">
-                Value
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('grandparent', 'size')">
-                Count
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'grandparent' && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'grandparent' || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('parent', 'name')">
-                Value
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('parent', 'size')">
-                Count
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'parent' && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'parent' || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('child', 'name')">
-                Value
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
-                </span>
-              </th>
-              <th class="cursor-pointer"
-                @click="columnClick('child', 'size')">
-                Count
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
-                </span>
-                <span v-show="tableSortField === 'child' && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
-                </span>
-                <span v-show="tableSortField !== 'child' || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
-                </span>
+                <a @click="hideColumn(item)"
+                  class="pull-right ml-2"
+                  v-b-tooltip.hover
+                  title="Hide column"
+                  v-if="index !== fieldList.length - 1">
+                  <span class="fa fa-minus-square" />
+                </a>
               </th>
             </template>
           </tr>
         </thead>
         <tbody>
-          <template v-if="fieldTypeaheadList.length">
-            <template v-for="(item, key) in tableData">
-              <tr :key="key" v-if="item.grandparent">
-                <td>
-                  <moloch-session-field
-                    :field="baseFieldObj"
-                    :value="item.grandparent.name"
-                    :expr="baseFieldObj.exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                  <span class="color-swatch"
-                    :style="{ backgroundColor: item.color }">
-                  </span>
-                </td>
-                <td>
-                  {{ item.grandparent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    :field="fieldTypeaheadList[0]"
-                    :value="item.parent.name"
-                    :expr="fieldTypeaheadList[0].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.parent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    v-if="fieldTypeaheadList[1]"
-                    :field="fieldTypeaheadList[1]"
-                    :value="item.name"
-                    :expr="fieldTypeaheadList[1].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.size | commaString }}
-                </td>
-              </tr>
-              <tr :key="key" v-else-if="item.parent">
-                <td>
-                  <moloch-session-field
-                    :field="baseFieldObj"
-                    :value="item.parent.name"
-                    :expr="baseFieldObj.exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                  <span class="color-swatch"
-                    :style="{ backgroundColor: item.color }">
-                  </span>
-                </td>
-                <td>
-                  {{ item.parent.size | commaString }}
-                </td>
-                <td>
-                  <moloch-session-field
-                    v-if="fieldTypeaheadList[0]"
-                    :field="fieldTypeaheadList[0]"
-                    :value="item.name"
-                    :expr="fieldTypeaheadList[0].exp"
-                    :parse="true"
-                    :session-btn="true">
-                  </moloch-session-field>
-                </td>
-                <td>
-                  {{ item.size | commaString }}
-                </td>
-              </tr>
-            </template>
-          </template>
-          <template v-else
-            v-for="(item, key) in tableData">
+          <template v-for="(item, key) in tableData">
             <tr :key="key">
+              <template v-if="item.parents && item.parents.length">
+                <template v-for="(parent, index) in item.parents">
+                  <td :key="`${index}-${parent.name}-0`">
+                    <moloch-session-field
+                      :field="fieldList[index]"
+                      :value="parent.name"
+                      :expr="fieldList[index].exp"
+                      :parse="true"
+                      :session-btn="true">
+                    </moloch-session-field>
+                  </td>
+                  <td :key="`${index}-${parent.name}-1`"
+                    v-if="fieldList[index] && !fieldList[index].hide">
+                    {{ parent.size | commaString }}
+                  </td>
+                </template>
+              </template>
               <td>
                 <span class="color-swatch"
                   :style="{ backgroundColor: item.color }">
                 </span>
-                <moloch-session-field
-                  :field="baseFieldObj"
-                  :value="item.name"
-                  :expr="baseFieldObj.exp"
-                  :parse="true"
-                  :session-btn="true">
-                </moloch-session-field>
+                <template v-if="item.parents && item.parents.length && fieldList[item.parents.length]">
+                  <moloch-session-field
+                    :field="fieldList[item.parents.length]"
+                    :value="item.name"
+                    :expr="fieldList[item.parents.length].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </template>
+                <template v-else>
+                  <moloch-session-field
+                    :field="fieldList[0]"
+                    :value="item.name"
+                    :expr="fieldList[0].exp"
+                    :parse="true"
+                    :session-btn="true">
+                  </moloch-session-field>
+                </template>
               </td>
               <td>
                 {{ item.size | commaString }}
@@ -353,11 +182,14 @@
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
+import '../../../../public/colResizable.js';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
 import MolochNoResults from '../utils/NoResults';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
+import Popup from './Popup';
+import DragList from '../utils/DragList';
 // import utils
 import Utils from '../utils/utils';
 
@@ -426,7 +258,7 @@ function mouseleave (d, self) {
 function getUid (d) {
   let id = '';
   while (d.parent) {
-    id += `-${d.data.name.replace(/\s/g, '')}`;
+    id += `-${d.data.name.toString().replace(/\s/g, '')}`;
     d = d.parent;
   }
   return id;
@@ -455,20 +287,6 @@ function fillBoxText (d) {
 }
 
 // common functions -------------------------------------------------------- //
-// close popups helper
-function closeInfo () {
-  if (popupVue) { popupVue.$destroy(); }
-  popupVue = undefined;
-  $('.pie-popup').hide();
-}
-
-// close popup on escape press
-function closeInfoOnEsc (keyCode) {
-  if (event.keyCode === 27) { // esc
-    closeInfo();
-  }
-}
-
 // color based on largest parent
 function fillColor (d) {
   while (d.depth > 1) { d = d.parent; }
@@ -478,7 +296,12 @@ function fillColor (d) {
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'MolochPie',
-  components: { MolochNoResults, MolochFieldTypeahead },
+  components: {
+    MolochNoResults,
+    MolochFieldTypeahead,
+    Popup,
+    DragList
+  },
   props: {
     spiGraphType: String,
     baseField: String,
@@ -491,15 +314,16 @@ export default {
       tableData: [],
       outerData: false,
       tableSortType: 'size',
-      tableSortField: 'child',
+      tableSortField: 0,
       tableDesc: true,
-      closeInfo: closeInfo,
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
-      vizData: undefined
+      vizData: undefined,
+      hiddenColumns: false,
+      popupInfo: undefined
     };
   },
-  mounted: function () {
+  mounted () {
     // set colors to match the background
     const styles = window.getComputedStyle(document.body);
     background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
@@ -519,13 +343,14 @@ export default {
       this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
     } else { // otherwise load the data for the additional fields
       this.initializeGraphs();
-      this.loadData();
     }
+
+    this.loadData();
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
     // close info popup if the user presses escape
-    window.addEventListener('keyup', closeInfoOnEsc);
+    window.addEventListener('keyup', this.closeInfoOnEsc);
   },
   watch: {
     'graphData': function (newVal, oldVal) {
@@ -556,6 +381,10 @@ export default {
     // Boolean in the store will remember chosen toggle state for all pages
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    fieldList: function () {
+      let fieldList = [ this.baseFieldObj ];
+      return fieldList.concat(this.fieldTypeaheadList);
     }
   },
   methods: {
@@ -580,17 +409,19 @@ export default {
       this.applyFieldListToUrl();
     },
     /**
+     * Reorders the fields from the field typeahead list and loads the data
+     * @param {Array} list The reordered list
+     */
+    reorderFields: function (list) {
+      this.fieldTypeaheadList = list;
+      this.applyFieldListToUrl();
+    },
+    /**
      * Fired when a second level field typeahead field is selected
      * @param {Object} field The field the add to the pie graph
      */
     changeField: function (field) {
-      // only allow max 2 items in this array
-      if (this.fieldTypeaheadList.length > 1) {
-        this.$set(this.fieldTypeaheadList, 1, field);
-      } else {
-        this.fieldTypeaheadList.push(field);
-      }
-
+      this.fieldTypeaheadList.push(field);
       this.applyFieldListToUrl();
     },
     /**
@@ -607,6 +438,18 @@ export default {
       this.tableSortType = type;
       this.tableSortField = sort;
       this.sortTable();
+    },
+    hideColumn: function (col) {
+      this.$set(col, 'hide', true);
+      this.hiddenColumns = true;
+      this.initializeColResizable();
+    },
+    showHiddenColumns: function () {
+      for (const field of this.fieldList) {
+        this.$set(field, 'hide', false);
+      }
+      this.hiddenColumns = false;
+      this.initializeColResizable();
     },
     /* event functions ----------------------------------------------------- */
     /**
@@ -669,18 +512,20 @@ export default {
      */
     sortTable: function () {
       this.tableData.sort((a, b) => {
-        let result = false;
-        if (this.tableSortField === 'child') {
+        let result = -1;
+        if (this.tableSortField === this.fieldList.length - 1) {
+          // sort on child field
           if (!this.tableDesc) {
             result = a[this.tableSortType] > b[this.tableSortType];
           } else {
             result = b[this.tableSortType] > a[this.tableSortType];
           }
         } else {
+          // sort on one of the parent fields
           if (!this.tableDesc) {
-            result = a[this.tableSortField][this.tableSortType] > b[this.tableSortField][this.tableSortType];
+            result = a.parents[this.tableSortField][this.tableSortType] > b.parents[this.tableSortField][this.tableSortType];
           } else {
-            result = b[this.tableSortField][this.tableSortType] > a[this.tableSortField][this.tableSortType];
+            result = b.parents[this.tableSortField][this.tableSortType] > a.parents[this.tableSortField][this.tableSortType];
           }
         }
         return result ? 1 : -1;
@@ -748,12 +593,10 @@ export default {
      */
     applyColorsToTableData: function (data) {
       let parentMap = {};
-      for (let item of data) {
-        if (item.grandparent && !parentMap[item.grandparent.name]) { // count grandparents
-          parentMap[item.grandparent.name] = true;
-        } else if (!item.grandparent && item.parent && !parentMap[item.parent.name]) { // count parents
-          parentMap[item.parent.name] = true;
-        } else if (!item.grandparent && !item.parent && !parentMap[item.name]) {
+      for (let item of data) { // count top level parents
+        if (item.parents && item.parents.length) {
+          parentMap[item.parents[0].name] = true;
+        } else {
           parentMap[item.name] = true;
         }
       }
@@ -761,10 +604,8 @@ export default {
       let tableColors = this.generateColors(parentCount);
       for (let item of data) {
         let key = item.name;
-        if (item.grandparent) {
-          key = item.grandparent.name;
-        } else if (item.parent) {
-          key = item.parent.name;
+        if (item.parents && item.parents.length) {
+          key = item.parents[0].name;
         }
         item.color = tableColors(key);
       }
@@ -1010,7 +851,6 @@ export default {
       this.query.cancelId = cancelId;
 
       const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SpigraphService.getHierarchy(this.query, source.token);
 
       // setup the query params
       let params = this.query;
@@ -1022,6 +862,8 @@ export default {
 
       params.exp = exps.toString(',');
 
+      const cancellablePromise = SpigraphService.getHierarchy(params, source.token);
+
       // set pending promise info so it can be cancelled
       pendingPromise = { cancellablePromise, source, cancelId };
 
@@ -1032,10 +874,24 @@ export default {
         this.tableData = response.data.tableResults;
         this.sortTable();
         this.applyColorsToTableData(this.tableData);
+        this.initializeColResizable();
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
         this.$emit('toggleError', error.text || error);
+      });
+    },
+    initializeColResizable: function () {
+      $('#spigraphTable').colResizable({ disable: true });
+
+      setTimeout(() => {
+        $('#spigraphTable').colResizable({
+          minWidth: 50,
+          headerOnly: true,
+          removePadding: false,
+          resizeMode: 'overflow',
+          hoverCursor: 'col-resize'
+        });
       });
     },
     /**
@@ -1044,171 +900,15 @@ export default {
      * @param {Object} d The pie slice data
      */
     showInfo: function (d) {
-      closeInfo(); // close open info section
-      // create the vue template
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="pie-popup">
-              <table class="table table-borderless table-condensed table-sm">
-                <thead>
-                  <tr>
-                    <th>
-                      Field
-                    </th>
-                    <th>
-                      Value
-                    </th>
-                    <th>
-                      <a class="pull-right cursor-pointer no-decoration"
-                        @click="closeInfo">
-                        <span class="fa fa-close"></span>
-                      </a>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template v-if="level2FieldObj && sliceData.parent.parent && sliceData.parent.parent.data && sliceData.parent.parent.data.sizeValue">
-                    <tr>
-                      <td>
-                        {{ level2FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level2FieldObj"
-                          :value="sliceData.data.name"
-                          :expr="level2FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ level1FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level1FieldObj"
-                          :value="sliceData.parent.data.name"
-                          :expr="level1FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.data.size || sliceData.parent.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ baseFieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="baseFieldObj"
-                          :value="sliceData.parent.parent.data.name"
-                          :expr="baseFieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.parent.data.sizeValue }}
-                        </strong>
-                      </td>
-                    </tr>
-                  </template>
-                  <template v-else-if="level1FieldObj && sliceData.parent.data && sliceData.parent.data.sizeValue">
-                    <tr>
-                      <td>
-                        {{ level1FieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="level1FieldObj"
-                          :value="sliceData.data.name"
-                          :expr="level1FieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                        </strong>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        {{ baseFieldObj.friendlyName }}
-                      </td>
-                      <td>
-                        <moloch-session-field
-                          :field="baseFieldObj"
-                          :value="sliceData.parent.data.name"
-                          :expr="baseFieldObj.exp"
-                          :parse="true"
-                          :session-btn="true">
-                        </moloch-session-field>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ sliceData.parent.data.sizeValue }}
-                        </strong>
-                      </td>
-                    </tr>
-                  </template>
-                  <tr v-else-if="baseFieldObj">
-                    <td>
-                      {{ baseFieldObj.friendlyName }}
-                    </td>
-                    <td>
-                      <moloch-session-field
-                        :field="baseFieldObj"
-                        :value="sliceData.data.name"
-                        :expr="baseFieldObj.exp"
-                        :parse="true"
-                        :session-btn="true">
-                      </moloch-session-field>
-                    </td>
-                    <td>
-                      <strong>
-                        {{ sliceData.data.size || sliceData.data.sizeValue | commaString }}
-                      </strong>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          `,
-          parent: this,
-          data: {
-            sliceData: d,
-            baseFieldObj: this.getFieldObj(this.baseField),
-            level1FieldObj: this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : undefined,
-            level2FieldObj: this.fieldTypeaheadList.length > 1 ? this.fieldTypeaheadList[1] : undefined
-          },
-          methods: {
-            addExpression: function (slice, op) {
-              this.$parent.addExpression(slice, op);
-            },
-            closeInfo: function () {
-              this.$parent.closeInfo();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      this.popupInfo = d;
+    },
+    closeInfo () {
+      this.popupInfo = undefined;
+    },
+    closeInfoOnEsc (event) {
+      if (event.keyCode === 27) { // esc
+        this.popupInfo = undefined;
       }
-      // display the pie popup area
-      $('.pie-popup').show();
     }
   },
   beforeDestroy: function () {
@@ -1219,7 +919,7 @@ export default {
 
     // remove listeners
     window.removeEventListener('resize', this.resize);
-    window.removeEventListener('keyup', closeInfoOnEsc);
+    window.removeEventListener('keyup', this.closeInfoOnEsc);
 
     // remove elements
     if (newSlice) {
@@ -1282,7 +982,6 @@ export default {
   position: absolute;
   right: 5px;
   max-height: 500px;
-  display: none;
   padding: 4px 8px;
   max-width: 400px;
   min-width: 280px;
@@ -1300,5 +999,21 @@ export default {
   border-radius: 4px;
   float: right;
   margin-top: 4px;
+}
+
+/* add padding to spigraph table since we can't use bootstrap's .table
+/* without messing up the colresizable stuff */
+.spigraph-table td,
+.spigraph-table th,
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  padding-left: .15rem !important;
+  padding-right: .15rem !important;
+}
+
+/* make sure field dropdowns are visible in the table */
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  overflow: visible;
 }
 </style>
