@@ -73,9 +73,11 @@
                 <span v-if="field">
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right btn-link no-decoration cursor-pointer small ml-2 mt-1"
+                    class="pull-right cursor-pointer ml-2"
+                    v-b-tooltip.hover
+                    title="Show hidden column(s)"
                     @click="showHiddenColumns">
-                    Show hidden columns
+                    <span class="fa fa-plus-square" />
                   </a>
                 </span>
               </th>
@@ -112,9 +114,11 @@
                   class="fa fa-sort ml-2">
                 </span>
                 <a @click="hideColumn(item)"
-                  class="pull-right btn-link no-decoration small ml-2 mt-1"
+                  class="pull-right ml-2"
+                  v-b-tooltip.hover
+                  title="Hide column"
                   v-if="index !== fieldList.length - 1">
-                  Hide
+                  <span class="fa fa-minus-square" />
                 </a>
               </th>
             </template>

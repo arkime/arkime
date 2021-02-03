@@ -26,7 +26,7 @@
           <td>
             <moloch-session-field
               :field="field"
-              :value="getPopupInfoValue(index)"
+              :value="getPopupInfo(index).name"
               :expr="field.exp"
               :parse="true"
               :session-btn="true">
@@ -34,7 +34,7 @@
           </td>
           <td>
             <strong>
-              {{ getPopupInfoSize(index) | commaString }}
+              {{ getPopupInfo(index).size | commaString }}
             </strong>
           </td>
         </tr>
@@ -54,22 +54,15 @@ export default {
     closeInfo () {
       this.$emit('closeInfo');
     },
-    getPopupInfoValue (index) {
+    getPopupInfo (index) {
       let info = this.popupInfo;
       let i = index + 1;
       while (info.parent) {
         if (i === info.depth) {
-          return info.data.name;
-        }
-        info = info.parent;
-      }
-    },
-    getPopupInfoSize (index) {
-      let info = this.popupInfo;
-      let i = index + 1;
-      while (info.parent) {
-        if (i === info.depth) {
-          return info.data.size || info.data.sizeValue;
+          if (info.data.sizeValue) {
+            info.data.size = info.data.sizeValue;
+          }
+          return info.data;
         }
         info = info.parent;
       }
