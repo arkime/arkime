@@ -42,17 +42,17 @@
                "dstCnt" : 1,
                "header" : [
                   "content-type",
-                  "mime-version",
                   "from",
-                  "to",
+                  "mime-version",
                   "received",
-                  "subject"
+                  "subject",
+                  "to"
                ],
                "headerCnt" : 6,
                "host" : [
-                  "xxxx.xxxx.xxxxxxxxx.com",
+                  "smtp-01.xxxxxxxxx.com",
                   "smtp-02.xxxxxxxxx.com",
-                  "smtp-01.xxxxxxxxx.com"
+                  "xxxx.xxxx.xxxxxxxxx.com"
                ],
                "hostCnt" : 3,
                "ip" : [
@@ -140,7 +140,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 2436,
             "srcDataBytes" : 1834,
             "srcGEO" : "RU",
@@ -175,7 +175,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:bXEsFJztw3iv5wiB6jK1YLFWxt0=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "CA",
@@ -32,12 +32,12 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "stun"
+               "stun",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 90,
             "srcDataBytes" : 44,
             "srcGEO" : "RU",
@@ -60,7 +60,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
@@ -123,12 +123,12 @@
                130
             ],
             "protocol" : [
-               "udp",
-               "stun"
+               "stun",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0002 Hmm!@#$%^&*()",
+            "srcASN" : "AS2",
             "srcBytes" : 179,
             "srcDataBytes" : 133,
             "srcIp" : "10.0.0.3",
@@ -272,8 +272,8 @@
                657
             ],
             "protocol" : [
-               "udp",
-               "stun"
+               "stun",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -332,8 +332,8 @@
                743
             ],
             "protocol" : [
-               "udp",
-               "stun"
+               "stun",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -392,8 +392,8 @@
                829
             ],
             "protocol" : [
-               "udp",
-               "stun"
+               "stun",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

@@ -19,19 +19,19 @@
             "dstPort" : 25,
             "email" : {
                "ASN" : [
-                  "AS0001 Cool Beans!",
-                  "AS0002 Hmm!@#$%^&*()",
-                  "---"
+                  "---",
+                  "AS1",
+                  "AS2"
                ],
                "GEO" : [
-                  "CA",
                   "---",
-                  "---"
+                  "---",
+                  "CA"
                ],
                "RIR" : [
-                  "TEST",
                   "",
-                  ""
+                  "",
+                  "TEST"
                ],
                "contentType" : [
                   "text/plain; charset=us-ascii"
@@ -42,18 +42,18 @@
                ],
                "dstCnt" : 1,
                "header" : [
-                  "content-type",
-                  "x-mailer",
-                  "message-id",
-                  "mime-version",
-                  "from",
-                  "to",
-                  "x-elnk-trace",
-                  "received",
                   "content-transfer-encoding",
+                  "content-type",
                   "date",
                   "domainkey-signature",
+                  "from",
+                  "message-id",
+                  "mime-version",
+                  "received",
                   "subject",
+                  "to",
+                  "x-elnk-trace",
+                  "x-mailer",
                   "x-originating-ip"
                ],
                "header-x-elnk-trace" : [
@@ -61,14 +61,14 @@
                ],
                "headerCnt" : 13,
                "headerField" : [
-                  "domainkey-signature",
                   "content-transfer-encoding",
-                  "date"
+                  "date",
+                  "domainkey-signature"
                ],
                "headerValue" : [
+                  "Mon, 13 Jan 2014 07:01:01 -0800",
                   "a=rsa-sha1; q=dns; c=nofws;  s=xxxxxxxxxx; d=xxxxxxxxx.net;  b=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;  h=Received:From:Content-Type:Content-Transfer-Encoding:Subject:Date:Message-Id:To:Mime-Version:X-Mailer:X-ELNK-Trace:X-Originating-IP;",
-                  "quoted-printable",
-                  "Mon, 13 Jan 2014 07:01:01 -0800"
+                  "quoted-printable"
                ],
                "headerValueCnt" : 3,
                "host" : [

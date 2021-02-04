@@ -79,7 +79,7 @@
             ],
             "certCnt" : 3,
             "communityId" : "1:6/u1qoj9fpHAapKWZJHA2kiVUeE=",
-            "dstASN" : "AS0001",
+            "dstASN" : "AS1",
             "dstBytes" : 7348,
             "dstDataBytes" : 6784,
             "dstGEO" : "CA",
@@ -153,7 +153,7 @@
                "port" : 443,
                "user" : "fd7bcf7b5c9e1d"
             },
-            "srcASN" : "AS0000",
+            "srcASN" : "AS0",
             "srcBytes" : 404,
             "srcDataBytes" : 38,
             "srcGEO" : "RU",
@@ -189,7 +189,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

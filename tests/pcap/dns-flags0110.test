@@ -5,9 +5,9 @@
             "communityId" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
             "dns" : {
                "ASN" : [
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited"
+                  "AS41231",
+                  "AS41231",
+                  "AS41231"
                ],
                "GEO" : [
                   "GB",
@@ -24,9 +24,9 @@
                ],
                "hostCnt" : 1,
                "ip" : [
+                  "91.189.89.88",
                   "91.189.90.40",
-                  "91.189.90.41",
-                  "91.189.89.88"
+                  "91.189.90.41"
                ],
                "ipCnt" : 3,
                "opcode" : [
@@ -46,7 +46,7 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS0000 This is neat",
+            "dstASN" : "AS0",
             "dstBytes" : 91,
             "dstDataBytes" : 45,
             "dstGEO" : "RU",
@@ -78,12 +78,12 @@
                175
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS15169 Google LLC",
+            "srcASN" : "AS15169",
             "srcBytes" : 135,
             "srcDataBytes" : 93,
             "srcGEO" : "US",

@@ -2,7 +2,7 @@
    "sessions2" : [
       {
          "body" : {
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 520,
             "dstDataBytes" : 400,
             "dstGEO" : "CA",
@@ -17,8 +17,8 @@
                   0
                ],
                "type" : [
-                  8,
-                  0
+                  0,
+                  8
                ]
             },
             "ipProtocol" : 1,
@@ -54,7 +54,7 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 520,
             "srcDataBytes" : 400,
             "srcGEO" : "RU",
@@ -68,7 +68,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:vbcli/UxDIwm0NneYKFef8IsBas=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 263,
             "dstDataBytes" : 31,
             "dstGEO" : "CA",
@@ -59,12 +59,12 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "socks" : {
-               "ASN" : "AS0000 This is neat",
+               "ASN" : "AS0",
                "GEO" : "RU",
                "ip" : "10.0.0.1",
                "port" : 3389
             },
-            "srcASN" : "AS0002 Hmm!@#$%^&*()",
+            "srcASN" : "AS2",
             "srcBytes" : 405,
             "srcDataBytes" : 54,
             "srcIp" : "10.0.0.3",

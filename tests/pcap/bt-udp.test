@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:NgeArQd71rXSwTFQP3vAiAa5728=",
-            "dstASN" : "AS0000 This is neat",
+            "dstASN" : "AS0",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "RU",
@@ -31,12 +31,12 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "bittorrent"
+               "bittorrent",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0001 Cool Beans!",
+            "srcASN" : "AS1",
             "srcBytes" : 145,
             "srcDataBytes" : 103,
             "srcGEO" : "CA",
@@ -73,7 +73,7 @@
       {
          "body" : {
             "communityId" : "1:ubEG2mv8a/m0qWzbcUkdorgqN8Q=",
-            "dstASN" : "AS0002 Hmm!@#$%^&*()",
+            "dstASN" : "AS2",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstIp" : "10.0.0.3",
@@ -100,8 +100,8 @@
                185
             ],
             "protocol" : [
-               "udp",
-               "bittorrent"
+               "bittorrent",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
@@ -160,8 +160,8 @@
                530
             ],
             "protocol" : [
-               "udp",
-               "bittorrent"
+               "bittorrent",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,

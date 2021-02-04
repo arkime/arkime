@@ -473,11 +473,13 @@ typedef struct moloch_config {
 } MolochConfig_t;
 
 typedef struct {
-    char     *country;
-    char     *asn;
-    char     *rir;
-    int       numtags;
     char     *tagsStr[10];
+    char     *country;
+    char     *asStr;
+    char     *rir;
+    uint32_t  asNum;
+    int       asLen;
+    int       numtags;
 } MolochIpInfo_t;
 
 /******************************************************************************/

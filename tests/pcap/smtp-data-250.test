@@ -31,19 +31,19 @@
                ],
                "dstCnt" : 1,
                "header" : [
+                  "content-transfer-encoding",
                   "content-type",
+                  "date",
+                  "from",
                   "message-id",
                   "mime-version",
-                  "from",
-                  "to",
-                  "content-transfer-encoding",
-                  "date",
-                  "subject"
+                  "subject",
+                  "to"
                ],
                "headerCnt" : 8,
                "headerField" : [
-                  "date",
-                  "content-transfer-encoding"
+                  "content-transfer-encoding",
+                  "date"
                ],
                "headerValue" : [
                   "Fri, 06 Dec 2013 08:48:53 -0500",
@@ -148,7 +148,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 1867,
             "srcDataBytes" : 1063,
             "srcGEO" : "RU",
@@ -183,7 +183,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

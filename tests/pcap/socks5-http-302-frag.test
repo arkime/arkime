@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:JyQ6uQSVR95peZHUdpcExPE7Dzw=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 1274,
             "dstDataBytes" : 942,
             "dstGEO" : "CA",
@@ -59,69 +59,69 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
-                  "cookie",
-                  "connection"
+                  "accept-language",
+                  "connection",
+                  "cookie"
                ],
                "requestHeaderValue" : [
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                  "ro-ro,ro;q=0.8,en-us;q=0.6,en-gb;q=0.4,en;q=0.2",
                   "gzip, deflate",
+                  "keep-alive",
                   "pref=id=xxxxxxxxxxxxxxxx:tm=xxxxxxxxxx:lm=xxxxxxxxxx:s=xxxxxxxxxxxx_6oz",
-                  "keep-alive"
+                  "ro-ro,ro;q=0.8,en-us;q=0.6,en-gb;q=0.4,en;q=0.2",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
                ],
                "requestHeaderValueCnt" : 5,
                "response-location" : [
                   "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
                ],
                "responseHeader" : [
-                  "content-type",
                   "alternate-protocol",
-                  "x-frame-options",
                   "cache-control",
-                  "x-xss-protection",
                   "content-length",
+                  "content-type",
                   "date",
+                  "location",
                   "p3p",
                   "server",
                   "set-cookie",
-                  "location"
+                  "x-frame-options",
+                  "x-xss-protection"
                ],
                "responseHeaderCnt" : 11,
                "responseHeaderField" : [
+                  "alternate-protocol",
                   "cache-control",
-                  "content-type",
-                  "set-cookie",
-                  "p3p",
-                  "date",
-                  "server",
                   "content-length",
-                  "x-xss-protection",
+                  "content-type",
+                  "date",
+                  "p3p",
+                  "server",
+                  "set-cookie",
                   "x-frame-options",
-                  "alternate-protocol"
+                  "x-xss-protection"
                ],
                "responseHeaderValue" : [
-                  "private",
-                  "text/html; charset=utf-8",
-                  "nid=67=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=wed, 28-may-2014 13:58:15 gmt; path=/; domain=.google.com; httponly",
-                  "cp=\"this is not a p3p policy! see http://www.google.com/support/accounts/bin/answer.py?hl=en&answer=151657 for more info.\"",
-                  "tue, 26 nov 2013 13:58:15 gmt",
-                  "gws",
-                  "258",
                   "1; mode=block",
+                  "258",
+                  "80:quic",
+                  "cp=\"this is not a p3p policy! see http://www.google.com/support/accounts/bin/answer.py?hl=en&answer=151657 for more info.\"",
+                  "gws",
+                  "nid=67=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=wed, 28-may-2014 13:58:15 gmt; path=/; domain=.google.com; httponly",
+                  "private",
                   "sameorigin",
-                  "80:quic"
+                  "text/html; charset=utf-8",
+                  "tue, 26 nov 2013 13:58:15 gmt"
                ],
                "responseHeaderValueCnt" : 10,
                "serverVersion" : [
@@ -193,7 +193,7 @@
                "host" : "www.google.com",
                "port" : 80
             },
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 859,
             "srcDataBytes" : 419,
             "srcGEO" : "RU",
@@ -227,7 +227,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

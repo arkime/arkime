@@ -28,9 +28,9 @@ countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
     countTest(5, "date=-1&expression=" . uri_escape("$files&&rir.socks==ripe"));
 
 # socks.asn
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0000 This is neat\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0000*\""));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"aS0000*\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0 This is neat\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"AS0*\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&asn.socks==\"aS0*\""));
 
 # socks.port
     countTest(6, "date=-1&expression=" . uri_escape("$files&&socks.port==80"));

@@ -66,7 +66,7 @@
       },
       {
          "body" : {
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 592,
             "dstDataBytes" : 256,
             "dstGEO" : "CA",
@@ -89,8 +89,8 @@
                   0
                ],
                "type" : [
-                  8,
-                  0
+                  0,
+                  8
                ]
             },
             "ipProtocol" : 1,
@@ -118,12 +118,12 @@
                1388
             ],
             "protocol" : [
-               "vxlan",
-               "icmp"
+               "icmp",
+               "vxlan"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 592,
             "srcDataBytes" : 256,
             "srcGEO" : "RU",
@@ -145,7 +145,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

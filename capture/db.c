@@ -91,8 +91,8 @@ void moloch_db_free_local_ip(MolochIpInfo_t *ii)
 {
     if (ii->country)
         g_free(ii->country);
-    if (ii->asn)
-        g_free(ii->asn);
+    if (ii->asStr)
+        g_free(ii->asStr);
     if (ii->rir)
         g_free(ii->rir);
 
@@ -192,16 +192,85 @@ end:
 }
 
 /******************************************************************************/
-void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char **g, char **as, char **rir, int *asFree)
+LOCAL void moloch_db_js0n_str_unquoted(BSB * bsb, unsigned char * in, int len, gboolean utf8)
 {
-    *g = *as = *rir = 0;
-    *asFree = 0;
+
+    if (len == -1)
+        len = strlen((char *)in);
+
+    unsigned char *end = in + len;
+
+    while (in < end) {
+        switch(*in) {
+        case '\b':
+            BSB_EXPORT_cstr(*bsb, "\\b");
+            break;
+        case '\n':
+            BSB_EXPORT_cstr(*bsb, "\\n");
+            break;
+        case '\r':
+            BSB_EXPORT_cstr(*bsb, "\\r");
+            break;
+        case '\f':
+            BSB_EXPORT_cstr(*bsb, "\\f");
+            break;
+        case '\t':
+            BSB_EXPORT_cstr(*bsb, "\\t");
+            break;
+        case '"':
+            BSB_EXPORT_cstr(*bsb, "\\\"");
+            break;
+        case '\\':
+            BSB_EXPORT_cstr(*bsb, "\\\\");
+            break;
+        case '/':
+            BSB_EXPORT_cstr(*bsb, "\\/");
+            break;
+        default:
+            if(*in < 32) {
+                BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
+            } else if (utf8) {
+                if ((*in & 0xf0) == 0xf0) {
+                    if (!in[1] || !in[2] || !in[3]) return;
+                    BSB_EXPORT_ptr(*bsb, in, 4);
+                    in += 3;
+                } else if ((*in & 0xf0) == 0xe0) {
+                    if (!in[1] || !in[2]) return;
+                    BSB_EXPORT_ptr(*bsb, in, 3);
+                    in += 2;
+                } else if ((*in & 0xf0) == 0xd0) {
+                    if (!in[1]) return;
+                    BSB_EXPORT_ptr(*bsb, in, 2);
+                    in += 1;
+                } else {
+                    BSB_EXPORT_u08(*bsb, *in);
+                }
+            } else {
+                if(*in & 0x80) {
+                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
+                } else {
+                    BSB_EXPORT_u08(*bsb, *in);
+                }
+            }
+            break;
+        }
+        in++;
+    }
+}
+
+/******************************************************************************/
+void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir)
+{
+    *g = *asStr = *rir = 0;
 
     if (ipTree4) {
         MolochIpInfo_t *ii;
         if ((ii = moloch_db_get_local_ip6(session, &addr))) {
             *g = ii->country;
-            *as = ii->asn;
+            *asNum = ii->asNum;
+            *asStr = ii->asStr;
+            *asLen = ii->asLen;
             *rir = ii->rir;
         }
     }
@@ -224,7 +293,6 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         sa = (struct sockaddr *)&sin6;
     }
 
-
     int error = 0;
     if (!*g && geoCountry) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
@@ -239,7 +307,7 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
         }
     }
 
-    if (!*as && geoASN) {
+    if (!*asStr && geoASN) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoASN, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s org;
@@ -252,10 +320,9 @@ void moloch_db_geo_lookup6(MolochSession_t *session, struct in6_addr addr, char 
             status += MMDB_aget_value(&result.entry, &num, asnPath);
 
             if (status == MMDB_SUCCESS) {
-                char buf[1000];
-                sprintf(buf, "AS%u %.*s", num.uint32, org.data_size, org.utf8_string);
-                *as = g_strdup(buf);
-                *asFree = 1;
+                *asNum = num.uint32;
+                *asStr = (char *)org.utf8_string;
+                *asLen = org.data_size;
             }
         }
     }
@@ -607,11 +674,12 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                           session->port2);
 
 
-        char *g1, *g2, *as1, *as2, *rir1, *rir2;
-        int asFree1, asFree2;
+        char *g1, *g2, *asStr1, *asStr2, *rir1, *rir2;
+        uint32_t asNum1, asNum2;
+        int asLen1, asLen2;
 
-        moloch_db_geo_lookup6(session, session->addr1, &g1, &as1, &rir1, &asFree1);
-        moloch_db_geo_lookup6(session, session->addr2, &g2, &as2, &rir2, &asFree2);
+        moloch_db_geo_lookup6(session, session->addr1, &g1, &asNum1, &asStr1, &asLen1, &rir1);
+        moloch_db_geo_lookup6(session, session->addr2, &g2, &asNum2, &asStr2, &asLen2, &rir2);
 
         if (g1)
             BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%2.2s\",", g1);
@@ -619,22 +687,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%2.2s\",", g2);
 
 
-        if (as1) {
-            BSB_EXPORT_cstr(jbsb, "\"srcASN\":");
-            moloch_db_js0n_str(&jbsb, (unsigned char*)as1, TRUE);
-            BSB_EXPORT_u08(jbsb, ',');
-            if (asFree1)
-                free(as1);
+        if (asStr1) {
+            BSB_EXPORT_sprintf(jbsb, "\"srcASN\":\"AS%u ", asNum1);
+            moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr1, asLen1, TRUE);
+            BSB_EXPORT_cstr(jbsb, "\",");
         }
 
-        if (as2) {
-            BSB_EXPORT_cstr(jbsb, "\"dstASN\":");
-            moloch_db_js0n_str(&jbsb, (unsigned char*)as2, TRUE);
-            BSB_EXPORT_u08(jbsb, ',');
-            if (asFree2)
-                free(as2);
+        if (asStr2) {
+            BSB_EXPORT_sprintf(jbsb, "\"dstASN\":\"AS%u ", asNum2);
+            moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr2, asLen2, TRUE);
+            BSB_EXPORT_cstr(jbsb, "\",");
         }
-
 
         if (rir1)
             BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
@@ -868,24 +931,22 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_IP: {
-            char                 *as;
+            uint32_t              asNum;
+            char                 *asStr;
+            int                   asLen;
             char                 *g;
             char                 *rir;
-            int                   asFree;
 
             ikey = session->fields[pos]->ip;
-            moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &as, &rir, &asFree);
+            moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &asNum, &asStr, &asLen, &rir);
             if (g) {
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%2.2s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, g);
             }
 
-            if (as) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
-                moloch_db_js0n_str(&jbsb, (unsigned char*)as, TRUE);
-                if (asFree) {
-                    free(as);
-                }
-                BSB_EXPORT_u08(jbsb, ',');
+            if (asStr) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":\"AS%u ", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, asNum);
+                moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
             }
 
             if (rir) {
@@ -911,16 +972,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
 
-            char                 *as[MAX_IPS];
+            uint32_t              asNum[MAX_IPS];
+            char                 *asStr[MAX_IPS];
+            int                   asLen[MAX_IPS];
             char                 *g[MAX_IPS];
             char                 *rir[MAX_IPS];
-            int                   asFree[MAX_IPS];
             uint32_t              cnt = 0;
 
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g[cnt], &as[cnt], &rir[cnt], &asFree[cnt]);
+                moloch_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g[cnt], &asNum[cnt], &asStr[cnt], &asLen[cnt], &rir[cnt]);
                 cnt++;
                 if (cnt >= MAX_IPS)
                     break;
@@ -950,11 +1012,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":[", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField);
             for (i = 0; i < cnt; i++) {
-                if (as[i]) {
-                    moloch_db_js0n_str(&jbsb, (unsigned char*)as[i], TRUE);
-                    BSB_EXPORT_u08(jbsb, ',');
-                    if(asFree[i])
-                        free(as[i]);
+                if (asStr[i]) {
+                    BSB_EXPORT_sprintf(jbsb, "\"AS%u ", asNum[i]);
+                    moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr[i], asLen[i], TRUE);
+                    BSB_EXPORT_cstr(jbsb, "\",");
+
                 } else {
                     BSB_EXPORT_cstr(jbsb, "\"---\",");
                 }

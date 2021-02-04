@@ -21,7 +21,7 @@
                ],
                "qtCnt" : 1
             },
-            "dstASN" : "AS15169 Google LLC",
+            "dstASN" : "AS15169",
             "dstBytes" : 0,
             "dstDataBytes" : 0,
             "dstGEO" : "US",
@@ -50,12 +50,12 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 74,
             "srcDataBytes" : 28,
             "srcGEO" : "RU",
@@ -77,7 +77,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"

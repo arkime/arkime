@@ -630,6 +630,7 @@ void moloch_config_load_local_ips()
         LOGEXIT("Error with override-ips: %s", error->message);
     }
 
+    GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
     gsize k, v;
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
@@ -641,7 +642,14 @@ void moloch_config_load_local_ips()
         MolochIpInfo_t *ii = MOLOCH_TYPE_ALLOC0(MolochIpInfo_t);
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
-                ii->asn = g_strdup(values[v]+4);
+                if (!g_regex_match(asnRegex, values[v]+4, 0, NULL)) {
+                    LOGEXIT("Doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
+                }
+                char *sp = strchr(values[v]+6, ' ');
+                *sp = 0;
+                ii->asNum = atoi(values[v]+6);
+                ii->asStr = g_strdup(sp+1);
+                ii->asLen = strlen(sp+1);
             } else if (strncmp(values[v], "rir:", 4) == 0) {
                 ii->rir = g_strdup(values[v]+4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
@@ -656,6 +664,7 @@ void moloch_config_load_local_ips()
         moloch_db_add_local_ip(keys[k], ii);
         g_strfreev(values);
     }
+    g_regex_unref(asnRegex);
     g_strfreev(keys);
 }
 /******************************************************************************/

@@ -3,7 +3,7 @@
       {
          "body" : {
             "communityId" : "1:XNKhxjIW0JZ2H0bhi58j9olVOcI=",
-            "dstASN" : "AS0001 Cool Beans!",
+            "dstASN" : "AS1",
             "dstBytes" : 909,
             "dstDataBytes" : 571,
             "dstGEO" : "CA",
@@ -49,56 +49,56 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "host",
-                  "accept-language"
+                  "user-agent"
                ],
                "requestHeaderCnt" : 6,
                "requestHeaderField" : [
-                  "connection",
                   "accept",
                   "accept-encoding",
-                  "accept-language"
+                  "accept-language",
+                  "connection"
                ],
                "requestHeaderValue" : [
-                  "keep-alive",
-                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "en-us,en;q=0.8",
                   "gzip,deflate,sdch",
-                  "en-us,en;q=0.8"
+                  "keep-alive",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
                ],
                "requestHeaderValueCnt" : 4,
                "responseHeader" : [
-                  "content-type",
                   "accept-ranges",
-                  "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
                   "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "last-modified",
                   "server"
                ],
                "responseHeaderCnt" : 8,
                "responseHeaderField" : [
-                  "date",
-                  "server",
-                  "last-modified",
-                  "etag",
                   "accept-ranges",
-                  "content-length",
                   "connection",
-                  "content-type"
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "last-modified",
+                  "server"
                ],
                "responseHeaderValue" : [
-                  "mon, 30 dec 2013 18:36:25 gmt",
-                  "apache/2.2.15 (centos)",
-                  "mon, 30 dec 2013 18:32:48 gmt",
                   "\"b42ffc-136-4eec4abac18db\"",
-                  "bytes",
                   "310",
+                  "apache/2.2.15 (centos)",
+                  "application/zip",
+                  "bytes",
                   "close",
-                  "application/zip"
+                  "mon, 30 dec 2013 18:32:48 gmt",
+                  "mon, 30 dec 2013 18:36:25 gmt"
                ],
                "responseHeaderValueCnt" : 8,
                "serverVersion" : [
@@ -161,7 +161,7 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0000 This is neat",
+            "srcASN" : "AS0",
             "srcBytes" : 836,
             "srcDataBytes" : 362,
             "srcGEO" : "RU",
@@ -196,7 +196,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0000 This is neat"
+                  "AS0"
                ],
                "GEO" : [
                   "RU"
