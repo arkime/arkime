@@ -6,7 +6,7 @@ In general capture tries to not use locks for anything but queues when communica
 When possible we use read only complex data structures shared across threads.
 When those data structures need to be updated we create a new one and replace the old one, which is schedule to be freed at a later time (moloch_free_later) so any curernt readers don't crash.
 
-## moloch-capture
+## capture
 The main thread, all http requests are on the main thread.  
 Since sessions aren't locked, any sessions actions need to be added to the packet threads.
 
