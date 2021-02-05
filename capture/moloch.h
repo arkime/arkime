@@ -1260,10 +1260,12 @@ typedef void (*MolochWriterInit)(char *name);
 typedef uint32_t (*MolochWriterQueueLength)();
 typedef void (*MolochWriterWrite)(const MolochSession_t * const session, MolochPacket_t * const packet);
 typedef void (*MolochWriterExit)();
+typedef void (*MolochWriterIndex)(MolochSession_t * session);
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochWriterWrite moloch_writer_write;
 extern MolochWriterExit moloch_writer_exit;
+extern MolochWriterIndex moloch_writer_index;
 
 
 void moloch_writers_init();

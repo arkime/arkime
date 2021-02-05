@@ -190,21 +190,50 @@ exports.getSession = function (id, options, cb) {
     }
     exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
       // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-      if (fileInfo && fileInfo.packetPosEncoding === 'gap0') {
-        let last = 0;
-        let lastgap = 0;
-        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-          if (fields.packetPos[i] < 0) {
-            last = 0;
-          } else {
-            if (fields.packetPos[i] === 0) {
-              fields.packetPos[i] = last + lastgap;
+      if (fileInfo) {
+        if (fileInfo.packetPosEncoding === 'gap0') {
+          let last = 0;
+          let lastgap = 0;
+          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+            if (fields.packetPos[i] < 0) {
+              last = 0;
             } else {
-              lastgap = fields.packetPos[i];
-              fields.packetPos[i] += last;
+              if (fields.packetPos[i] === 0) {
+                fields.packetPos[i] = last + lastgap;
+              } else {
+                lastgap = fields.packetPos[i];
+                fields.packetPos[i] += last;
+              }
+              last = fields.packetPos[i];
             }
-            last = fields.packetPos[i];
           }
+        } else if (fileInfo.packetPosEncoding === 'localIndex') {
+          let pcapDir = internals.info.Config.getFull(fields.node, 'pcapDir').split(';')[0];
+          let newPacketPos = [];
+          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i += 2) {
+            newPacketPos.push(fields.packetPos[i]);
+            const filename = `${pcapDir}/${fields.node}-${fields.packetPos[i] * -1}.index`;
+            const fd = fs.openSync(filename, 'r');
+            if (!fd) {
+              fields.packetPos = [];
+            }
+
+            // ALW need try catch here with error checking
+            const buffer = Buffer.alloc(0xffff);
+            fs.readSync(fd, buffer, 0, 2, fields.packetPos[i + 1]);
+            const num = buffer.readUInt16BE(0);
+            fs.readSync(fd, buffer, 0, num * 5, fields.packetPos[i + 1] + 2);
+            for (let i = 0; i < num; i++) {
+              // These are 5 byte numbers and JS doesn't have shifting
+              let pos = buffer.readUInt32BE(i * 5) * 256;
+              pos += buffer.readUInt8(i * 5 + 4);
+              newPacketPos.push(pos);
+            }
+            fs.closeSync(fd);
+          }
+          fields.packetPos = newPacketPos;
+        } else {
+          console.log('Unsupported packetPosEncoding', fileInfo);
         }
       }
       return cb(null, session);

@@ -475,6 +475,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         return;
     }
 
+    if (moloch_writer_index) {
+        moloch_writer_index(session);
+    }
+
     /* jsonSize is an estimate of how much space it will take to encode the session */
     jsonSize = 1100 + session->filePosArray->len*17 + 10*session->fileNumArray->len;
     if (config.enablePacketLen) {
@@ -761,6 +765,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
         }
     } else {
+        // Do NOT remove this, S3 and others use this
         for(i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
