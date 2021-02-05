@@ -39,7 +39,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - rule matches can now be logged
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
-  - viewer - reorganize and standardize some APIs
+  - viewer - reorganize and standardize APIs
   - viewer - put npm scripts and common npm packages at top level
   - viewer - allow viewing of large encrypted pcap files (issue #1555)
   - viewer - can find nodes for pcap based on --host
@@ -47,6 +47,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - fix addTag/removeTag with multiviewer (PR #1556)
   - viewer - can modify some sessions2 template from esadmin tab
   - viewer - can modify entire shortcuts now
+  - viewer - spigraph visualization improvements
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse
