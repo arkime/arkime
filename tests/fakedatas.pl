@@ -10,6 +10,13 @@ $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $DEBUG = 0;
+my $STICKYSRC;
+my $STICKYDST;
+my $STICKYUSER;
+my $STICKYPATH;
+my $STICKYLAST;
+my $TAG = "fakeit";
+
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
@@ -268,18 +275,34 @@ sub num
 ################################################################################
 sub generateHTTP()
 {
+    my $uriCnt = num(1, 10);
+
     my $host = "${\word()}.com";
-    my $path = "${\word()}/${\word()}${\htmlextension()}";
 
-    my $firstPacket = (time() - num(100, 100000)) * 1000;
-    my $lastPacket =  $firstPacket + (num(10, 1000) * 1000);
+    my @paths;
+    my @uris;
+    for (my $i = 0; $i < $uriCnt; $i++) {
+        my $path = "${\word()}/${\word()}${\htmlextension()}";
+        if ($i == 0 && $STICKYPATH) {
+            $path = $STICKYPATH;
+        }
+        push(@paths, qq("$path"));
+        push(@uris, qq("${host}/${path}"));
+    }
 
-    my $srcPackets = num(1, 10000);
-    my $dstPackets = num(1, 10000);
+    my $dstIp = $STICKYDST || ip();
+    my $srcIp = $STICKYSRC || ip();
+    my $user = $STICKYUSER || user();
+
+    my $lastPacket = $STICKYLAST || (time() - num(100, 100000)) * 1000;
+    my $firstPacket =  $lastPacket - (num(10, 1000) * 1000);
+
+    my $srcPackets = num(1, 8000);
+    my $dstPackets = num(1, 8000);
     my $srcBytes   = $srcPackets * num(10,1000);
     my $dstBytes   = $dstPackets * num(10,1000);
-    my $srcDataBytes  = int($srcPackets * 0.90);
-    my $dstDataBytes  = int($dstPackets * 0.90);
+    my $srcDataBytes  = int($srcBytes * 0.90);
+    my $dstDataBytes  = int($dstBytes * 0.90);
 
     my $json = qq(
 {
@@ -288,7 +311,7 @@ sub generateHTTP()
 "dstBytes" : ${dstBytes},
 "dstDataBytes" : ${dstDataBytes},
 "dstGEO" : "${\geo()}",
-"dstIp" : "${\ip()}",
+"dstIp" : "${dstIp}",
 "dstMac" : [
    "00:c0:ca:30:eb:0c"
 ],
@@ -332,9 +355,9 @@ sub generateHTTP()
    ],
    "methodCnt" : 1,
    "path" : [
-      "${path}"
+      ${\join(',', @paths)}
    ],
-   "pathCnt" : 1,
+   "pathCnt" : ${uriCnt},
    "request-referer" : [
       "http://${host}/${\word()}/${\word()}.html"
    ],
@@ -422,10 +445,10 @@ sub generateHTTP()
    ],
    "statuscodeCnt" : 1,
    "uri" : [
-      "${host}/${path}"
+     ${\join(',', @uris)}
    ],
-   "uriCnt" : 1,
-   "user": "${\user()}",
+   "uriCnt" : ${uriCnt},
+   "user": "${user}",
    "useragent" : [
       "${\useragent()}"
    ],
@@ -450,7 +473,7 @@ sub generateHTTP()
 "srcBytes" : ${srcBytes},
 "srcDataBytes" : ${srcDataBytes},
 "srcGEO" : "${\geo()}",
-"srcIp" : "${\ip()}",
+"srcIp" : "${srcIp}",
 "srcMac" : [
    "00:16:44:a0:a0:7e"
 ],
@@ -463,11 +486,11 @@ sub generateHTTP()
 "srcPayload8" : "474554202f6a732f",
 "srcPort" : ${\num(1,65000)},
 "tags" : [
-   "fakeit",
+   "$TAG",
    "dstip",
    "srcip"
 ],
-"tagsCnt" : 2,
+"tagsCnt" : 3,
 "tcpflags" : {
    "ack" : 4,
    "dstZero" : 0,
@@ -502,9 +525,53 @@ for (my $pos;$pos <= $#ARGV; $pos++) {
     } elsif ($ARGV[$pos] eq "--http") {
         $pos++;
         $HTTP = int($ARGV[$pos]);
+    } elsif ($ARGV[$pos] eq "--sticky-src") {
+        if ($pos < $#ARGV && @ARGV[$pos + 1] !~ /^--/) {
+            $pos++;
+            $STICKYSRC = $ARGV[$pos];
+        } else {
+            $STICKYSRC = ip();
+        }
+    } elsif ($ARGV[$pos] eq "--sticky-dst") {
+        if ($pos < $#ARGV && @ARGV[$pos + 1] !~ /^--/) {
+            $pos++;
+            $STICKYDST = $ARGV[$pos];
+        } else {
+            $STICKYDST = ip();
+        }
+    } elsif ($ARGV[$pos] eq "--sticky-user") {
+        if ($pos < $#ARGV && @ARGV[$pos + 1] !~ /^--/) {
+            $pos++;
+            $STICKYUSER = $ARGV[$pos];
+        } else {
+            $STICKYUSER = user();
+        }
+    } elsif ($ARGV[$pos] eq "--sticky-path") {
+        if ($pos < $#ARGV && @ARGV[$pos + 1] !~ /^--/) {
+            $pos++;
+            $STICKYPATH = $ARGV[$pos];
+        } else {
+            $STICKYPATH = "${\word()}/${\word()}${\htmlextension()}";
+        }
+    } elsif ($ARGV[$pos] eq "--sticky-last") {
+        if ($pos < $#ARGV && @ARGV[$pos + 1] !~ /^--/) {
+            $pos++;
+            $STICKYLAST = int($ARGV[$pos]);
+        } else {
+            $STICKYLAST = (time() - num(100, 100000)) * 1000;
+        }
+    } elsif ($ARGV[$pos] eq "--tag") {
+        $pos++;
+        $TAG = $ARGV[$pos];
     } else {
-        print "--http <number> - number of http records to create, default 100\n";
-        print "--debug         - turn on debugging100\n";
+        print "--debug                - turn on debugging100\n";
+        print "--http <number>        - number of http records to create, default 100\n";
+        print "--sticky-src [<ip>]    - All src ips will be the same, which can be optionally provided\n";
+        print "--sticky-dst [<ip>]    - All dst ips will be the same, which can be optionally provided\n";
+        print "--sticky-user [<user>] - All users will be the same, which can be optionally provided\n";
+        print "--sticky-path [<path>] - The first path for each suession will be the same, which can be optionally provided\n";
+        print "--sticky-last [<ms>]   - All items will have the same lastPacket time, which can be optionally provided\n";
+        print "--tag <tag>            - All session will have this tag, default: $TAG\n";
         exit(0);
     }
 }
@@ -516,7 +583,7 @@ for (my $i = 0; $i < $HTTP; $i++) {
 
 ################################################################################
 esGet("/_flush");
-esGet("/_reindex");
+esGet("/_refresh");
 esGet("/_flush");
-esGet("/_reindex");
+esGet("/_refresh");
 
