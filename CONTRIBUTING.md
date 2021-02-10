@@ -84,6 +84,7 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 #### Pull Requests :muscle:
 
 **We welcome all collaboration!** If you can fix it or implement it, please do! :hammer:
+To implement something new, please create an issue first so we can discuss it together.
 
 **To better help us review your pull request, please follow these guidelines:**
 * Provide a clear and descriptive title
@@ -93,6 +94,11 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 * Run `npm run lint` from the top level directory and correct any errors
 * Additionally, for any viewer or parliament changes, verify that all UI tests pass by runnning `./tests.pl --viewer`
 * The README file in the tests directory provides additional information on the test cases
+* When creating a Pull Request please follow [best practices](https://github.com/trein/dev-best-practices/wiki/Git-Commit-Best-Practices) for creating git commits.
+* When your code is ready to be submitted, submit a Pull Request to begin the code review process.
+
+We only seek to accept code that you are authorized to contribute to the project. We have added a pull request template on our projects so that your contributions are made with the following confirmation:
+> I confirm that this contribution is made under an Apache 2.0 license and that I have the authority necessary to make this contribution on behalf of its copyright owner.
 
 #### API Documentation
 
@@ -124,6 +130,12 @@ The documentation lives on our website at [arkime.com/api](https://arkime.com/ap
 9. Delete the old CyberChef zip file
 10. Delete the old CyberChef html file
 11. Rename `viewer/public/CyberChef_v*.html` file to `viewer/public/cyberchef.html`
+
+---
+
+### Code of Conduct
+
+We encourage inclusive and professional interactions on our project. We welcome everyone to open an issue, improve the documentation, report bug or submit a pull request. By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). If you feel there is a conduct issue related to this project, please raise it per the Code of Conduct process and we will address it.
 
 ---
 
