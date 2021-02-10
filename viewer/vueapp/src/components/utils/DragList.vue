@@ -48,7 +48,6 @@ export default {
       this.draggedOver = index; // index of the field that is being dragged over
     },
     drop (event, index) {
-      console.log('drop!');
       // remove the dragged field from the list
       const draggedField = this.list.splice(this.dragging, 1)[0];
       // and replace it in the new position

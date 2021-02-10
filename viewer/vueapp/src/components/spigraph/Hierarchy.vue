@@ -366,6 +366,9 @@ export default {
     'spiGraphType': function (newVal, oldVal) {
       this.closeInfo();
       this.applyGraphData(this.vizData);
+      if (newVal === 'table') {
+        this.initializeColResizable();
+      }
     },
     '$route.query.subFields': function (newVal, oldVal) {
       this.loadData();
