@@ -76,6 +76,12 @@ LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
 
+#define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS*3)
+struct {
+    int64_t  fileNum;
+    FILE    *fp;
+} indexFiles[INDEX_FILES_CACHE_SIZE];
+
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
 {
@@ -493,6 +499,13 @@ LOCAL void writer_simple_exit()
     while (writer_simple_queue_length() > 0) {
         usleep(10000);
     }
+
+    for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
+        if (indexFiles[p].fp) {
+            fclose(indexFiles[p].fp);
+            indexFiles[p].fp = 0;
+        }
+    }
 }
 /******************************************************************************/
 // Called inside each packet thread
@@ -540,55 +553,106 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
+FILE *writer_simple_get_index(int64_t fileNum)
+{
+    const int p = fileNum % INDEX_FILES_CACHE_SIZE;
+
+    if (indexFiles[p].fp) {
+        // This is the fileNum we are looking for
+        if (indexFiles[p].fileNum == fileNum) {
+            return indexFiles[p].fp;
+        }
+
+        // This isn't it, close the old one
+        fclose(indexFiles[p].fp);
+    }
+
+    char     filename[1024];
+    snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, fileNum);
+
+    if ((indexFiles[p].fp = fopen(filename, "a")) == NULL) {
+        LOGEXIT("Couldn't open file %s", filename);
+    }
+
+    return indexFiles[p].fp;
+}
+/******************************************************************************/
 void writer_simple_index (MolochSession_t * session)
 {
     uint8_t  buf[0xffff*5];
     BSB      bsb;
-    int      num = 0;
-    char     filename[1024];
     int      files = 0;
     int64_t  filePos[1024];
 
+    BSB_INIT(bsb, buf, sizeof(buf));
+
     FILE *fp = 0;
+    uint64_t last = 0;
+    uint64_t lastgap = 0;
     for(guint i = 0; i < session->filePosArray->len; i++) {
-        int64_t fpos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
-        if (fpos < 0) {
+        int64_t packetPos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
+        if (packetPos < 0) {
             if (fp) {
-                buf[0] = (num & 0xff00) >> 8;
-                buf[1] = (num & 0x00ff);
+                filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
                 fwrite(buf, BSB_LENGTH(bsb), 1, fp);
-                fclose(fp);
+                last = 0;
+                lastgap = 0;
             }
-            snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, -fpos);
+            fp = writer_simple_get_index(-packetPos);
 
-            // ALW FIX - should cache fopen and stuffs
-
-            if ((fp = fopen(filename, "a")) == NULL) {
-                LOGEXIT("Couldn't open file %s", filename);
-            }
-
-            filePos[files*2] = fpos;
-            filePos[files*2 + 1] = ftell(fp);
+            filePos[files*3] = packetPos;      // Which file
+            filePos[files*3 + 1] = ftell(fp);  // Where in index file
             files++;
 
             BSB_INIT(bsb, buf, sizeof(buf));
-            BSB_EXPORT_skip(bsb, 2);
-            num = 0;
         } else {
-            num++;
-            BSB_EXPORT_u40(bsb, fpos);
+            uint64_t val = packetPos - last;
+            if (val == lastgap) {
+                val = 0;
+            } else {
+                lastgap = val;
+            }
+            last = packetPos;
+
+            if (val <= 0x7f) {
+                BSB_EXPORT_u08(bsb, val);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | (val & 0x7f));
+
+            if (val <= 0x3fff) {
+                BSB_EXPORT_u08(bsb, val >> 7);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f));
+
+            if (val <= 0x1fffff) {
+                BSB_EXPORT_u08(bsb, val >> 14);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f));
+
+            if (val <= 0x0fffffff) {
+                BSB_EXPORT_u08(bsb, val >> 21);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 21) & 0x7f));
+
+            if (val <= 0x07ffffffffLL) {
+                BSB_EXPORT_u08(bsb, val >> 28);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));
         }
     }
 
     if (fp) {
-        buf[0] = (num & 0xff00) >> 8;
-        buf[1] = (num & 0x00ff);
+        filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
         fwrite(buf, BSB_LENGTH(bsb), 1, fp);
-        fclose(fp);
     }
 
     g_array_set_size(session->filePosArray, 0);
-    g_array_append_vals(session->filePosArray, filePos, files*2);
+    g_array_append_vals(session->filePosArray, filePos, files*3);
 }
 /******************************************************************************/
 void writer_simple_init(char *name)
@@ -646,6 +710,7 @@ void writer_simple_init(char *name)
         if (config.pcapDir[1]) {
             LOG("Don't support index with more than 1 pcap dir for now");
         } else {
+            config.maxFileSizeB = MIN(config.maxFileSizeB, 0x07ffffffffL);
             config.gapPacketPos = FALSE;
             moloch_writer_index = writer_simple_index;
         }
