@@ -621,25 +621,25 @@ void writer_simple_index (MolochSession_t * session)
             BSB_EXPORT_u08(bsb, 0x80 | (val & 0x7f));
 
             if (val <= 0x3fff) {
-                BSB_EXPORT_u08(bsb, val >> 7);
+                BSB_EXPORT_u08(bsb, (val >> 7) & 0x7f);
                 continue;
             }
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f));
 
             if (val <= 0x1fffff) {
-                BSB_EXPORT_u08(bsb, val >> 14);
+                BSB_EXPORT_u08(bsb, (val >> 14) & 0x7f);
                 continue;
             }
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f));
 
             if (val <= 0x0fffffff) {
-                BSB_EXPORT_u08(bsb, val >> 21);
+                BSB_EXPORT_u08(bsb, (val >> 21) & 0x7f);
                 continue;
             }
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 21) & 0x7f));
 
             if (val <= 0x07ffffffffLL) {
-                BSB_EXPORT_u08(bsb, val >> 28);
+                BSB_EXPORT_u08(bsb, (val >> 28) & 0x7f);
                 continue;
             }
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));

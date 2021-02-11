@@ -210,7 +210,7 @@ exports.getSession = function (id, options, cb) {
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
           let pcapDir = internals.info.Config.getFull(fields.node, 'pcapDir').split(';')[0];
           let newPacketPos = [];
-          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i += 2) {
+          for (let i = 0, ilen = fields.packetPos.length - 2; i < ilen; i += 3) {
             newPacketPos.push(fields.packetPos[i]);
             const filename = `${pcapDir}/${fields.node}-${fields.packetPos[i] * -1}.index`;
             const fd = fs.openSync(filename, 'r');
@@ -218,16 +218,27 @@ exports.getSession = function (id, options, cb) {
               fields.packetPos = [];
             }
 
-            // ALW need try catch here with error checking
-            const buffer = Buffer.alloc(0xffff);
-            fs.readSync(fd, buffer, 0, 2, fields.packetPos[i + 1]);
-            const num = buffer.readUInt16BE(0);
-            fs.readSync(fd, buffer, 0, num * 5, fields.packetPos[i + 1] + 2);
-            for (let i = 0; i < num; i++) {
-              // These are 5 byte numbers and JS doesn't have shifting
-              let pos = buffer.readUInt32BE(i * 5) * 256;
-              pos += buffer.readUInt8(i * 5 + 4);
-              newPacketPos.push(pos);
+            const buffer = Buffer.alloc(fields.packetPos[i + 2]);
+            fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[i + 1]);
+            let last = 0;
+            let lastgap = 0;
+            let num = 0;
+            let mult = 1;
+            for (let i = 0; i < buffer.length; i++) {
+              let x = buffer.readUInt8(i);
+              if (x & 0x80) {
+                num = num + (x & 0x7f) * mult;
+                mult *= 128;
+              } else {
+                num = num + x * mult;
+                if (num !== 0) {
+                  lastgap = num;
+                }
+                last += lastgap;
+                newPacketPos.push(last);
+                num = 0;
+                mult = 1;
+              }
             }
             fs.closeSync(fd);
           }
