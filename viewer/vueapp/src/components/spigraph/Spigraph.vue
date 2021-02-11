@@ -75,7 +75,7 @@
                   v-model="spiGraphType"
                   @change="changeSpiGraphType">
                   <option value="default">timeline/map</option>
-                  <option value="pie">pie</option>
+                  <option value="pie">donut</option>
                   <option value="table">table</option>
                   <option value="treemap">treemap</option>
                 </select>
