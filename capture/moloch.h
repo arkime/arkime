@@ -72,6 +72,8 @@
 
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
+#define MOLOCH_VAR_ARG_SKIP (char *)1LL
+
 /******************************************************************************/
 /*
  * Base Hash Table Types
@@ -831,7 +833,6 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
 /*
  * db.c
  */
-
 void     moloch_db_init();
 char    *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
 char    *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);

@@ -309,10 +309,13 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
-        char *encoding = NULL;
+        char *encoding = MOLOCH_VAR_ARG_SKIP;
+        char  indexFilename[1024];
 
+        indexFilename[0] = 0;
         if (localPcapIndex) {
             encoding = "localIndex";
+            snprintf(indexFilename, sizeof(indexFilename), "%s/%s-#NUM#.index", config.pcapDir[0], config.nodeName);
         } else if (config.gapPacketPos) {
             encoding = "gap0";
         }
@@ -321,30 +324,22 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            if (encoding)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "packetPosEncoding", encoding,
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
             break;
         case MOLOCH_SIMPLE_XOR2048:
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            if (encoding)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "xor-2048",
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  "packetPosEncoding", encoding,
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "xor-2048",
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  (char *)NULL);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "encoding", "xor-2048",
+                                              "dek", dekhex,
+                                              "kekId", kekId,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -358,21 +353,14 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             moloch_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            if (encoding)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "aes-256-ctr",
-                                                  "iv", ivhex,
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  "packetPosEncoding", encoding,
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "aes-256-ctr",
-                                                  "iv", ivhex,
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  (char *)NULL);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "encoding", "aes-256-ctr",
+                                              "iv", ivhex,
+                                              "dek", dekhex,
+                                              "kekId", kekId,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
             break;
         }
         default:

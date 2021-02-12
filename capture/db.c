@@ -1741,6 +1741,8 @@ LOCAL void moloch_db_mkpath(char *path)
 /******************************************************************************/
 char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
+    static GRegex     *numRegex;
+    static GRegex     *numHexRegex;
     char               key[100];
     int                key_len;
     uint32_t           num;
@@ -1749,6 +1751,10 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     BSB                jbsb;
     const uint64_t     fp = firstPacket;
 
+    if (!numRegex) {
+        numRegex = g_regex_new("#NUM#", 0, 0, 0);
+        numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
+    }
 
     BSB_INIT(jbsb, json, MOLOCH_HTTP_BUFFER_SIZE);
 
@@ -1765,22 +1771,16 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     }
 
 
-    if (name) {
-        static GRegex     *numRegex;
-        static GRegex     *numHexRegex;
-        if (!numRegex) {
-            numRegex = g_regex_new("#NUM#", 0, 0, 0);
-            numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
-        }
-        char numstr[100];
-        snprintf(numstr, sizeof(numstr), "%u", num);
+    char numstr[100];
+    snprintf(numstr, sizeof(numstr), "%u", num);
 
+    if (name) {
         char *name1 = g_regex_replace_literal(numRegex, name, -1, 0, numstr, 0, NULL);
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)moloch_char_to_hexstr[num%256], 0, NULL);
         g_free(name1);
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
-        key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName,num);
+        key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
@@ -1876,8 +1876,18 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         if (!value)
             break;
 
+        if (value == MOLOCH_VAR_ARG_SKIP)
+            continue;
+
+
         BSB_EXPORT_sprintf(jbsb, ", \"%s\": ", field);
-        if (*value == '{' || *value == '[')
+
+        // HACK: But need num as we create this
+        if (strcmp(field, "indexFilename") == 0) {
+            char *value1 = g_regex_replace_literal(numRegex, value, -1, 0, numstr, 0, NULL);
+            BSB_EXPORT_sprintf(jbsb, "\"%s\"", value1);
+            g_free(value1);
+        } else if (*value == '{' || *value == '[')
             BSB_EXPORT_sprintf(jbsb, "%s", value);
         else
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value);
@@ -2491,6 +2501,7 @@ void moloch_db_exit()
         if (!config.noStats) {
             moloch_db_update_stats(0, 1);
         }
+        moloch_http_get(esServer, "/_refresh", 9, NULL);
         moloch_http_free_server(esServer);
     }
 
