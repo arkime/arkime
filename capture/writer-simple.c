@@ -693,15 +693,15 @@ void writer_simple_init(char *name)
 
     config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
 
-    localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", TRUE);
+    localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
     if (localPcapIndex) {
         if (config.pcapDir[1]) {
-            LOG("Don't support index with more than 1 pcap dir for now");
-        } else {
-            config.maxFileSizeB = MIN(config.maxFileSizeB, 0x07ffffffffL);
-            config.gapPacketPos = FALSE;
-            moloch_writer_index = writer_simple_index;
+            LOG("WARNING - Will always use first pcap directory for local index");
         }
+
+        config.maxFileSizeB = MIN(config.maxFileSizeB, 0x07ffffffffL);
+        config.gapPacketPos = FALSE;
+        moloch_writer_index = writer_simple_index;
     }
 
     DLL_INIT(simple_, &simpleQ);
