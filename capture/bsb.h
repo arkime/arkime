@@ -48,6 +48,17 @@ do {                                              \
         BSB_SET_ERROR(b);                         \
 } while (0)
 
+#define BSB_EXPORT_u24(b, x)                      \
+do {                                              \
+    if ((b).ptr && (b).ptr + 3 <= (b).end) {      \
+        uint32_t t = x;                           \
+        *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
+        *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
+        *(((b).ptr)++) = (t & 0x000000ff);        \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
 #define BSB_EXPORT_u32(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
@@ -56,6 +67,19 @@ do {                                              \
         *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
         *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
         *(((b).ptr)++) = (t & 0x000000ff);        \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
+#define BSB_EXPORT_u40(b, x)                      \
+do {                                              \
+    if ((b).ptr && (b).ptr + 5 <= (b).end) {      \
+        uint64_t t = x;                           \
+        *(((b).ptr)++) = (t & 0xff00000000) >> 32;  \
+        *(((b).ptr)++) = (t & 0x00ff000000) >> 24;  \
+        *(((b).ptr)++) = (t & 0x0000ff0000) >> 16;  \
+        *(((b).ptr)++) = (t & 0x000000ff00) >> 8;   \
+        *(((b).ptr)++) = (t & 0x00000000ff);        \
     } else                                        \
         BSB_SET_ERROR(b);                         \
 } while (0)
@@ -214,6 +238,17 @@ do {                                              \
         BSB_SET_ERROR(b);                         \
 } while (0)
 
+#define BSB_LEXPORT_u32(b, x)                     \
+do {                                              \
+    if ((b).ptr + 4 <= (b).end) {                 \
+        uint32_t t = x;                           \
+        *(((b).ptr)++) = (t & 0x000000ff);        \
+        *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
+        *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
+        *(((b).ptr)++) = (t & 0xff000000) >> 24;  \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
+} while (0)
 #define BSB_LEXPORT_u32(b, x)                     \
 do {                                              \
     if ((b).ptr + 4 <= (b).end) {                 \

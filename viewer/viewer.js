@@ -1118,6 +1118,9 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
       if (freeG < minFreeSpaceG) {
         data.hits.total--;
         console.log('Deleting', item);
+        if (item.indexFilename) {
+          fs.unlink(item.indexFilename, () => {});
+        }
         return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
       } else {
         return forNextCb('DONE');

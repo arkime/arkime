@@ -72,6 +72,8 @@
 
 #define MOLOCH_SESSION_v6(s) ((s)->sessionId[0] == 37)
 
+#define MOLOCH_VAR_ARG_SKIP (char *)1LL
+
 /******************************************************************************/
 /*
  * Base Hash Table Types
@@ -831,7 +833,6 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
 /*
  * db.c
  */
-
 void     moloch_db_init();
 char    *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
 char    *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
@@ -1260,10 +1261,12 @@ typedef void (*MolochWriterInit)(char *name);
 typedef uint32_t (*MolochWriterQueueLength)();
 typedef void (*MolochWriterWrite)(const MolochSession_t * const session, MolochPacket_t * const packet);
 typedef void (*MolochWriterExit)();
+typedef void (*MolochWriterIndex)(MolochSession_t * session);
 
 extern MolochWriterQueueLength moloch_writer_queue_length;
 extern MolochWriterWrite moloch_writer_write;
 extern MolochWriterExit moloch_writer_exit;
+extern MolochWriterIndex moloch_writer_index;
 
 
 void moloch_writers_init();

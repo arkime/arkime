@@ -35,6 +35,7 @@
 
 extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
+LOCAL  gboolean              localPcapIndex;
 
 typedef struct {
     EVP_CIPHER_CTX      *cipher_ctx;
@@ -74,6 +75,12 @@ LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
+
+#define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS*3)
+struct {
+    int64_t  fileNum;
+    FILE    *fp;
+} indexFiles[INDEX_FILES_CACHE_SIZE];
 
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
@@ -302,34 +309,37 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
+        char *encoding = MOLOCH_VAR_ARG_SKIP;
+        char  indexFilename[1024];
+
+        indexFilename[0] = 0;
+        if (localPcapIndex) {
+            encoding = "localIndex";
+            snprintf(indexFilename, sizeof(indexFilename), "%s/%s-#NUM#.index", config.pcapDir[0], config.nodeName);
+        } else if (config.gapPacketPos) {
+            encoding = "gap0";
+        }
+
 
         MolochSimple_t *info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            if (config.gapPacketPos)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "packetPosEncoding", "gap0",
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file(packet->ts.tv_sec, NULL, 0, 0, &info->file->id);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
             break;
         case MOLOCH_SIMPLE_XOR2048:
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            if (config.gapPacketPos)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "xor-2048",
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  "packetPosEncoding", "gap0",
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "xor-2048",
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  (char *)NULL);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "encoding", "xor-2048",
+                                              "dek", dekhex,
+                                              "kekId", kekId,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
 
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
@@ -343,21 +353,14 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             moloch_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            if (config.gapPacketPos)
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "aes-256-ctr",
-                                                  "iv", ivhex,
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  "packetPosEncoding", "gap0",
-                                                  (char *)NULL);
-            else
-                name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
-                                                  "encoding", "aes-256-ctr",
-                                                  "iv", ivhex,
-                                                  "dek", dekhex,
-                                                  "kekId", kekId,
-                                                  (char *)NULL);
+            name = moloch_db_create_file_full(packet->ts.tv_sec, NULL, 0, 0, &info->file->id,
+                                              "encoding", "aes-256-ctr",
+                                              "iv", ivhex,
+                                              "dek", dekhex,
+                                              "kekId", kekId,
+                                              "packetPosEncoding", encoding,
+                                              "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
+                                              (char *)NULL);
             break;
         }
         default:
@@ -484,6 +487,13 @@ LOCAL void writer_simple_exit()
     while (writer_simple_queue_length() > 0) {
         usleep(10000);
     }
+
+    for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
+        if (indexFiles[p].fp) {
+            fclose(indexFiles[p].fp);
+            indexFiles[p].fp = 0;
+        }
+    }
 }
 /******************************************************************************/
 // Called inside each packet thread
@@ -529,6 +539,108 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     MOLOCH_UNLOCK(simpleQ);
 
     return TRUE;
+}
+/******************************************************************************/
+FILE *writer_simple_get_index(int64_t fileNum)
+{
+    const int p = fileNum % INDEX_FILES_CACHE_SIZE;
+
+    if (indexFiles[p].fp) {
+        // This is the fileNum we are looking for
+        if (indexFiles[p].fileNum == fileNum) {
+            return indexFiles[p].fp;
+        }
+
+        // This isn't it, close the old one
+        fclose(indexFiles[p].fp);
+    }
+
+    char     filename[1024];
+    snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, fileNum);
+
+    if ((indexFiles[p].fp = fopen(filename, "a")) == NULL) {
+        LOGEXIT("Couldn't open file %s", filename);
+    }
+
+    return indexFiles[p].fp;
+}
+/******************************************************************************/
+void writer_simple_index (MolochSession_t * session)
+{
+    uint8_t  buf[0xffff*5];
+    BSB      bsb;
+    int      files = 0;
+    int64_t  filePos[1024];
+
+    BSB_INIT(bsb, buf, sizeof(buf));
+
+    FILE *fp = 0;
+    uint64_t last = 0;
+    uint64_t lastgap = 0;
+    for(guint i = 0; i < session->filePosArray->len; i++) {
+        int64_t packetPos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
+        if (packetPos < 0) {
+            if (fp) {
+                filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
+                fwrite(buf, BSB_LENGTH(bsb), 1, fp);
+                last = 0;
+                lastgap = 0;
+            }
+            fp = writer_simple_get_index(-packetPos);
+
+            filePos[files*3] = packetPos;      // Which file
+            filePos[files*3 + 1] = ftell(fp);  // Where in index file
+            files++;
+
+            BSB_INIT(bsb, buf, sizeof(buf));
+        } else {
+            uint64_t val = packetPos - last;
+            if (val == lastgap) {
+                val = 0;
+            } else {
+                lastgap = val;
+            }
+            last = packetPos;
+
+            if (val <= 0x7f) {
+                BSB_EXPORT_u08(bsb, val);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | (val & 0x7f));
+
+            if (val <= 0x3fff) {
+                BSB_EXPORT_u08(bsb, (val >> 7) & 0x7f);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f));
+
+            if (val <= 0x1fffff) {
+                BSB_EXPORT_u08(bsb, (val >> 14) & 0x7f);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f));
+
+            if (val <= 0x0fffffff) {
+                BSB_EXPORT_u08(bsb, (val >> 21) & 0x7f);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 21) & 0x7f));
+
+            if (val <= 0x07ffffffffLL) {
+                BSB_EXPORT_u08(bsb, (val >> 28) & 0x7f);
+                continue;
+            }
+            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));
+        }
+    }
+
+    if (fp) {
+        filePos[(files-1)*3 + 2] = BSB_LENGTH(bsb);
+        fwrite(buf, BSB_LENGTH(bsb), 1, fp);
+    }
+
+    g_array_set_size(session->filePosArray, 0);
+    g_array_append_vals(session->filePosArray, filePos, files*3);
 }
 /******************************************************************************/
 void writer_simple_init(char *name)
@@ -580,6 +692,17 @@ void writer_simple_init(char *name)
     }
 
     config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
+
+    localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
+    if (localPcapIndex) {
+        if (config.pcapDir[1]) {
+            LOG("WARNING - Will always use first pcap directory for local index");
+        }
+
+        config.maxFileSizeB = MIN(config.maxFileSizeB, 0x07ffffffffL);
+        config.gapPacketPos = FALSE;
+        moloch_writer_index = writer_simple_index;
+    }
 
     DLL_INIT(simple_, &simpleQ);
 
