@@ -226,11 +226,9 @@ exports.getSession = function (id, options, cb) {
                 newPacketPos.push(item);
                 for (let i = 0; i < buffer.length; i++) {
                   let x = buffer.readUInt8(i);
+                  // high bit set when last
                   if (x & 0x80) {
                     num = num + (x & 0x7f) * mult;
-                    mult *= 128;
-                  } else {
-                    num = num + x * mult;
                     if (num !== 0) {
                       lastgap = num;
                     }
@@ -238,6 +236,9 @@ exports.getSession = function (id, options, cb) {
                     newPacketPos.push(last);
                     num = 0;
                     mult = 1;
+                  } else {
+                    num = num + x * mult;
+                    mult *= 128; // Javscript can't shift large numbers, so mult
                   }
                 }
                 fs.closeSync(fd);

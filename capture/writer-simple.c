@@ -603,33 +603,30 @@ void writer_simple_index (MolochSession_t * session)
             last = packetPos;
 
             if (val <= 0x7f) {
-                BSB_EXPORT_u08(bsb, val);
+                BSB_EXPORT_u08(bsb, 0x80 | val);
                 continue;
             }
-            BSB_EXPORT_u08(bsb, 0x80 | (val & 0x7f));
+            BSB_EXPORT_u08(bsb, (val & 0x7f));
 
             if (val <= 0x3fff) {
-                BSB_EXPORT_u08(bsb, (val >> 7) & 0x7f);
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f);
                 continue;
             }
-            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f));
+            BSB_EXPORT_u08(bsb, ((val >> 7) & 0x7f));
 
             if (val <= 0x1fffff) {
-                BSB_EXPORT_u08(bsb, (val >> 14) & 0x7f);
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f);
                 continue;
             }
-            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f));
+            BSB_EXPORT_u08(bsb, ((val >> 14) & 0x7f));
 
             if (val <= 0x0fffffff) {
-                BSB_EXPORT_u08(bsb, (val >> 21) & 0x7f);
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 21) & 0x7f));
                 continue;
             }
-            BSB_EXPORT_u08(bsb, 0x80 | ((val >> 21) & 0x7f));
+            BSB_EXPORT_u08(bsb, ((val >> 21) & 0x7f));
 
-            if (val <= 0x07ffffffffLL) {
-                BSB_EXPORT_u08(bsb, (val >> 28) & 0x7f);
-                continue;
-            }
+            // Has to be last because of config.maxFileSizeB on init
             BSB_EXPORT_u08(bsb, 0x80 | ((val >> 28) & 0x7f));
         }
     }
