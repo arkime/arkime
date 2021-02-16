@@ -609,13 +609,13 @@ void writer_simple_index (MolochSession_t * session)
             BSB_EXPORT_u08(bsb, (val & 0x7f));
 
             if (val <= 0x3fff) {
-                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f);
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 7) & 0x7f));
                 continue;
             }
             BSB_EXPORT_u08(bsb, ((val >> 7) & 0x7f));
 
             if (val <= 0x1fffff) {
-                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f);
+                BSB_EXPORT_u08(bsb, 0x80 | ((val >> 14) & 0x7f));
                 continue;
             }
             BSB_EXPORT_u08(bsb, ((val >> 14) & 0x7f));
