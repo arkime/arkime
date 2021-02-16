@@ -29,7 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - BREAKING - wise - for json data keyColumn has been renamed keyPath
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
   - BREAKING - capture - override-ips will no longer have leading 0s for ASN
-  - release - curl 7.74.0, node 12.20.1, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
+  - release - curl 7.74.0, node 12.20.2, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - capture - fixed possible ABR with time parsing
   - capture - fixed memory leak with dns bad hostname parsing
@@ -37,6 +37,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - handle larger oracle connect msgs better
   - capture - parse small http basic auth headers correctly
   - capture - rule matches can now be logged
+  - capture - new localPcapIndex setting to enable pcap index on capture node instead of ES
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize APIs
