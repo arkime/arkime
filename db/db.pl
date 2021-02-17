@@ -3518,6 +3518,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esDelete("/${PREFIX}dstats", 1);
     dstatsCreate();
     exit 0;
+} elsif ($ARGV[1] eq "recreate-fields") {
+    waitFor("FIELDS", "This will delete and recreate the fields index, make sure no captures are running");
+    esDelete("/${PREFIX}fields_*", 1);
+    esDelete("/${PREFIX}fields", 1);
+    fieldsCreate();
+    exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
     my $esversion = dbESVersion();

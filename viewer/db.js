@@ -208,6 +208,7 @@ exports.getSession = function (id, options, cb) {
               last = fields.packetPos[i];
             }
           }
+          return cb(null, session);
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
           let newPacketPos = [];
           async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
@@ -249,12 +250,15 @@ exports.getSession = function (id, options, cb) {
             });
           }, () => {
             fields.packetPos = newPacketPos;
+            return cb(null, session);
           });
         } else {
           console.log('Unsupported packetPosEncoding', fileInfo);
+          return cb(null, session);
         }
+      } else {
+        return cb(null, session);
       }
-      return cb(null, session);
     });
   }
 
