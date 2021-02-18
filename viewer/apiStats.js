@@ -904,10 +904,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     ]).then(([settings, ilm, template]) => {
       let rsettings = [];
 
+      function getValue (key) {
+        return settings.transient[key] || settings.persistent[key] || settings.defaults[key];
+      }
+
       function addSetting (key, type, name, url, regex, current) {
-        if (current === undefined) { current = settings.transient[key]; }
-        if (current === undefined) { current = settings.persistent[key]; }
-        if (current === undefined) { current = settings.defaults[key]; }
+        if (current === undefined) { current = getValue(key); }
         if (current === undefined) { return; }
         rsettings.push({ key: key, current: current, name: name, type: type, url: url, regex: regex });
       }
@@ -917,20 +919,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
         '^(|null|\\d+)$');
 
-      addSetting('cluster.routing.allocation.disk.watermark.flood_stage', 'Percent or Byte Value',
-        'Disk Watermark Flood',
+      addSetting('arkime.disk.watermarks', '3 Percent or Byte Values',
+        'Disk Watermark Low,High,Flood',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
-
-      addSetting('cluster.routing.allocation.disk.watermark.high', 'Percent or Byte Value',
-        'Disk Watermark High',
-        'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
-
-      addSetting('cluster.routing.allocation.disk.watermark.low', 'Percent or Byte Value',
-        'Disk Watermark Low',
-        'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb))$');
+        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb),\\d+(%|b|kb|mb|gb|tb|pb),\\d+(%|b|kb|mb|gb|tb|pb))$',
+        getValue('cluster.routing.allocation.disk.watermark.low') + ',' +
+        getValue('cluster.routing.allocation.disk.watermark.high') + ',' +
+        getValue('cluster.routing.allocation.disk.watermark.flood_stage')
+      );
 
       addSetting('cluster.routing.allocation.enable', 'Mode',
         'Allocation Mode',
@@ -1036,6 +1032,34 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
 
+    // Must set all 3 at once because of ES bug/feature
+    if (req.body.key === 'arkime.disk.watermarks') {
+      let query = { body: { persistent: {} } };
+      if (req.body.value === '' || req.body.value === null) {
+        query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = null;
+        query.body.persistent['cluster.routing.allocation.disk.watermark.high'] = null;
+        query.body.persistent['cluster.routing.allocation.disk.watermark.flood_stage'] = null;
+      } else {
+        const parts = req.body.value.split(',');
+        if (parts.length !== 3) {
+          return res.molochError(500, 'Must be 3 piece of info');
+        }
+
+        query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = parts[0];
+        query.body.persistent['cluster.routing.allocation.disk.watermark.high'] = parts[1];
+        query.body.persistent['cluster.routing.allocation.disk.watermark.flood_stage'] = parts[2];
+      }
+
+      Db.putClusterSettings(query, (err, result) => {
+        if (err) {
+          console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
+          return res.molochError(500, 'Set failed');
+        }
+        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+      });
+      return;
+    }
+
     if (req.body.key.startsWith('arkime.ilm')) {
       Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
         const silm = ilm[`${internals.prefix}molochsessions`];
@@ -1104,7 +1128,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.putClusterSettings(query, (err, result) => {
       if (err) {
-        console.log('putSettings failed', result);
+        console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
         return res.molochError(500, 'Set failed');
       }
       return res.send(JSON.stringify({ success: true, text: 'Set' }));
@@ -1308,7 +1332,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       query.body.persistent[settingName] = exclude.join(',');
 
       Db.putClusterSettings(query, (err, settings) => {
-        if (err) { console.log('putSettings', err); }
+        if (err) { console.log('putSettings', JSON.stringify(err, false, 2), 'query', query); }
         return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
       });
     });

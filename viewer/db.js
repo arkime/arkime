@@ -210,46 +210,50 @@ exports.getSession = function (id, options, cb) {
           }
           return cb(null, session);
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
-          let newPacketPos = [];
-          async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
-            if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
+          exports.isLocalView(fields.node, () => {
+            let newPacketPos = [];
+            async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
+              if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
-            exports.fileIdToFile(fields.node, -1 * item, (fileInfo) => {
-              try {
-                const fd = fs.openSync(fileInfo.indexFilename, 'r');
-                if (!fd) { return nextCb(); }
-                const buffer = Buffer.alloc(fields.packetPos[key + 2]);
-                fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
-                let last = 0;
-                let lastgap = 0;
-                let num = 0;
-                let mult = 1;
-                newPacketPos.push(item);
-                for (let i = 0; i < buffer.length; i++) {
-                  let x = buffer.readUInt8(i);
-                  // high bit set when last
-                  if (x & 0x80) {
-                    num = num + (x & 0x7f) * mult;
-                    if (num !== 0) {
-                      lastgap = num;
+              exports.fileIdToFile(fields.node, -1 * item, (fileInfo) => {
+                try {
+                  const fd = fs.openSync(fileInfo.indexFilename, 'r');
+                  if (!fd) { return nextCb(); }
+                  const buffer = Buffer.alloc(fields.packetPos[key + 2]);
+                  fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
+                  let last = 0;
+                  let lastgap = 0;
+                  let num = 0;
+                  let mult = 1;
+                  newPacketPos.push(item);
+                  for (let i = 0; i < buffer.length; i++) {
+                    let x = buffer.readUInt8(i);
+                    // high bit set when last
+                    if (x & 0x80) {
+                      num = num + (x & 0x7f) * mult;
+                      if (num !== 0) {
+                        lastgap = num;
+                      }
+                      last += lastgap;
+                      newPacketPos.push(last);
+                      num = 0;
+                      mult = 1;
+                    } else {
+                      num = num + x * mult;
+                      mult *= 128; // Javscript can't shift large numbers, so mult
                     }
-                    last += lastgap;
-                    newPacketPos.push(last);
-                    num = 0;
-                    mult = 1;
-                  } else {
-                    num = num + x * mult;
-                    mult *= 128; // Javscript can't shift large numbers, so mult
                   }
+                  fs.closeSync(fd);
+                } catch (e) {
+                  console.log(e);
                 }
-                fs.closeSync(fd);
                 return nextCb();
-              } catch (e) {
-                console.log(e);
-              }
+              });
+            }, () => {
+              fields.packetPos = newPacketPos;
+              return cb(null, session);
             });
           }, () => {
-            fields.packetPos = newPacketPos;
             return cb(null, session);
           });
         } else {

@@ -49,6 +49,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - can modify some sessions2 template from esadmin tab
   - viewer - can modify entire shortcuts now
   - viewer - spigraph visualization improvements
+  - viewer - Can set watermark settings again
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse
