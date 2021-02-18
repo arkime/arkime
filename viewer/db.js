@@ -842,7 +842,15 @@ exports.deleteUser = function (name, cb) {
 // Set user, callback only
 exports.setUser = function (name, doc, cb) {
   delete internals.usersCache[name];
-  internals.usersClient7.index({ index: internals.usersPrefix + 'users', body: doc, id: name, refresh: true, timeout: '10m' }, (err) => {
+  const createOnly = !!doc._createOnly;
+  delete doc._createOnly;
+  internals.usersClient7.index({
+    index: internals.usersPrefix + 'users',
+    body: doc, id: name,
+    refresh: true,
+    timeout: '10m',
+    op_type: createOnly ? 'create' : 'index'
+  }, (err) => {
     delete internals.usersCache[name]; // Delete again after db says its done refreshing
     cb(err);
   });

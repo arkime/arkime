@@ -64,6 +64,7 @@
     "viewer:bundle": "webpack -d --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:start": "cd viewer && node viewer.js -c ../config.ini",
     "previewer:start": "npm run viewer:build",
+    "previewer:dev": "(cd viewer && node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch --createOnly)",
     "viewer:dev": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:test": "(cd viewer && nodemon viewer.js --debug -c ../tests/config.test.ini -n test) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:testuserdebug": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser --debug) & webpack -d --no-stats --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",

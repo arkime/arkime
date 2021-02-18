@@ -19,11 +19,11 @@
  */
 
 'use strict';
-var Config = require('./config.js');
-var Db = require('./db.js');
-var crypto = require('crypto');
+const Config = require('./config.js');
+const Db = require('./db.js');
+const crypto = require('crypto');
 
-var escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
   console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
   console.log('');
@@ -36,6 +36,7 @@ function help () {
   console.log('  --webauth             Can auth using the web auth header or password');
   console.log('  --webauthonly         Can auth using the web auth header only, password ignored');
   console.log('  --packetSearch        Can create a packet search job (hunt)');
+  console.log('  --createOnly          Only create the user if it doesn\'t exist');
   console.log('');
   console.log('Config Options:');
   console.log('  -c <config file>      Config file to use');
@@ -51,7 +52,7 @@ function main () {
     process.exit(0);
   }
 
-  var nuser = {
+  const nuser = {
     userId: process.argv[2],
     userName: process.argv[3],
     passStore: Config.pass2store(process.argv[2], process.argv[4]),
@@ -66,8 +67,7 @@ function main () {
     settings: {}
   };
 
-  var i;
-  for (i = 5; i < process.argv.length; i++) {
+  for (let i = 5; i < process.argv.length; i++) {
     switch (process.argv[i]) {
     case '--admin':
     case '-admin':
@@ -111,6 +111,11 @@ function main () {
       nuser.packetSearch = true;
       break;
 
+    case '--createOnly':
+    case '-createOnly':
+      nuser._createOnly = true;
+      break;
+
     default:
       console.log('Unknown option', process.argv[i]);
       help();
@@ -119,7 +124,11 @@ function main () {
 
   Db.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
-      console.log('Elastic search error', err);
+      if (err.meta.body.error.type === 'version_conflict_engine_exception') {
+        console.log('User already exists');
+      } else {
+        console.log('Elastic search error', JSON.stringify(err, false, 2));
+      }
     } else {
       console.log('Added');
     }
