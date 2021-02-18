@@ -1970,7 +1970,7 @@ app.get( // reverse dns endpoint
 
 // uploads apis ---------------------------------------------------------------
 app.post(
-  ['/api/updload', '/upload'],
+  ['/api/upload', '/upload'],
   [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
   miscAPIs.upload
 );
