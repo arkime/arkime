@@ -846,7 +846,8 @@ exports.setUser = function (name, doc, cb) {
   delete doc._createOnly;
   internals.usersClient7.index({
     index: internals.usersPrefix + 'users',
-    body: doc, id: name,
+    body: doc,
+    id: name,
     refresh: true,
     timeout: '10m',
     op_type: createOnly ? 'create' : 'index'
