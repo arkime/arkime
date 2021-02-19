@@ -23,9 +23,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
-#ifdef __FreeBSD__
 #include <sys/stat.h>
-#endif
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 
@@ -560,6 +558,10 @@ FILE *writer_simple_get_index(int64_t fileNum)
 
     if ((indexFiles[p].fp = fopen(filename, "a")) == NULL) {
         LOGEXIT("Couldn't open file %s", filename);
+    }
+
+    if (!config.pcapReadOffline) {
+        fchmod(fileno(indexFiles[p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
     }
 
     return indexFiles[p].fp;
