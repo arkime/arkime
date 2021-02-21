@@ -158,6 +158,11 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
         session->tcpFlagCnt[MOLOCH_TCPFLAG_URG]++;
     }
 
+    // add to the long open
+    if (!session->tcp_next) {
+        DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
+    }
+
     if (tcphdr->th_flags & TH_SYN) {
         if (tcphdr->th_flags & TH_ACK) {
             session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK]++;
@@ -183,9 +188,6 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
         if ((session->synSet & (1 << packet->direction)) == 0) {
             session->tcpSeq[packet->direction] = seq + 1;
             session->synSet |= (1 << packet->direction);
-        }
-        if (!session->tcp_next) {
-            DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
         }
         return 1;
     }

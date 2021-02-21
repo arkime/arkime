@@ -38,6 +38,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - parse small http basic auth headers correctly
   - capture - rule matches can now be logged
   - capture - new localPcapIndex setting to enable pcap index on capture node instead of ES
+  - capture - write long open tcp sessions every tcpSaveTimeout even if no syn
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize APIs
