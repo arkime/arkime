@@ -483,7 +483,7 @@ export default {
       if (localStorage && this.user.settings) { // display user saved options
         if (this.user.settings.detailFormat === 'last' && localStorage['moloch-base']) {
           this.params.base = localStorage['moloch-base'];
-        } else if (this.user.settings.detailFormat) {
+        } else if (this.user.settings.detailFormat && this.user.settings.detailFormat !== 'last') {
           this.params.base = this.user.settings.detailFormat;
         }
 

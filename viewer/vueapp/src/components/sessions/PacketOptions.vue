@@ -36,7 +36,12 @@
         text="Packet Options">
         <b-dropdown-item
           @click="toggleShowFrames">
-          {{ params.showFrames ? 'Show Reassambled Packets' : 'Show Packet Flow' }}
+          {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Packet Flow' }}
+        </b-dropdown-item>
+        <b-dropdown-item
+          @click="toggleTimestamps">
+          {{ params.ts ? 'Hide' : 'Show' }}
+          Packet Info
         </b-dropdown-item>
         <b-dropdown-item
           v-if="params.base === 'hex'"
@@ -54,11 +59,6 @@
           @click="toggleImages">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
-        </b-dropdown-item>
-        <b-dropdown-item
-          @click="toggleTimestamps">
-          {{ params.ts ? 'Hide' : 'Show' }}
-          Packet Info
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item
