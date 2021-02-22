@@ -28,30 +28,12 @@
           { value: 'hex', text: 'hex' }
         ]"
       /> <!-- /packet display type -->
-      <!-- src/dst packets -->
-      <div class="btn-group mr-1">
-        <button type="button"
-          class="btn btn-sm btn-secondary btn-checkbox btn-sm"
-          :class="{'active':params.showSrc}"
-          @click="toggleShowSrc"
-          v-b-tooltip
-          title="Toggle source packet visibility">
-          Src
-        </button>
-        <button type="button"
-          class="btn btn-secondary btn-checkbox btn-sm"
-          :class="{'active':params.showDst}"
-          @click="toggleShowDst"
-          v-b-tooltip
-          title="Toggle destination packet visibility">
-          Dst
-        </button>
-      </div> <!-- /src/dst packets -->
       <!-- toggle options -->
       <b-dropdown
         size="sm"
         class="mr-1"
-        text="Packet Display Options">
+        variant="checkbox"
+        text="Packet Options">
         <b-dropdown-item
           @click="toggleShowFrames">
           {{ params.showFrames ? 'Show Reassambled Packets' : 'Show Packet Flow' }}
@@ -90,8 +72,26 @@
           Open <strong>dst</strong> packets with CyberChef
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
+      <!-- src/dst packets -->
+      <div class="btn-group mr-1">
+        <button type="button"
+          class="btn btn-sm btn-secondary btn-checkbox btn-sm"
+          :class="{'active':params.showSrc}"
+          @click="toggleShowSrc"
+          v-b-tooltip
+          title="Toggle source packet visibility">
+          Src
+        </button>
+        <button type="button"
+          class="btn btn-secondary btn-checkbox btn-sm"
+          :class="{'active':params.showDst}"
+          @click="toggleShowDst"
+          v-b-tooltip
+          title="Toggle destination packet visibility">
+          Dst
+        </button>
+      </div> <!-- /src/dst packets -->
       <!-- decodings -->
-      <!-- TODO this isn't showing active -->
       <div class="btn-group">
         <button
           v-for="(value, key) in decodings"
@@ -100,8 +100,8 @@
           v-b-tooltip.hover
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
-          :title="value.name + 'Decoding'"
-          :class="{'active':params.decode[key]}"
+          :title="`Toggle ${value.name} Decoding`"
+          :class="{'active':value.active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
         </button>
@@ -169,6 +169,13 @@ export default {
       decodingForm: false
     };
   },
+  mounted () {
+    for (const decoding in this.decodings) {
+      if (this.params.decoding[decoding]) {
+        this.decodings[decoding].active = true;
+      }
+    }
+  },
   methods: {
     getPackets () {
       this.$emit('getPackets');
@@ -199,10 +206,10 @@ export default {
      * If a decoding needs more input, shows form
      * @param {string} key Identifier of the decoding to toggle
      */
-    toggleDecoding: function (key) {
+    toggleDecoding (key) {
       const decoding = this.decodings[key];
 
-      decoding.active = !decoding.active;
+      this.$set(decoding, 'active', !decoding.active);
 
       if (decoding.fields && decoding.active) {
         this.decodingForm = key;
@@ -215,7 +222,7 @@ export default {
      * Closes the form for additional decoding input
      * @param {bool} active The active state of the decoding
      */
-    closeDecodingForm: function (active) {
+    closeDecodingForm (active) {
       if (this.decodingForm) {
         this.decodings[this.decodingForm].active = active;
       }
@@ -226,23 +233,21 @@ export default {
      * Sets the decode param, issues query, and closes form if necessary
      * @param {key} key Identifier of the decoding to apply
      */
-    applyDecoding: function (key) {
+    applyDecoding (key) {
       this.params.decode[key] = {};
+
       const decoding = this.decodings[key];
 
       if (decoding.active) {
         if (decoding.fields) {
-          for (let i = 0, len = decoding.fields.length; i < len; ++i) {
-            let field = decoding.fields[i];
-            this.params.decode[key][field.key] = field.value;
+          for (const field of decoding.fields) {
+            this.$set(this.params.decode[key], field.key, field.value);
           }
         }
       } else {
-        this.params.decode[key] = null;
-        delete this.params.decode[key];
+        this.$delete(this.params.decode, key);
       }
 
-      console.log('apply decoding', this.params.decode); // TODO ECR remove
       this.$emit('updateDecodings', this.params.decode);
       this.closeDecodingForm(decoding.active);
 
