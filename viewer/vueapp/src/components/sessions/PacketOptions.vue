@@ -36,7 +36,7 @@
         text="Packet Options">
         <b-dropdown-item
           @click="toggleShowFrames">
-          {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Packet Flow' }}
+          {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="toggleTimestamps">
