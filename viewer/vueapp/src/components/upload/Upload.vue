@@ -132,7 +132,7 @@ export default {
     uploadFile: function () {
       this.uploading = true;
 
-      let formData = new FormData();
+      const formData = new FormData();
 
       formData.append('file', this.file);
       formData.append('tags', this.tags);

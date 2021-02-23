@@ -196,7 +196,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const clone = {};
 
     for (const prop of userProps) {
-      if (req.user.hasOwnProperty(prop)) {
+      if (req.user[prop]) {
         clone[prop] = req.user[prop];
       }
     }
@@ -731,7 +731,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }
           // only admins or the user that created the view can delete the shared view
           if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
-            return res.molochError(401, `Need admin privelages to delete another user's shared view`);
+            return res.molochError(401, 'Need admin privelages to delete another user\'s shared view');
           }
           delete sharedUser.views[name];
         }
@@ -817,7 +817,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         if (sharedUser.views[name] === undefined) { return res.molochError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
         if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
-          return res.molochError(401, `Need admin privelages to unshare another user's shared view`);
+          return res.molochError(401, 'Need admin privelages to unshare another user\'s shared view');
         }
         // delete the shared view
         delete sharedUser.views[name];
@@ -862,7 +862,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }
           // only admins or the user that created the view can update the shared view
           if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-            return res.molochError(401, `Need admin privelages to update another user's shared view`);
+            return res.molochError(401, 'Need admin privelages to update another user\'s shared view');
           }
           sharedUser.views[req.body.name] = {
             expression: req.body.expression,
@@ -1135,7 +1135,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // Fix for new names
     if (req.settingUser.columnConfigs) {
       for (const key in req.settingUser.columnConfigs) {
-        let item = req.settingUser.columnConfigs[key];
+        const item = req.settingUser.columnConfigs[key];
         item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
         if (item.order && item.order.length > 0) {
           item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);

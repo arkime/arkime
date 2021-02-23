@@ -143,7 +143,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         exp: this.intersectionFields,
         counts: 0,
         sort: this.sort
@@ -158,13 +158,13 @@ export default {
     /* helper functions ------------------------------------------ */
     /* compute the string of comma separated field exp values */
     computeIntersectionFields: function () {
-      let fieldExpList = [];
+      const fieldExpList = [];
 
-      for (let field of this.fields) {
+      for (const field of this.fields) {
         if (field.exp === 'info' || field.type === 'seconds') {
           continue;
         } else if (field.children) {
-          for (let child of field.children) {
+          for (const child of field.children) {
             fieldExpList.push(child.exp);
           }
         } else {

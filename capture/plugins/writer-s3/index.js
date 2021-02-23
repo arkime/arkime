@@ -20,13 +20,13 @@
 const AWS = require('aws-sdk');
 const async = require('async');
 const zlib = require('zlib');
-var S3s = {};
-var Config;
-var Db;
-var Pcap;
+const S3s = {};
+let Config;
+let Db;
+let Pcap;
 
-var COMPRESSED_BLOCK_SIZE = 100000;
-var COMPRESSED_WITHIN_BLOCK_BITS = 20;
+const COMPRESSED_BLOCK_SIZE = 100000;
+const COMPRESSED_WITHIN_BLOCK_BITS = 20;
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
@@ -34,24 +34,24 @@ function splitRemain (str, separator, limit) {
   str = str.split(separator);
   if (str.length <= limit) { return str; }
 
-  var ret = str.splice(0, limit);
+  const ret = str.splice(0, limit);
   ret.push(str.join(separator));
 
   return ret;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function makeS3 (node, region) {
-  var key = Config.getFull(node, 's3AccessKeyId');
+  const key = Config.getFull(node, 's3AccessKeyId');
 
-  var s3 = S3s[region + key];
+  const s3 = S3s[region + key];
   if (s3) {
     return s3;
   }
 
-  var s3Params = { region: region };
+  const s3Params = { region: region };
 
   if (key) {
-    var secret = Config.getFull(node, 's3SecretAccessKey');
+    const secret = Config.getFull(node, 's3SecretAccessKey');
     if (!secret) {
       console.log('ERROR - No s3SecretAccessKey set for ', node);
     }
@@ -64,8 +64,8 @@ function makeS3 (node, region) {
     s3Params.endpoint = Config.getFull(node, 's3Host');
   }
 
-  var bucket = Config.getFull(node, 's3Bucket');
-  var bucketHasDot = bucket.indexOf('.') >= 0;
+  const bucket = Config.getFull(node, 's3Bucket');
+  const bucketHasDot = bucket.indexOf('.') >= 0;
   if (Config.getBoolFull(node, 's3PathAccessStyle', bucketHasDot) === true) {
     s3Params.s3ForcePathStyle = true;
   }
@@ -75,22 +75,22 @@ function makeS3 (node, region) {
   }
 
   // Lets hope that we can find a credential provider elsewhere
-  var rv = S3s[region + key] = new AWS.S3(s3Params);
+  const rv = S3s[region + key] = new AWS.S3(s3Params);
   return rv;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
-  var fields = session._source || session.fields;
+  const fields = session._source || session.fields;
 
   // Get first pcap header
-  var header, pcap, s3;
+  let header, pcap, s3;
   Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
-    var parts = splitRemain(info.name, '/', 4);
+    const parts = splitRemain(info.name, '/', 4);
 
     // Make s3 for this request, all will be in same region
     s3 = makeS3(fields.node, parts[2]);
 
-    var params = {
+    const params = {
       Bucket: parts[3],
       Key: parts[4],
       Range: 'bytes=0-128'
@@ -116,7 +116,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   });
 
   function readyToProcess () {
-    var itemPos = 0;
+    let itemPos = 0;
 
     function process (data, nextCb) {
       // console.log("NEXT", data);
@@ -128,28 +128,28 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         }
         if (data.compressed) {
           // Need to decompress the block(s)
-          var decompressed = {};
+          const decompressed = {};
           // First build a map from rangeStart to the decompressed block
-          for (var i = 0; i < data.subPackets.length; i++) {
-            var sp = data.subPackets[i];
+          for (let i = 0; i < data.subPackets.length; i++) {
+            const sp = data.subPackets[i];
             if (!decompressed[sp.rangeStart]) {
-              var offset = sp.rangeStart - data.rangeStart;
+              const offset = sp.rangeStart - data.rangeStart;
               decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
                 { finishFlush: zlib.constants.Z_SYNC_FLUSH });
             }
           }
           async.each(data.subPackets, function (sp, nextCb) {
-            var block = decompressed[sp.rangeStart];
-            var packetData = block.subarray(sp.packetStart, sp.packetEnd);
-            var len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+            const block = decompressed[sp.rangeStart];
+            const packetData = block.subarray(sp.packetStart, sp.packetEnd);
+            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
 
             packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
           nextCb);
         } else {
           async.each(data.subPackets, function (sp, nextCb) {
-            var packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
-            var len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+            const packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
 
             packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
           },
@@ -159,27 +159,27 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     }
 
     // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
-    var packetData = [];
+    const packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, function (p, nextCb) {
-      var pos = fields.packetPos[p];
+      const pos = fields.packetPos[p];
 
       if (pos < 0) {
         Db.fileIdToFile(fields.node, pos * -1, function (info) {
-          var parts = splitRemain(info.name, '/', 4);
+          const parts = splitRemain(info.name, '/', 4);
           p = parseInt(p);
-          var compressed = info.name.endsWith('.gz');
-          for (var pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
-            var pos = fields.packetPos[pp];
-            var len = 65536;
+          const compressed = info.name.endsWith('.gz');
+          for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
+            const pos = fields.packetPos[pp];
+            let len = 65536;
             if (fields.packetLen) {
               len = fields.packetLen[pp];
             }
-            var params = {
+            const params = {
               Bucket: parts[3],
               Key: parts[4]
             };
-            var pd = packetData[pp] = {
+            const pd = packetData[pp] = {
               params: params,
               info: info,
               compressed: compressed
@@ -205,10 +205,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     },
     function (pcapErr, results) {
       // Now we have all the packetData objects. Set the itemPos correctly
-      var packetDataOpt = [];
-      var previousData = null;
-      for (var i = 0; i < packetData.length; i++) {
-        var data = packetData[i];
+      const packetDataOpt = [];
+      let previousData = null;
+      for (let i = 0; i < packetData.length; i++) {
+        const data = packetData[i];
         if (data) {
           data.itemPos = itemPos++;
           // See if we should glue these two together
@@ -241,28 +241,32 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 function s3Expire () {
-  var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
+  const query = {
+    _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
     size: 1000,
-    query: { bool: {
-      must: [
-        { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
-        { prefix: { name: 's3://' } }
-      ]
-    } },
-    sort: { first: { order: 'asc' } } };
+    query: {
+      bool: {
+        must: [
+          { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
+          { prefix: { name: 's3://' } }
+        ]
+      }
+    },
+    sort: { first: { order: 'asc' } }
+  };
   Db.search('files', 'file', query, function (err, data) {
-    if (!data.hits || !data.hits.hits) {
+    if (err || !data.hits || !data.hits.hits) {
       return;
     }
     // console.log("HITS", data.hits.hits);
 
     data.hits.hits.forEach(function (item) {
-      var parts = splitRemain(item._source.name, '/', 4);
-      var s3 = makeS3(item._source.node, parts[2]);
+      const parts = splitRemain(item._source.name, '/', 4);
+      const s3 = makeS3(item._source.node, parts[2]);
       s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, function (err, data) {
         if (err) {
-          console.log(`Couldn't delete from S3`, item._id, item._source);
+          console.log('Couldn\'t delete from S3', item._id, item._source);
         } else {
           Db.deleteDocument('files', 'file', item._id, function (err, data) {
             if (err) {

@@ -3,7 +3,8 @@
 module.exports = {
   root: true,
   parserOptions: {
-    parser: 'babel-eslint'
+    parser: '@babel/eslint-parser',
+    requireConfigFile: false
   },
   env: {
     browser: true,
@@ -33,6 +34,11 @@ module.exports = {
     'no-labels': ['error', { 'allowLoop': true }],
     'no-new-func': 'off',
     'indent': ['error', 2, {'SwitchCase': 0}],
-    'no-useless-return': 'off'
+    'no-useless-return': 'off',
+    'node/no-callback-literal': 'off',
+    'node/handle-callback-err': 'off',
+    'no-case-declarations': 'off',
+    'no-empty': 'off',
+    'default-case-last': 'off'
   }
 }

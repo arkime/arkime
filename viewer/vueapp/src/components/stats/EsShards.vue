@@ -285,7 +285,7 @@ export default {
             return a.localeCompare(b);
           });
 
-          for (var node of this.nodes) {
+          for (const node of this.nodes) {
             if (node === 'Unassigned') {
               this.columns.push({ name: node, doClick: false, hasDropdown: false });
             } else {

@@ -35,7 +35,7 @@ export default {
    * @returns {array} An array of factors
    */
   findFactors: function (num) {
-    let numArr = [...Array(num).keys()];
+    const numArr = [...Array(num).keys()];
     return numArr.filter((i) => { return num % i === 0; });
   },
 
@@ -47,7 +47,7 @@ export default {
    * @returns {object} An object of result
    */
   checkClusterSelection: function (queryCluster, availableClusterList) {
-    var result = {
+    const result = {
       valid: true,
       error: ''
     };
@@ -62,8 +62,8 @@ export default {
       // either no active cluster or it is taking time to fetch the available cluster
       return result;
     } else {
-      var queryClusterList = queryCluster ? queryCluster.split(',') : [];
-      for (var i = 0; i < queryClusterList.length; i++) {
+      const queryClusterList = queryCluster ? queryCluster.split(',') : [];
+      for (let i = 0; i < queryClusterList.length; i++) {
         if (availableClusterList.includes(queryClusterList[i])) { // valid selection
           result.valid = true;
           result.error = '';

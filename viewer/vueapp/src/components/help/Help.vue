@@ -1309,7 +1309,7 @@
 import FieldService from '../search/FieldService';
 
 let timeout;
-let info = {
+const info = {
   ip: { operator: '==, !=', type: 'ip' },
   lotermfield: { operator: '==, !=', type: 'lower case string' },
   termfield: { operator: '==, !=', type: 'mixed case string' },

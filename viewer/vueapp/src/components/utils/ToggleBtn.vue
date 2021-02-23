@@ -12,7 +12,7 @@
 <script>
 export default {
   name: 'ToggleBtn',
-  props: [ 'opened' ],
+  props: ['opened'],
   computed: {
     btnClass: function () {
       return {

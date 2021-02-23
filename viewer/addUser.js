@@ -140,7 +140,8 @@ if (process.argv.length < 5) {
   help();
 }
 
-Db.initialize({ host: escInfo,
+Db.initialize({
+  host: escInfo,
   prefix: Config.get('prefix', ''),
   esClientKey: Config.get('esClientKey', null),
   esClientCert: Config.get('esClientCert', null),
@@ -148,4 +149,5 @@ Db.initialize({ host: escInfo,
   insecure: Config.insecure,
   ca: Config.getCaTrustCerts(Config.nodeName()),
   usersHost: Config.get('usersElasticsearch'),
-  usersPrefix: Config.get('usersPrefix') }, main);
+  usersPrefix: Config.get('usersPrefix')
+}, main);

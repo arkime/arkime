@@ -7,7 +7,6 @@ const http = require('http');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
-const url = require('url');
 const util = require('util');
 const decode = require('./decode.js');
 
@@ -572,8 +571,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   }
 
   function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
-    let fields;
-
     function processFile (pcap, pos, i, nextCb) {
       pcap.ref();
       pcap.readPacket(pos, (packet) => {
@@ -593,7 +590,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    fields = session._source || session.fields;
+    const fields = session._source || session.fields;
 
     let fileNum;
     let itemPos = 0;
@@ -697,7 +694,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
           let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
           let bufpos = 0;
-          const info = url.parse(viewUrl);
+          const info = new URL(viewUrl);
           info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
           info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
 
@@ -957,7 +954,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (packet) {
           if (packet.length > 16) {
             try {
-              let obj = {};
+              const obj = {};
               pcap.decode(packet, obj);
               pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[0], whatToRemove === 'all');
               pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
@@ -1170,7 +1167,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   module.buildSessionQuery = (req, buildCb, queryOverride = null) => {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
-    let interval;
 
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
@@ -1183,7 +1179,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (startAndStopParams[1] !== undefined) {
       reqQuery.stopTime = startAndStopParams[1];
     }
-    interval = startAndStopParams[2];
+
+    const interval = startAndStopParams[2];
 
     if ((parseInt(reqQuery.date) > parseInt(req.user.timeLimit)) ||
       ((reqQuery.date === '-1') && req.user.timeLimit)) {
@@ -1200,7 +1197,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     const limit = Math.min(2000000, +reqQuery.length || 100);
 
-    const query = { from: reqQuery.start || 0,
+    const query = {
+      from: reqQuery.start || 0,
       size: limit,
       timeout: internals.esQueryTimeout,
       query: { bool: { filter: [] } }
@@ -1407,7 +1405,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
         return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
-      const info = url.parse(viewUrl);
+      const info = new URL(viewUrl);
       info.path = req.url;
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;
@@ -1556,7 +1554,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         query._source = ViewerUtils.queryValueToArray(req.query.fields);
       }
 
-      res.send({ 'esquery': query, 'indices': indices });
+      res.send({ esquery: query, indices: indices });
     });
   };
 
@@ -2195,7 +2193,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         // This uses a depth first search.
         const tableResults = [];
         function addDataToTable (parents, buckets) {
-          for (let bucket of buckets) {
+          for (const bucket of buckets) {
             if (bucket.field) {
               // Not leaf - add this one to parents list, recurse, and remove from parents list
               parents.push({
@@ -2952,7 +2950,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    */
   module.deleteData = (req, res) => {
     if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
-      return res.molochError(403, `You can't delete nothing`);
+      return res.molochError(403, 'You can\'t delete nothing');
     }
 
     let whatToRemove;
@@ -2974,7 +2972,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         scrubList(req, res, whatToRemove, list);
       });
     } else {
-      return res.molochError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
+      return res.molochError(403, 'Error: Missing expression. An expression is required so you don\'t delete everything.');
     }
   };
 

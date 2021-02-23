@@ -529,7 +529,7 @@ export default {
   },
   watch: {
     // watch for the route to change, then update the view
-    '$route': 'updateParams',
+    $route: 'updateParams',
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.loadData(); }
     }
@@ -560,7 +560,7 @@ export default {
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
     },
     updateParams: function () {
-      let queryParams = this.$route.query;
+      const queryParams = this.$route.query;
 
       if (queryParams.statsTab) {
         this.tabIndex = parseInt(queryParams.statsTab, 10);

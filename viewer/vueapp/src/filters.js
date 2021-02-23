@@ -80,7 +80,7 @@ Vue.filter('extractIPv6String', (ipv6) => {
  * @returns {string}          The human understandable protocol string
  */
 Vue.filter('protocol', (protocolCode) => {
-  let lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
+  const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
   let result = lookup[protocolCode];
   if (!result) { result = protocolCode; }
@@ -101,7 +101,7 @@ Vue.filter('protocol', (protocolCode) => {
 Vue.filter('humanReadableBits', (fileSizeInBits) => {
   fileSizeInBits = parseInt(fileSizeInBits);
   let i = 0;
-  let bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  const bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (fileSizeInBits >= 1024) {
     fileSizeInBits = fileSizeInBits / 1024;
     i++;
@@ -128,7 +128,7 @@ Vue.filter('humanReadableBits', (fileSizeInBits) => {
 Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
   fileSizeInBytes = parseInt(fileSizeInBytes);
   let i = 0;
-  let byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
+  const byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
   while (fileSizeInBytes >= 1000) {
     fileSizeInBytes = fileSizeInBytes / 1024;
     i++;
@@ -154,7 +154,7 @@ Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
  */
 Vue.filter('humanReadableNumber', (num) => {
   let i = 0;
-  let units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  const units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (num >= 1000) {
     num = num / 1000;
     i++;
@@ -225,10 +225,10 @@ Vue.filter('round', function (value, decimals) {
 Vue.filter('readableTime', function (ms) {
   if (isNaN(ms)) { return '?'; }
 
-  let seconds = parseInt((ms / 1000) % 60);
-  let minutes = parseInt((ms / (1000 * 60)) % 60);
-  let hours = parseInt((ms / (1000 * 60 * 60)) % 24);
-  let days = parseInt((ms / (1000 * 60 * 60 * 24)));
+  const seconds = parseInt((ms / 1000) % 60);
+  const minutes = parseInt((ms / (1000 * 60)) % 60);
+  const hours = parseInt((ms / (1000 * 60 * 60)) % 24);
+  const days = parseInt((ms / (1000 * 60 * 60 * 24)));
 
   let result = '';
 
@@ -266,8 +266,8 @@ Vue.filter('readableTime', function (ms) {
 Vue.filter('readableTimeCompact', function (ms) {
   if (isNaN(ms)) { return '?'; }
 
-  let hours = parseInt((ms / (1000 * 60 * 60)) % 24);
-  let days = parseInt((ms / (1000 * 60 * 60 * 24)));
+  const hours = parseInt((ms / (1000 * 60 * 60)) % 24);
+  const days = parseInt((ms / (1000 * 60 * 60 * 24)));
 
   let result = '';
 

@@ -426,8 +426,8 @@ export default {
       }
     },
     filteredClusteres: function () {
-      let filteredGroupedClusters = {};
-      for (let group in this.availableCluster) {
+      const filteredGroupedClusters = {};
+      for (const group in this.availableCluster) {
         filteredGroupedClusters[group] = this.$options.filters.searchCluster(
           this.esQuery,
           this.availableCluster[group]
@@ -595,12 +595,12 @@ export default {
         ConfigService.getClusters()
           .then((response) => {
             this.availableCluster = response;
-            var clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+            const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
             if (clusters.length === 0) {
               this.selectedCluster = response.active;
             } else {
               this.selectedCluster = [];
-              for (var i = 0; i < clusters.length; i++) {
+              for (let i = 0; i < clusters.length; i++) {
                 if (response.active.includes(clusters[i])) {
                   this.selectedCluster.push(clusters[i]);
                 }
@@ -617,7 +617,7 @@ export default {
       }
     },
     updateRouteQueryForClusters: function (clusters) {
-      var cluster = clusters.length > 0 ? clusters.join(',') : 'none';
+      const cluster = clusters.length > 0 ? clusters.join(',') : 'none';
       if (!this.$route.query.cluster || this.$route.query.cluster !== cluster) {
         this.$router.push({
           query: {
@@ -640,10 +640,10 @@ export default {
         this.$store.state.time.startTime && this.$store.state.time.stopTime) {
         if (this.user.timeLimit) {
           // make sure the query doesn't exceed the user time limit
-          let deltaTime = this.$store.state.time.stopTime - this.$store.state.time.startTime;
+          const deltaTime = this.$store.state.time.stopTime - this.$store.state.time.startTime;
 
           // make sure the time range does not exceed the user setting
-          let deltaTimeHrs = deltaTime / 3600;
+          const deltaTimeHrs = deltaTime / 3600;
           if (deltaTimeHrs > this.user.timeLimit) {
             return;
           }

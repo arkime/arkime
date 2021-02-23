@@ -160,11 +160,13 @@ module.exports = (Db, internals, ViewerUtils) => {
         }
       }
 
-      const sendResults = map ? results.map : {
-        data: results.list,
-        recordsTotal: total.count,
-        recordsFiltered: shortcuts.hits.total
-      };
+      const sendResults = map
+        ? results.map
+        : {
+          data: results.list,
+          recordsTotal: total.count,
+          recordsFiltered: shortcuts.hits.total
+        };
 
       res.send(sendResults);
     }).catch((err) => {
@@ -309,7 +311,7 @@ module.exports = (Db, internals, ViewerUtils) => {
               { term: { name: req.body.name } } // same name
             ],
             must_not: [
-              { ids: { values: [ req.params.id ] } } // but different ID
+              { ids: { values: [req.params.id] } } // but different ID
             ]
           }
         }

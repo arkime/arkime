@@ -99,7 +99,7 @@ let respondedAt; // the time that the last data load succesfully responded
 
 export default {
   name: 'EsStats',
-  props: [ 'dataInterval', 'refreshData', 'searchTerm' ],
+  props: ['dataInterval', 'refreshData', 'searchTerm'],
   components: {
     MolochTable,
     MolochError,

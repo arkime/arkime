@@ -6,13 +6,14 @@ const https = require('https');
 const url = require('url');
 
 module.exports = (Config, Db, molochparser, internals) => {
-  let module = {};
+  const module = {};
 
   module.addAuth = (info, user, node, secret) => {
     if (!info.headers) {
       info.headers = {};
     }
-    info.headers['x-moloch-auth'] = Config.obj2auth({ date: Date.now(),
+    info.headers['x-moloch-auth'] = Config.obj2auth({
+      date: Date.now(),
       user: user.userId,
       node: node,
       path: info.path
@@ -99,7 +100,7 @@ module.exports = (Config, Db, molochparser, internals) => {
         interval = 60 * 60; // hour
       }
     } else {
-      let queryDate = reqQuery.date || 1;
+      const queryDate = reqQuery.date || 1;
       startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(queryDate, 10));
       stopTimeSec = Date.now() / 1000;
 
@@ -178,7 +179,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
 
     function convert (parent, obj) {
-      for (let item in obj) {
+      for (const item in obj) {
         process(parent, obj, item);
       }
     }
@@ -193,7 +194,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   module.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
     // queryOverride can supercede req.query if specified
-    let reqQuery = queryOverride || req.query;
+    const reqQuery = queryOverride || req.query;
 
     if (!err && req.user.expression && req.user.expression.length > 0) {
       try {
@@ -224,7 +225,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   module.mapMerge = (aggregations) => {
-    let map = { src: {}, dst: {}, xffGeo: {} };
+    const map = { src: {}, dst: {}, xffGeo: {} };
 
     if (!aggregations || !aggregations.mapG1) {
       return {};
@@ -246,9 +247,9 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   module.graphMerge = (req, query, aggregations) => {
-    let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+    const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
-    let graph = {
+    const graph = {
       xmin: req.query.startTime * 1000 || null,
       xmax: req.query.stopTime * 1000 || null,
       interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
@@ -257,14 +258,14 @@ module.exports = (Config, Db, molochparser, internals) => {
     };
 
     // allowed tot* data map
-    let filtersMap = {
-      'totPackets': ['srcPackets', 'dstPackets'],
-      'totBytes': ['srcBytes', 'dstBytes'],
-      'totDataBytes': ['srcDataBytes', 'dstDataBytes']
+    const filtersMap = {
+      totPackets: ['srcPackets', 'dstPackets'],
+      totBytes: ['srcBytes', 'dstBytes'],
+      totDataBytes: ['srcDataBytes', 'dstDataBytes']
     };
 
     for (let i = 0; i < filters.length; i++) {
-      let filter = filters[i];
+      const filter = filters[i];
       if (filtersMap[filter] !== undefined) {
         for (const j of filtersMap[filter]) {
           graph[j + 'Histo'] = [];
@@ -281,13 +282,13 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
 
     aggregations.dbHisto.buckets.forEach(function (item) {
-      let key = item.key;
+      const key = item.key;
 
       // always add session information
       graph.sessionsHisto.push([key, item.doc_count]);
       graph.sessionsTotal += item.doc_count;
 
-      for (let prop in item) {
+      for (const prop in item) {
         // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
         // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
         // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
@@ -329,18 +330,18 @@ module.exports = (Config, Db, molochparser, internals) => {
    * @returns {object} fields The object with fields flattened
    */
   module.flattenFields = (fields) => {
-    let newFields = {};
+    const newFields = {};
 
-    for (let key in fields) {
+    for (const key in fields) {
       if (fields.hasOwnProperty(key)) {
-        let field = fields[key];
-        let baseKey = key + '.';
+        const field = fields[key];
+        const baseKey = key + '.';
         if (typeof field === 'object' && !field.length) {
           // flatten out object
-          for (let nestedKey in field) {
+          for (const nestedKey in field) {
             if (field.hasOwnProperty(nestedKey)) {
-              let nestedField = field[nestedKey];
-              let newKey = baseKey + nestedKey;
+              const nestedField = field[nestedKey];
+              const newKey = baseKey + nestedKey;
               newFields[newKey] = nestedField;
             }
           }
@@ -348,10 +349,10 @@ module.exports = (Config, Db, molochparser, internals) => {
           delete fields[key];
         } else if (Array.isArray(field)) {
           // flatten out list
-          for (let nestedField of field) {
+          for (const nestedField of field) {
             if (typeof nestedField === 'object') {
-              for (let nestedKey in nestedField) {
-                let newKey = baseKey + nestedKey;
+              for (const nestedKey in nestedField) {
+                const newKey = baseKey + nestedKey;
                 if (newFields[newKey] === undefined) {
                   newFields[newKey] = nestedField[nestedKey];
                 } else if (Array.isArray(newFields[newKey])) {
@@ -368,7 +369,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       }
     }
 
-    for (let key in newFields) {
+    for (const key in newFields) {
       if (newFields.hasOwnProperty(key)) {
         fields[key] = newFields[key];
       }
@@ -383,7 +384,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       return fixCb(null, fields);
     }
 
-    let files = [];
+    const files = [];
     async.forEachSeries(fields.fileId, function (item, cb) {
       Db.fileIdToFile(fields.node, item, function (file) {
         if (file && file.locked === 1) {
@@ -457,7 +458,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   module.mergeUnarray = (to, from) => {
-    for (var key in from) {
+    for (const key in from) {
       if (Array.isArray(from[key])) {
         to[key] = from[key][0];
       } else {
@@ -500,14 +501,14 @@ module.exports = (Config, Db, molochparser, internals) => {
     str = str.split(separator);
     if (str.length <= limit) { return str; }
 
-    let ret = str.splice(0, limit);
+    const ret = str.splice(0, limit);
     ret.push(str.join(separator));
 
     return ret;
   };
 
   module.arrayZeroFill = (n) => {
-    let a = [];
+    const a = [];
 
     while (n > 0) {
       a.push(0);
@@ -522,7 +523,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       node = node[0];
     }
 
-    let url = Config.getFull(node, 'viewUrl');
+    const url = Config.getFull(node, 'viewUrl');
     if (url) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
@@ -550,7 +551,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   module.makeRequest = (node, path, user, cb) => {
     module.getViewUrl(node, function (err, viewUrl, client) {
-      let info = url.parse(viewUrl);
+      const info = url.parse(viewUrl);
       info.path = encodeURI(`${Config.basePath(node)}${path}`);
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;
@@ -567,11 +568,11 @@ module.exports = (Config, Db, molochparser, internals) => {
         });
       }
 
-      let preq = client.request(info, responseFunc);
+      const preq = client.request(info, responseFunc);
       preq.on('error', (err) => {
         // Try a second time on errors
         console.log(`Retry ${info.path} on remote viewer: ${err}`);
-        let preq2 = client.request(info, responseFunc);
+        const preq2 = client.request(info, responseFunc);
         preq2.on('error', (err) => {
           console.log(`Error with ${info.path} on remote viewer: ${err}`);
           cb(err);
@@ -595,7 +596,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   module.getUserCacheIncAnon = (userId, cb) => {
     if (internals.noPasswordSecret) { // user is anonymous
       Db.getUserCache('anonymous', (err, anonUser) => {
-        let anon = internals.anonymousUser;
+        const anon = internals.anonymousUser;
 
         if (!err && anonUser && anonUser.found) {
           anon.settings = anonUser._source.settings || {};
@@ -606,7 +607,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       });
     } else {
       Db.getUserCache(userId, (err, user) => {
-        let found = user.found;
+        const found = user.found;
         user = user._source;
         if (user) { user.found = found; }
         return cb(err, user);
@@ -637,9 +638,9 @@ module.exports = (Config, Db, molochparser, internals) => {
             return user._source.userId;
           });
 
-          let validUsers = [];
-          let invalidUsers = [];
-          for (let user of userIdList) {
+          const validUsers = [];
+          const invalidUsers = [];
+          for (const user of userIdList) {
             usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
           }
 

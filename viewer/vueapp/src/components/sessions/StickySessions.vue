@@ -115,7 +115,7 @@ let oldLength = 1;
 
 export default {
   name: 'MolochStickySessions',
-  props: [ 'sessions', 'timezone', 'ms' ],
+  props: ['sessions', 'timezone', 'ms'],
   data: function () {
     return {
       open: false,
@@ -125,7 +125,7 @@ export default {
   },
   watch: {
     sessions: function (newVal, oldVal) {
-      let newLength = newVal.length;
+      const newLength = newVal.length;
 
       this.$store.commit('setStickySessionsBtn', !!newLength);
 
@@ -215,7 +215,7 @@ export default {
      * @param {string} id The id of the session to scroll to
      */
     scrollTo: function (id) {
-      let el = document.getElementById(`session${id}`);
+      const el = document.getElementById(`session${id}`);
       if (el) { el.scrollIntoView(true); }
     }
   }

@@ -27,7 +27,7 @@
 <script>
 export default {
   name: 'MolochNoResults',
-  props: [ 'recordsTotal', 'view' ]
+  props: ['recordsTotal', 'view']
 };
 </script>
 

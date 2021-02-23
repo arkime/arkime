@@ -4,7 +4,7 @@ import countries from './countries.json';
 
 let _fieldsMapCache;
 let _fieldsArrayCache;
-let queryInProgress = {
+const queryInProgress = {
   array: false,
   promise: undefined
 };
@@ -58,10 +58,10 @@ export default {
    * to allow the request to be cancelled
    */
   getValues (params) {
-    let source = Vue.axios.CancelToken.source();
+    const source = Vue.axios.CancelToken.source();
 
-    let promise = new Promise((resolve, reject) => {
-      let options = { params: params, cancelToken: source.token };
+    const promise = new Promise((resolve, reject) => {
+      const options = { params: params, cancelToken: source.token };
 
       Vue.axios.get('api/unique', options)
         .then((response) => {

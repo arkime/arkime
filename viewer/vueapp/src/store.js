@@ -177,7 +177,7 @@ const store = new Vuex.Store({
       // combine sort field and sort order into one string
       // because server takes one param
       for (let i = 0, len = value.length; i < len; ++i) {
-        let item = value[i];
+        const item = value[i];
         state.sortsParam += item[0] + ':' + item[1];
         if (i < len - 1) { state.sortsParam += ','; }
       }

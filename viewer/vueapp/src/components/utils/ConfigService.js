@@ -47,8 +47,8 @@ export default {
         .then((response) => {
           getMolochClickablesQIP = undefined;
 
-          for (var key in response.data) {
-            var item = response.data[key];
+          for (const key in response.data) {
+            const item = response.data[key];
             if (item.func !== undefined) {
               /* eslint-disable no-new-func */
               item.func = new Function('key', 'value', item.func);

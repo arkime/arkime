@@ -139,7 +139,7 @@ export default {
 
       this.loading = true;
 
-      let data = {
+      const data = {
         tags: this.tags,
         start: this.start,
         applyTo: this.applyTo,

@@ -127,7 +127,7 @@ export default {
         { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
         { id: 'shardsPerNode', name: 'Shards/Node', sort: 'shardsPerNode', doStats: false, width: 100 },
         { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 },
-        { id: 'docSize', name: 'Disk Per Doc', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docSize']); } }
+        { id: 'docSize', name: 'Disk Per Doc', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.docSize); } }
       ]
     };
   },

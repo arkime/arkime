@@ -35,29 +35,29 @@ try {
   process.exit(1);
 }
 
-var esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
-var esClientKey = Config.get('esClientKey');
-var esClientCert = Config.get('esClientCert');
+const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
+const esClientKey = Config.get('esClientKey');
+const esClientCert = Config.get('esClientCert');
 if (esClientKey) {
   esSSLOptions.key = fs.readFileSync(esClientKey);
   esSSLOptions.cert = fs.readFileSync(esClientCert);
-  var esClientKeyPass = Config.get('esClientKeyPass');
+  const esClientKeyPass = Config.get('esClientKeyPass');
   if (esClientKeyPass) {
     esSSLOptions.passphrase = esClientKeyPass;
   }
 }
 
-var clients = {};
-var nodes = [];
-var clusters = {};
-var clusterList = [];
-var activeESNodes = [];
-var httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
-var httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+const clients = {};
+let nodes = [];
+const clusters = {};
+const clusterList = [];
+let activeESNodes = [];
+const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
+const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
 function hasBody (req) {
-  var encoding = 'transfer-encoding' in req.headers;
-  var length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
+  const encoding = 'transfer-encoding' in req.headers;
+  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
   return encoding || length;
 }
 
@@ -71,7 +71,7 @@ function saveBody (req, res, next) {
   req._body = true;
 
   // parse
-  var buf = '';
+  let buf = '';
   req.setEncoding('utf8');
   req.on('data', (chunk) => { buf += chunk; });
   req.on('end', () => {
@@ -81,11 +81,11 @@ function saveBody (req, res, next) {
 }
 
 // app.configure
-var logger = require('morgan');
-var favicon = require('serve-favicon');
-var compression = require('compression');
+const logger = require('morgan');
+const favicon = require('serve-favicon');
+const compression = require('compression');
 
-var app = express();
+const app = express();
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
@@ -99,15 +99,15 @@ app.use(function (req, res, next) {
 });
 
 function node2Url (node) {
-  var url = node.split(',')[0];
+  const url = node.split(',')[0];
   if (url.match(/^http/)) { return url; }
   return 'http://' + url;
 }
 
 function node2Prefix (node) {
-  var parts = node.split(',');
-  for (var p = 1; p < parts.length; p++) {
-    var kv = parts[p].split(':');
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const kv = parts[p].split(':');
     if (kv[0] === 'prefix') {
       if (kv[1].charAt(kv[1].length - 1) !== '_') {
         return kv[1] + '_';
@@ -119,9 +119,9 @@ function node2Prefix (node) {
 }
 
 function node2Name (node) {
-  var parts = node.split(',');
-  for (var p = 1; p < parts.length; p++) {
-    var kv = parts[p].split(':');
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const kv = parts[p].split(':');
     if (kv[0] === 'name') {
       return kv[1];
     }
@@ -134,13 +134,13 @@ function getActiveNodes (clusterin) {
     if (!Array.isArray(clusterin)) {
       clusterin = [clusterin];
     }
-    var tmpNodes = [];
-    for (var i = 0; i < clusterin.length; i++) {
+    const tmpNodes = [];
+    for (let i = 0; i < clusterin.length; i++) {
       if (clusters[clusterin[i]]) { // cluster -> node
         tmpNodes.push(clusters[clusterin[i]]);
       }
     }
-    var esNodes = [];
+    const esNodes = [];
     activeESNodes.slice().forEach((node) => {
       if (tmpNodes.includes(node)) {
         esNodes.push(node);
@@ -153,25 +153,25 @@ function getActiveNodes (clusterin) {
 }
 
 function simpleGather (req, res, bodies, doneCb) {
-  var cluster = null;
+  let cluster = null;
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
     req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
     delete req.query.cluster;
   }
-  var nodes = getActiveNodes(cluster);
+  const nodes = getActiveNodes(cluster);
   if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
     return doneCb(true, [{}]);
   }
   async.map(nodes, (node, asyncCb) => {
-    var result = '';
-    var url = node2Url(node) + req.url;
-    var prefix = node2Prefix(node);
+    let result = '';
+    let url = node2Url(node) + req.url;
+    const prefix = node2Prefix(node);
 
     url = url.replace(/MULTIPREFIX_/g, prefix);
-    var info = URL.parse(url);
+    const info = URL.parse(url);
     info.method = req.method;
-    var client;
+    let client;
     if (url.match(/^https:/)) {
       info.agent = httpsAgent;
       client = https;
@@ -179,7 +179,7 @@ function simpleGather (req, res, bodies, doneCb) {
       info.agent = httpAgent;
       client = http;
     }
-    var preq = client.request(info, (pres) => {
+    const preq = client.request(info, (pres) => {
       pres.on('data', (chunk) => {
         result += chunk.toString();
       });
@@ -214,7 +214,7 @@ function simpleGather (req, res, bodies, doneCb) {
 }
 
 function shallowCopy (obj1, obj2) {
-  for (var attrname in obj2) {
+  for (const attrname in obj2) {
     obj1[attrname] = obj2[attrname];
   }
 }
@@ -222,8 +222,8 @@ function shallowCopy (obj1, obj2) {
 // Merge all the top level nodes fields
 function simpleGatherNodes (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       shallowCopy(obj.nodes, results[i].nodes);
     }
     res.send(obj);
@@ -233,8 +233,8 @@ function simpleGatherNodes (req, res) {
 // Merge all the top level tasks fields
 function simpleGatherTasks (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       shallowCopy(obj.tasks, results[i].tasks);
     }
     res.send(obj);
@@ -242,7 +242,7 @@ function simpleGatherTasks (req, res) {
 }
 
 function shallowAdd (obj1, obj2) {
-  for (var attrname in obj2) {
+  for (const attrname in obj2) {
     if (typeof obj2[attrname] === 'number') {
       obj1[attrname] += obj2[attrname];
     }
@@ -251,8 +251,8 @@ function shallowAdd (obj1, obj2) {
 // For any top level number field add them together
 function simpleGatherAdd (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       shallowAdd(obj, results[i]);
     }
     obj.cluster_name = 'COMBINED';
@@ -279,9 +279,9 @@ app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
 app.get('/_cluster/:type/details', function (req, res) {
-  var result = { available: [], active: [], inactive: [] };
-  var activeNodes = getActiveNodes();
-  for (var i = 0; i < clusterList.length; i++) {
+  const result = { available: [], active: [], inactive: [] };
+  const activeNodes = getActiveNodes();
+  for (let i = 0; i < clusterList.length; i++) {
     result.available.push(clusterList[i]);
     if (activeNodes.includes(clusters[clusterList[i]])) {
       result.active.push(clusterList[i]);
@@ -294,9 +294,9 @@ app.get('/_cluster/:type/details', function (req, res) {
 
 app.get('/:index/_status', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
-      for (var index in results[i].indices) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
+      for (const index in results[i].indices) {
         if (obj.indices[index]) {
           obj.indices[index].docs.num_docs += results[i].indices[index].docs.num_docs;
           obj.indices[index].docs.max_doc += results[i].indices[index].docs.max_doc;
@@ -312,9 +312,9 @@ app.get('/:index/_status', (req, res) => {
 app.get('/:index/_stats', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG - _stats results", JSON.stringify(results, null, 2));
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
-      for (var index in results[i].indices) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
+      for (const index in results[i].indices) {
         if (obj.indices[index]) {
           obj.indices[index].total.docs.count += results[i].indices[index].total.docs.count;
           obj.indices[index].total.docs.deleted += results[i].indices[index].total.docs.deleted;
@@ -331,8 +331,8 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     // console.log("DEBUG -", JSON.stringify(results, null, 2));
 
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    let obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       if (results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
@@ -361,8 +361,8 @@ app.get('/_cat/master', (req, res) => {
 
 app.get('/_cat/*', (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    let obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       if (results[i].error) {
         console.log('ERROR - GET', req.url, req.query.index, req.query.type, results[i].error);
       }
@@ -374,8 +374,8 @@ app.get('/_cat/*', (req, res) => {
 
 app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
-    var obj = results[0];
-    for (var i = 1; i < results.length; i++) {
+    const obj = results[0];
+    for (let i = 1; i < results.length; i++) {
       if (results[i].error) {
         console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
       }
@@ -388,7 +388,7 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
 
 app.get('/:index/:type/:id', function (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    for (var i = 0; i < results.length; i++) {
+    for (let i = 0; i < results.length; i++) {
       if (results[i].found) {
         if (results[i]._source) {
           results[i]._source.cluster = results[i].cluster;
@@ -424,16 +424,16 @@ app.get(/./, function (req, res) {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 function facet2Obj (field, facet) {
-  var obj = {};
-  for (var i = 0; i < facet.length; i++) {
+  const obj = {};
+  for (let i = 0; i < facet.length; i++) {
     obj[facet[i][field]] = facet[i];
   }
   return obj;
 }
 
 function facet2Arr (facet, type) {
-  var arr = [];
-  for (var attrname in facet) {
+  let arr = [];
+  for (const attrname in facet) {
     arr.push(facet[attrname]);
   }
 
@@ -446,7 +446,7 @@ function facet2Arr (facet, type) {
 }
 
 function facetConvert2Obj (facets) {
-  for (var facetname in facets) {
+  for (const facetname in facets) {
     if (facets[facetname]._type === 'histogram') {
       facets[facetname].entries = facet2Obj('key', facets[facetname].entries);
     } else if (facets[facetname]._type === 'terms') {
@@ -458,26 +458,26 @@ function facetConvert2Obj (facets) {
 }
 
 function facetConvert2Arr (facets) {
-  for (var facetname in facets) {
-    var facetarray = facets[facetname]._type === 'histogram' ? 'entries' : 'terms';
+  for (const facetname in facets) {
+    const facetarray = facets[facetname]._type === 'histogram' ? 'entries' : 'terms';
     facets[facetname][facetarray] = facet2Arr(facets[facetname][facetarray], facets[facetname]._type);
   }
 }
 
 function facetAdd (obj1, obj2) {
-  for (var facetname in obj2) {
-    var facetarray = obj1[facetname]._type === 'histogram' ? 'entries' : 'terms';
+  for (const facetname in obj2) {
+    const facetarray = obj1[facetname]._type === 'histogram' ? 'entries' : 'terms';
 
     obj1[facetname].total += obj2[facetname].total;
     obj1[facetname].missing += obj2[facetname].missing;
     obj1[facetname].other += obj2[facetname].other;
 
-    for (var entry in obj2[facetname][facetarray]) {
+    for (const entry in obj2[facetname][facetarray]) {
       if (!obj1[facetname][facetarray][entry]) {
         obj1[facetname][facetarray][entry] = obj2[facetname][facetarray][entry];
       } else {
-        var o1 = obj1[facetname][facetarray][entry];
-        var o2 = obj2[facetname][facetarray][entry];
+        const o1 = obj1[facetname][facetarray][entry];
+        const o2 = obj2[facetname][facetarray][entry];
 
         o1.count += o2.count;
         if (o1.total) {
@@ -492,16 +492,16 @@ function facetAdd (obj1, obj2) {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 function agg2Obj (field, agg) {
-  var obj = {};
-  for (var i = 0; i < agg.length; i++) {
+  const obj = {};
+  for (let i = 0; i < agg.length; i++) {
     obj[agg[i][field]] = agg[i];
   }
   return obj;
 }
 
 function agg2Arr (agg, type) {
-  var arr = [];
-  for (var attrname in agg) {
+  let arr = [];
+  for (const attrname in agg) {
     arr.push(agg[attrname]);
   }
 
@@ -519,28 +519,28 @@ function agg2Arr (agg, type) {
 }
 
 function aggConvert2Obj (aggs) {
-  for (var aggname in aggs) {
+  for (const aggname in aggs) {
     aggs[aggname].buckets = agg2Obj('key', aggs[aggname].buckets);
   }
 }
 
 function aggConvert2Arr (aggs) {
-  for (var aggname in aggs) {
+  for (const aggname in aggs) {
     aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
     delete aggs[aggname]._type;
   }
 }
 
 function aggAdd (obj1, obj2) {
-  for (var aggname in obj2) {
+  for (const aggname in obj2) {
     obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
     obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
-    for (var entry in obj2[aggname].buckets) {
+    for (const entry in obj2[aggname].buckets) {
       if (!obj1[aggname].buckets[entry]) {
         obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
       } else {
-        var o1 = obj1[aggname].buckets[entry];
-        var o2 = obj2[aggname].buckets[entry];
+        const o1 = obj1[aggname].buckets[entry];
+        const o2 = obj2[aggname].buckets[entry];
 
         o1.doc_count += o2.doc_count;
         if (o1.db) {
@@ -562,17 +562,17 @@ function fixQuery (node, body, doneCb) {
 
   delete body.from;
 
-  var outstanding = 0;
-  var finished = 0;
-  var err = null;
+  let outstanding = 0;
+  let finished = 0;
+  const err = null;
 
-  var convert;
+  let convert;
 
   function process (parent, obj, item) {
-    var query;
+    let query;
 
     if (item === 'fileand' && typeof obj[item] === 'string') {
-      var name = obj.fileand;
+      const name = obj.fileand;
       delete obj.fileand;
       outstanding++;
 
@@ -602,7 +602,7 @@ function fixQuery (node, body, doneCb) {
   }
 
   convert = function (parent, obj) {
-    for (var item in obj) {
+    for (const item in obj) {
       process(parent, obj, item);
     }
   };
@@ -625,7 +625,7 @@ function combineResults (obj, result) {
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
-    for (var i = 0; i < result.hits.hits.length; i++) {
+    for (let i = 0; i < result.hits.hits.length; i++) {
       result.hits.hits[i].cluster = result.cluster;
       result.hits.hits[i]._source.cluster = result.cluster;
     }
@@ -645,13 +645,13 @@ function combineResults (obj, result) {
 function sortResults (search, obj) {
   // Resort items
   if (search.sort && search.sort.length > 0) {
-    var sortorder = [];
-    for (var i = 0; i < search.sort.length; i++) {
+    const sortorder = [];
+    for (let i = 0; i < search.sort.length; i++) {
       sortorder[i] = search.sort[i][Object.keys(search.sort[i])[0]].order === 'asc' ? 1 : -1;
     }
 
     obj.hits.hits = obj.hits.hits.sort((a, b) => {
-      for (var i = 0; i < a.sort.length; i++) {
+      for (let i = 0; i < a.sort.length; i++) {
         if (a.sort[i] === b.sort[i]) {
           continue;
         }
@@ -666,15 +666,15 @@ function sortResults (search, obj) {
   }
 
   if (search.size) {
-    var from = +search.from || 0;
+    const from = +search.from || 0;
     obj.hits.hits = obj.hits.hits.slice(from, from + (+search.size));
   }
 }
 function newResult (search) {
-  var result = { hits: { hits: [], total: 0 } };
+  const result = { hits: { hits: [], total: 0 } };
   if (search.facets) {
     result.facets = {};
-    for (var facet in search.facets) {
+    for (const facet in search.facets) {
       if (search.facets[facet].histogram) {
         result.facets[facet] = { entries: [], _type: 'histogram', total: 0, other: 0, missing: 0 };
       } else {
@@ -684,7 +684,7 @@ function newResult (search) {
   }
   if (search.aggregations) {
     result.aggregations = {};
-    for (var agg in search.aggregations) {
+    for (const agg in search.aggregations) {
       if (search.aggregations[agg].histogram) {
         result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
@@ -697,23 +697,23 @@ function newResult (search) {
 
 app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], function (req, res) {
   simpleGather(req, res, null, (err, results) => {
-    var obj = {
+    const obj = {
       hits: {
         total: 0,
         hits: [
         ]
       }
     };
-    var unique = {};
-    for (var i = 0; i < results.length; i++) {
-      var result = results[i];
+    const unique = {};
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
 
       if (result.error) {
         console.log('ERROR - GET /fields/field/_search', result.error);
       }
 
-      for (var h = 0; h < result.hits.total; h++) {
-        var hit = result.hits.hits[h];
+      for (let h = 0; h < result.hits.total; h++) {
+        const hit = result.hits.hits[h];
         if (!unique[hit._id]) {
           unique[hit._id] = 1;
           obj.hits.total++;
@@ -726,10 +726,10 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
 });
 
 app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
-  var bodies = {};
-  var search = JSON.parse(req.body);
+  const bodies = {};
+  const search = JSON.parse(req.body);
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  var nodes = getActiveNodes();
+  const nodes = getActiveNodes();
   async.each(nodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
@@ -738,9 +738,9 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
-      var obj = newResult(search);
+      const obj = newResult(search);
 
-      for (var i = 0; i < results.length; i++) {
+      for (let i = 0; i < results.length; i++) {
         combineResults(obj, results[i]);
       }
 
@@ -760,11 +760,11 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
 });
 
 function msearch (req, res) {
-  var lines = req.body.split(/[\r\n]/);
-  var bodies = {};
-  var nodes = getActiveNodes();
+  const lines = req.body.split(/[\r\n]/);
+  const bodies = {};
+  const nodes = getActiveNodes();
   async.each(nodes, (node, nodeCb) => {
-    var nlines = [];
+    const nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
       if (line === '{}' || line === '') {
         nlines.push('{}');
@@ -776,17 +776,17 @@ function msearch (req, res) {
       });
     }, (err) => {
       bodies[node] = nlines.join('\n') + '\n';
-      var prefix = node2Prefix(node);
+      const prefix = node2Prefix(node);
       bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
       nodeCb();
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
-      var obj = { responses: [] };
-      for (var h = 0; h < results[0].responses.length; h++) {
+      const obj = { responses: [] };
+      for (let h = 0; h < results[0].responses.length; h++) {
         obj.responses[h] = newResult(JSON.parse(lines[h * 2 + 1]));
 
-        for (var i = 0; i < results.length; i++) {
+        for (let i = 0; i < results.length; i++) {
           combineResults(obj.responses[h], results[i].responses[h]);
         }
 
@@ -807,15 +807,15 @@ function msearch (req, res) {
 }
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
-  var body = JSON.parse(req.body);
+  const body = JSON.parse(req.body);
   if (body.cluster && clusters[body.cluster]) {
-    var node = clusters[body.cluster];
+    const node = clusters[body.cluster];
     delete body.cluster;
 
-    var prefix = node2Prefix(node);
-    var index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
-    var id = req.params.id;
-    let params = {
+    const prefix = node2Prefix(node);
+    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    const id = req.params.id;
+    const params = {
       retry_on_conflict: 3,
       index: index,
       body: body,
@@ -867,7 +867,7 @@ if (nodes.length === 0 || nodes[0] === '') {
 }
 
 for (let i = 0; i < nodes.length; i++) {
-  let name = node2Name(nodes[i]);
+  const name = node2Name(nodes[i]);
   if (!name) {
     console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
     process.exit(1);
@@ -921,18 +921,18 @@ function pingESNode (client, node) {
 }
 
 function enumerateActiveNodes () {
-  var pingTasks = [];
+  const pingTasks = [];
   for (let i = 0; i < nodes.length; i++) {
     pingTasks.push(pingESNode(clients[nodes[i]], nodes[i]));
   }
   Promise.all(pingTasks).then(function (values) {
-    var activeNodes = [];
+    const activeNodes = [];
     for (let i = 0; i < values.length; i++) {
       if (values[i].isActive) { // true -> node is active
         activeNodes.push(values[i].node);
       } else { // false -> node is down
         // remove credential from the url
-        var host = values[i].node.split('://');
+        let host = values[i].node.split('://');
         host = host[host.length > 1 ? 1 : 0].split('@'); // user:pass@elastic.com:9200
         host = host[host.length > 1 ? host.length - 1 : 0];
         console.log('Elasticsearch is down at ', host);

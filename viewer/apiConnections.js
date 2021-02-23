@@ -5,15 +5,14 @@ const async = require('async');
 let fieldsMap;
 
 module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
-  let module = {};
+  const module = {};
 
   if (!fieldsMap) {
     setTimeout(() => { // make sure db.js loads before fetching fields
       ViewerUtils.loadFields()
         .then((result) => {
           fieldsMap = result.fieldsMap;
-        })
-        .catch((err) => {});
+        });
     });
   }
 
@@ -34,7 +33,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
   function buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
-    let result = {
+    const result = {
       resultId: resultId,
       err: null,
       query: null,
@@ -80,11 +79,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     }
 
     // use a copy of req.query as we will modify the startTime/stopTime if we are doing a baseline query
-    let tmpReqQuery = JSON.parse(JSON.stringify(req.query));
+    const tmpReqQuery = JSON.parse(JSON.stringify(req.query));
 
     if (resultId > 1) {
       // replace current time frame start/stop values with baseline time frame start/stop values
-      let currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
+      const currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
       if (Config.debug) {
         console.log('buildConnections baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
       }
@@ -147,7 +146,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
   function dbConnectionQuerySearch (connQueries, cb) {
-    let resultSet = {
+    const resultSet = {
       resultId: null,
       err: null,
       graph: null
@@ -208,9 +207,9 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     req.query.srcField = req.query.srcField || 'srcIp';
     req.query.dstField = req.query.dstField || 'dstIp';
-    let fsrc = req.query.srcField;
-    let fdst = req.query.dstField;
-    let minConn = req.query.minConn || 1;
+    const fsrc = req.query.srcField;
+    const fdst = req.query.dstField;
+    const minConn = req.query.minConn || 1;
 
     // get the requested fields
     let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
@@ -222,37 +221,37 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     }
     options = ViewerUtils.addCluster(req.query.cluster, options);
 
-    let dstIsIp = fdst.match(/(\.ip|Ip)$/);
+    const dstIsIp = fdst.match(/(\.ip|Ip)$/);
 
-    let nodesHash = {};
-    let connects = {};
-    let nodes = [];
-    let links = [];
+    const nodesHash = {};
+    const connects = {};
+    const nodes = [];
+    const links = [];
     let totalHits = 0;
 
     // ------------------------------------------------------------------------
     // updateValues and process are for aggregating query results into their final form
-    let dbFieldsMap = Config.getDBFieldsMap();
+    const dbFieldsMap = Config.getDBFieldsMap();
     function updateValues (data, property, fields) {
-      for (let i in fields) {
-        let dbField = fields[i];
-        let field = dbFieldsMap[dbField];
-        if (data.hasOwnProperty(dbField)) {
+      for (const i in fields) {
+        const dbField = fields[i];
+        const field = dbFieldsMap[dbField];
+        if (data[dbField]) {
           // sum integers
           if (field.type === 'integer' && field.category !== 'port') {
             property[dbField] = (property[dbField] || 0) + data[dbField];
           } else { // make a list of values
             if (!property[dbField]) { property[dbField] = []; }
             // make all values an array (because sometimes they are by default)
-            let values = [ data[dbField] ];
+            let values = [data[dbField]];
             if (Array.isArray(data[dbField])) {
               values = data[dbField];
             }
-            for (let value of values) {
+            for (const value of values) {
               property[dbField].push(value);
             }
             if (property[dbField] && Array.isArray(property[dbField])) {
-              property[dbField] = [ ...new Set(property[dbField]) ]; // unique only
+              property[dbField] = [...new Set(property[dbField])]; // unique only
             }
           }
         }
@@ -288,7 +287,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       nodesHash[vdst].inresult |= resultId;
       updateValues(f, nodesHash[vdst], fields);
 
-      let linkId = `${vsrc}->${vdst}`;
+      const linkId = `${vsrc}->${vdst}`;
       if (connects[linkId] === undefined) {
         connects[linkId] = { value: 0, source: vsrc, target: vdst };
         nodesHash[vsrc].cnt++;
@@ -302,7 +301,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     // ------------------------------------------------------------------------
     // processResultSets - process the hits of each search resultset into nodesHash and connects
     function processResultSets (connResultSets, cb) {
-      let resultSetStatus = {
+      const resultSetStatus = {
         resultId: null,
         err: null,
         hits: 0
@@ -331,7 +330,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
             if (!Array.isArray(asrc)) { asrc = [asrc]; }
             if (!Array.isArray(adst)) { adst = [adst]; }
 
-            for (let vsrc of asrc) {
+            for (const vsrc of asrc) {
               for (let vdst of adst) {
                 if (dstIsIp && dstipport) {
                   if (vdst.includes(':')) {
@@ -388,7 +387,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               console.log('buildConnections.processResultSets', connResultSetStats.length, JSON.stringify(connResultSetStats, null, 2));
             }
 
-            for (let stat of connResultSetStats) {
+            for (const stat of connResultSetStats) {
               if (stat.err) {
                 return cb(stat.err, null, null, null);
               }
@@ -401,7 +400,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
                 return nodesHash[a].id.localeCompare(nodesHash[b].id);
               });
             }
-            for (let node of nodeKeys) {
+            for (const node of nodeKeys) {
               if (nodesHash[node].cnt < minConn) {
                 nodesHash[node].pos = -1;
               } else {
@@ -410,8 +409,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               }
             }
 
-            for (let key in connects) {
-              let c = connects[key];
+            for (const key in connects) {
+              const c = connects[key];
               c.source = nodesHash[c.source].pos;
               c.target = nodesHash[c.target].pos;
               if (c.source >= 0 && c.target >= 0) {
@@ -431,7 +430,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           }); // processResultSets.callback
         }); // dbConnectionQuerySearch.callback
       } else {
-        let err = 'no connection queries generated';
+        const err = 'no connection queries generated';
         console.log('ERROR - buildConnections', err);
         return cb(err, null, null, null);
       } // connQueries.length check
@@ -511,16 +510,16 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       }
 
       // write out the fields requested
-      let fields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
+      let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
       if (req.query.fields) { fields = req.query.fields.split(','); }
 
       res.write('Source, Destination, Sessions');
-      let displayFields = {};
-      for (let field of fields) {
-        let map = JSON.parse(fieldsMap);
-        for (let f in map) {
+      const displayFields = {};
+      for (const field of fields) {
+        const map = JSON.parse(fieldsMap);
+        for (const f in map) {
           if (map[f].dbField === field) {
-            let friendlyName = map[f].friendlyName;
+            const friendlyName = map[f].friendlyName;
             displayFields[field] = map[f];
             res.write(`, ${friendlyName}`);
           }

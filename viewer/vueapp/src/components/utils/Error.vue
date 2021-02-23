@@ -18,7 +18,7 @@
 <script>
 export default {
   name: 'MolochError',
-  props: [ 'message', 'messageHtml' ]
+  props: ['message', 'messageHtml']
 };
 </script>
 
