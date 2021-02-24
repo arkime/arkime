@@ -98,10 +98,10 @@ exports.sendSlackAlert = function (config, message, links, cb) {
   });
 
   // add links to the slack alert
-  let slackMsgObj = { slack: { text: message } };
+  const slackMsgObj = { slack: { text: message } };
   if (links && links.length) {
     slackMsgObj.slack.attachments = [];
-    for (let link of links) {
+    for (const link of links) {
       slackMsgObj.slack.attachments.push({
         fallback: `${link.text}: <${link.link}>`,
         actions: [{
@@ -138,7 +138,7 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
   });
 
   if (links && links.length) {
-    for (let link of links) {
+    for (const link of links) {
       message += `\n${link.text}: ${link.url}`;
     }
   }
@@ -182,7 +182,7 @@ exports.sendEmailAlert = function (config, message, links, cb) {
   });
 
   if (links && links.length) {
-    for (let link of links) {
+    for (const link of links) {
       message += `<br><a href="${link.url}">${link.text}</a>`;
     }
   }
