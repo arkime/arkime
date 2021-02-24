@@ -203,15 +203,6 @@ app.use((req, res, next) => {
   return next();
 });
 
-// add lookups for queries
-app.use((req, res, next) => {
-  if (!req.user) { return next(); }
-  Db.getLookupsCache(req.user.userId, (err, lookupsMap) => {
-    req.lookups = lookupsMap || {};
-    return next();
-  });
-});
-
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));

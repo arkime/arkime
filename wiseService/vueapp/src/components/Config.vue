@@ -9,7 +9,7 @@
       />
     </div>
 
-    <div class="d-flex flex-row">
+    <div class="d-flex flex-row" v-if="loaded">
       <!-- Sources sidebar -->
       <div class="d-flex flex-column">
         <div
@@ -249,6 +249,7 @@ export default {
       showSourceModal: false,
       selectedSourceKey: 'wiseService',
       configDefs: {},
+      loaded: false,
       currConfig: {},
       currConfigBefore: {}, // Used to determine if changes have been made
       currFile: '',
@@ -430,6 +431,7 @@ export default {
 
           this.currConfig = data.config;
           this.currConfigBefore = JSON.parse(JSON.stringify(data.config));
+          this.loaded = true;
         })
         .catch((err) => {
           this.alertState = {

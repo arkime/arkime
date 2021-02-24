@@ -1008,32 +1008,33 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     addSortToQuery(query, reqQuery, 'firstPacket');
 
-    let err = null;
+    Db.getLookupsCache(req.user.userId, (lerr, lookups) => {
+      let err = null;
+      molochparser.parser.yy = {
+        views: req.user.views,
+        fieldsMap: Config.getFieldsMap(),
+        dbFieldsMap: Config.getDBFieldsMap(),
+        prefix: internals.prefix,
+        emailSearch: req.user.emailSearch === true,
+        lookups: lookups || {},
+        lookupTypeMap: internals.lookupTypeMap
+      };
 
-    molochparser.parser.yy = {
-      views: req.user.views,
-      fieldsMap: Config.getFieldsMap(),
-      dbFieldsMap: Config.getDBFieldsMap(),
-      prefix: internals.prefix,
-      emailSearch: req.user.emailSearch === true,
-      lookups: req.lookups,
-      lookupTypeMap: internals.lookupTypeMap
-    };
-
-    if (reqQuery.expression) {
-      // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-      try {
-        query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
-      } catch (e) {
-        err = e;
+      if (reqQuery.expression) {
+        // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
+        try {
+          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+        } catch (e) {
+          err = e;
+        }
       }
-    }
 
-    if (!err && reqQuery.view) {
-      addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
-    } else {
-      ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
-    }
+      if (!err && reqQuery.view) {
+        addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
+      } else {
+        ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
+      }
+    });
   };
 
   module.sessionsListFromIds = (req, ids, fields, cb) => {

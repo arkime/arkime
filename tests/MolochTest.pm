@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTest2 errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken);
+@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -245,6 +245,16 @@ sub countTest {
 my ($count, $test, $debug) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $json = viewerGet("/sessions.json?$test");
+    diag Dumper($json) if ($debug);
+    is ($json->{recordsFiltered}, $count, " recordsFiltered");
+    is (scalar @{$json->{data}}, $count, " data count");
+    return $json
+}
+################################################################################
+sub countTestToken {
+my ($token, $count, $test, $debug) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    my $json = viewerGetToken("/sessions.json?$test", $token);
     diag Dumper($json) if ($debug);
     is ($json->{recordsFiltered}, $count, " recordsFiltered");
     is (scalar @{$json->{data}}, $count, " data count");
