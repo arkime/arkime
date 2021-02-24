@@ -97,8 +97,9 @@ export default {
     acknowledgeIssue: function () {
       ParliamentService.acknowledgeIssues([this.issue])
         .then((data) => {
-          this.issue.acknowledged = data.acknowledged;
-          this.updateIssue(true, 'Issue acknowledged', this.issue);
+          const issueClone = JSON.parse(JSON.stringify(this.issue));
+          issueClone.acknowledged = data.acknowledged;
+          this.updateIssue(true, 'Issue acknowledged', issueClone);
         })
         .catch((error) => {
           this.updateIssue(false, error.text || 'Unable to acknowledge this issue');
@@ -123,8 +124,9 @@ export default {
     ignoreIssue: function (forMs) {
       ParliamentService.ignoreIssues([this.issue], forMs)
         .then((data) => {
-          this.issue.ignoreUntil = data.ignoreUntil;
-          this.updateIssue(true, 'Issue ignored', this.issue);
+          const issueClone = JSON.parse(JSON.stringify(this.issue));
+          issueClone.ignoreUntil = data.ignoreUntil;
+          this.updateIssue(true, 'Issue ignored', issueClone);
         })
         .catch((error) => {
           this.updateIssue(false, error.text || 'Unable to ignore this issue');
@@ -135,8 +137,9 @@ export default {
     removeIgnore: function () {
       ParliamentService.removeIgnoreIssues([this.issue])
         .then((data) => {
-          this.issue.ignoreUntil = undefined;
-          this.updateIssue(true, 'Issue unignored', this.issue);
+          const issueClone = JSON.parse(JSON.stringify(this.issue));
+          issueClone.ignoreUntil = undefined;
+          this.updateIssue(true, 'Issue unignored', issueClone);
         })
         .catch((error) => {
           this.updateIssue(false, error.text || 'Unable to unignore this issue');
@@ -144,7 +147,7 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     updateIssue: function (success, message, issue) {
-      let emit = {
+      const emit = {
         success: success,
         message: message,
         groupId: this.groupId,

@@ -27,7 +27,7 @@ export default {
     };
   },
   mounted: function () {
-    this.compatibleBrowser = (typeof Object['__defineSetter__'] === 'function') &&
+    this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
       !!String.prototype.includes;
 
     if (!this.compatibleBrowser) {

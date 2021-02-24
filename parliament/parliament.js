@@ -19,6 +19,7 @@ const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const upgrade = require('./upgrade');
+const path = require('path');
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -50,10 +51,10 @@ const parliamentReadError = `\nYou must fix this before you can run Parliament.
   Try using parliament.example.json as a starting point`;
 
 // keep a map of invalid tokens for when a user logs out before jwt expires
-let invalidTokens = {};
+const invalidTokens = {};
 
 (function () { // parse arguments
-  let appArgs = process.argv.slice(2);
+  const appArgs = process.argv.slice(2);
   let file, port;
   let debug = 0;
 
@@ -158,7 +159,7 @@ try { // check if the file exists
     parliament = { version: MIN_PARLIAMENT_VERSION };
     fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
   } catch (e) { // notify of error saving new parliament and exit
-    console.log(`Error creating new Parliament:\n\n`, e.stack);
+    console.log('Error creating new Parliament:\n\n', e.stack);
     console.log(parliamentReadError);
     process.exit(1);
   }
@@ -184,7 +185,7 @@ try { // get the parliament file or error out if it's unreadable
 // construct the issues file name
 let issuesFilename = 'issues.json';
 if (app.get('file').indexOf('.json') > -1) {
-  let name = app.get('file').replace(/\.json/g, '');
+  const name = app.get('file').replace(/\.json/g, '');
   issuesFilename = `${name}.issues.json`;
 }
 app.set('issuesfile', issuesFilename);
@@ -204,7 +205,7 @@ let clusterId = 0;
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
 // was encounterd exceeds the noPacketsLength user setting)
-let noPacketsMap = {};
+const noPacketsMap = {};
 
 // super secret
 app.use(helmet.hidePoweredBy());
@@ -231,41 +232,36 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-// expose vue bundles (prod)
-app.use('/parliament/static', express.static(`${__dirname}/vueapp/dist/static`));
-// expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+app.use('/parliament/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
 
-app.use('/parliament/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
-
-app.use('/parliament/assets', express.static(`${__dirname}/../assets`, { maxAge: 600 * 1000 }));
+app.use('/parliament/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
 
 // log requests
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
 
-app.use(favicon(`${__dirname}/favicon.ico`));
+app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // define router to mount api related functions
 app.use('/parliament/api', router);
 router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
-let internals = {
+const internals = {
   notifierTypes: {}
 };
 
 // Load notifier plugins for Parliament alerting
 function loadNotifiers () {
-  let api = {
+  const api = {
     register: function (str, info) {
       internals.notifierTypes[str] = info;
     }
   };
 
   // look for all notifier providers and initialize them
-  let files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
+  const files = glob.sync(path.join(__dirname, '/../notifiers/provider.*.js'));
   files.forEach((file) => {
-    let plugin = require(file);
+    const plugin = require(file);
     plugin.init(api);
   });
 }
@@ -304,13 +300,13 @@ function verifyToken (req, res, next) {
     });
   }
 
-  let hasAuth = !!app.get('password');
+  const hasAuth = !!app.get('password');
   if (!hasAuth) {
     return tokenError(req, res, 'No password set.');
   }
 
   // check for token in header, url parameters, or post parameters
-  let token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token = req.body.token || req.query.token || req.headers['x-access-token'];
 
   if (!token) {
     return tokenError(req, res, 'No token provided.');
@@ -338,13 +334,13 @@ function verifyToken (req, res, next) {
 let alerts = [];
 // sends alerts in the alerts list
 async function sendAlerts () {
-  let promise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     for (let i = 0, len = alerts.length; i < len; i++) {
       (function (i) {
         // timeout so that alerts are alerted in order
         setTimeout(() => {
-          let alert = alerts[i];
-          let links = [];
+          const alert = alerts[i];
+          const links = [];
           if (parliament.settings.general.includeUrl) {
             links.push({
               text: 'Parliament Dashboard',
@@ -410,8 +406,8 @@ function buildAlert (cluster, issue) {
 
   const message = `${cluster.title} - ${issue.message}`;
 
-  for (let n in parliament.settings.notifiers) {
-    let setNotifier = parliament.settings.notifiers[n];
+  for (const n in parliament.settings.notifiers) {
+    const setNotifier = parliament.settings.notifiers[n];
 
     // keep looking for notifiers if the notifier is off
     if (!setNotifier.on) { continue; }
@@ -419,12 +415,12 @@ function buildAlert (cluster, issue) {
     // quit before sending the alert if the alert is off
     if (!setNotifier.alerts[issue.type]) { continue; }
 
-    let config = {};
+    const config = {};
     const notifierDef = internals.notifierTypes[setNotifier.type];
 
-    for (let f in notifierDef.fields) {
-      let fieldDef = notifierDef.fields[f];
-      let field = setNotifier.fields[fieldDef.name];
+    for (const f in notifierDef.fields) {
+      const fieldDef = notifierDef.fields[f];
+      const field = setNotifier.fields[fieldDef.name];
       if (!field || (fieldDef.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
         console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
@@ -444,7 +440,7 @@ function buildAlert (cluster, issue) {
 
 // Finds an issue in a cluster
 function findIssue (clusterId, issueType, node) {
-  for (let issue of issues) {
+  for (const issue of issues) {
     if (issue.clusterId === clusterId &&
       issue.type === issueType &&
       issue.node === node) {
@@ -456,7 +452,7 @@ function findIssue (clusterId, issueType, node) {
 // Updates an existing issue or pushes a new issue onto the issue array
 function setIssue (cluster, newIssue) {
   // build issue
-  let issueType = issueTypes[newIssue.type];
+  const issueType = issueTypes[newIssue.type];
   newIssue.text = issueType.text;
   newIssue.title = issueType.name;
   newIssue.severity = issueType.severity;
@@ -468,7 +464,7 @@ function setIssue (cluster, newIssue) {
   let existingIssue = false;
 
   // don't duplicate existing issues, update them
-  for (let issue of issues) {
+  for (const issue of issues) {
     if (issue.clusterId === newIssue.clusterId &&
         issue.type === newIssue.type &&
         issue.node === newIssue.node) {
@@ -524,9 +520,9 @@ function setIssue (cluster, newIssue) {
 // Retrieves the health of each cluster and updates the cluster with that info
 function getHealth (cluster) {
   return new Promise((resolve, reject) => {
-    let timeout = getGeneralSetting('esQueryTimeout') * 1000;
+    const timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
-    let options = {
+    const options = {
       url: `${cluster.localUrl || cluster.url}/eshealth.json`,
       method: 'GET',
       rejectUnauthorized: false,
@@ -559,7 +555,7 @@ function getHealth (cluster) {
         return resolve();
       })
       .catch((error) => {
-        let message = error.message || error;
+        const message = error.message || error;
 
         setIssue(cluster, { type: 'esDown', value: message });
 
@@ -577,9 +573,9 @@ function getHealth (cluster) {
 // Retrieves, then calculates stats for each cluster and updates the cluster with that info
 function getStats (cluster) {
   return new Promise((resolve, reject) => {
-    let timeout = getGeneralSetting('esQueryTimeout') * 1000;
+    const timeout = getGeneralSetting('esQueryTimeout') * 1000;
 
-    let options = {
+    const options = {
       url: `${cluster.localUrl || cluster.url}/parliament.json`,
       method: 'GET',
       rejectUnauthorized: false,
@@ -587,7 +583,7 @@ function getStats (cluster) {
     };
 
     // Get now before the query since we don't know how long query/response will take
-    let now = Date.now() / 1000;
+    const now = Date.now() / 1000;
     rp(options)
       .then((response) => {
         cluster.statsError = undefined;
@@ -614,9 +610,9 @@ function getStats (cluster) {
         cluster.molochNodes = 0;
         cluster.monitoring = 0;
 
-        let outOfDate = getGeneralSetting('outOfDate');
+        const outOfDate = getGeneralSetting('outOfDate');
 
-        for (let stat of stats.data) {
+        for (const stat of stats.data) {
           // sum delta bytes per second
           if (stat.deltaBytesPerSec) {
             cluster.deltaBPS += stat.deltaBytesPerSec;
@@ -646,8 +642,8 @@ function getStats (cluster) {
 
           // look for no packets issue
           if (stat.deltaPacketsPerSec <= getGeneralSetting('noPackets')) {
-            let now = Date.now();
-            let id = cluster.title + stat.nodeName;
+            const now = Date.now();
+            const id = cluster.title + stat.nodeName;
 
             // only set the noPackets issue if there is a record of this cluster/node
             // having noPackets and that issue has persisted for the set length of time
@@ -676,7 +672,7 @@ function getStats (cluster) {
         return resolve();
       })
       .catch((error) => {
-        let message = error.message || error;
+        const message = error.message || error;
 
         setIssue(cluster, { type: 'esDown', value: message });
 
@@ -692,13 +688,13 @@ function getStats (cluster) {
 }
 
 function buildNotifierTypes () {
-  for (let n in internals.notifierTypes) {
-    let notifier = internals.notifierTypes[n];
+  for (const n in internals.notifierTypes) {
+    const notifier = internals.notifierTypes[n];
     // add alert issue types to notifiers
     notifier.alerts = issueTypes;
     // make fields a map
-    let fieldsMap = {};
-    for (let field of notifier.fields) {
+    const fieldsMap = {};
+    for (const field of notifier.fields) {
       fieldsMap[field.name] = field;
     }
     notifier.fields = fieldsMap;
@@ -729,7 +725,7 @@ function initializeParliament () {
           fs.writeFileSync(app.get('file'), JSON.stringify(parliament, null, 2), 'utf8');
         }
       } catch (e) { // notify of error saving upgraded parliament and exit
-        console.log(`Error upgrading Parliament:\n\n`, e.stack);
+        console.log('Error upgrading Parliament:\n\n', e.stack);
         console.log(parliamentReadError);
         process.exit(1);
       }
@@ -741,10 +737,10 @@ function initializeParliament () {
     if (!parliament.groups) { parliament.groups = []; }
 
     // set id for each group/cluster
-    for (let group of parliament.groups) {
+    for (const group of parliament.groups) {
       group.id = groupId++;
       if (group.clusters) {
-        for (let cluster of group.clusters) {
+        for (const cluster of group.clusters) {
           cluster.id = clusterId++;
         }
       }
@@ -809,10 +805,10 @@ function initializeParliament () {
 // in the parliament
 function updateParliament () {
   return new Promise((resolve, reject) => {
-    let promises = [];
-    for (let group of parliament.groups) {
+    const promises = [];
+    for (const group of parliament.groups) {
       if (group.clusters) {
-        for (let cluster of group.clusters) {
+        for (const cluster of group.clusters) {
           // only get health for online clusters
           if (cluster.type !== 'disabled') {
             promises.push(getHealth(cluster));
@@ -825,7 +821,7 @@ function updateParliament () {
       }
     }
 
-    let issuesRemoved = cleanUpIssues();
+    const issuesRemoved = cleanUpIssues();
 
     Promise.all(promises)
       .then(() => {
@@ -1052,7 +1048,7 @@ router.post('/auth', (req, res, next) => {
     return next(error);
   }
 
-  let hasAuth = !!app.get('password');
+  const hasAuth = !!app.get('password');
   if (!hasAuth) {
     const error = new Error('No password set.');
     error.httpStatusCode = 401;
@@ -1068,7 +1064,7 @@ router.post('/auth', (req, res, next) => {
 
   const payload = { admin: true };
 
-  let token = jwt.sign(payload, app.get('password'), {
+  const token = jwt.sign(payload, app.get('password'), {
     expiresIn: 60 * 60 * 24 // expires in 24 hours
   });
 
@@ -1082,7 +1078,7 @@ router.post('/auth', (req, res, next) => {
 // logout a "session" by invalidating the token
 router.post('/logout', (req, res, next) => {
   // check for token in header, url parameters, or post parameters
-  let token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token = req.body.token || req.query.token || req.headers['x-access-token'];
   // add token to invalid token map
   if (token) { invalidTokens[token] = true; }
 
@@ -1091,8 +1087,8 @@ router.post('/logout', (req, res, next) => {
 
 // Get whether authentication or dashboardOnly mode is set
 router.get('/auth', (req, res, next) => {
-  let hasAuth = !!app.get('password');
-  let dashboardOnly = !!app.get('dashboardOnly');
+  const hasAuth = !!app.get('password');
+  const dashboardOnly = !!app.get('dashboardOnly');
   return res.json({
     hasAuth: hasAuth,
     dashboardOnly: dashboardOnly
@@ -1119,7 +1115,7 @@ router.put('/auth/update', (req, res, next) => {
     return next(error);
   }
 
-  let hasAuth = !!app.get('password');
+  const hasAuth = !!app.get('password');
   if (hasAuth) { // if the user has a password already set
     // check if the user has supplied their current password
     if (!req.body.currentPassword) {
@@ -1149,13 +1145,13 @@ router.put('/auth/update', (req, res, next) => {
 
     const payload = { admin: true };
 
-    let token = jwt.sign(payload, hash, {
+    const token = jwt.sign(payload, hash, {
       expiresIn: 60 * 60 * 24 // expires in 24 hours
     });
 
     // return the information including token as JSON
-    let successObj = { success: true, text: 'Here\'s your new token!', token: token };
-    let errorText = 'Unable to update your password.';
+    const successObj = { success: true, text: 'Here\'s your new token!', token: token };
+    const errorText = 'Unable to update your password.';
     writeParliament(req, res, next, successObj, errorText);
   });
 });
@@ -1172,7 +1168,7 @@ router.get('/settings', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let settings = JSON.parse(JSON.stringify(parliament.settings));
+  const settings = JSON.parse(JSON.stringify(parliament.settings));
 
   if (!settings.general) {
     settings.general = settingsDefault.general;
@@ -1184,7 +1180,7 @@ router.get('/settings', verifyToken, (req, res, next) => {
 // Update the parliament general settings object
 router.put('/settings', verifyToken, (req, res, next) => {
   // save general settings
-  for (let s in req.body.settings.general) {
+  for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
     if (s !== 'hostname' && s !== 'includeUrl' && isNaN(setting)) {
       const error = new Error(`${s} must be a number.`);
@@ -1195,8 +1191,8 @@ router.put('/settings', verifyToken, (req, res, next) => {
     parliament.settings.general[s] = setting;
   }
 
-  let successObj = { success: true, text: 'Successfully updated your settings.' };
-  let errorText = 'Unable to update your settings.';
+  const successObj = { success: true, text: 'Successfully updated your settings.' };
+  const errorText = 'Unable to update your settings.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1254,8 +1250,8 @@ router.put('/notifiers/:name', verifyToken, (req, res, next) => {
   }
 
   let foundNotifier;
-  for (let n in internals.notifierTypes) {
-    let notifier = internals.notifierTypes[n];
+  for (const n in internals.notifierTypes) {
+    const notifier = internals.notifierTypes[n];
     if (notifier.type === req.body.notifier.type) {
       foundNotifier = notifier;
     }
@@ -1268,10 +1264,10 @@ router.put('/notifiers/:name', verifyToken, (req, res, next) => {
   }
 
   // check that required notifier fields exist
-  for (let f in foundNotifier.fields) {
-    let field = foundNotifier.fields[f];
-    for (let sf in req.body.notifier.fields) {
-      let sentField = req.body.notifier.fields[sf];
+  for (const f in foundNotifier.fields) {
+    const field = foundNotifier.fields[f];
+    for (const sf in req.body.notifier.fields) {
+      const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
         const error = new Error(`Missing a value for ${field.name}`);
         error.httpStatusCode = 403;
@@ -1288,12 +1284,12 @@ router.put('/notifiers/:name', verifyToken, (req, res, next) => {
     delete parliament.settings.notifiers[req.body.key];
   }
 
-  let successObj = {
+  const successObj = {
     success: true,
     newKey: req.body.notifier.name,
     text: `Successfully updated ${req.params.name} notifier.`
   };
-  let errorText = `Cannot update ${req.params.name} notifier`;
+  const errorText = `Cannot update ${req.params.name} notifier`;
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1307,8 +1303,8 @@ router.delete('/notifiers/:name', verifyToken, (req, res, next) => {
 
   parliament.settings.notifiers[req.params.name] = undefined;
 
-  let successObj = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
-  let errorText = `Cannot remove ${req.params.name} notifier`;
+  const successObj = { success: true, text: `Successfully removed ${req.params.name} notifier.` };
+  const errorText = `Cannot remove ${req.params.name} notifier`;
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1347,8 +1343,8 @@ router.post('/notifiers', verifyToken, (req, res, next) => {
   }
 
   let foundNotifier;
-  for (let n in internals.notifierTypes) {
-    let notifier = internals.notifierTypes[n];
+  for (const n in internals.notifierTypes) {
+    const notifier = internals.notifierTypes[n];
     if (notifier.type === req.body.notifier.type) {
       foundNotifier = notifier;
     }
@@ -1361,10 +1357,10 @@ router.post('/notifiers', verifyToken, (req, res, next) => {
   }
 
   // check that required notifier fields exist
-  for (let f in foundNotifier.fields) {
-    let field = foundNotifier.fields[f];
-    for (let sf in req.body.notifier.fields) {
-      let sentField = req.body.notifier.fields[sf];
+  for (const f in foundNotifier.fields) {
+    const field = foundNotifier.fields[f];
+    for (const sf in req.body.notifier.fields) {
+      const sentField = req.body.notifier.fields[sf];
       if (sentField.name === field.name && field.required && !sentField.value) {
         const error = new Error(`Missing a value for ${field.name}`);
         error.httpStatusCode = 403;
@@ -1375,12 +1371,12 @@ router.post('/notifiers', verifyToken, (req, res, next) => {
 
   parliament.settings.notifiers[req.body.notifier.name] = req.body.notifier;
 
-  let successObj = {
+  const successObj = {
     success: true,
     name: req.body.notifier.name,
     text: `Successfully added ${req.body.notifier.name} notifier.`
   };
-  let errorText = `Unable to add ${req.body.notifier.name} notifier.`;
+  const errorText = `Unable to add ${req.body.notifier.name} notifier.`;
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1397,7 +1393,7 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
     parliament.settings = JSON.parse(JSON.stringify(settingsDefault));
   }
 
-  let settings = JSON.parse(JSON.stringify(parliament.settings));
+  const settings = JSON.parse(JSON.stringify(parliament.settings));
 
   const parliamentError = validateParliament(next);
   if (!parliamentError) {
@@ -1424,12 +1420,12 @@ router.put('/settings/restoreDefaults', verifyToken, (req, res, next) => {
 
 // Get parliament with stats
 router.get('/parliament', (req, res, next) => {
-  let parliamentClone = JSON.parse(JSON.stringify(parliament));
+  const parliamentClone = JSON.parse(JSON.stringify(parliament));
 
   for (const group of parliamentClone.groups) {
-    for (let cluster of group.clusters) {
+    for (const cluster of group.clusters) {
       cluster.activeIssues = [];
-      for (let issue of issues) {
+      for (const issue of issues) {
         if (issue.clusterId === cluster.id &&
           !issue.acknowledged && !issue.ignoreUntil &&
           !issue.provisional) {
@@ -1465,8 +1461,8 @@ router.put('/parliament', verifyToken, (req, res, next) => {
   parliament.groups = req.body.reorderedParliament.groups;
   updateParliament();
 
-  let successObj = { success: true, text: 'Successfully reordered items in your parliament.' };
-  let errorText = 'Unable to update the order of items in your parliament.';
+  const successObj = { success: true, text: 'Successfully reordered items in your parliament.' };
+  const errorText = 'Unable to update the order of items in your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1478,13 +1474,13 @@ router.post('/groups', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let newGroup = { title: req.body.title, id: groupId++, clusters: [] };
+  const newGroup = { title: req.body.title, id: groupId++, clusters: [] };
   if (req.body.description) { newGroup.description = req.body.description; }
 
   parliament.groups.push(newGroup);
 
-  let successObj = { success: true, group: newGroup, text: 'Successfully added new group.' };
-  let errorText = 'Unable to add that group to your parliament.';
+  const successObj = { success: true, group: newGroup, text: 'Successfully added new group.' };
+  const errorText = 'Unable to add that group to your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1492,7 +1488,7 @@ router.post('/groups', verifyToken, (req, res, next) => {
 router.delete('/groups/:id', verifyToken, (req, res, next) => {
   let index = 0;
   let foundGroup = false;
-  for (let group of parliament.groups) {
+  for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.id)) {
       parliament.groups.splice(index, 1);
       foundGroup = true;
@@ -1507,8 +1503,8 @@ router.delete('/groups/:id', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj = { success: true, text: 'Successfully removed the requested group.' };
-  let errorText = 'Unable to remove that group from the parliament.';
+  const successObj = { success: true, text: 'Successfully removed the requested group.' };
+  const errorText = 'Unable to remove that group from the parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1521,7 +1517,7 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
   }
 
   let foundGroup = false;
-  for (let group of parliament.groups) {
+  for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.id)) {
       group.title = req.body.title;
       if (req.body.description) {
@@ -1538,8 +1534,8 @@ router.put('/groups/:id', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj = { success: true, text: 'Successfully updated the requested group.' };
-  let errorText = 'Unable to update that group in the parliament.';
+  const successObj = { success: true, text: 'Successfully updated the requested group.' };
+  const errorText = 'Unable to update that group in the parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1558,7 +1554,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let newCluster = {
+  const newCluster = {
     title: req.body.title,
     description: req.body.description,
     url: req.body.url,
@@ -1568,7 +1564,7 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
   };
 
   let foundGroup = false;
-  for (let group of parliament.groups) {
+  for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.id)) {
       group.clusters.push(newCluster);
       foundGroup = true;
@@ -1582,13 +1578,13 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
     return next(error);
   }
 
-  let successObj = {
+  const successObj = {
     success: true,
     cluster: newCluster,
     parliament: parliament,
     text: 'Successfully added the requested cluster.'
   };
-  let errorText = 'Unable to add that cluster to the parliament.';
+  const errorText = 'Unable to add that cluster to the parliament.';
   writeParliament(req, res, next, successObj, errorText, true);
 });
 
@@ -1596,9 +1592,9 @@ router.post('/groups/:id/clusters', verifyToken, (req, res, next) => {
 router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next) => {
   let clusterIndex = 0;
   let foundCluster = false;
-  for (let group of parliament.groups) {
+  for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.groupId)) {
-      for (let cluster of group.clusters) {
+      for (const cluster of group.clusters) {
         if (cluster.id === parseInt(req.params.clusterId)) {
           group.clusters.splice(clusterIndex, 1);
           foundCluster = true;
@@ -1615,8 +1611,8 @@ router.delete('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, ne
     return next(error);
   }
 
-  let successObj = { success: true, text: 'Successfully removed the requested cluster.' };
-  let errorText = 'Unable to remove that cluster from your parliament.';
+  const successObj = { success: true, text: 'Successfully removed the requested cluster.' };
+  const errorText = 'Unable to remove that cluster from your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1636,9 +1632,9 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
   }
 
   let foundCluster = false;
-  for (let group of parliament.groups) {
+  for (const group of parliament.groups) {
     if (group.id === parseInt(req.params.groupId)) {
-      for (let cluster of group.clusters) {
+      for (const cluster of group.clusters) {
         if (cluster.id === parseInt(req.params.clusterId)) {
           cluster.url = req.body.url;
           cluster.title = req.body.title;
@@ -1665,8 +1661,8 @@ router.put('/groups/:groupId/clusters/:clusterId', verifyToken, (req, res, next)
     return next(error);
   }
 
-  let successObj = { success: true, text: 'Successfully updated the requested cluster.' };
-  let errorText = 'Unable to update that cluster in your parliament.';
+  const successObj = { success: true, text: 'Successfully updated the requested cluster.' };
+  const errorText = 'Unable to update that cluster in your parliament.';
   writeParliament(req, res, next, successObj, errorText);
 });
 
@@ -1678,7 +1674,7 @@ router.get('/issues', (req, res, next) => {
   issuesClone = issuesClone.filter((issue) => !issue.provisional);
 
   if (req.query.filter) { // simple search for issues
-    let searchTerm = req.query.filter.toLowerCase();
+    const searchTerm = req.query.filter.toLowerCase();
     issuesClone = issuesClone.filter((issue) => {
       return issue.severity.toLowerCase().includes(searchTerm) ||
         (issue.node && issue.node.toLowerCase().includes(searchTerm)) ||
@@ -1690,7 +1686,7 @@ router.get('/issues', (req, res, next) => {
   }
 
   let type = 'string';
-  let sortBy = req.query.sort;
+  const sortBy = req.query.sort;
   if (sortBy === 'ignoreUntil' ||
     sortBy === 'firstNoticed' ||
     sortBy === 'lastNoticed' ||
@@ -1699,17 +1695,9 @@ router.get('/issues', (req, res, next) => {
   }
 
   if (sortBy) {
-    let order = req.query.order || 'desc';
+    const order = req.query.order || 'desc';
     issuesClone.sort((a, b) => {
-      if (type === 'string') {
-        let aVal = '';
-        let bVal = '';
-
-        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
-        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
-
-        return order === 'asc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-      } else if (type === 'number') {
+      if (type === 'number') {
         let aVal = 0;
         let bVal = 0;
 
@@ -1717,15 +1705,23 @@ router.get('/issues', (req, res, next) => {
         if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
 
         return order === 'asc' ? bVal - aVal : aVal - bVal;
+      } else { // assume it's a string
+        let aVal = '';
+        let bVal = '';
+
+        if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
+        if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
+
+        return order === 'asc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
       }
     });
   }
 
-  let recordsFiltered = issuesClone.length;
+  const recordsFiltered = issuesClone.length;
 
   if (req.query.length) { // paging
-    let len = parseInt(req.query.length);
-    let start = !req.query.start ? 0 : parseInt(req.query.start);
+    const len = parseInt(req.query.length);
+    const start = !req.query.start ? 0 : parseInt(req.query.start);
 
     issuesClone = issuesClone.slice(start, len + start);
   }
@@ -1739,17 +1735,17 @@ router.get('/issues', (req, res, next) => {
 // acknowledge one or more issues
 router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
-    let message = 'Must specify the issue(s) to acknowledge.';
+    const message = 'Must specify the issue(s) to acknowledge.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
   }
 
-  let now = Date.now();
+  const now = Date.now();
   let count = 0;
 
-  for (let i of req.body.issues) {
-    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+  for (const i of req.body.issues) {
+    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
     if (issue) {
       issue.acknowledged = now;
       count++;
@@ -1771,27 +1767,27 @@ router.put('/acknowledgeIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success: true, text: successText, acknowledged: now };
+  const successObj = { success: true, text: successText, acknowledged: now };
   writeIssues(req, res, next, successObj, errorText);
 });
 
 // ignore one or more issues
 router.put('/ignoreIssues', verifyToken, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
-    let message = 'Must specify the issue(s) to ignore.';
+    const message = 'Must specify the issue(s) to ignore.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
   }
 
-  let ms = req.body.ms || 3600000; // Default to 1 hour
+  const ms = req.body.ms || 3600000; // Default to 1 hour
   let ignoreUntil = Date.now() + ms;
   if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
 
   let count = 0;
 
-  for (let i of req.body.issues) {
-    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+  for (const i of req.body.issues) {
+    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
     if (issue) {
       issue.ignoreUntil = ignoreUntil;
       count++;
@@ -1813,14 +1809,14 @@ router.put('/ignoreIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success: true, text: successText, ignoreUntil: ignoreUntil };
+  const successObj = { success: true, text: successText, ignoreUntil: ignoreUntil };
   writeIssues(req, res, next, successObj, errorText);
 });
 
 // unignore one or more issues
 router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
-    let message = 'Must specify the issue(s) to unignore.';
+    const message = 'Must specify the issue(s) to unignore.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
@@ -1828,8 +1824,8 @@ router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
 
   let count = 0;
 
-  for (let i of req.body.issues) {
-    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+  for (const i of req.body.issues) {
+    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
     if (issue) {
       issue.ignoreUntil = undefined;
       issue.alerted = undefined; // reset alert time so it can alert again
@@ -1852,20 +1848,20 @@ router.put('/removeIgnoreIssues', verifyToken, (req, res, next) => {
     errorText += 's';
   }
 
-  let successObj = { success: true, text: successText };
+  const successObj = { success: true, text: successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
 // Remove an issue with a cluster
 router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req, res, next) => {
   if (!req.body.type) {
-    let message = 'Must specify the issue type to remove.';
+    const message = 'Must specify the issue type to remove.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
   }
 
-  let foundIssue = removeIssue(req.body.type, req.params.clusterId, req.body.node);
+  const foundIssue = removeIssue(req.body.type, req.params.clusterId, req.body.node);
 
   if (!foundIssue) {
     const error = new Error('Unable to find issue to remove. Maybe it was already removed.');
@@ -1873,8 +1869,8 @@ router.put('/groups/:groupId/clusters/:clusterId/removeIssue', verifyToken, (req
     return next(error);
   }
 
-  let successObj = { success: true, text: 'Successfully removed the requested issue.' };
-  let errorText = 'Unable to remove that issue.';
+  const successObj = { success: true, text: 'Successfully removed the requested issue.' };
+  const errorText = 'Unable to remove that issue.';
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1897,15 +1893,15 @@ router.put('/issues/removeAllAcknowledgedIssues', verifyToken, (req, res, next) 
     return next(error);
   }
 
-  let successObj = { success: true, text: `Successfully removed ${count} acknowledged issues.` };
-  let errorText = 'Unable to remove acknowledged issues.';
+  const successObj = { success: true, text: `Successfully removed ${count} acknowledged issues.` };
+  const errorText = 'Unable to remove acknowledged issues.';
   writeIssues(req, res, next, successObj, errorText, true);
 });
 
 // remove one or more acknowledged issues
 router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) => {
   if (!req.body.issues || !req.body.issues.length) {
-    let message = 'Must specify the acknowledged issue(s) to remove.';
+    const message = 'Must specify the acknowledged issue(s) to remove.';
     const error = new Error(message);
     error.httpStatusCode = 422;
     return next(error);
@@ -1914,8 +1910,8 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
   let count = 0;
 
   // mark issues to remove
-  for (let i of req.body.issues) {
-    let issue = findIssue(parseInt(i.clusterId), i.type, i.node);
+  for (const i of req.body.issues) {
+    const issue = findIssue(parseInt(i.clusterId), i.type, i.node);
     if (issue && issue.acknowledged) {
       count++;
       issue.remove = true;
@@ -1931,7 +1927,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
   count = 0;
   let len = issues.length;
   while (len--) {
-    let issue = issues[len];
+    const issue = issues[len];
     if (issue.remove) {
       count++;
       issues.splice(len, 1);
@@ -1953,7 +1949,7 @@ router.put('/removeSelectedAcknowledgedIssues', verifyToken, (req, res, next) =>
     errorText += 's';
   }
 
-  let successObj = { success: true, text: successText };
+  const successObj = { success: true, text: successText };
   writeIssues(req, res, next, successObj, errorText);
 });
 
@@ -1968,19 +1964,19 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
   const notifier = parliament.settings.notifiers[req.body.notifier];
 
   if (!notifier) {
-    let errorText = 'Unable to find the requested notifier';
+    const errorText = 'Unable to find the requested notifier';
     const error = new Error(errorText);
     error.httpStatusCode = 500;
     return next(error);
   }
 
-  let config = {};
+  const config = {};
 
-  for (let f in notifier.fields) {
-    let field = notifier.fields[f];
+  for (const f in notifier.fields) {
+    const field = notifier.fields[f];
     if (!field || (field.required && !field.value)) {
       // field doesn't exist, or field is required and doesn't have a value
-      let message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
+      const message = `Missing the ${f} field for the ${notifier.name} notifier. Add it on the settings page.`;
       console.log(message);
 
       const error = new Error(message);
@@ -1998,7 +1994,8 @@ router.post('/testAlert', verifyToken, (req, res, next) => {
       // there should only be one error here because only one
       // notifier alert is sent at a time
       if (response.errors) {
-        for (let e in response.errors) {
+        // eslint-disable-next-line no-unreachable-loop
+        for (const e in response.errors) {
           const error = new Error(response.errors[e]);
           error.httpStatusCode = 500;
           return next(error);
@@ -2021,9 +2018,16 @@ process.on('SIGINT', function () {
 });
 
 /* LISTEN! ----------------------------------------------------------------- */
+// expose vue bundles (prod)
+app.use(['/static', '/parliament/static'], express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use(['/app.css', '/parliament/app.css'], express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+// expose vue bundle (dev)
+app.use(['/app.js', '/parliament/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/parliament/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+
 // vue index page
 app.use((req, res, next) => {
-  res.status(404).sendFile(`${__dirname}/vueapp/dist/index.html`);
+  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
 });
 
 let server;
@@ -2059,7 +2063,7 @@ server
         updateParliament();
       })
       .catch((err) => {
-        console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
+        console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
         process.exit(1);
       });
 

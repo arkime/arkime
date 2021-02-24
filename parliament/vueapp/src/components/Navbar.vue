@@ -186,7 +186,7 @@ export default {
     if (localStorage.getItem('parliamentTheme')) {
       this.theme = localStorage.getItem('parliamentTheme');
       if (this.theme === 'dark') {
-        document.body.classList = [ this.theme ];
+        document.body.classList = [this.theme];
       }
     }
   },
@@ -231,7 +231,7 @@ export default {
     toggleTheme: function () {
       if (this.theme === 'light') {
         this.theme = 'dark';
-        document.body.classList = [ this.theme ];
+        document.body.classList = [this.theme];
       } else {
         this.theme = 'light';
         document.body.classList = [];

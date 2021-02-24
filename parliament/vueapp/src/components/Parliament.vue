@@ -1039,7 +1039,7 @@ export default {
       this.showMoreIssuesFor.push(cluster.id);
     },
     showLessIssues: function (cluster) {
-      let i = this.showMoreIssuesFor.indexOf(cluster.id);
+      const i = this.showMoreIssuesFor.indexOf(cluster.id);
       if (i > -1) { this.showMoreIssuesFor.splice(i, 1); }
     },
     acknowledgeAllIssues: function (cluster) {
@@ -1060,7 +1060,7 @@ export default {
     },
     issueChange: function (changeEvent) {
       // find the cluster to display/hide error
-      let cluster = this.getCluster(changeEvent.groupId, changeEvent.clusterId);
+      const cluster = this.getCluster(changeEvent.groupId, changeEvent.clusterId);
 
       if (!cluster && !changeEvent.success) {
         this.error = changeEvent.message;
@@ -1223,15 +1223,15 @@ export default {
           this.stopAutoRefresh();
         },
         onEnd: (event) => { // dragged group was dropped
-          let newIdx = event.newIndex;
-          let oldIdx = event.oldIndex;
+          const newIdx = event.newIndex;
+          const oldIdx = event.oldIndex;
 
           if (newIdx === oldIdx) {
             return;
           }
 
-          let group = this.parliament.groups[oldIdx];
-          let errorText = 'Error moving this group.';
+          const group = this.parliament.groups[oldIdx];
+          const errorText = 'Error moving this group.';
 
           if (!group) {
             this.error = errorText;
@@ -1252,7 +1252,7 @@ export default {
     initializeClusterDragDrop: function () {
       if (!this.$refs.draggableClusters) { return; }
 
-      for (let clusterGroup of this.$refs.draggableClusters) {
+      for (const clusterGroup of this.$refs.draggableClusters) {
         draggableClusters = Sortable.create(clusterGroup, {
           group: 'clusters',
           handle: '.cluster-handle',
@@ -1263,20 +1263,20 @@ export default {
             this.stopAutoRefresh();
           },
           onEnd: (event) => { // dragged cluster was dropped
-            let newIdx = event.newIndex;
-            let oldIdx = event.oldIndex;
-            let newGroupId = parseInt(event.to.id);
-            let oldGroupId = parseInt(event.from.id);
+            const newIdx = event.newIndex;
+            const oldIdx = event.oldIndex;
+            const newGroupId = parseInt(event.to.id);
+            const oldGroupId = parseInt(event.from.id);
 
             if (newIdx === oldIdx && newGroupId === oldGroupId) {
               return;
             }
 
-            let clusterId = parseInt(event.item.id);
-            let oldGroup = this.getGroup(oldGroupId);
-            let newGroup = this.getGroup(newGroupId);
-            let cluster = this.getCluster(oldGroupId, clusterId);
-            let errorText = 'Error moving this cluster.';
+            const clusterId = parseInt(event.item.id);
+            const oldGroup = this.getGroup(oldGroupId);
+            const newGroup = this.getGroup(newGroupId);
+            const cluster = this.getCluster(oldGroupId, clusterId);
+            const errorText = 'Error moving this cluster.';
 
             if (!oldGroup || !cluster) {
               this.error = errorText;

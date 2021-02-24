@@ -848,7 +848,7 @@ export default {
     /* clears new notifier form fields */
     clearNewNotifierFields: function () {
       this.newNotifier.name = '';
-      for (let f in this.newNotifier.fields) {
+      for (const f in this.newNotifier.fields) {
         this.newNotifier.fields[f].value = '';
       }
     },
@@ -865,18 +865,18 @@ export default {
       }
 
       // make sure required fields are filled
-      for (let f in this.newNotifier.fields) {
-        let field = this.newNotifier.fields[f];
+      for (const f in this.newNotifier.fields) {
+        const field = this.newNotifier.fields[f];
         if (!field.value && field.required) {
           this.settingsError = `${field.name} is required`;
           return;
         }
       }
 
-      let notifierClone = JSON.parse(JSON.stringify(this.newNotifier));
+      const notifierClone = JSON.parse(JSON.stringify(this.newNotifier));
 
       // remove alert objects and replace with bools
-      for (let a in notifierClone.alerts) {
+      for (const a in notifierClone.alerts) {
         notifierClone.alerts[a] = notifierClone.alerts[a].on;
       }
 

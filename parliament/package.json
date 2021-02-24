@@ -21,7 +21,11 @@
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
-    "ignore": ["node_modules/*", "*.json"]
+    "ignore": [
+      "node_modules/*",
+      "vueapp/*",
+      "*.json"
+    ]
   },
   "browserslist": [
     "> 1%",

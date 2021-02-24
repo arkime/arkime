@@ -87,7 +87,7 @@ export default {
 
   updateParliamentOrder: function (reorderedParliament) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/parliament`, { reorderedParliament: reorderedParliament })
+      Vue.axios.put('api/parliament', { reorderedParliament: reorderedParliament })
         .then((response) => {
           resolve(response.data);
         })
@@ -99,7 +99,7 @@ export default {
 
   getIssues: function (query) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/issues`, { params: query })
+      Vue.axios.get('api/issues', { params: query })
         .then((response) => {
           resolve(response.data);
         })
@@ -111,7 +111,7 @@ export default {
 
   acknowledgeIssues: function (issues) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/acknowledgeIssues`, {
+      Vue.axios.put('api/acknowledgeIssues', {
         issues: issues
       })
         .then((response) => {
@@ -140,7 +140,7 @@ export default {
 
   removeAllAcknowledgedIssues: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/issues/removeAllAcknowledgedIssues`, {})
+      Vue.axios.put('api/issues/removeAllAcknowledgedIssues', {})
         .then((response) => {
           resolve(response.data);
         })
@@ -152,7 +152,7 @@ export default {
 
   removeSelectedAcknowledgedIssues: function (issues) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/removeSelectedAcknowledgedIssues`, {
+      Vue.axios.put('api/removeSelectedAcknowledgedIssues', {
         issues: issues
       })
         .then((response) => {
@@ -166,7 +166,7 @@ export default {
 
   ignoreIssues: function (issues, forMs) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/ignoreIssues`, {
+      Vue.axios.put('api/ignoreIssues', {
         ms: forMs,
         issues: issues
       })
@@ -181,7 +181,7 @@ export default {
 
   removeIgnoreIssues: function (issues) {
     return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/removeIgnoreIssues`, {
+      Vue.axios.put('api/removeIgnoreIssues', {
         issues: issues
       })
         .then((response) => {

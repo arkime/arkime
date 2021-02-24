@@ -510,7 +510,7 @@ export default {
       }
     },
     removeSelectedAcknowledgedIssues: function () {
-      let selectedIssues = this.getSelectedIssues();
+      const selectedIssues = this.getSelectedIssues();
 
       ParliamentService.removeSelectedAcknowledgedIssues(selectedIssues)
         .then((data) => {
@@ -529,7 +529,7 @@ export default {
         this.atLeastOneIssueSelected = true;
       } else {
         this.atLeastOneIssueSelected = false;
-        for (let issue of this.issues) {
+        for (const issue of this.issues) {
           if (issue.selected) {
             this.atLeastOneIssueSelected = true;
             return;
@@ -542,18 +542,18 @@ export default {
 
       this.atLeastOneIssueSelected = this.allIssuesSelected;
 
-      for (let issue of this.issues) {
+      for (const issue of this.issues) {
         this.$set(issue, 'selected', this.allIssuesSelected);
       }
     },
     acknowledgeIssues: function () {
-      let selectedIssues = this.getSelectedIssues();
+      const selectedIssues = this.getSelectedIssues();
 
       ParliamentService.acknowledgeIssues(selectedIssues)
         .then((data) => {
           this.allIssuesSelected = false;
           this.atLeastOneIssueSelected = false;
-          for (let issue of this.issues) {
+          for (const issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
               this.$set(issue, 'acknowledged', data.acknowledged);
@@ -565,13 +565,13 @@ export default {
         });
     },
     ignoreIssues: function (forMs) {
-      let selectedIssues = this.getSelectedIssues();
+      const selectedIssues = this.getSelectedIssues();
 
       ParliamentService.ignoreIssues(selectedIssues, forMs)
         .then((data) => {
           this.allIssuesSelected = false;
           this.atLeastOneIssueSelected = false;
-          for (let issue of this.issues) {
+          for (const issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
               this.$set(issue, 'ignoreUntil', data.ignoreUntil);
@@ -583,13 +583,13 @@ export default {
         });
     },
     removeIgnore: function () {
-      let selectedIssues = this.getSelectedIssues();
+      const selectedIssues = this.getSelectedIssues();
 
       ParliamentService.removeIgnoreIssues(selectedIssues)
         .then((data) => {
           this.allIssuesSelected = false;
           this.atLeastOneIssueSelected = false;
-          for (let issue of this.issues) {
+          for (const issue of this.issues) {
             if (issue.selected) {
               this.$set(issue, 'selected', false);
               this.$set(issue, 'ignoreUntil', undefined);
@@ -625,7 +625,7 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
-      let query = { // set up query parameters (order, sort, paging)
+      const query = { // set up query parameters (order, sort, paging)
         start: this.start,
         length: this.query.length
       };
@@ -661,9 +661,9 @@ export default {
       if (interval) { clearInterval(interval); }
     },
     getSelectedIssues: function () {
-      let selectedIssues = [];
+      const selectedIssues = [];
 
-      for (let issue of this.issues) {
+      for (const issue of this.issues) {
         if (issue.selected) {
           selectedIssues.push(issue);
         }

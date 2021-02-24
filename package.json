@@ -70,11 +70,11 @@
     "parliament:bundle": "webpack -d --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "parliament:start": "cd parliament && node parliament.js",
     "preparliament:start": "npm run parliament:build",
-    "parliament:dev": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json) & webpack --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
-    "parliament:debug": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json --debug) & webpack --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "parliament:dev": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json) & webpack --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "parliament:debug": "(cd parliament && nodemon parliament.js --pass admin --port 8008 -c ./parliament.dev.json --debug) & webpack --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "parliament:lint": "eslint --ext .js,.vue parliament",
     "parliament:lint-fix": "eslint --fix --ext .js,.vue parliament",
-    "parliament:noauth": "(cd parliament && nodemon parliament.js --port 8008 -c ./parliament.dev.json) & webpack --no-stats --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+    "parliament:noauth": "(cd parliament && nodemon parliament.js --port 8008 -c ./parliament.dev.json) & webpack --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "wise:build": "cd wiseService && node vueapp/build/build.js",
     "wise:bundle": "webpack -d --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
@@ -82,8 +82,8 @@
     "wise:lint-fix": "eslint --fix --ext .js,.vue wiseService",
     "prewise:start": "npm run wise:build",
     "wise:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files wiseService/*.js > ../arkimeweb/_wiki/api_wise.md",
-    "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
-    "wise:devdebug": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --no-stats --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
+    "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
+    "wise:devdebug": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --progress --config wiseService/vueapp/build/webpack.dev.conf.js"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
