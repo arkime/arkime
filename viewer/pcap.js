@@ -86,7 +86,7 @@ Pcap.prototype.open = function (filename, info) {
   if (info) {
     this.encoding = info.encoding || 'normal';
     if (info.dek) {
-      const decipher = crypto.createDecipher('aes-192-cbc', info.kek);
+      const decipher = crypto.createDecipheriv('aes-192-cbc', info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
@@ -779,8 +779,8 @@ exports.reassemble_icmp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_udp = function (packets, numPackets, cb) {
+  const results = [];
   try {
-    var results = [];
     packets.length = Math.min(packets.length, numPackets);
     packets.forEach((item) => {
       const key = item.ip.addr1 + ':' + item.udp.sport;
@@ -805,8 +805,8 @@ exports.reassemble_udp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_sctp = function (packets, numPackets, cb) {
+  const results = [];
   try {
-    var results = [];
     packets.length = Math.min(packets.length, numPackets);
     packets.forEach((item) => {
       const key = item.ip.addr1 + ':' + item.sctp.sport;

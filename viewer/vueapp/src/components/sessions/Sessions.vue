@@ -1504,17 +1504,13 @@ export default {
      */
     setupFields: function () {
       for (const key in customCols) {
-        if (customCols.hasOwnProperty(key)) {
-          this.fields[key] = customCols[key];
-          const children = this.fields[key].children;
-          // expand all the children
-          for (const c in children) {
-            // (replace fieldId with field object)
-            if (children.hasOwnProperty(c)) {
-              if (typeof children[c] !== 'object') {
-                children[c] = this.getField(children[c]);
-              }
-            }
+        this.fields[key] = customCols[key];
+        const children = this.fields[key].children;
+        // expand all the children
+        for (const c in children) {
+          // (replace fieldId with field object)
+          if (typeof children[c] !== 'object') {
+            children[c] = this.getField(children[c]);
           }
         }
       }
@@ -1524,15 +1520,13 @@ export default {
       const existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
       for (const f in this.fields) {
-        if (this.fields.hasOwnProperty(f)) {
-          const field = this.fields[f];
-          if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
-            existingFieldsLookup[field.exp] = field;
-            if (!this.groupedFields[field.group]) {
-              this.groupedFields[field.group] = [];
-            }
-            this.groupedFields[field.group].push(field);
+        const field = this.fields[f];
+        if (!existingFieldsLookup[field.exp]) {
+          existingFieldsLookup[field.exp] = field;
+          if (!this.groupedFields[field.group]) {
+            this.groupedFields[field.group] = [];
           }
+          this.groupedFields[field.group].push(field);
         }
       }
     },
@@ -1543,16 +1537,14 @@ export default {
      */
     getField: function (fieldId) {
       for (const key in this.fields) {
-        if (this.fields.hasOwnProperty(key)) {
-          const field = this.fields[key];
-          if (field.dbField === fieldId || field.exp === fieldId) {
-            return field;
-          }
-          if (field.aliases) {
-            for (const alias of field.aliases) {
-              if (alias === fieldId) {
-                return field;
-              }
+        const field = this.fields[key];
+        if (field.dbField === fieldId || field.exp === fieldId) {
+          return field;
+        }
+        if (field.aliases) {
+          for (const alias of field.aliases) {
+            if (alias === fieldId) {
+              return field;
             }
           }
         }

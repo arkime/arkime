@@ -3433,9 +3433,7 @@ export default {
 
           // add custom columns to the fields array
           for (const key in customCols) {
-            if (customCols.hasOwnProperty(key)) {
-              this.fields.push(customCols[key]);
-            }
+            this.fields.push(customCols[key]);
           }
 
           // update the user settings for spigraph field & connections src/dst fields

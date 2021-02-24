@@ -690,7 +690,7 @@ export default {
       let exact = false;
 
       for (const key in values) {
-        if (values.hasOwnProperty(key)) {
+        if (values[key]) {
           let str;
           const field = values[key];
 

@@ -23,6 +23,7 @@ const Stream = require('stream');
 const Readable = Stream.Readable;
 const Transform = Stream.Transform;
 const Writable = Stream.Writable;
+// eslint-disable-next-line node/no-deprecated-api
 const HTTPParser = process.version.startsWith('v12') ? process.binding('http_parser_llhttp').HTTPParser : process.binding('http_parser').HTTPParser;
 const zlib = require('zlib');
 const through = require('through2');
@@ -227,7 +228,8 @@ function createUnxorBruteGzip (options, context) {
           for (let g = 0; g < gzip.length; g++) {
             tmp[g] = data[d + g] ^ key[g % key.length];
           }
-          for (var j = 0; j < gzip.length; j++) {
+          let j;
+          for (j = 0; j < gzip.length; j++) {
             if (tmp[j] !== gzip[j]) {
               break;
             }

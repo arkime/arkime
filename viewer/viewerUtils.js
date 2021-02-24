@@ -3,7 +3,6 @@
 const async = require('async');
 const http = require('http');
 const https = require('https');
-const url = require('url');
 
 module.exports = (Config, Db, molochparser, internals) => {
   const module = {};
@@ -333,17 +332,15 @@ module.exports = (Config, Db, molochparser, internals) => {
     const newFields = {};
 
     for (const key in fields) {
-      if (fields.hasOwnProperty(key)) {
+      if (fields[key]) {
         const field = fields[key];
         const baseKey = key + '.';
         if (typeof field === 'object' && !field.length) {
           // flatten out object
           for (const nestedKey in field) {
-            if (field.hasOwnProperty(nestedKey)) {
-              const nestedField = field[nestedKey];
-              const newKey = baseKey + nestedKey;
-              newFields[newKey] = nestedField;
-            }
+            const nestedField = field[nestedKey];
+            const newKey = baseKey + nestedKey;
+            newFields[newKey] = nestedField;
           }
           fields[key] = null;
           delete fields[key];
@@ -370,9 +367,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
 
     for (const key in newFields) {
-      if (newFields.hasOwnProperty(key)) {
-        fields[key] = newFields[key];
-      }
+      fields[key] = newFields[key];
     }
 
     return fields;
@@ -551,7 +546,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   module.makeRequest = (node, path, user, cb) => {
     module.getViewUrl(node, function (err, viewUrl, client) {
-      const info = url.parse(viewUrl);
+      const info = new URL(viewUrl);
       info.path = encodeURI(`${Config.basePath(node)}${path}`);
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;

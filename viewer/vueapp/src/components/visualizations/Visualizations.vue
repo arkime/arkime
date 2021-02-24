@@ -899,32 +899,32 @@ export default {
 
       if (!Object.keys(this.mapData).length) { return; }
 
-      this.mapData.tot = {};
+      this.localMapData = JSON.parse(JSON.stringify(this.mapData));
+      this.localMapData.tot = {};
       if (this.src) {
-        for (const k in this.mapData.src) {
-          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
-          this.mapData.tot[k] += this.mapData.src[k];
+        for (const k in this.localMapData.src) {
+          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
+          this.localMapData.tot[k] += this.localMapData.src[k];
         }
       }
       if (this.dst) {
-        for (const k in this.mapData.dst) {
-          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
-          this.mapData.tot[k] += this.mapData.dst[k];
+        for (const k in this.localMapData.dst) {
+          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
+          this.localMapData.tot[k] += this.localMapData.dst[k];
         }
       }
       if (this.xffGeo) {
-        for (const k in this.mapData.xffGeo) {
-          if (!this.mapData.tot[k]) { this.mapData.tot[k] = 0; }
-          this.mapData.tot[k] += this.mapData.xffGeo[k];
+        for (const k in this.localMapData.xffGeo) {
+          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
+          this.localMapData.tot[k] += this.localMapData.xffGeo[k];
         }
       }
-      this.map.series.regions[0].setValues(this.mapData.tot);
+      this.map.series.regions[0].setValues(this.localMapData.tot);
 
       const region = this.map.series.regions[0];
       this.legend = [];
       for (const key in region.values) {
-        if (region.values.hasOwnProperty(key) &&
-           region.elements.hasOwnProperty(key)) {
+        if (region.elements[key]) {
           this.legend.push({
             name: key,
             value: region.values[key],

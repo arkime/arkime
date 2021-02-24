@@ -22,35 +22,35 @@ const MIN_DB_VERSION = 66;
 // ============================================================================
 // MODULES
 // ============================================================================
+let Config, express, fs, fse, async, Pcap, Db, molochparser, passport,
+  DigestStrategy, version, http, https, onHeaders, helmet, uuid, path;
+
 try {
-  var Config = require('./config.js');
-  var express = require('express');
-  var fs = require('fs');
-  var fse = require('fs-ext');
-  var async = require('async');
-  var url = require('url');
-  var Pcap = require('./pcap.js');
-  var Db = require('./db.js');
-  var molochparser = require('./molochparser.js');
-  var passport = require('passport');
-  var DigestStrategy = require('passport-http').DigestStrategy;
-  var version = require('./version');
-  var http = require('http');
-  var https = require('https');
-  var onHeaders = require('on-headers');
-  var helmet = require('helmet');
-  var uuid = require('uuidv4').default;
-  var path = require('path');
+  Config = require('./config.js');
+  express = require('express');
+  fs = require('fs');
+  fse = require('fs-ext');
+  async = require('async');
+  Pcap = require('./pcap.js');
+  Db = require('./db.js');
+  molochparser = require('./molochparser.js');
+  passport = require('passport');
+  DigestStrategy = require('passport-http').DigestStrategy;
+  version = require('./version');
+  http = require('http');
+  https = require('https');
+  onHeaders = require('on-headers');
+  helmet = require('helmet');
+  uuid = require('uuidv4').default;
+  path = require('path');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
-  throw new Error('Exiting');
 }
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
   process.exit(1);
-  throw new Error('Exiting');
 }
 
 // express app
@@ -670,7 +670,7 @@ function logAction (uiPage) {
     const bodyClone = {};
 
     for (const key in req.body) {
-      if (req.body.hasOwnProperty(key) && !avoidProps[key]) {
+      if (req.body[key] && !avoidProps[key]) {
         bodyClone[key] = req.body[key];
       }
     }
@@ -952,7 +952,7 @@ function sendSessionWorker (options, cb) {
       return cb();
     }
 
-    const info = url.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
+    const info = new URL(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
     ViewerUtils.addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
     info.method = 'POST';
 
@@ -1030,7 +1030,7 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     function () {
       // Get from remote DISK
       ViewerUtils.getViewUrl(node, function (err, viewUrl, client) {
-        const info = url.parse(viewUrl);
+        const info = new URL(viewUrl);
         info.method = 'POST';
         info.path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
         info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
@@ -1245,7 +1245,7 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
     const clone = {};
 
     for (const key in clusters) {
-      if (clusters.hasOwnProperty(key)) {
+      if (clusters[key]) {
         const cluster = clusters[key];
         clone[key] = {
           name: cluster.name,
@@ -2005,7 +2005,6 @@ if (Config.get('regressionTests')) {
   app.post('/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
-    throw new Error('Exiting');
   });
   app.post('/flushCache', function (req, res) {
     Db.flushCache();
@@ -2051,11 +2050,11 @@ function createApp () {
 }
 
 // expose vue bundles (prod)
-app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
-app.use('/app.css', express.static(`${__dirname}/vueapp/dist/app.css`));
+app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(`${__dirname}/vueapp/dist/app.js.map`));
+app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
@@ -2427,7 +2426,6 @@ function main () {
     .on('error', function (e) {
       console.log("ERROR - couldn't listen on port", Config.get('viewPort', '8005'), 'is viewer already running?');
       process.exit(1);
-      throw new Error('Exiting');
     })
     .on('listening', function (e) {
       console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);

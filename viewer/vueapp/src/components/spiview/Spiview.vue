@@ -557,15 +557,11 @@ export default {
 
       // set loading to false for all categories and fields
       for (const key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          const cat = this.categoryObjects[key];
-          cat.loading = false;
-          if (cat.spi) {
-            for (const field in cat.spi) {
-              if (cat.spi.hasOwnProperty(field)) {
-                cat.spi[field].loading = false;
-              }
-            }
+        const cat = this.categoryObjects[key];
+        cat.loading = false;
+        if (cat.spi) {
+          for (const field in cat.spi) {
+            cat.spi[field].loading = false;
           }
         }
       }
@@ -880,7 +876,7 @@ export default {
               continue;
             }
 
-            if (this.categoryObjects.hasOwnProperty(field.group)) {
+            if (this.categoryObjects[field.group]) {
               // already created, just add a new field
               this.categoryObjects[field.group].fields.push(field);
             } else { // create it
@@ -1117,18 +1113,16 @@ export default {
     openCategories: function () {
       openedCategories = true;
       for (const key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          const category = this.categoryObjects[key];
+        const category = this.categoryObjects[key];
 
-          const fields = this.sortFields(category.fields);
-          Vue.set(category, 'filteredFields', fields);
+        const fields = this.sortFields(category.fields);
+        Vue.set(category, 'filteredFields', fields);
 
-          if (localStorage && localStorage['spiview-collapsible']) {
-            if (localStorage['spiview-collapsible'].includes(key)) {
-              category.isopen = true;
-            } else {
-              continue;
-            }
+        if (localStorage && localStorage['spiview-collapsible']) {
+          if (localStorage['spiview-collapsible'].includes(key)) {
+            category.isopen = true;
+          } else {
+            continue;
           }
         }
       }
@@ -1138,29 +1132,25 @@ export default {
     updateProtocols: function () {
       // clean up any old protocols
       for (const c in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(c)) {
-          this.categoryObjects[c].protocols = {};
-        }
+        this.categoryObjects[c].protocols = {};
       }
 
       for (const key in this.protocols) {
-        if (this.protocols.hasOwnProperty(key)) {
-          let category;
+        let category;
 
-          // find the category that the protocol belongs to
-          if (this.categoryObjects.hasOwnProperty(key)) {
-            category = this.categoryObjects[key];
-          } else { // categorize special protocols that don't match category
-            if (key === 'tcp' || key === 'udp' || key === 'icmp' || key === 'sctp' || key === 'esp') {
-              category = this.categoryObjects.general;
-            } else if (key === 'smtp' || key === 'lmtp') {
-              category = this.categoryObjects.email;
-            }
+        // find the category that the protocol belongs to
+        if (this.categoryObjects[key]) {
+          category = this.categoryObjects[key];
+        } else { // categorize special protocols that don't match category
+          if (key === 'tcp' || key === 'udp' || key === 'icmp' || key === 'sctp' || key === 'esp') {
+            category = this.categoryObjects.general;
+          } else if (key === 'smtp' || key === 'lmtp') {
+            category = this.categoryObjects.email;
           }
+        }
 
-          if (category) {
-            category.protocols[key] = this.protocols[key];
-          }
+        if (category) {
+          category.protocols[key] = this.protocols[key];
         }
       }
     },
@@ -1186,21 +1176,17 @@ export default {
     deactivateSpiData: function () {
       const spiParamsArray = this.spiQuery.split(',');
       for (const key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          const category = this.categoryObjects[key];
-          for (const k in category.spi) {
-            if (category.spi.hasOwnProperty(k)) {
-              const spiData = category.spi[k];
-              if (spiData.active) {
-                let inactive = true;
-                for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-                  // if it exists in spi url param, it's still active
-                  if (spiParamsArray[i] === k) { inactive = false; }
-                }
-                // it's no longer in the spi url param, so it's not active
-                if (inactive) { spiData.active = false; }
-              }
+        const category = this.categoryObjects[key];
+        for (const k in category.spi) {
+          const spiData = category.spi[k];
+          if (spiData.active) {
+            let inactive = true;
+            for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+              // if it exists in spi url param, it's still active
+              if (spiParamsArray[i] === k) { inactive = false; }
             }
+            // it's no longer in the spi url param, so it's not active
+            if (inactive) { spiData.active = false; }
           }
         }
       }

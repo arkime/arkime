@@ -757,9 +757,7 @@ export default {
    */
   parseViews (views) {
     for (const name in views) {
-      if (views.hasOwnProperty(name)) {
-        views[name].name = name;
-      }
+      views[name].name = name;
     }
     return views;
   }

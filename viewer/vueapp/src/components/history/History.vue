@@ -114,7 +114,7 @@
               @keyup="debounceSearch"
               @click.stop
             />
-            <div v-if="column.hasOwnProperty('exists')"
+            <div v-if="column.exists"
               class="mr-1 header-div">
               <input type="checkbox"
                 class="checkbox"
@@ -483,9 +483,7 @@ export default {
 
       if (this.filters && Object.keys(this.filters).length) {
         for (const key in this.filters) {
-          if (this.filters.hasOwnProperty(key)) {
-            this.query[key] = this.filters[key];
-          }
+          this.query[key] = this.filters[key];
         }
       }
 

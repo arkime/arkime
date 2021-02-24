@@ -755,7 +755,7 @@ export default {
           if (this.user.userId === user.userId) {
             // update all the fields
             for (const field in user) {
-              if (this.user.hasOwnProperty(field) &&
+              if (this.user[field] &&
                 user[field] !== undefined) {
                 this.user[field] = user[field];
               }

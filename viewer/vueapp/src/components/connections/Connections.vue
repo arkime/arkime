@@ -954,8 +954,8 @@ export default {
         // found the ip.dst:port field
         if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
         // don't include fields with regex
-        if (field.hasOwnProperty('regex')) { continue; }
-        if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
+        if (field.regex) { continue; }
+        if (!existingFieldsLookup[field.exp]) {
           this.fieldsMap[field.dbField] = field;
           existingFieldsLookup[field.exp] = field;
           if (!this.groupedFields[field.group]) {

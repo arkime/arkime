@@ -52,7 +52,7 @@ function main () {
     }
 
     // Decrypt the dek
-    const kdecipher = crypto.createDecipher('aes-192-cbc', kek);
+    const kdecipher = crypto.createDecipheriv('aes-192-cbc', kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     // Setup IV

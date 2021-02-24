@@ -96,7 +96,6 @@ exports.initialize = function (info, cb) {
     }
     if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
       console.log('ERROR - ES', data.version.number, 'not supported, ES 7.7.1 or later required.');
-      throw new Error('Exiting');
       process.exit();
     }
 
@@ -1233,7 +1232,6 @@ exports.checkVersion = function (minVersion, checkUsers) {
   const version = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (version < 81200) {
     console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
-    throw new Error('Exiting');
     process.exit(1);
   }
 
@@ -1241,7 +1239,6 @@ exports.checkVersion = function (minVersion, checkUsers) {
     exports.indexStats(index, (err, status) => {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
-        throw new Error('Exiting');
         process.exit(1);
       }
     });

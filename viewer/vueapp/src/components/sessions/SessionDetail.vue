@@ -33,13 +33,14 @@
             :decodings="decodings"
             :cyberChefSrcUrl="cyberChefSrcUrl"
             :cyberChefDstUrl="cyberChefDstUrl"
-            @getPackets="getPackets"
+            @updateBase="updateBase"
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
+            @updateNumPackets="updateNumPackets"
             @toggleLineNumbers="toggleLineNumbers"
             @toggleCompression="toggleCompression"
           />
@@ -105,13 +106,14 @@
             :decodings="decodings"
             :cyberChefSrcUrl="cyberChefSrcUrl"
             :cyberChefDstUrl="cyberChefDstUrl"
-            @getPackets="getPackets"
+            @updateBase="updateBase"
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
+            @updateNumPackets="updateNumPackets"
             @toggleLineNumbers="toggleLineNumbers"
             @toggleCompression="toggleCompression"
           />
@@ -204,6 +206,14 @@ export default {
         this.loadingPackets = false;
         this.errorPackets = 'Request canceled';
       }
+    },
+    updateBase (value) {
+      this.params.base = value;
+      this.getPackets();
+    },
+    updateNumPackets (value) {
+      this.params.packets = value;
+      this.getPackets();
     },
     toggleShowFrames: function () {
       this.params.showFrames = !this.params.showFrames;
@@ -534,14 +544,12 @@ export default {
         if (localStorage['moloch-decodings']) {
           this.params.decode = JSON.parse(localStorage['moloch-decodings']);
           for (const key in this.decodings) {
-            if (this.decodings.hasOwnProperty(key)) {
-              if (this.params.decode[key]) {
-                this.decodings[key].active = true;
-                for (const field in this.params.decode[key]) {
-                  for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
-                    if (this.decodings[key].fields[i].key === field) {
-                      this.decodings[key].fields[i].value = this.params.decode[key][field];
-                    }
+            if (this.params.decode[key]) {
+              this.decodings[key].active = true;
+              for (const field in this.params.decode[key]) {
+                for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
+                  if (this.decodings[key].fields[i].key === field) {
+                    this.decodings[key].fields[i].value = this.params.decode[key][field];
                   }
                 }
               }

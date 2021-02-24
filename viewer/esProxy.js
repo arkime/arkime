@@ -24,7 +24,6 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
-const URL = require('url');
 
 // express app
 const app = express();
@@ -159,7 +158,7 @@ function doProxy (req, res, cb) {
   let result = '';
   const url = elasticsearch + req.url;
   console.log('URL', url);
-  const info = URL.parse(url);
+  const info = new URL(url);
   info.method = req.method;
   let client;
   if (url.match(/^https:/)) {

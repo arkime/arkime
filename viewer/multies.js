@@ -20,16 +20,17 @@
 
 /// / Modules
 /// ///////////////////////////////////////////////////////////////////////////////
+let Config, express, async, ESC, http, https, fs, path;
+
 try {
-  var Config = require('./config.js');
-  var express = require('express');
-  var async = require('async');
-  var URL = require('url');
-  var ESC = require('elasticsearch');
-  var http = require('http');
-  var https = require('https');
-  var fs = require('fs');
-  var path = require('path');
+  Config = require('./config.js');
+  express = require('express');
+  async = require('async');
+  ESC = require('elasticsearch');
+  http = require('http');
+  https = require('https');
+  fs = require('fs');
+  path = require('path');
 } catch (e) {
   console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
   process.exit(1);
@@ -169,7 +170,7 @@ function simpleGather (req, res, bodies, doneCb) {
     const prefix = node2Prefix(node);
 
     url = url.replace(/MULTIPREFIX_/g, prefix);
-    const info = URL.parse(url);
+    const info = new URL(url);
     info.method = req.method;
     let client;
     if (url.match(/^https:/)) {
@@ -566,7 +567,11 @@ function fixQuery (node, body, doneCb) {
   let finished = 0;
   const err = null;
 
-  let convert;
+  function convert (parent, obj) {
+    for (const item in obj) {
+      process(parent, obj, item);
+    }
+  };
 
   function process (parent, obj, item) {
     let query;
@@ -600,12 +605,6 @@ function fixQuery (node, body, doneCb) {
       convert(obj, obj[item]);
     }
   }
-
-  convert = function (parent, obj) {
-    for (const item in obj) {
-      process(parent, obj, item);
-    }
-  };
 
   convert(null, body);
   if (outstanding === 0) {
@@ -848,7 +847,6 @@ app.post('/:index/:type/_count', simpleGatherAdd);
 if (Config.get('regressionTests')) {
   app.post('/shutdown', function (req, res) {
     process.exit(0);
-    throw new Error('Exiting');
   });
 }
 

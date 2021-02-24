@@ -852,12 +852,12 @@ export default {
 
       // create unique cancel id to make canel req for corresponding es task
       const cancelId = Utils.createRandomString();
-      this.query.cancelId = cancelId;
-
       const source = Vue.axios.CancelToken.source();
 
       // setup the query params
       const params = this.query;
+      params.cancelId = cancelId;
+
       const exps = [this.baseField];
 
       for (const field of this.fieldTypeaheadList) {

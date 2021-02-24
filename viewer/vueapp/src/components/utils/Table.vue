@@ -332,7 +332,7 @@ export default {
           if (column.doStats) {
             let totalValue = 0;
             for (const item of this.data) {
-              if (!item.hasOwnProperty(column.id) && !item.hasOwnProperty(column.sort)) {
+              if (!item.[column.id] && !item[column.sort]) {
                 continue;
               }
               totalValue += parseInt(item[column.id || column.sort]);
@@ -469,7 +469,7 @@ export default {
 
       if (value === null || value === undefined) { return; }
 
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         value = value - this.zeroMap[column.id][index];
       }
 
@@ -488,7 +488,7 @@ export default {
 
       let value = this.totalValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         // subtract all zeroed values for this column
         for (const zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
@@ -513,7 +513,7 @@ export default {
       let sum = 0;
       let value = this.averageValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         for (let v = 0; v < this.data.length; v++) {
           const realValue = this.data[v];
           let value = realValue[column.id];

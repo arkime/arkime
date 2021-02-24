@@ -128,7 +128,7 @@ exports.store2ha1 = function (passstore) {
       return d;
     } else {
       // Old style without IV: E
-      const c = crypto.createDecipher('aes192', internals.passwordSecret);
+      const c = crypto.createDecipheriv('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
@@ -223,7 +223,7 @@ exports.auth2obj = function (auth, c2s, secret) {
     }
 
     try {
-      const c = crypto.createDecipher('aes192', secret);
+      const c = crypto.createDecipheriv('aes192', secret);
       let d = c.update(parts[0], 'hex', 'binary');
       d += c.final('binary');
       return JSON.parse(d);

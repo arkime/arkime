@@ -488,7 +488,7 @@ export default {
         dateparams = `date=${urlParams.date}`;
       }
       for (const key in this.molochClickables) {
-        if (this.molochClickables.hasOwnProperty(key)) {
+        if (this.molochClickables[key]) {
           const rc = this.molochClickables[key];
           if ((!rc.category || info.category.indexOf(rc.category) === -1) &&
              (!rc.fields || rc.fields.indexOf(info.field) === -1)) {

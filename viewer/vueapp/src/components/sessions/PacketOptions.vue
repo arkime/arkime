@@ -5,8 +5,7 @@
       <b-form-select
         size="sm"
         class="mr-1"
-        @change="getPackets"
-        v-model="params.packets"
+        :value="params.packets"
         :options="[
           { value: 50, text: '50 packets' },
           { value: 200, text: '200 packets' },
@@ -14,19 +13,20 @@
           { value: 1000, text: '1,000 packets' },
           { value: 2000, text: '2,000 packets' }
         ]"
+        @change="$emit('updateNumPackets', $event)"
       /> <!-- /# packets -->
       <!-- packet display type -->
       <b-form-select
         size="sm"
         class="mr-1"
-        @change="getPackets"
-        v-model="params.base"
+        :value="params.base"
         :options="[
           { value: 'natural', text: 'natural' },
           { value: 'ascii', text: 'ascii' },
           { value: 'utf8', text: 'utf8' },
           { value: 'hex', text: 'hex' }
         ]"
+        @change="$emit('updateBase', $event)"
       /> <!-- /packet display type -->
       <!-- toggle options -->
       <b-dropdown
@@ -35,28 +35,28 @@
         variant="checkbox"
         text="Packet Options">
         <b-dropdown-item
-          @click="toggleShowFrames">
+          @click="$emit('toggleShowFrames')">
           {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
         </b-dropdown-item>
         <b-dropdown-item
-          @click="toggleTimestamps">
+          @click="$emit('toggleTimestamps')">
           {{ params.ts ? 'Hide' : 'Show' }}
           Packet Info
         </b-dropdown-item>
         <b-dropdown-item
           v-if="params.base === 'hex'"
-          @click="toggleLineNumbers">
+          @click="$emit('toggleLineNumbers')">
           {{ params.line ? 'Hide' : 'Show'}}
           Line Numbers
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!params.showFrames"
-          @click="toggleCompression">
+          @click="$emit('toggleCompression')">
           {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!params.showFrames"
-          @click="toggleImages">
+          @click="$emit('toggleImages')">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
         </b-dropdown-item>
@@ -77,7 +77,7 @@
         <button type="button"
           class="btn btn-sm btn-secondary btn-checkbox btn-sm"
           :class="{'active':params.showSrc}"
-          @click="toggleShowSrc"
+          @click="$emit('toggleShowSrc')"
           v-b-tooltip
           title="Toggle source packet visibility">
           Src
@@ -85,7 +85,7 @@
         <button type="button"
           class="btn btn-secondary btn-checkbox btn-sm"
           :class="{'active':params.showDst}"
-          @click="toggleShowDst"
+          @click="$emit('toggleShowDst')"
           v-b-tooltip
           title="Toggle destination packet visibility">
           Dst
@@ -101,7 +101,7 @@
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
           :title="`Toggle ${value.name} Decoding`"
-          :class="{'active':value.active}"
+          :class="{'active':activeDecodings[key]}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
         </button>
@@ -127,7 +127,7 @@
             </div>
           </div>
         </span>
-        <div class="btn-group btn-group-sm pull-right mt-1 mb-1">
+        <div class="btn-group btn-group-sm pull-right mt-1">
           <button type="button"
             class="btn btn-warning"
             title="cancel"
@@ -166,41 +166,11 @@ export default {
   },
   data () {
     return {
-      decodingForm: false
+      decodingForm: false,
+      activeDecodings: {}
     };
   },
-  mounted () {
-    for (const decoding in this.decodings) {
-      if (this.params.decoding[decoding]) {
-        this.decodings[decoding].active = true;
-      }
-    }
-  },
   methods: {
-    getPackets () {
-      this.$emit('getPackets');
-    },
-    toggleImages () {
-      this.$emit('toggleImages');
-    },
-    toggleShowSrc () {
-      this.$emit('toggleShowSrc');
-    },
-    toggleShowDst () {
-      this.$emit('toggleShowDst');
-    },
-    toggleTimestamps () {
-      this.$emit('toggleTimestamps');
-    },
-    toggleShowFrames () {
-      this.$emit('toggleShowFrames');
-    },
-    toggleLineNumbers () {
-      this.$emit('toggleLineNumbers');
-    },
-    toggleCompression () {
-      this.$emit('toggleCompression');
-    },
     /**
      * Toggles a decoding on or off
      * If a decoding needs more input, shows form
@@ -209,9 +179,10 @@ export default {
     toggleDecoding (key) {
       const decoding = this.decodings[key];
 
-      this.$set(decoding, 'active', !decoding.active);
+      const isActive = !this.activeDecodings[key];
+      this.$set(this.activeDecodings, key, isActive);
 
-      if (decoding.fields && decoding.active) {
+      if (decoding.fields && isActive) {
         this.decodingForm = key;
       } else {
         this.decodingForm = false;
@@ -224,7 +195,7 @@ export default {
      */
     closeDecodingForm (active) {
       if (this.decodingForm) {
-        this.decodings[this.decodingForm].active = active;
+        this.$set(this.activeDecodings, this.decodingForm, active);
       }
 
       this.decodingForm = false;
@@ -234,25 +205,26 @@ export default {
      * @param {key} key Identifier of the decoding to apply
      */
     applyDecoding (key) {
-      this.params.decode[key] = {};
+      const decodeClone = JSON.parse(JSON.stringify(this.params.decode));
+      decodeClone[key] = {};
 
       const decoding = this.decodings[key];
 
-      if (decoding.active) {
+      if (this.activeDecodings[key]) {
         if (decoding.fields) {
           for (const field of decoding.fields) {
-            this.$set(this.params.decode[key], field.key, field.value);
+            this.$set(decodeClone[key], field.key, field.value);
           }
         }
       } else {
-        this.$delete(this.params.decode, key);
+        this.$delete(decodeClone, key);
       }
 
-      this.$emit('updateDecodings', this.params.decode);
-      this.closeDecodingForm(decoding.active);
+      this.$emit('updateDecodings', decodeClone);
+      this.closeDecodingForm(this.activeDecodings[key]);
 
       // update local storage
-      localStorage['moloch-decodings'] = JSON.stringify(this.params.decode);
+      localStorage['moloch-decodings'] = JSON.stringify(decodeClone);
     }
   }
 };

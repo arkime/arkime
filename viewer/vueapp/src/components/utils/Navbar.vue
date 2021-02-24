@@ -165,8 +165,8 @@ export default {
         // a sibling of this component might update the user (Users.vue)
         if (this.user) {
           item.hasPermission = !item.permission ||
-            (this.user.hasOwnProperty(item.permission) && this.user[item.permission] && !item.reverse) ||
-            (!this.user.hasOwnProperty(item.permission) || (!this.user[item.permission] && item.reverse));
+            (this.user[item.permission] !== undefined && this.user[item.permission] && !item.reverse) ||
+            (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
         }
       }
 
