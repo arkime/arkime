@@ -49,7 +49,7 @@ class ValueActionsSource extends WISESource {
 
     // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
     this.watchTimeout = null;
-    let watchCb = (event, filename) => {
+    const watchCb = (event, filename) => {
       clearTimeout(this.watchTimeout);
       if (event === 'rename') {
         this.watch.close();
@@ -75,7 +75,7 @@ class ValueActionsSource extends WISESource {
     }
 
     const config = ini.parseSync(this.file);
-    const data = config['valueactions'] || config;
+    const data = config.valueactions || config;
 
     this.process(data);
   };

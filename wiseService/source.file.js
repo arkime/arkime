@@ -40,7 +40,7 @@ class FileSource extends SimpleSource {
 
     // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
     this.watchTimeout = null;
-    let watchCb = (event, filename) => {
+    const watchCb = (event, filename) => {
       clearTimeout(this.watchTimeout);
       if (event === 'rename') {
         this.watch.close();

@@ -88,6 +88,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.17",
     "@babel/eslint-parser": "^7.13.4",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-env": "^7.12.17",
     "@vue/babel-preset-jsx": "^1.2.4",
     "autoprefixer": "^9.8.6",
@@ -125,6 +126,7 @@
     "shelljs": "^0.8.4",
     "sortablejs": "^1.13.0",
     "terser-webpack-plugin": "^5.1.1",
+    "url-loader": "^4.1.1",
     "vue-axios": "^3.2.4",
     "vue-json-editor": "^1.4.3",
     "vue-json-pretty": "^1.7.1",

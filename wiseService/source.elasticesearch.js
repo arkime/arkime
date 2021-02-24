@@ -64,9 +64,9 @@ class ElasticsearchSource extends WISESource {
       query: {
         bool: {
           filter: [
-            { 'range': { } },
-            { 'exists': { field: this.esResultField } },
-            { 'term': { } }
+            { range: { } },
+            { exists: { field: this.esResultField } },
+            { term: { } }
           ]
         }
       },

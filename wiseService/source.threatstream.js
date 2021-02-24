@@ -137,7 +137,7 @@ class ThreatStreamSource extends WISESource {
     fs.createReadStream('/tmp/threatstream.zip')
       .pipe(unzipper.Parse())
       .on('entry', (entry) => {
-        let bufs = [];
+        const bufs = [];
         entry.on('data', (buf) => {
           bufs.push(buf);
         }).on('end', () => {
@@ -445,7 +445,7 @@ class ThreatStreamSource extends WISESource {
     // * Close .moloch db
     // * mv .temp to .moloch
     // * Open .moloch
-    let beginImmediate = (err) => {
+    const beginImmediate = (err) => {
       // Repeat until we lock the DB
       if (err && err.code === 'SQLITE_BUSY') {
         console.log(this.section, 'Failed to lock sqlite DB', dbFile);
@@ -504,7 +504,7 @@ class ThreatStreamSource extends WISESource {
       process.exit();
     }
 
-    let beginImmediate = (err) => {
+    const beginImmediate = (err) => {
       // Repeat until we lock the DB
       if (err && err.code === 'SQLITE_BUSY') {
         console.log(this.section, 'Failed to lock sqlite DB', dbFile);
@@ -521,7 +521,7 @@ class ThreatStreamSource extends WISESource {
 
     this.db = new sqlite3.Database(dbFile);
     if (!this.db) {
-      console.log(`ERROR - couldn't open threatstream db`);
+      console.log('ERROR - couldn\'t open threatstream db');
       process.exit();
     }
     this.db.run('BEGIN IMMEDIATE', beginImmediate);

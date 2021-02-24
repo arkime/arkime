@@ -4,7 +4,12 @@ module.exports = {
   root: true,
   parserOptions: {
     parser: '@babel/eslint-parser',
-    requireConfigFile: false
+    requireConfigFile: false,
+    babelOptions: {
+      plugins: [
+        "@babel/plugin-proposal-class-properties"
+      ]
+    }
   },
   env: {
     browser: true,

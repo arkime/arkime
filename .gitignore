@@ -44,6 +44,9 @@ parliament/parliament.issues.json
 parliament/parliament.dev.issues.json
 parliament/vueapp/dist
 
+# wiseservice
+wiseService/vueapp/dist
+
 # Makefiles
 Makefile
 Makefile.in

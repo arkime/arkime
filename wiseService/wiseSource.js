@@ -109,7 +109,7 @@ class WISESource {
         if (item === '') {
           return;
         }
-        let parts = item.split('/');
+        const parts = item.split('/');
         try {
           this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
         } catch (e) {
@@ -268,7 +268,7 @@ class WISESource {
       }
 
       if (this.arrayPath !== undefined) {
-        let arrayPath = this.arrayPath.split('.');
+        const arrayPath = this.arrayPath.split('.');
         for (let i = 0; i < arrayPath.length; i++) {
           json = json[arrayPath[i]];
           if (!json) {
@@ -277,11 +277,11 @@ class WISESource {
         }
       }
 
-      let keyPath = this.keyPath.split('.');
+      const keyPath = this.keyPath.split('.');
 
       // Convert shortcuts into array of key path
-      let shortcuts = [];
-      let shortcutsValue = [];
+      const shortcuts = [];
+      const shortcutsValue = [];
       for (const k in this.shortcuts) {
         shortcuts.push(k.split('.'));
         shortcutsValue.push(this.shortcuts[k]);
@@ -470,7 +470,7 @@ class WISESource {
    * @returns {string} - The JSON string
    */
   static result2JSON (results) {
-    let collection = [];
+    const collection = [];
     let offset = 1;
     for (let i = 0; i < results[0]; i++) {
       const pos = results[offset];

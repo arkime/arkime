@@ -32,7 +32,7 @@ class OpenDNSSource extends WISESource {
 
     this.waiting = [];
     this.processing = {};
-    this.statuses = { '-1': 'malicious', '0': 'unknown', '1': 'benign' };
+    this.statuses = { '-1': 'malicious', 0: 'unknown', 1: 'benign' };
 
     this.api.addSource('opendns', this, ['domain']);
     this.getCategories();
@@ -65,7 +65,7 @@ class OpenDNSSource extends WISESource {
       path: '/domains/categories/',
       method: 'GET',
       headers: {
-        'Authorization': 'Bearer ' + this.key
+        Authorization: 'Bearer ' + this.key
       }
     };
 
@@ -106,7 +106,7 @@ class OpenDNSSource extends WISESource {
       path: '/domains/categorization/',
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + this.key,
+        Authorization: 'Bearer ' + this.key,
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': postData.length
       }
@@ -127,13 +127,13 @@ class OpenDNSSource extends WISESource {
         }
 
         for (let result in results) {
-          let cbs = this.processing[result];
+          const cbs = this.processing[result];
           if (!cbs) {
             return;
           }
           delete this.processing[result];
 
-          let args = [this.statusField, this.statuses[results[result].status]];
+          const args = [this.statusField, this.statuses[results[result].status]];
 
           if (results[result].security_categories) {
             results[result].security_categories.forEach((value) => {
@@ -196,7 +196,7 @@ exports.initSource = function (api) {
     description: 'OpenDNS source for domain names',
     types: ['domain'],
     fields: [
-      { name: 'key', password: true, required: true, help: 'The API key' } ]
+      { name: 'key', password: true, required: true, help: 'The API key' }]
   });
 
   return new OpenDNSSource(api, 'opendns');

@@ -95,7 +95,7 @@ class SplunkSource extends WISESource {
         cache = new Map();
       }
 
-      for (let item of results.results) {
+      for (const item of results.results) {
         const key = item[this.keyPath];
         if (!key) { continue; }
 
