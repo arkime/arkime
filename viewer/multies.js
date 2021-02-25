@@ -28,6 +28,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const URL = require('url');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -163,7 +164,8 @@ function simpleGather (req, res, bodies, doneCb) {
     const prefix = node2Prefix(node);
 
     url = url.replace(/MULTIPREFIX_/g, prefix);
-    const info = new URL(url);
+    // eslint-disable-next-line node/no-deprecated-api
+    const info = URL.parse(url);
     info.method = req.method;
     let client;
     if (url.match(/^https:/)) {
@@ -692,10 +694,10 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
     const obj = {
       hits: {
         total: 0,
-        hits: [
-        ]
+        hits: []
       }
     };
+
     const unique = {};
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
@@ -704,7 +706,7 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
         console.log('ERROR - GET /fields/field/_search', result.error);
       }
 
-      for (let h = 0; h < result.hits.total; h++) {
+      for (let h = 0; h < result.hits.hits.length; h++) {
         const hit = result.hits.hits[h];
         if (!unique[hit._id]) {
           unique[hit._id] = 1;

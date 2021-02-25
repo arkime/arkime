@@ -39,6 +39,7 @@ const onHeaders = require('on-headers');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
+const URL = require('URL');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -944,7 +945,8 @@ function sendSessionWorker (options, cb) {
       return cb();
     }
 
-    const info = new URL(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
+    // eslint-disable-next-line node/no-deprecated-api
+    const info = URL.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
     ViewerUtils.addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
     info.method = 'POST';
 
@@ -1022,7 +1024,8 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     function () {
       // Get from remote DISK
       ViewerUtils.getViewUrl(node, function (err, viewUrl, client) {
-        const info = new URL(viewUrl);
+        // eslint-disable-next-line node/no-deprecated-api
+        const info = URL.parse(viewUrl);
         info.method = 'POST';
         info.path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
         info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);

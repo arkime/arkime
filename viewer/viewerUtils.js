@@ -3,6 +3,7 @@
 const async = require('async');
 const http = require('http');
 const https = require('https');
+const URL = require('url');
 
 module.exports = (Config, Db, molochparser, internals) => {
   const module = {};
@@ -546,7 +547,8 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   module.makeRequest = (node, path, user, cb) => {
     module.getViewUrl(node, function (err, viewUrl, client) {
-      const info = new URL(viewUrl);
+      // eslint-disable-next-line node/no-deprecated-api
+      const info = URL.parse(viewUrl);
       info.path = encodeURI(`${Config.basePath(node)}${path}`);
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;

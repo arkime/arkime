@@ -9,6 +9,7 @@ const PNG = require('pngjs').PNG;
 const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
+const URL = require('url');
 
 module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   const module = {};
@@ -694,7 +695,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
           let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
           let bufpos = 0;
-          const info = new URL(viewUrl);
+          // eslint-disable-next-line node/no-deprecated-api
+          const info = URL.parse(viewUrl);
           info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
           info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
 
@@ -1405,7 +1407,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
         return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
-      const info = new URL(viewUrl);
+      // eslint-disable-next-line node/no-deprecated-api
+      const info = URL.parse(viewUrl);
       info.path = req.url;
       info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
       info.timeout = 20 * 60 * 1000;
