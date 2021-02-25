@@ -109,7 +109,8 @@ exports.pass2store = function (userid, password) {
     return iv.toString('hex') + '.' + e;
   } else {
     // Old style without IV: E
-    const c = crypto.createCipheriv('aes192', internals.passwordSecret);
+    // eslint-disable-next-line node/no-deprecated-api
+    const c = crypto.createCipher('aes192', internals.passwordSecret);
     let e = c.update(m, 'binary', 'hex');
     e += c.final('hex');
     return e;
@@ -128,7 +129,8 @@ exports.store2ha1 = function (passstore) {
       return d;
     } else {
       // Old style without IV: E
-      const c = crypto.createDecipheriv('aes192', internals.passwordSecret);
+      // eslint-disable-next-line node/no-deprecated-api
+      const c = crypto.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
@@ -160,7 +162,8 @@ exports.obj2auth = function (obj, c2s, secret) {
     // Old style without IV: E or E.H
     secret = secret || internals.serverSecret;
 
-    const c = crypto.createCipheriv('aes192', secret);
+    // eslint-disable-next-line node/no-deprecated-api
+    const c = crypto.createCipher('aes192', secret);
     let e = c.update(JSON.stringify(obj), 'binary', 'hex');
     e += c.final('hex');
 
@@ -223,7 +226,8 @@ exports.auth2obj = function (auth, c2s, secret) {
     }
 
     try {
-      const c = crypto.createDecipheriv('aes192', secret);
+      // eslint-disable-next-line node/no-deprecated-api
+      const c = crypto.createCipher('aes192', secret);
       let d = c.update(parts[0], 'hex', 'binary');
       d += c.final('binary');
       return JSON.parse(d);

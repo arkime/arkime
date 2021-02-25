@@ -226,7 +226,8 @@ function store2ha1 (passstore) {
       return d;
     } else {
       // Old style without IV: E
-      const c = crypto.createDecipheriv('aes192', internals.passwordSecret);
+      // eslint-disable-next-line node/no-deprecated-api
+      const c = crypto.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
