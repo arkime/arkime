@@ -24,7 +24,7 @@
 <script>
 export default {
   name: 'MolochLoading',
-  props: [ 'canCancel' ],
+  props: ['canCancel'],
   methods: {
     cancel: function () {
       this.$emit('cancel');

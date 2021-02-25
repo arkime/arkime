@@ -171,7 +171,7 @@ import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
 import MolochSessionInfo from './SessionInfo';
 
-const noCommas = { 'vlan': true, 'suricata.signatureId': true };
+const noCommas = { vlan: true, 'suricata.signatureId': true };
 
 export default {
   name: 'MolochSessionField',
@@ -372,7 +372,7 @@ export default {
         newExpression = appendExpression;
       }
 
-      let routeData = this.$router.resolve({
+      const routeData = this.$router.resolve({
         path: '/sessions',
         query: {
           ...this.$route.query,
@@ -428,12 +428,12 @@ export default {
         return;
       }
 
-      let options = {
+      const options = {
         method: 'GET',
         url: url
       };
 
-      let oldValue = this.asyncMenuItems[key].value;
+      const oldValue = this.asyncMenuItems[key].value;
 
       Vue.axios(options)
         .then((response) => {
@@ -455,14 +455,14 @@ export default {
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
       if (!this.parsed[0].value || !this.molochClickables) { return; }
-      let info = this.getInfo();
-      let session = this.getSession();
-      let text = this.parsed[0].queryVal.toString();
-      let url = text.indexOf('?') === -1 ? text : text.substring(0, text.indexOf('?'));
+      const info = this.getInfo();
+      const session = this.getSession();
+      const text = this.parsed[0].queryVal.toString();
+      const url = text.indexOf('?') === -1 ? text : text.substring(0, text.indexOf('?'));
       let host = url;
       let pos = url.indexOf('//');
-      let nodename = session.node || '';
-      let sessionid = session.id || '';
+      const nodename = session.node || '';
+      const sessionid = session.id || '';
 
       if (pos >= 0) { host = url.substring(pos + 2); }
       pos = host.indexOf('/');
@@ -470,7 +470,7 @@ export default {
       pos = host.indexOf(':');
       if (pos >= 0) { host = host.substring(0, pos); }
 
-      let urlParams = this.$route.query;
+      const urlParams = this.$route.query;
       let dateparams, isostart, isostop;
 
       if (urlParams.startTime && urlParams.stopTime) {
@@ -487,16 +487,16 @@ export default {
         }
         dateparams = `date=${urlParams.date}`;
       }
-      for (let key in this.molochClickables) {
-        if (this.molochClickables.hasOwnProperty(key)) {
-          let rc = this.molochClickables[key];
+      for (const key in this.molochClickables) {
+        if (this.molochClickables[key]) {
+          const rc = this.molochClickables[key];
           if ((!rc.category || info.category.indexOf(rc.category) === -1) &&
              (!rc.fields || rc.fields.indexOf(info.field) === -1)) {
             continue;
           }
 
           if (this.molochClickables[key].func !== undefined) {
-            let v = this.molochClickables[key].func(key, text);
+            const v = this.molochClickables[key].func(key, text);
             if (v !== undefined) {
               this.$set(this.menuItems, key, v);
             }
@@ -538,7 +538,7 @@ export default {
 
           if (rc.regex) {
             if (!rc.cregex) { rc.cregex = new RegExp(rc.regex); }
-            let matches = text.match(rc.cregex);
+            const matches = text.match(rc.cregex);
             if (matches && matches[1]) {
               result = result.replace('%REGEX%', matches[1]);
             } else {

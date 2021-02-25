@@ -86,7 +86,7 @@ class ThreatQSource extends WISESource {
         }).on('end', () => {
           const json = JSON.parse(Buffer.concat(bufs));
           json.forEach((item) => {
-            let args = [this.idField, '' + item.id, this.typeField, item.type];
+            const args = [this.idField, '' + item.id, this.typeField, item.type];
 
             if (item.source) {
               item.source.forEach((str) => {

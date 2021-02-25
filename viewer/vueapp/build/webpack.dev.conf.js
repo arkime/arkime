@@ -1,4 +1,5 @@
 'use strict'
+
 const utils = require('./utils')
 const webpack = require('webpack')
 const config = require('../config')
@@ -7,9 +8,9 @@ const path = require('path')
 const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
 const portfinder = require('portfinder')
 
 const HOST = process.env.HOST
@@ -19,6 +20,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap, usePostCSS: true })
   },
+  watch: true,
+  stats: 'minimal',
   // cheap-module-eval-source-map is faster for development
   devtool: config.dev.devtool,
   mode: 'development',
@@ -32,11 +35,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       jQuery: 'jquery'
     }),
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
     new webpack.NoEmitOnErrorsPlugin(),
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      title: 'Development Arkime',
       filename: config.build.index,
       template: 'index.html',
       inject: true
@@ -53,7 +54,15 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }
       ]
     }),
-    new VueLoaderPlugin()
+    new VueLoaderPlugin(),
+    new ESLintPlugin({
+      emitError: true,
+      emitWarning: true,
+      failOnError: true,
+      extensions: ['js', 'vue'],
+      context: path.resolve(__dirname, '../'),
+      overrideConfigFile: path.resolve(__dirname, '../../../.eslintrc.js')
+    })
   ]
 })
 

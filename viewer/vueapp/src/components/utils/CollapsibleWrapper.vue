@@ -40,7 +40,9 @@ export default {
         // Momentarily override toolbars position so animation can occur
         // WARNING: inline position or non-scoped css position will be modified
         Array.from(this.$refs.collapseBox.children).map((el) => {
-          el.style.position = (this.showToolBars) ? '' : 'static';
+          const position = (this.showToolBars) ? '' : 'static';
+          el.style.position = position;
+          return position;
         });
 
         this.getOffset();

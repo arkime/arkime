@@ -57,7 +57,7 @@ export default {
       }
     },
     isOutsideClick: function (event) {
-      let element = $('#keyboardShortcutsHelp');
+      const element = $('#keyboardShortcutsHelp');
       if (!$(element).is(event.target) &&
         $(element).has(event.target).length === 0) {
         this.close();

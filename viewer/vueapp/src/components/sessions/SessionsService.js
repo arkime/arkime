@@ -17,7 +17,7 @@ export default {
    */
   get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
-      let params = { flatten: 1 };
+      const params = { flatten: 1 };
       const sameParams = {
         view: true,
         start: true,
@@ -31,7 +31,7 @@ export default {
       };
 
       if (query) {
-        for (let param in sameParams) {
+        for (const param in sameParams) {
           if (query[param]) { params[param] = query[param]; }
         }
 
@@ -62,7 +62,7 @@ export default {
         params.map = true;
       }
 
-      let options = {
+      const options = {
         url: 'api/sessions',
         method: 'POST',
         data: params,
@@ -91,7 +91,7 @@ export default {
    */
   getDetail: function (id, node, cluster) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         method: 'GET',
         params: {
           cluster: cluster
@@ -119,10 +119,10 @@ export default {
    * to allow the request to be cancelled
    */
   getPackets: function (id, node, cluster, params) {
-    let source = Vue.axios.CancelToken.source();
+    const source = Vue.axios.CancelToken.source();
 
-    let promise = new Promise((resolve, reject) => {
-      let options = {
+    const promise = new Promise((resolve, reject) => {
+      const options = {
         method: 'GET',
         params: {
           ...params,
@@ -183,7 +183,7 @@ export default {
     return new Promise((resolve, reject) => {
       let url = 'api/sessions';
       addTags ? url += '/addtags' : url += '/removetags';
-      let options = this.getReqOptions(url, 'POST', params, routeParams);
+      const options = this.getReqOptions(url, 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); }
 
@@ -238,7 +238,7 @@ export default {
    */
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
+      const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
@@ -268,13 +268,13 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `api/sessions/pcap/${params.filename}`;
+      const baseUrl = `api/sessions/pcap/${params.filename}`;
       // save segments for later because getReqOptions deletes it
-      let segments = params.segments;
+      const segments = params.segments;
 
       delete params.filename; // don't need this anymore
 
-      let options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const options = this.getReqOptions(baseUrl, '', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
@@ -287,7 +287,7 @@ export default {
       // add sort to params
       options.params.order = store.state.sortsParam;
 
-      let url = `${baseUrl}?${qs.stringify(options.params)}`;
+      const url = `${baseUrl}?${qs.stringify(options.params)}`;
 
       window.location = url;
 
@@ -302,13 +302,13 @@ export default {
    */
   exportCsv: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      let baseUrl = `api/sessions/csv/${params.filename}`;
+      const baseUrl = `api/sessions/csv/${params.filename}`;
       // save segments for later because getReqOptions deletes it
-      let segments = params.segments;
+      const segments = params.segments;
 
       delete params.filename; // don't need this anymore
 
-      let options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const options = this.getReqOptions(baseUrl, '', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
 
@@ -321,7 +321,7 @@ export default {
       // add sort to params
       options.params.order = store.state.sortsParam;
 
-      let url = `${baseUrl}?${qs.stringify(options.params)}`;
+      const url = `${baseUrl}?${qs.stringify(options.params)}`;
 
       window.location = url;
 
@@ -335,7 +335,7 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   viewIntersection: function (params, routeParams) {
-    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+    const clonedParams = JSON.parse(JSON.stringify(routeParams));
 
     params.date = clonedParams.date;
     params.view = clonedParams.view;
@@ -344,7 +344,7 @@ export default {
     params.expression = clonedParams.expression;
     params.cluster = clonedParams.cluster;
 
-    let url = `api/multiunique?${qs.stringify(params)}`;
+    const url = `api/multiunique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -356,9 +356,9 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   exportUniqueValues: function (exp, counts, routeParams) {
-    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+    const clonedParams = JSON.parse(JSON.stringify(routeParams));
 
-    let params = {
+    const params = {
       exp: exp,
       counts: counts,
       view: clonedParams.view,
@@ -369,7 +369,7 @@ export default {
       cluster: clonedParams.cluster
     };
 
-    let url = `api/unique?${qs.stringify(params)}`;
+    const url = `api/unique?${qs.stringify(params)}`;
 
     window.open(url, '_blank');
   },
@@ -380,10 +380,10 @@ export default {
    * @param {object} routeParams  The current url route parameters
    */
   openSpiGraph: function (dbField, routeParams) {
-    let clonedParams = JSON.parse(JSON.stringify(routeParams));
+    const clonedParams = JSON.parse(JSON.stringify(routeParams));
     clonedParams.field = dbField;
 
-    let url = `spigraph?${qs.stringify(clonedParams)}`;
+    const url = `spigraph?${qs.stringify(clonedParams)}`;
 
     window.open(url, '_blank');
   },
@@ -400,7 +400,7 @@ export default {
   getReqOptions: function (baseUrl, method, params, routeParams) {
     let error; // keep track of any errors
     // add segments to data instead of url parameters
-    let data = { segments: params.segments };
+    const data = { segments: params.segments };
 
     // merge params and routeParams
     params = Object.assign(params, routeParams);

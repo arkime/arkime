@@ -20,15 +20,15 @@
  */
 
 'use strict';
-var Config = require('./config.js');
-var Db = require('./db.js');
-var crypto = require('crypto');
-var fs = require('fs');
+const Config = require('./config.js');
+const Db = require('./db.js');
+const crypto = require('crypto');
+const fs = require('fs');
 
-var escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
+const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 
 function main () {
-  let query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
+  const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
   Db.search('files', 'file', query, (err, data) => {
     if (err) {
       console.error('ES Error', err);
@@ -38,30 +38,31 @@ function main () {
       console.error('No matches');
       process.exit();
     }
-    let info = data.hits.hits[0]._source;
+    const info = data.hits.hits[0]._source;
     if (!info.encoding || info.encoding === 'normal') {
       console.error('Not encrypted');
       process.exit();
     }
 
     // Get the kek
-    let kek = Config.sectionGet('keks', info.kekId, undefined);
+    const kek = Config.sectionGet('keks', info.kekId, undefined);
     if (kek === undefined) {
       console.error("ERROR - Couldn't find kek", info.kekId, 'in keks section');
       process.exit();
     }
 
     // Decrypt the dek
-    let kdecipher = crypto.createDecipher('aes-192-cbc', kek);
-    let encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
+    // eslint-disable-next-line node/no-deprecated-api
+    const kdecipher = crypto.createDecipher('aes-192-cbc', kek);
+    const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     // Setup IV
-    let iv = Buffer.alloc(16);
+    const iv = Buffer.alloc(16);
     Buffer.from(info.iv, 'hex').copy(iv);
 
     // Setup streams
-    let r = fs.createReadStream(process.argv[2]);
-    let d = crypto.createDecipheriv(info.encoding, encKey, iv);
+    const r = fs.createReadStream(process.argv[2]);
+    const d = crypto.createDecipheriv(info.encoding, encKey, iv);
     d.on('end', function () {
       process.exit();
     });
@@ -76,11 +77,13 @@ if (process.argv.length < 3) {
   process.exit();
 }
 
-Db.initialize({ host: escInfo,
+Db.initialize({
+  host: escInfo,
   prefix: Config.get('prefix', ''),
   esClientKey: Config.get('esClientKey', null),
   esClientCert: Config.get('esClientCert', null),
   esClientKeyPass: Config.get('esClientKeyPass', null),
   insecure: Config.insecure,
   usersHost: Config.get('usersElasticsearch'),
-  usersPrefix: Config.get('usersPrefix') }, main);
+  usersPrefix: Config.get('usersPrefix')
+}, main);

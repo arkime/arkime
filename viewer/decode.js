@@ -18,22 +18,25 @@
  */
 'use strict';
 
-var util = require('util');
-var Stream = require('stream');
-var Readable = Stream.Readable;
-var Transform = Stream.Transform;
-var Writable = Stream.Writable;
-var HTTPParser = process.version.startsWith('v12') ? process.binding('http_parser_llhttp').HTTPParser : process.binding('http_parser').HTTPParser;
-var zlib = require('zlib');
-var through = require('through2');
-var peek = require('peek-stream');
-var sprintf = require('./public/sprintf.js');
-var async = require('async');
-var crypto = require('crypto');
+const util = require('util');
+const Stream = require('stream');
+const Readable = Stream.Readable;
+const Transform = Stream.Transform;
+const Writable = Stream.Writable;
+// eslint-disable-next-line node/no-deprecated-api
+const HTTPParser = process.version.startsWith('v12') ? process.binding('http_parser_llhttp').HTTPParser : process.binding('http_parser').HTTPParser;
+const zlib = require('zlib');
+const through = require('through2');
+const peek = require('peek-stream');
+const sprintf = require('./public/sprintf.js');
+const async = require('async');
+const crypto = require('crypto');
 
-var internals = { registry: {},
+const internals = {
+  registry: {},
   settings: {},
-  debug: 0 };
+  debug: 0
+};
 
 /// /////////////////////////////////////////////////////////////////////////////
 function mkname (stream, name) {
@@ -49,9 +52,11 @@ function safeStr (str) {
 /// /////////////////////////////////////////////////////////////////////////////
 function ItemTransform (options) {
   Transform.call(this, { objectMode: true });
-  this._itemTransform = { state: 0,
+  this._itemTransform = {
+    state: 0,
     max: options.maxPeekItems || 1,
-    items: [] };
+    items: []
+  };
 }
 util.inherits(ItemTransform, Transform);
 ItemTransform.prototype._transform = function (item, encoding, callback) {
@@ -59,7 +64,7 @@ ItemTransform.prototype._transform = function (item, encoding, callback) {
     return callback();
   }
 
-  var self = this;
+  const self = this;
   switch (self._itemTransform.state) {
   case 0:
     self._itemTransform.items.push(item);
@@ -107,7 +112,7 @@ ItemTransform.prototype._flush = function (callback) {
     return this._finish(callback);
   }
 
-  var item;
+  let item;
   while ((item = this._itemTransform.items.shift())) {
     this.push(item);
   }
@@ -123,8 +128,8 @@ function Pcap2ItemStream (options, pcap) {
 }
 util.inherits(Pcap2ItemStream, Readable);
 Pcap2ItemStream.prototype._read = function (size) {
-  var data = this.data;
-  for (var i = 0; i < data.length; i++) {
+  const data = this.data;
+  for (let i = 0; i < data.length; i++) {
     data[i].client = (i % 2);
     this.push(data[i]);
   }
@@ -142,7 +147,7 @@ function createUncompressStream (options, context) {
       if (context.headersMap && context.headersMap['content-encoding'] === 'deflate') {
         context.headersMap['content-encoding'] = 'moloch-gzip';
       }
-      var s = zlib.createGunzip();
+      const s = zlib.createGunzip();
       return swap(null, s);
     }
 
@@ -188,9 +193,9 @@ function createKeyUnxorStream (options, context) {
     }
 
     if (this.state === 1) {
-      var pos = this.pos;
-      var key = this.key;
-      for (var i = 0; i < data.length; i++) {
+      let pos = this.pos;
+      const key = this.key;
+      for (let i = 0; i < data.length; i++) {
         data[i] ^= key[pos];
         pos = (pos + 1) % key.length;
       }
@@ -209,28 +214,29 @@ function createUnxorBruteGzip (options, context) {
         return callback(null, data);
       }
 
-      var gzip = Buffer.from('1f8b08000000000002', 'hex');
-      var tmp = Buffer.alloc(gzip.length * 2);
+      const gzip = Buffer.from('1f8b08000000000002', 'hex');
+      const tmp = Buffer.alloc(gzip.length * 2);
       this.state = 2;
 
       done:
-      for (var klen = 1; klen <= 4; klen++) {
-        var key = Buffer.alloc(klen);
-        for (var d = 0; d < data.length - gzip.length; d++) {
-          for (var k = 0; k < klen; k++) {
+      for (let klen = 1; klen <= 4; klen++) {
+        const key = Buffer.alloc(klen);
+        for (let d = 0; d < data.length - gzip.length; d++) {
+          for (let k = 0; k < klen; k++) {
             key[k] = data[d + k] ^ gzip[k];
           }
-          for (var g = 0; g < gzip.length; g++) {
+          for (let g = 0; g < gzip.length; g++) {
             tmp[g] = data[d + g] ^ key[g % key.length];
           }
-          for (var j = 0; j < gzip.length; j++) {
+          let j;
+          for (j = 0; j < gzip.length; j++) {
             if (tmp[j] !== gzip[j]) {
               break;
             }
           }
           if (j === gzip.length) {
             data = data.slice(d);
-            for (var i = 0; i < gzip.length + 4; i++) {
+            for (let i = 0; i < gzip.length + 4; i++) {
               tmp[i] = data[d + i] ^ key[(i % key.length)];
             }
             this.key = key;
@@ -243,9 +249,9 @@ function createUnxorBruteGzip (options, context) {
     }
 
     if (this.state === 1) {
-      var pos = this.pos;
-      var key2 = this.key;
-      for (var l = 0; l < data.length; l++) {
+      let pos = this.pos;
+      const key2 = this.key;
+      for (let l = 0; l < data.length; l++) {
         data[l] ^= key2[pos];
         pos = (pos + 1) % key2.length;
       }
@@ -303,16 +309,16 @@ ItemSMTPStream.prototype._shouldProcess = function (item) {
 };
 
 ItemSMTPStream.prototype._process = function (item, callback) {
-  var self = this;
-  var lines = item.data.toString('binary').replace(/\r?\n$/, '').split(/\r?\n|\r/);
-  var state = this.states[item.client];
-  var header = '';
-  var mime;
-  var boundaries = {};
-  var matches;
-  var bodyType = 'file';
-  var bodyName = 'unknown';
-  var boundary;
+  const self = this;
+  const lines = item.data.toString('binary').replace(/\r?\n$/, '').split(/\r?\n|\r/);
+  let state = this.states[item.client];
+  let header = '';
+  let mime;
+  let boundaries = {};
+  let matches;
+  let bodyType = 'file';
+  let bodyName = 'unknown';
+  let boundary;
 
   if (internals.debug > 0) {
     console.log('ItemSMTPStream._process', item);
@@ -320,19 +326,21 @@ ItemSMTPStream.prototype._process = function (item, callback) {
 
   function addBuffer (newState, mimeData) {
     if (mimeData) {
-      var headerInfo = { bodyType: bodyType, bodyName: bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
-      var bufferStream = new Stream.PassThrough();
-      var order = self.options['ITEM-SMTP'] ? self.options['ITEM-SMTP'].order || [] : [];
-      var pipes = exports.createPipeline(self.options, order, bufferStream, headerInfo);
+      const headerInfo = { bodyType: bodyType, bodyName: bodyName, bodyNum: ++self.bodyNum, itemPos: ++self.itemPos };
+      const bufferStream = new Stream.PassThrough();
+      const order = self.options['ITEM-SMTP'] ? self.options['ITEM-SMTP'].order || [] : [];
+      const pipes = exports.createPipeline(self.options, order, bufferStream, headerInfo);
       self.runningStreams++;
-      var heb = new CollectBodyStream(self, item, headerInfo);
+      const heb = new CollectBodyStream(self, item, headerInfo);
       pipes[pipes.length - 1].pipe(heb);
       bufferStream.end(Buffer.from(self.buffers.join('\n') + '\n'));
     } else {
-      var buf = { client: item.client,
+      const buf = {
+        client: item.client,
         ts: item.ts,
         data: Buffer.from(self.buffers.join('\n') + '\n'),
-        itemPos: ++self.itemPos };
+        itemPos: ++self.itemPos
+      };
 
       self.push(buf);
     }
@@ -341,7 +349,7 @@ ItemSMTPStream.prototype._process = function (item, callback) {
   }
 
   linesloop:
-  for (var l = 0, llen = lines.length; l < llen; l++) {
+  for (let l = 0, llen = lines.length; l < llen; l++) {
     switch (state) {
     case ItemSMTPStream.STATES.cmd:
       this.buffers.push(lines[l]);
@@ -497,7 +505,7 @@ function ItemHTTPStream (options) {
 util.inherits(ItemHTTPStream, ItemTransform);
 ItemHTTPStream.onBody = function (buf, start, len) {
   // console.log("onBody", start, len, item);
-  var item = this.curitem;
+  const item = this.curitem;
   delete this.curitem;
   if (!this.bufferStream) {
     this.httpstream.push({ client: item.client, ts: item.ts, data: buf.slice(0, start) });
@@ -505,12 +513,12 @@ ItemHTTPStream.onBody = function (buf, start, len) {
     this.bufferStream = new Stream.PassThrough();
     mkname(this.bufferStream, 'bufferStream');
 
-    var order = this.httpstream.options['ITEM-HTTP'] ? this.httpstream.options['ITEM-HTTP'].order || [] : [];
-    var pipes = exports.createPipeline(this.httpstream.options, order, this.bufferStream, this.headerInfo);
+    const order = this.httpstream.options['ITEM-HTTP'] ? this.httpstream.options['ITEM-HTTP'].order || [] : [];
+    const pipes = exports.createPipeline(this.httpstream.options, order, this.bufferStream, this.headerInfo);
 
     item.bodyNum = ++this.httpstream.bodyNum;
     item.bodyName = this.httpstream.bodyName;
-    var heb = new CollectBodyStream(this.httpstream, item, this.headerInfo);
+    const heb = new CollectBodyStream(this.httpstream, item, this.headerInfo);
     pipes[pipes.length - 1].pipe(heb);
 
     delete this.headerInfo;
@@ -532,14 +540,14 @@ ItemHTTPStream.onMessageComplete = function () {
 
 ItemHTTPStream.onHeadersComplete = function (major, minor, headers, method, url) {
   // console.log("onHeadersComplete", headers, method, url);
-  var info = { headersMap: {} };
-  for (var i = 0; i < headers.length; i += 2) {
+  const info = { headersMap: {} };
+  for (let i = 0; i < headers.length; i += 2) {
     info.headersMap[headers[i].toLowerCase()] = headers[i + 1];
   }
   this.headerInfo = info;
   if (url) { this.httpstream.bodyName = url.split(/[/?=]/).pop(); }
 
-  if (info.headersMap['expect'] === '100-continue') {
+  if (info.headersMap.expect === '100-continue') {
     this.curitem.expect100 = true;
   }
 };
@@ -570,7 +578,7 @@ ItemHTTPStream.prototype._process = function (item, callback) {
     this.push(item);
   } else {
     this.parsers[item.client].curitem = item;
-    var out = this.parsers[item.client].execute(item.data, 0, item.data.length);
+    const out = this.parsers[item.client].execute(item.data, 0, item.data.length);
     if (typeof out === 'object') {
       this.push(item);
     } else if (item.expect100) {
@@ -581,7 +589,7 @@ ItemHTTPStream.prototype._process = function (item, callback) {
 };
 
 ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
-  var bodyType = 'file';
+  let bodyType = 'file';
   if (headerInfo.headersMap && headerInfo.headersMap['content-type']) {
     if (headerInfo.headersMap['content-type'].match(/^image/i)) {
       bodyType = 'image';
@@ -590,7 +598,7 @@ ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
     }
   }
 
-  var bodyName = item.bodyName || bodyType + item.bodyNum;
+  const bodyName = item.bodyName || bodyType + item.bodyNum;
   this.push({ client: item.client, ts: item.ts, data: data, bodyNum: item.bodyNum, bodyType: bodyType, bodyName: bodyName });
   this.runningStreams--;
   if (this.runningStreams === 0 && this.endCb) {
@@ -598,7 +606,7 @@ ItemHTTPStream.prototype.bodyDone = function (item, data, headerInfo) {
   }
 };
 ItemHTTPStream.prototype._finish = function (callback) {
-  var self = this;
+  const self = this;
   this.parsers[0].finish();
   this.parsers[1].finish();
   if (this.parsers[0].curitem) {
@@ -607,7 +615,7 @@ ItemHTTPStream.prototype._finish = function (callback) {
   if (this.parsers[1].curitem) {
     this.push(this.parsers[1].curitem);
   }
-  var streams = 0;
+  const streams = 0;
   async.each([this.parsers[0].bufferStream, this.parsers[1].bufferStream], function (stream, cb) {
     if (stream) {
       return stream.end(cb);
@@ -634,12 +642,12 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
     return callback(null, item);
   }
 
-  var out = '<pre>';
-  var i, ilen;
+  let out = '<pre>';
+  let i, ilen;
 
-  var input = item.data;
-  for (var pos = 0, poslen = input.length; pos < poslen; pos += 16) {
-    var line = input.slice(pos, Math.min(pos + 16, input.length));
+  const input = item.data;
+  for (let pos = 0, poslen = input.length; pos < poslen; pos += 16) {
+    const line = input.slice(pos, Math.min(pos + 16, input.length));
     if (this.showOffsets) {
       out += sprintf.sprintf('<span class="sessionln">%08d:</span> ', pos);
     }
@@ -671,7 +679,7 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
 };
 /// /////////////////////////////////////////////////////////////////////////////
 function createItemSorterStream (options) {
-  var stream = through.obj(function (item, encoding, callback) {
+  const stream = through.obj(function (item, encoding, callback) {
     if (item.itemPos === undefined) {
       item.itemPos = this.items.length;
     }
@@ -685,7 +693,7 @@ function createItemSorterStream (options) {
       return a.ts - b.ts;
     });
 
-    for (var i = 0; i < this.items.length; i++) {
+    for (let i = 0; i < this.items.length; i++) {
       this.push(this.items[i]);
     }
 
@@ -710,12 +718,14 @@ exports.settings = function () {
 
 exports.register('BODY-UNXORBRUTEGZ', createUnxorBruteGzip, { name: 'UnXOR Brute GZip Header' });
 exports.register('BODY-UNXOR', createKeyUnxorStream,
-  { name: 'UnXOR',
+  {
+    name: 'UnXOR',
     title: 'Only set keyLength or key',
     fields: [{ key: 'skip', name: 'Skip Bytes', type: 'text' },
       { key: 'keyLength', name: 'Key is in data length', type: 'text' },
       { key: 'key', name: 'Fixed key in hex', type: 'text' }
-    ] });
+    ]
+  });
 
 exports.register('BODY-UNCOMPRESS', createUncompressStream);
 exports.register('BODY-UNBASE64', createUnbase64Stream, { name: 'Unbase64' });
@@ -724,7 +734,7 @@ exports.register('ITEM-HTTP', ItemHTTPStream);
 exports.register('ITEM-SMTP', ItemSMTPStream);
 exports.register('ITEM-SORTER', createItemSorterStream);
 exports.register('ITEM-PRINTER', through.ctor({ objectMode: true }, function (item, encoding, callback) {
-  var data = item.html || item.data.toString();
+  const data = item.html || item.data.toString();
   console.log(item.ts, item.client, item.itemPos, item.bodyNum, item.bodyType, item.bodyName, data.length, data);
   console.log();
   callback(null, item);
@@ -754,8 +764,8 @@ exports.register('ITEM-BYTES', through.ctor({ objectMode: true }, function (item
 }));
 exports.register('ITEM-HASH', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.data !== undefined) {
-    var md5 = crypto.createHash('md5').update(item.data).digest('hex');
-    var sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    const md5 = crypto.createHash('md5').update(item.data).digest('hex');
+    const sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
     if (this.options['ITEM-HASH'].hash === md5 || this.options['ITEM-HASH'].hash === sha256) { return callback(null, item); }
   }
   return callback();
@@ -796,7 +806,7 @@ exports.register('ITEM-CB', through.ctor({ objectMode: true }, function (item, e
 
 exports.Pcap2ItemStream = Pcap2ItemStream;
 exports.createPipeline = function (options, order, stream, context) {
-  var pipes = [stream];
+  const pipes = [stream];
 
   function link (p) {
     pipes[p].pipe(pipes[p + 1]).on('error', function (err) {
@@ -804,8 +814,8 @@ exports.createPipeline = function (options, order, stream, context) {
     });
   }
 
-  for (var i = 0; i < order.length; i++) {
-    var ClassOrCreate = internals.registry[order[i]];
+  for (let i = 0; i < order.length; i++) {
+    const ClassOrCreate = internals.registry[order[i]];
     if (!ClassOrCreate) {
       console.trace("ERROR - Couldn't find", order[i], 'in decode registry');
       return;
@@ -824,7 +834,7 @@ exports.createPipeline = function (options, order, stream, context) {
 
 // Run directly, testing code
 if (require.main === module) {
-  var options = {
+  const options = {
     nodeName: 'nodeName',
     id: 'id',
     order: [],
@@ -836,10 +846,10 @@ if (require.main === module) {
     }
   };
 
-  var base = 'ITEM-NATURAL';
-  var filename;
-  var ending = ['ITEM-SORTER', 'ITEM-PRINTER'];
-  for (var aa = 2; aa < process.argv.length; aa++) {
+  let base = 'ITEM-NATURAL';
+  let filename;
+  const ending = ['ITEM-SORTER', 'ITEM-PRINTER'];
+  for (let aa = 2; aa < process.argv.length; aa++) {
     if (process.argv[aa] === '--hex') {
       base = 'ITEM-HEX';
     } else if (process.argv[aa] === '--ascii') {
@@ -884,19 +894,19 @@ if (require.main === module) {
   if (!filename) {
     console.log('ERROR, must provide a file');
   } else if (filename.match(/\.pcap$/)) {
-    var Pcap = require('./pcap.js');
-    var fs = require('fs');
-    var pcap = new Pcap(filename);
+    const Pcap = require('./pcap.js');
+    const fs = require('fs');
+    const pcap = new Pcap(filename);
     pcap.open(filename);
-    var stat = fs.statSync(filename);
-    var pos = 24;
-    var packets = [];
+    const stat = fs.statSync(filename);
+    let pos = 24;
+    const packets = [];
 
     async.whilst(
       function () { return pos < stat.size; },
       function (callback) {
         pcap.readPacket(pos, function (packet) {
-          var obj = {};
+          const obj = {};
           pcap.decode(packet, obj);
           packets.push(obj);
           pos += packet.length;
@@ -912,7 +922,7 @@ if (require.main === module) {
 
     console.log('process', filename);
   } else {
-    var data = require('./' + filename);
+    const data = require('./' + filename);
     exports.createPipeline(options, options.order, new Pcap2ItemStream(options, data));
   }
 }

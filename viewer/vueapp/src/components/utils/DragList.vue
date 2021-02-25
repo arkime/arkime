@@ -49,10 +49,10 @@ export default {
     },
     drop (event, index) {
       // remove the dragged field from the list
-      const draggedField = this.list.splice(this.dragging, 1)[0];
+      const draggedField = [...this.list].splice(this.dragging, 1)[0];
       // and replace it in the new position
-      this.list.splice(this.draggedOver, 0, draggedField);
-      this.$emit('reorder', this.list);
+      const reorderedList = [...this.list].splice(this.draggedOver, 0, draggedField);
+      this.$emit('reorder', reorderedList);
       this.dragging = undefined;
     },
     removeField (index) {

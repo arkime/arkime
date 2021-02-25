@@ -5,7 +5,7 @@ const util = require('util');
 const async = require('async');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
-  let module = {};
+  const module = {};
 
   // --------------------------------------------------------------------------
   // APIs
@@ -73,7 +73,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
   module.getStats = (req, res) => {
-    let query = {
+    const query = {
       from: 0,
       size: 10000,
       query: {
@@ -100,7 +100,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     }
 
-    let rquery = {
+    const rquery = {
       query: { term: { locked: 0 } },
       size: 0,
       aggregations: {
@@ -122,7 +122,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     }
 
-    let now = Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / 1000);
 
     Promise.all([Db.search('stats', 'stat', query),
       Db.numberOfDocuments('stats'),
@@ -136,10 +136,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         retention = {};
       }
 
-      let results = { total: stats.hits.total, results: [] };
+      const results = { total: stats.hits.total, results: [] };
 
       for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
-        let fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
+        const fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
         if (stats.hits.hits[i]._source) {
           ViewerUtils.mergeUnarray(fields, stats.hits.hits[i].fields);
         }
@@ -189,10 +189,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         });
       }
 
-      let from = +req.query.start || 0;
-      let stop = from + (+req.query.length || 500);
+      const from = +req.query.start || 0;
+      const stop = from + (+req.query.length || 500);
 
-      let r = {
+      const r = {
         recordsTotal: total.count,
         recordsFiltered: results.results.length,
         data: results.results.slice(from, stop)
@@ -223,7 +223,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.getDetailedStats = (req, res) => {
     const nodeName = req.query.nodeName;
 
-    let query = {
+    const query = {
       query: {
         bool: {
           filter: [
@@ -277,7 +277,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       let i, ilen;
-      let data = {};
+      const data = {};
       const num = (req.query.stop - req.query.start) / req.query.step;
 
       let mult = 1;
@@ -309,7 +309,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
         if (nodeName === 'Total' || nodeName === 'Average') {
           delete data[nodeName];
-          let data2 = ViewerUtils.arrayZeroFill(num);
+          const data2 = ViewerUtils.arrayZeroFill(num);
           let cnt = 0;
           for (const key in data) {
             for (i = 0; i < num; i++) {
@@ -382,7 +382,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       const nodeKeys = Object.keys(nodesStats.nodes);
       for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
-        let node = nodesStats.nodes[nodeKeys[n]];
+        const node = nodesStats.nodes[nodeKeys[n]];
 
         if (nodeKeys[n] === 'timestamp' || (regex && !node.name.match(regex))) { continue; }
 
@@ -391,7 +391,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         let rejected = 0;
         let completed = 0;
 
-        let writeInfo = node.thread_pool.bulk || node.thread_pool.write;
+        const writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
         const oldnode = internals.previousNodesStats[0][nodeKeys[n]];
         if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && 'total' in node.fs.io_stats) {
@@ -399,7 +399,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes) / timediffsec * 1024));
           write = Math.max(0, Math.ceil((node.fs.io_stats.total.write_kilobytes - oldnode.fs.io_stats.total.write_kilobytes) / timediffsec * 1024));
 
-          let writeInfoOld = oldnode.thread_pool.bulk || oldnode.thread_pool.write;
+          const writeInfoOld = oldnode.thread_pool.bulk || oldnode.thread_pool.write;
 
           completed = Math.max(0, Math.ceil((writeInfo.completed - writeInfoOld.completed) / timediffsec));
           rejected = Math.max(0, Math.ceil((writeInfo.rejected - writeInfoOld.rejected) / timediffsec));
@@ -454,7 +454,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       if (req.query.sortField && stats.length > 1) {
-        let field = req.query.sortField === 'nodeName' ? 'name' : req.query.sortField;
+        const field = req.query.sortField === 'nodeName' ? 'name' : req.query.sortField;
         if (typeof (stats[0][field]) === 'string') {
           if (req.query.desc === 'true') {
             stats = stats.sort((a, b) => { return b[field].localeCompare(a[field]); });
@@ -675,7 +675,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.molochError(403, 'Missing target');
     }
 
-    let settingsParams = {
+    const settingsParams = {
       body: {
         'index.routing.allocation.total_shards_per_node': null,
         'index.routing.allocation.require._name': req.body.target,
@@ -691,7 +691,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }));
       }
 
-      let shrinkParams = {
+      const shrinkParams = {
         body: {
           settings: {
             'index.routing.allocation.require._name': null,
@@ -703,7 +703,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       };
 
       // wait for no more reloacting shards
-      let shrinkCheckInterval = setInterval(() => {
+      const shrinkCheckInterval = setInterval(() => {
         Db.healthCachePromise()
           .then((result) => {
             if (result.relocating_shards === 0) {
@@ -773,7 +773,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       let rtasks = [];
       for (const key in tasks) {
-        let task = tasks[key];
+        const task = tasks[key];
 
         task.taskId = key;
         if (task.children) {
@@ -788,7 +788,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
 
         if (task.headers['X-Opaque-Id']) {
-          let parts = ViewerUtils.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
+          const parts = ViewerUtils.splitRemain(task.headers['X-Opaque-Id'], '::', 1);
           task.user = (parts.length === 1 ? '' : parts[0]);
         } else {
           task.user = '';
@@ -814,7 +814,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
       }
 
-      let size = parseInt(req.query.size) || 1000;
+      const size = parseInt(req.query.size) || 1000;
       if (rtasks.length > size) {
         rtasks = rtasks.slice(0, size);
       }
@@ -902,7 +902,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.getILMPolicy(),
       Db.getTemplate('sessions2_template')
     ]).then(([settings, ilm, template]) => {
-      let rsettings = [];
+      const rsettings = [];
 
       function getValue (key) {
         return settings.transient[key] || settings.persistent[key] || settings.defaults[key];
@@ -1034,7 +1034,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     // Must set all 3 at once because of ES bug/feature
     if (req.body.key === 'arkime.disk.watermarks') {
-      let query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} } };
       if (req.body.value === '' || req.body.value === null) {
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = null;
         query.body.persistent['cluster.routing.allocation.disk.watermark.high'] = null;
@@ -1123,7 +1123,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return;
     }
 
-    let query = { body: { persistent: {} } };
+    const query = { body: { persistent: {} } };
     query.body.persistent[req.body.key] = req.body.value || null;
 
     Db.putClusterSettings(query, (err, result) => {
@@ -1243,8 +1243,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }
       }
 
-      let result = {};
-      let nodes = {};
+      const result = {};
+      const nodes = {};
 
       for (const shard of shards) {
         if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
@@ -1328,7 +1328,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         exclude.push(req.params.value);
       }
 
-      let query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
       Db.putClusterSettings(query, (err, settings) => {
@@ -1367,12 +1367,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         exclude = settings.persistent[settingName].split(',');
       }
 
-      let pos = exclude.indexOf(req.params.value);
+      const pos = exclude.indexOf(req.params.value);
       if (pos > -1) {
         exclude.splice(pos, 1);
       }
 
-      let query = { body: { persistent: {} } };
+      const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
       Db.putClusterSettings(query, (err, settings) => {
@@ -1426,7 +1426,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // Work around for https://github.com/elastic/elasticsearch/issues/48070
       if (req.query.sortField && req.query.sortField.endsWith('_percent')) {
-        let sf = req.query.sortField;
+        const sf = req.query.sortField;
         if (req.query.desc === 'true') {
           result = result.sort((a, b) => { return parseFloat(b[sf]) - parseFloat(a[sf]); });
         } else {
@@ -1494,7 +1494,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         fields.id = stat._id;
 
         // make sure necessary fields are not undefined
-        const keys = [ 'deltaOverloadDropped', 'monitoring', 'deltaESDropped' ];
+        const keys = ['deltaOverloadDropped', 'monitoring', 'deltaESDropped'];
         for (const key of keys) {
           fields[key] = fields[key] || 0;
         }

@@ -92,7 +92,7 @@ module.exports = (Db) => {
 
     if (req.query.exists) {
       if (!query.query) { query.query = { bool: { must: [] } }; }
-      let existsArr = req.query.exists.split(',');
+      const existsArr = req.query.exists.split(',');
       for (let i = 0, len = existsArr.length; i < len; ++i) {
         query.query.bool.must.push({
           exists: { field: existsArr[i] }
@@ -116,10 +116,12 @@ module.exports = (Db) => {
 
       if (!query.query) { query.query = { bool: {} }; }
       query.query.bool.filter = [{
-        range: { timestamp: {
-          gte: req.query.startTime,
-          lte: req.query.stopTime
-        } }
+        range: {
+          timestamp: {
+            gte: req.query.startTime,
+            lte: req.query.stopTime
+          }
+        }
       }];
     }
 

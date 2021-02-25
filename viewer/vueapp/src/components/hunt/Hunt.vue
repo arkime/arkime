@@ -938,7 +938,7 @@ export default {
         return;
       }
 
-      let newJob = {
+      const newJob = {
         name: this.jobName,
         size: this.jobSize,
         search: this.jobSearch,
@@ -1026,7 +1026,7 @@ export default {
         });
     },
     openSessions: function (job) {
-      let url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
+      const url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
       window.open(url, '_blank');
     },
     setJobSearchType: function (val) {
@@ -1115,7 +1115,7 @@ export default {
     },
     calculateQueue: function () {
       let queueCount = 1;
-      for (let job of this.results) {
+      for (const job of this.results) {
         if (job.status === 'queued') {
           this.$set(job, 'queueCount', queueCount);
           queueCount++;
@@ -1125,13 +1125,13 @@ export default {
     loadData: function () {
       respondedAt = undefined;
 
-      let loading = {};
-      let expanded = {};
-      let runningJobLoading = this.runningJob && this.runningJob.loading;
-      let runningJobExpanded = this.runningJob && this.runningJob.expanded;
+      const loading = {};
+      const expanded = {};
+      const runningJobLoading = this.runningJob && this.runningJob.loading;
+      const runningJobExpanded = this.runningJob && this.runningJob.expanded;
       if (this.results && this.results.length) {
         // save the expanded and loading ones
-        for (let result of this.results) {
+        for (const result of this.results) {
           if (result.expanded) {
             expanded[result.id] = true;
           }
@@ -1142,7 +1142,7 @@ export default {
       }
       if (this.historyResults.data && this.historyResults.data.length) {
         // save the expanded and loading ones
-        for (let result of this.historyResults.data) {
+        for (const result of this.historyResults.data) {
           if (result.expanded) {
             expanded[result.id] = true;
           }
@@ -1153,12 +1153,12 @@ export default {
       }
 
       // get the hunt history
-      let historyReq = this.axios.get('api/hunts', { params: { ...this.query, history: true } });
+      const historyReq = this.axios.get('api/hunts', { params: { ...this.query, history: true } });
       historyReq.then((response) => {
         this.historyListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (let result of response.data.data) {
+          for (const result of response.data.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1180,16 +1180,16 @@ export default {
       });
 
       // get the running, queued, paused hunts
-      let queuedQuery = JSON.parse(JSON.stringify(this.query));
+      const queuedQuery = JSON.parse(JSON.stringify(this.query));
       queuedQuery.desc = false;
       queuedQuery.length = undefined;
       queuedQuery.start = 0;
-      let queueReq = this.axios.get('api/hunts', { params: queuedQuery });
+      const queueReq = this.axios.get('api/hunts', { params: queuedQuery });
       queueReq.then((response) => {
         this.queuedListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (let result of response.data.data) {
+          for (const result of response.data.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {

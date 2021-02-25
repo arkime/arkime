@@ -358,7 +358,7 @@ export default {
       return this.selectedSourceKey.split(':')[0];
     },
     sidebarOptions: function () {
-      let options = {};
+      const options = {};
       // Note: Services are alredy added to currConfig. This assists rendering them first
       options.services = Object.keys(this.configDefs).filter(key => this.configDefs[key].service);
       options.sources = Object.keys(this.currConfig).filter(key => !options.services.includes(key));
@@ -385,7 +385,7 @@ export default {
       return this.currFile === this.currFileBefore;
     },
     configViews: function () {
-      let views = [ { text: 'Config', value: 'config' } ];
+      const views = [{ text: 'Config', value: 'config' }];
 
       if (this.configDefs[this.selectedSourceSplit].editable) {
         views.push({ text: 'Edit', value: 'edit' });
@@ -416,7 +416,7 @@ export default {
   },
   methods: {
     createNewSource: function () {
-      let key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton)
+      const key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton)
         ? this.newSource + ':' + this.newSourceName
         : this.newSource;
 
@@ -433,8 +433,8 @@ export default {
         param: /^\s*([\w.\-_]+)\s*=\s*(.*?)\s*$/,
         comment: /^\s*[;#].*$/
       };
-      let value = {};
-      let lines = data.split(/\r\n|\r|\n/);
+      const value = {};
+      const lines = data.split(/\r\n|\r|\n/);
       let section = null;
       lines.forEach(function (line) {
         if (regex.comment.test(line)) {
@@ -455,7 +455,7 @@ export default {
       return value;
     },
     importConfig: function () {
-      let text = this.importConfigText.trim();
+      const text = this.importConfigText.trim();
       if (text[0] === '"' || text[0] === '{') {
         // JSON input
         try {
@@ -472,10 +472,10 @@ export default {
         }
       } else if (text.startsWith('[')) {
         // INI Input
-        let json = this.parseINI(text);
+        const json = this.parseINI(text);
         this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
       } else {
-        this.importConfigError = `Doesn't look like JSON or INI`;
+        this.importConfigError = 'Doesn\'t look like JSON or INI';
         return; // Don't clear
       }
 
@@ -525,7 +525,7 @@ export default {
     saveConfig: function () {
       // Iterate through user config before saving and test for missing required fields and improper regex
       for (const sourceName in this.currConfig) {
-        let defSource = this.configDefs[sourceName.split(':')[0]];
+        const defSource = this.configDefs[sourceName.split(':')[0]];
 
         for (const item of defSource.fields) {
           if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
@@ -550,7 +550,7 @@ export default {
             throw data;
           } else {
             this.alertState = {
-              text: `Config saved`,
+              text: 'Config saved',
               variant: 'alert-success'
             };
             // Resync object that tests for changes
@@ -560,7 +560,7 @@ export default {
         })
         .catch((err) => {
           this.alertState = {
-            text: err.text || `Error saving config for wise.`,
+            text: err.text || 'Error saving config for wise.',
             variant: 'alert-danger'
           };
         });
@@ -573,7 +573,7 @@ export default {
         })
         .catch((err) => {
           this.alertState = {
-            text: err.text || `Error fetching config definitions from wise.`,
+            text: err.text || 'Error fetching config definitions from wise.',
             variant: 'alert-danger'
           };
         });
@@ -583,7 +583,7 @@ export default {
         .then((data) => {
           if (!data.success) {
             this.alertState = {
-              text: data.text || `Error fetching config from wise.`,
+              text: data.text || 'Error fetching config from wise.',
               variant: 'alert-danger'
             };
             return;
@@ -597,7 +597,7 @@ export default {
 
           // Always include services even if omitted from config file
           Object.keys(this.configDefs).filter(key => this.configDefs[key].service).forEach((serviceKey) => {
-            if (!data.config.hasOwnProperty(serviceKey)) {
+            if (data.config[serviceKey] === undefined) {
               data.config[serviceKey] = {};
             }
           });
@@ -608,7 +608,7 @@ export default {
         })
         .catch((err) => {
           this.alertState = {
-            text: err.text || `Error fetching current config for wise.`,
+            text: err.text || 'Error fetching current config for wise.',
             variant: 'alert-danger'
           };
         });
@@ -633,15 +633,15 @@ export default {
         })
         .catch((err) => {
           this.alertState = {
-            text: err.text || `Error fetching source files from wise.`,
+            text: err.text || 'Error fetching source files from wise.',
             variant: 'alert-danger'
           };
         });
     },
     saveSourceFile: function () {
-      if (!this.currConfigBefore.hasOwnProperty(this.selectedSourceKey)) {
+      if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
         this.alertState = {
-          text: `Wise config does not exist. Make sure to save config before the file!`,
+          text: 'Wise config does not exist. Make sure to save config before the file!',
           variant: 'alert-danger'
         };
         return;

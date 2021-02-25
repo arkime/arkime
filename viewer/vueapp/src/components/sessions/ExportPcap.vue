@@ -109,7 +109,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         start: this.start,
         applyTo: this.applyTo,
         filename: this.filename,

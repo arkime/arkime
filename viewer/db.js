@@ -24,7 +24,8 @@ const fs = require('fs');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 
-var internals = { fileId2File: {},
+const internals = {
+  fileId2File: {},
   fileName2File: {},
   molochNodeStatsCache: {},
   healthCache: {},
@@ -37,7 +38,8 @@ var internals = { fileId2File: {},
   masterCache: {},
   qInProgress: 0,
   apiVersion: '7.7',
-  q: [] };
+  q: []
+};
 
 exports.initialize = function (info, cb) {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
@@ -69,7 +71,7 @@ exports.initialize = function (info, cb) {
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
 
-  var esSSLOptions = { rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca };
+  const esSSLOptions = { rejectUnauthorized: !internals.info.insecure, ca: internals.info.ca };
   if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);
@@ -95,7 +97,6 @@ exports.initialize = function (info, cb) {
     if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
       console.log('ERROR - ES', data.version.number, 'not supported, ES 7.7.1 or later required.');
       process.exit();
-      throw new Error('Exiting');
     }
 
     internals.client7 = new Client({
@@ -168,7 +169,7 @@ function fixIndex (index) {
 }
 
 exports.merge = function (to, from) {
-  for (var key in from) {
+  for (const key in from) {
     to[key] = from[key];
   }
 };
@@ -178,7 +179,7 @@ exports.get = function (index, type, id, cb) {
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
-  var params = { index: fixIndex(index), id: id };
+  const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.get(params, cb);
 };
@@ -211,7 +212,7 @@ exports.getSession = function (id, options, cb) {
           return cb(null, session);
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
           exports.isLocalView(fields.node, () => {
-            let newPacketPos = [];
+            const newPacketPos = [];
             async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
               if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
@@ -227,7 +228,7 @@ exports.getSession = function (id, options, cb) {
                   let mult = 1;
                   newPacketPos.push(item);
                   for (let i = 0; i < buffer.length; i++) {
-                    let x = buffer.readUInt8(i);
+                    const x = buffer.readUInt8(i);
                     // high bit set when last
                     if (x & 0x80) {
                       num = num + (x & 0x7f) * mult;
@@ -270,7 +271,7 @@ exports.getSession = function (id, options, cb) {
     exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
       if (err) { return cb(err); }
       if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
-      let session = results.hits.hits[0];
+      const session = results.hits.hits[0];
       session.found = true;
       if (options && options._source && !options._source.includes('packetPos')) {
         return cb(null, session);
@@ -302,7 +303,7 @@ exports.search = function (index, type, query, options, cb) {
   }
   query.profile = internals.esProfile;
 
-  let params = {
+  const params = {
     index: fixIndex(index),
     body: query,
     rest_total_hits_as_int: true
@@ -318,8 +319,8 @@ exports.cancelByOpaqueId = function (cancelId, cb) {
     .then((results) => {
       let found = false;
 
-      for (let resultKey in results.tasks) {
-        let result = results.tasks[resultKey];
+      for (const resultKey in results.tasks) {
+        const result = results.tasks[resultKey];
         if (result.headers &&
           result.headers['X-Opaque-Id'] &&
           result.headers['X-Opaque-Id'] === cancelId) {
@@ -339,14 +340,14 @@ exports.cancelByOpaqueId = function (cancelId, cb) {
 };
 
 function searchScrollInternal (index, type, query, options, cb) {
-  let from = +query.from || 0;
-  let size = +query.size || 0;
+  const from = +query.from || 0;
+  const size = +query.size || 0;
 
-  let querySize = from + size;
+  const querySize = from + size;
   delete query.from;
 
-  var totalResults;
-  var params = { scroll: '5m' };
+  let totalResults;
+  const params = { scroll: '5m' };
   exports.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
@@ -409,7 +410,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 
 exports.searchPrimary = function (index, type, query, options, cb) {
   // ALW - FIXME - 6.1+ has removed primary_first :(
-  let params = { preference: 'primaries', ignore_unavailable: 'true' };
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
 
   if (options && options.cancelId) {
     // set X-Opaque-Id header on the params so the task can be canceled
@@ -422,14 +423,14 @@ exports.searchPrimary = function (index, type, query, options, cb) {
 };
 
 exports.msearch = function (index, type, queries, options, cb) {
-  var body = [];
+  const body = [];
 
-  for (var i = 0, ilen = queries.length; i < ilen; i++) {
+  for (let i = 0, ilen = queries.length; i < ilen; i++) {
     body.push({ index: fixIndex(index) });
     body.push(queries[i]);
   }
 
-  let params = { body: body, rest_total_hits_as_int: true };
+  const params = { body: body, rest_total_hits_as_int: true };
 
   if (options && options.cancelId) {
     // set X-Opaque-Id header on the params so the task can be canceled
@@ -461,7 +462,7 @@ exports.deleteDocument = function (index, type, id, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: fixIndex(index), id: id };
+  const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
   return internals.elasticSearchClient.delete(params, cb);
 };
@@ -472,7 +473,7 @@ exports.deleteIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: index };
+  const params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.delete(params, cb);
 };
@@ -483,7 +484,7 @@ exports.optimizeIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: index, maxNumSegments: 1 };
+  const params = { index: index, maxNumSegments: 1 };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.forcemerge(params, cb);
 };
@@ -494,7 +495,7 @@ exports.closeIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: index };
+  const params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.close(params, cb);
 };
@@ -505,13 +506,13 @@ exports.openIndex = function (index, options, cb) {
     cb = options;
     options = undefined;
   }
-  var params = { index: index };
+  const params = { index: index };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.open(params, cb);
 };
 
 exports.shrinkIndex = function (index, options, cb) {
-  let params = { index: index, target: `${index}-shrink` };
+  const params = { index: index, target: `${index}-shrink` };
   exports.merge(params, options);
   return internals.elasticSearchClient.indices.shrink(params, cb);
 };
@@ -610,7 +611,7 @@ exports.tasks = function (cb) {
 };
 
 exports.taskCancel = function (taskId, cb) {
-  let params = {};
+  const params = {};
   if (taskId) { params.taskId = taskId; }
   return internals.elasticSearchClient.tasks.cancel(params, cb);
 };
@@ -629,13 +630,13 @@ exports.update = function (index, type, id, document, options, cb) {
     options = undefined;
   }
 
-  var params = { index: fixIndex(index), body: document, id: id, timeout: '10m' };
+  const params = { index: fixIndex(index), body: document, id: id, timeout: '10m' };
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
 
 exports.updateSession = function (index, id, document, cb) {
-  let params = {
+  const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
     body: document,
@@ -688,7 +689,7 @@ exports.refresh = function (index, cb) {
 };
 
 exports.addTagsToSession = function (index, id, tags, cluster, cb) {
-  let script = `
+  const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
         if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
@@ -702,7 +703,7 @@ exports.addTagsToSession = function (index, id, tags, cluster, cb) {
     }
   `;
 
-  let body = {
+  const body = {
     script: {
       source: script,
       lang: 'painless',
@@ -718,7 +719,7 @@ exports.addTagsToSession = function (index, id, tags, cluster, cb) {
 };
 
 exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
-  let script = `
+  const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
         int index = ctx._source.tags.indexOf(params.tags[i]);
@@ -732,7 +733,7 @@ exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
     }
   `;
 
-  let body = {
+  const body = {
     script: {
       source: script,
       lang: 'painless',
@@ -748,7 +749,7 @@ exports.removeTagsFromSession = function (index, id, tags, cluster, cb) {
 };
 
 exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
-  let script = `
+  const script = `
     if (ctx._source.huntId != null) {
       ctx._source.huntId.add(params.huntId);
     } else {
@@ -761,7 +762,7 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   `;
 
-  let body = {
+  const body = {
     script: {
       source: script,
       lang: 'painless',
@@ -858,7 +859,7 @@ exports.setUser = function (name, doc, cb) {
 };
 
 exports.setLastUsed = function (name, now, cb) {
-  var params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
+  const params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
 
   return internals.usersClient7.update(params, cb);
 };
@@ -868,9 +869,9 @@ function twoDigitString (value) {
 }
 
 exports.historyIt = function (doc, cb) {
-  var d = new Date(Date.now());
-  var jan = new Date(d.getUTCFullYear(), 0, 0);
-  var iname = internals.prefix + 'history_v1-' +
+  const d = new Date(Date.now());
+  const jan = new Date(d.getUTCFullYear(), 0, 0);
+  const iname = internals.prefix + 'history_v1-' +
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
@@ -943,8 +944,8 @@ exports.getShortcutsCache = function (name, cb) {
   exports.searchShortcuts(query, (err, shortcuts) => {
     if (err) { return cb(err, shortcuts); }
 
-    let shortcutsMap = {};
-    for (let shortcut of shortcuts.hits.hits) {
+    const shortcutsMap = {};
+    for (const shortcut of shortcuts.hits.hits) {
       // need the whole object to test for type mismatch
       shortcutsMap[shortcut._source.name] = shortcut;
     }
@@ -1127,11 +1128,11 @@ exports.indicesSettingsCache = function (cb) {
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
-  var query = { query: { match: { hostname: hostname } } };
+  const query = { query: { match: { hostname: hostname } } };
   exports.search('stats', 'stat', query, (err, sdata) => {
-    var nodes = [];
+    const nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
-      for (var i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
+      for (let i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
         nodes.push(sdata.hits.hits[i]._id);
       }
     }
@@ -1140,8 +1141,8 @@ exports.hostnameToNodeids = function (hostname, cb) {
 };
 
 exports.fileIdToFile = function (node, num, cb) {
-  var key = node + '!' + num;
-  let info = internals.fileId2File[key];
+  const key = node + '!' + num;
+  const info = internals.fileId2File[key];
   if (info !== undefined) {
     return setImmediate(() => {
       cb(info);
@@ -1150,7 +1151,7 @@ exports.fileIdToFile = function (node, num, cb) {
 
   exports.get('files', 'file', node + '-' + num, (err, fresult) => {
     if (!err && fresult.found) {
-      var file = fresult._source;
+      const file = fresult._source;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
       return cb(file);
@@ -1163,7 +1164,7 @@ exports.fileIdToFile = function (node, num, cb) {
 };
 
 exports.fileNameToFiles = function (name, cb) {
-  var query;
+  let query;
   if (name[0] === '/' && name[name.length - 1] === '/') {
     query = { query: { regexp: { name: name.substring(1, name.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
   } else if (name.indexOf('*') !== -1) {
@@ -1179,13 +1180,13 @@ exports.fileNameToFiles = function (name, cb) {
   }
 
   exports.search('files', 'file', query, (err, data) => {
-    var files = [];
+    const files = [];
     if (err || !data.hits) {
       return cb(null);
     }
     data.hits.hits.forEach((hit) => {
-      var file = hit._source;
-      var key = file.node + '!' + file.num;
+      const file = hit._source;
+      const key = file.node + '!' + file.num;
       internals.fileId2File[key] = file;
       internals.fileName2File[file.name] = file;
       files.push(file);
@@ -1203,14 +1204,14 @@ exports.getSequenceNumber = function (name, cb) {
 exports.numberOfDocuments = function (index, options) {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    let params = { index: fixIndex(index), ignoreUnavailable: true };
+    const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     return internals.elasticSearchClient.count(params);
   }
 
   return new Promise((resolve, reject) => {
     let count = 0;
-    let str = internals.prefix + 'sessions2-';
+    const str = internals.prefix + 'sessions2-';
     exports.indicesCache((err, indices) => {
       for (let i = 0; i < indices.length; i++) {
         if (indices[i].index.includes(str)) {
@@ -1227,12 +1228,11 @@ exports.updateFileSize = function (item, filesize) {
 };
 
 exports.checkVersion = function (minVersion, checkUsers) {
-  var match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
-  var version = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
+  const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
+  const version = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (version < 81200) {
     console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
     process.exit(1);
-    throw new Error('Exiting');
   }
 
   ['stats', 'dstats', 'sequence', 'files'].forEach((index) => {
@@ -1240,7 +1240,6 @@ exports.checkVersion = function (minVersion, checkUsers) {
       if (err || status.error) {
         console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
         process.exit(1);
-        throw new Error('Exiting');
       }
     });
   });
@@ -1251,7 +1250,7 @@ exports.checkVersion = function (minVersion, checkUsers) {
       process.exit(0);
     }
     try {
-      var version = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      const version = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
 
       if (version < minVersion) {
         console.log(`ERROR - Current database version (${version}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
@@ -1315,7 +1314,7 @@ exports.session2Sid = function (item) {
 };
 
 exports.sid2Id = function (id) {
-  let colon = id.indexOf(':');
+  const colon = id.indexOf(':');
   if (colon > 0) {
     return id.substr(colon + 1);
   }
@@ -1324,7 +1323,7 @@ exports.sid2Id = function (id) {
 };
 
 exports.sid2Index = function (id) {
-  let colon = id.indexOf(':');
+  const colon = id.indexOf(':');
   if (colon > 0) {
     return 'sessions2-' + id.substr(0, colon);
   }
@@ -1341,7 +1340,7 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       return cb('');
     }
 
-    let indices = [];
+    const indices = [];
 
     // Guess how long hour indices we find are
     let hlength = 0;
@@ -1355,7 +1354,7 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
 
     // Go thru each index, convert to start/stop range and see if our time range overlaps
     // For hourly and month indices we may search extra
-    for (let iname in aliases) {
+    for (const iname in aliases) {
       let index = iname;
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
@@ -1391,8 +1390,8 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
         length = hlength;
       }
 
-      let start = Date.UTC(year, month - 1, day, hour) / 1000;
-      let stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
+      const start = Date.UTC(year, month - 1, day, hour) / 1000;
+      const stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
 
       switch (bounding) {
       default:
@@ -1421,7 +1420,7 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
 };
 
 exports.getMinValue = function (index, field, cb) {
-  var params = { index: fixIndex(index), body: { size: 0, aggs: { min: { min: { field: field } } } } };
+  const params = { index: fixIndex(index), body: { size: 0, aggs: { min: { min: { field: field } } } } };
   return internals.elasticSearchClient.search(params, (err, data) => {
     if (err) { return cb(err, 0); }
     return cb(null, data.aggregations.min.value);

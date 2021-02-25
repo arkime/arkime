@@ -12,7 +12,7 @@ export default {
    */
   get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: 'api/connections',
         method: 'POST',
         data: query,

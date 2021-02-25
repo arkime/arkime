@@ -128,7 +128,7 @@ export default {
     send: function () {
       this.loading = true;
 
-      let data = {
+      const data = {
         tags: this.tags,
         start: this.start,
         cluster: this.cluster,

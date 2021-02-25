@@ -731,13 +731,13 @@ export default {
       }
     },
     cancelEdits: function (userId) {
-      let canceledUser = this.users.data.find(u => u.userId === userId);
-      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      const canceledUser = this.users.data.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.data.find(u => u.userId === userId);
       Object.assign(canceledUser, oldUser);
     },
     userHasChanged: function (userId) {
-      let newUser = this.users.data.find(u => u.userId === userId);
-      let oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      const newUser = this.users.data.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.data.find(u => u.userId === userId);
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
 
       // Iterate over user keys that come from store.
@@ -754,8 +754,8 @@ export default {
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
             // update all the fields
-            for (let field in user) {
-              if (this.user.hasOwnProperty(field) &&
+            for (const field in user) {
+              if (this.user[field] &&
                 user[field] !== undefined) {
                 this.user[field] = user[field];
               }
@@ -860,14 +860,14 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          let userData = JSON.parse(JSON.stringify(response.data));
+          const userData = JSON.parse(JSON.stringify(response.data));
           // Dont modify original list. Used for comparing
           this.dbUserList = response.data;
 
           // Dont update users that have edits. Update dbUserList first to compare against
           // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
           this.users.data = userData.data.map(u => {
-            let matchedUser = this.users.data.find(item => item.userId === u.userId);
+            const matchedUser = this.users.data.find(item => item.userId === u.userId);
             // If user already exists and is still being edited, keep user obj
             return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
           });

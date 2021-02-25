@@ -114,7 +114,7 @@
               @keyup="debounceSearch"
               @click.stop
             />
-            <div v-if="column.hasOwnProperty('exists')"
+            <div v-if="column.exists"
               class="mr-1 header-div">
               <input type="checkbox"
                 class="checkbox"
@@ -440,9 +440,9 @@ export default {
       if (log.query && log.expanded && !log.queryObj) {
         log.queryObj = {};
 
-        let a = (log.query[0] === '?' ? log.query.substr(1) : log.query).split('&');
+        const a = (log.query[0] === '?' ? log.query.substr(1) : log.query).split('&');
         for (let i = 0, len = a.length; i < len; i++) {
-          let b = a[i].split('=');
+          const b = a[i].split('=');
           let value = b[1] || '';
           if (b[0] === 'expression') { value = value.replace(/\+/g, ' '); }
           log.queryObj[decodeURIComponent(b[0])] = decodeURIComponent(value);
@@ -470,9 +470,9 @@ export default {
     loadData: function () {
       this.loading = true;
 
-      let exists = [];
+      const exists = [];
       for (let i = 0, len = this.columns.length; i < len; ++i) {
-        let col = this.columns[i];
+        const col = this.columns[i];
         if (col.exists) { exists.push(col.sort); }
       }
       if (exists.length) {
@@ -482,10 +482,8 @@ export default {
       }
 
       if (this.filters && Object.keys(this.filters).length) {
-        for (let key in this.filters) {
-          if (this.filters.hasOwnProperty(key)) {
-            this.query[key] = this.filters[key];
-          }
+        for (const key in this.filters) {
+          this.query[key] = this.filters[key];
         }
       }
 

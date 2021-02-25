@@ -111,12 +111,12 @@ router.beforeEach((to, from, next) => {
     store.commit('setExpression', to.query.expression);
   }
 
-  let page = to.name || 'Arkime - ';
-  let view = to.query.view ? ` - ${to.query.view}` : '';
-  let expression = to.query.expression ? ` - ${to.query.expression}` : '';
+  const page = to.name || 'Arkime - ';
+  const view = to.query.view ? ` - ${to.query.view}` : '';
+  const expression = to.query.expression ? ` - ${to.query.expression}` : '';
 
   /* eslint-disable no-undef */
-  let title = MOLOCH_TITLE_CONFIG.replace(/_page_/g, page)
+  const title = MOLOCH_TITLE_CONFIG.replace(/_page_/g, page)
     .replace(/( *_-expression|_expression)_/g, expression)
     .replace(/( *_-view|_view)_/g, view);
 

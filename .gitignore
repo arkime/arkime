@@ -1,27 +1,69 @@
+# OS & Editor directories and files
 *.so
 *.o
 *.dSYM
 *.val
 .*.swp
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+
+# dependencies
 node_modules
-viewer/version.js
-Makefile
-Makefile.in
-aclocal.m4
-config.guess
-config.sub
-config.log
-config.status
-missing
-install-sh
-compile
-configure
+
+# npm
+npm-debug.log*
+
+# capture
 capture/molochconfig.h
 capture/molochconfig.h.in
 capture/arkimeconfig.h
 capture/arkimeconfig.h.in
 capture/moloch-capture
 capture/capture
+
+
+# tests
+tests/GeoLite2*
+tests/oui.txt
+
+# viewer
+viewer/public/CyberChef*.zip
+viewer/vueapp/dist
+viewer/version.js
+
+# parliament
+parliament/issues.json
+parliament/parliament.json
+parliament/parliament.dev.json
+parliament/parliament.issues.json
+parliament/parliament.dev.issues.json
+parliament/vueapp/dist
+
+# wiseservice
+wiseService/vueapp/dist
+
+# Makefiles
+Makefile
+Makefile.in
+
+# configs
+config.guess
+config.sub
+config.log
+config.status
+config.dev.ini
+
+# misc
+aclocal.m4
+missing
+install-sh
+compile
+configure
 GeoIP.dat
 GeoIPASNum.dat
 GeoIPASNumv6.dat
@@ -29,13 +71,3 @@ GeoIPv6.dat
 ipv4-address-space.csv
 autom4te.cache
 stamp-h1
-npm-debug.log*
-config.dev.ini
-.DS_Store
-bundle/
-.idea
-.vscode
-parliament/issues.json
-tests/GeoLite2*
-tests/oui.txt
-viewer/public/CyberChef*.zip

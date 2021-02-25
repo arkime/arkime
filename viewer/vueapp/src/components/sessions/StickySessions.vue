@@ -4,14 +4,14 @@
     ref="stickyContainer"
     :class="{
       'hide-toolbars': !showToolBars,
-      'show-sticky-sessions-btn': sessions && sessions.length
+      'show-sticky-sessions-btn': sortedSessions && sortedSessions.length
     }"
   >
 
     <!-- toggle button -->
     <div class="sticky-session-btn"
       @click="toggleStickySessions"
-      v-if="sessions && sessions.length > 0"
+      v-if="sortedSessions && sortedSessions.length > 0"
       v-b-tooltip.hover.left
       title="Toggle view of expanded sessions">
       <span v-if="!open"
@@ -19,7 +19,7 @@
       </span><span v-else
         class="fa fa-angle-double-right">
       </span>&nbsp;
-      <small>{{ sessions.length }}</small>
+      <small>{{ sortedSessions.length }}</small>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
@@ -69,14 +69,14 @@
               </option>
             </select>
             <h4>
-              {{ sessions.length }} Open
-              Session<span v-if="sessions.length > 1">s</span>
+              {{ sortedSessions.length }} Open
+              Session<span v-if="sortedSessions.length > 1">s</span>
             </h4>
           </li>
           <transition-group name="slide">
             <a class="list-group-item list-group-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
-              v-for="session in sessions"
+              v-for="session in sortedSessions"
               :key="session.id">
               <div class="list-group-item-text">
                 <button class="btn btn-xs btn-link pull-right"
@@ -115,7 +115,7 @@ let oldLength = 1;
 
 export default {
   name: 'MolochStickySessions',
-  props: [ 'sessions', 'timezone', 'ms' ],
+  props: ['sessions', 'timezone', 'ms'],
   data: function () {
     return {
       open: false,
@@ -125,7 +125,7 @@ export default {
   },
   watch: {
     sessions: function (newVal, oldVal) {
-      let newLength = newVal.length;
+      const newLength = newVal.length;
 
       this.$store.commit('setStickySessionsBtn', !!newLength);
 
@@ -147,8 +147,6 @@ export default {
         setTimeout(() => {
           stickyContainer.classList.add('bounce');
         });
-
-        this.sort();
       }
 
       oldLength = newLength;
@@ -157,13 +155,6 @@ export default {
   computed: {
     showToolBars: function () {
       return this.$store.state.showToolBars;
-    }
-  },
-  methods: {
-    /* exposed functions --------------------------------------------------- */
-    /* Opens/closes the sticky sessions panel */
-    toggleStickySessions: function () {
-      this.open = !this.open;
     },
     /**
      * Orders the sessions by start or stop time
@@ -171,9 +162,9 @@ export default {
      * is added to the sticky sessions list
      * Default sort order is the order in which the sessions were opened
      */
-    sort: function () {
+    sortedSessions () {
       if (this.sortBy) {
-        this.sessions = this.sessions.sort((a, b) => {
+        return [...this.sessions].sort((a, b) => {
           let result;
           if (this.sortOrder === 'desc') {
             result = b[this.sortBy] - a[this.sortBy];
@@ -182,7 +173,16 @@ export default {
           }
           return result;
         });
+      } else {
+        return this.sessions;
       }
+    }
+  },
+  methods: {
+    /* exposed functions --------------------------------------------------- */
+    /* Opens/closes the sticky sessions panel */
+    toggleStickySessions: function () {
+      this.open = !this.open;
     },
     /**
      * Orders the sessions ascending or descending
@@ -194,8 +194,6 @@ export default {
       } else {
         this.sortOrder = 'asc';
       }
-
-      this.sort();
     },
     /**
      * Closes the display of the session detail for the specified session
@@ -215,7 +213,7 @@ export default {
      * @param {string} id The id of the session to scroll to
      */
     scrollTo: function (id) {
-      let el = document.getElementById(`session${id}`);
+      const el = document.getElementById(`session${id}`);
       if (el) { el.scrollIntoView(true); }
     }
   }
@@ -252,7 +250,7 @@ export default {
 .sticky-session-detail {
   overflow-y: auto;
   position: fixed;
-  top: 110px;
+  top: 150px;
   right: 0;
   bottom: 0;
   z-index: 4;

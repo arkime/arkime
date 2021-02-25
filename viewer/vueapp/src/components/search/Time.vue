@@ -338,7 +338,7 @@ export default {
     // route parameters to change, then update the view
     '$route.query': 'updateParams',
     // watch for other components to update the start and stop time
-    'time': {
+    time: {
       deep: true,
       handler (newVal, oldVal) {
         if (newVal && oldVal) {
@@ -356,7 +356,7 @@ export default {
         }
       }
     },
-    'updateTime': function (newVal, oldVal) {
+    updateTime: function (newVal, oldVal) {
       if (newVal) {
         // calculate new stop/start time
         this.updateStartStopTime();
@@ -409,7 +409,7 @@ export default {
         }
       }
 
-      let routeQuery = this.$route.query;
+      const routeQuery = this.$route.query;
       routeQuery.expression = this.expression;
 
       this.$router.push({
@@ -433,13 +433,13 @@ export default {
     },
     /* Fired when start datetime is changed */
     changeStartTime: function (event) {
-      let msDate = event.date.valueOf();
+      const msDate = event.date.valueOf();
       this.time.startTime = Math.floor(msDate / 1000);
       this.validateDate();
     },
     /* Fired when stop datetime is changed */
     changeStopTime: function (event) {
-      let msDate = event.date.valueOf();
+      const msDate = event.date.valueOf();
       this.time.stopTime = Math.floor(msDate / 1000);
       this.validateDate();
     },
@@ -479,7 +479,7 @@ export default {
         newTime = newTime.subtract(1, 'days');
       }
 
-      let secondsPastEpoch = Math.floor(newTime.valueOf() / 1000);
+      const secondsPastEpoch = Math.floor(newTime.valueOf() / 1000);
       // If range value falls above epoch time, update existing time data
       if (secondsPastEpoch >= 0) {
         if (startOrStop === 'start') {
@@ -554,8 +554,8 @@ export default {
 
       this.timeError = '';
 
-      let stopSec = parseInt(this.time.stopTime, 10);
-      let startSec = parseInt(this.time.startTime, 10);
+      const stopSec = parseInt(this.time.stopTime, 10);
+      const startSec = parseInt(this.time.startTime, 10);
 
       // only continue if start and stop are valid numbers
       if (!startSec || !stopSec || isNaN(startSec) || isNaN(stopSec)) {
@@ -568,11 +568,11 @@ export default {
       }
 
       // update the displayed time range
-      let deltaTime = stopSec - startSec;
+      const deltaTime = stopSec - startSec;
 
       // make sure the time range does not exceed the user setting
       if (this.user.timeLimit) {
-        let deltaTimeHrs = deltaTime / 3600;
+        const deltaTimeHrs = deltaTime / 3600;
         if (deltaTimeHrs > this.user.timeLimit) {
           this.timeError = `Your query cannot exceed ${this.user.timeLimit} hours`;
           return;
@@ -694,7 +694,7 @@ export default {
           let deltaTime = stop - start;
 
           // make sure the time range does not exceed the user setting
-          let deltaTimeHrs = deltaTime / 3600;
+          const deltaTimeHrs = deltaTime / 3600;
           if (this.user.timeLimit) {
             if (deltaTimeHrs > this.user.timeLimit) {
               start = stop - (this.user.timeLimit * 3600);
@@ -762,9 +762,9 @@ export default {
 
       if (stopTimeChanged || startTimeChanged) {
         // make sure the time window does not exceed the user setting
-        let deltaTime = newParams.stopTime - newParams.startTime;
+        const deltaTime = newParams.stopTime - newParams.startTime;
 
-        let deltaTimeHrs = deltaTime / 3600;
+        const deltaTimeHrs = deltaTime / 3600;
         if (!this.user.timeLimit || deltaTimeHrs <= this.user.timeLimit) {
           if (startTimeChanged) {
             this.time.startTime = newParams.startTime;

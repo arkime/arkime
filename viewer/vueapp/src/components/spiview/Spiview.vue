@@ -449,7 +449,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      let filters = this.$store.state.user.settings.timelineDataFilters;
+      const filters = this.$store.state.user.settings.timelineDataFilters;
       return filters.map(i => this.fields.find(f => f.dbField === i));
     }
   },
@@ -481,7 +481,7 @@ export default {
       if (inputTimeout) { clearTimeout(inputTimeout); }
 
       inputTimeout = setTimeout(() => {
-        let category = this.categoryObjects[categoryName];
+        const category = this.categoryObjects[categoryName];
         let fields = category.fields;
 
         fields = this.$options.filters.searchFields(searchFilter, fields);
@@ -529,7 +529,7 @@ export default {
         }
         this.spiQuery += spiQuery += `${field.dbField}:100`;
       } else {
-        let spiParamsArray = this.spiQuery.split(',');
+        const spiParamsArray = this.spiQuery.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
           if (spiParamsArray[i].includes(field.dbField)) {
             spiParamsArray.splice(i, 1);
@@ -556,16 +556,12 @@ export default {
       this.staleData = newQuery;
 
       // set loading to false for all categories and fields
-      for (let key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          let cat = this.categoryObjects[key];
-          cat.loading = false;
-          if (cat.spi) {
-            for (let field in cat.spi) {
-              if (cat.spi.hasOwnProperty(field)) {
-                cat.spi[field].loading = false;
-              }
-            }
+      for (const key in this.categoryObjects) {
+        const cat = this.categoryObjects[key];
+        cat.loading = false;
+        if (cat.spi) {
+          for (const field in cat.spi) {
+            cat.spi[field].loading = false;
           }
         }
       }
@@ -581,7 +577,7 @@ export default {
         if (localStorage['spiview-collapsible']) {
           let visiblePanels = localStorage['spiview-collapsible'];
           if (!this.categoryObjects[name].isopen) {
-            let split = visiblePanels.split(',');
+            const split = visiblePanels.split(',');
             for (let i = 0, len = split.length; i < len; ++i) {
               if (split[i].includes(name)) {
                 split.splice(i, 1);
@@ -607,13 +603,13 @@ export default {
      */
     showValues: function (value, more) {
       let count;
-      let field = value.field;
+      const field = value.field;
       if (this.spiQuery.includes(field.dbField)) {
         // make sure field is in the spi query parameter
-        let spiParamsArray = this.spiQuery.split(',');
+        const spiParamsArray = this.spiQuery.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
           if (spiParamsArray[i].includes(field.dbField)) {
-            let spiParam = spiParamsArray[i].split(':');
+            const spiParam = spiParamsArray[i].split(':');
             if (more) {
               count = spiParam[1] = parseInt(spiParam[1]) + 100;
             } else {
@@ -640,12 +636,12 @@ export default {
      */
     toggleAllValues: function (categoryName, load) {
       let query = '';
-      let category = this.categoryObjects[categoryName];
+      const category = this.categoryObjects[categoryName];
 
       for (let i = 0, len = category.fields.length; i < len; ++i) {
-        let field = category.fields[i];
+        const field = category.fields[i];
         if (category.spi && category.spi[field.dbField]) {
-          let spiData = category.spi[field.dbField];
+          const spiData = category.spi[field.dbField];
           if ((spiData.active && !load) ||
              (!spiData.active && load)) {
             // the spi data for this field is already visible and we don't want
@@ -687,8 +683,8 @@ export default {
     pivot: function (bucket) {
       const fieldExp = bucket.field.exp;
 
-      let values = [];
-      for (let val of bucket.value.buckets) {
+      const values = [];
+      for (const val of bucket.value.buckets) {
         values.push(val.key);
       }
 
@@ -712,7 +708,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         name: this.newFieldConfigName,
         fields: this.spiQuery
       };
@@ -768,7 +764,7 @@ export default {
      * @param {int} index   The index in the array of the spiview fields config to update
      */
     updateFieldConfiguration: function (name, index) {
-      let data = {
+      const data = {
         name: name,
         fields: this.spiQuery
       };
@@ -798,11 +794,11 @@ export default {
       }
     },
     fetchMapData: function () {
-      let spiParamsArray = this.spiQuery.split(',');
+      const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
       if (!field) { field = 'dstIp'; }
 
-      let query = this.constructQuery(field, 100);
+      const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map data
 
       this.get(query).promise
@@ -830,15 +826,15 @@ export default {
       };
     },
     get: function (query) {
-      let source = Vue.axios.CancelToken.source();
+      const source = Vue.axios.CancelToken.source();
 
       // set whether map is open on the spiview page
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
       }
 
-      let promise = new Promise((resolve, reject) => {
-        let options = {
+      const promise = new Promise((resolve, reject) => {
+        const options = {
           method: 'POST',
           params: query,
           cancelToken: source.token,
@@ -871,7 +867,7 @@ export default {
           this.categoryObjects = {};
 
           for (let i = 0, len = this.fields.length; i < len; ++i) {
-            let field = this.fields[i];
+            const field = this.fields[i];
 
             field.active = false;
 
@@ -880,12 +876,12 @@ export default {
               continue;
             }
 
-            if (this.categoryObjects.hasOwnProperty(field.group)) {
+            if (this.categoryObjects[field.group]) {
               // already created, just add a new field
               this.categoryObjects[field.group].fields.push(field);
             } else { // create it
               Vue.set(this.categoryObjects, field.group, {
-                fields: [ field ],
+                fields: [field],
                 spi: {}
               });
             }
@@ -907,8 +903,8 @@ export default {
       if (!spiQuery) { return; }
 
       if (this.multiviewer) {
-        var availableCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           pendingPromise = null;
           this.error = selection.error;
@@ -925,22 +921,22 @@ export default {
       this.canceled = false;
       this.error = false;
 
-      let spiParamsArray = spiQuery.split(',');
+      const spiParamsArray = spiQuery.split(',');
 
-      let tasks = [];
+      const tasks = [];
       let category;
 
       // get each field from the spi query parameter and issue
       // a query for one field at a time
       for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-        let param = spiParamsArray[i];
-        let split = param.split(':');
-        let fieldID = split[0];
-        let count = split[1];
+        const param = spiParamsArray[i];
+        const split = param.split(':');
+        const fieldID = split[0];
+        const count = split[1];
 
         let field;
 
-        for (let key in this.fields) {
+        for (const key in this.fields) {
           if (this.fields[key].dbField === fieldID) {
             field = this.fields[key];
             break;
@@ -956,14 +952,14 @@ export default {
           // count the number of fields fetched for each category
           this.countCategoryFieldsLoading(category, true);
 
-          let spiData = category.spi[field.dbField];
+          const spiData = category.spi[field.dbField];
 
           Vue.set(field, 'active', true);
           Vue.set(spiData, 'active', true);
           Vue.set(spiData, 'error', false);
           Vue.set(spiData, 'loading', true);
 
-          let promise = () => {
+          const promise = () => {
             return new Promise((resolve, reject) => {
               resolve(this.getSingleSpiData(field, count).promise);
             });
@@ -1002,8 +998,8 @@ export default {
      * @param {int} count     The amount of spi data to query for
      */
     getSingleSpiData: function (field, count) {
-      let category = this.setupCategory(this.categoryObjects, field);
-      let spiData = category.spi[field.dbField];
+      const category = this.setupCategory(this.categoryObjects, field);
+      const spiData = category.spi[field.dbField];
 
       // don't continue if the active flag is defined and false
       if (spiData.active !== undefined && !spiData.active) { return; }
@@ -1014,7 +1010,7 @@ export default {
       Vue.set(spiData, 'loading', true);
       Vue.set(spiData, 'error', false);
 
-      let query = this.constructQuery(field.dbField, count);
+      const query = this.constructQuery(field.dbField, count);
 
       pendingPromise = this.get(query);
 
@@ -1067,7 +1063,7 @@ export default {
     getCaptureStats: function () {
       this.$http.get('api/stats')
         .then((response) => {
-          for (let data of response.data.data) {
+          for (const data of response.data.data) {
             this.capStartTimes.push({
               nodeName: data.nodeName,
               startTime: data.startTime * 1000
@@ -1089,7 +1085,7 @@ export default {
     serial: function (tasks) {
       let prevPromise;
 
-      for (let task of tasks) {
+      for (const task of tasks) {
         if (!prevPromise) { // first task
           prevPromise = task();
         } else { // subsequent tasks
@@ -1106,8 +1102,8 @@ export default {
      */
     sortFields: function (fields) {
       return fields.sort((a, b) => {
-        let bool = (a.active === b.active) ? 0 : a.active ? -1 : 1;
-        let str = a.friendlyName.localeCompare(b.friendlyName);
+        const bool = (a.active === b.active) ? 0 : a.active ? -1 : 1;
+        const str = a.friendlyName.localeCompare(b.friendlyName);
 
         return bool || str;
       });
@@ -1116,19 +1112,17 @@ export default {
        should only run once on page load */
     openCategories: function () {
       openedCategories = true;
-      for (let key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          let category = this.categoryObjects[key];
+      for (const key in this.categoryObjects) {
+        const category = this.categoryObjects[key];
 
-          let fields = this.sortFields(category.fields);
-          Vue.set(category, 'filteredFields', fields);
+        const fields = this.sortFields(category.fields);
+        Vue.set(category, 'filteredFields', fields);
 
-          if (localStorage && localStorage['spiview-collapsible']) {
-            if (localStorage['spiview-collapsible'].includes(key)) {
-              category.isopen = true;
-            } else {
-              continue;
-            }
+        if (localStorage && localStorage['spiview-collapsible']) {
+          if (localStorage['spiview-collapsible'].includes(key)) {
+            category.isopen = true;
+          } else {
+            continue;
           }
         }
       }
@@ -1137,30 +1131,26 @@ export default {
        should only run when issuing a new query */
     updateProtocols: function () {
       // clean up any old protocols
-      for (let c in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(c)) {
-          this.categoryObjects[c].protocols = {};
-        }
+      for (const c in this.categoryObjects) {
+        this.categoryObjects[c].protocols = {};
       }
 
-      for (let key in this.protocols) {
-        if (this.protocols.hasOwnProperty(key)) {
-          let category;
+      for (const key in this.protocols) {
+        let category;
 
-          // find the category that the protocol belongs to
-          if (this.categoryObjects.hasOwnProperty(key)) {
-            category = this.categoryObjects[key];
-          } else { // categorize special protocols that don't match category
-            if (key === 'tcp' || key === 'udp' || key === 'icmp' || key === 'sctp' || key === 'esp') {
-              category = this.categoryObjects.general;
-            } else if (key === 'smtp' || key === 'lmtp') {
-              category = this.categoryObjects.email;
-            }
+        // find the category that the protocol belongs to
+        if (this.categoryObjects[key]) {
+          category = this.categoryObjects[key];
+        } else { // categorize special protocols that don't match category
+          if (key === 'tcp' || key === 'udp' || key === 'icmp' || key === 'sctp' || key === 'esp') {
+            category = this.categoryObjects.general;
+          } else if (key === 'smtp' || key === 'lmtp') {
+            category = this.categoryObjects.email;
           }
+        }
 
-          if (category) {
-            category.protocols[key] = this.protocols[key];
-          }
+        if (category) {
+          category.protocols[key] = this.protocols[key];
         }
       }
     },
@@ -1184,23 +1174,19 @@ export default {
     },
     /* deactivate spi data that is no longer in url params */
     deactivateSpiData: function () {
-      let spiParamsArray = this.spiQuery.split(',');
-      for (let key in this.categoryObjects) {
-        if (this.categoryObjects.hasOwnProperty(key)) {
-          let category = this.categoryObjects[key];
-          for (let k in category.spi) {
-            if (category.spi.hasOwnProperty(k)) {
-              let spiData = category.spi[k];
-              if (spiData.active) {
-                let inactive = true;
-                for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-                  // if it exists in spi url param, it's still active
-                  if (spiParamsArray[i] === k) { inactive = false; }
-                }
-                // it's no longer in the spi url param, so it's not active
-                if (inactive) { spiData.active = false; }
-              }
+      const spiParamsArray = this.spiQuery.split(',');
+      for (const key in this.categoryObjects) {
+        const category = this.categoryObjects[key];
+        for (const k in category.spi) {
+          const spiData = category.spi[k];
+          if (spiData.active) {
+            let inactive = true;
+            for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+              // if it exists in spi url param, it's still active
+              if (spiParamsArray[i] === k) { inactive = false; }
             }
+            // it's no longer in the spi url param, so it's not active
+            if (inactive) { spiData.active = false; }
           }
         }
       }
@@ -1213,7 +1199,7 @@ export default {
      * @returns {object} category The updated category that the field belongs to
      */
     setupCategory: function (catMap, field) {
-      let category = catMap[field.group];
+      const category = catMap[field.group];
 
       category.name = field.group;
 

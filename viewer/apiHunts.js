@@ -132,7 +132,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     }
 
     if (!hunt.errors) {
-      hunt.errors = [ error ];
+      hunt.errors = [error];
     } else {
       hunt.errors.push(error);
     }
@@ -222,7 +222,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
   // so that we can go back and search for it at the end of the hunt
   function continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions, cb) {
     if (!hunt.failedSessionIds) {
-      hunt.failedSessionIds = [ sessionId ];
+      hunt.failedSessionIds = [sessionId];
     } else {
       // pause the hunt if there are more than 10k failed sessions
       if (hunt.failedSessionIds.length > 10000) {
@@ -681,7 +681,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
     }
 
-    const searchTypes = [ 'ascii', 'asciicase', 'hex', 'regex', 'hexregex' ];
+    const searchTypes = ['ascii', 'asciicase', 'hex', 'regex', 'hexregex'];
     if (!req.body.searchType) {
       return res.molochError(403, 'Missing packet search text type');
     } else if (searchTypes.indexOf(req.body.searchType) === -1) {

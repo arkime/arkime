@@ -117,7 +117,7 @@ export default {
     limitArrayLength: function (array, length) {
       if (!length) { length = this.initialLimit; }
 
-      let limitCount = parseInt(length, 10);
+      const limitCount = parseInt(length, 10);
 
       if (limitCount <= 0) { return array; }
 

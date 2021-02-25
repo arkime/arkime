@@ -75,15 +75,15 @@ export default {
   computed: {
     colors: function () {
       // build colors array from css variables
-      let styles = window.getComputedStyle(document.body);
-      let primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      let primaryLight = styles.getPropertyValue('--color-primary').trim();
-      let primary = styles.getPropertyValue('--color-primary-dark').trim();
-      let primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      let secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      let secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const styles = window.getComputedStyle(document.body);
+      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
+      const primaryLight = styles.getPropertyValue('--color-primary').trim();
+      const primary = styles.getPropertyValue('--color-primary-dark').trim();
+      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
+      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
+      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
+      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
+      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {
@@ -177,21 +177,21 @@ export default {
         });
     },
     makeStatsGraph: function (metricName, interval) {
-      var self = this;
+      const self = this;
       if (self.context) { self.context.stop(); } // Stop old context
 
       self.context = cubism.cubism.context()
         .step(interval * 1000)
         .size(1440);
 
-      var context = self.context;
-      var nodes = self.stats.data.map((item) => {
+      const context = self.context;
+      const nodes = self.stats.data.map((item) => {
         return item.nodeName;
       });
 
       function metric (name) {
         return context.metric((startV, stopV, stepV, callback) => {
-          let config = {
+          const config = {
             method: 'GET',
             url: 'api/dstats',
             params: {
@@ -212,7 +212,7 @@ export default {
         }, name);
       }
 
-      let wrap = document.getElementById('statsGraph');
+      const wrap = document.getElementById('statsGraph');
       if (wrap) {
         while (wrap.firstChild) {
           wrap.removeChild(wrap.firstChild);
@@ -220,18 +220,18 @@ export default {
       }
 
       d3.select('#statsGraph').call((div) => {
-        var metrics = [];
-        for (var i = 0, ilen = nodes.length; i < ilen; i++) {
+        const metrics = [];
+        for (let i = 0, ilen = nodes.length; i < ilen; i++) {
           metrics.push(metric(nodes[i]));
         }
 
         if (div[0][0]) {
-          let axis = context.axis();
-          let axisBottom = context.axis();
+          const axis = context.axis();
+          const axisBottom = context.axis();
 
-          let timeStr = self.graphInterval >= 600 ? '%m/%d %H:%M:%S' : '%H:%M:%S';
+          const timeStr = self.graphInterval >= 600 ? '%m/%d %H:%M:%S' : '%H:%M:%S';
 
-          let timeFormat = self.user.settings.timezone === 'gmt' ? d3.time.format.utc(timeStr + 'Z') : d3.time.format(timeStr);
+          const timeFormat = self.user.settings.timezone === 'gmt' ? d3.time.format.utc(timeStr + 'Z') : d3.time.format(timeStr);
 
           div.append('div')
             .attr('class', 'axis')
@@ -281,7 +281,7 @@ export default {
       this.context.stop(); // stop cubism context from continuing to issue reqs
     }
 
-    let wrap = document.getElementById('statsGraph');
+    const wrap = document.getElementById('statsGraph');
     if (wrap) {
       while (wrap.firstChild) {
         wrap.removeChild(wrap.firstChild);

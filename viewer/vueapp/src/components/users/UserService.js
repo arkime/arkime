@@ -120,9 +120,9 @@ export default {
    *                            or rejection of the request.
    */
   hasPermission (priv) {
-    let user = store.state.user;
+    const user = store.state.user;
     if (!user) { return false; }
-    let privs = priv.split(',');
+    const privs = priv.split(',');
     for (let p of privs) {
       let reverse = false;
       if (p.startsWith('!')) {
@@ -207,7 +207,7 @@ export default {
    *                            or rejection of the request.
    */
   resetSettings (userId, theme) {
-    let settings = JSON.parse(JSON.stringify(defaultSettings));
+    const settings = JSON.parse(JSON.stringify(defaultSettings));
 
     if (theme) {
       settings.theme = theme;
@@ -756,10 +756,8 @@ export default {
    *                          properties on each view object
    */
   parseViews (views) {
-    for (var name in views) {
-      if (views.hasOwnProperty(name)) {
-        views[name].name = name;
-      }
+    for (const name in views) {
+      views[name].name = name;
     }
     return views;
   }

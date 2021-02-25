@@ -176,7 +176,7 @@ export default {
         return;
       }
 
-      let body = {
+      const body = {
         key: setting.key,
         value: setting.current
       };
@@ -194,7 +194,7 @@ export default {
       this.$http.get('api/esadmin')
         .then((response) => {
           this.$set(setting, 'error', '');
-          for (let resSetting of response.data) {
+          for (const resSetting of response.data) {
             if (resSetting.key === setting.key) {
               this.$set(setting, 'current', resSetting.current);
               this.$set(setting, 'changed', false);

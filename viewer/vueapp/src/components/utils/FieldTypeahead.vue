@@ -79,16 +79,16 @@ export default {
   },
   watch: {
     // update the value when the url query param
-    'routeParams': function (newVal, oldVal) {
+    routeParams: function (newVal, oldVal) {
       if (!newVal) { this.value = this.constantInitialVal; }
-      for (let field of this.fields) {
+      for (const field of this.fields) {
         if (field.dbField === newVal) {
           this.value = field.friendlyName;
           continue;
         }
       }
     },
-    'initialValue': function () {
+    initialValue: function () {
       this.value = this.initialValue;
     }
   },
@@ -160,7 +160,8 @@ export default {
     },
     /* navigates up through field and field history results */
     up: function () {
-      this.current = (this.current > 0 ? this.current
+      this.current = (this.current > 0
+        ? this.current
         : (this.filteredFieldHistory.length + this.filteredFields.length)) - 1;
     },
     /* navigates down through field and field history results */
@@ -178,7 +179,7 @@ export default {
       if (!field) { return found; }
 
       let index = 0;
-      for (let historyField of this.fieldHistory) {
+      for (const historyField of this.fieldHistory) {
         if (historyField.exp === field.exp) {
           found = true;
           break;
@@ -210,7 +211,7 @@ export default {
      */
     removeFromFieldHistory: function (field) {
       let index = 0;
-      for (let historyField of this.fieldHistory) {
+      for (const historyField of this.fieldHistory) {
         if (historyField.exp === field.exp) {
           break;
         }
@@ -222,7 +223,7 @@ export default {
 
       // find it in the field history results (displayed in the typeahead)
       index = 0;
-      for (let historyField of this.filteredFieldHistory) {
+      for (const historyField of this.filteredFieldHistory) {
         if (historyField.exp === field.exp) {
           break;
         }

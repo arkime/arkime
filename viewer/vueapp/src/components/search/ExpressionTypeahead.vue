@@ -154,7 +154,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  mixins: [ clickaway ],
+  mixins: [clickaway],
   directives: { CaretPos, FocusInput },
   data: function () {
     return {
@@ -321,7 +321,7 @@ export default {
         // if there is no item in the results is selected, use the first one
         if (this.activeIdx < 0) { this.activeIdx = 0; }
 
-        let result = this.results[this.activeIdx];
+        const result = this.results[this.activeIdx];
         if (result) { this.addToQuery(result); }
 
         this.cancelPromise();
@@ -402,7 +402,7 @@ export default {
      */
     removeFromFieldHistory: function (field) {
       let index = 0;
-      for (let historyField of this.fieldHistory) {
+      for (const historyField of this.fieldHistory) {
         if (historyField.exp === field.exp) {
           break;
         }
@@ -414,7 +414,7 @@ export default {
 
       // find it in the field history results (displayed in the typeahead)
       index = 0;
-      for (let historyField of this.fieldHistoryResults) {
+      for (const historyField of this.fieldHistoryResults) {
         if (historyField.exp === field.exp) {
           break;
         }
@@ -438,7 +438,7 @@ export default {
       if (!field) { return found; }
 
       let index = 0;
-      for (let historyField of this.fieldHistory) {
+      for (const historyField of this.fieldHistory) {
         if (historyField.exp === field.exp) {
           found = true;
           break;
@@ -485,25 +485,25 @@ export default {
       this.autocompletingField = false;
 
       // if the cursor is at a space
-      let spaceCP = (this.caretPos > 0 &&
+      const spaceCP = (this.caretPos > 0 &&
         this.caretPos === this.expression.length &&
         this.expression[this.caretPos - 1] === ' ');
 
       let end = this.caretPos;
-      let endLen = this.expression.length;
+      const endLen = this.expression.length;
       for (end; end < endLen; ++end) {
         if (this.expression[end] === ' ') {
           break;
         }
       }
 
-      let currentInput = this.expression.substr(0, end);
+      const currentInput = this.expression.substr(0, end);
       tokens = this.splitExpression(currentInput);
 
       // add the space to the tokens
       if (spaceCP) { tokens.push(' '); }
 
-      let lastToken = tokens[tokens.length - 1];
+      const lastToken = tokens[tokens.length - 1];
 
       // display fields
       if (tokens.length <= 1) {
@@ -536,7 +536,7 @@ export default {
       }
 
       // save the operator token for possibly adding 'EXISTS!' result
-      let operatorToken = token;
+      const operatorToken = token;
 
       token = tokens[tokens.length - 3];
       field = this.fields[token];
@@ -593,7 +593,7 @@ export default {
         this.$http.get(url)
           .then((response) => {
             this.loadingValues = false;
-            let escapedToken = lastToken.replace('$', '\\$');
+            const escapedToken = lastToken.replace('$', '\\$');
             this.results = this.findMatch(escapedToken, response.data);
           }, (error) => {
             this.loadingValues = false;
@@ -605,7 +605,7 @@ export default {
 
       // autocomplete other values after 2 chars
       if (lastToken.trim().length >= 2) {
-        let params = { // build parameters for getting value(s)
+        const params = { // build parameters for getting value(s)
           autocomplete: true,
           field: field.dbField
         };
@@ -689,10 +689,10 @@ export default {
       let results = [];
       let exact = false;
 
-      for (let key in values) {
-        if (values.hasOwnProperty(key)) {
+      for (const key in values) {
+        if (values[key]) {
           let str;
-          let field = values[key];
+          const field = values[key];
 
           strToMatch = strToMatch.toLowerCase();
 
@@ -705,7 +705,7 @@ export default {
           if (str === strToMatch) {
             exact = field;
           } else {
-            let match = str.match(strToMatch);
+            const match = str.match(strToMatch);
             if (match) { results.push(field); }
           }
         }
@@ -726,8 +726,8 @@ export default {
      */
     rebuildQuery: function (q, str) {
       let result = '';
-      let lastToken = tokens[tokens.length - 1];
-      let allTokens = this.splitExpression(q);
+      const lastToken = tokens[tokens.length - 1];
+      const allTokens = this.splitExpression(q);
 
       if (lastToken === ' ') {
         result = q += str + ' ';
@@ -761,7 +761,7 @@ export default {
       // replace spaces that are not enclosed in quotes
       input = input.replace(/ (?=([^"]*"[^"]*")*[^"]*$)/g, '');
 
-      let output = [];
+      const output = [];
       let cur = '';
 
       for (let i = 0, ilen = input.length; i < ilen; i++) {

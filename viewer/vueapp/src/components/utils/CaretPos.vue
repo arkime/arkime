@@ -10,8 +10,8 @@ export default {
       } else if (document.selection) {
         // the user has highlighted text in the input
         el.focus();
-        let selection = document.selection.createRange();
-        let selectionLen = document.selection.createRange().text.length;
+        const selection = document.selection.createRange();
+        const selectionLen = document.selection.createRange().text.length;
         selection.moveStart('character', -el.value.length);
         binding.value = selection.text.length - selectionLen;
       }

@@ -207,7 +207,7 @@ let g, newSlice;
 let width = getWindowWidth();
 let height = getWindowHeight();
 let radius = getRadius();
-let arc = getArc();
+const arc = getArc();
 
 // page treemap variables -------------------------------------------------- //
 let gtree, newBox;
@@ -332,8 +332,8 @@ export default {
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
     if (this.$route.query.subFields) {
-      let subFieldExps = this.$route.query.subFields.split(',');
-      for (let exp of subFieldExps) {
+      const subFieldExps = this.$route.query.subFields.split(',');
+      for (const exp of subFieldExps) {
         this.fieldTypeaheadList.push(this.getFieldObj(exp));
       }
     }
@@ -353,17 +353,17 @@ export default {
     window.addEventListener('keyup', this.closeInfoOnEsc);
   },
   watch: {
-    'graphData': function (newVal, oldVal) {
+    graphData: function (newVal, oldVal) {
       // if there is more data to fetch than the spigraph component can provide,
       // fetch it from the spigraphpie endpoint
       if (this.fieldTypeaheadList.length) {
         this.loadData();
       } else {
-        let data = this.formatDataFromSpigraph(newVal);
+        const data = this.formatDataFromSpigraph(newVal);
         this.applyGraphData(data);
       }
     },
-    'spiGraphType': function (newVal, oldVal) {
+    spiGraphType: function (newVal, oldVal) {
       this.closeInfo();
       this.applyGraphData(this.vizData);
       if (newVal === 'table') {
@@ -374,7 +374,7 @@ export default {
       this.loadData();
     },
     // Resize svg height after toggle is updated and mounted()
-    'showToolBars': function () {
+    showToolBars: function () {
       this.$nextTick(() => {
         this.resize();
       });
@@ -386,7 +386,7 @@ export default {
       return this.$store.state.showToolBars;
     },
     fieldList: function () {
-      let fieldList = [ this.baseFieldObj ];
+      const fieldList = [this.baseFieldObj];
       return fieldList.concat(this.fieldTypeaheadList);
     }
   },
@@ -398,7 +398,7 @@ export default {
      * @param {String} op     The operator to apply to the search expression ('||' or '&&')
      */
     addExpression: function (slice, op) {
-      let fullExpression = `${slice.field} == ${slice.name}`;
+      const fullExpression = `${slice.field} == ${slice.name}`;
       this.$store.commit('addToExpression', {
         expression: fullExpression, op: op
       });
@@ -437,7 +437,8 @@ export default {
       // if the sort field and type is the same, toggle it,
       // otherwise set it to default (true)
       this.tableDesc = (this.tableSortField === sort && this.tableSortType === type)
-        ? !this.tableDesc : true;
+        ? !this.tableDesc
+        : true;
       this.tableSortType = type;
       this.tableSortField = sort;
       this.sortTable();
@@ -495,8 +496,8 @@ export default {
      * Adds the field exps of the subfields to the url
      */
     applyFieldListToUrl: function () {
-      let subFieldExps = [];
-      for (let field of this.fieldTypeaheadList) {
+      const subFieldExps = [];
+      for (const field of this.fieldTypeaheadList) {
         subFieldExps.push(field.exp);
       }
 
@@ -543,13 +544,13 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraph: function (data) {
-      let formattedData = {
+      const formattedData = {
         name: 'Top Talkers',
         children: []
       };
 
-      for (let item of data) {
-        let dataObj = {
+      for (const item of data) {
+        const dataObj = {
           name: item.name,
           size: item.count,
           field: this.baseField
@@ -586,7 +587,7 @@ export default {
         data = data.children || data[0].children;
       }
 
-      let lowRange = levelCount > 1 ? 0.3 : 1;
+      const lowRange = levelCount > 1 ? 0.3 : 1;
 
       return d3.scaleLinear().domain([1, levelCount]).range([lowRange, 1]);
     },
@@ -595,17 +596,17 @@ export default {
      * @param {Object} data The data to generate the colors from
      */
     applyColorsToTableData: function (data) {
-      let parentMap = {};
-      for (let item of data) { // count top level parents
+      const parentMap = {};
+      for (const item of data) { // count top level parents
         if (item.parents && item.parents.length) {
           parentMap[item.parents[0].name] = true;
         } else {
           parentMap[item.name] = true;
         }
       }
-      let parentCount = Object.keys(parentMap).length;
-      let tableColors = this.generateColors(parentCount);
-      for (let item of data) {
+      const parentCount = Object.keys(parentMap).length;
+      const tableColors = this.generateColors(parentCount);
+      for (const item of data) {
         let key = item.name;
         if (item.parents && item.parents.length) {
           key = item.parents[0].name;
@@ -658,7 +659,7 @@ export default {
      * @param {Object} data The data to add to the graph
      */
     applyPieGraphData: function (data) {
-      let vueSelf = this;
+      const vueSelf = this;
       colors = this.generateColors(data.children.length);
 
       const partition = d3.partition() // organize data into sunburst pattern
@@ -733,7 +734,7 @@ export default {
      * @param {Object} data The data to add to the graph
      */
     applyTreemapGraphData: function (data) {
-      let vueSelf = this;
+      const vueSelf = this;
       colors = this.generateColors(data.children.length);
 
       const opacity = this.generateOpacity(data);
@@ -838,7 +839,7 @@ export default {
      * @returns {Object} field  The field that matches the exp or undefined if not found
      */
     getFieldObj: function (exp) {
-      for (let field of this.$parent.fields) {
+      for (const field of this.$parent.fields) {
         if (field.exp === exp) {
           return field;
         }
@@ -851,15 +852,15 @@ export default {
 
       // create unique cancel id to make canel req for corresponding es task
       const cancelId = Utils.createRandomString();
-      this.query.cancelId = cancelId;
-
       const source = Vue.axios.CancelToken.source();
 
       // setup the query params
-      let params = this.query;
-      let exps = [ this.baseField ];
+      const params = this.query;
+      params.cancelId = cancelId;
 
-      for (let field of this.fieldTypeaheadList) {
+      const exps = [this.baseField];
+
+      for (const field of this.fieldTypeaheadList) {
         exps.push(field.exp);
       }
 

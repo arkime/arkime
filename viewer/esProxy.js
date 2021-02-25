@@ -159,6 +159,7 @@ function doProxy (req, res, cb) {
   let result = '';
   const url = elasticsearch + req.url;
   console.log('URL', url);
+  // eslint-disable-next-line node/no-deprecated-api
   const info = URL.parse(url);
   info.method = req.method;
   let client;
@@ -208,7 +209,7 @@ app.get('*', (req, res) => {
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
-  } else if (path.startsWith(`/tagger`)) {
+  } else if (path.startsWith('/tagger')) {
   } else if (path.startsWith(`/${prefix}users/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
@@ -246,12 +247,12 @@ app.post('*', saveBody, (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
   } else if (path.startsWith(`/${prefix}fields/_doc/`)) {
-  } else if (path.startsWith(`/tagger`)) {
+  } else if (path.startsWith('/tagger')) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (path.startsWith(`/${prefix}dstats/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
-  } else if (path.startsWith(`/_bulk`)) {
+  } else if (path.startsWith('/_bulk')) {
     if (!validateBulk(req)) {
       console.log(`POST failed node: ${req.sensor.node} path:${path}`);
       return res.status(400).send('Not authorized for API');

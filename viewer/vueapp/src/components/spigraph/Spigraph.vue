@@ -310,7 +310,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      let filters = this.$store.state.user.settings.timelineDataFilters;
+      const filters = this.$store.state.user.settings.timelineDataFilters;
       return filters.map(i => this.fields.find(f => f.dbField === i));
     },
     graphType: function () {
@@ -336,7 +336,7 @@ export default {
       };
     },
     fieldObj: function () {
-      for (let field of this.fields) {
+      for (const field of this.fields) {
         if (field.dbField === this.query.exp ||
           field.exp === this.query.exp) {
           oldFieldObj = field;
@@ -360,7 +360,7 @@ export default {
       this.spiGraphType = newVal;
     },
     // watch graph type and update sort
-    'graphType': function (newVal, oldVal) {
+    graphType: function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
         this.query.sort = newVal;
         if (oldVal) { this.cancelAndLoad(true); }
@@ -386,7 +386,7 @@ export default {
           group: 'general',
           friendlyName: 'Dst IP:Dst Port'
         });
-        for (let field of this.fields) {
+        for (const field of this.fields) {
           if (field.dbField === this.query.exp ||
             field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
@@ -508,8 +508,8 @@ export default {
       this.error = false;
 
       if (this.multiviewer) {
-        var availableCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           this.items = [];
           this.mapData = undefined;
@@ -559,7 +559,7 @@ export default {
     getCaptureStats: function () {
       this.$http.get('api/stats')
         .then((response) => {
-          for (let data of response.data.data) {
+          for (const data of response.data.data) {
             this.capStartTimes.push({
               nodeName: data.nodeName,
               startTime: data.startTime * 1000

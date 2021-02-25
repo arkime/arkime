@@ -92,7 +92,7 @@ export default {
         })
         .catch((error) => {
           this.alertMessage = error.text ||
-            `Error fetching resource stats for wise.`;
+            'Error fetching resource stats for wise.';
         });
     }
   }

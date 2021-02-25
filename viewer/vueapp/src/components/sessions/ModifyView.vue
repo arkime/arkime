@@ -161,7 +161,7 @@ export default {
       }
     },
     createView: function () {
-      let data = {
+      const data = {
         name: this.name,
         expression: this.viewExpression
       };
@@ -188,14 +188,14 @@ export default {
         });
     },
     updateView: function (key) {
-      let data = JSON.parse(JSON.stringify(this.editView));
+      const data = JSON.parse(JSON.stringify(this.editView));
 
       data.expression = this.viewExpression;
       data.name = this.name;
 
       if (this.useColConfig === true) {
         // save the current sessions table column configuration
-        let tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
+        const tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
         data.sessionsColConfig = tableClone;
       } else if (data.sessionsColConfig) {
         // If unselected, delete table cols

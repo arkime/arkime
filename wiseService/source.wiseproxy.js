@@ -100,6 +100,7 @@ class WiseProxySource extends WISESource {
         this.updateInfo();
       }
       // const ver = body.readUInt32BE(offset); offset += 4;
+      // eslint-disable-next-line no-unreachable-loop
       for (i = 0; i < bufferInfo.length; i++) {
         const num = body[offset]; offset += 1;
         const bi = bufferInfo[i];

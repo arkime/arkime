@@ -44,6 +44,7 @@ const DigestStrategy = require('passport-http').DigestStrategy;
 const elasticsearch = require('elasticsearch');
 const chalk = require('chalk');
 const version = require('../viewer/version');
+const path = require('path');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -219,12 +220,13 @@ function store2ha1 (passstore) {
     const parts = passstore.split('.');
     if (parts.length === 2) {
       // New style with IV: IV.E
-      let c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      const c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
       let d = c.update(parts[1], 'hex', 'binary');
       d += c.final('binary');
       return d;
     } else {
       // Old style without IV: E
+      // eslint-disable-next-line node/no-deprecated-api
       const c = crypto.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
@@ -455,7 +457,7 @@ class WISESourceAPI {
       internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
       let offset = 9;
       for (let i = 0; i < internals.fields.length; i++) {
-        let len = internals.fieldsBuf0.write(internals.fields[i], offset + 2);
+        const len = internals.fieldsBuf0.write(internals.fields[i], offset + 2);
         internals.fieldsBuf0.writeUInt16BE(len + 1, offset);
         internals.fieldsBuf0.writeUInt8(0, offset + 2 + len);
         offset += 3 + len;
@@ -470,7 +472,7 @@ class WISESourceAPI {
     internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
     let offset = 10;
     for (let i = 0; i < internals.fields.length; i++) {
-      let len = internals.fieldsBuf1.write(internals.fields[i], offset + 2);
+      const len = internals.fieldsBuf1.write(internals.fields[i], offset + 2);
       internals.fieldsBuf1.writeUInt16BE(len + 1, offset);
       internals.fieldsBuf1.writeUInt8(0, offset + 2 + len);
       offset += 3 + len;
@@ -518,8 +520,8 @@ class WISESourceAPI {
       }
 
       let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
-      for (let field of fields.split(',')) {
-        let info = WISESource.field2Info[field];
+      for (const field of fields.split(',')) {
+        const info = WISESource.field2Info[field];
         if (!info) {
           continue;
         }
@@ -595,11 +597,11 @@ class WISESourceAPI {
    * @param {WISESourceAPI~SourceConfig} config - The configuration of this source type
    */
   addSourceConfigDef (sourceName, configDef) {
-    if (!internals.configDefs.hasOwnProperty(sourceName)) {
+    if (internals.configDefs[sourceName] === undefined) {
       // ALW - should really merge all the types somehow here instead of type2Name
-      let types = configDef.types || internals.type2Name;
+      const types = configDef.types || internals.type2Name;
       for (let i = 0; i < types.length; i++) {
-        let type = types[i];
+        const type = types[i];
         let excludeName;
         if (type === 'url') {
           excludeName = 'excludeURLs';
@@ -695,7 +697,7 @@ class WISESourceAPI {
 }
 // ----------------------------------------------------------------------------
 function loadSources () {
-  glob(getConfig('wiseService', 'sourcePath', `${__dirname}/`) + 'source.*.js', (err, files) => {
+  glob(getConfig('wiseService', 'sourcePath', path.join(__dirname, '/')) + 'source.*.js', (err, files) => {
     files.forEach((file) => {
       const src = require(file);
       src.initSource(internals.sourceApi);
@@ -704,7 +706,7 @@ function loadSources () {
 
   // ALW - should really merge all the types somehow here instead of type2Name
   for (let i = 0; i < internals.type2Name.length; i++) {
-    let type = internals.type2Name[i];
+    const type = internals.type2Name[i];
     let excludeName;
     if (type === 'url') {
       excludeName = 'excludeURLs';
@@ -722,6 +724,7 @@ function loadSources () {
     );
   }
 }
+
 // ----------------------------------------------------------------------------
 // APIs
 // ----------------------------------------------------------------------------
@@ -730,20 +733,24 @@ app.use(timeout(5 * 1000));
 
 // Serve vue app
 app.get(['/', '/config', '/statistics'], (req, res, next) => {
-  res.sendFile(`${__dirname}/vueapp/dist/index.html`);
+  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
 });
-app.use(favicon(`${__dirname}/favicon.ico`));
+app.use(favicon(path.join(__dirname, '/favicon.ico')));
+
 // expose vue bundles (prod)
-app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
-app.use('/font-awesome', express.static(`${__dirname}/../node_modules/font-awesome`, { maxAge: 600 * 1000 }));
-app.use('/assets', express.static(`${__dirname}/../assets`, { maxAge: 600 * 1000 }));
+app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
+app.use('/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
+
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
   app.post('/shutdown', (req, res) => {
     process.exit(0);
-    throw new Error('Exiting');
   });
 }
 // ----------------------------------------------------------------------------
@@ -895,7 +902,7 @@ function addType (type, newSrc) {
     if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
-        let parts = item.split('/');
+        const parts = item.split('/');
         try {
           typeInfo.excludes.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
         } catch (e) {
@@ -983,7 +990,7 @@ function processQuery (req, query, cb) {
 
         // First query for this value
         src.srcInProgress[query.typeName][query.value] = [cb];
-        let startTime = Date.now();
+        const startTime = Date.now();
         src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
           src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
 
@@ -1222,7 +1229,7 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  * @returns {object}
  */
 app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
-  let config = Object.keys(internals.config)
+  const config = Object.keys(internals.config)
     .filter(key => internals.configDefs[key.split(':')[0]])
     .reduce((obj, key) => {
       // Deep Copy
@@ -1250,17 +1257,17 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
  *
  * @name "/config/save"
  */
-app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }
 
-  let config = req.body.config;
+  const config = req.body.config;
   if (internals.debug > 0) {
     console.log(config);
   }
 
-  for (let section in config) {
+  for (const section in config) {
     const sectionType = section.split(':')[0];
     const configDef = internals.configDefs[sectionType];
     if (configDef === undefined) {
@@ -1278,11 +1285,11 @@ app.put(`/config/save`, [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
       try {
         fs.writeFileSync(config[section].file, '');
       } catch (e) {
-        return res.send({ success: false, text: `New file could not be written to system` });
+        return res.send({ success: false, text: 'New file could not be written to system' });
       }
     }
 
-    for (let key in config[section]) {
+    for (const key in config[section]) {
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
         return res.send({ success: false, text: `Section ${section} field ${key} unknown` });
@@ -1466,10 +1473,10 @@ app.get('/stats', [noCacheJson], function (req, res) {
   const types = Object.keys(internals.types).sort();
   const sections = Object.keys(internals.sources).sort();
 
-  let stats = { types: [], sources: [], startTime: internals.startTime };
+  const stats = { types: [], sources: [], startTime: internals.startTime };
 
   for (const type of types) {
-    let typeInfo = internals.types[type];
+    const typeInfo = internals.types[type];
     stats.types.push({
       type: type,
       request: typeInfo.requestStats,
@@ -1482,7 +1489,7 @@ app.get('/stats', [noCacheJson], function (req, res) {
   }
 
   for (const section of sections) {
-    let src = internals.sources[section];
+    const src = internals.sources[section];
     stats.sources.push({
       source: section,
       request: src.requestStat,
@@ -1596,7 +1603,7 @@ function printStats () {
   lines[5] = 'CACHE SRC REFRESH: ';
 
   for (const key of keys) {
-    let typeInfo = internals.types[key];
+    const typeInfo = internals.types[key];
     lines[0] += sprintf(' %11s', key);
     lines[1] += sprintf(' %11d', typeInfo.requestStats);
     lines[2] += sprintf(' %11d', typeInfo.foundStats);
@@ -1610,7 +1617,7 @@ function printStats () {
   }
 
   for (const section in internals.sources) {
-    let src = internals.sources[section];
+    const src = internals.sources[section];
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
   }
@@ -1646,9 +1653,9 @@ b=="?"||b=="_"?".":b=="#"?"\\d":d&&b.charAt(0)=="{"?b+g:b=="<"?"\\b(?=\\w)":b=="
 // ----------------------------------------------------------------------------
 
 // redis://[:pass]@host:port/db/key
-internals.configSchemes['redis'] = {
+internals.configSchemes.redis = {
   load: function (cb) {
-    let redisParts = internals.configFile.split('/');
+    const redisParts = internals.configFile.split('/');
     if (redisParts.length !== 5) {
       throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
     }
@@ -1676,7 +1683,7 @@ internals.configSchemes['redis'] = {
 
 // ----------------------------------------------------------------------------
 // rediss://pass@host:port/db/key
-internals.configSchemes['rediss'] = internals.configSchemes['redis'];
+internals.configSchemes.rediss = internals.configSchemes.redis;
 
 // redis-sentinel://sentinelPassword:redisPassword@host:port/name/db/key
 internals.configSchemes['redis-sentinel'] = {
@@ -1740,11 +1747,11 @@ internals.configSchemes['redis-cluster'] = {
 };
 
 // ----------------------------------------------------------------------------
-internals.configSchemes['elasticsearch'] = {
+internals.configSchemes.elasticsearch = {
   load: function (cb) {
-    let url = internals.configFile.replace('elasticsearch', 'http');
+    const url = internals.configFile.replace('elasticsearch', 'http');
     if (!url.includes('/_doc/')) {
-      throw new Error(`Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC`);
+      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
     }
 
     axios.get(url)
@@ -1761,7 +1768,7 @@ internals.configSchemes['elasticsearch'] = {
       });
   },
   save: function (config, cb) {
-    let url = internals.configFile.replace('elasticsearch', 'http');
+    const url = internals.configFile.replace('elasticsearch', 'http');
 
     axios.post(url, JSON.stringify(config))
       .then((response) => {
@@ -1774,11 +1781,11 @@ internals.configSchemes['elasticsearch'] = {
 };
 
 // ----------------------------------------------------------------------------
-internals.configSchemes['elasticsearchs'] = {
+internals.configSchemes.elasticsearchs = {
   load: function (cb) {
-    let url = internals.configFile.replace('elasticsearchs', 'https');
+    const url = internals.configFile.replace('elasticsearchs', 'https');
     if (!url.includes('/_doc/')) {
-      throw new Error(`Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC`);
+      throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
     }
 
     axios.get(url)
@@ -1795,7 +1802,7 @@ internals.configSchemes['elasticsearchs'] = {
       });
   },
   save: function (config, cb) {
-    let url = internals.configFile.replace('elasticsearchs', 'https');
+    const url = internals.configFile.replace('elasticsearchs', 'https');
 
     axios.post(url, JSON.stringify(config))
       .then((response) => {
@@ -1808,7 +1815,7 @@ internals.configSchemes['elasticsearchs'] = {
 };
 
 // ----------------------------------------------------------------------------
-internals.configSchemes['json'] = {
+internals.configSchemes.json = {
   load: function (cb) {
     internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'));
     return cb();
@@ -1824,7 +1831,7 @@ internals.configSchemes['json'] = {
 };
 
 // ----------------------------------------------------------------------------
-internals.configSchemes['ini'] = {
+internals.configSchemes.ini = {
   load: function (cb) {
     internals.config = ini.parseSync(internals.configFile);
     return cb();
@@ -1897,7 +1904,7 @@ function buildConfigAndStart () {
     internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
   }
 
-  let parts = internals.configFile.split('://');
+  const parts = internals.configFile.split('://');
   if (parts.length === 1) {
     if (internals.configFile.endsWith('json')) {
       internals.configScheme = internals.configSchemes.json;

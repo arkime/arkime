@@ -15,9 +15,9 @@ module.exports = {
   upgrade: function (parliament, notifierDefs) {
     // fix cluster types
     if (parliament.groups) {
-      for (let group of parliament.groups) {
+      for (const group of parliament.groups) {
         if (group.clusters) {
-          for (let cluster of group.clusters) {
+          for (const cluster of group.clusters) {
             if (cluster.multiviewer) {
               delete cluster.multiviewer;
               cluster.type = 'multiviewer';
@@ -33,12 +33,12 @@ module.exports = {
     // fix notifiers
     if (parliament.settings && parliament.settings.notifiers) {
       // only save the notifiers with values
-      for (let n in parliament.settings.notifiers) {
-        let notifier = parliament.settings.notifiers[n];
+      for (const n in parliament.settings.notifiers) {
+        const notifier = parliament.settings.notifiers[n];
         let hasValues = false;
 
         // check for values in notifiers
-        for (let f in notifier.fields) {
+        for (const f in notifier.fields) {
           if (notifier.fields[f].value) {
             hasValues = true;
             break;

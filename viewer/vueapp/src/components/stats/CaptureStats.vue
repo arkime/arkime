@@ -143,15 +143,15 @@ export default {
   computed: {
     colors: function () {
       // build colors array from css variables
-      let styles = window.getComputedStyle(document.body);
-      let primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      let primaryLight = styles.getPropertyValue('--color-primary').trim();
-      let primary = styles.getPropertyValue('--color-primary-dark').trim();
-      let primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      let secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      let secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      let secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      let secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const styles = window.getComputedStyle(document.body);
+      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
+      const primaryLight = styles.getPropertyValue('--color-primary').trim();
+      const primary = styles.getPropertyValue('--color-primary-dark').trim();
+      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
+      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
+      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
+      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
+      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {
@@ -261,16 +261,16 @@ export default {
     },
     toggleStatDetail: function (stat) {
       if (!stat.opened) { return; }
-      var self = this;
-      let id = stat.id.replace(/[.:]/g, '\\$&');
+      const self = this;
+      const id = stat.id.replace(/[.:]/g, '\\$&');
 
-      let wrap = document.getElementById('moreInfo-' + id);
+      const wrap = document.getElementById('moreInfo-' + id);
       while (wrap.firstChild) {
         wrap.removeChild(wrap.firstChild);
       }
       $(wrap).css('width', '1440px');
 
-      var dcontext = cubism.cubism.context()
+      const dcontext = cubism.cubism.context()
         .serverDelay(0)
         .clientDelay(0)
         .step(60e3)
@@ -278,7 +278,7 @@ export default {
 
       function dmetric (name, mname) {
         return dcontext.metric(function (startV, stopV, stepV, callback) {
-          let config = {
+          const config = {
             method: 'GET',
             url: 'api/dstats',
             params: {
@@ -300,12 +300,12 @@ export default {
       }
 
       // TODO instead of just showing the default columns, show the ones currently in the table
-      let columns = this.columns.filter((column) => {
+      const columns = this.columns.filter((column) => {
         return column.default && column.doStats;
       });
-      let headerNames = columns.map(function (item) { return item.name; });
-      let dataSrcs = columns.map(function (item) { return item.sort; });
-      let metrics = [];
+      const headerNames = columns.map(function (item) { return item.name; });
+      const dataSrcs = columns.map(function (item) { return item.sort; });
+      const metrics = [];
       for (let i = 0; i < headerNames.length; i++) {
         if (headerNames[i].match('/s')) {
           metrics.push(dmetric(headerNames[i].replace('/s', '/m'), dataSrcs[i].replace('PerSec', '')));

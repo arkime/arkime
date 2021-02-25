@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     issueDateTooltip: function (issue) {
-      let firstNoticed = this.$options.filters.moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss');
+      const firstNoticed = this.$options.filters.moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss');
 
       let htmlStr =
       `<small>
@@ -62,7 +62,7 @@ export default {
         </div>`;
 
       if (issue.lastNoticed) {
-        let lastNoticed = this.$options.filters.moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss');
+        const lastNoticed = this.$options.filters.moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss');
         htmlStr +=
           `<div>
             <strong>Last</strong>

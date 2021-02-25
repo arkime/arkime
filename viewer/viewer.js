@@ -22,39 +22,32 @@ const MIN_DB_VERSION = 66;
 // ============================================================================
 // MODULES
 // ============================================================================
-try {
-  var Config = require('./config.js');
-  var express = require('express');
-  var fs = require('fs');
-  var fse = require('fs-ext');
-  var async = require('async');
-  var url = require('url');
-  var Pcap = require('./pcap.js');
-  var Db = require('./db.js');
-  var molochparser = require('./molochparser.js');
-  var passport = require('passport');
-  var DigestStrategy = require('passport-http').DigestStrategy;
-  var version = require('./version');
-  var http = require('http');
-  var https = require('https');
-  var onHeaders = require('on-headers');
-  var helmet = require('helmet');
-  var uuid = require('uuidv4').default;
-  var path = require('path');
-} catch (e) {
-  console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
-  process.exit(1);
-  throw new Error('Exiting');
-}
+const Config = require('./config.js');
+const express = require('express');
+const fs = require('fs');
+const fse = require('fs-ext');
+const async = require('async');
+const Pcap = require('./pcap.js');
+const Db = require('./db.js');
+const molochparser = require('./molochparser.js');
+const passport = require('passport');
+const DigestStrategy = require('passport-http').DigestStrategy;
+const version = require('./version');
+const http = require('http');
+const https = require('https');
+const onHeaders = require('on-headers');
+const helmet = require('helmet');
+const uuid = require('uuidv4').default;
+const path = require('path');
+const URL = require('url');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
   process.exit(1);
-  throw new Error('Exiting');
 }
 
 // express app
-var app = express();
+const app = express();
 
 // ============================================================================
 // CONFIG & APP SETUP
@@ -77,12 +70,12 @@ passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'M
 ));
 
 // app.configure
-var logger = require('morgan');
-var favicon = require('serve-favicon');
-var bodyParser = require('body-parser');
-var multer = require('multer');
-var methodOverride = require('method-override');
-var compression = require('compression');
+const logger = require('morgan');
+const favicon = require('serve-favicon');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+const methodOverride = require('method-override');
+const compression = require('compression');
 
 // internal app deps
 const { internals } = require('./internals')(app, Config);
@@ -171,16 +164,16 @@ const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
 // logging --------------------------------------------------------------------
 // send req to access log file or stdout
 let _stream = process.stdout;
-let _accesslogfile = Config.get('accessLogFile');
+const _accesslogfile = Config.get('accessLogFile');
 if (_accesslogfile) {
   _stream = fs.createWriteStream(_accesslogfile, { flags: 'a' });
 }
 
-let _loggerFormat = decodeURIComponent(Config.get(
+const _loggerFormat = decodeURIComponent(Config.get(
   'accessLogFormat',
   ':date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms'
 ));
-let _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
+const _suppressPaths = Config.getArray('accessLogSuppressPaths', ';', '');
 
 app.use(logger(_loggerFormat, {
   stream: _stream,
@@ -222,7 +215,7 @@ if (Config.get('passwordSecret')) {
 
     // S2S Auth
     if (req.headers['x-moloch-auth']) {
-      var obj = Config.auth2obj(req.headers['x-moloch-auth'], false);
+      const obj = Config.auth2obj(req.headers['x-moloch-auth'], false);
       obj.path = obj.path.replace(Config.basePath(), '/');
       if (obj.path !== req.url) {
         console.log('ERROR - mismatch url', obj.path, req.url);
@@ -270,7 +263,7 @@ if (Config.get('passwordSecret')) {
         // Check if we require a certain header+value to be present
         // as in the case of an apache plugin that sends AD groups
         if (internals.requiredAuthHeader !== undefined && internals.requiredAuthHeaderVal !== undefined) {
-          let authHeader = req.headers[internals.requiredAuthHeader];
+          const authHeader = req.headers[internals.requiredAuthHeader];
           if (authHeader === undefined) {
             return res.send('Missing authorization header');
           }
@@ -292,7 +285,7 @@ if (Config.get('passwordSecret')) {
             return ucb(err, suser, userName);
           } else if ((err && err.toString().includes('Not Found')) ||
              (!suser || !suser.found)) { // Try dynamic creation
-            let nuser = JSON.parse(new Function('return `' +
+            const nuser = JSON.parse(new Function('return `' +
                    internals.userAutoCreateTmpl + '`;').call(req.headers));
             Db.setUser(userName, nuser, (err, info) => {
               if (err) {
@@ -323,7 +316,7 @@ if (Config.get('passwordSecret')) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
   app.use(function (req, res, next) {
-    var username = req.query.molochRegressionUser || 'anonymous';
+    const username = req.query.molochRegressionUser || 'anonymous';
     req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
     Db.getUserCache(username, function (err, suser) {
       if (!err && suser && suser.found) {
@@ -356,33 +349,33 @@ if (Config.get('passwordSecret')) {
 // UTILITY
 // ============================================================================
 function parseCustomView (key, input) {
-  var fieldsMap = Config.getFieldsMap();
+  const fieldsMap = Config.getFieldsMap();
 
-  var match = input.match(/require:([^;]+)/);
+  let match = input.match(/require:([^;]+)/);
   if (!match) {
     console.log(`custom-view ${key} missing require section`);
     process.exit(1);
   }
-  var require = match[1];
+  const require = match[1];
 
   match = input.match(/title:([^;]+)/);
-  var title = match[1] || key;
+  const title = match[1] || key;
 
   match = input.match(/fields:([^;]+)/);
   if (!match) {
     console.log(`custom-view ${key} missing fields section`);
     process.exit(1);
   }
-  var fields = match[1];
+  const fields = match[1];
 
-  var output = `  if (session.${require})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+  let output = `  if (session.${require})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
 
-  for (let field of fields.split(',')) {
-    let info = fieldsMap[field];
+  for (const field of fields.split(',')) {
+    const info = fieldsMap[field];
     if (!info) {
       continue;
     }
-    var parts = ViewerUtils.splitRemain(info.dbField, '.', 1);
+    const parts = ViewerUtils.splitRemain(info.dbField, '.', 1);
     if (parts.length === 1) {
       output += `      +arrayList(session, '${parts[0]}', '${info.friendlyName}', '${field}')\n`;
     } else {
@@ -394,18 +387,18 @@ function parseCustomView (key, input) {
 }
 
 function createSessionDetail () {
-  var found = {};
-  var dirs = [];
+  const found = {};
+  let dirs = [];
 
   dirs = dirs.concat(Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`));
   dirs = dirs.concat(Config.getArray('parsersDir', ';', `${version.config_prefix}/parsers`));
 
   dirs.forEach(function (dir) {
     try {
-      var files = fs.readdirSync(dir);
+      const files = fs.readdirSync(dir);
       // sort().reverse() so in this dir pug is processed before jade
       files.sort().reverse().forEach(function (file) {
-        var sfile = file.replace(/\.(pug|jade)/, '');
+        const sfile = file.replace(/\.(pug|jade)/, '');
         if (found[sfile]) {
           return;
         }
@@ -418,17 +411,17 @@ function createSessionDetail () {
     } catch (e) {}
   });
 
-  var customViews = Config.keys('custom-views') || [];
+  const customViews = Config.keys('custom-views') || [];
 
-  for (let key of customViews) {
-    let view = Config.sectionGet('custom-views', key);
+  for (const key of customViews) {
+    const view = Config.sectionGet('custom-views', key);
     found[key] = parseCustomView(key, view);
   }
 
-  var makers = internals.pluginEmitter.listeners('makeSessionDetail');
+  const makers = internals.pluginEmitter.listeners('makeSessionDetail');
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
-      for (var k in items) {
+      for (const k in items) {
         found[k] = items[k].replace(/^/mg, '  ') + '\n';
       }
       return nextCb();
@@ -449,23 +442,23 @@ function createSessionDetail () {
 }
 
 function createRightClicks () {
-  var mrc = Config.configMap('right-click');
-  for (var key in mrc) {
+  const mrc = Config.configMap('right-click');
+  for (const key in mrc) {
     if (mrc[key].fields) {
       mrc[key].fields = mrc[key].fields.split(',');
     }
     if (mrc[key].users) {
-      var users = {};
+      const users = {};
       for (const item of mrc[key].users.split(',')) {
         users[item] = 1;
       }
       mrc[key].users = users;
     }
   }
-  var makers = internals.pluginEmitter.listeners('makeRightClick');
+  const makers = internals.pluginEmitter.listeners('makeRightClick');
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
-      for (var k in items) {
+      for (const k in items) {
         mrc[k] = items[k];
         if (mrc[k].fields && !Array.isArray(mrc[k].fields)) {
           mrc[k].fields = mrc[k].fields.split(',');
@@ -498,7 +491,7 @@ function checkProxyRequest (req, res, next) {
 }
 
 function setCookie (req, res, next) {
-  let cookieOptions = {
+  const cookieOptions = {
     path: Config.basePath(),
     sameSite: 'Strict',
     overwrite: true
@@ -525,7 +518,7 @@ function checkCookieToken (req, res, next) {
   }
 
   req.token = Config.auth2obj(req.headers['x-moloch-cookie'], true);
-  var diff = Math.abs(Date.now() - req.token.date);
+  const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
     console.trace('bad token', req.token);
@@ -553,7 +546,7 @@ function checkPermissions (permissions) {
   };
 
   return (req, res, next) => {
-    for (let permission of permissions) {
+    for (const permission of permissions) {
       if ((!req.user[permission] && !inversePermissions[permission]) ||
         (req.user[permission] && inversePermissions[permission])) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
@@ -587,7 +580,7 @@ function checkHuntAccess (req, res, next) {
       if (huntHit._source.userId === req.user.userId) {
         return next();
       }
-      return res.molochError(403, `You cannot change another user's hunt unless you have admin privileges`);
+      return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
     });
   }
 }
@@ -604,7 +597,7 @@ function checkCronAccess (req, res, next) {
       if (query._source.creator === req.user.userId) {
         return next();
       }
-      return res.molochError(403, `You cannot change another user's cron query unless you have admin privileges`);
+      return res.molochError(403, 'You cannot change another user\'s cron query unless you have admin privileges');
     });
   }
 }
@@ -670,7 +663,7 @@ function logAction (uiPage) {
     const bodyClone = {};
 
     for (const key in req.body) {
-      if (req.body.hasOwnProperty(key) && !avoidProps[key]) {
+      if (req.body[key] && !avoidProps[key]) {
         bodyClone[key] = req.body[key];
       }
     }
@@ -703,7 +696,7 @@ function logAction (uiPage) {
 // field to exp middleware ----------------------------------------------------
 function fieldToExp (req, res, next) {
   if (req.query.exp && !req.query.field) {
-    let field = Config.getFieldsMap()[req.query.exp];
+    const field = Config.getFieldsMap()[req.query.exp];
     if (field) {
       req.query.field = field.dbField;
     } else {
@@ -719,7 +712,7 @@ function fieldToExp (req, res, next) {
 // until the headers are set to send the response
 function recordResponseTime (req, res, next) {
   onHeaders(res, () => {
-    let now = process.hrtime();
+    const now = process.hrtime();
     let ms = ((now[0] - req._startAt[0]) * 1000) + ((now[1] - req._startAt[1]) / 1000000);
     ms = Math.ceil(ms);
     res.setHeader('X-Moloch-Response-Time', ms);
@@ -735,7 +728,7 @@ function recordResponseTime (req, res, next) {
 // all endpoints that use POST and GET (app.getpost) should look for req.query
 function fillQueryFromBody (req, res, next) {
   if (req.method === 'POST') {
-    let query = { // last object property overwrites the previous one
+    const query = { // last object property overwrites the previous one
       ...req.query,
       ...req.body
     };
@@ -831,21 +824,21 @@ function setFieldLocals () {
 }
 
 function loadPlugins () {
-  var api = {
+  const api = {
     registerWriter: function (str, info) {
       internals.writers[str] = info;
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
   };
-  var plugins = Config.getArray('viewerPlugins', ';', '');
-  var dirs = Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`);
+  const plugins = Config.getArray('viewerPlugins', ';', '');
+  const dirs = Config.getArray('pluginsDir', ';', `${version.config_prefix}/plugins`);
   plugins.forEach(function (plugin) {
     plugin = plugin.trim();
     if (plugin === '') {
       return;
     }
-    var found = false;
+    let found = false;
     dirs.forEach(function (dir) {
       dir = dir.trim();
       if (found || dir === '') {
@@ -853,7 +846,7 @@ function loadPlugins () {
       }
       if (fs.existsSync(dir + '/' + plugin)) {
         found = true;
-        var p = require(dir + '/' + plugin);
+        const p = require(dir + '/' + plugin);
         p.init(Config, internals.pluginEmitter, api);
       }
     });
@@ -872,8 +865,8 @@ function userCleanup (suser) {
   if (Config.get('multiES', false) && !Config.get('usersElasticsearch')) {
     suser.createEnabled = false;
   }
-  let now = Date.now();
-  let timespan = Config.get('regressionTests', false) ? 1 : 60000;
+  const now = Date.now();
+  const timespan = Config.get('regressionTests', false) ? 1 : 60000;
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
   if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
     suser.lastUsed = now;
@@ -887,11 +880,11 @@ function userCleanup (suser) {
 
 // session helpers ------------------------------------------------------------
 function sendSessionWorker (options, cb) {
-  var packetslen = 0;
-  var packets = [];
-  var packetshdr;
-  var ps = [-1];
-  var tags = [];
+  let packetslen = 0;
+  const packets = [];
+  let packetshdr;
+  let ps = [-1];
+  let tags = [];
 
   if (!options.saveId) {
     return cb({ success: false, text: 'Missing saveId' });
@@ -908,14 +901,14 @@ function sendSessionWorker (options, cb) {
     packets[i] = packet;
     pcb(null);
   }, function (err, session) {
-    var buffer;
+    let buffer;
     if (err || !packetshdr) {
       console.log('WARNING - No PCAP only sending SPI data err:', err);
       buffer = Buffer.alloc(0);
       ps = [];
     } else {
       buffer = Buffer.alloc(packetshdr.length + packetslen);
-      var pos = 0;
+      let pos = 0;
       packetshdr.copy(buffer);
       pos += packetshdr.length;
       for (let i = 0, ilen = packets.length; i < ilen; i++) {
@@ -940,27 +933,28 @@ function sendSessionWorker (options, cb) {
       session.tags = session.tags.concat(tags);
     }
 
-    var remoteClusters = internals.remoteClusters;
+    const remoteClusters = internals.remoteClusters;
     if (!remoteClusters) {
       console.log('ERROR - [remote-clusters] is not configured');
       return cb();
     }
 
-    var sobj = remoteClusters[options.cluster];
+    const sobj = remoteClusters[options.cluster];
     if (!sobj) {
       console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
       return cb();
     }
 
-    let info = url.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
+    // eslint-disable-next-line node/no-deprecated-api
+    const info = URL.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
     ViewerUtils.addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
     info.method = 'POST';
 
-    var result = '';
-    var client = info.protocol === 'https:' ? https : http;
+    let result = '';
+    const client = info.protocol === 'https:' ? https : http;
     info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
     ViewerUtils.addCaTrust(info, options.nodeName);
-    var preq = client.request(info, function (pres) {
+    const preq = client.request(info, function (pres) {
       pres.on('data', function (chunk) {
         result += chunk;
       });
@@ -978,8 +972,8 @@ function sendSessionWorker (options, cb) {
       cb();
     });
 
-    var sessionStr = JSON.stringify(session);
-    var b = Buffer.alloc(12);
+    const sessionStr = JSON.stringify(session);
+    const b = Buffer.alloc(12);
     b.writeUInt32BE(Buffer.byteLength(sessionStr), 0);
     b.writeUInt32BE(buffer.length, 8);
     preq.write(b);
@@ -991,13 +985,13 @@ function sendSessionWorker (options, cb) {
 
 internals.sendSessionQueue = async.queue(sendSessionWorker, 10);
 
-var qlworking = {};
+const qlworking = {};
 function sendSessionsListQL (pOptions, list, nextQLCb) {
   if (!list) {
     return;
   }
 
-  var nodes = {};
+  const nodes = {};
 
   list.forEach(function (item) {
     if (!nodes[item.node]) {
@@ -1006,13 +1000,13 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     nodes[item.node].push(item.id);
   });
 
-  var keys = Object.keys(nodes);
+  const keys = Object.keys(nodes);
 
   async.eachLimit(keys, 15, function (node, nextCb) {
     sessionAPIs.isLocalView(node, function () {
-      var sent = 0;
+      let sent = 0;
       nodes[node].forEach(function (item) {
-        var options = {
+        const options = {
           id: item,
           nodeName: node
         };
@@ -1030,7 +1024,8 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     function () {
       // Get from remote DISK
       ViewerUtils.getViewUrl(node, function (err, viewUrl, client) {
-        var info = url.parse(viewUrl);
+        // eslint-disable-next-line node/no-deprecated-api
+        const info = URL.parse(viewUrl);
         info.method = 'POST';
         info.path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
         info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
@@ -1039,7 +1034,7 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
         }
         ViewerUtils.addAuth(info, pOptions.user, node);
         ViewerUtils.addCaTrust(info, node);
-        var preq = client.request(info, function (pres) {
+        const preq = client.request(info, function (pres) {
           pres.on('data', function (chunk) {
             qlworking[info.path] = 'data';
           });
@@ -1072,20 +1067,24 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
 // If less then size items are returned we don't delete anything.
 // Doesn't support mounting sub directories in main directory, don't do it.
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
-  var query = { _source: [ 'num', 'name', 'first', 'size', 'node' ],
+  const query = {
+    _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
     size: 200,
-    query: { bool: {
-      must: [
-        { terms: { node: nodes } },
-        { bool: { should: [] } }
-      ],
-      must_not: { term: { locked: 1 } }
-    } },
-    sort: { first: { order: 'asc' } } };
+    query: {
+      bool: {
+        must: [
+          { terms: { node: nodes } },
+          { bool: { should: [] } }
+        ],
+        must_not: { term: { locked: 1 } }
+      }
+    },
+    sort: { first: { order: 'asc' } }
+  };
 
   Object.keys(dirs).forEach(function (pcapDir) {
-    var obj = { wildcard: {} };
+    const obj = { wildcard: {} };
     if (pcapDir[pcapDir.length - 1] === '/') {
       obj.wildcard.name = pcapDir + '*';
     } else {
@@ -1104,11 +1103,11 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         return forNextCb('DONE');
       }
 
-      var fields = item._source || item.fields;
+      const fields = item._source || item.fields;
 
-      var freeG;
+      let freeG;
       try {
-        var stat = fse.statVFS(fields.name);
+        const stat = fse.statVFS(fields.name);
         freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
       } catch (e) {
         console.log('ERROR', e);
@@ -1132,14 +1131,14 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
 }
 
 function expireCheckDevice (nodes, stat, nextCb) {
-  var doit = false;
-  var minFreeSpaceG = 0;
+  let doit = false;
+  let minFreeSpaceG = 0;
   async.forEach(nodes, function (node, cb) {
-    var freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
+    let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
       freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.f_frsize / 1024.0 * stat.f_blocks / (1024.0 * 1024.0);
     }
-    var freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
+    const freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
     if (freeG < freeSpaceG) {
       doit = true;
     }
@@ -1159,7 +1158,7 @@ function expireCheckDevice (nodes, stat, nextCb) {
 }
 
 function expireCheckAll () {
-  var devToStat = {};
+  const devToStat = {};
   // Find all the nodes running on this host
   Db.hostnameToNodeids(Config.hostName(), function (nodes) {
     // Current node name should always be checked too
@@ -1169,7 +1168,7 @@ function expireCheckAll () {
 
     // Find all the pcap dirs for local nodes
     async.map(nodes, function (node, cb) {
-      var pcapDirs = Config.getFull(node, 'pcapDir');
+      const pcapDirs = Config.getFull(node, 'pcapDir');
       if (typeof pcapDirs !== 'string') {
         return cb("ERROR - couldn't find pcapDir setting for node: " + node + '\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser');
       }
@@ -1179,8 +1178,8 @@ function expireCheckAll () {
           return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
         }
         pcapDir = pcapDir.trim();
-        var fileStat = fs.statSync(pcapDir);
-        var vfsStat = fse.statVFS(pcapDir);
+        const fileStat = fs.statSync(pcapDir);
+        const vfsStat = fse.statVFS(pcapDir);
         if (!devToStat[fileStat.dev]) {
           vfsStat.dirs = {};
           vfsStat.dirs[pcapDir] = {};
@@ -1193,7 +1192,7 @@ function expireCheckAll () {
     },
     function (err) {
       // Now gow through all the local devices and check them
-      var keys = Object.keys(devToStat);
+      const keys = Object.keys(devToStat);
       async.forEachSeries(keys, function (key, cb) {
         expireCheckDevice(nodes, devToStat[key], cb);
       }, function (err) {
@@ -1223,7 +1222,7 @@ if (Config.get('demoMode', false)) {
 
 // redirect to sessions page and conserve params
 app.get(['/', '/app'], (req, res) => {
-  let question = req.url.indexOf('?');
+  const question = req.url.indexOf('?');
   if (question === -1) {
     res.redirect('sessions');
   } else {
@@ -1238,11 +1237,11 @@ app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
 
 app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
   function cloneClusters (clusters) {
-    var clone = {};
+    const clone = {};
 
-    for (var key in clusters) {
-      if (clusters.hasOwnProperty(key)) {
-        var cluster = clusters[key];
+    for (const key in clusters) {
+      if (clusters[key]) {
+        const cluster = clusters[key];
         clone[key] = {
           name: cluster.name,
           url: cluster.url
@@ -1258,7 +1257,7 @@ app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
     return res.send('Cannot locate remote clusters');
   }
 
-  var clustersClone = cloneClusters(internals.remoteClusters);
+  const clustersClone = cloneClusters(internals.remoteClusters);
 
   return res.send(clustersClone);
 });
@@ -2001,7 +2000,6 @@ if (Config.get('regressionTests')) {
   app.post('/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
-    throw new Error('Exiting');
   });
   app.post('/flushCache', function (req, res) {
     Db.flushCache();
@@ -2042,14 +2040,16 @@ const vueServerRenderer = require('vue-server-renderer');
 // Factory function to create fresh Vue apps
 function createApp () {
   return new Vue({
-    template: `<div id="app"></div>`
+    template: '<div id="app"></div>'
   });
 }
 
 // expose vue bundles (prod)
-app.use('/static', express.static(`${__dirname}/vueapp/dist/static`));
+app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(`${__dirname}/vueapp/dist/app.js`));
+app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
@@ -2071,12 +2071,12 @@ app.use(cspHeader, setCookie, (req, res) => {
   let theme = req.user.settings.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
-  let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
+  const titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
     .replace(/_cluster_/g, internals.clusterName)
     .replace(/_userId_/g, req.user ? req.user.userId : '-')
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
-  let limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+  const limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
   const appContext = {
     theme: theme,
@@ -2147,7 +2147,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           Db.clearScroll({ body: { scroll_id: result._scroll_id } });
           return setImmediate(whilstCb, 'DONE');
         } else {
-          var document = { doc: { count: (query.count || 0) + count } };
+          const document = { doc: { count: (query.count || 0) + count } };
           Db.update('queries', 'query', options.qid, document, { refresh: true }, function () {});
         }
 
@@ -2166,7 +2166,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
         return setImmediate(whilstCb, 'ERR');
       }
 
-      let ids = [];
+      const ids = [];
       const hits = result.hits.hits;
       let i, ilen;
       if (cq.action.indexOf('forward:') === 0) {
@@ -2297,7 +2297,7 @@ internals.processCronQueries = () => {
               try {
                 // Expression was set by admin, so assume email search ok
                 molochparser.parser.yy.emailSearch = true;
-                var userExpression = molochparser.parse(user.expression);
+                const userExpression = molochparser.parse(user.expression);
                 query.query.bool.filter.push(userExpression);
               } catch (e) {
                 console.log("Couldn't compile user forced expression", user.expression, e);
@@ -2384,8 +2384,8 @@ function main () {
 
   loadPlugins();
 
-  var pcapWriteMethod = Config.get('pcapWriteMethod');
-  var writer = internals.writers[pcapWriteMethod];
+  const pcapWriteMethod = Config.get('pcapWriteMethod');
+  const writer = internals.writers[pcapWriteMethod];
   if (!writer || writer.localNode === true) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);
@@ -2401,7 +2401,7 @@ function main () {
     setInterval(huntAPIs.processHuntJobs, 10000);
   }
 
-  var server;
+  let server;
   if (Config.isHTTPS()) {
     server = https.createServer({
       key: Config.keyFileData,
@@ -2412,7 +2412,7 @@ function main () {
     server = http.createServer(app);
   }
 
-  var viewHost = Config.get('viewHost', undefined);
+  const viewHost = Config.get('viewHost', undefined);
   if (internals.userNameHeader !== undefined && viewHost !== 'localhost' && viewHost !== '127.0.0.1') {
     console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
   }
@@ -2421,7 +2421,6 @@ function main () {
     .on('error', function (e) {
       console.log("ERROR - couldn't listen on port", Config.get('viewPort', '8005'), 'is viewer already running?');
       process.exit(1);
-      throw new Error('Exiting');
     })
     .on('listening', function (e) {
       console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
@@ -2434,7 +2433,7 @@ function main () {
 // COMMAND LINE PARSING
 // ============================================================================
 function processArgs (argv) {
-  for (var i = 0, ilen = argv.length; i < ilen; i++) {
+  for (let i = 0, ilen = argv.length; i < ilen; i++) {
     if (argv[i] === '--help') {
       console.log('node.js [<options>]');
       console.log('');
@@ -2455,7 +2454,8 @@ processArgs(process.argv);
 // ============================================================================
 // DB
 // ============================================================================
-Db.initialize({ host: internals.elasticBase,
+Db.initialize({
+  host: internals.elasticBase,
   prefix: Config.get('prefix', ''),
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
   usersPrefix: Config.get('usersPrefix'),

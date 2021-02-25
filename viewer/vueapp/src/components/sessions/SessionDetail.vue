@@ -33,13 +33,14 @@
             :decodings="decodings"
             :cyberChefSrcUrl="cyberChefSrcUrl"
             :cyberChefDstUrl="cyberChefDstUrl"
-            @getPackets="getPackets"
+            @updateBase="updateBase"
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
+            @updateNumPackets="updateNumPackets"
             @toggleLineNumbers="toggleLineNumbers"
             @toggleCompression="toggleCompression"
           />
@@ -105,13 +106,14 @@
             :decodings="decodings"
             :cyberChefSrcUrl="cyberChefSrcUrl"
             :cyberChefDstUrl="cyberChefDstUrl"
-            @getPackets="getPackets"
+            @updateBase="updateBase"
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
+            @updateNumPackets="updateNumPackets"
             @toggleLineNumbers="toggleLineNumbers"
             @toggleCompression="toggleCompression"
           />
@@ -205,6 +207,14 @@ export default {
         this.errorPackets = 'Request canceled';
       }
     },
+    updateBase (value) {
+      this.params.base = value;
+      this.getPackets();
+    },
+    updateNumPackets (value) {
+      this.params.packets = value;
+      this.getPackets();
+    },
     toggleShowFrames: function () {
       this.params.showFrames = !this.params.showFrames;
 
@@ -258,9 +268,9 @@ export default {
     getDetailData: function (message, messageType) {
       this.loading = true;
 
-      let p1 = FieldService.get();
-      let p2 = ConfigService.getMolochClusters();
-      let p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster);
+      const p1 = FieldService.get();
+      const p2 = ConfigService.getMolochClusters();
+      const p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster);
 
       if (this.component) {
         this.component.$destroy(true);
@@ -291,7 +301,7 @@ export default {
               fields: this.fields,
               molochclusters: responses[1]
             },
-            props: [ 'session', 'fields', 'molochclusters' ],
+            props: ['session', 'fields', 'molochclusters'],
             data: function () {
               return {
                 form: undefined,
@@ -364,14 +374,14 @@ export default {
                 const id = this.session.id.split(':');
                 const prefixlessId = id.length > 1 ? id[1] : id[0];
 
-                let params = {
+                const params = {
                   expression: `id == ${prefixlessId}`,
                   startTime: Math.floor(this.session.firstPacket / 1000),
                   stopTime: Math.ceil(this.session.lastPacket / 1000),
                   openAll: 1
                 };
 
-                let url = `sessions?${qs.stringify(params)}`;
+                const url = `sessions?${qs.stringify(params)}`;
 
                 window.location = url;
               },
@@ -383,7 +393,7 @@ export default {
               allSessions: function (rootId, startTime) {
                 startTime = Math.floor(startTime / 1000);
 
-                let fullExpression = `rootId == ${rootId}`;
+                const fullExpression = `rootId == ${rootId}`;
 
                 this.expression = fullExpression;
 
@@ -533,15 +543,13 @@ export default {
         }
         if (localStorage['moloch-decodings']) {
           this.params.decode = JSON.parse(localStorage['moloch-decodings']);
-          for (let key in this.decodings) {
-            if (this.decodings.hasOwnProperty(key)) {
-              if (this.params.decode[key]) {
-                this.decodings[key].active = true;
-                for (let field in this.params.decode[key]) {
-                  for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
-                    if (this.decodings[key].fields[i].key === field) {
-                      this.decodings[key].fields[i].value = this.params.decode[key][field];
-                    }
+          for (const key in this.decodings) {
+            if (this.params.decode[key]) {
+              this.decodings[key].active = true;
+              for (const field in this.params.decode[key]) {
+                for (let i = 0, len = this.decodings[key].fields.length; i < len; ++i) {
+                  if (this.decodings[key].fields[i].key === field) {
+                    this.decodings[key].fields[i].value = this.params.decode[key][field];
                   }
                 }
               }
@@ -588,31 +596,31 @@ export default {
 
           // remove all un-whitelisted tokens from the html
           this.packetHtml = sanitizeHtml(response, {
-            allowedTags: [ 'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img' ],
+            allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
             allowedClasses: {
-              'div': [ 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger' ],
-              'span': [ 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip' ],
-              'em': [ 'ts-value' ],
-              'h5': [ 'text-theme-quaternary' ],
-              'a': [ 'imagetag', 'file' ]
+              div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
+              span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
+              em: ['ts-value'],
+              h5: ['text-theme-quaternary'],
+              a: ['imagetag', 'file']
             },
             allowedAttributes: {
-              'div': [ 'value' ],
-              'img': [ 'src' ],
-              'a': [ 'target', 'href' ]
+              div: ['value'],
+              img: ['src'],
+              a: ['target', 'href']
             }
           });
 
           setTimeout(() => { // wait until session packets are rendered
             // tooltips for src/dst byte images
             if (!this.$refs.packetContainer) { return; }
-            let tss = this.$refs.packetContainer.getElementsByClassName('session-detail-ts');
+            const tss = this.$refs.packetContainer.getElementsByClassName('session-detail-ts');
             for (let i = 0; i < tss.length; ++i) {
               let timeEl = tss[i];
-              let value = timeEl.getAttribute('value');
+              const value = timeEl.getAttribute('value');
               timeEl = timeEl.getElementsByClassName('ts-value');
               if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
-                let time = this.$options.filters.timezoneDateString(
+                const time = this.$options.filters.timezoneDateString(
                   parseInt(value),
                   this.user.settings.timezone,
                   this.user.settings.ms
@@ -622,13 +630,13 @@ export default {
             }
 
             // tooltips for linked images
-            let imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
+            const imgs = this.$refs.packetContainer.getElementsByClassName('imagetag');
             for (let i = 0; i < imgs.length; ++i) {
-              let img = imgs[i];
+              const img = imgs[i];
               let href = img.href;
               href = href.replace('body', 'bodypng');
 
-              let tooltip = document.createElement('span');
+              const tooltip = document.createElement('span');
               tooltip.className = 'img-tip';
               tooltip.innerHTML = `File Bytes:
                 <br>
@@ -639,12 +647,12 @@ export default {
             }
 
             // add listeners to fetch the src/dst bytes images on mouse enter
-            let srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+            const srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
             if (srcBytes && srcBytes.length) {
               srcBytes[0].addEventListener('mouseenter', this.showSrcBytesImg);
             }
 
-            let dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+            const dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
             if (dstBytes && dstBytes.length) {
               dstBytes[0].addEventListener('mouseenter', this.showDstBytesImg);
             }
@@ -687,12 +695,12 @@ export default {
     }
 
     if (this.$refs.packetContainer) {
-      let srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
+      const srcBytes = this.$refs.packetContainer.getElementsByClassName('srccol');
       if (srcBytes && srcBytes.length) {
         srcBytes[0].removeEventListener('mouseenter', this.showSrcBytesImg);
       }
 
-      let dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
+      const dstBytes = this.$refs.packetContainer.getElementsByClassName('dstcol');
       if (dstBytes && dstBytes.length) {
         dstBytes[0].removeEventListener('mouseenter', this.showDstBytesImg);
       }

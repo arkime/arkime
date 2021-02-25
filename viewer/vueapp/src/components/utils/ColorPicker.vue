@@ -91,8 +91,8 @@ export default {
       this.displayPicker ? this.hidePicker() : this.showPicker();
     },
     documentClick: function (e) {
-      let el = this.$refs.colorpicker;
-      let target = e.target;
+      const el = this.$refs.colorpicker;
+      const target = e.target;
       if (el !== target && !el.contains(target)) {
         this.hidePicker();
       }

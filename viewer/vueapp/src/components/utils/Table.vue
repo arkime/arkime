@@ -321,18 +321,18 @@ export default {
     data: function () {
       if (Object.keys(this.openedRows).length) {
         // there are opened rows
-        for (let item of this.data) {
+        for (const item of this.data) {
           if (this.openedRows[item.id]) {
             this.$set(item, 'opened', true);
           }
         }
       }
       if (this.showAvgTot) { // calculate avg/tot values
-        for (let column of this.computedColumns) {
+        for (const column of this.computedColumns) {
           if (column.doStats) {
             let totalValue = 0;
-            for (let item of this.data) {
-              if (!item.hasOwnProperty(column.id) && !item.hasOwnProperty(column.sort)) {
+            for (const item of this.data) {
+              if (!item.[column.id] && !item[column.sort]) {
                 continue;
               }
               totalValue += parseInt(item[column.id || column.sort]);
@@ -367,18 +367,18 @@ export default {
         this.tableWidth = $(this.tableDiv).width();
       }
 
-      let windowWidth = window.innerWidth;
-      let leftoverWidth = windowWidth - this.tableWidth;
-      let percentChange = 1 + (leftoverWidth / this.tableWidth);
+      const windowWidth = window.innerWidth;
+      const leftoverWidth = windowWidth - this.tableWidth;
+      const percentChange = 1 + (leftoverWidth / this.tableWidth);
 
-      for (let column of this.computedColumns) {
+      for (const column of this.computedColumns) {
         if (!column.width || isNaN(column.width)) {
           // column has no width so use the default
-          for (let col of this.columns) {
+          for (const col of this.columns) {
             column.width = parseInt(JSON.parse(JSON.stringify(col.width)));
           }
         }
-        let newWidth = Math.floor(column.width * percentChange);
+        const newWidth = Math.floor(column.width * percentChange);
         column.width = newWidth;
         this.columnWidths[column.id] = newWidth;
       }
@@ -401,7 +401,7 @@ export default {
     },
     isVisible: function (id) {
       let index = 0;
-      for (let column of this.computedColumns) {
+      for (const column of this.computedColumns) {
         if (column.id === id) {
           return index;
         }
@@ -410,7 +410,7 @@ export default {
       return -1;
     },
     toggleVisibility: function (column) {
-      let index = this.isVisible(column.id);
+      const index = this.isVisible(column.id);
       if (index >= 0) { // it's visible
         this.computedColumns.splice(index, 1);
       } else { // it's hidden
@@ -419,7 +419,7 @@ export default {
 
       // calculate table width and set showFitButton accordingly
       let tableWidth = 0;
-      for (let column of this.computedColumns) {
+      for (const column of this.computedColumns) {
         tableWidth += column.width;
       }
       this.tableWidth = tableWidth;
@@ -437,8 +437,8 @@ export default {
       this.displayDefaultColumns();
 
       this.columnWidths = {};
-      for (let column of this.columns) {
-        for (let col of this.computedColumns) {
+      for (const column of this.columns) {
+        for (const col of this.computedColumns) {
           if (col.id === column.id) {
             col.width = JSON.parse(JSON.stringify(column.width));
           }
@@ -456,7 +456,7 @@ export default {
       this.$set(this.zeroedAt, column.id, new Date().getTime());
       this.$set(this.zeroMap, column.id, []);
       for (let i = 0; i < this.data.length; i++) {
-        let data = this.data[i];
+        const data = this.data[i];
         this.$set(this.zeroMap[column.id], i, data[column.id]);
       }
     },
@@ -464,12 +464,12 @@ export default {
       // if it's not a computed field value return it immediately
       if (!column.doStats && !column.dataFunction) { return item[column.id]; }
 
-      let itemClone = JSON.parse(JSON.stringify(item));
+      const itemClone = JSON.parse(JSON.stringify(item));
       let value = itemClone[column.id];
 
       if (value === null || value === undefined) { return; }
 
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         value = value - this.zeroMap[column.id][index];
       }
 
@@ -488,14 +488,14 @@ export default {
 
       let value = this.totalValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         // subtract all zeroed values for this column
-        for (let zeroVal of this.zeroMap[column.id]) {
+        for (const zeroVal of this.zeroMap[column.id]) {
           value = value - zeroVal;
         }
       }
 
-      let mock = {};
+      const mock = {};
       mock[column.id] = value;
 
       if (column.avgTotFunction) {
@@ -513,9 +513,9 @@ export default {
       let sum = 0;
       let value = this.averageValues[column.id];
       // need to recalucate the value if this column has been zeroed
-      if (this.zeroMap.hasOwnProperty(column.id)) {
+      if (this.zeroMap[column.id] !== undefined) {
         for (let v = 0; v < this.data.length; v++) {
-          let realValue = this.data[v];
+          const realValue = this.data[v];
           let value = realValue[column.id];
           value = value - this.zeroMap[column.id][v];
           sum += value;
@@ -523,7 +523,7 @@ export default {
         value = sum / this.data.length;
       }
 
-      let mock = {};
+      const mock = {};
       mock[column.id] = value;
 
       if (column.avgTotFunction) {
@@ -559,7 +559,7 @@ export default {
               newIdx--;
             }
 
-            let element = this.computedColumns[oldIdx];
+            const element = this.computedColumns[oldIdx];
             this.computedColumns.splice(oldIdx, 1);
             this.computedColumns.splice(newIdx, 0, element);
 
@@ -575,7 +575,7 @@ export default {
       }
 
       setTimeout(() => { // wait for columns to render
-        let options = {
+        const options = {
           minWidth: 50,
           headerOnly: true,
           resizeMode: 'overflow',
@@ -585,7 +585,7 @@ export default {
             // account for the index of the action column
             if (this.actionColumn) { colIdx--; }
 
-            let column = this.computedColumns[colIdx];
+            const column = this.computedColumns[colIdx];
 
             if (column) {
               column.width = col.w;
@@ -595,7 +595,7 @@ export default {
 
             // recalculate table width
             let tableWidth = 0;
-            for (let column of this.computedColumns) {
+            for (const column of this.computedColumns) {
               tableWidth += column.width;
             }
             this.tableWidth = tableWidth;
@@ -622,10 +622,10 @@ export default {
             // so apply it to sortField, desc, and column order
             this.tableSortField = response.data.order[0][0];
             this.tableDesc = response.data.order[0][1] === 'desc';
-            for (let c of response.data.visibleHeaders) {
-              for (let column of this.columns) {
+            for (const c of response.data.visibleHeaders) {
+              for (const column of this.columns) {
                 if (column.id === c) {
-                  let newCol = this.cloneColumn(column);
+                  const newCol = this.cloneColumn(column);
                   this.computedColumns.push(newCol);
                 }
               }
@@ -646,12 +646,12 @@ export default {
         });
     },
     saveTableState: function () {
-      let tableState = {
+      const tableState = {
         order: [[this.tableSortField, this.tableDesc === true ? 'desc' : 'asc']],
         visibleHeaders: []
       };
 
-      for (let column of this.computedColumns) {
+      for (const column of this.computedColumns) {
         tableState.visibleHeaders.push(column.id);
       }
 
@@ -662,8 +662,8 @@ export default {
         .then((response) => {
           this.columnWidths = response.data || {};
           let tableWidth = 0;
-          for (let column of this.computedColumns) {
-            for (let c in this.columnWidths) {
+          for (const column of this.computedColumns) {
+            for (const c in this.columnWidths) {
               if (column.id === c) {
                 column.width = JSON.parse(JSON.stringify(this.columnWidths[c]));
               }
@@ -695,15 +695,15 @@ export default {
       this.tableDesc = this.desc;
       this.tableSortField = this.sortField;
       // display only the default columns
-      for (let column of this.columns) {
+      for (const column of this.columns) {
         if (column.default) {
-          let newCol = this.cloneColumn(column);
+          const newCol = this.cloneColumn(column);
           this.computedColumns.push(newCol);
         }
       }
     },
     cloneColumn: function (column) {
-      let newCol = JSON.parse(JSON.stringify(column));
+      const newCol = JSON.parse(JSON.stringify(column));
       if (column.dataFunction) {
         newCol.dataFunction = column.dataFunction;
       }

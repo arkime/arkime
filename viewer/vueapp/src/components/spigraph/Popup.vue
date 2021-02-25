@@ -56,7 +56,7 @@ export default {
     },
     getPopupInfo (index) {
       let info = this.popupInfo;
-      let i = index + 1;
+      const i = index + 1;
       while (info.parent) {
         if (i === info.depth) {
           if (info.data.sizeValue) {

@@ -18,18 +18,18 @@
 
 'use strict';
 
-var fs = require('fs');
-var crypto = require('crypto');
-var ipaddr = require('ipaddr.js');
+const fs = require('fs');
+const crypto = require('crypto');
+const ipaddr = require('ipaddr.js');
 
-var Pcap = module.exports = exports = function Pcap (key) {
+const Pcap = module.exports = exports = function Pcap (key) {
   this.key = key;
   this.count = 0;
   this.closing = false;
   return this;
 };
 
-var internals = {
+const internals = {
   pr2name: {
     1: 'icmp',
     2: 'igmp',
@@ -57,13 +57,13 @@ exports.get = function (key) {
     return internals.pcaps[key];
   }
 
-  var pcap = new Pcap(key);
+  const pcap = new Pcap(key);
   internals.pcaps[key] = pcap;
   return pcap;
 };
 
 exports.make = function (key, header) {
-  var pcap = new Pcap(key);
+  const pcap = new Pcap(key);
   pcap.headBuffer = header;
   pcap.bigEndian = pcap.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
   if (pcap.bigEndian) {
@@ -86,12 +86,13 @@ Pcap.prototype.open = function (filename, info) {
   if (info) {
     this.encoding = info.encoding || 'normal';
     if (info.dek) {
-      var decipher = crypto.createDecipher('aes-192-cbc', info.kek);
+      // eslint-disable-next-line node/no-deprecated-api
+      const decipher = crypto.createDecipher('aes-192-cbc', info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
     if (info.iv) {
-      var iv = Buffer.from(info.iv, 'hex');
+      const iv = Buffer.from(info.iv, 'hex');
       this.iv = Buffer.alloc(16);
       iv.copy(this.iv);
     }
@@ -153,11 +154,11 @@ Pcap.prototype.readHeader = function (cb) {
   fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
 
   if (this.encoding === 'aes-256-ctr') {
-    var decipher = this.createDecipher(0);
+    const decipher = this.createDecipher(0);
     this.headBuffer = Buffer.concat([decipher.update(this.headBuffer),
       decipher.final()]);
   } else if (this.encoding === 'xor-2048') {
-    for (var i = 0; i < this.headBuffer.length; i++) {
+    for (let i = 0; i < this.headBuffer.length; i++) {
       this.headBuffer[i] ^= this.encKey[i % 256];
     }
   };
@@ -182,8 +183,8 @@ Pcap.prototype.readPacket = function (pos, cb) {
     return;
   }
 
-  var buffer = Buffer.alloc(1792); // Divisible by 256 and 16 and > 1550
-  var posoffset = 0;
+  const buffer = Buffer.alloc(1792); // Divisible by 256 and 16 and > 1550
+  let posoffset = 0;
 
   if (this.encoding === 'aes-256-ctr') {
     posoffset = pos % 16;
@@ -201,17 +202,17 @@ Pcap.prototype.readPacket = function (pos, cb) {
       }
 
       if (this.encoding === 'aes-256-ctr') {
-        var decipher = this.createDecipher(pos / 16);
+        const decipher = this.createDecipher(pos / 16);
         buffer = Buffer.concat([decipher.update(buffer),
           decipher.final()]).slice(posoffset);
       } else if (this.encoding === 'xor-2048') {
-        for (var i = posoffset; i < bytesRead; i++) {
+        for (let i = posoffset; i < bytesRead; i++) {
           buffer[i] ^= this.encKey[i % 256];
         }
         buffer = buffer.slice(posoffset);
       }
 
-      var len = (this.bigEndian ? buffer.readUInt32BE(8) : buffer.readUInt32LE(8));
+      const len = (this.bigEndian ? buffer.readUInt32BE(8) : buffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
         return cb(undefined);
@@ -223,14 +224,14 @@ Pcap.prototype.readPacket = function (pos, cb) {
       }
       // Full packet didn't fit, get what was missed
       try {
-        var buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
+        const buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
         fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, bytesRead, ignore) => {
           if (this.encoding === 'aes-256-ctr') {
-            var decipher = this.createDecipher((pos + bytesRead) / 16);
+            const decipher = this.createDecipher((pos + bytesRead) / 16);
             return cb(Buffer.concat([buffer, decipher.update(buffer2),
               decipher.final()]));
           } else if (this.encoding === 'xor-2048') {
-            for (var i = posoffset; i < bytesRead; i++) {
+            for (let i = posoffset; i < bytesRead; i++) {
               buffer2[i] ^= this.encKey[i % 256];
             }
           }
@@ -249,7 +250,7 @@ Pcap.prototype.readPacket = function (pos, cb) {
 };
 
 Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
-  var len = packet.pcap.incl_len + 16; // 16 = pcap header length
+  let len = packet.pcap.incl_len + 16; // 16 = pcap header length
   if (entire) {
     pos += 16; // Don't delete pcap header
     len -= 16;
@@ -386,7 +387,7 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
     type: buffer.readUInt16BE(2)
   };
 
-  var bpos = 4;
+  let bpos = 4;
   if (obj.gre.flags_version & (0x8000 | 0x4000)) {
     bpos += 4;
   }
@@ -405,7 +406,7 @@ Pcap.prototype.gre = function (buffer, obj, pos) {
   if (obj.gre.flags_version & 0x4000) {
     while (1) {
       bpos += 3;
-      var len = buffer.readUInt16BE(bpos);
+      const len = buffer.readUInt16BE(bpos);
       bpos++;
       if (len === 0) { break; }
       bpos += len;
@@ -501,7 +502,7 @@ Pcap.prototype.ip6 = function (buffer, obj, pos) {
     addr2: ipaddr.fromByteArray(buffer.slice(24, 40)).toString()
   };
 
-  var offset = 40;
+  let offset = 40;
   while (offset < buffer.length) {
     switch (obj.ip.p) {
     case 0: // IPPROTO_HOPOPTS:
@@ -578,7 +579,7 @@ Pcap.prototype.ppp = function (buffer, obj, pos) {
 Pcap.prototype.mpls = function (buffer, obj, pos) {
   let offset = 0;
   while (offset + 5 < buffer.length) {
-    let S = buffer[offset + 2] & 0x1;
+    const S = buffer[offset + 2] & 0x1;
     offset += 4;
     if (S) {
       switch (buffer[offset] >> 4) {
@@ -632,7 +633,7 @@ Pcap.prototype.ether = function (buffer, obj, pos) {
 };
 
 Pcap.prototype.radiotap = function (buffer, obj, pos) {
-  var l = buffer[2] + 24;
+  const l = buffer[2] + 24;
   if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
     this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
   } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
@@ -641,9 +642,9 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
 };
 
 Pcap.prototype.nflog = function (buffer, obj, pos) {
-  var offset = 4;
+  let offset = 4;
   while (offset + 4 < buffer.length) {
-    var length = buffer.readUInt16LE(offset);
+    const length = buffer.readUInt16LE(offset);
     if (buffer[offset + 3] === 0 && buffer[offset + 2] === 9) {
       if (buffer[0] === 2) { return this.ip4(buffer.slice(offset + 4), obj, pos + offset + 4); } else { return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4); }
     } else {
@@ -651,7 +652,7 @@ Pcap.prototype.nflog = function (buffer, obj, pos) {
     }
   }
 
-  var l = buffer[2] + 24;
+  const l = buffer[2] + 24;
   if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
     this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
   } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
@@ -728,8 +729,8 @@ Pcap.prototype.decode = function (buffer, obj) {
 };
 
 Pcap.prototype.getHeaderNg = function () {
-  var buffer = this.readHeader();
-  var b = Buffer.alloc(32 + 24);
+  const buffer = this.readHeader();
+  const b = Buffer.alloc(32 + 24);
 
   b.writeUInt32LE(0x0A0D0D0A, 0); // Block Type
   b.writeUInt32LE(32, 4); // Block Len 1
@@ -757,19 +758,19 @@ Pcap.prototype.getHeaderNg = function () {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 exports.reassemble_icmp = function (packets, numPackets, cb) {
-  var results = [];
+  const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
-    var key = item.ip.addr1;
+    const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
-      var result = {
+      const result = {
         key: key,
         data: item.icmp.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
       results.push(result);
     } else {
-      var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.icmp.data.length);
+      const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.icmp.data.length);
       results[results.length - 1].data.copy(newBuf);
       item.icmp.data.copy(newBuf, results[results.length - 1].data.length);
       results[results.length - 1].data = newBuf;
@@ -779,20 +780,20 @@ exports.reassemble_icmp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_udp = function (packets, numPackets, cb) {
+  const results = [];
   try {
-    var results = [];
     packets.length = Math.min(packets.length, numPackets);
     packets.forEach((item) => {
-      var key = item.ip.addr1 + ':' + item.udp.sport;
+      const key = item.ip.addr1 + ':' + item.udp.sport;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        var result = {
+        const result = {
           key: key,
           data: item.udp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
         results.push(result);
       } else {
-        var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.udp.data.length);
+        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.udp.data.length);
         results[results.length - 1].data.copy(newBuf);
         item.udp.data.copy(newBuf, results[results.length - 1].data.length);
         results[results.length - 1].data = newBuf;
@@ -805,20 +806,20 @@ exports.reassemble_udp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_sctp = function (packets, numPackets, cb) {
+  const results = [];
   try {
-    var results = [];
     packets.length = Math.min(packets.length, numPackets);
     packets.forEach((item) => {
-      var key = item.ip.addr1 + ':' + item.sctp.sport;
+      const key = item.ip.addr1 + ':' + item.sctp.sport;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        var result = {
+        const result = {
           key: key,
           data: item.sctp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
         results.push(result);
       } else {
-        var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.sctp.data.length);
+        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.sctp.data.length);
         results[results.length - 1].data.copy(newBuf);
         item.sctp.data.copy(newBuf, results[results.length - 1].data.length);
         results[results.length - 1].data = newBuf;
@@ -831,19 +832,19 @@ exports.reassemble_sctp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_esp = function (packets, numPackets, cb) {
-  var results = [];
+  const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
-    var key = item.ip.addr1;
+    const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
-      var result = {
+      const result = {
         key: key,
         data: item.esp.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
       results.push(result);
     } else {
-      var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.esp.data.length);
+      const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.esp.data.length);
       results[results.length - 1].data.copy(newBuf);
       item.esp.data.copy(newBuf, results[results.length - 1].data.length);
       results[results.length - 1].data = newBuf;
@@ -853,19 +854,19 @@ exports.reassemble_esp = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_generic_ip = function (packets, numPackets, cb) {
-  var results = [];
+  const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
-    var key = item.ip.addr1;
+    const key = item.ip.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
-      var result = {
+      const result = {
         key: key,
         data: item.ip.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
       results.push(result);
     } else {
-      var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ip.data.length);
+      const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ip.data.length);
       results[results.length - 1].data.copy(newBuf);
       item.ip.data.copy(newBuf, results[results.length - 1].data.length);
       results[results.length - 1].data = newBuf;
@@ -875,19 +876,19 @@ exports.reassemble_generic_ip = function (packets, numPackets, cb) {
 };
 
 exports.reassemble_generic_ether = function (packets, numPackets, cb) {
-  var results = [];
+  const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
-    var key = item.ether.addr1;
+    const key = item.ether.addr1;
     if (results.length === 0 || key !== results[results.length - 1].key) {
-      var result = {
+      const result = {
         key: key,
         data: item.ether.data,
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
       results.push(result);
     } else {
-      var newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ether.data.length);
+      const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ether.data.length);
       results[results.length - 1].data.copy(newBuf);
       item.ether.data.copy(newBuf, results[results.length - 1].data.length);
       results[results.length - 1].data = newBuf;
@@ -902,10 +903,10 @@ exports.reassemble_generic_ether = function (packets, numPackets, cb) {
 exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
-    var packets2 = [];
-    var info = {};
-    var keys = [];
-    var key, i, ilen;
+    const packets2 = [];
+    const info = {};
+    const keys = [];
+    let key, i, ilen;
     for (i = 0, ilen = packets.length; i < ilen; i++) {
       if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
         continue;
@@ -929,7 +930,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     }
 
     // Do we need to wrap the packets
-    var needwrap = false;
+    let needwrap = false;
     if (info[keys[0]] && info[keys[0]].max - info[keys[0]].min > 0x7fffffff) {
       info[keys[0]].wrapseq = true;
       info[keys[1]].wrapack = true;
@@ -957,7 +958,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     }
 
     // Sort Packets
-    var clientKey = packets[0].ip.addr1 + ':' + packets[0].tcp.sport;
+    const clientKey = packets[0].ip.addr1 + ':' + packets[0].tcp.sport;
     packets.sort((a, b) => {
       if ((a.ip.addr1 === b.ip.addr1) && (a.tcp.sport === b.tcp.sport)) {
         return (a.tcp.seq - b.tcp.seq);
@@ -974,14 +975,14 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
     packets.length = Math.min(packets.length, numPackets);
 
     // Now divide up conversation
-    var clientSeq = 0;
-    var hostSeq = 0;
-    var start = 0;
-    var previous = 0;
+    let clientSeq = 0;
+    let hostSeq = 0;
+    let start = 0;
+    let previous = 0;
 
-    var results = [];
+    const results = [];
     packets.forEach((item) => {
-      var key = item.ip.addr1 + ':' + item.tcp.sport;
+      const key = item.ip.addr1 + ':' + item.tcp.sport;
       if (key === clientKey) {
         if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
           return;
@@ -994,7 +995,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         hostSeq = (item.tcp.seq + item.tcp.data.length);
       }
 
-      var result;
+      let result;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         previous = start = item.tcp.seq;
         result = {
@@ -1015,7 +1016,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         results.push(result);
       } else {
         previous = item.tcp.seq;
-        var newBuf = Buffer.alloc(item.tcp.data.length + item.tcp.seq - start);
+        const newBuf = Buffer.alloc(item.tcp.data.length + item.tcp.seq - start);
         results[results.length - 1].data.copy(newBuf);
         item.tcp.data.copy(newBuf, item.tcp.seq - start);
         results[results.length - 1].data = newBuf;
@@ -1033,12 +1034,12 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
 
 exports.packetFlow = function (session, packets, numPackets, cb) {
   let sKey, dKey;
-  let error = false;
+  const error = false;
 
   packets = packets.slice(0, numPackets);
 
-  let results = packets.map((item, index) => {
-    let result = {
+  const results = packets.map((item, index) => {
+    const result = {
       key: Pcap.key(item),
       ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
     };

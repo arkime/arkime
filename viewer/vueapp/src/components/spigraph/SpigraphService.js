@@ -12,7 +12,7 @@ export default {
    */
   get: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: 'api/spigraph',
         method: 'POST',
         data: query,
@@ -40,7 +40,7 @@ export default {
    */
   getHierarchy: function (query, cancelToken) {
     return new Promise((resolve, reject) => {
-      let options = {
+      const options = {
         url: 'api/spigraphhierarchy',
         method: 'POST',
         data: query,

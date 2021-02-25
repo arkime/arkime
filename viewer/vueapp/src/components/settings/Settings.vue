@@ -2549,7 +2549,7 @@ export default {
           this.msgType = 'success';
 
           if (updateTheme) {
-            let now = Date.now();
+            const now = Date.now();
             if ($('link[href^="api/user/css"]').length) {
               $('link[href^="api/user/css"]').remove();
             }
@@ -2624,7 +2624,7 @@ export default {
       this.update();
     },
     timelineFilterSelected: function (field) {
-      let index = this.settings.timelineDataFilters.indexOf(field.dbField);
+      const index = this.settings.timelineDataFilters.indexOf(field.dbField);
       this.$set(this, 'filtersTypeahead', field.friendlyName);
 
       if (index >= 0) {
@@ -2678,7 +2678,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         shared: this.newViewShared,
         name: this.newViewName,
         expression: this.newViewExpression
@@ -2758,7 +2758,7 @@ export default {
      * @param {string} key The unique id of the view to update
      */
     updateView: function (key) {
-      let data = this.views[key];
+      const data = this.views[key];
 
       if (!data) {
         this.msg = 'Could not find corresponding view';
@@ -2823,7 +2823,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         enabled: true,
         name: this.newCronQueryName,
         query: this.newCronQueryExpression,
@@ -2902,7 +2902,7 @@ export default {
      * @param {string} key The unique id of the cron query to update
      */
     updateCronQuery: function (key) {
-      let data = this.cronQueries[key];
+      const data = this.cronQueries[key];
 
       if (!data) {
         this.msg = 'Could not find corresponding cron query';
@@ -3005,7 +3005,7 @@ export default {
       this.update(true);
     },
     updateThemeString: function () {
-      let colors = this.themeString.split(',');
+      const colors = this.themeString.split(',');
 
       this.background = colors[0];
       this.foreground = colors[1];
@@ -3059,7 +3059,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         newPassword: this.newPassword,
         currentPassword: this.currentPassword
       };
@@ -3098,7 +3098,7 @@ export default {
     /* clears the fields of the new notifier form */
     clearNotifierFields: function () {
       this.newNotifier.name = '';
-      for (let field of this.newNotifier.fields) {
+      for (const field of this.newNotifier.fields) {
         field.value = '';
       }
     },
@@ -3115,7 +3115,7 @@ export default {
       }
 
       // make sure required fields are filled
-      for (let field of this.newNotifier.fields) {
+      for (const field of this.newNotifier.fields) {
         if (!field.value && field.required) {
           this.newNotifierError = `${field.name} is required`;
           return;
@@ -3324,7 +3324,7 @@ export default {
     /* helper functions ---------------------------------------------------- */
     /* retrievs the theme colors from the document body's property values */
     getThemeColors: function () {
-      let styles = window.getComputedStyle(document.body);
+      const styles = window.getComputedStyle(document.body);
 
       this.background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
       this.foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
@@ -3358,7 +3358,7 @@ export default {
       UserService.getSettings(this.userId)
         .then((response) => {
           // set the user settings individually
-          for (let key in response) {
+          for (const key in response) {
             this.$set(this.settings, key, response[key]);
           }
 
@@ -3424,24 +3424,22 @@ export default {
           // attach the full field object to the component's timelineDataFilters from array of dbField
           this.timelineDataFilters = [];
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
-            let filter = this.settings.timelineDataFilters[i];
-            let fieldOBJ = this.integerFields.find(i => i.dbField === filter);
+            const filter = this.settings.timelineDataFilters[i];
+            const fieldOBJ = this.integerFields.find(i => i.dbField === filter);
             if (fieldOBJ) {
               this.timelineDataFilters.push(fieldOBJ);
             }
           }
 
           // add custom columns to the fields array
-          for (let key in customCols) {
-            if (customCols.hasOwnProperty(key)) {
-              this.fields.push(customCols[key]);
-            }
+          for (const key in customCols) {
+            this.fields.push(customCols[key]);
           }
 
           // update the user settings for spigraph field & connections src/dst fields
           // NOTE: dbField is saved in settings, but show the field's friendlyName
           for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
-            let field = this.fieldsPlus[i];
+            const field = this.fieldsPlus[i];
             if (this.settings.spiGraph === field.dbField) {
               this.$set(this, 'spiGraphField', field);
               this.$set(this, 'spiGraphTypeahead', field.friendlyName);
@@ -3460,7 +3458,7 @@ export default {
           // build fields map for quick lookup by dbField
           this.fieldsMap = {};
           for (let i = 0, len = this.fields.length; i < len; ++i) {
-            let field = this.fields[i];
+            const field = this.fields[i];
             this.fieldsMap[field.dbField] = field;
           }
 
@@ -3517,20 +3515,20 @@ export default {
           this.spiviewConfigs = response;
 
           for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
-            let config = this.spiviewConfigs[x];
-            let spiParamsArray = config.fields.split(',');
+            const config = this.spiviewConfigs[x];
+            const spiParamsArray = config.fields.split(',');
 
             // get each field from the spi query parameter and issue
             // a query for one field at a time
             for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-              let param = spiParamsArray[i];
-              let split = param.split(':');
-              let fieldID = split[0];
-              let count = split[1];
+              const param = spiParamsArray[i];
+              const split = param.split(':');
+              const fieldID = split[0];
+              const count = split[1];
 
               let field;
 
-              for (let key in this.fields) {
+              for (const key in this.fields) {
                 if (this.fields[key].dbField === fieldID) {
                   field = this.fields[key];
                   break;

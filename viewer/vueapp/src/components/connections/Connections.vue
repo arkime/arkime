@@ -470,9 +470,9 @@ let linkMax = 1;
 let linkMin = 1;
 let linkScaleFactor = 0;
 let nodeScaleFactor = 0;
-let maxLog = Math.ceil(Math.pow(Math.E, 9));
+const maxLog = Math.ceil(Math.pow(Math.E, 9));
 /* eslint-disable no-useless-escape */
-let idRegex = /[\[\]:. ]/g;
+const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 
 // drag helpers
@@ -554,13 +554,13 @@ function closePopupsOnEsc (keyCode) {
 
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
-const defaultLinkFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
-const defaultNodeFields = [ 'totBytes', 'totDataBytes', 'totPackets', 'node' ];
+const defaultLinkFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+const defaultNodeFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
 
 // vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
-  mixins: [ clickaway ],
+  mixins: [clickaway],
   components: {
     MolochSearch,
     MolochError,
@@ -624,9 +624,9 @@ export default {
       return this.$store.state.showToolBars;
     },
     filteredFields: function () {
-      let filteredGroupedFields = {};
+      const filteredGroupedFields = {};
 
-      for (let group in this.groupedFields) {
+      for (const group in this.groupedFields) {
         filteredGroupedFields[group] = this.$options.filters.searchFields(
           this.fieldQuery,
           this.groupedFields[group]
@@ -680,7 +680,7 @@ export default {
     }
   },
   mounted: function () {
-    let styles = window.getComputedStyle(document.body);
+    const styles = window.getComputedStyle(document.body);
     this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
@@ -788,7 +788,8 @@ export default {
         .attr('dx', this.calculateNodeLabelOffset);
     },
     changeNodeDist: function (direction) {
-      this.query.nodeDist = direction > 0 ? Math.min(this.query.nodeDist + direction, 200)
+      this.query.nodeDist = direction > 0
+        ? Math.min(this.query.nodeDist + direction, 200)
         : Math.max(this.query.nodeDist + direction, 10);
 
       this.$router.push({
@@ -822,7 +823,7 @@ export default {
       return list.indexOf(id);
     },
     toggleFieldVisibility: function (id, list) {
-      let index = this.isFieldVisible(id, list);
+      const index = this.isFieldVisible(id, list);
 
       if (index >= 0) { // it's visible
         // remove it from the visible node fields list
@@ -843,7 +844,8 @@ export default {
       simulation.alphaTarget(0.3).restart();
     },
     zoomConnections: function (direction) {
-      this.zoomLevel = direction > 0.5 ? Math.min(this.zoomLevel * direction, 4)
+      this.zoomLevel = direction > 0.5
+        ? Math.min(this.zoomLevel * direction, 4)
         : Math.max(this.zoomLevel * direction, 0.0625);
 
       svg.transition().duration(500).call(zoom.scaleBy, direction);
@@ -856,7 +858,8 @@ export default {
       );
     },
     updateTextSize: function (direction) {
-      this.fontSize = direction > 0 ? Math.min(this.fontSize + direction, 1)
+      this.fontSize = direction > 0
+        ? Math.min(this.fontSize + direction, 1)
         : Math.max(this.fontSize + direction, 0.2);
 
       svg.selectAll('.node-label')
@@ -868,8 +871,8 @@ export default {
       this.loading = true;
 
       if (this.multiviewer) {
-        var availableCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           this.getFields({ nodes: [], links: [] });
           this.recordsFiltered = 0;
@@ -888,10 +891,10 @@ export default {
       }
 
       // send the requested fields with the query
-      let fields = this.nodeFields;
+      const fields = this.nodeFields;
       // combine fields from nodes and links
-      for (let f in this.linkFields) {
-        let id = this.linkFields[f];
+      for (const f in this.linkFields) {
+        const id = this.linkFields[f];
         if (fields.indexOf(id) > -1) { continue; }
         fields.push(id);
       }
@@ -927,7 +930,7 @@ export default {
 
           this.setupFields();
 
-          for (let field of this.fields) {
+          for (const field of this.fields) {
             if (field.dbField === this.query.srcField) {
               this.srcFieldTypeahead = field.friendlyName;
             }
@@ -944,15 +947,15 @@ export default {
     setupFields: function () {
       // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
-      let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
+      const existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
       let ipDstPortFieldExists = false;
-      for (let field of this.fields) {
+      for (const field of this.fields) {
         // found the ip.dst:port field
         if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
         // don't include fields with regex
-        if (field.hasOwnProperty('regex')) { continue; }
-        if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
+        if (field.regex) { continue; }
+        if (!existingFieldsLookup[field.exp]) {
           this.fieldsMap[field.dbField] = field;
           existingFieldsLookup[field.exp] = field;
           if (!this.groupedFields[field.group]) {
@@ -1000,7 +1003,7 @@ export default {
       const dstFieldIsTime = this.dbField2Type(this.query.dstField) === 'seconds';
 
       if (srcFieldIsTime || dstFieldIsTime) {
-        for (let dataNode of data.nodes) {
+        for (const dataNode of data.nodes) {
           // only parse date values if the source field is of type seconds
           // and the node is a source node OR if the destination field is
           // of type seconds and the node is a destination (target) node
@@ -1175,7 +1178,7 @@ export default {
 
       nodeMax = 1;
       nodeMin = 1;
-      for (let n of nodes) {
+      for (const n of nodes) {
         if (n[weightField] !== undefined) {
           if (n[weightField] > nodeMax) {
             nodeMax = n[weightField];
@@ -1191,7 +1194,7 @@ export default {
       if (weightField === 'sessions') {
         weightField = 'value';
       }
-      for (let l of links) {
+      for (const l of links) {
         if (l[weightField] !== undefined) {
           if (l[weightField] > linkMax) {
             linkMax = l[weightField];
@@ -1222,7 +1225,7 @@ export default {
       return 3 + val;
     },
     calculateNodeLabelOffset: function (nl) {
-      let val = this.calculateNodeWeight(nl);
+      const val = this.calculateNodeWeight(nl);
       return 2 + val;
     },
     calculateNodeLabelWeight: function (n) {
@@ -1265,8 +1268,8 @@ export default {
       let val = 'visible';
 
       if (this.query.baselineDate !== '0') {
-        let inActualSet = ((n.inresult & 0x1) !== 0);
-        let inBaselineSet = ((n.inresult & 0x2) !== 0);
+        const inActualSet = ((n.inresult & 0x1) !== 0);
+        const inBaselineSet = ((n.inresult & 0x2) !== 0);
         switch (this.query.baselineVis) {
         case 'actual':
           val = inActualSet ? 'visible' : 'hidden';
@@ -1289,18 +1292,18 @@ export default {
       let val = 'visible';
 
       if (this.query.baselineDate !== '0') {
-        let nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
+        const nodesVisibilities = [this.calculateNodeBaselineVisibility(l.source), this.calculateNodeBaselineVisibility(l.target)];
         val = (nodesVisibilities.includes('hidden')) ? 'hidden' : 'visible';
       }
 
       return val;
     },
     calculateCollisionRadius: function (n) {
-      let val = this.calculateNodeWeight(n);
+      const val = this.calculateNodeWeight(n);
       return 2 * val;
     },
     dbField2Type: function (dbField) {
-      for (let k in this.fields) {
+      for (const k in this.fields) {
         if (dbField === this.fields[k].dbField ||
             dbField === this.fields[k].rawField) {
           return this.fields[k].type;
@@ -1310,7 +1313,7 @@ export default {
       return undefined;
     },
     dbField2Exp: function (dbField) {
-      for (let k in this.fields) {
+      for (const k in this.fields) {
         if (dbField === this.fields[k].dbField ||
             dbField === this.fields[k].rawField) {
           return this.fields[k].exp;
@@ -1410,7 +1413,7 @@ export default {
           methods: {
             hideNode: function () {
               this.$parent.closePopups();
-              let id = '#id' + dataNode.id.replace(idRegex, '_');
+              const id = '#id' + dataNode.id.replace(idRegex, '_');
               svg.select(id).remove();
               svg.select(id + '-label').remove();
               svg.selectAll('.link')
@@ -1420,7 +1423,7 @@ export default {
                 .remove();
             },
             addExpression: function (op) {
-              let fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
+              const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
               this.$store.commit('addToExpression', { expression: fullExpression, op: op });
             },
             closePopup: function () {
@@ -1529,7 +1532,7 @@ export default {
                 .remove();
             },
             addExpression: function (op) {
-              let fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
+              const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
               this.$store.commit('addToExpression', { expression: fullExpression, op: op });
             },
             closePopup: function () {

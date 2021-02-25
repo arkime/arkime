@@ -69,12 +69,12 @@ export default {
       },
       set: function (newValue) {
         if (newValue !== this.length) {
-          let newQuery = {
+          const newQuery = {
             ...this.$route.query,
             length: newValue
           };
 
-          let exprChanged = this.$store.state.expression !== this.$route.query.expression;
+          const exprChanged = this.$store.state.expression !== this.$route.query.expression;
           if (exprChanged) {
             newQuery.expression = this.$store.state.expression;
           }
@@ -88,7 +88,7 @@ export default {
       }
     },
     lengthOptions: function () {
-      let options = [
+      const options = [
         { value: 10, label: '10 per page' },
         { value: 50, label: '50 per page' },
         { value: 100, label: '100 per page' },
@@ -98,7 +98,7 @@ export default {
       ];
 
       let exists = false;
-      for (let option of options) {
+      for (const option of options) {
         if (this.length === option.value) {
           exists = true;
           break;
@@ -119,7 +119,7 @@ export default {
       return options;
     },
     pagingInfoTitle: function () {
-      let total = this.$options.filters.commaString(this.recordsTotal);
+      const total = this.$options.filters.commaString(this.recordsTotal);
       return `filtered from ${total} total entries`;
     }
   },
@@ -127,7 +127,7 @@ export default {
     notifyParent: function (issueQuery) {
       this.start = (this.currentPage - 1) * this.length;
 
-      let pagingParams = {
+      const pagingParams = {
         start: this.start,
         length: this.length,
         issueQuery: issueQuery

@@ -20,13 +20,13 @@
 const http = require('http');
 
 exports.init = function (Config, emitter) {
-  var port = Config.get('wisePort', 8081);
-  var host = Config.get('wiseHost', '127.0.0.1');
+  const port = Config.get('wisePort', 8081);
+  const host = Config.get('wiseHost', '127.0.0.1');
 
   emitter.on('makeSessionDetail', function (cb) {
-    var url = 'http://' + host + ':' + port + '/views';
-    var req = http.request(url, function (res) {
-      var body = '';
+    const url = 'http://' + host + ':' + port + '/views';
+    const req = http.request(url, function (res) {
+      let body = '';
       res.on('data', function (chunk) {
         body += chunk;
       });
@@ -34,7 +34,7 @@ exports.init = function (Config, emitter) {
         if (res.statusCode !== 200) {
           return cb(null, {});
         }
-        var result = JSON.parse(body);
+        const result = JSON.parse(body);
         return cb(null, result);
       });
     });
@@ -46,9 +46,9 @@ exports.init = function (Config, emitter) {
   });
 
   emitter.on('makeRightClick', function (cb) {
-    var url = 'http://' + host + ':' + port + '/rightClicks';
-    var req = http.request(url, function (res) {
-      var body = '';
+    const url = 'http://' + host + ':' + port + '/rightClicks';
+    const req = http.request(url, function (res) {
+      let body = '';
       res.on('data', function (chunk) {
         body += chunk;
       });
@@ -56,7 +56,7 @@ exports.init = function (Config, emitter) {
         if (res.statusCode !== 200) {
           return cb(null, {});
         }
-        var result = JSON.parse(body);
+        const result = JSON.parse(body);
         return cb(null, result);
       });
     });

@@ -121,7 +121,7 @@ export default {
       return 'assets/Arkime_Logo_Mark_White.png';
     },
     menu: function () {
-      let menu = {
+      const menu = {
         sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'] },
         spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'] },
         spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'] },
@@ -142,8 +142,8 @@ export default {
       }
 
       // preserve url query parameters
-      for (let m in menu) {
-        let item = menu[m];
+      for (const m in menu) {
+        const item = menu[m];
         item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
         // make sure the stored expression is part of the query
         item.query = {
@@ -165,15 +165,15 @@ export default {
         // a sibling of this component might update the user (Users.vue)
         if (this.user) {
           item.hasPermission = !item.permission ||
-            (this.user.hasOwnProperty(item.permission) && this.user[item.permission] && !item.reverse) ||
-            (!this.user.hasOwnProperty(item.permission) || (!this.user[item.permission] && item.reverse));
+            (this.user[item.permission] !== undefined && this.user[item.permission] && !item.reverse) ||
+            (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
         }
       }
 
       return menu;
     },
     helpLink: function () {
-      let helpLink = {
+      const helpLink = {
         href: `help?${qs.stringify(this.$route.query)}`,
         query: {
           ...this.$route.query,
@@ -187,9 +187,9 @@ export default {
     },
     activePage: function () {
       let activeLink;
-      let chosenPath = this.$route.path.split('/')[1];
-      for (let page in this.menu) {
-        let link = this.menu[page].link;
+      const chosenPath = this.$route.path.split('/')[1];
+      for (const page in this.menu) {
+        const link = this.menu[page].link;
         if (link === chosenPath) {
           activeLink = chosenPath;
           break;

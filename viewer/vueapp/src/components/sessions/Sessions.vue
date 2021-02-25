@@ -534,7 +534,7 @@ import MolochStickySessions from './StickySessions';
 import Sortable from 'sortablejs';
 import '../../../../public/colResizable.js';
 
-let defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
+const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
 let componentInitialized = false;
 let holdingClick = false;
@@ -548,16 +548,16 @@ let tableDestroyed;
 let resizeTimeout;
 let windowResizeEvent;
 const defaultColWidths = {
-  'firstPacket': 100,
-  'lastPacket': 100,
-  'src': 140,
-  'srcPort': 100,
-  'dst': 140,
-  'dstPort': 100,
-  'totPackets': 100,
-  'dbby': 120,
-  'node': 100,
-  'info': 250
+  firstPacket: 100,
+  lastPacket: 100,
+  src: 140,
+  srcPort: 100,
+  dst: 140,
+  dstPort: 100,
+  totPackets: 100,
+  dbby: 120,
+  node: 100,
+  info: 250
 };
 
 // save a pending promise to be able to cancel it
@@ -664,7 +664,7 @@ export default {
       return this.$store.state.views;
     },
     tableStyle: function () {
-      let style = {};
+      const style = {};
       if (this.tableHeaderOverflow < 0) {
         style.width = `${this.tableWidth}px`;
       }
@@ -695,7 +695,7 @@ export default {
      * the dropdown is cut off and scrolls vertically in the column header */
     dropdownShowListener: function (bvEvent) {
       if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
+      const target = $(bvEvent.target);
       if (!target) { return; }
       if (!target.parent().hasClass('col-dropdown')) { return; }
       $('thead').css('overflow-x', 'visible');
@@ -705,7 +705,7 @@ export default {
      * behavior so that the table can overflow the window width */
     dropdownHideListener: function (bvEvent) {
       if (!this.stickyHeader) { return; }
-      let target = $(bvEvent.target);
+      const target = $(bvEvent.target);
       if (!target) { return; }
       if (!target.parent().hasClass('col-dropdown')) { return; }
       $('thead').css('overflow-x', 'scroll');
@@ -755,7 +755,7 @@ export default {
       if (session.expanded) {
         this.stickySessions.push(session);
       } else {
-        let index = this.stickySessions.indexOf(session);
+        const index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
 
@@ -767,8 +767,8 @@ export default {
      * @param {string} sessionId The id of the session to close
      */
     closeSession: function (sessionId) {
-      for (let i in this.stickySessions) {
-        let session = this.stickySessions[i];
+      for (const i in this.stickySessions) {
+        const session = this.stickySessions[i];
         if (session.id === sessionId) {
           session.expanded = false;
           this.stickySessions.splice(i, 1);
@@ -782,7 +782,7 @@ export default {
      * Triggered by the sticky session component
      */
     closeAllSessions: function () {
-      for (let session of this.stickySessions) {
+      for (const session of this.stickySessions) {
         session.expanded = false;
       }
 
@@ -813,7 +813,7 @@ export default {
       if (this.isSorted(id) >= 0) {
         // the table is already sorted by this element
         if (!event.shiftKey) {
-          let item = this.toggleSortOrder(id);
+          const item = this.toggleSortOrder(id);
           this.tableState.order = [item];
         } else {
           // if it's a shift click - toggle the order between 3 states:
@@ -832,10 +832,10 @@ export default {
       } else { // sort by a new column
         if (!event.shiftKey) {
           // if it's a regular click - remove other sorts and add this one
-          this.tableState.order = [[ id, 'asc' ]];
+          this.tableState.order = [[id, 'asc']];
         } else {
           // if it's a shift click - add it to the list
-          this.tableState.order.push([ id, 'asc' ]);
+          this.tableState.order.push([id, 'asc']);
         }
       }
 
@@ -865,7 +865,7 @@ export default {
      */
     toggleSortOrder: function (id) {
       for (let i = 0, len = this.tableState.order.length; i < len; ++i) {
-        let item = this.tableState.order[i];
+        const item = this.tableState.order[i];
         if (item[0] === id) {
           if (item[1] === 'asc') {
             item[1] = 'desc';
@@ -886,7 +886,7 @@ export default {
       let updated = false;
 
       // update the sort field and order if the table was being sorted by that field
-      let sortIndex = this.isSorted(id);
+      const sortIndex = this.isSorted(id);
       if (sortIndex > -1) {
         updated = true; // requires a data reload because the sort is different
         // if we are sorting by this column, remove it
@@ -895,7 +895,7 @@ export default {
           // so reset it to the first sortable field in the visible headers
           let newSort;
           for (let i = 0, len = this.headers.length; i < len; ++i) {
-            let header = this.headers[i];
+            const header = this.headers[i];
             // find the first sortable column
             if ((!header.children || (header.children && header.sortBy)) &&
                (header.dbField !== id && header.sortBy !== id)) {
@@ -955,7 +955,7 @@ export default {
     toggleColVis: function (id, sort) {
       let reloadData = false;
 
-      let index = this.isColVisible(id);
+      const index = this.isColVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the visible headers list
@@ -984,7 +984,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         name: this.newColConfigName,
         columns: this.tableState.visibleHeaders.slice(),
         order: this.tableState.order.slice()
@@ -1021,8 +1021,8 @@ export default {
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
-        for (let headerId of this.tableState.visibleHeaders) {
-          let field = this.getField(headerId);
+        for (const headerId of this.tableState.visibleHeaders) {
+          const field = this.getField(headerId);
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
       } else {
@@ -1057,7 +1057,7 @@ export default {
      * @param {int} index   The index in the array of the column config to udpate
      */
     updateColumnConfiguration: function (name, index) {
-      let data = {
+      const data = {
         name: name,
         columns: this.tableState.visibleHeaders.slice(),
         order: JSON.parse(JSON.stringify(this.tableState.order))
@@ -1095,7 +1095,7 @@ export default {
         }
 
         if (field.aliases) { // check aliases too
-          for (let alias of field.aliases) {
+          for (const alias of field.aliases) {
             if (id === alias) {
               return index;
             }
@@ -1122,7 +1122,7 @@ export default {
     toggleInfoVis: function (id) {
       let reloadData = false;
 
-      let index = this.isInfoVisible(id);
+      const index = this.isInfoVisible(id);
 
       if (index >= 0) { // it's visible
         // remove it from the info fields list
@@ -1130,7 +1130,7 @@ export default {
       } else { // it's hidden
         reloadData = true; // requires a data reload
         // add it to the info fields list
-        let field = this.getField(id);
+        const field = this.getField(id);
         if (field) { this.infoFields.push(field); }
       }
 
@@ -1157,8 +1157,8 @@ export default {
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
-      let infoFields = [];
-      for (let field of this.infoFields) {
+      const infoFields = [];
+      for (const field of this.infoFields) {
         infoFields.push(field.dbField);
       }
       this.user.settings.infoFields = infoFields;
@@ -1171,13 +1171,13 @@ export default {
       $('#sessionsTable').colResizable({ disable: true });
       colResizeInitialized = false;
 
-      let windowWidth = window.innerWidth - 34; // account for right and left margins
-      let leftoverWidth = windowWidth - this.sumOfColWidths;
-      let percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
+      const windowWidth = window.innerWidth - 34; // account for right and left margins
+      const leftoverWidth = windowWidth - this.sumOfColWidths;
+      const percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
 
       for (let i = 0, len = this.headers.length; i < len; ++i) {
-        let header = this.headers[i];
-        let newWidth = Math.floor(header.width * percentChange);
+        const header = this.headers[i];
+        const newWidth = Math.floor(header.width * percentChange);
         header.width = newWidth;
         this.colWidths[header.dbField] = newWidth;
       }
@@ -1213,11 +1213,11 @@ export default {
      * @param {string} exp      The field to add to the search expression
      */
     pivot: function (dbField, exp) {
-      let values = [];
-      let existingVals = {}; // save map of existing values for deduping
-      for (let session of this.sessions.data) {
+      const values = [];
+      const existingVals = {}; // save map of existing values for deduping
+      for (const session of this.sessions.data) {
         if (session[dbField]) {
-          let value = session[dbField];
+          const value = session[dbField];
           if (existingVals[value]) { continue; }
           values.push(value);
           existingVals[value] = true;
@@ -1253,9 +1253,9 @@ export default {
      * @param {boolean} excludeInfo     Whether to exclude the special info "field"
      */
     filterFields: function (excludeTokens, excludeFilename, excludeInfo) {
-      let filteredGroupedFields = {};
+      const filteredGroupedFields = {};
 
-      for (let group in this.groupedFields) {
+      for (const group in this.groupedFields) {
         filteredGroupedFields[group] = this.$options.filters.searchFields(
           this.colQuery,
           this.groupedFields[group],
@@ -1364,8 +1364,8 @@ export default {
       this.error = '';
 
       if (this.multiviewer) {
-        var availableCluster = this.$store.state.esCluster.availableCluster.active;
-        var selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
+        const availableCluster = this.$store.state.esCluster.availableCluster.active;
+        const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
           pendingPromise = null;
           this.sessions.data = undefined;
@@ -1376,15 +1376,15 @@ export default {
       }
 
       // save expanded sessions
-      let expandedSessions = [];
-      for (let session of this.stickySessions) {
+      const expandedSessions = [];
+      for (const session of this.stickySessions) {
         expandedSessions.push(session.id);
       }
 
       this.sorts = this.tableState.order || JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
 
       if (this.viewChanged && this.views) {
-        for (let view in this.views) {
+        for (const view in this.views) {
           if (view === this.query.view && this.views[view].sessionsColConfig) {
             this.tableState = JSON.parse(JSON.stringify(this.views[view].sessionsColConfig));
             this.sorts = this.tableState.order;
@@ -1404,14 +1404,14 @@ export default {
 
       // set the fields to retrieve from the server for each session
       if (this.headers) {
-        for (let field of this.headers) {
+        for (const field of this.headers) {
           if (field.children) {
             let children = field.children;
             // add user configurable child info fields
             if (field.exp === 'info' && this.infoFields) {
               children = JSON.parse(JSON.stringify(this.infoFields));
             }
-            for (let child of children) {
+            for (const child of children) {
               if (child) {
                 this.query.fields.push(child.dbField);
               }
@@ -1446,8 +1446,8 @@ export default {
         if (parseInt(this.$route.query.openAll) === 1) {
           this.openAll();
         } else { // open the previously opened sessions
-          for (let sessionId of expandedSessions) {
-            for (let session of this.sessions.data) {
+          for (const sessionId of expandedSessions) {
+            for (const session of this.sessions.data) {
               if (session.id === sessionId) {
                 session.expanded = true;
                 this.stickySessions.push(session);
@@ -1472,7 +1472,7 @@ export default {
     getCaptureStats: function () {
       this.$http.get('api/stats')
         .then((response) => {
-          for (let data of response.data.data) {
+          for (const data of response.data.data) {
             this.capStartTimes.push({
               nodeName: data.nodeName,
               startTime: data.startTime * 1000
@@ -1503,36 +1503,30 @@ export default {
      * by adding custom columns to the visible columns list and table
      */
     setupFields: function () {
-      for (let key in customCols) {
-        if (customCols.hasOwnProperty(key)) {
-          this.fields[key] = customCols[key];
-          let children = this.fields[key].children;
-          // expand all the children
-          for (let c in children) {
-            // (replace fieldId with field object)
-            if (children.hasOwnProperty(c)) {
-              if (typeof children[c] !== 'object') {
-                children[c] = this.getField(children[c]);
-              }
-            }
+      for (const key in customCols) {
+        this.fields[key] = customCols[key];
+        const children = this.fields[key].children;
+        // expand all the children
+        for (const c in children) {
+          // (replace fieldId with field object)
+          if (typeof children[c] !== 'object') {
+            children[c] = this.getField(children[c]);
           }
         }
       }
 
       // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
-      let existingFieldsLookup = {}; // lookup map of fields in fieldsArray
+      const existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
-      for (let f in this.fields) {
-        if (this.fields.hasOwnProperty(f)) {
-          let field = this.fields[f];
-          if (!existingFieldsLookup.hasOwnProperty(field.exp)) {
-            existingFieldsLookup[field.exp] = field;
-            if (!this.groupedFields[field.group]) {
-              this.groupedFields[field.group] = [];
-            }
-            this.groupedFields[field.group].push(field);
+      for (const f in this.fields) {
+        const field = this.fields[f];
+        if (!existingFieldsLookup[field.exp]) {
+          existingFieldsLookup[field.exp] = field;
+          if (!this.groupedFields[field.group]) {
+            this.groupedFields[field.group] = [];
           }
+          this.groupedFields[field.group].push(field);
         }
       }
     },
@@ -1542,17 +1536,15 @@ export default {
      * @return {Object} field   The field object
      */
     getField: function (fieldId) {
-      for (let key in this.fields) {
-        if (this.fields.hasOwnProperty(key)) {
-          let field = this.fields[key];
-          if (field.dbField === fieldId || field.exp === fieldId) {
-            return field;
-          }
-          if (field.aliases) {
-            for (let alias of field.aliases) {
-              if (alias === fieldId) {
-                return field;
-              }
+      for (const key in this.fields) {
+        const field = this.fields[key];
+        if (field.dbField === fieldId || field.exp === fieldId) {
+          return field;
+        }
+        if (field.aliases) {
+          for (const alias of field.aliases) {
+            if (alias === fieldId) {
+              return field;
             }
           }
         }
@@ -1566,15 +1558,15 @@ export default {
       this.sumOfColWidths = 85;
       if (!this.colWidths) { this.colWidths = {}; }
 
-      for (let headerId of this.tableState.visibleHeaders) {
-        let field = this.getField(headerId);
+      for (const headerId of this.tableState.visibleHeaders) {
+        const field = this.getField(headerId);
 
         if (field) {
           field.width = this.colWidths[headerId] || field.width || 100;
           if (field.dbField === 'info') { // info column is super special
             // reset info field width to default so it can always be recalculated
             // to take up all of the rest of the space that it can
-            field.width = defaultColWidths['info'];
+            field.width = defaultColWidths.info;
           } else { // don't account for info column's width because it changes
             this.sumOfColWidths += field.width;
           }
@@ -1584,7 +1576,7 @@ export default {
 
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
-      this.calculateInfoColumnWidth(defaultColWidths['info']);
+      this.calculateInfoColumnWidth(defaultColWidths.info);
       this.toggleStickyHeader();
     },
     /* Opens up to 10 session details in the table */
@@ -1594,7 +1586,7 @@ export default {
         alert('You\'re trying to open too many session details at once! I\'ll only open the first 10 for you, sorry!');
       }
 
-      let len = Math.min(this.sessions.data.length, 10);
+      const len = Math.min(this.sessions.data.length, 10);
 
       for (let i = 0; i < len; ++i) {
         this.toggleSessionDetail(this.sessions.data[i]);
@@ -1628,9 +1620,9 @@ export default {
           this.loading = true;
 
           // update the headers to the new order
-          let oldIdx = event.oldIndex - 1;
-          let newIdx = event.newIndex - 1;
-          let element = this.tableState.visibleHeaders[oldIdx];
+          const oldIdx = event.oldIndex - 1;
+          const newIdx = event.newIndex - 1;
+          const element = this.tableState.visibleHeaders[oldIdx];
           this.tableState.visibleHeaders.splice(oldIdx, 1);
           this.tableState.visibleHeaders.splice(newIdx, 0, element);
 
@@ -1663,7 +1655,7 @@ export default {
           onResize: (event, column, colIdx) => {
             this.loading = true;
 
-            let header = this.headers[colIdx - 1];
+            const header = this.headers[colIdx - 1];
             if (header) {
               header.width = column.w;
               this.colWidths[header.dbField] = column.w;
@@ -1691,13 +1683,13 @@ export default {
     calculateInfoColumnWidth: function (infoColWidth) {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
-      let windowWidth = window.innerWidth - 34; // account for right and left margins
+      const windowWidth = window.innerWidth - 34; // account for right and left margins
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
-        let fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        const fillWithInfoCol = windowWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
           if (this.headers[i].dbField === 'info') {
-            let newInfoColWidth = Math.max(fillWithInfoCol, infoColWidth);
+            const newInfoColWidth = Math.max(fillWithInfoCol, infoColWidth);
             this.headers[i].width = newInfoColWidth;
             newTableWidth += newInfoColWidth;
           }
@@ -1714,7 +1706,7 @@ export default {
     },
     /* Toggles the sticky table header */
     toggleStickyHeader: function () {
-      let firstTableRow = this.$refs.tableRow0;
+      const firstTableRow = this.$refs.tableRow0;
       if (this.stickyHeader) {
         // calculate the height of the header row
         const height = this.$refs.draggableColumns.clientHeight + 2;

@@ -146,11 +146,13 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
 
     const actions = {};
 
-    actions.httpAuthorizationDecode = { fields: 'http.authorization', func: `{
+    actions.httpAuthorizationDecode = {
+      fields: 'http.authorization', func: `{
       if (value.substring(0,5) === "Basic")
         return {name: "Decoded:", value: atob(value.substring(6))};
       return undefined;
-    }` };
+    }`
+    };
     actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'api/reversedns?ip=%TEXT%', actionType: 'fetch' };
     actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
     actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };

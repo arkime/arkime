@@ -167,7 +167,7 @@ export default {
     if (localStorage.getItem('wiseTheme')) {
       this.theme = localStorage.getItem('wiseTheme');
       if (this.theme === 'dark') {
-        document.body.classList = [ this.theme ];
+        document.body.classList = [this.theme];
       }
     }
 
@@ -211,7 +211,7 @@ export default {
     toggleTheme: function () {
       if (this.theme === 'light') {
         this.theme = 'dark';
-        document.body.classList = [ this.theme ];
+        document.body.classList = [this.theme];
       } else {
         this.theme = 'light';
         document.body.classList = [];

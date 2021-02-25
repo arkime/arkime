@@ -1,6 +1,7 @@
 'use strict';
 
 const glob = require('glob');
+const path = require('path');
 
 module.exports = (Config, Db, internals) => {
   const module = {};
@@ -18,7 +19,7 @@ module.exports = (Config, Db, internals) => {
     };
 
     // look for all notifier providers and initialize them
-    const files = glob.sync(`${__dirname}/../notifiers/provider.*.js`);
+    const files = glob.sync(path.join(__dirname, '/../notifiers/provider.*.js'));
     files.forEach((file) => {
       const plugin = require(file);
       plugin.init(api);
@@ -134,7 +135,7 @@ module.exports = (Config, Db, internals) => {
       const clone = {};
 
       for (const key in notifiers) {
-        if (notifiers.hasOwnProperty(key)) {
+        if (notifiers[key]) {
           const notifier = notifiers[key];
           clone[key] = {
             name: notifier.name,

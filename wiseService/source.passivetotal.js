@@ -68,7 +68,8 @@ class PassiveTotalSource extends WISESource {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       body: {
         additional: ['osint', 'malware'],
-        query: this.waiting },
+        query: this.waiting
+      },
       auth: {
         user: this.user,
         pass: this.key

@@ -190,7 +190,7 @@ export default {
         })
         .catch((error) => {
           this.alertMessage = error.text ||
-            `Error fetching source options for wise.`;
+            'Error fetching source options for wise.';
         });
     },
     loadTypeOptions: function () {
@@ -204,7 +204,7 @@ export default {
         })
         .catch((error) => {
           this.alertMessage = error.text ||
-            `Error fetching type options for wise.`;
+            'Error fetching type options for wise.';
         });
     },
     sendSearchQuery: function () {
@@ -250,7 +250,7 @@ export default {
         .catch((error) => {
           this.loading = false;
           this.alertMessage = error.text ||
-            `Error getting search result for wise.`;
+            'Error getting search result for wise.';
         });
     },
     clear: function () {

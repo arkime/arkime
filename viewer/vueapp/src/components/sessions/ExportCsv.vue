@@ -157,7 +157,7 @@ export default {
         return;
       }
 
-      let data = {
+      const data = {
         start: this.start,
         applyTo: this.applyTo,
         filename: this.filename,
@@ -179,14 +179,14 @@ export default {
     /* helper functions ------------------------------------------ */
     /* compute the string of comma separated field db values */
     computeExportFields: function () {
-      let fieldDbList = [];
+      const fieldDbList = [];
 
       if (this.fields) {
         for (let i = 0; i < this.fields.length; ++i) {
-          let field = this.fields[i];
+          const field = this.fields[i];
           if (field.children) {
             for (let j = 0; j < field.children.length; ++j) {
-              let child = field.children[j];
+              const child = field.children[j];
               if (child) { fieldDbList.push(child.dbField); }
             }
           } else {

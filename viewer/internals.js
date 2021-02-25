@@ -6,7 +6,7 @@ const https = require('https');
 const RE2 = require('re2');
 
 module.exports = (app, Config) => {
-  let module = {};
+  const module = {};
 
   // build internals
   module.internals = {

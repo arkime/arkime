@@ -15,7 +15,7 @@ export default {
   },
   getTypes: function (source) {
     return new Promise((resolve, reject) => {
-      let url = source ? 'types/' + source : 'types';
+      const url = source ? 'types/' + source : 'types';
       Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);
@@ -111,7 +111,7 @@ export default {
   },
   search: function (source, type, value) {
     return new Promise((resolve, reject) => {
-      let url = ((source ? source.replace(':', '%3A') + '/' : '') + type + '/' + value);
+      const url = ((source ? source.replace(':', '%3A') + '/' : '') + type + '/' + value);
       Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);
