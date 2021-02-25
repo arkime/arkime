@@ -24,7 +24,6 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
-const URL = require('url');
 
 // express app
 const app = express();
@@ -157,21 +156,20 @@ function saveBody (req, res, next) {
 
 function doProxy (req, res, cb) {
   let result = '';
-  const url = elasticsearch + req.url;
-  console.log('URL', url);
-  // eslint-disable-next-line node/no-deprecated-api
-  const info = URL.parse(url);
-  info.method = req.method;
+  const esUrl = elasticsearch + req.url;
+  console.log('URL', esUrl);
+  const url = new URL(esUrl);
+  const options = { method: req.method };
   let client;
   if (url.match(/^https:/)) {
-    info.agent = httpsAgent;
+    options.headers = { 'User-Agent': httpsAgent };
     client = https;
   } else {
-    info.agent = httpAgent;
+    options.headers = { 'User-Agent': httpAgent };
     client = http;
   }
 
-  const preq = client.request(info, (pres) => {
+  const preq = client.request(url, options, (pres) => {
     pres.on('data', (chunk) => {
       result += chunk.toString();
     });

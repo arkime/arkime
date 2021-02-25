@@ -9,7 +9,6 @@ const PNG = require('pngjs').PNG;
 const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
-const URL = require('url');
 
 module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   const module = {};
@@ -695,14 +694,19 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
           let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
           let bufpos = 0;
-          // eslint-disable-next-line node/no-deprecated-api
-          const info = URL.parse(viewUrl);
-          info.path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
-          info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
 
-          ViewerUtils.addAuth(info, req.user, fields.node);
-          ViewerUtils.addCaTrust(info, fields.node);
-          const preq = client.request(info, (pres) => {
+          const path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
+          const url = new URL(path, viewUrl);
+          const options = {
+            headers: {
+              'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
+            }
+          };
+
+          ViewerUtils.addAuth(options, req.user, fields.node, path);
+          ViewerUtils.addCaTrust(options, fields.node);
+
+          const preq = client.request(url, options, (pres) => {
             pres.on('data', (chunk) => {
               if (bufpos + chunk.length > buffer.length) {
                 const tmp = Buffer.alloc(buffer.length + chunk.length * 10);
@@ -724,7 +728,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             });
           });
           preq.on('error', (e) => {
-            console.log("ERROR - Couldn't proxy pcap request=", info, '\nerror=', e);
+            console.log("ERROR - Couldn't proxy pcap request=", url, '\nerror=', e);
             nextCb(null);
           });
           preq.end();
@@ -1407,15 +1411,19 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
         return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
-      // eslint-disable-next-line node/no-deprecated-api
-      const info = URL.parse(viewUrl);
-      info.path = req.url;
-      info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-      info.timeout = 20 * 60 * 1000;
-      ViewerUtils.addAuth(info, req.user, req.params.nodeName);
-      ViewerUtils.addCaTrust(info, req.params.nodeName);
 
-      const preq = client.request(info, (pres) => {
+      const url = new URL(req.url, viewUrl);
+      const options = {
+        timeout: 20 * 60 * 1000,
+        headers: {
+          'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
+        }
+      };
+
+      ViewerUtils.addAuth(options, req.user, req.params.nodeName, req.url);
+      ViewerUtils.addCaTrust(options, req.params.nodeName);
+
+      const preq = client.request(url, options, (pres) => {
         if (pres.headers['content-type']) {
           res.setHeader('content-type', pres.headers['content-type']);
         }
@@ -1434,8 +1442,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (errCb) {
           return errCb(e);
         }
-        console.log("ERROR - Couldn't proxy request=", info, '\nerror=', e, 'You might want to run viewer with two --debug for more info');
-        res.send(`Error talking to node '${ViewerUtils.safeStr(req.params.nodeName)}' using host '${info.host}' check viewer logs on '${Config.hostName()}'`);
+        console.log("ERROR - Couldn't proxy request=", url, '\nerror=', e, 'You might want to run viewer with two --debug for more info');
+        res.send(`Error talking to node '${ViewerUtils.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
       });
       preq.end();
     });
