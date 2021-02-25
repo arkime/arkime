@@ -227,7 +227,7 @@ exports.auth2obj = function (auth, c2s, secret) {
 
     try {
       // eslint-disable-next-line node/no-deprecated-api
-      const c = crypto.createCipher('aes192', secret);
+      const c = crypto.createDecipher('aes192', secret);
       let d = c.update(parts[0], 'hex', 'binary');
       d += c.final('binary');
       return JSON.parse(d);

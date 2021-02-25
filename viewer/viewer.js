@@ -22,31 +22,23 @@ const MIN_DB_VERSION = 66;
 // ============================================================================
 // MODULES
 // ============================================================================
-let Config, express, fs, fse, async, Pcap, Db, molochparser, passport,
-  DigestStrategy, version, http, https, onHeaders, helmet, uuid, path;
-
-try {
-  Config = require('./config.js');
-  express = require('express');
-  fs = require('fs');
-  fse = require('fs-ext');
-  async = require('async');
-  Pcap = require('./pcap.js');
-  Db = require('./db.js');
-  molochparser = require('./molochparser.js');
-  passport = require('passport');
-  DigestStrategy = require('passport-http').DigestStrategy;
-  version = require('./version');
-  http = require('http');
-  https = require('https');
-  onHeaders = require('on-headers');
-  helmet = require('helmet');
-  uuid = require('uuidv4').default;
-  path = require('path');
-} catch (e) {
-  console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
-  process.exit(1);
-}
+const Config = require('./config.js');
+const express = require('express');
+const fs = require('fs');
+const fse = require('fs-ext');
+const async = require('async');
+const Pcap = require('./pcap.js');
+const Db = require('./db.js');
+const molochparser = require('./molochparser.js');
+const passport = require('passport');
+const DigestStrategy = require('passport-http').DigestStrategy;
+const version = require('./version');
+const http = require('http');
+const https = require('https');
+const onHeaders = require('on-headers');
+const helmet = require('helmet');
+const uuid = require('uuidv4').default;
+const path = require('path');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");

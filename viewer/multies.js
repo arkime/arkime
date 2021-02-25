@@ -20,21 +20,14 @@
 
 /// / Modules
 /// ///////////////////////////////////////////////////////////////////////////////
-let Config, express, async, ESC, http, https, fs, path;
-
-try {
-  Config = require('./config.js');
-  express = require('express');
-  async = require('async');
-  ESC = require('elasticsearch');
-  http = require('http');
-  https = require('https');
-  fs = require('fs');
-  path = require('path');
-} catch (e) {
-  console.log("ERROR - Couldn't load some dependancies, maybe need to 'npm update' inside viewer directory", e);
-  process.exit(1);
-}
+const Config = require('./config.js');
+const express = require('express');
+const async = require('async');
+const ESC = require('elasticsearch');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');

@@ -24,10 +24,6 @@ module.exports = {
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
 
-    /**
-     * Source Maps
-     */
-
     // https://webpack.js.org/configuration/devtool/#development
     devtool: 'source-map',
 
@@ -48,13 +44,9 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '',
 
-    /**
-     * Source Maps
-     */
-
     productionSourceMap: false,
     // https://webpack.js.org/configuration/devtool/#production
-    devtool: '#source-map',
+    devtool: 'source-map',
 
     // Gzip off by default as many popular static hosts such as
     // Surge or Netlify already gzip all static assets for you.
