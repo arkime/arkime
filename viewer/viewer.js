@@ -39,7 +39,7 @@ const onHeaders = require('on-headers');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
-const URL = require('URL');
+const URL = require('url');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
