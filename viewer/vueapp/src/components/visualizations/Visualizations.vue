@@ -210,6 +210,18 @@
               </b-radio>
             </b-form-radio-group>
           </div> <!-- series type -->
+          <!-- cap times -->
+          <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
+            <b-form-checkbox
+              button
+              size="sm"
+              :active="showCapStartTimes"
+              v-model="showCapStartTimes"
+              @change="toggleCapStartTimes"
+              v-b-tooltip="'Toggle the capture process start time(s)'">
+              {{ showCapStartTimes ? 'Hide' : 'Show' }} Cap Times
+            </b-form-checkbox> <!-- /cap times -->
+          </div>
         </div> <!-- /graph controls -->
 
         <!-- graph -->
@@ -304,7 +316,8 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      stickyViz: false
+      stickyViz: false,
+      showCapStartTimes: true
     };
   },
   computed: {
@@ -445,6 +458,9 @@ export default {
     const stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
       localStorage[`${basePath}-sticky-viz`] !== 'false';
 
+    this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
+      localStorage[`${basePath}-cap-times`] !== 'false';
+
     this.$store.commit('toggleStickyViz', stickyViz);
 
     this.showMap = showMap;
@@ -547,6 +563,12 @@ export default {
     },
     plotPanChange: function (value) {
       this.plotPan = value;
+    },
+    toggleCapStartTimes () {
+      this.showCapStartTimes = !this.showCapStartTimes;
+      localStorage[`${basePath}-cap-times`] = this.showCapStartTimes;
+      this.setupGraphData();
+      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
     /* helper functions ---------------------------------------------------- */
     debounce: function (func, funcParam, ms) {
@@ -764,14 +786,16 @@ export default {
         }
       };
 
-      for (const capture of this.capStartTimes) {
-        this.graphOptions.grid.markings.push({
-          color: foregroundColor || '#666',
-          xaxis: {
-            from: capture.startTime,
-            to: capture.startTime
-          }
-        });
+      if (this.showCapStartTimes) {
+        for (const capture of this.capStartTimes) {
+          this.graphOptions.grid.markings.push({
+            color: foregroundColor || '#666',
+            xaxis: {
+              from: capture.startTime,
+              to: capture.startTime
+            }
+          });
+        }
       }
 
       // add business hours to graph if they exist
@@ -1099,6 +1123,20 @@ export default {
   line-height: 1;
   font-size: small;
 }
+
+/* make buttons small and inthe correct position */
+.session-graph-btn-container .btn-group-xs.btn-group-radios {
+  margin-top: -7px;
+}
+.session-graph-btn-container .btn-group-xs.btn-group-checkboxes {
+  margin-top: -9px;
+}
+
+.session-graph-btn-container .btn-group-xs label.btn {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+}
 </style>
 
 <style scoped>
@@ -1208,16 +1246,6 @@ export default {
 }
 .map-visible .session-graph-btn-container > div {
   left: 0;
-}
-
-.session-graph-btn-container .btn-group-xs.btn-group-radios {
-  margin-top: -7px;
-}
-
-.session-graph-btn-container .btn-group-xs label.btn-radio {
-  padding: 1px 5px;
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 /* sticky vizualization styles --------------- */
