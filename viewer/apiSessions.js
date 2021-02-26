@@ -1423,6 +1423,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       ViewerUtils.addAuth(options, req.user, req.params.nodeName, req.url);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
+      console.log('proxy request', url); // TODO ECR remove
       const preq = client.request(url, options, (pres) => {
         if (pres.headers['content-type']) {
           res.setHeader('content-type', pres.headers['content-type']);
@@ -2896,8 +2897,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                   return res.end('No Match');
                 }
               });
-            },
-            () => { // get file from the remote disk
+            }, () => { // get file from the remote disk
               const preq = Object.assign({}, req);
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
