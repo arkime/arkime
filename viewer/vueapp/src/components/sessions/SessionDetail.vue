@@ -168,7 +168,7 @@ export default {
       decodingForm: false,
       decodings: {},
       params: {
-        base: 'hex',
+        base: 'natural',
         line: false,
         image: false,
         gzip: false,
@@ -491,7 +491,7 @@ export default {
     /* sets some of the session detail query parameters based on user settings */
     setUserParams: function () {
       if (localStorage && this.user.settings) { // display user saved options
-        if (this.user.settings.detailFormat === 'last' && localStorage['moloch-base']) {
+        if (this.user.settings.detailFormat === 'last' && localStorage['moloch-base'] && localStorage['moloch-base'] !== 'last') {
           this.params.base = localStorage['moloch-base'];
         } else if (this.user.settings.detailFormat && this.user.settings.detailFormat !== 'last') {
           this.params.base = this.user.settings.detailFormat;
