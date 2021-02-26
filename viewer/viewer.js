@@ -195,7 +195,6 @@ app.use((req, res, next) => {
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-app.use('/bootstrap', express.static(path.join(__dirname, '/../node_modules/bootstrap'), { maxAge: 600 * 1000 }));
 app.use('/', express.static(path.join(__dirname, '/public'), { maxAge: 600 * 1000 }));
 app.use('/assets', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
 app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
