@@ -39,7 +39,6 @@ const onHeaders = require('on-headers');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
-const URL = require('url');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -944,20 +943,23 @@ function sendSessionWorker (options, cb) {
       return cb();
     }
 
-    // eslint-disable-next-line node/no-deprecated-api
-    const info = URL.parse(sobj.url + '/api/sessions/receive?saveId=' + options.saveId);
-    ViewerUtils.addAuth(info, options.user, options.nodeName, sobj.serverSecret || sobj.passwordSecret);
-    info.method = 'POST';
+    const path = '/api/sessions/receive?saveId=' + options.saveId;
+    const url = new URL(path, sobj.url);
+    const client = url.protocol === 'https:' ? https : http;
+    const reqOptions = {
+      method: 'POST',
+      agent: client === http ? internals.httpAgent : internals.httpsAgent
+    };
+
+    ViewerUtils.addAuth(reqOptions, options.user, options.nodeName, path, sobj.serverSecret || sobj.passwordSecret);
+    ViewerUtils.addCaTrust(reqOptions, options.nodeName);
 
     let result = '';
-    const client = info.protocol === 'https:' ? https : http;
-    info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-    ViewerUtils.addCaTrust(info, options.nodeName);
-    const preq = client.request(info, function (pres) {
-      pres.on('data', function (chunk) {
+    const preq = client.request(url, reqOptions, (pres) => {
+      pres.on('data', (chunk) => {
         result += chunk;
       });
-      pres.on('end', function () {
+      pres.on('end', () => {
         result = JSON.parse(result);
         if (!result.success) {
           console.log('ERROR sending session ', result);
@@ -966,8 +968,8 @@ function sendSessionWorker (options, cb) {
       });
     });
 
-    preq.on('error', function (e) {
-      console.log("ERROR - Couldn't connect to ", info, '\nerror=', e);
+    preq.on('error', (e) => {
+      console.log("ERROR - Couldn't connect to ", url, '\nerror=', e);
       cb();
     });
 
@@ -1022,39 +1024,40 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     },
     function () {
       // Get from remote DISK
-      ViewerUtils.getViewUrl(node, function (err, viewUrl, client) {
-        // eslint-disable-next-line node/no-deprecated-api
-        const info = URL.parse(viewUrl);
-        info.method = 'POST';
-        info.path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
-        info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-        if (pOptions.tags) {
-          info.path += '&tags=' + pOptions.tags;
-        }
-        ViewerUtils.addAuth(info, pOptions.user, node);
-        ViewerUtils.addCaTrust(info, node);
-        const preq = client.request(info, function (pres) {
-          pres.on('data', function (chunk) {
-            qlworking[info.path] = 'data';
+      ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
+        let path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
+        if (pOptions.tags) { path += `&tags=${pOptions.tags}`; }
+        const url = new URL(path, viewUrl);
+        const reqOptions = {
+          method: 'POST',
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
+        };
+
+        ViewerUtils.addAuth(reqOptions, pOptions.user, node, path);
+        ViewerUtils.addCaTrust(reqOptions, node);
+
+        const preq = client.request(url, reqOptions, (pres) => {
+          pres.on('data', (chunk) => {
+            qlworking[url.path] = 'data';
           });
-          pres.on('end', function () {
-            delete qlworking[info.path];
+          pres.on('end', () => {
+            delete qlworking[url.path];
             setImmediate(nextCb);
           });
         });
-        preq.on('error', function (e) {
-          delete qlworking[info.path];
-          console.log("ERROR - Couldn't proxy sendSession request=", info, '\nerror=', e);
+        preq.on('error', (e) => {
+          delete qlworking[url.path];
+          console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
           setImmediate(nextCb);
         });
         preq.setHeader('content-type', 'application/x-www-form-urlencoded');
         preq.write('ids=');
         preq.write(nodes[node].join(','));
         preq.end();
-        qlworking[info.path] = 'sent';
+        qlworking[url.path] = 'sent';
       });
     });
-  }, function (err) {
+  }, (err) => {
     nextQLCb();
   });
 }

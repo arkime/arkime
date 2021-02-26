@@ -3,39 +3,36 @@
 const async = require('async');
 const http = require('http');
 const https = require('https');
-const URL = require('url');
 
 module.exports = (Config, Db, molochparser, internals) => {
   const module = {};
 
-  module.addAuth = (info, user, node, secret) => {
-    if (!info.headers) {
-      info.headers = {};
+  module.addAuth = (options, user, node, path, secret) => {
+    if (!options.headers) {
+      options.headers = {};
     }
-    info.headers['x-moloch-auth'] = Config.obj2auth({
+    options.headers['x-moloch-auth'] = Config.obj2auth({
       date: Date.now(),
       user: user.userId,
       node: node,
-      path: info.path
+      path: path
     }, false, secret);
   };
 
-  module.addCaTrust = (info, node) => {
+  module.addCaTrust = (options, node) => {
     if (!Config.isHTTPS(node)) {
       return;
     }
 
-    if ((internals.caTrustCerts[node] !== undefined) && (internals.caTrustCerts[node].length > 0)) {
-      info.ca = internals.caTrustCerts[node];
-      info.agent.options.ca = internals.caTrustCerts[node];
+    if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
+      options.ca = internals.caTrustCerts[node];
       return;
     }
 
     internals.caTrustCerts[node] = Config.getCaTrustCerts(node);
 
     if (internals.caTrustCerts[node] !== undefined && internals.caTrustCerts[node].length > 0) {
-      info.ca = internals.caTrustCerts[node];
-      info.agent.options.ca = internals.caTrustCerts[node];
+      options.ca = internals.caTrustCerts[node];
     }
   };
 
@@ -546,14 +543,16 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   module.makeRequest = (node, path, user, cb) => {
-    module.getViewUrl(node, function (err, viewUrl, client) {
-      // eslint-disable-next-line node/no-deprecated-api
-      const info = URL.parse(viewUrl);
-      info.path = encodeURI(`${Config.basePath(node)}${path}`);
-      info.agent = (client === http ? internals.httpAgent : internals.httpsAgent);
-      info.timeout = 20 * 60 * 1000;
-      module.addAuth(info, user, node);
-      module.addCaTrust(info, node);
+    module.getViewUrl(node, (err, viewUrl, client) => {
+      const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
+      const url = new URL(nodePath, viewUrl);
+      const options = {
+        timeout: 20 * 60 * 1000,
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
+      };
+
+      module.addAuth(options, user, node, nodePath);
+      module.addCaTrust(options, node);
 
       function responseFunc (pres) {
         let response = '';
@@ -565,13 +564,13 @@ module.exports = (Config, Db, molochparser, internals) => {
         });
       }
 
-      const preq = client.request(info, responseFunc);
+      const preq = client.request(url, options, responseFunc);
       preq.on('error', (err) => {
         // Try a second time on errors
-        console.log(`Retry ${info.path} on remote viewer: ${err}`);
-        const preq2 = client.request(info, responseFunc);
+        console.log(`Retry ${url.path} on remote viewer: ${err}`);
+        const preq2 = client.request(url, options, responseFunc);
         preq2.on('error', (err) => {
-          console.log(`Error with ${info.path} on remote viewer: ${err}`);
+          console.log(`Error with ${url.path} on remote viewer: ${err}`);
           cb(err);
         });
         preq2.end();

@@ -28,7 +28,6 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const URL = require('url');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -160,22 +159,21 @@ function simpleGather (req, res, bodies, doneCb) {
   }
   async.map(nodes, (node, asyncCb) => {
     let result = '';
-    let url = node2Url(node) + req.url;
+    let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
 
-    url = url.replace(/MULTIPREFIX_/g, prefix);
-    // eslint-disable-next-line node/no-deprecated-api
-    const info = URL.parse(url);
-    info.method = req.method;
+    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix);
+    const url = new URL(nodeUrl);
+    const options = { method: req.method };
     let client;
-    if (url.match(/^https:/)) {
-      info.agent = httpsAgent;
+    if (nodeUrl.match(/^https:/)) {
+      options.agent = httpsAgent;
       client = https;
     } else {
-      info.agent = httpAgent;
+      options.agent = httpAgent;
       client = http;
     }
-    const preq = client.request(info, (pres) => {
+    const preq = client.request(url, options, (pres) => {
       pres.on('data', (chunk) => {
         result += chunk.toString();
       });
