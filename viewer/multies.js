@@ -28,7 +28,6 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const URL = require('url');
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -168,10 +167,10 @@ function simpleGather (req, res, bodies, doneCb) {
     const options = { method: req.method };
     let client;
     if (nodeUrl.match(/^https:/)) {
-      options.headers = { 'User-Agent': httpsAgent };
+      options.agent = httpsAgent;
       client = https;
     } else {
-      options.headers = { 'User-Agent': httpAgent };
+      options.agent = httpAgent;
       client = http;
     }
     const preq = client.request(url, options, (pres) => {

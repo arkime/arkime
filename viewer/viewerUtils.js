@@ -548,9 +548,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       const url = new URL(nodePath, viewUrl);
       const options = {
         timeout: 20 * 60 * 1000,
-        headers: {
-          'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
-        }
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
       module.addAuth(options, user, node, nodePath);

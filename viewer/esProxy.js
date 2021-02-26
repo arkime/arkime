@@ -162,10 +162,10 @@ function doProxy (req, res, cb) {
   const options = { method: req.method };
   let client;
   if (url.match(/^https:/)) {
-    options.headers = { 'User-Agent': httpsAgent };
+    options.agent = httpsAgent;
     client = https;
   } else {
-    options.headers = { 'User-Agent': httpAgent };
+    options.agent = httpAgent;
     client = http;
   }
 

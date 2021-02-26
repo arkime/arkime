@@ -949,9 +949,7 @@ function sendSessionWorker (options, cb) {
     const client = url.protocol === 'https:' ? https : http;
     const reqOptions = {
       method: 'POST',
-      headers: {
-        'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
-      }
+      agent: client === http ? internals.httpAgent : internals.httpsAgent
     };
 
     ViewerUtils.addAuth(reqOptions, options.user, options.nodeName, path, sobj.serverSecret || sobj.passwordSecret);
@@ -1033,9 +1031,7 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
         const url = new URL(path, viewUrl);
         const reqOptions = {
           method: 'POST',
-          headers: {
-            'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
-          }
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
         };
 
         ViewerUtils.addAuth(reqOptions, pOptions.user, node, path);

@@ -698,9 +698,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           const path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
           const url = new URL(path, viewUrl);
           const options = {
-            headers: {
-              'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
-            }
+            agent: client === http ? internals.httpAgent : internals.httpsAgent
           };
 
           ViewerUtils.addAuth(options, req.user, fields.node, path);
@@ -1415,15 +1413,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const url = new URL(req.url, viewUrl);
       const options = {
         timeout: 20 * 60 * 1000,
-        headers: {
-          'User-Agent': client === http ? internals.httpAgent : internals.httpsAgent
-        }
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
       ViewerUtils.addAuth(options, req.user, req.params.nodeName, req.url);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
-      console.log('proxy request', url); // TODO ECR remove
       const preq = client.request(url, options, (pres) => {
         if (pres.headers['content-type']) {
           res.setHeader('content-type', pres.headers['content-type']);
