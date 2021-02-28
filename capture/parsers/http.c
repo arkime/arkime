@@ -341,8 +341,12 @@ LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
         str += 5;
         while (isspace(*str)) str++;
 
+        int len = strlen(str);
+        if (len < 2)
+            return;
+
         // Yahoo reused Basic
-        if (strlen(str) < 6 || memcmp("token=", str, 6) != 0) {
+        if (len < 6 || memcmp("token=", str, 6) != 0) {
             g_base64_decode_inplace(str, &olen);
             char *colon = strchr(str, ':');
             if (colon)

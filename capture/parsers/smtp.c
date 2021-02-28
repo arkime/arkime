@@ -276,7 +276,7 @@ LOCAL void smtp_email_add_encoded(MolochSession_t *session, int pos, char *strin
             *question = 0;
             *endquestion = 0; // g_base64_decode_inplace expected null terminated string
 
-            if (question[3]) {
+            if (question[3] && question[4]) {
                 g_base64_decode_inplace(question+3, &olen);
             } else
                 olen = 0;
@@ -525,7 +525,7 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
         }
         case EMAIL_AUTHLOGIN_RETURN: {
             gsize out_len = 0;
-            if (line->len > 0)
+            if (line->len > 1)
                 g_base64_decode_inplace(line->str, &out_len);
             if (out_len > 0) {
                 moloch_field_string_add_lower(userField, session, line->str, out_len);
@@ -536,7 +536,7 @@ LOCAL int smtp_parser(MolochSession_t *session, void *uw, const unsigned char *d
         case EMAIL_AUTHPLAIN_RETURN: {
             gsize out_len = 0;
             gsize zation = 0;
-            if (line->len > 0)
+            if (line->len > 1)
                 g_base64_decode_inplace(line->str, &out_len);
             zation = strlen(line->str);
             if (zation < out_len) {
