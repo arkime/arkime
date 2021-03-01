@@ -227,6 +227,8 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_HTTPGET, 1L);
     }
 
+    curl_easy_setopt(easy, CURLOPT_USERAGENT, "arkime");
+
     if (headerList) {
         curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
     }
@@ -828,6 +830,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETFUNCTION, moloch_http_curl_close_callback);
     curl_easy_setopt(request->easy, CURLOPT_ACCEPT_ENCODING, ""); // https://curl.haxx.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
     curl_easy_setopt(request->easy, CURLOPT_TCP_KEEPALIVE, 1L);
+    curl_easy_setopt(request->easy, CURLOPT_USERAGENT, "arkime");
 
     if (request->headerList) {
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);
@@ -947,7 +950,7 @@ void moloch_http_set_retries(void *serverV, uint16_t retries)
     server->maxRetries = retries;
 }
 /******************************************************************************/
-void moloch_http_set_client_cert(void *serverV, char* clientCert, 
+void moloch_http_set_client_cert(void *serverV, char* clientCert,
                                 char* clientKey, char* clientKeyPass)
 {
     MolochHttpServer_t        *server = serverV;
