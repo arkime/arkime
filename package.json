@@ -39,7 +39,7 @@
     "on-headers": "^1.0.2",
     "passport": "^0.3.2",
     "passport-http": "^0.3.0",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "splunk-sdk": "^1.9.0",
