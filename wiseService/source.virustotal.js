@@ -67,6 +67,7 @@ class VirusTotalSource extends WISESource {
     this.linksField = this.api.addField('field:virustotal.links;db:virustotal.links;kind:termfield;friendly:Link;help:VirusTotal Link;count:true');
 
     this.api.addValueAction('virustotallinks', { name: 'Open', url: '%TEXT%', fields: 'virustotal.links' });
+    this.api.addValueAction('virustotalmd5', { name: 'Virus Total MD5 Search', url: 'https://www.virustotal.com/gui/search/%TEXT%', category: 'md5' });
 
     this.api.addView('virustotal', str);
   }
