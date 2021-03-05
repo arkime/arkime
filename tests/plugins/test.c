@@ -18,7 +18,7 @@ void test_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
         char tmp[1000];
         moloch_field_ip4_add(test_ip, session, ((uint32_t *)session->addr1.s6_addr)[3]);
         moloch_field_int_add(test_number, session, ((uint32_t *)session->addr2.s6_addr)[3]);
-        sprintf(tmp, "%d:%d,%d:%d", ((uint32_t *)session->addr1.s6_addr)[3], session->port1, ((uint32_t *)session->addr2.s6_addr)[3], session->port2);
+        snprintf(tmp, sizeof(tmp), "%d:%d,%d:%d", ((uint32_t *)session->addr1.s6_addr)[3], session->port1, ((uint32_t *)session->addr2.s6_addr)[3], session->port2);
         moloch_field_string_add(test_string, session, tmp, -1, TRUE);
     }
 }
