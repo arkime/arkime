@@ -301,15 +301,16 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     struct timeval outputFileTime;
 
     gettimeofday(&outputFileTime, 0);
-    struct tm         *gm = gmtime(&outputFileTime.tv_sec);
+    struct tm      gm;
+    gmtime_r(&outputFileTime.tv_sec, &gm);
     snprintf(datetime, sizeof(datetime),
             "%04u%02u%02uT%02u%02u%02uZ",
-            gm->tm_year + 1900,
-            gm->tm_mon+1,
-            gm->tm_mday,
-            gm->tm_hour,
-            gm->tm_min,
-            gm->tm_sec);
+            gm.tm_year + 1900,
+            gm.tm_mon+1,
+            gm.tm_mday,
+            gm.tm_hour,
+            gm.tm_min,
+            gm.tm_sec);
 
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
@@ -320,7 +321,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, data, len);
-    strcpy(bodyHash, g_checksum_get_string(checksum));
+    g_strlcpy(bodyHash, g_checksum_get_string(checksum), sizeof(bodyHash));
 
     if (s3PathAccessStyle)
         snprintf(objectkey, sizeof(objectkey), "/%s%s", s3Bucket, path);
@@ -405,7 +406,7 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     char signature[65];
     hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar*)kSigning, kSigningLen);
     g_hmac_update(hmac, (guchar*)stringToSign, -1);
-    strcpy(signature, g_hmac_get_string(hmac));
+    g_strlcpy(signature, g_hmac_get_string(hmac), sizeof(signature));
     g_hmac_unref(hmac);
 
     //LOG("signature: %s", signature);
@@ -608,10 +609,11 @@ extern MolochPcapFileHdr_t pcapFileHeader;
 void writer_s3_create(const MolochPacket_t *packet)
 {
     char               filename[1000];
-    struct tm         *tmp = localtime(&packet->ts.tv_sec);
+    struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
 
-    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp->tm_year%100, tmp->tm_mon+1, tmp->tm_mday, s3WriteGzip ? ".gz" : "");
+    localtime_r(&packet->ts.tv_sec, &tmp);
+    snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, s3WriteGzip ? ".gz" : "");
 
     currentFile = MOLOCH_TYPE_ALLOC0(SavepcapS3File_t);
     DLL_INIT(os3_, &currentFile->outputQ);

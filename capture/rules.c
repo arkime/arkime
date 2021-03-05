@@ -136,7 +136,7 @@ YamlNode_t *moloch_rules_parser_add_node(YamlNode_t *parent, char *key, char *va
     if (parent) {
         if (!key) {
             char str[10];
-            sprintf(str, "%u", parent->values->len);
+            snprintf(str, sizeof(str), "%u", parent->values->len);
             node->key = g_strdup(str);
         }
         g_ptr_array_add(parent->values, node);
