@@ -856,7 +856,7 @@ LOCAL void moloch_rules_match(MolochSession_t * const session, MolochRule_t * co
 /******************************************************************************/
 #define RULE_LOG_INT(_v) \
     if (good && logStr) \
-        BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, _v)
+        BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, (unsigned int)(_v))
 
 #define G_HASH_TABLE_CONTAINS_CHECK(_v) \
     good = g_hash_table_contains(rule->hash[p], (gpointer)(long)_v); \
