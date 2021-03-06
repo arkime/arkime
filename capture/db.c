@@ -1788,7 +1788,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             LOGEXIT("pcapDir %s is too large", config.pcapDir[config.pcapDirPos]);
         }
 
-        strcpy(filename, config.pcapDir[config.pcapDirPos]);
+        g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
 
         struct tm tmp;
         localtime_r(&firstPacket, &tmp);

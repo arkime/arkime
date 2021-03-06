@@ -1362,3 +1362,34 @@ void moloch_pq_flush();
  */
 int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned int olen);
 
+/******************************************************************************/
+// Idea from https://github.com/git/git/blob/master/banned.h
+#define BANNED(func, func2) sorry_##func##_is_a_banned_function_use_##func2
+
+#undef strcpy
+#define strcpy(x,y) BANNED(strcpy, g_strlcpy)
+#undef strcat
+#define strcat(x,y) BANNED(strcat, g_strlcat)
+#undef strncpy
+#define strncpy(x,y,n) BANNED(strncpy, g_strlcpy)
+#undef strncat
+#define strncat(x,y,n) BANNED(strncat, g_strlcat)
+
+#undef sprintf
+#undef vsprintf
+#define sprintf(...) BANNED(sprintf, snprintf)
+#define vsprintf(...) BANNED(vsprintf, vsnprintf)
+
+#undef gmtime
+#define gmtime(t) BANNED(gmtime, gmtime_r)
+#undef localtime
+#define localtime(t) BANNED(localtime, localtime_r)
+#undef ctime
+#define ctime(t) BANNED(ctime, ctime_r)
+//#undef ctime_r
+//#define ctime_r(t, buf) BANNED(ctime_r)
+#undef asctime
+#define asctime(t) BANNED(asctime, none)
+#undef asctime_r
+#define asctime_r(t, buf) BANNED(asctime_r, none)
+

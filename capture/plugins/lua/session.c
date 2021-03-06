@@ -924,7 +924,7 @@ LOCAL int MSP_get_protocol(lua_State *L)
             protocol = "sctp";
             break;
         default:
-            sprintf(pnum, "%d", session->ipProtocol);
+            snprintf(pnum, sizeof(pnum), "%d", session->ipProtocol);
             break;
     }
     lua_pushstring(L, protocol);

@@ -226,13 +226,13 @@ LOCAL int reader_libpcapfile_process(char *filename)
     	  path[0] = 0;
 
         // process copy of filename given strtok_r changes arg
-        strncpy (tmpFilename, filename, PATH_MAX);
+        g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
 
         token = strtok_r (tmpFilename, "/", &save_ptr);
 
         while (token != NULL) {
-          strcat (path, "/");
-          strcat (path, token);
+          g_strlcat (path, "/", sizeof(path));
+          g_strlcat (path, token, sizeof(path));
 
           if (stat(path, &stats) != -1) {
             gr = getgrgid (stats.st_gid);

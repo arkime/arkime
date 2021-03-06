@@ -572,7 +572,7 @@ LOCAL gboolean moloch_http_curl_watch_open_callback(int fd, GIOCondition conditi
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
         remoteIp[0] = '[';
-        strcat(remoteIp, "]");
+        g_strlcat(remoteIp, "]", sizeof(remoteIp));
     }
 
     if (config.logHTTPConnections) {
@@ -672,7 +672,7 @@ int moloch_http_curl_close_callback(void *snameV, curl_socket_t fd)
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp+1, sizeof(remoteIp)-2);
         remoteIp[0] = '[';
-        strcat(remoteIp, "]");
+        g_strlcat(remoteIp, "]", sizeof(remoteIp));
     }
 
 

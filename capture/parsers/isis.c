@@ -40,7 +40,7 @@ LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNU
         moloch_session_add_protocol(session, "isis");
 
     if (packet->pktlen < 22) {
-      sprintf (msg, "err-len-%d", packet->pktlen);
+      snprintf (msg, sizeof(msg), "err-len-%d", packet->pktlen);
       moloch_field_string_add(typeField, session, msg, -1, TRUE);
       return;
     }
@@ -74,7 +74,7 @@ LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNU
         moloch_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
         break;
       default:
-        sprintf (msg, "unk-%d", packet->pkt[21]);
+        snprintf (msg, sizeof(msg), "unk-%d", packet->pkt[21]);
         if (config.debug)
             LOG("isis %s\n", msg);
         moloch_field_string_add(typeField, session, msg, -1, TRUE);

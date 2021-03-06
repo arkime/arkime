@@ -297,13 +297,13 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
         if (hashPos == fieldsMapCnt) {
             fieldsMapHash[hashPos] = g_strndup((gchar*)hash, 32);
             fieldsMapCnt++;
-            sprintf(wiseGetURI, "/get?ver=2");
+            g_strlcpy(wiseGetURI, "/get?ver=2", sizeof(wiseGetURI));
             if (fieldsMapCnt > 0) {
-                strcat(wiseGetURI, "&hashes=");
-                strcat(wiseGetURI, fieldsMapHash[0]);
+                g_strlcat(wiseGetURI, "&hashes=", sizeof(wiseGetURI));
+                g_strlcat(wiseGetURI, fieldsMapHash[0], sizeof(wiseGetURI));
                 for (i = 1; i < fieldsMapCnt; i++) {
-                    strcat(wiseGetURI, ",");
-                    strcat(wiseGetURI, fieldsMapHash[i]);
+                    g_strlcat(wiseGetURI, ",", sizeof(wiseGetURI));
+                    g_strlcat(wiseGetURI, fieldsMapHash[i], sizeof(wiseGetURI));
                 }
             }
         }
@@ -979,5 +979,5 @@ void moloch_plugin_init()
     g_timeout_add_seconds(1, wise_flush, 0);
     wise_load_fields();
 
-    sprintf(wiseGetURI, "/get?ver=2");
+    g_strlcpy(wiseGetURI, "/get?ver=2", sizeof(wiseGetURI));
 }
