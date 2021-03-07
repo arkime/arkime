@@ -43,7 +43,7 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "splunk-sdk": "^1.9.0",
-    "sqlite3": "^4.2.0",
+    "sqlite3": "^5.0.2",
     "stylus": "^0.54.8",
     "unzipper": "^0.10.11",
     "uuidv4": "^5.0.1",
