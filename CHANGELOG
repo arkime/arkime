@@ -11,7 +11,7 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Moloch >= 3.0.0 requires NodeJS 12.x
+  * Moloch >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
   * Moloch >= 1.6.0 requires NodeJS 8.x, 8.12 or later
@@ -21,7 +21,7 @@ Node Versions:
 
 NOTICE: Restart wiseService before capture when upgrading
 
-3.0.0 2021/02/xx
+3.0.0 2021/04/xx
   - BREAKING - elasticsearch - ES 7.7.1 or later required
   - BREAKING - multies - multiESNodes requires a name: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
