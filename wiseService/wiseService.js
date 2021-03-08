@@ -1903,6 +1903,9 @@ function buildConfigAndStart () {
   if (internals.configFile.endsWith('.hiddenconfig')) {
     internals.configFile = fs.readFileSync(internals.configFile).toString().split('\n')[0].trim();
   }
+  if (internals.configFile.startsWith('urlinfile://')) {
+    internals.configFile = fs.readFileSync(internals.configFile.substring(12)).toString().split('\n')[0].trim();
+  }
 
   const parts = internals.configFile.split('://');
   if (parts.length === 1) {

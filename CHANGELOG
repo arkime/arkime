@@ -39,6 +39,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - rule matches can now be logged
   - capture - new localPcapIndex setting to enable pcap index on capture node instead of ES
   - capture - write long open tcp sessions every tcpSaveTimeout even if no syn
+  - db.pl - new urlinfile://filepath where elasticsearch url is the first line of filepath file
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize APIs
@@ -57,6 +58,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - new elasticsearchfile type
   - wise - threatstream results now cached
   - wise - support memcached for cache
+  - wise - new urlinfile://filepath where config is the first line of filepath file
   - all - renamed rightclicks to valueactions
   - esproxy - first version, see https://arkime.com/esproxy
 

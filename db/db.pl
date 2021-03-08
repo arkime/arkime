@@ -3108,7 +3108,12 @@ if ($CLIENTCERT ne "") {
     )
 }
 
-if ($ARGV[0] =~ /^http/) {
+if ($ARGV[0] =~ /^urlinfile:\/\//) {
+    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
+    $main::elasticsearch = <$file>;
+    chomp $main::elasticsearch;
+    close ($file);
+} elsif ($ARGV[0] =~ /^http/) {
     $main::elasticsearch = $ARGV[0];
 } else {
     $main::elasticsearch = "http://$ARGV[0]";
