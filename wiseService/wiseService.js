@@ -731,19 +731,8 @@ function loadSources () {
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
 app.use(timeout(5 * 1000));
 
-// Serve vue app
-app.get(['/', '/config', '/statistics'], (req, res, next) => {
-  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
-});
+// client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
-
-// expose vue bundles (prod)
-app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
-
-// expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
 app.use('/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
 
@@ -1624,12 +1613,6 @@ function printStats () {
 }
 
 // ----------------------------------------------------------------------------
-// Error handling
-app.use((req, res, next) => {
-  res.status(404).send('Not found');
-});
-
-// ----------------------------------------------------------------------------
 // jPaq
 // ----------------------------------------------------------------------------
 /*
@@ -1856,6 +1839,22 @@ internals.configSchemes.ini = {
     }
   }
 };
+
+// ============================================================================
+// VUE APP
+// ============================================================================
+// expose vue bundles (prod)
+app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+
+// always send the client html (it will deal with 404s)
+app.use((req, res, next) => {
+  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
+});
 
 // ----------------------------------------------------------------------------
 // Main
