@@ -139,6 +139,21 @@ function processArgs (argv) {
 
 processArgs(process.argv);
 
+try { // check if the file exists
+  fs.accessSync(internals.configFile, fs.constants.F_OK);
+} catch (e) { // if the file doesn't exist, create it
+  try { // write the new file
+    fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
+  } catch (e) { // notify of error saving new config and exit
+    console.log('Error creating new WISE Config:\n\n', e.stack);
+    console.log(`
+      You must fix this before you can run WISE UI.
+      Try using arkime/tests/config.test.json as a starting point.
+    `);
+    process.exit(1);
+  }
+}
+
 if (internals.workers > 1) {
   if (cluster.isMaster) {
     for (let i = 0; i < internals.workers; i++) {
@@ -150,6 +165,7 @@ if (internals.workers > 1) {
     });
   }
 }
+
 // ----------------------------------------------------------------------------
 const app = express();
 const logger = require('morgan');

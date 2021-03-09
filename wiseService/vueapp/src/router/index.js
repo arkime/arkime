@@ -40,6 +40,14 @@ const routes = [
 const router = new VueRouter({
   mode: 'history',
   base: window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1),
+  scrollBehavior (to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        selector: to.hash,
+        offset: { x: 0, y: 60 }
+      };
+    }
+  },
   routes
 });
 

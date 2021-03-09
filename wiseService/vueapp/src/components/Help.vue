@@ -12,6 +12,11 @@
         <b-icon-link45deg />&nbsp;
         Links
       </a>
+      <a href="help#getStarted"
+        class="nav-link">
+        <b-icon-play />&nbsp;
+        Get Started
+      </a>
       <a href="help#query"
         class="nav-link">
         <b-icon-search />&nbsp;
@@ -83,6 +88,18 @@
             WISE API</a>
         </div>
       </div>
+
+      <hr>
+
+      <h3 id="getStarted">
+        <b-icon-play />&nbsp;
+        Get Started
+      </h3>
+
+      <p>
+        <!-- TODO -->
+        To get started...
+      </p>
 
       <hr>
 

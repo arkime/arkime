@@ -14,30 +14,26 @@
       <div class="d-flex flex-column">
         <div
           v-for="sourceKey in sidebarOptions.services"
-          :key="sourceKey + '-tab'"
-        >
+          :key="sourceKey + '-tab'">
           <button
             type="button"
             @click="selectedSourceKey = sourceKey"
             :active="selectedSourceKey === sourceKey"
-            class="btn btn-light source-btn btn-outline-dark"
-          >
+            class="btn btn-light source-btn btn-outline-dark">
             {{ sourceKey }}
           </button>
         </div>
 
-        <hr class="mx-3"/>
+        <hr class="mx-3" v-if="sidebarOptions.sources.length">
 
         <div
           v-for="sourceKey in sidebarOptions.sources"
-          :key="sourceKey + '-tab'"
-        >
+          :key="sourceKey + '-tab'">
           <button
             type="button"
             @click="selectedSourceKey = sourceKey"
             :active="selectedSourceKey === sourceKey"
-            class="btn btn-light source-btn btn-outline-dark"
-          >
+            class="btn btn-light source-btn btn-outline-dark">
             {{ sourceKey }}
           </button>
         </div>
@@ -80,8 +76,7 @@
                   class="ml-auto"
                   variant="primary"
                   :disabled="!saveEnabled"
-                  @click="saveConfig"
-                >
+                  @click="saveConfig">
                   Save Config &amp; Restart
                 </b-button>
               </div>
@@ -102,8 +97,7 @@
               buttons
               button-variant="outline-secondary"
               size="md"
-              name="radio-btn-outline"
-            >
+              name="radio-btn-outline">
             </b-form-radio-group>
             <b-form-checkbox
               switch
@@ -165,8 +159,7 @@
           <div
             class="input-group mb-3"
             v-for="field in activeFields"
-            :key="field.name + '-field'"
-          >
+            :key="field.name + '-field'">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ field.name }}</span>
             </div>
@@ -179,8 +172,7 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.focus.top="field.help"
-            >
+              v-b-popover.focus.top="field.help">
             </b-form-input>
             <b-form-textarea
               v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
@@ -190,8 +182,7 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.focus.top="field.help"
-            >
+              v-b-popover.focus.top="field.help">
             </b-form-textarea>
           </div>
 
@@ -206,8 +197,7 @@
     <!-- add source modal -->
     <b-modal
       v-model="showSourceModal"
-      title="New Source"
-    >
+      title="New Source">
       <b-container fluid>
         <div class="input-group">
           <span class="input-group-prepend cursor-help"
@@ -220,15 +210,13 @@
           </span>
           <select
             class="form-control"
-            v-model="newSource"
-          >
+            v-model="newSource">
             <option value="" disabled>Select Source</option>
             <option
               v-for="(source) in Object.keys(configDefs).filter(k => !configDefs[k].service)"
               :value="source"
               :key="source + 'Option'"
-              :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)"
-            >
+              :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)">
               {{ source }}
             </option>
           </select>
@@ -238,8 +226,7 @@
             :state="inputState(newSourceName, true, null)"
             class="input-box mt-2"
             v-model="newSourceName"
-            placeholder="Unique name for source"
-          >
+            placeholder="Unique name for source">
           </b-form-input>
         </span>
       </b-container>
@@ -250,8 +237,7 @@
             variant="warning"
             size="sm"
             class="float-left"
-            @click="showSourceModal = false"
-          >
+            @click="showSourceModal = false">
             Cancel
           </b-button>
           <b-button
@@ -259,8 +245,7 @@
             variant="success"
             size="sm"
             class="float-right mr-2"
-            @click="createNewSource"
-          >
+            @click="createNewSource">
             Create
           </b-button>
         </div>
