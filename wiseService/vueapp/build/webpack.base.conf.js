@@ -15,8 +15,11 @@ module.exports = {
     app: './src/main.js'
   },
   output: {
+    clean: true,
     path: config.build.assetsRoot,
     filename: '[name].js',
+    hotUpdateChunkFilename: 'hot/hot-update.js',
+    hotUpdateMainFilename: 'hot/hot-update.json',
     publicPath: process.env.NODE_ENV === 'production'
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath

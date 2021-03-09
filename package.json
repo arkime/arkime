@@ -96,7 +96,6 @@
     "babel-loader": "^8.2.2",
     "bootstrap": "^4.5.3",
     "bootstrap-vue": "^2.18.1",
-    "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",
     "css-loader": "^5.0.2",
     "css-minimizer-webpack-plugin": "^1.2.0",
