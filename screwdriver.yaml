@@ -274,7 +274,7 @@ jobs:
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
             - build-sanitize: (cd capture; scl enable devtoolset-9 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
@@ -305,7 +305,7 @@ jobs:
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/opt/arkime/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - linting: npm run lint
