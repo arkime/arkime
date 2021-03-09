@@ -34,10 +34,12 @@ LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, MolochPacket_t * c
     // for now, lump all unkIpProtocol into the same session
 }
 /******************************************************************************/
-LOCAL void unkIpProtocol_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int unkIpProtocol_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "unkIpProtocol");
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL int unkIpProtocol_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

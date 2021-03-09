@@ -67,7 +67,7 @@ LOCAL void sctp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL void sctp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
+LOCAL int sctp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
@@ -91,6 +91,8 @@ LOCAL void sctp_pre_process(MolochSession_t *session, MolochPacket_t * const pac
                          session->port1 == ntohs(udphdr->uh_sport) &&
                          session->port2 == ntohs(udphdr->uh_dport))?0:1;
     session->databytes[packet->direction] += (packet->pktlen - 8);
+
+    return 0;
 }
 /******************************************************************************/
 void moloch_parser_init()

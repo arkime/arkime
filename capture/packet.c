@@ -197,6 +197,7 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
 
+repeat:
     int isNew;
     session = moloch_session_find_or_create(packet->mProtocol, packet->hash, sessionId, &isNew);
 
@@ -221,7 +222,15 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         }
     }
 
-    mProtocols[packet->mProtocol].preProcess(session, packet, isNew);
+    int rc = mProtocols[packet->mProtocol].preProcess(session, packet, isNew);
+
+    // Close out the old session and create a new one
+    if (rc == 1) {
+        LOG("redo");
+        void moloch_session_save(MolochSession_t *session);
+        moloch_session_save(session);
+        goto repeat;
+    }
 
     if (session->stopSPI) {
         moloch_packet_free(packet);

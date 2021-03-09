@@ -219,6 +219,7 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
+    LOG("ALW - MARK CLOSING");
     if (session->closingQ)
         return;
 
@@ -269,7 +270,7 @@ LOCAL void moloch_session_free (MolochSession_t *session)
     MOLOCH_TYPE_FREE(MolochSession_t, session);
 }
 /******************************************************************************/
-LOCAL void moloch_session_save(MolochSession_t *session)
+void moloch_session_save(MolochSession_t *session)
 {
     if (session->h_next) {
         HASH_REMOVE(h_, sessions[session->thread][session->ses], session);

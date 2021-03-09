@@ -38,10 +38,12 @@ LOCAL void lldp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUS
     // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
 }
 /******************************************************************************/
-LOCAL void lldp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int lldp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "lldp");
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL int lldp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

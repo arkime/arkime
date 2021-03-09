@@ -38,10 +38,12 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
         memcpy(sessionId+5, data+14, 4);
 }
 /******************************************************************************/
-LOCAL void arp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int arp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "arp");
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL int arp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

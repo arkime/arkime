@@ -32,10 +32,12 @@ LOCAL void igmp_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUS
     // for now, lump all igmp into the same session
 }
 /******************************************************************************/
-LOCAL void igmp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int igmp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "igmp");
+
+    return 0;
 }
 /******************************************************************************/
 int igmp_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

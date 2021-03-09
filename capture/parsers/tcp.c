@@ -197,6 +197,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
         int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
+                LOG("ALW B");
                 moloch_session_mark_for_close(session, SESSION_TCP);
             }
             return 1;
@@ -247,6 +248,7 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
             if (session->tcpState[packet->direction] == MOLOCH_TCP_STATE_FIN_ACK) {
 
                 if (!session->closingQ) {
+                    LOG("ALW A %d", session->tcpSeq[packet->direction]);
                     moloch_session_mark_for_close(session, SESSION_TCP);
                 }
                 return 1;
@@ -358,11 +360,21 @@ void tcp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
+int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
+
+    static int cnt = 1;
+
+    LOG("ALW %d !isnew: %d hdr: %d closing: %d state: %d", cnt, !isNewSession, (tcphdr->th_flags & TH_SYN), session->closingQ, session->tcpState[packet->direction]);
+    cnt++;
+    // If this is an old session that is closing and we get a syn, probably a port reuse, close old session
+    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]) {
+        LOG("ALW DO IT");
+        return 1;
+    }
 
     if (isNewSession) {
        /* If antiSynDrop option is set to true, capture will assume that
@@ -401,6 +413,8 @@ void tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, in
                          session->port1 == ntohs(tcphdr->th_sport) &&
                          session->port2 == ntohs(tcphdr->th_dport))?0:1;
     session->tcp_flags |= tcphdr->th_flags;
+
+    return 0;
 }
 /******************************************************************************/
 int tcp_process(MolochSession_t *session, MolochPacket_t * const packet)

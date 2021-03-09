@@ -32,10 +32,12 @@ LOCAL void pim_create_sessionid(uint8_t *sessionId, MolochPacket_t * const UNUSE
     // for now, lump all pim into the same session
 }
 /******************************************************************************/
-LOCAL void pim_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int pim_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "pim");
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL int pim_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))
