@@ -1441,7 +1441,7 @@ export default {
 .help-content div.nav-pills {
   min-width: 150px;
   border: 1px solid var(--color-gray);
-  border-radius: 4px;
+  border-radius: 0 8px 8px 0;
   position: fixed;
   top: 40px;
   height: calc(100vh - 50px);
@@ -1452,6 +1452,12 @@ export default {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
+}
+
+/* content offset for left nav */
+.navbar-offset {
+  padding-left: 150px;
+  overflow-x: hidden;
 }
 
 .help-content .nav-pills .nav-link {
@@ -1472,6 +1478,11 @@ export default {
   width: 70%;
 }
 
+.badge.badge-primary {
+  font-weight: bold;
+  background-color: var(--color-primary);
+}
+
 /* field table animation */
 .help-content .list-enter-active, .list-leave-active {
   transition: all .5s;
@@ -1482,12 +1493,5 @@ export default {
 }
 .help-content .list-move {
   transition: transform .5s;
-}
-.navbar-offset {
-  padding-left: 150px;
-}
-.badge.badge-primary {
-  font-weight: bold;
-  background-color: var(--color-primary);
 }
 </style>
