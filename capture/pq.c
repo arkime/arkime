@@ -194,20 +194,18 @@ void moloch_pq_free(MolochSession_t *session)
 }
 /******************************************************************************/
 /* Reset the bucket0 time */
-void moloch_pq_flush()
+void moloch_pq_flush(int thread)
 {
     int i, t, b;
     for (i = 0; i < numPQs; i++) {
-        for (t = 0; t < config.packetThreads; t++) {
-            for (b = 0; b < pqs[i]->maxSeconds; b++) {
-                MolochPQItem_t *item = 0;
-                while (DLL_POP_HEAD(pql_, &pqs[i]->buckets[t][b], item)) {
-                    HASH_REMOVE(pqh_, pqs[i]->keys[t], item);
-                    MOLOCH_TYPE_FREE(MolochPQItem_t, item);
-                }
+        for (b = 0; b < pqs[i]->maxSeconds; b++) {
+            MolochPQItem_t *item = 0;
+            while (DLL_POP_HEAD(pql_, &pqs[i]->buckets[thread][b], item)) {
+                HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);
+                MOLOCH_TYPE_FREE(MolochPQItem_t, item);
             }
-            pqs[i]->bucket0[t] = 0;
         }
+        pqs[i]->bucket0[thread] = 0;
     }
 }
 /******************************************************************************/

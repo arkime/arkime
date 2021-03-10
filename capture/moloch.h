@@ -1354,7 +1354,7 @@ void moloch_pq_upsert(MolochPQ_t *pq, MolochSession_t *session, int seconds,  vo
 void moloch_pq_remove(MolochPQ_t *pq, MolochSession_t *session);
 void moloch_pq_run(int thread, int max);
 void moloch_pq_free(MolochSession_t *session);
-void moloch_pq_flush();
+void moloch_pq_flush(int thread);
 
 /******************************************************************************/
 /*

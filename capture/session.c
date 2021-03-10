@@ -620,7 +620,7 @@ LOCAL void moloch_session_flush_close(MolochSession_t *session, gpointer UNUSED(
             moloch_session_save(session);
         );
     }
-    moloch_pq_flush();
+    moloch_pq_flush(thread);
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then
