@@ -212,8 +212,8 @@ if (Config.get('passwordSecret')) {
     }
 
     // S2S Auth
-    if (req.headers['x-moloch-auth']) {
-      const obj = Config.auth2obj(req.headers['x-moloch-auth'], false);
+    if (req.headers['x-arkime-auth']) {
+      const obj = Config.auth2obj(req.headers['x-arkime-auth'], false);
       obj.path = obj.path.replace(Config.basePath(), '/');
       if (obj.path !== req.url) {
         console.log('ERROR - mismatch url', obj.path, req.url);
@@ -498,7 +498,7 @@ function setCookie (req, res, next) {
   if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
   res.cookie( // send cookie for basic, non admin functions
-    'MOLOCH-COOKIE',
+    'ARKIME-COOKIE',
     Config.obj2auth({
       date: Date.now(),
       pid: process.pid,
@@ -511,11 +511,11 @@ function setCookie (req, res, next) {
 }
 
 function checkCookieToken (req, res, next) {
-  if (!req.headers['x-moloch-cookie']) {
+  if (!req.headers['x-arkime-cookie']) {
     return res.molochError(500, 'Missing token');
   }
 
-  req.token = Config.auth2obj(req.headers['x-moloch-cookie'], true);
+  req.token = Config.auth2obj(req.headers['x-arkime-cookie'], true);
   const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
@@ -713,7 +713,7 @@ function recordResponseTime (req, res, next) {
     const now = process.hrtime();
     let ms = ((now[0] - req._startAt[0]) * 1000) + ((now[1] - req._startAt[1]) / 1000000);
     ms = Math.ceil(ms);
-    res.setHeader('X-Moloch-Response-Time', ms);
+    res.setHeader('X-Arkime-Response-Time', ms);
   });
 
   next();

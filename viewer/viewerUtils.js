@@ -11,7 +11,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     if (!options.headers) {
       options.headers = {};
     }
-    options.headers['x-moloch-auth'] = Config.obj2auth({
+    options.headers['x-arkime-auth'] = Config.obj2auth({
       date: Date.now(),
       user: user.userId,
       node: node,

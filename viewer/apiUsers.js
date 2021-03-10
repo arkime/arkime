@@ -578,7 +578,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
     res.cookie(
-      'MOLOCH-COOKIE',
+      'ARKIME-COOKIE',
       Config.obj2auth({
         date: Date.now(), pid: process.pid, userId: req.user.userId
       }, true),
