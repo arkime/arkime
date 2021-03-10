@@ -3964,6 +3964,11 @@ export default {
   color: #FFFFFF !important;
 }
 
+.settings-page .arkime-dark-theme input.form-control {
+  color: #FFFFFF;
+  background-color: #222222;
+}
+
 /* purp */
 .settings-page .purp-theme .navbar {
   background-color: #530763;
@@ -4394,6 +4399,11 @@ export default {
   color: #FFFFFF !important;
 }
 
+.settings-page .dark-2-theme input.form-control {
+  color: #FFFFFF;
+  background-color: #111111;
+}
+
 /* Dark Blue */
 .settings-page .dark-3-theme .navbar {
   background-color: #9F9F9F;
@@ -4482,6 +4492,11 @@ export default {
 
 .settings-page .dark-3-theme .btn {
   color: #FFFFFF !important;
+}
+
+.settings-page .dark-3-theme input.form-control {
+  color: #EEEEEE;
+  background-color: #222222;
 }
 
 /* Custom */

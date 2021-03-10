@@ -1,4 +1,16 @@
-/* Bootstrap Overrides (mainly for Molch themes) */
+/* Bootstrap Overrides (mainly for Arkime themes) */
+
+/* dark form controls ------------------------------------------------------ */
+input.form-control,
+input.form-control:focus,
+select.form-control,
+select.form-control:focus,
+textarea.form-control,
+textarea.form-control:focus {
+  color: var(--color-foreground, #000);
+  background-color: var(--color-inputs, #FFF);
+}
+
 
 /* dark default buttons ---------------------------------------------------- */
 .btn.btn-default {
@@ -20,7 +32,7 @@
 
 /* themed input groups ----------------------------------------------------- */
 .input-group-prepend > .input-group-text,
-.input-group-append:not(.cursor-pointer) > .input-group-text {
+.input-group-append:not(.color) > .input-group-text {
   border-color: var(--color-gray) !important;
   color: var(--color-foreground, #555) !important;
   background-color: var(--color-background, #EEE) !important;
