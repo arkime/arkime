@@ -65,10 +65,11 @@
         WISE
       </strong></p>
       <p class="lead">
-        WISE is a framework for integrating data feeds into Arkime. The data
-        feeds can be sourced from local files, remote URLs, or commercial
-        services such as OpenDNS, Emerging Threats Pro, and others. The data
-        feeds can set almost any Arkime field or even create new Arkime fields.
+        WISE is a framework for integrating data feeds into Arkime, whare are used
+        to enrich the session meta data.
+        The data feeds can be sourced from local files, remote URLs, or commercial
+        services such as OpenDNS, Emerging Threats Pro, and others.
+        The data feeds can set almost any Arkime field or even create new Arkime fields.
         Think of WISE as the next and better version of the tagger plugin.
       </p>
 
@@ -97,8 +98,28 @@
       </h3>
 
       <p>
-        <!-- TODO -->
-        To get started...
+        Setting up WISE to use with Arkime is a multi step process.
+        <ol>
+          <li> In config.ini you'll need to make some changes.
+            Add wise.so to plugins line.
+            Set wiseURL to point to the wise host and port.
+            Add wise.js to the viewerPlugins line.
+            See https://arkime.com/wise for more options
+            Sample:
+            <pre>
+              plugins=wise.so
+              viewerPlugins=wise.js
+              wiseURL=http://localhost:8081
+            </pre>
+          </li>
+          <li>
+            You'll need to provision sources into WISE service using either the wise.ini file or the config builder
+          </li>
+          <li>
+            You'll need to restart all the capture and viewer processes with the new config.ini
+          </li>
+
+        </ol>
       </p>
 
       <hr>
@@ -109,8 +130,8 @@
       </h3>
 
       <p>
-        <!-- TODO -->
-        The Query page is for searching for...
+        The Query page of the WISE UI is for searching for indicators and testing what WISE knows about them.
+        This is basically the same thing that capture is doing when it uses the wise plugin, but in a user friendly way.
       </p>
 
       <hr>
@@ -121,7 +142,6 @@
       </h3>
 
       <p>
-        <!-- TODO -->
         The Stats page displays statistics about your WISE configuration.
       </p>
 
@@ -129,16 +149,13 @@
         Sources
       </h6>
       <p>
-        <!-- TODO -->
-        The Sources tab allows you to view your WISE sources and how many
-        sessions they are augmenting.
+        The Sources tab allows you to view your WISE sources and how many sessions they are enriching.
       </p>
 
       <h6 id="types">
         Types
       </h6>
       <p>
-        <!-- TODO -->
         The Types tab allows you to view data about your WISE source types.
       </p>
 
@@ -150,8 +167,7 @@
       </h3>
 
       <p>
-        The Config page allows you to configure you WISE service, cache, and
-        WISE sources.
+        The Config page allows you to configure your WISE service, cache, and WISE sources.
         <br>
         <strong>Note:</strong> You must enter the config pin code
         every time you make a change. This can be found in the logs created
