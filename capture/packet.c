@@ -228,7 +228,6 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
         // Close out the old session and create a new one
         if (rc == 1) {
-            LOG("redo");
             void moloch_session_save(MolochSession_t *session);
             moloch_session_save(session);
             continue;
