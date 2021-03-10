@@ -511,11 +511,12 @@ function setCookie (req, res, next) {
 }
 
 function checkCookieToken (req, res, next) {
-  if (!req.headers['x-arkime-cookie']) {
+  if (!req.headers['x-arkime-cookie'] && !req.headers['x-moloch-cookie']) {
     return res.serverError(500, 'Missing token');
   }
 
-  req.token = Config.auth2obj(req.headers['x-arkime-cookie'], true);
+  const cookie = req.headers['x-arkime-cookie'] || req.headers['x-moloch-cookie'];
+  req.token = Config.auth2obj(cookie, true);
   const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
