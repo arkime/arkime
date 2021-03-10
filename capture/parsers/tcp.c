@@ -358,11 +358,16 @@ void tcp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
+int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession)
 {
     struct ip           *ip4 = (struct ip*)(packet->pkt + packet->ipOffset);
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
+
+    // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
+    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]) {
+        return 1;
+    }
 
     if (isNewSession) {
        /* If antiSynDrop option is set to true, capture will assume that
@@ -401,6 +406,8 @@ void tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, in
                          session->port1 == ntohs(tcphdr->th_sport) &&
                          session->port2 == ntohs(tcphdr->th_dport))?0:1;
     session->tcp_flags |= tcphdr->th_flags;
+
+    return 0;
 }
 /******************************************************************************/
 int tcp_process(MolochSession_t *session, MolochPacket_t * const packet)

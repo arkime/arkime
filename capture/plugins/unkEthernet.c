@@ -34,10 +34,11 @@ LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, MolochPacket_t * con
     // for now, lump all unkEthernet into the same session
 }
 /******************************************************************************/
-LOCAL void unkEthernet_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int unkEthernet_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "unkEthernet");
+    return 0;
 }
 /******************************************************************************/
 LOCAL int unkEthernet_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

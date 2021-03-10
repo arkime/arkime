@@ -62,11 +62,13 @@ LOCAL void esp_create_sessionid(uint8_t *sessionId, MolochPacket_t *packet)
     }
 }
 /******************************************************************************/
-LOCAL void esp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int esp_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
         moloch_session_add_protocol(session, "esp");
     session->stopSaving = 1;
+
+    return 0;
 }
 /******************************************************************************/
 void moloch_parser_init()

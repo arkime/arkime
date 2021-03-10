@@ -32,7 +32,7 @@ LOCAL void isis_create_sessionid(uint8_t *sessionId, MolochPacket_t *UNUSED(pack
     // for now, lump all isis into the same session
 }
 /******************************************************************************/
-LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
+LOCAL int isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNUSED(packet), int isNewSession)
 {
     char msg[32];
 
@@ -42,7 +42,7 @@ LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNU
     if (packet->pktlen < 22) {
       snprintf (msg, sizeof(msg), "err-len-%d", packet->pktlen);
       moloch_field_string_add(typeField, session, msg, -1, TRUE);
-      return;
+      return 0;
     }
 
     switch (packet->pkt[21]) {
@@ -79,6 +79,8 @@ LOCAL void isis_pre_process(MolochSession_t *session, MolochPacket_t * const UNU
             LOG("isis %s\n", msg);
         moloch_field_string_add(typeField, session, msg, -1, TRUE);
     }
+
+    return 0;
 }
 /******************************************************************************/
 LOCAL int isis_process(MolochSession_t *UNUSED(session), MolochPacket_t * const UNUSED(packet))

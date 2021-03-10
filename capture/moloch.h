@@ -1071,7 +1071,7 @@ void     moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb
 
 /******************************************************************************/
 typedef void (*MolochProtocolCreateSessionId_cb)(uint8_t *sessionId, MolochPacket_t * const packet);
-typedef void (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
+typedef int  (*MolochProtocolPreProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet, int isNewSession);
 typedef int  (*MolochProtocolProcess_cb)(MolochSession_t *session, MolochPacket_t * const packet);
 typedef void (*MolochProtocolSessionFree_cb)(MolochSession_t *session);
 
