@@ -89,6 +89,21 @@
           <span class="fa fa-3x fa-search">
           </span>
           Try adding a search query!
+          <template v-if="!sources.length">
+            <br>
+            Looks like you don't have any WISE sources yet.
+            <br>
+            Check out our
+            <a href="help#getStarted"
+              class="no-decoration">
+              getting started section
+            </a> for help.
+            <br>
+            Or add a source on the
+            <a href="config"
+              class="no-decoration">
+              Config Page</a>.
+          </template>
         </div>
       </div>
     </div> <!-- /empty search -->
@@ -115,6 +130,21 @@
           <span class="fa fa-3x fa-search-minus">
           </span>
           No Results
+          <template v-if="!sources.length">
+            <br>
+            Looks like you don't have any WISE sources yet.
+            <br>
+            Check out our
+            <a href="help#getStarted"
+              class="no-decoration">
+              getting started section
+            </a> for help.
+            <br>
+            Or add a source on the
+            <a href="config"
+              class="no-decoration">
+              Config Page</a>.
+          </template>
         </div>
       </div>
     </div> <!-- /no results -->

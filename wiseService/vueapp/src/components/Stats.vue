@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
 
-    <div>
+    <div v-if="sourceStats.length">
       <b-tabs content-class="mt-3">
         <b-tab title="Sources" active>
           <div v-if="sourceStats.length > 0">
@@ -28,6 +28,25 @@
           </li>
         </template>
       </b-tabs>
+    </div>
+
+    <div v-else
+      class="vertical-center info-area mt-5 pt-5">
+      <div>
+        <h1><b-icon-folder2-open /></h1>
+        Looks like you don't have any WISE sources yet.
+        <br>
+        Check out our
+        <a href="help#getStarted"
+          class="no-decoration">
+          getting started section
+        </a> for help.
+        <br>
+        Or add a source on the
+        <a href="config"
+          class="no-decoration">
+          Config Page</a>.
+      </div>
     </div>
 
   </div>
