@@ -212,8 +212,8 @@ if (Config.get('passwordSecret')) {
     }
 
     // S2S Auth
-    if (req.headers['x-arkime-auth']) {
-      const obj = Config.auth2obj(req.headers['x-arkime-auth'], false);
+    if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
+      const obj = Config.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth'], false);
       obj.path = obj.path.replace(Config.basePath(), '/');
       if (obj.path !== req.url) {
         console.log('ERROR - mismatch url', obj.path, req.url);
