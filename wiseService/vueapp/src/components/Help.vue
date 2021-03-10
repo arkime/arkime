@@ -65,8 +65,8 @@
         WISE
       </strong></p>
       <p class="lead">
-        WISE is a framework for integrating data feeds into Arkime, whare are used
-        to enrich the session meta data.
+        WISE is a framework for integrating data feeds into Arkime, where they
+        are used to enrich the session meta data.
         The data feeds can be sourced from local files, remote URLs, or commercial
         services such as OpenDNS, Emerging Threats Pro, and others.
         The data feeds can set almost any Arkime field or even create new Arkime fields.
@@ -102,9 +102,12 @@
         <ol>
           <li> In config.ini you'll need to make some changes.
             Add wise.so to plugins line.
-            Set wiseURL to point to the wise host and port.
+            Set wiseURL to point to the WISE host and port.
             Add wise.js to the viewerPlugins line.
-            See https://arkime.com/wise for more options
+            See <a href="https://arkime.com/wise"
+              class="no-decoration"
+              target="_blank">
+              arkime.com/wise</a> for more options
             Sample:
             <pre>
               plugins=wise.so
@@ -131,7 +134,7 @@
 
       <p>
         The Query page of the WISE UI is for searching for indicators and testing what WISE knows about them.
-        This is basically the same thing that capture is doing when it uses the wise plugin, but in a user friendly way.
+        This is basically the same thing that capture is doing when it uses the WISE plugin, but in a user friendly way.
       </p>
 
       <hr>
@@ -178,24 +181,25 @@
         Configuring WISE Service
       </h6>
       <p>
-        <!-- TODO -->
-        Here's how to configure the WISE service
+        The wiseService tab allows you to configure your WISE service.
+        You can use this tool instead of configuring fields in the config.ini.
       </p>
 
       <h6 id="configCache">
         Configuring WISE Cache
       </h6>
       <p>
-        <!-- TODO -->
-        Here's how to configure the WISE cache
+        The cache tab allows you to configure how WISE should cache results
+        from sources that support it. Using a redis setup is especially useful
+        when there are multiple WISE servers or large amount of results to cache.
       </p>
 
       <h6 id="configSources">
         Configuring WISE Sources
       </h6>
       <p>
-        Use this tool instead of manually creating and configuring your WISE
-        sources!
+        The rest of the tabs on this page list your WISE Sources.
+        Use this tool instead of manually creating and configuring them.
       </p>
 
       <div class="ml-4">
@@ -218,7 +222,7 @@
         </p>
         <h6>
           <b-icon-pencil />&nbsp;
-          Import Config
+          Edit Source
         </h6>
         <p>
           Click "Edit" to edit the WISE source file directly. The file is
@@ -227,7 +231,7 @@
         </p>
         <h6>
           <b-icon-eye />&nbsp;
-          Import Config
+          View Source
         </h6>
         <p>
           Click "Display" to view the JSON output.
