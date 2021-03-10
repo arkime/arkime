@@ -221,7 +221,7 @@ if (Config.get('passwordSecret')) {
       }
       if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
         console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
-        return res.send('Unauthorized based on timestamp - check that all moloch viewer machines have accurate clocks');
+        return res.send('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
       }
 
       // Don't look up user for receiveSession
@@ -230,7 +230,7 @@ if (Config.get('passwordSecret')) {
       }
 
       Db.getUserCache(obj.user, function (err, suser) {
-        if (err) { return res.send('ERROR - x-moloch getUser - user: ' + obj.user + ' err:' + err); }
+        if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
         if (!suser || !suser.found) { return res.send(obj.user + " doesn't exist"); }
         if (!suser._source.enabled) { return res.send(obj.user + ' not enabled'); }
         userCleanup(suser._source);
