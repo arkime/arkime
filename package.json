@@ -1,11 +1,9 @@
 {
-  "name": "moloch",
-  "version": "1.0.0",
-  "description": "",
+  "name": "arkime",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aol/moloch.git"
+    "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.9.1",
