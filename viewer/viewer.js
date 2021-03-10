@@ -185,7 +185,7 @@ logger.token('username', (req, res) => {
 
 // appwide middleware ---------------------------------------------------------
 app.use((req, res, next) => {
-  res.molochError = molochError;
+  res.serverError = serverError;
 
   req.url = req.url.replace(Config.basePath(), '/');
   return next();
@@ -307,7 +307,7 @@ if (Config.get('passwordSecret')) {
     req.url = req.url.replace('/', Config.basePath());
     passport.authenticate('digest', { session: false })(req, res, function (err) {
       req.url = req.url.replace(Config.basePath(), '/');
-      if (err) { return res.molochError(200, err); } else { return next(); }
+      if (err) { return res.serverError(200, err); } else { return next(); }
     });
   });
 } else if (Config.get('regressionTests', false)) {
@@ -473,7 +473,7 @@ function createRightClicks () {
 // API MIDDLEWARE
 // ============================================================================
 // error middleware -----------------------------------------------------------
-function molochError (status, text) {
+function serverError (status, text) {
   this.status(status || 403);
   return this.send(JSON.stringify({ success: false, text: text }));
 }
@@ -512,7 +512,7 @@ function setCookie (req, res, next) {
 
 function checkCookieToken (req, res, next) {
   if (!req.headers['x-arkime-cookie']) {
-    return res.molochError(500, 'Missing token');
+    return res.serverError(500, 'Missing token');
   }
 
   req.token = Config.auth2obj(req.headers['x-arkime-cookie'], true);
@@ -520,7 +520,7 @@ function checkCookieToken (req, res, next) {
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
     console.trace('bad token', req.token);
-    return res.molochError(500, 'Timeout - Please try reloading page and repeating the action');
+    return res.serverError(500, 'Timeout - Please try reloading page and repeating the action');
   }
 
   return next();
@@ -548,7 +548,7 @@ function checkPermissions (permissions) {
       if ((!req.user[permission] && !inversePermissions[permission]) ||
         (req.user[permission] && inversePermissions[permission])) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
-        return res.molochError(403, 'You do not have permission to access this resource');
+        return res.serverError(403, 'You do not have permission to access this resource');
       }
     }
     next();
@@ -558,7 +558,7 @@ function checkPermissions (permissions) {
 // used to disable endpoints in multi es mode
 function disableInMultiES (req, res, next) {
   if (Config.get('multiES', false)) {
-    return res.molochError(401, 'Not supported in multies');
+    return res.serverError(401, 'Not supported in multies');
   }
   return next();
 }
@@ -571,14 +571,14 @@ function checkHuntAccess (req, res, next) {
     Db.getHunt(req.params.id, (err, huntHit) => {
       if (err) {
         console.log('error', err);
-        return res.molochError(500, err);
+        return res.serverError(500, err);
       }
       if (!huntHit || !huntHit.found) { throw new Error('Hunt not found'); }
 
       if (huntHit._source.userId === req.user.userId) {
         return next();
       }
-      return res.molochError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
+      return res.serverError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
     });
   }
 }
@@ -590,12 +590,12 @@ function checkCronAccess (req, res, next) {
   } else {
     Db.get('queries', 'query', req.body.key, (err, query) => {
       if (err || !query.found) {
-        return res.molochError(403, 'Unknown cron query');
+        return res.serverError(403, 'Unknown cron query');
       }
       if (query._source.creator === req.user.userId) {
         return next();
       }
-      return res.molochError(403, 'You cannot change another user\'s cron query unless you have admin privileges');
+      return res.serverError(403, 'You cannot change another user\'s cron query unless you have admin privileges');
     });
   }
 }
@@ -610,7 +610,7 @@ function checkEsAdminUser (req, res, next) {
       return next();
     }
   }
-  return res.molochError(403, 'You do not have permission to access this resource');
+  return res.serverError(403, 'You do not have permission to access this resource');
 }
 
 // no cache middleware --------------------------------------------------------
@@ -746,7 +746,7 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.createEnabled) { return res.molochError(403, 'Need admin privileges'); }
+  if (!req.user.createEnabled) { return res.serverError(403, 'Need admin privileges'); }
 
   Db.getUserCache(req.query.userId, function (err, user) {
     if (err || !user || !user.found) {
@@ -777,7 +777,7 @@ function getSettingUserDb (req, res, next) {
     userId = req.user.userId;
   } else if (!req.user.createEnabled) {
     // user is trying to get another user's settings without admin privilege
-    return res.molochError(403, 'Need admin privileges');
+    return res.serverError(403, 'Need admin privileges');
   } else {
     userId = req.query.userId;
   }
@@ -788,7 +788,7 @@ function getSettingUserDb (req, res, next) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
       } else {
-        return res.molochError(403, 'Unknown user');
+        return res.serverError(403, 'Unknown user');
       }
       return next();
     }
@@ -1214,11 +1214,11 @@ if (Config.get('demoMode', false)) {
   });
 
   app.get(['/user/cron', '/history/list'], (req, res) => {
-    return res.molochError(403, 'Disabled in demo mode.');
+    return res.serverError(403, 'Disabled in demo mode.');
   });
 
   app.post(['/user/password/change', '/changePassword', '/tableState/:tablename'], (req, res) => {
-    return res.molochError(403, 'Disabled in demo mode.');
+    return res.serverError(403, 'Disabled in demo mode.');
   });
 }
 
