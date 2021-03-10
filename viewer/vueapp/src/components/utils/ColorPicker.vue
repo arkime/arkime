@@ -9,7 +9,7 @@
           {{ fieldName }}
         </span>
       </span>
-      <div class="input-group-append cursor-pointer"
+      <div class="input-group-append cursor-pointer color"
         @click="togglePicker">
         <span class="input-group-text"
           :style="{'background-color':colorValue}">
