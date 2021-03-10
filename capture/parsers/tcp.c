@@ -197,7 +197,6 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
         int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
-                LOG("ALW B");
                 moloch_session_mark_for_close(session, SESSION_TCP);
             }
             return 1;
@@ -248,7 +247,6 @@ int tcp_packet_process(MolochSession_t * const session, MolochPacket_t * const p
             if (session->tcpState[packet->direction] == MOLOCH_TCP_STATE_FIN_ACK) {
 
                 if (!session->closingQ) {
-                    LOG("ALW A %d", session->tcpSeq[packet->direction]);
                     moloch_session_mark_for_close(session, SESSION_TCP);
                 }
                 return 1;
@@ -366,13 +364,8 @@ int tcp_pre_process(MolochSession_t *session, MolochPacket_t * const packet, int
     struct ip6_hdr      *ip6 = (struct ip6_hdr*)(packet->pkt + packet->ipOffset);
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
-    static int cnt = 1;
-
-    LOG("ALW %d !isnew: %d hdr: %d closing: %d state: %d", cnt, !isNewSession, (tcphdr->th_flags & TH_SYN), session->closingQ, session->tcpState[packet->direction]);
-    cnt++;
-    // If this is an old session that is closing and we get a syn, probably a port reuse, close old session
-    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]) {
-        LOG("ALW DO IT");
+    // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
+    if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) && session->tcpFlagCnt[MOLOCH_TCPFLAG_RST]) {
         return 1;
     }
 

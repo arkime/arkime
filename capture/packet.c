@@ -197,39 +197,43 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
 
-repeat:
+    // Try at most 2 times
     int isNew;
-    session = moloch_session_find_or_create(packet->mProtocol, packet->hash, sessionId, &isNew);
 
-    if (isNew) {
-        session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
-        session->firstPacket = packet->ts;
-        session->thread = thread;
+    for (int i = 0; i < 2; i++) {
+        session = moloch_session_find_or_create(packet->mProtocol, packet->hash, sessionId, &isNew);
 
-        if (packet->ipProtocol) {
-            session->ipProtocol = packet->ipProtocol;
-            if (ip4->ip_v == 4) {
-                ((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
-                ((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
-                ((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
-                ((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
-                session->ip_tos = ip4->ip_tos;
-            } else {
-                session->addr1 = ip6->ip6_src;
-                session->addr2 = ip6->ip6_dst;
-                session->ip_tos = 0;
+        if (isNew) {
+            session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
+            session->firstPacket = packet->ts;
+            session->thread = thread;
+
+            if (packet->ipProtocol) {
+                session->ipProtocol = packet->ipProtocol;
+                if (ip4->ip_v == 4) {
+                    ((uint32_t *)session->addr1.s6_addr)[2] = htonl(0xffff);
+                    ((uint32_t *)session->addr1.s6_addr)[3] = ip4->ip_src.s_addr;
+                    ((uint32_t *)session->addr2.s6_addr)[2] = htonl(0xffff);
+                    ((uint32_t *)session->addr2.s6_addr)[3] = ip4->ip_dst.s_addr;
+                    session->ip_tos = ip4->ip_tos;
+                } else {
+                    session->addr1 = ip6->ip6_src;
+                    session->addr2 = ip6->ip6_dst;
+                    session->ip_tos = 0;
+                }
             }
         }
-    }
 
-    int rc = mProtocols[packet->mProtocol].preProcess(session, packet, isNew);
+        int rc = mProtocols[packet->mProtocol].preProcess(session, packet, isNew);
 
-    // Close out the old session and create a new one
-    if (rc == 1) {
-        LOG("redo");
-        void moloch_session_save(MolochSession_t *session);
-        moloch_session_save(session);
-        goto repeat;
+        // Close out the old session and create a new one
+        if (rc == 1) {
+            LOG("redo");
+            void moloch_session_save(MolochSession_t *session);
+            moloch_session_save(session);
+            continue;
+        }
+        break;
     }
 
     if (session->stopSPI) {
