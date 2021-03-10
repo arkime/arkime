@@ -42,10 +42,14 @@ const router = new VueRouter({
   base: window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1),
   scrollBehavior (to, from, savedPosition) {
     if (to.hash) {
-      return {
-        selector: to.hash,
-        offset: { x: 0, y: 60 }
-      };
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({
+            selector: to.hash,
+            offset: { x: 0, y: 60 }
+          });
+        });
+      });
     }
   },
   routes
