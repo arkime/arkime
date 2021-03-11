@@ -1,8 +1,10 @@
 {
   "name": "WISE",
-  "version": "0.0.0",
-  "private": true,
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arkime/arkime.git"
+  },
   "dependencies": {
     "core-js": "^3.6.5",
     "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",

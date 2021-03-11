@@ -295,13 +295,13 @@ my ($userId) = @_;
         $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8123/makeToken")->{"_headers"}->{"set-cookie"};
     }
 
-    $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
+    $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
     return $1;
 }
 ################################################################################
 sub getTokenCookie2 {
     my $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:8124/users")->{"_headers"}->{"set-cookie"};
-    $setCookie =~ /MOLOCH-COOKIE=([^;]*)/;
+    $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
     return $1;
 }
 ################################################################################

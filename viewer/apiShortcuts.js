@@ -171,7 +171,7 @@ module.exports = (Db, internals, ViewerUtils) => {
       res.send(sendResults);
     }).catch((err) => {
       console.log('ERROR - /api/shortcuts', err);
-      return res.molochError(500, 'Error retrieving shortcuts - ' + err);
+      return res.serverError(500, 'Error retrieving shortcuts - ' + err);
     });
   };
 
@@ -189,13 +189,13 @@ module.exports = (Db, internals, ViewerUtils) => {
   module.createShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
-      return res.molochError(403, 'Missing shortcut name');
+      return res.serverError(403, 'Missing shortcut name');
     }
     if (!req.body.type) {
-      return res.molochError(403, 'Missing shortcut type');
+      return res.serverError(403, 'Missing shortcut type');
     }
     if (!req.body.value) {
-      return res.molochError(403, 'Missing shortcut value');
+      return res.serverError(403, 'Missing shortcut value');
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_]/g, '');
@@ -221,7 +221,7 @@ module.exports = (Db, internals, ViewerUtils) => {
           const shortcut = hit._source;
           if (shortcut.name === req.body.name) {
             shortcutMutex.unlock();
-            return res.molochError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+            return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
           }
         }
 
@@ -240,7 +240,7 @@ module.exports = (Db, internals, ViewerUtils) => {
           if (err) {
             console.log('shortcut create failed', err, result);
             shortcutMutex.unlock();
-            return res.molochError(500, 'Creating shortcut failed');
+            return res.serverError(500, 'Creating shortcut failed');
           }
           newShortcut.id = result._id;
           newShortcut.type = type;
@@ -258,7 +258,7 @@ module.exports = (Db, internals, ViewerUtils) => {
       }).catch((err) => {
         console.log('ERROR - /api/shortcut', err);
         shortcutMutex.unlock();
-        return res.molochError(500, 'Error creating shortcut - ' + err);
+        return res.serverError(500, 'Error creating shortcut - ' + err);
       });
     });
   };
@@ -278,13 +278,13 @@ module.exports = (Db, internals, ViewerUtils) => {
   module.updateShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
-      return res.molochError(403, 'Missing shortcut name');
+      return res.serverError(403, 'Missing shortcut name');
     }
     if (!req.body.type) {
-      return res.molochError(403, 'Missing shortcut type');
+      return res.serverError(403, 'Missing shortcut type');
     }
     if (!req.body.value) {
-      return res.molochError(403, 'Missing shortcut value');
+      return res.serverError(403, 'Missing shortcut value');
     }
 
     const sentShortcut = req.body;
@@ -292,16 +292,16 @@ module.exports = (Db, internals, ViewerUtils) => {
     Db.getShortcut(req.params.id, (err, fetchedShortcut) => { // fetch shortcut
       if (err) {
         console.log('fetching shortcut to update failed', err, fetchedShortcut);
-        return res.molochError(500, 'Fetching shortcut to update failed');
+        return res.serverError(500, 'Fetching shortcut to update failed');
       }
 
       if (fetchedShortcut._source.locked) {
-        return res.molochError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
+        return res.serverError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
       }
 
       // only allow admins or shortcut creator to update shortcut item
       if (!req.user.createEnabled && req.settingUser.userId !== fetchedShortcut._source.userId) {
-        return res.molochError(403, 'Permission denied');
+        return res.serverError(403, 'Permission denied');
       }
 
       const query = {
@@ -324,7 +324,7 @@ module.exports = (Db, internals, ViewerUtils) => {
             const shortcut = hit._source;
             if (shortcut.name === req.body.name) {
               shortcutMutex.unlock();
-              return res.molochError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+              return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
             }
           }
 
@@ -341,7 +341,7 @@ module.exports = (Db, internals, ViewerUtils) => {
 
             if (err) {
               console.log('shortcut update failed', err, info);
-              return res.molochError(500, 'Updating shortcut failed');
+              return res.serverError(500, 'Updating shortcut failed');
             }
 
             sentShortcut.value = values.join('\n');
@@ -355,7 +355,7 @@ module.exports = (Db, internals, ViewerUtils) => {
         }).catch((err) => {
           console.log('ERROR - /api/shortcut', err);
           shortcutMutex.unlock();
-          return res.molochError(500, 'Error updating shortcut - ' + err);
+          return res.serverError(500, 'Error updating shortcut - ' + err);
         });
       });
     });
@@ -373,18 +373,18 @@ module.exports = (Db, internals, ViewerUtils) => {
     Db.getShortcut(req.params.id, (err, shortcut) => { // fetch shortcut
       if (err) {
         console.log('fetching shortcut to delete failed', err, shortcut);
-        return res.molochError(500, 'Fetching shortcut to delete failed');
+        return res.serverError(500, 'Fetching shortcut to delete failed');
       }
 
       // only allow admins or shortcut creator to delete shortcut item
       if (!req.user.createEnabled && req.settingUser.userId !== shortcut._source.userId) {
-        return res.molochError(403, 'Permission denied');
+        return res.serverError(403, 'Permission denied');
       }
 
       Db.deleteShortcut(req.params.id, shortcut.userId, (err, result) => {
         if (err || result.error) {
           console.log('ERROR - deleting shortcut', err || result.error);
-          return res.molochError(500, 'Error deleting shortcut');
+          return res.serverError(500, 'Error deleting shortcut');
         } else {
           res.send(JSON.stringify({
             success: true,

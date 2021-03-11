@@ -33,7 +33,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       if (sharedUser.views[req.body.name]) {
         console.log('Trying to add duplicate shared view', sharedUser);
-        return res.molochError(403, 'Shared view already exists');
+        return res.serverError(403, 'Shared view already exists');
       }
 
       sharedUser.views[req.body.name] = view;
@@ -41,7 +41,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
           console.log(endpoint, 'failed', err, info);
-          return res.molochError(500, errorMessage);
+          return res.serverError(500, errorMessage);
         }
 
         return res.send(JSON.stringify({
@@ -64,7 +64,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(endpoint, 'failed', err, info);
-        return res.molochError(500, errorMessage);
+        return res.serverError(500, errorMessage);
       }
 
       // save the view on the shared user
@@ -77,11 +77,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser('_moloch_shared', sharedUser, (err, info) => {
       if (err) {
         console.log(endpoint, 'failed', err, info);
-        return res.molochError(500, errorMessage);
+        return res.serverError(500, errorMessage);
       }
 
       if (user.views[req.body.name]) { // the user already has a view with this name
-        return res.molochError(403, 'A view already exists with this name.');
+        return res.serverError(403, 'A view already exists with this name.');
       }
 
       user.views[req.body.name] = {
@@ -94,7 +94,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(endpoint, 'failed', err, info);
-          return res.molochError(500, errorMessage);
+          return res.serverError(500, errorMessage);
         }
 
         return res.send(JSON.stringify({
@@ -233,21 +233,21 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.createUser = (req, res) => {
     if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
-      return res.molochError(403, 'Missing/Empty required fields');
+      return res.serverError(403, 'Missing/Empty required fields');
     }
 
     if (req.body.userId.match(/[^@\w.-]/)) {
-      return res.molochError(403, 'User ID must be word characters');
+      return res.serverError(403, 'User ID must be word characters');
     }
 
     if (req.body.userId === '_moloch_shared') {
-      return res.molochError(403, 'User ID cannot be the same as the shared moloch user');
+      return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
     }
 
     Db.getUser(req.body.userId, (err, user) => {
       if (!user || user.found) {
         console.log('Trying to add duplicate user', err, user);
-        return res.molochError(403, 'User already exists');
+        return res.serverError(403, 'User already exists');
       }
 
       const nuser = {
@@ -282,7 +282,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }));
         } else {
           console.log('ERROR - add user', err, info);
-          return res.molochError(403, err);
+          return res.serverError(403, err);
         }
       });
     });
@@ -299,7 +299,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.deleteUser = (req, res) => {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
-      return res.molochError(403, 'Can not delete yourself');
+      return res.serverError(403, 'Can not delete yourself');
     }
 
     Db.deleteUser(userId, (err, data) => {
@@ -323,17 +323,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
-      return res.molochError(403, 'Missing userId');
+      return res.serverError(403, 'Missing userId');
     }
 
     if (userId === '_moloch_shared') {
-      return res.molochError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+      return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
     }
 
     Db.getUser(userId, (err, user) => {
       if (err || !user.found) {
         console.log('update user failed', err, user);
-        return res.molochError(403, 'User not found');
+        return res.serverError(403, 'User not found');
       }
 
       user = user._source;
@@ -351,7 +351,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       if (req.body.userName !== undefined) {
         if (req.body.userName.match(/^\s*$/)) {
           console.log('ERROR - empty username', req.body);
-          return res.molochError(403, 'Username can not be empty');
+          return res.serverError(403, 'Username can not be empty');
         } else {
           user.userName = req.body.userName;
         }
@@ -396,13 +396,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.updateUserPassword = (req, res) => {
     if (!req.body.newPassword || req.body.newPassword.length < 3) {
-      return res.molochError(403, 'New password needs to be at least 3 characters');
+      return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
     if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
       Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
       req.token.userId !== req.user.userId)) {
-      return res.molochError(403, 'New password mismatch');
+      return res.serverError(403, 'New password mismatch');
     }
 
     const user = req.settingUser;
@@ -411,7 +411,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/password update error', err, info);
-        return res.molochError(500, 'Password update failed');
+        return res.serverError(500, 'Password update failed');
       }
 
       return res.send(JSON.stringify({
@@ -578,7 +578,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     if (Config.isHTTPS()) { cookieOptions.secure = true; }
 
     res.cookie(
-      'MOLOCH-COOKIE',
+      'ARKIME-COOKIE',
       Config.obj2auth({
         date: Date.now(), pid: process.pid, userId: req.user.userId
       }, true),
@@ -603,7 +603,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {
         console.log('/api/user/settings update error', err, info);
-        return res.molochError(500, 'User settings update failed');
+        return res.serverError(500, 'User settings update failed');
       }
 
       return res.send(JSON.stringify({
@@ -655,11 +655,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.createUserView = (req, res) => {
     if (!req.body.name) {
-      return res.molochError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name');
     }
 
     if (!req.body.expression) {
-      return res.molochError(403, 'Missing view expression');
+      return res.serverError(403, 'Missing view expression');
     }
 
     const user = req.settingUser;
@@ -677,7 +677,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     } else {
       newView.shared = false;
       if (user.views[req.body.name]) {
-        return res.molochError(403, 'A view already exists with this name.');
+        return res.serverError(403, 'A view already exists with this name.');
       } else {
         user.views[req.body.name] = newView;
       }
@@ -691,7 +691,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log('/api/user/view create error', err, info);
-          return res.molochError(500, 'Create view failed');
+          return res.serverError(500, 'Create view failed');
         }
 
         return res.send(JSON.stringify({
@@ -715,7 +715,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.deleteUserView = (req, res) => {
     const name = req.body.name || req.params.name;
     if (!name) {
-      return res.molochError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name');
     }
 
     const user = req.settingUser;
@@ -727,11 +727,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           sharedUser = sharedUser._source;
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[name] === undefined) {
-            return res.molochError(404, 'View not found');
+            return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can delete the shared view
           if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
-            return res.molochError(401, 'Need admin privelages to delete another user\'s shared view');
+            return res.serverError(401, 'Need admin privelages to delete another user\'s shared view');
           }
           delete sharedUser.views[name];
         }
@@ -739,7 +739,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
             console.log('/api/user/view delete failed', err, info);
-            return res.molochError(500, 'Delete shared view failed');
+            return res.serverError(500, 'Delete shared view failed');
           }
 
           return res.send(JSON.stringify({
@@ -750,14 +750,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       });
     } else {
       if (user.views[name] === undefined) {
-        return res.molochError(404, 'View not found');
+        return res.serverError(404, 'View not found');
       }
       delete user.views[name];
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log('/api/user/view delete failed', err, info);
-          return res.molochError(500, 'Delete view failed');
+          return res.serverError(500, 'Delete view failed');
         }
 
         return res.send(JSON.stringify({
@@ -779,11 +779,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.userViewToggleShare = (req, res) => {
     const name = req.params.name || req.body.name;
     if (!name) {
-      return res.molochError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name');
     }
 
     if (!req.body.expression) {
-      return res.molochError(403, 'Missing view expression');
+      return res.serverError(403, 'Missing view expression');
     }
 
     const share = req.body.shared;
@@ -791,7 +791,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     user.views = user.views || {};
 
     if (share && user.views[name] === undefined) {
-      return res.molochError(404, 'View not found');
+      return res.serverError(404, 'View not found');
     }
 
     Db.getUser('_moloch_shared', (err, sharedUser) => {
@@ -801,7 +801,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           return shareView(req, res, user, '/api/user/views/toggleshare', 'Shared view successfully', 'Sharing view failed');
         }
         // if it not already a shared view and it's trying to be unshared, something went wrong, can't do it
-        return res.molochError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
+        return res.serverError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
       }
 
       sharedUser = sharedUser._source;
@@ -809,15 +809,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       if (share) { // if sharing, make sure the view doesn't already exist
         if (sharedUser.views[name]) { // duplicate detected
-          return res.molochError(403, 'A shared view already exists with this name.');
+          return res.serverError(403, 'A shared view already exists with this name.');
         }
         return shareView(req, res, user, '/api/user/view/toggleshare', 'Shared view successfully', 'Sharing view failed');
       } else {
         // if unsharing, remove it from shared user and add it to current user
-        if (sharedUser.views[name] === undefined) { return res.molochError(404, 'View not found'); }
+        if (sharedUser.views[name] === undefined) { return res.serverError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
         if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
-          return res.molochError(401, 'Need admin privelages to unshare another user\'s shared view');
+          return res.serverError(401, 'Need admin privelages to unshare another user\'s shared view');
         }
         // delete the shared view
         delete sharedUser.views[name];
@@ -838,15 +838,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const key = req.body.key || req.params.key;
 
     if (!key) {
-      return res.molochError(403, 'Missing view key');
+      return res.serverError(403, 'Missing view key');
     }
 
     if (!req.body.name) {
-      return res.molochError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name');
     }
 
     if (!req.body.expression) {
-      return res.molochError(403, 'Missing view expression');
+      return res.serverError(403, 'Missing view expression');
     }
 
     const user = req.settingUser;
@@ -858,11 +858,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           sharedUser = sharedUser._source;
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[key] === undefined) {
-            return res.molochError(404, 'View not found');
+            return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can update the shared view
           if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
-            return res.molochError(401, 'Need admin privelages to update another user\'s shared view');
+            return res.serverError(401, 'Need admin privelages to update another user\'s shared view');
           }
           sharedUser.views[req.body.name] = {
             expression: req.body.expression,
@@ -880,7 +880,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
             console.log('/api/user/view update failed', err, info);
-            return res.molochError(500, 'Update shared view failed');
+            return res.serverError(500, 'Update shared view failed');
           }
 
           return res.send(JSON.stringify({
@@ -911,7 +911,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log('/api/user/view update failed', err, info);
-          return res.molochError(500, 'Updating view failed');
+          return res.serverError(500, 'Updating view failed');
         }
 
         return res.send(JSON.stringify({
@@ -931,7 +931,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.getUserCron = (req, res) => {
     if (!req.settingUser) {
-      return res.molochError(403, 'Unknown user');
+      return res.serverError(403, 'Unknown user');
     }
 
     const user = req.settingUser;
@@ -967,16 +967,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.createUserCron = (req, res) => {
     if (!req.body.name) {
-      return res.molochError(403, 'Missing cron query name');
+      return res.serverError(403, 'Missing cron query name');
     }
     if (!req.body.query) {
-      return res.molochError(403, 'Missing cron query expression');
+      return res.serverError(403, 'Missing cron query expression');
     }
     if (!req.body.action) {
-      return res.molochError(403, 'Missing cron query action');
+      return res.serverError(403, 'Missing cron query action');
     }
     if (!req.body.tags) {
-      return res.molochError(403, 'Missing cron query tag(s)');
+      return res.serverError(403, 'Missing cron query tag(s)');
     }
 
     const document = {
@@ -1015,7 +1015,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.indexNow('queries', 'query', null, document.doc, (err, info) => {
         if (err) {
           console.log('/api/user/cron create error', err, info);
-          return res.molochError(500, 'Create cron query failed');
+          return res.serverError(500, 'Create cron query failed');
         }
 
         if (Config.get('cronQueries', false)) {
@@ -1042,13 +1042,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.deleteUserCron = (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
-      return res.molochError(403, 'Missing cron query key');
+      return res.serverError(403, 'Missing cron query key');
     }
 
     Db.deleteDocument('queries', 'query', key, { refresh: true }, (err, sq) => {
       if (err) {
         console.log('/api/user/cron delete error', err, sq);
-        return res.molochError(500, 'Delete cron query failed');
+        return res.serverError(500, 'Delete cron query failed');
       }
       res.send(JSON.stringify({
         success: true,
@@ -1068,19 +1068,19 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.updateUserCron = (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
-      return res.molochError(403, 'Missing cron query key');
+      return res.serverError(403, 'Missing cron query key');
     }
     if (!req.body.name) {
-      return res.molochError(403, 'Missing cron query name');
+      return res.serverError(403, 'Missing cron query name');
     }
     if (!req.body.query) {
-      return res.molochError(403, 'Missing cron query expression');
+      return res.serverError(403, 'Missing cron query expression');
     }
     if (!req.body.action) {
-      return res.molochError(403, 'Missing cron query action');
+      return res.serverError(403, 'Missing cron query action');
     }
     if (!req.body.tags) {
-      return res.molochError(403, 'Missing cron query tag(s)');
+      return res.serverError(403, 'Missing cron query tag(s)');
     }
 
     const document = {
@@ -1101,13 +1101,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.get('queries', 'query', key, (err, sq) => {
       if (err || !sq.found) {
         console.log('/user/cron update failed', err, sq);
-        return res.molochError(403, 'Unknown query');
+        return res.serverError(403, 'Unknown query');
       }
 
       Db.update('queries', 'query', key, document, { refresh: true }, (err, data) => {
         if (err) {
           console.log('/user/cron update error', err, document, data);
-          return res.molochError(500, 'Cron query update failed');
+          return res.serverError(500, 'Cron query update failed');
         }
 
         if (Config.get('cronQueries', false)) {
@@ -1157,18 +1157,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.createUserColumns = (req, res) => {
     if (!req.body.name) {
-      return res.molochError(403, 'Missing custom column configuration name');
+      return res.serverError(403, 'Missing custom column configuration name');
     }
     if (!req.body.columns) {
-      return res.molochError(403, 'Missing columns');
+      return res.serverError(403, 'Missing columns');
     }
     if (!req.body.order) {
-      return res.molochError(403, 'Missing sort order');
+      return res.serverError(403, 'Missing sort order');
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
     if (req.body.name.length < 1) {
-      return res.molochError(403, 'Invalid custom column configuration name');
+      return res.serverError(403, 'Invalid custom column configuration name');
     }
 
     const user = req.settingUser;
@@ -1177,7 +1177,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // don't let user use duplicate names
     for (const config of user.columnConfigs) {
       if (req.body.name === config.name) {
-        return res.molochError(403, 'There is already a custom column with that name');
+        return res.serverError(403, 'There is already a custom column with that name');
       }
     }
 
@@ -1190,7 +1190,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/column error', err, info);
-        return res.molochError(500, 'Create custom column configuration failed');
+        return res.serverError(500, 'Create custom column configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1213,13 +1213,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.updateUserColumns = (req, res) => {
     const name = req.body.name || req.params.name;
     if (!name) {
-      return res.molochError(403, 'Missing custom column configuration name');
+      return res.serverError(403, 'Missing custom column configuration name');
     }
     if (!req.body.columns) {
-      return res.molochError(403, 'Missing columns');
+      return res.serverError(403, 'Missing columns');
     }
     if (!req.body.order) {
-      return res.molochError(403, 'Missing sort order');
+      return res.serverError(403, 'Missing sort order');
     }
 
     const user = req.settingUser;
@@ -1236,13 +1236,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (!found) {
-      return res.molochError(200, 'Custom column configuration not found');
+      return res.serverError(200, 'Custom column configuration not found');
     }
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/column udpate error', err, info);
-        return res.molochError(500, 'Update custom column configuration failed');
+        return res.serverError(500, 'Update custom column configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1264,7 +1264,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.deleteUserColumns = (req, res) => {
     const name = req.body.name || req.params.name;
     if (!name) {
-      return res.molochError(403, 'Missing custom column configuration name');
+      return res.serverError(403, 'Missing custom column configuration name');
     }
 
     const user = req.settingUser;
@@ -1280,13 +1280,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (!found) {
-      return res.molochError(200, 'Custom column configuration not found');
+      return res.serverError(200, 'Custom column configuration not found');
     }
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/column delete error', err, info);
-        return res.molochError(500, 'Delete custom column configuration failed');
+        return res.serverError(500, 'Delete custom column configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1320,16 +1320,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.createUserSpiviewFields = (req, res) => {
     if (!req.body.name) {
-      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+      return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
     if (!req.body.fields) {
-      return res.molochError(403, 'Missing fields');
+      return res.serverError(403, 'Missing fields');
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
 
     if (req.body.name.length < 1) {
-      return res.molochError(403, 'Invalid custom SPI View fields configuration name');
+      return res.serverError(403, 'Invalid custom SPI View fields configuration name');
     }
 
     const user = req.settingUser;
@@ -1338,7 +1338,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // don't let user use duplicate names
     for (const config of user.spiviewFieldConfigs) {
       if (req.body.name === config.name) {
-        return res.molochError(403, 'There is already a custom SPI View fieldss configuration with that name');
+        return res.serverError(403, 'There is already a custom SPI View fieldss configuration with that name');
       }
     }
 
@@ -1350,7 +1350,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/spiview create error', err, info);
-        return res.molochError(500, 'Create custom SPI View fields configuration failed');
+        return res.serverError(500, 'Create custom SPI View fields configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1373,10 +1373,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.updateUserSpiviewFields = (req, res) => {
     const name = req.body.name || req.params.name;
     if (!name) {
-      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+      return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
     if (!req.body.fields) {
-      return res.molochError(403, 'Missing fields');
+      return res.serverError(403, 'Missing fields');
     }
 
     const user = req.settingUser;
@@ -1393,13 +1393,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (!found) {
-      return res.molochError(200, 'Custom SPI View fields configuration not found');
+      return res.serverError(200, 'Custom SPI View fields configuration not found');
     }
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/spiview udpate error', err, info);
-        return res.molochError(500, 'Update SPI View fields configuration failed');
+        return res.serverError(500, 'Update SPI View fields configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1421,7 +1421,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   module.deleteUserSpiviewFields = (req, res) => {
     const name = req.params.name || req.body.name;
     if (!name) {
-      return res.molochError(403, 'Missing custom SPI View fields configuration name');
+      return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
 
     const user = req.settingUser;
@@ -1437,13 +1437,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (!found) {
-      return res.molochError(200, 'SPI View fields not found');
+      return res.serverError(200, 'SPI View fields not found');
     }
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('/api/user/spiview delete failed', err, info);
-        return res.molochError(500, 'Delete custom SPI View fields configuration failed');
+        return res.serverError(500, 'Delete custom SPI View fields configuration failed');
       }
 
       return res.send(JSON.stringify({
@@ -1463,17 +1463,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.acknowledgeMsg = (req, res) => {
     if (!req.body.msgNum) {
-      return res.molochError(403, 'Message number required');
+      return res.serverError(403, 'Message number required');
     }
 
     if (req.params.userId !== req.user.userId) {
-      return res.molochError(403, 'Can not change other users msg');
+      return res.serverError(403, 'Can not change other users msg');
     }
 
     Db.getUser(req.params.userId, (err, user) => {
       if (err || !user.found) {
         console.log('update user failed', err, user);
-        return res.molochError(403, 'User not found');
+        return res.serverError(403, 'User not found');
       }
 
       user = user._source;
@@ -1531,7 +1531,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.getUser(req.user.userId, (err, user) => {
       if (err || !user.found) {
         console.log('save state failed', err, user);
-        return res.molochError(403, 'Unknown user');
+        return res.serverError(403, 'Unknown user');
       }
 
       user = user._source;
@@ -1545,7 +1545,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log('state error', err, info);
-          return res.molochError(403, 'state update failed');
+          return res.serverError(403, 'state update failed');
         }
 
         return res.send(JSON.stringify({

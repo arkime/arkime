@@ -1,12 +1,9 @@
 {
-  "name": "moloch",
-  "version": "1.5.2",
-  "description": "",
-  "main": "viewer.js",
+  "name": "arkime",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aol/moloch.git"
+    "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
     "compression": "^1.6.2",

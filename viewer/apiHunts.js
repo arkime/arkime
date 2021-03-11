@@ -244,19 +244,19 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
         console.log(errorText, err, hit);
-        return res.molochError(500, errorText);
+        return res.serverError(500, errorText);
       }
 
       // don't let a user play a hunt job if one is already running
       if (status === 'running' && internals.runningHuntJob) {
-        return res.molochError(403, 'You cannot start a new hunt until the running job completes or is paused.');
+        return res.serverError(403, 'You cannot start a new hunt until the running job completes or is paused.');
       }
 
       const hunt = hit._source;
 
       // if hunt is finished, don't allow pause
       if (hunt.status === 'finished' && status === 'paused') {
-        return res.molochError(403, 'You cannot pause a completed hunt.');
+        return res.serverError(403, 'You cannot pause a completed hunt.');
       }
 
       // clear the running hunt job if this is it
@@ -266,7 +266,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       Db.setHunt(req.params.id, hunt, (err, info) => {
         if (err) {
           console.log(errorText, err, info);
-          return res.molochError(500, errorText);
+          return res.serverError(500, errorText);
         }
         res.send(JSON.stringify({ success: true, text: successText }));
         module.processHuntJobs();
@@ -669,34 +669,34 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    */
   module.createHunt = (req, res) => {
     // make sure all the necessary data is included in the post body
-    if (!req.body.totalSessions) { return res.molochError(403, 'This hunt does not apply to any sessions'); }
-    if (!req.body.name) { return res.molochError(403, 'Missing hunt name'); }
-    if (!req.body.size) { return res.molochError(403, 'Missing max mumber of packets to examine per session'); }
-    if (!req.body.search) { return res.molochError(403, 'Missing packet search text'); }
+    if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
+    if (!req.body.name) { return res.serverError(403, 'Missing hunt name'); }
+    if (!req.body.size) { return res.serverError(403, 'Missing max mumber of packets to examine per session'); }
+    if (!req.body.search) { return res.serverError(403, 'Missing packet search text'); }
     if (!req.body.src && !req.body.dst) {
-      return res.molochError(403, 'The hunt must search source or destination packets (or both)');
+      return res.serverError(403, 'The hunt must search source or destination packets (or both)');
     }
-    if (!req.body.query) { return res.molochError(403, 'Missing query'); }
+    if (!req.body.query) { return res.serverError(403, 'Missing query'); }
     if (req.body.query.startTime === undefined || req.body.query.stopTime === undefined) {
-      return res.molochError(403, 'Missing fully formed query (must include start time and stop time)');
+      return res.serverError(403, 'Missing fully formed query (must include start time and stop time)');
     }
 
     const searchTypes = ['ascii', 'asciicase', 'hex', 'regex', 'hexregex'];
     if (!req.body.searchType) {
-      return res.molochError(403, 'Missing packet search text type');
+      return res.serverError(403, 'Missing packet search text type');
     } else if (searchTypes.indexOf(req.body.searchType) === -1) {
-      return res.molochError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "hexregex", or "regex"');
+      return res.serverError(403, 'Improper packet search text type. Must be "ascii", "asciicase", "hex", "hexregex", or "regex"');
     }
 
     if (!req.body.type) {
-      return res.molochError(403, 'Missing packet search type (raw or reassembled packets)');
+      return res.serverError(403, 'Missing packet search type (raw or reassembled packets)');
     } else if (req.body.type !== 'raw' && req.body.type !== 'reassembled') {
-      return res.molochError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
+      return res.serverError(403, 'Improper packet search type. Must be "raw" or "reassembled"');
     }
 
     const limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
     if (parseInt(req.body.totalSessions) > limit) {
-      return res.molochError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
+      return res.serverError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`);
     }
 
     const now = Math.floor(Date.now() / 1000);
@@ -730,7 +730,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       Db.createHunt(hunt, (err, result) => {
         if (err) {
           console.log('create hunt error', err, result);
-          return res.molochError(500, 'Error creating hunt - ' + err);
+          return res.serverError(500, 'Error creating hunt - ' + err);
         }
         hunt.id = result._id;
         module.processHuntJobs(() => {
@@ -762,7 +762,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       return doneCb(hunt, response.invalidUsers);
     }).catch((error) => {
-      res.molochError(500, error);
+      res.serverError(500, error);
     });
   };
 
@@ -857,7 +857,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       res.send(r);
     }).catch(err => {
       console.log('ERROR - /api/hunts', err);
-      return res.molochError(500, 'Error retrieving hunts - ' + err);
+      return res.serverError(500, 'Error retrieving hunts - ' + err);
     });
   };
 
@@ -873,7 +873,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     Db.deleteHuntItem(req.params.id, (err, result) => {
       if (err || result.error) {
         console.log('ERROR - deleting hunt', err || result.error);
-        return res.molochError(500, 'Error deleting hunt');
+        return res.serverError(500, 'Error deleting hunt');
       } else {
         res.send(JSON.stringify({
           success: true,
@@ -919,13 +919,13 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    */
   module.addUsers = (req, res) => {
     if (!req.body.users) {
-      return res.molochError(403, 'You must provide users in a comma separated string');
+      return res.serverError(403, 'You must provide users in a comma separated string');
     }
 
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
         console.log('Unable to fetch hunt to add user(s)', err, hit);
-        return res.molochError(500, 'Unable to fetch hunt to add user(s)');
+        return res.serverError(500, 'Unable to fetch hunt to add user(s)');
       }
 
       const hunt = hit._source;
@@ -933,7 +933,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       ViewerUtils.validateUserIds(reqUsers).then((response) => {
         if (!response.validUsers.length) {
-          return res.molochError(404, 'Unable to validate user IDs provided');
+          return res.serverError(404, 'Unable to validate user IDs provided');
         }
 
         if (!hunt.users) {
@@ -948,7 +948,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         Db.setHunt(req.params.id, hunt, (err, info) => {
           if (err) {
             console.log('Unable to add user(s)', err, info);
-            return res.molochError(500, 'Unable to add user(s)');
+            return res.serverError(500, 'Unable to add user(s)');
           }
           res.send(JSON.stringify({
             success: true,
@@ -957,7 +957,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           }));
         });
       }).catch((error) => {
-        res.molochError(500, error);
+        res.serverError(500, error);
       });
     });
   };
@@ -975,19 +975,19 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
         console.log('Unable to fetch hunt to remove user', err, hit);
-        return res.molochError(500, 'Unable to fetch hunt to remove user');
+        return res.serverError(500, 'Unable to fetch hunt to remove user');
       }
 
       const hunt = hit._source;
 
       if (!hunt.users || !hunt.users.length) {
-        return res.molochError(404, 'There are no users that have access to view this hunt');
+        return res.serverError(404, 'There are no users that have access to view this hunt');
       }
 
       const userIdx = hunt.users.indexOf(req.params.user);
 
       if (userIdx < 0) { // user doesn't have access to this hunt
-        return res.molochError(404, 'That user does not have access to this hunt');
+        return res.serverError(404, 'That user does not have access to this hunt');
       }
 
       hunt.users.splice(userIdx, 1); // remove the user from the list
@@ -995,7 +995,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       Db.setHunt(req.params.id, hunt, (err, info) => {
         if (err) {
           console.log('Unable to remove user', err, info);
-          return res.molochError(500, 'Unable to remove user');
+          return res.serverError(500, 'Unable to remove user');
         }
         res.send(JSON.stringify({ success: true, users: hunt.users }));
       });

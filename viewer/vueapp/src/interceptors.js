@@ -4,15 +4,15 @@ import store from './store';
 export default function setup () {
   // set moloch xsrf cookie and always send credentials
   axios.defaults.withCredentials = true;
-  axios.defaults.xsrfCookieName = 'MOLOCH-COOKIE';
-  axios.defaults.xsrfHeaderName = 'X-MOLOCH-COOKIE';
+  axios.defaults.xsrfCookieName = 'ARKIME-COOKIE';
+  axios.defaults.xsrfHeaderName = 'X-ARKIME-COOKIE';
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
   // watch for no response to let the user know the server is down
   axios.interceptors.response.use(function (response) {
     // add the response time to the store so it can be displayed
-    if (response.headers['x-moloch-response-time']) {
-      store.commit('setResponseTime', response.headers['x-moloch-response-time']);
+    if (response.headers['x-arkime-response-time']) {
+      store.commit('setResponseTime', response.headers['x-arkime-response-time']);
     }
     return response;
   }, function (error) {

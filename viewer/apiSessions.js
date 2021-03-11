@@ -783,7 +783,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   }
 
   function sendSessionsList (req, res, list) {
-    if (!list) { return res.molochError(200, 'Missing list of sessions'); }
+    if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
@@ -1037,7 +1037,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   }
 
   function scrubList (req, res, whatToRemove, list) {
-    if (!list) { return res.molochError(200, 'Missing list of sessions'); }
+    if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item._source || item.fields;
@@ -1468,7 +1468,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
   module.removeTagsList = (res, allTagNames, sessionList) => {
     if (!sessionList.length) {
-      return res.molochError(200, 'No sessions to remove tags from');
+      return res.serverError(200, 'No sessions to remove tags from');
     }
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
@@ -1932,7 +1932,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     module.buildSessionQuery(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
       if (bsqErr) {
-        return res.molochError(403, bsqErr.toString());
+        return res.serverError(403, bsqErr.toString());
       }
 
       let options = {};
@@ -2104,7 +2104,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         return endCb();
       }).catch((err) => {
         console.log('spigraph.json error', err);
-        return res.molochError(403, ViewerUtils.errorString(err));
+        return res.serverError(403, ViewerUtils.errorString(err));
       });
     });
   };
@@ -2122,7 +2122,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    */
   module.getSPIGraphHierarchy = (req, res) => {
     if (req.query.exp === undefined) {
-      return res.molochError(403, 'Missing exp parameter');
+      return res.serverError(403, 'Missing exp parameter');
     }
 
     const fields = [];
@@ -2134,7 +2134,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
       const field = Config.getFieldsMap()[parts[i]];
       if (!field) {
-        return res.molochError(403, `Unknown expression ${parts[i]}\n`);
+        return res.serverError(403, `Unknown expression ${parts[i]}\n`);
       }
       fields.push(field);
     }
@@ -2551,7 +2551,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     if (tags.length === 0) {
-      return res.molochError(200, 'No tags specified');
+      return res.serverError(200, 'No tags specified');
     }
 
     if (req.body.ids) {
@@ -2559,7 +2559,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       module.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
         if (!list.length) {
-          return res.molochError(200, 'No sessions to add tags to');
+          return res.serverError(200, 'No sessions to add tags to');
         }
         module.addTagsList(tags, list, () => {
           return res.send(JSON.stringify({
@@ -2571,7 +2571,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     } else {
       sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
         if (!list.length) {
-          return res.molochError(200, 'No sessions to add tags to');
+          return res.serverError(200, 'No sessions to add tags to');
         }
         module.addTagsList(tags, list, () => {
           return res.send(JSON.stringify({
@@ -2605,7 +2605,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     if (tags.length === 0) {
-      return res.molochError(200, 'No tags specified');
+      return res.serverError(200, 'No tags specified');
     }
 
     if (req.body.ids) {
@@ -2956,7 +2956,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    */
   module.deleteData = (req, res) => {
     if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
-      return res.molochError(403, 'You can\'t delete nothing');
+      return res.serverError(403, 'You can\'t delete nothing');
     }
 
     let whatToRemove;
@@ -2978,7 +2978,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         scrubList(req, res, whatToRemove, list);
       });
     } else {
-      return res.molochError(403, 'Error: Missing expression. An expression is required so you don\'t delete everything.');
+      return res.serverError(403, 'Error: Missing expression. An expression is required so you don\'t delete everything.');
     }
   };
 
@@ -3082,7 +3082,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {saveId} saveId - The sessionId to save the session.
    */
   module.receiveSession = (req, res) => {
-    if (!req.query.saveId) { return res.molochError(200, 'Missing saveId'); }
+    if (!req.query.saveId) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
 
