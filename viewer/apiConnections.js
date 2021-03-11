@@ -480,7 +480,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let health;
     Db.healthCache((err, h) => { health = h; });
     buildConnections(req, res, (err, nodes, links, total) => {
-      if (err) { return res.molochError(403, err.toString()); }
+      if (err) { return res.serverError(403, err.toString()); }
       res.send({
         health: health,
         nodes: nodes,

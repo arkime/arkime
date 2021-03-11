@@ -376,7 +376,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         try {
           regex = new RE2(req.query.filter);
         } catch (e) {
-          return res.molochError(500, `Regex Error: ${e}`);
+          return res.serverError(500, `Regex Error: ${e}`);
         }
       }
 
@@ -534,7 +534,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             findices.push(index);
           }
         } catch (e) {
-          return res.molochError(500, `Regex Error: ${e}`);
+          return res.serverError(500, `Regex Error: ${e}`);
         }
       } else {
         findices = indices;
@@ -672,7 +672,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.shrinkESIndex = (req, res) => {
     if (!req.body || !req.body.target) {
-      return res.molochError(403, 'Missing target');
+      return res.serverError(403, 'Missing target');
     }
 
     const settingsParams = {
@@ -767,7 +767,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         try {
           regex = new RE2(req.query.filter);
         } catch (e) {
-          return res.molochError(500, `Regex Error: ${e}`);
+          return res.serverError(500, `Regex Error: ${e}`);
         }
       }
 
@@ -842,7 +842,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     } else if (req.body && req.body.taskId) {
       taskId = req.body.taskId;
     } else {
-      return res.molochError(403, 'Missing ID of task to cancel');
+      return res.serverError(403, 'Missing ID of task to cancel');
     }
 
     Db.taskCancel(taskId, (err, result) => {
@@ -866,7 +866,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     } else if (req.body && req.body.cancelId) {
       cancelId = req.body.cancelId;
     } else {
-      return res.molochError(403, 'Missing ID of task to cancel');
+      return res.serverError(403, 'Missing ID of task to cancel');
     }
 
     Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, (err, result) => {
@@ -1026,8 +1026,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   module.setESAdminSettings = (req, res) => {
-    if (req.body.key === undefined) { return res.molochError(500, 'Missing key'); }
-    if (req.body.value === undefined) { return res.molochError(500, 'Missing value'); }
+    if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
+    if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
 
     // Convert null string to null
     if (req.body.value === 'null') { req.body.value = null; }
@@ -1042,7 +1042,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else {
         const parts = req.body.value.split(',');
         if (parts.length !== 3) {
-          return res.molochError(500, 'Must be 3 piece of info');
+          return res.serverError(500, 'Must be 3 piece of info');
         }
 
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = parts[0];
@@ -1053,7 +1053,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.putClusterSettings(query, (err, result) => {
         if (err) {
           console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
-          return res.molochError(500, 'Set failed');
+          return res.serverError(500, 'Set failed');
         }
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
       });
@@ -1066,7 +1066,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         const hilm = ilm[`${internals.prefix}molochhistory`];
 
         if (silm === undefined || hilm === undefined) {
-          return res.molochError(500, 'ILM isn\'t configured');
+          return res.serverError(500, 'ILM isn\'t configured');
         }
 
         switch (req.body.key) {
@@ -1086,7 +1086,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           hilm.policy.phases.delete.min_age = req.body.value;
           break;
         default:
-          return res.molochError(500, 'Unknown field');
+          return res.serverError(500, 'Unknown field');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
           Db.setILMPolicy(`${internals.prefix}molochhistory`, hilm);
@@ -1115,7 +1115,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }
           break;
         default:
-          return res.molochError(500, 'Unknown field');
+          return res.serverError(500, 'Unknown field');
         }
         Db.putTemplate('sessions2_template', template[`${internals.prefix}sessions2_template`]);
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
@@ -1129,7 +1129,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Db.putClusterSettings(query, (err, result) => {
       if (err) {
         console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
-        return res.molochError(500, 'Set failed');
+        return res.serverError(500, 'Set failed');
       }
       return res.send(JSON.stringify({ success: true, text: 'Set' }));
     });
@@ -1239,7 +1239,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         try {
           regex = new RE2(req.query.filter.toLowerCase());
         } catch (e) {
-          return res.molochError(500, `Regex Error: ${e}`);
+          return res.serverError(500, `Regex Error: ${e}`);
         }
       }
 
@@ -1305,7 +1305,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.excludeESShard = (req, res) => {
     if (Config.get('multiES', false)) {
-      return res.molochError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies');
     }
 
     Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
@@ -1317,7 +1317,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else if (req.params.type === 'name') {
         settingName = 'cluster.routing.allocation.exclude._name';
       } else {
-        return res.molochError(403, 'Unknown exclude type');
+        return res.serverError(403, 'Unknown exclude type');
       }
 
       if (settings.persistent[settingName]) {
@@ -1348,7 +1348,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   module.includeESShard = (req, res) => {
     if (Config.get('multiES', false)) {
-      return res.molochError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies');
     }
 
     Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
@@ -1360,7 +1360,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       } else if (req.params.type === 'name') {
         settingName = 'cluster.routing.allocation.exclude._name';
       } else {
-        return res.molochError(403, 'Unknown include type');
+        return res.serverError(403, 'Unknown include type');
       }
 
       if (settings.persistent[settingName]) {
@@ -1407,7 +1407,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         try {
           regex = new RE2(req.query.filter);
         } catch (e) {
-          return res.molochError(500, `Regex Error: ${e}`);
+          return res.serverError(500, `Regex Error: ${e}`);
         }
       }
 

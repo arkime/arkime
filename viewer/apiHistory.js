@@ -52,7 +52,7 @@ module.exports = (Db) => {
       // if the admin has requested a specific user
       if (req.query.userId) { userId = req.query.userId; }
     } else { // user isn't an admin, so they can only view their own logs
-      if (req.query.userId && req.query.userId !== req.user.userId) { return res.molochError(403, 'Need admin privileges'); }
+      if (req.query.userId && req.query.userId !== req.user.userId) { return res.serverError(403, 'Need admin privileges'); }
       userId = req.user.userId;
     }
 
@@ -150,7 +150,7 @@ module.exports = (Db) => {
       });
     }).catch(err => {
       console.log('ERROR - /history/logs', err);
-      return res.molochError(500, 'Error retrieving log history - ' + err);
+      return res.serverError(500, 'Error retrieving log history - ' + err);
     });
   };
 
@@ -165,13 +165,13 @@ module.exports = (Db) => {
    */
   module.deleteHistory = (req, res) => {
     if (!req.query.index) {
-      return res.molochError(403, 'Missing history index');
+      return res.serverError(403, 'Missing history index');
     }
 
     Db.deleteHistoryItem(req.params.id, req.query.index, (err, result) => {
       if (err || result.error) {
         console.log('ERROR - deleting history item', err || result.error);
-        return res.molochError(500, 'Error deleting history item');
+        return res.serverError(500, 'Error deleting history item');
       } else {
         res.send(JSON.stringify({
           success: true,
