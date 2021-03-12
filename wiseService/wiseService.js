@@ -139,21 +139,6 @@ function processArgs (argv) {
 
 processArgs(process.argv);
 
-try { // check if the file exists
-  fs.accessSync(internals.configFile, fs.constants.F_OK);
-} catch (e) { // if the file doesn't exist, create it
-  try { // write the new file
-    fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
-  } catch (e) { // notify of error saving new config and exit
-    console.log('Error creating new WISE Config:\n\n', e.stack);
-    console.log(`
-      You must fix this before you can run WISE UI.
-      Try using arkime/tests/config.test.json as a starting point.
-    `);
-    process.exit(1);
-  }
-}
-
 if (internals.workers > 1) {
   if (cluster.isMaster) {
     for (let i = 0; i < internals.workers; i++) {
@@ -751,6 +736,9 @@ app.use(timeout(5 * 1000));
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
 app.use('/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
+
+// expose vue bundles (prod)
+app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
 
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
@@ -1923,7 +1911,28 @@ function buildConfigAndStart () {
   }
 
   const parts = internals.configFile.split('://');
+
+  // If there is only 1 part, then this is actually a file on disk
   if (parts.length === 1) {
+    try { // check if the file exists
+      fs.accessSync(internals.configFile, fs.constants.F_OK);
+    } catch (e) { // if the file doesn't exist, create it
+      try { // write the new file
+        if (internals.configFile.endsWith('json')) {
+          fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
+        } else {
+          fs.writeFileSync(internals.configFile, '', 'utf8');
+        }
+      } catch (e) { // notify of error saving new config and exit
+        console.log('Error creating new WISE Config:\n\n', e.stack);
+        console.log(`
+          You must fix this before you can run WISE UI.
+          Try using arkime/tests/config.test.json as a starting point.
+        `);
+        process.exit(1);
+      }
+    }
+
     if (internals.configFile.endsWith('json')) {
       internals.configScheme = internals.configSchemes.json;
     } else {
