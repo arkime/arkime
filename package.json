@@ -24,7 +24,7 @@
     "helmet": "^3.23.3",
     "hoek": "^4.2.1",
     "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
-    "ioredis": "^4.19.0",
+    "ioredis": "^4.23.0",
     "lodash": "^4.17.20",
     "lodash.template": "^4.5.0",
     "lru-cache": "^4.0.1",
