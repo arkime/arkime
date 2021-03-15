@@ -737,8 +737,13 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
 app.use('/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
 
-// expose vue bundles (prod)
+// expose vue bundles (prod) - need to be here because of wildcard endpoint matches
 app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
+app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+
+// expose vue bundle (dev)
+app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
 
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
@@ -1847,14 +1852,6 @@ internals.configSchemes.ini = {
 // ============================================================================
 // VUE APP
 // ============================================================================
-// expose vue bundles (prod)
-app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
-
-// expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
-
 // always send the client html (it will deal with 404s)
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
