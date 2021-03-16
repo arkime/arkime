@@ -219,7 +219,6 @@ void moloch_session_add_tag(MolochSession_t *session, const char *tag) {
 /******************************************************************************/
 void moloch_session_mark_for_close (MolochSession_t *session, SessionTypes ses)
 {
-    LOG("ALW - MARK CLOSING");
     if (session->closingQ)
         return;
 
