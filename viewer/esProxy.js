@@ -157,11 +157,11 @@ function saveBody (req, res, next) {
 function doProxy (req, res, cb) {
   let result = '';
   const esUrl = elasticsearch + req.url;
-  console.log('URL', esUrl);
+  console.log(`URL ${req.method} ${esUrl}`);
   const url = new URL(esUrl);
   const options = { method: req.method };
   let client;
-  if (url.match(/^https:/)) {
+  if (esUrl.match(/^https:/)) {
     options.agent = httpsAgent;
     client = https;
   } else {
@@ -238,6 +238,16 @@ function validateBulk (req) {
   return true;
 }
 
+// Validate Files Search
+function validateFilesSearch (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return json.query.bool.must[0].terms.node.includes(req.sensor.node);
+  } catch (e) {
+    return false;
+  }
+}
+
 // Post requests
 app.post('*', saveBody, (req, res) => {
   const path = req.params['0'];
@@ -250,14 +260,24 @@ app.post('*', saveBody, (req, res) => {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (path.startsWith(`/${prefix}dstats/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
-  } else if (path.startsWith('/_bulk')) {
-    if (!validateBulk(req)) {
-      console.log(`POST failed node: ${req.sensor.node} path:${path}`);
-      return res.status(400).send('Not authorized for API');
-    }
+  } else if (path.startsWith('/_bulk') && validateBulk(req)) {
+  } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:${path}`);
+    console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
+    return res.status(400).send('Not authorized for API');
+  }
+  doProxy(req, res);
+});
+
+// Delete requests
+app.delete('*', (req, res) => {
+  const path = req.params['0'];
+
+  // Empty IFs since those are allowed requests and will run code at end
+  if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
+  } else {
+    console.log(`DELETE failed node: ${req.sensor.node} path:${path}`);
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
