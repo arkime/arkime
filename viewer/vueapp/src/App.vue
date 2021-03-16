@@ -402,7 +402,8 @@ div.btn-checkbox > label:hover:not(:disabled) {
 }
 label.btn-radio.active:not(:disabled),
 button.btn-checkbox.active:not(:disabled),
-div.btn-checkbox > label.active:not(:disabled) {
+div.btn-checkbox > label.active:not(:disabled),
+.btn-group-checkboxes label.btn-secondary.active:not(:disabled) {
   border-color    : var(--color-primary) !important;
   background-color: var(--color-primary) !important;
   color: var(--color-button, #FFF) !important;

@@ -219,7 +219,7 @@
               v-model="showCapStartTimes"
               @change="toggleCapStartTimes"
               v-b-tooltip="'Toggle the capture process start time(s)'">
-              {{ showCapStartTimes ? 'Hide' : 'Show' }} Cap Times
+              Cap Restarts
             </b-form-checkbox> <!-- /cap times -->
           </div>
         </div> <!-- /graph controls -->
