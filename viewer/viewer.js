@@ -193,10 +193,16 @@ app.use((req, res, next) => {
 
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
-app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-app.use('/', express.static(path.join(__dirname, '/public'), { maxAge: 600 * 1000 }));
-app.use('/assets', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
-app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: 600 * 1000, fallthrough: false }
+), missingResource);
+app.use(['/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: 600 * 1000, fallthrough: false }
+), missingResource);
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
@@ -476,6 +482,14 @@ function createRightClicks () {
 function serverError (status, text) {
   this.status(status || 403);
   return this.send(JSON.stringify({ success: false, text: text }));
+}
+
+// missing resource error handler for static file endpoints
+function missingResource (err, req, res, next) {
+  res.status(404);
+  const msg = `Cannot locate resource requsted from ${req.path}`;
+  console.log(msg);
+  return res.send(msg);
 }
 
 // security/access middleware -------------------------------------------------
@@ -1984,6 +1998,11 @@ app.get(
 );
 
 // cyberchef apis -------------------------------------------------------------
+app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
+  path.join(__dirname, '/public'),
+  { maxAge: 600 * 1000, fallthrough: false }
+), missingResource);
+
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
   [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
@@ -2047,12 +2066,26 @@ function createApp () {
   });
 }
 
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
 // expose vue bundles (prod)
-app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+app.use('/static', express.static(
+  path.join(__dirname, '/vueapp/dist/static'),
+  { fallthrough: false }
+), missingResource);
+app.use('/app.css', express.static(
+  path.join(__dirname, '/vueapp/dist/app.css'),
+  { fallthrough: false }
+), missingResource);
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+app.use(['/app.js', '/vueapp/app.js'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js'),
+  { fallthrough: false }
+), missingResource);
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js.map'),
+  { fallthrough: false }
+), missingResource);
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {

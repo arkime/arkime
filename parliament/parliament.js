@@ -232,9 +232,16 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-app.use('/parliament/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-
-app.use('/parliament/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/parliament/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
+app.use('/parliament/assets', express.static(
+  path.join(__dirname, '/../assets'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
 
 // log requests
 app.use(logger(':date \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :status :res[content-length] bytes :response-time ms', { stream: process.stdout }));
@@ -2018,12 +2025,26 @@ process.on('SIGINT', function () {
 });
 
 /* LISTEN! ----------------------------------------------------------------- */
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
 // expose vue bundles (prod)
-app.use(['/static', '/parliament/static'], express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use(['/app.css', '/parliament/app.css'], express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+app.use(['/static', '/parliament/static'], express.static(
+  path.join(__dirname, '/vueapp/dist/static'),
+  { fallthrough: false }
+));
+app.use(['/app.css', '/parliament/app.css'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.css'),
+  { fallthrough: false }
+));
 // expose vue bundle (dev)
-app.use(['/app.js', '/parliament/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/parliament/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+app.use(['/app.js', '/parliament/app.js'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js'),
+  { fallthrough: false }
+));
+app.use(['/app.js.map', '/parliament/app.js.map'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js.map'),
+  { fallthrough: false }
+));
 
 // vue index page
 app.use((req, res, next) => {
