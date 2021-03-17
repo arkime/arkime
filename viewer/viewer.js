@@ -199,11 +199,7 @@ app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: 600 * 1000, fallthrough: false }
 ), missingResource);
-app.use('/assets', express.static(
-  path.join(__dirname, '../assets'),
-  { maxAge: 600 * 1000, fallthrough: false }
-), missingResource);
-app.use('/logos', express.static(
+app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
   { maxAge: 600 * 1000, fallthrough: false }
 ), missingResource);
@@ -491,7 +487,9 @@ function serverError (status, text) {
 // missing resource error handler for static file endpoints
 function missingResource (err, req, res, next) {
   res.status(404);
-  return res.send('Cannot locate resource');
+  const msg = `Cannot locate resource requsted from ${req.path}`;
+  console.log(msg);
+  return res.send(msg);
 }
 
 // security/access middleware -------------------------------------------------
