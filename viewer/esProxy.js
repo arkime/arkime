@@ -64,6 +64,7 @@ const getExact = {
   '/': 1,
   '/_cat/health': 1,
   '/_cluster/health': 1,
+  '/_refresh': 1,
   '/_nodes/stats/jvm,process,fs,os,indices,thread_pool': 1
 };
 getExact[`/_template/${prefix}sessions2_template`] = 1;
@@ -82,6 +83,10 @@ const postExact = {
 postExact[`/${prefix}stats/_search`] = 1;
 postExact[`/${prefix}fields/_search`] = 1;
 postExact[`/${prefix}lookups/_search`] = 1;
+
+// PUT calls we can match exactly
+const putExact = {
+};
 
 // ============================================================================
 // Auth
@@ -278,6 +283,19 @@ app.delete('*', (req, res) => {
   if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
   } else {
     console.log(`DELETE failed node: ${req.sensor.node} path:${path}`);
+    return res.status(400).send('Not authorized for API');
+  }
+  doProxy(req, res);
+});
+
+// Put requests
+app.put('*', (req, res) => {
+  const path = req.params['0'];
+
+  // Empty IFs since those are allowed requests and will run code at end
+  if (putExact[path]) {
+  } else {
+    console.log(`PUT failed node: ${req.sensor.node} path:${path}`);
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
