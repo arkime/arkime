@@ -7,7 +7,7 @@
     <img src="assets/watching.gif" />
 
     <div class="well well-lg">
-      <h1 class="text-theme-accentt">404</h1>
+      <h1 class="text-theme-accent">404</h1>
       <h4>Nothing to see here...</h4>
     </div>
 
