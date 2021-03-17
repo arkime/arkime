@@ -478,7 +478,7 @@ let pendingPromise; // save a pending promise to be able to cancel it
 // drag helpers
 function dragstarted (d) {
   d3.event.sourceEvent.stopPropagation();
-  if (!d3.event.active) { simulation.alphaTarget(0.3).restart(); }
+  if (!d3.event.active) { simulation.alphaTarget(0.1).restart(); }
   draggingNode = d;
   d.fx = d.x;
   d.fy = d.y;
@@ -491,7 +491,7 @@ function dragged (d) {
 }
 
 function dragended (d) {
-  if (!d3.event.active) { simulation.alphaTarget(0); }
+  if (!d3.event.active) { simulation.alphaTarget(0).stop(); }
   draggingNode = undefined;
   // keep the node where it was dragged
   d.fx = d.x;
