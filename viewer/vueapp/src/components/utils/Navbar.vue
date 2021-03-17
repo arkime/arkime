@@ -202,6 +202,7 @@ export default {
       return activeLink;
     },
     isAToolBarPage: function () {
+      if (!this.activePage) { return false; }
       return ['settings', 'upload', 'help'].every(item => item !== this.activePage);
     },
     user: function () {

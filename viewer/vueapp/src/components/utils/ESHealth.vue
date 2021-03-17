@@ -9,7 +9,7 @@
       <small>
         {{ error || 'Network Error' }} - try
         <a @click="reload"
-          class="cursor-pointer reload-btn">
+          class="cursor-pointer reload-btn mr-2">
           reloading the page
         </a>
       </small>
