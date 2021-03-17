@@ -198,15 +198,15 @@ app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: 600 * 1000, fallthrough: false }
-));
+), missingResource);
 app.use('/assets', express.static(
   path.join(__dirname, '../assets'),
   { maxAge: 600 * 1000, fallthrough: false }
-));
+), missingResource);
 app.use('/logos', express.static(
   path.join(__dirname, '../assets'),
   { maxAge: 600 * 1000, fallthrough: false }
-));
+), missingResource);
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
@@ -486,6 +486,12 @@ function createRightClicks () {
 function serverError (status, text) {
   this.status(status || 403);
   return this.send(JSON.stringify({ success: false, text: text }));
+}
+
+// missing resource error handler for static file endpoints
+function missingResource (err, req, res, next) {
+  res.status(404);
+  return res.send('Cannot locate resource');
 }
 
 // security/access middleware -------------------------------------------------
@@ -1997,7 +2003,7 @@ app.get(
 app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
   { maxAge: 600 * 1000, fallthrough: false }
-));
+), missingResource);
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
@@ -2068,20 +2074,20 @@ function createApp () {
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { fallthrough: false }
-));
+), missingResource);
 app.use('/app.css', express.static(
   path.join(__dirname, '/vueapp/dist/app.css'),
   { fallthrough: false }
-));
+), missingResource);
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),
   { fallthrough: false }
-));
+), missingResource);
 app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
-));
+), missingResource);
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
