@@ -6,9 +6,7 @@
     <div class="form-group">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend input-group-prepend-fw cursor-help"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Time Range">
+          v-b-tooltip.hover.bottomright.d300="'Time Range'">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
               class="fa fa-clock-o fa-fw">
@@ -79,9 +77,7 @@
     <div class="form-group ml-1">
       <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Beginning Time">
+          v-b-tooltip.hover.top.d300="'Beginning Time'">
           <span class="input-group-text">
             Start
           </span>
@@ -130,9 +126,7 @@
     <div class="form-group ml-1">
       <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Stop Time">
+          v-b-tooltip.hover.top.d300="'Stop Time'">
           <span class="input-group-text">
             End
           </span>
@@ -182,9 +176,7 @@
       v-if="!hideBounding">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Which time field to use for selected time window">
+          v-b-tooltip.hover.top.d300="'Which time field to use for selected time window'">
           <span class="input-group-text">
             Bounding
           </span>
@@ -207,9 +199,7 @@
       v-if="!hideInterval">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
-          tooltip-placement="topright"
-          v-b-tooltip.hover
-          title="Time interval bucket size for graph">
+          v-b-tooltip.hover.top.d300="'Time interval bucket size for graph'">
           <span class="input-group-text">
             Interval
           </span>

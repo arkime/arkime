@@ -6,9 +6,7 @@
     <!-- typeahead input -->
     <div class="input-group input-group-sm">
       <span class="input-group-prepend input-group-prepend-fw cursor-help"
-        v-b-tooltip.hover
-        placement="bottomright"
-        title="Search Expression">
+        v-b-tooltip.hover.bottomright.d300="'Search Expression'">
         <span class="input-group-text input-group-text-fw">
           <span v-if="!shiftKeyHold"
             class="fa fa-search fa-fw">
