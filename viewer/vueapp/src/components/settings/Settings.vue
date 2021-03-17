@@ -1133,6 +1133,23 @@
               :class="theme.class"
               :key="theme.class">
               <div class="theme-display">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="custom-control custom-radio ml-1">
+                      <input type="radio"
+                        class="custom-control-input cursor-pointer"
+                        v-model="settings.theme"
+                        @change="changeTheme(theme.class)"
+                        :value="theme.class"
+                        :id="theme.class"
+                      />
+                      <label class="custom-control-label cursor-pointer"
+                        :for="theme.class">
+                        {{ theme.name }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
                     <img :src="settings.logo"
@@ -1209,23 +1226,6 @@
                     </span>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="custom-control custom-radio ml-1">
-                      <input type="radio"
-                        class="custom-control-input cursor-pointer"
-                        v-model="settings.theme"
-                        @change="changeTheme(theme.class)"
-                        :value="theme.class"
-                        :id="theme.class"
-                      />
-                      <label class="custom-control-label cursor-pointer"
-                        :for="theme.class">
-                        {{ theme.name }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div> <!-- /theme picker -->
@@ -1240,7 +1240,6 @@
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <img :src="logo.location" :alt="logo.name" />
               <div class="custom-control custom-radio ml-1">
                 <input type="radio"
                   :id="logo.location"
@@ -1254,6 +1253,7 @@
                   {{ logo.name }}
                 </label>
               </div>
+              <img :src="logo.location" :alt="logo.name" />
             </div>
           </div> <!-- /logo picker -->
 
