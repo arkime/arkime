@@ -4,7 +4,7 @@
 
   <div class="center-area">
 
-    <img src="watching.gif" />
+    <img src="assets/watching.gif" />
 
     <div class="well well-lg">
       <h1>Incompatible Browser</h1>

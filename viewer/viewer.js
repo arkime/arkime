@@ -193,10 +193,20 @@ app.use((req, res, next) => {
 
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
-app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-app.use('/', express.static(path.join(__dirname, '/public'), { maxAge: 600 * 1000 }));
-app.use('/assets', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
-app.use('/logos', express.static(path.join(__dirname, '../assets'), { maxAge: 600 * 1000 }));
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
+app.use('/assets', express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
+app.use('/logos', express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
 
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
@@ -1984,6 +1994,11 @@ app.get(
 );
 
 // cyberchef apis -------------------------------------------------------------
+app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
+  path.join(__dirname, '/public'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
+
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
   [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
@@ -2047,12 +2062,26 @@ function createApp () {
   });
 }
 
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
 // expose vue bundles (prod)
-app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+app.use('/static', express.static(
+  path.join(__dirname, '/vueapp/dist/static'),
+  { fallthrough: false }
+));
+app.use('/app.css', express.static(
+  path.join(__dirname, '/vueapp/dist/app.css'),
+  { fallthrough: false }
+));
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+app.use(['/app.js', '/vueapp/app.js'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js'),
+  { fallthrough: false }
+));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js.map'),
+  { fallthrough: false }
+));
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {

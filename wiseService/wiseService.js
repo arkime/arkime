@@ -734,16 +734,37 @@ app.use(timeout(5 * 1000));
 
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
-app.use('/font-awesome', express.static(path.join(__dirname, '/../node_modules/font-awesome'), { maxAge: 600 * 1000 }));
-app.use('/assets', express.static(path.join(__dirname, '/../assets'), { maxAge: 600 * 1000 }));
+
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
+app.use('/assets', express.static(
+  path.join(__dirname, '/../assets'),
+  { maxAge: 600 * 1000, fallthrough: false }
+));
 
 // expose vue bundles (prod) - need to be here because of wildcard endpoint matches
-app.use('/static', express.static(path.join(__dirname, '/vueapp/dist/static')));
-app.use('/app.css', express.static(path.join(__dirname, '/vueapp/dist/app.css')));
+app.use('/static', express.static(
+  path.join(__dirname, '/vueapp/dist/static'),
+  { fallthrough: false }
+));
+app.use('/app.css', express.static(
+  path.join(__dirname, '/vueapp/dist/app.css'),
+  { fallthrough: false }
+));
 
 // expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(path.join(__dirname, '/vueapp/dist/app.js')));
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(path.join(__dirname, '/vueapp/dist/app.js.map')));
+app.use(['/app.js', '/vueapp/app.js'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js'),
+  { fallthrough: false }
+));
+app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js.map'),
+  { fallthrough: false }
+));
 
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
