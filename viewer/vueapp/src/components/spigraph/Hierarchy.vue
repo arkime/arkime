@@ -878,7 +878,7 @@ export default {
         this.tableData = response.data.tableResults;
         this.sortTable();
         this.applyColorsToTableData(this.tableData);
-        this.initializeColResizable();
+        this.showHiddenColumns(); // initalizes resizeable cols
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
