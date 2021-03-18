@@ -1336,7 +1336,7 @@ export default {
         popupVue = new Vue({
           template: `
             <div class="connections-popup">
-              <div class="mb-2">
+              <div class="mb-2 mt-2">
                 <strong>
                   <moloch-session-field
                     :value="dataNode.id"
@@ -1448,7 +1448,7 @@ export default {
         popupVue = new Vue({
           template: `
             <div class="connections-popup">
-              <div class="mb-2">
+              <div class="mb-2 mt-2">
                 <strong>Link</strong>
                 <a class="pull-right cursor-pointer no-decoration"
                    @click="closePopup">

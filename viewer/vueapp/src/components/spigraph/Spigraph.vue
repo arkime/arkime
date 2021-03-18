@@ -379,18 +379,26 @@ export default {
     FieldService.get(true)
       .then((result) => {
         this.fields = result;
-        this.fields.push({
-          dbField: 'ip.dst:port',
-          exp: 'ip.dst:port',
-          help: 'Destination IP:Destination Port',
-          group: 'general',
-          friendlyName: 'Dst IP:Dst Port'
-        });
+        let ipDstPortFieldExists = false;
         for (const field of this.fields) {
+          if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
           if (field.dbField === this.query.exp ||
             field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
             this.baseField = field.exp;
+          }
+        }
+        if (!ipDstPortFieldExists) {
+          this.fields.push({
+            dbField: 'ip.dst:port',
+            exp: 'ip.dst:port',
+            help: 'Destination IP:Destination Port',
+            group: 'general',
+            friendlyName: 'Dst IP:Dst Port'
+          });
+          if (this.query.exp === 'ip.dst:port') {
+            this.fieldTypeahead = 'Dst IP:Dst Port';
+            this.baseField = 'ip.dst:port';
           }
         }
       }).catch((error) => {
