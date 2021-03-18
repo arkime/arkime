@@ -74,11 +74,11 @@ LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
 
-#define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS*3)
+#define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS-1)
 struct {
     int64_t  fileNum;
     FILE    *fp;
-} indexFiles[INDEX_FILES_CACHE_SIZE];
+} indexFiles[MOLOCH_MAX_PACKET_THREADS][INDEX_FILES_CACHE_SIZE];
 
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
@@ -486,10 +486,12 @@ LOCAL void writer_simple_exit()
         usleep(10000);
     }
 
-    for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
-        if (indexFiles[p].fp) {
-            fclose(indexFiles[p].fp);
-            indexFiles[p].fp = 0;
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
+            if (indexFiles[thread][p].fp) {
+                fclose(indexFiles[thread][p].fp);
+                indexFiles[thread][p].fp = 0;
+            }
         }
     }
 }
@@ -539,32 +541,32 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     return TRUE;
 }
 /******************************************************************************/
-FILE *writer_simple_get_index(int64_t fileNum)
+FILE *writer_simple_get_index(int thread, int64_t fileNum)
 {
     const int p = fileNum % INDEX_FILES_CACHE_SIZE;
 
-    if (indexFiles[p].fp) {
+    if (indexFiles[thread][p].fp) {
         // This is the fileNum we are looking for
-        if (indexFiles[p].fileNum == fileNum) {
-            return indexFiles[p].fp;
+        if (indexFiles[thread][p].fileNum == fileNum) {
+            return indexFiles[thread][p].fp;
         }
 
         // This isn't it, close the old one
-        fclose(indexFiles[p].fp);
+        fclose(indexFiles[thread][p].fp);
     }
 
     char     filename[1024];
     snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, fileNum);
 
-    if ((indexFiles[p].fp = fopen(filename, "a")) == NULL) {
+    if ((indexFiles[thread][p].fp = fopen(filename, "a")) == NULL) {
         LOGEXIT("Couldn't open file %s", filename);
     }
 
     if (!config.pcapReadOffline) {
-        fchmod(fileno(indexFiles[p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+        fchmod(fileno(indexFiles[thread][p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
     }
 
-    return indexFiles[p].fp;
+    return indexFiles[thread][p].fp;
 }
 /******************************************************************************/
 void writer_simple_index (MolochSession_t * session)
@@ -588,7 +590,7 @@ void writer_simple_index (MolochSession_t * session)
                 last = 0;
                 lastgap = 0;
             }
-            fp = writer_simple_get_index(-packetPos);
+            fp = writer_simple_get_index(session->thread, -packetPos);
 
             filePos[files*3] = packetPos;      // Which file
             filePos[files*3 + 1] = ftell(fp);  // Where in index file

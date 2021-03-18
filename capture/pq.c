@@ -196,7 +196,7 @@ void moloch_pq_free(MolochSession_t *session)
 /* Reset the bucket0 time */
 void moloch_pq_flush(int thread)
 {
-    int i, t, b;
+    int i, b;
     for (i = 0; i < numPQs; i++) {
         for (b = 0; b < pqs[i]->maxSeconds; b++) {
             MolochPQItem_t *item = 0;
