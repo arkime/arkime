@@ -682,13 +682,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    const options = { writeHeader: true };
+    const writerOptions = { writeHeader: true };
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item._source || item.fields;
       module.isLocalView(fields.node, () => {
         // Get from our DISK
-        pcapWriter(res, Db.session2Sid(item), options, nextCb);
+        pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, () => {
         // Get from remote DISK
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
@@ -716,8 +716,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             });
             pres.on('end', () => {
               if (bufpos < 24) {
-              } else if (options.writeHeader) {
-                options.writeHeader = false;
+              } else if (writerOptions.writeHeader) {
+                writerOptions.writeHeader = false;
                 res.write(buffer.slice(0, bufpos));
               } else {
                 res.write(buffer.slice(24, bufpos));
@@ -837,16 +837,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
   }
 
-  function writePcap (res, id, options, doneCb) {
+  function writePcap (res, id, writerOptions, doneCb) {
     let b = Buffer.alloc(0xfffe);
     let nextPacket = 0;
     let boffset = 0;
     const packets = {};
 
     module.processSessionId(id, false, (pcap, buffer) => {
-      if (options.writeHeader) {
+      if (writerOptions.writeHeader) {
         res.write(buffer);
-        options.writeHeader = false;
+        writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb, i) => {
       // Save this packet in its spot
@@ -877,14 +877,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }, undefined, 10);
   }
 
-  function writePcapNg (res, id, options, doneCb) {
+  function writePcapNg (res, id, writerOptions, doneCb) {
     let b = Buffer.alloc(0xfffe);
     let boffset = 0;
 
     module.processSessionId(id, true, (pcap, buffer) => {
-      if (options.writeHeader) {
+      if (writerOptions.writeHeader) {
         res.write(pcap.getHeaderNg());
-        options.writeHeader = false;
+        writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
       if (boffset + buffer.length + 20 > b.length) {
@@ -2736,7 +2736,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   module.getEntirePCAP = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    const options = { writeHeader: true };
+    const writerOptions = { writeHeader: true };
 
     const query = {
       size: 1000,
@@ -2751,7 +2751,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     Db.searchPrimary('sessions2-*', 'session', query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
-        writePcap(res, Db.session2Sid(item), options, nextCb);
+        writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
         res.end();
       });
