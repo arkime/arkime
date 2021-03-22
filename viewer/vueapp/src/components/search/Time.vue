@@ -77,7 +77,7 @@
     <div class="form-group ml-1">
       <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.top.d300="'Beginning Time'">
+          v-b-tooltip.hover.bottom.d300="'Beginning Time'">
           <span class="input-group-text">
             Start
           </span>
@@ -100,19 +100,19 @@
           </div>
         </span>
         <b-tooltip
+          placement="bottom"
           v-if="isStartOfDay(time.startTime)"
           target="prevStartTime">
           Beginning of previous day
         </b-tooltip>
         <b-tooltip
           v-else
+          placement="bottom"
           target="prevStartTime">
           Beginning of this day
         </b-tooltip>
         <span class="input-group-append cursor-pointer"
-          placement="topright"
-          v-b-tooltip.hover
-          title="Beginning of next day"
+          v-b-tooltip.hover.bottom.d300="'Beginning of next day'"
           @click="nextTime('start')">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
@@ -126,7 +126,7 @@
     <div class="form-group ml-1">
       <div class="input-group input-group-sm input-group-time">
         <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.top.d300="'Stop Time'">
+          v-b-tooltip.hover.bottom.d300="'Stop Time'">
           <span class="input-group-text">
             End
           </span>
@@ -141,9 +141,7 @@
           tabindex="5">
         </date-picker>
         <span class="input-group-append cursor-pointer"
-          placement="topright"
-          v-b-tooltip.hover
-          title="End of previous day"
+          v-b-tooltip.hover.bottom.d300="'End of previous day'"
           @click="prevTime('stop')">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
@@ -159,12 +157,14 @@
           </div>
         </span>
         <b-tooltip
+          placement="bottom"
           v-if="isEndOfDay(time.stopTime)"
           target="nextStopTime">
           End of next day
         </b-tooltip>
         <b-tooltip
           v-else
+            placement="bottom"
           target="nextStopTime">
           End of this day
         </b-tooltip>
@@ -176,7 +176,7 @@
       v-if="!hideBounding">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.top.d300="'Which time field to use for selected time window'">
+          v-b-tooltip.hover.bottom.d300="'Which time field to use for selected time window'">
           <span class="input-group-text">
             Bounding
           </span>
@@ -199,7 +199,7 @@
       v-if="!hideInterval">
       <div class="input-group input-group-sm">
         <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.top.d300="'Time interval bucket size for graph'">
+          v-b-tooltip.hover.bottom.d300="'Time interval bucket size for graph'">
           <span class="input-group-text">
             Interval
           </span>
@@ -222,8 +222,7 @@
       <strong class="text-theme-accent">
         <span v-if="deltaTime && !timeError"
           class="help-cursor"
-          v-b-tooltip.hover
-          title="Query time range">
+          v-b-tooltip.hover.bottom.d300="'Query time range'">
           {{ deltaTime * 1000 | readableTime }}
         </span>
         <span v-if="timeError">

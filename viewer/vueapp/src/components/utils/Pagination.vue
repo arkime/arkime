@@ -22,8 +22,7 @@
       </b-pagination> <!-- paging -->
       <!-- page info -->
       <div class="pagination-info cursor-help"
-        v-b-tooltip.hover
-        :title="pagingInfoTitle">
+        v-b-tooltip.hover.right="pagingInfoTitle">
         Showing
         <span v-if="recordsFiltered">
           {{ start + 1 }}
