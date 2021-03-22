@@ -1123,12 +1123,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return;
     }
 
-    const query = { body: { persistent: {} } };
-    query.body.persistent[req.body.key] = req.body.value || null;
+    const clusterQuery = { body: { persistent: {} } };
+    clusterQuery.body.persistent[req.body.key] = req.body.value || null;
 
-    Db.putClusterSettings(query, (err, result) => {
+    Db.putClusterSettings(clusterQuery, (err, result) => {
       if (err) {
-        console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
+        console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(clusterQuery, false, 2));
         return res.serverError(500, 'Set failed');
       }
       return res.send(JSON.stringify({ success: true, text: 'Set' }));

@@ -140,18 +140,18 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           }
           async.each(data.subPackets, (sp, nextSubCb) => {
             const block = decompressed[sp.rangeStart];
-            const packetData = block.subarray(sp.packetStart, sp.packetEnd);
-            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+            const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
+            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-            packetCb(pcap, packetData.subarray(0, len + 16), nextSubCb, sp.itemPos);
+            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
           },
           nextCb);
         } else {
           async.each(data.subPackets, (sp, nextSubCb) => {
-            const packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
-            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+            const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-            packetCb(pcap, packetData.subarray(0, len + 16), nextSubCb, sp.itemPos);
+            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
           },
           nextCb);
         }
