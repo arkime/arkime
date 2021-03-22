@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (Db, internals, ViewerUtils) => {
-  const module = {};
+  const sModule = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -71,7 +71,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of shortcut results stored.
    * @returns {number} recordsFiltered - The number of shortcut items returned in this result.
    */
-  module.getShortcuts = (req, res) => {
+  sModule.getShortcuts = (req, res) => {
     // return nothing if we can't find the user
     const user = req.settingUser;
     if (!user) { return res.send({}); }
@@ -142,9 +142,9 @@ module.exports = (Db, internals, ViewerUtils) => {
         const values = shortcut[shortcut.type];
 
         if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
-          const name = `$${shortcut.name}`;
-          shortcut.exp = name;
-          shortcut.dbField = name;
+          const shortcutName = `$${shortcut.name}`;
+          shortcut.exp = shortcutName;
+          shortcut.dbField = shortcutName;
           shortcut.help = shortcut.description
             ? `${shortcut.description}: ${values.join(', ')}`
             : `${values.join(',')}`;
@@ -186,7 +186,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {Shortcut} shortcut - The new shortcut object.
    * @returns {boolean} success - Whether the create shortcut operation was successful.
    */
-  module.createShortcut = (req, res) => {
+  sModule.createShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
       return res.serverError(403, 'Missing shortcut name');
@@ -275,7 +275,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the upate shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateShortcut = (req, res) => {
+  sModule.updateShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
       return res.serverError(403, 'Missing shortcut name');
@@ -369,7 +369,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteShortcut = (req, res) => {
+  sModule.deleteShortcut = (req, res) => {
     Db.getShortcut(req.params.id, (err, shortcut) => { // fetch shortcut
       if (err) {
         console.log('fetching shortcut to delete failed', err, shortcut);
@@ -395,5 +395,5 @@ module.exports = (Db, internals, ViewerUtils) => {
     });
   };
 
-  return module;
+  return sModule;
 };

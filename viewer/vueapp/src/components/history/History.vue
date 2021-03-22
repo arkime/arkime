@@ -330,7 +330,7 @@ import MolochCollapsible from '../utils/CollapsibleWrapper';
 let searchInputTimeout; // timeout to debounce the search input
 
 export default {
-  name: 'History',
+  name: 'ArkimeHistory',
   components: {
     MolochPaging,
     MolochLoading,
@@ -426,8 +426,8 @@ export default {
     onOffFocus: function () {
       this.focusInput = false;
     },
-    columnClick: function (name) {
-      this.sortField = name;
+    columnClick: function (colName) {
+      this.sortField = colName;
       this.desc = !this.desc;
       this.loadData();
     },

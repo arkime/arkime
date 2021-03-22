@@ -30,7 +30,7 @@ const iptrie = require('iptrie');
 const WISESource = require('./wiseSource.js');
 const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const Redis = require('ioredis');
 const memjs = require('memjs');
 const favicon = require('serve-favicon');
@@ -95,7 +95,7 @@ const internals = {
   workers: 1,
   regressionTests: false,
   webconfig: false,
-  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
+  configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
   startTime: Date.now()
 };
 
@@ -181,11 +181,11 @@ app.use(helmet.contentSecurityPolicy({
   }
 }));
 
-function getConfig (section, name, d) {
+function getConfig (section, sectionKey, d) {
   if (!internals.config[section]) {
     return d;
   }
-  return internals.config[section][name] || d;
+  return internals.config[section][sectionKey] || d;
 }
 
 // Explicit sigint handler for running under docker
@@ -207,8 +207,8 @@ function noCacheJson (req, res, next) {
 // ----------------------------------------------------------------------------
 // Authentication
 // ----------------------------------------------------------------------------
-function getUser (name, cb) {
-  internals.usersElasticSearch.get({ index: internals.usersPrefix + 'users', type: '_doc', id: name }, (err, result) => {
+function getUser (userId, cb) {
+  internals.usersElasticSearch.get({ index: internals.usersPrefix + 'users', type: '_doc', id: userId }, (err, result) => {
     console.log(err, result);
     if (err) { return cb(err); }
     return cb(null, result._source);
@@ -221,14 +221,14 @@ function store2ha1 (passstore) {
     const parts = passstore.split('.');
     if (parts.length === 2) {
       // New style with IV: IV.E
-      const c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      const c = cryptoLib.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
       let d = c.update(parts[1], 'hex', 'binary');
       d += c.final('binary');
       return d;
     } else {
       // Old style without IV: E
       // eslint-disable-next-line node/no-deprecated-api
-      const c = crypto.createDecipher('aes192', internals.passwordSecret);
+      const c = cryptoLib.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
@@ -242,7 +242,7 @@ function store2ha1 (passstore) {
 function setupAuth () {
   internals.userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
   internals.passwordSecret = getConfig('wiseService', 'passwordSecret', 'password');
-  internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
+  internals.passwordSecret256 = cryptoLib.createHash('sha256').update(internals.passwordSecret).digest();
 
   if (internals.userNameHeader === 'anonymous') {
     return;
@@ -388,12 +388,12 @@ class WISESourceAPI {
    * Get from the config section a value or default
    *
    * @param {string} section - The section in the config file the key is in
-   * @param {string} name - The key to get from the section
+   * @param {string} sectionKey - The key to get from the section
    * @param {string} [default] - the default value to return if key is not found in section
    * @returns {string} - The value found or the default value
    */
-  getConfig (section, name, d) {
-    return getConfig(section, name, d);
+  getConfig (section, sectionKey, d) {
+    return getConfig(section, sectionKey, d);
   }
 
   // ----------------------------------------------------------------------------
@@ -425,7 +425,7 @@ class WISESourceAPI {
    */
   addField (field) {
     let match = field.match(/field:([^;]+)/);
-    const name = match[1];
+    const fieldName = match[1];
 
     let db;
     if ((match = field.match(/db:([^;]+)/))) {
@@ -437,12 +437,12 @@ class WISESourceAPI {
       friendly = match[1];
     }
 
-    if (WISESource.field2Pos[name] !== undefined) {
-      return WISESource.field2Pos[name];
+    if (WISESource.field2Pos[fieldName] !== undefined) {
+      return WISESource.field2Pos[fieldName];
     }
 
     if (internals.debug > 1) {
-      console.log(`Adding field name:${name} db:${db} friendly:${friendly} from '${field}'`);
+      console.log(`Adding field name:${fieldName} db:${db} friendly:${friendly} from '${field}'`);
     }
 
     const pos = internals.fields.length;
@@ -450,13 +450,14 @@ class WISESourceAPI {
     internals.fields.push(field);
     internals.fieldsSize += field.length + 10;
 
+    let offset;
     // Create version 0 of fields buf
     if (internals.fields.length < 256) {
       internals.fieldsBuf0 = Buffer.alloc(internals.fieldsSize + 9);
       internals.fieldsBuf0.writeUInt32BE(internals.fieldsTS, 0);
       internals.fieldsBuf0.writeUInt32BE(0, 4);
       internals.fieldsBuf0.writeUInt8(internals.fields.length, 8);
-      let offset = 9;
+      offset = 9;
       for (let i = 0; i < internals.fields.length; i++) {
         const len = internals.fieldsBuf0.write(internals.fields[i], offset + 2);
         internals.fieldsBuf0.writeUInt16BE(len + 1, offset);
@@ -471,7 +472,7 @@ class WISESourceAPI {
     internals.fieldsBuf1.writeUInt32BE(internals.fieldsTS, 0);
     internals.fieldsBuf1.writeUInt32BE(1, 4);
     internals.fieldsBuf1.writeUInt16BE(internals.fields.length, 8);
-    let offset = 10;
+    offset = 10;
     for (let i = 0; i < internals.fields.length; i++) {
       const len = internals.fieldsBuf1.write(internals.fields[i], offset + 2);
       internals.fieldsBuf1.writeUInt16BE(len + 1, offset);
@@ -480,11 +481,11 @@ class WISESourceAPI {
     }
     internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
 
-    internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
+    internals.fieldsMd5 = cryptoLib.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
 
-    WISESource.pos2Field[pos] = name;
-    WISESource.field2Pos[name] = pos;
-    WISESource.field2Info[name] = { pos: pos, friendly: friendly, db: db };
+    WISESource.pos2Field[pos] = fieldName;
+    WISESource.field2Pos[fieldName] = pos;
+    WISESource.field2Info[fieldName] = { pos: pos, friendly: friendly, db: db };
     return pos;
   }
 
@@ -492,24 +493,24 @@ class WISESourceAPI {
   /**
    * Add a view
    *
-   * @param {string} name - Name of the new view
+   * @param {string} viewName - Name of the new view
    * @param {string} view - An encoded view definition
    */
-  addView (name, view) {
+  addView (viewName, view) {
     if (view.includes('require:')) {
       let match = view.match(/require:([^;]+)/);
-      const require = match[1];
+      const req = match[1];
 
       match = view.match(/title:([^;]+)/);
       if (!match) {
-        console.log(`ERROR - ${name} view is missing 'title:' ${view}`);
+        console.log(`ERROR - ${viewName} view is missing 'title:' ${view}`);
         return;
       }
       const title = match[1];
 
       match = view.match(/fields:([^;]+)/);
       if (!match) {
-        console.log(`ERROR - ${name} view is missing 'fields:' ${view}`);
+        console.log(`ERROR - ${viewName} view is missing 'fields:' ${view}`);
         return;
       }
       const fields = match[1];
@@ -517,10 +518,10 @@ class WISESourceAPI {
       // Can override the name in the view
       match = view.match(/section:([^;]+)/);
       if (match) {
-        name = match[1];
+        viewName = match[1];
       }
 
-      let output = `if (session.${require})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      let output = `if (session.${req})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
       for (const field of fields.split(',')) {
         const info = WISESource.field2Info[field];
         if (!info) {
@@ -537,9 +538,9 @@ class WISESourceAPI {
           output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
         }
       }
-      internals.views[name] = output;
+      internals.views[viewName] = output;
     } else {
-      internals.views[name] = view;
+      internals.views[viewName] = view;
     }
   }
 
@@ -670,7 +671,7 @@ class WISESourceAPI {
   /**
    * Define all configuration for a field for a source
    * @typedef {Object} WISESourceAPI~ValueAction
-   * @property {string} name - The name of the value action to show the user
+   * @property {string} actionName - The name of the value action to show the user
    * @property {string} [url] - The url to send the user, supports special subsitutions, must set url or func
    * @property {string} [func] - A javascript function body to call, will be passed the name and value and must return the value, must set url or func
    * @property {string} [actionType] - If set to 'fetch' this will replace the menu option with the results of url or func
@@ -681,11 +682,11 @@ class WISESourceAPI {
 
   /**
    * Add a value action set
-   * @params {string} name - The globally unique name of this action, not shown to user
+   * @params {string} actionName - The globally unique name of this action, not shown to user
    * @params {WISESourceAPI~ValueAction} action - The action
    */
-  addValueAction (name, action) {
-    internals.valueActions[name] = action;
+  addValueAction (actionName, action) {
+    internals.valueActions[actionName] = action;
   }
 
   isWebConfig () {
@@ -980,10 +981,10 @@ function processQuery (req, query, cb) {
       typeInfo.cacheHitStats++;
     }
 
-    async.map(query.sources || typeInfo.sources, (src, cb) => {
+    async.map(query.sources || typeInfo.sources, (src, mapCb) => {
       if (!typeInfo.sourceAllowed(src, query.value)) {
         // This source isn't allowed for query
-        return setImmediate(cb, undefined);
+        return setImmediate(mapCb, undefined);
       }
 
       src.requestStat++;
@@ -1003,12 +1004,12 @@ function processQuery (req, query, cb) {
 
         // If already in progress then add to the list and return, cb called later;
         if (query.value in src.srcInProgress[query.typeName]) {
-          src.srcInProgress[query.typeName][query.value].push(cb);
+          src.srcInProgress[query.typeName][query.value].push(mapCb);
           return;
         }
 
         // First query for this value
-        src.srcInProgress[query.typeName][query.value] = [cb];
+        src.srcInProgress[query.typeName][query.value] = [mapCb];
         const startTime = Date.now();
         src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
           src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
@@ -1035,7 +1036,7 @@ function processQuery (req, query, cb) {
         src.cacheHitStat++;
         typeInfo.cacheSrcHitStats++;
         // Woot, we can use the cache
-        setImmediate(cb, null, cacheResult[src.section].result);
+        setImmediate(mapCb, null, cacheResult[src.section].result);
       }
     }, (err, results) => {
       // Combine all the results together
@@ -1901,7 +1902,7 @@ function main () {
     const keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
     const certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
 
-    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
+    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: cryptoLib.constants.SSL_OP_NO_TLSv1 }, app);
   } else {
     server = http.createServer(app);
   }
@@ -1934,15 +1935,15 @@ function buildConfigAndStart () {
   if (parts.length === 1) {
     try { // check if the file exists
       fs.accessSync(internals.configFile, fs.constants.F_OK);
-    } catch (e) { // if the file doesn't exist, create it
+    } catch (err) { // if the file doesn't exist, create it
       try { // write the new file
         if (internals.configFile.endsWith('json')) {
           fs.writeFileSync(internals.configFile, JSON.stringify({}, null, 2), 'utf8');
         } else {
           fs.writeFileSync(internals.configFile, '', 'utf8');
         }
-      } catch (e) { // notify of error saving new config and exit
-        console.log('Error creating new WISE Config:\n\n', e.stack);
+      } catch (err) { // notify of error saving new config and exit
+        console.log('Error creating new WISE Config:\n\n', err.stack);
         console.log(`
           You must fix this before you can run WISE UI.
           Try using arkime/tests/config.test.json as a starting point.

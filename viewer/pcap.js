@@ -19,7 +19,7 @@
 'use strict';
 
 const fs = require('fs');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 
 const Pcap = module.exports = exports = function Pcap (key) {
@@ -87,7 +87,7 @@ Pcap.prototype.open = function (filename, info) {
     this.encoding = info.encoding || 'normal';
     if (info.dek) {
       // eslint-disable-next-line node/no-deprecated-api
-      const decipher = crypto.createDecipher('aes-192-cbc', info.kek);
+      const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
@@ -139,7 +139,7 @@ Pcap.prototype.unref = function () {
 
 Pcap.prototype.createDecipher = function (pos) {
   this.iv.writeUInt32BE(pos, 12);
-  return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
+  return cryptoLib.createDecipheriv(this.encoding, this.encKey, this.iv);
 };
 
 Pcap.prototype.readHeader = function (cb) {
@@ -196,23 +196,25 @@ Pcap.prototype.readPacket = function (pos, cb) {
 
   try {
     // Try and read full packet and header in one read
-    fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, buffer) => {
+    fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, readBuffer) => {
       if (bytesRead - posoffset < 16) {
         return cb(null);
       }
 
       if (this.encoding === 'aes-256-ctr') {
         const decipher = this.createDecipher(pos / 16);
-        buffer = Buffer.concat([decipher.update(buffer),
-          decipher.final()]).slice(posoffset);
+        readBuffer = Buffer.concat([
+          decipher.update(readBuffer),
+          decipher.final()
+        ]).slice(posoffset);
       } else if (this.encoding === 'xor-2048') {
         for (let i = posoffset; i < bytesRead; i++) {
-          buffer[i] ^= this.encKey[i % 256];
+          readBuffer[i] ^= this.encKey[i % 256];
         }
-        buffer = buffer.slice(posoffset);
+        readBuffer = readBuffer.slice(posoffset);
       }
 
-      const len = (this.bigEndian ? buffer.readUInt32BE(8) : buffer.readUInt32LE(8));
+      const len = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
         return cb(undefined);
@@ -220,23 +222,23 @@ Pcap.prototype.readPacket = function (pos, cb) {
 
       // Full packet fit
       if ((16 + len) <= (bytesRead - posoffset)) {
-        return cb(buffer.slice(0, 16 + len));
+        return cb(readBuffer.slice(0, 16 + len));
       }
       // Full packet didn't fit, get what was missed
       try {
         const buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
-        fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, bytesRead, ignore) => {
+        fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, subBytesRead, ignore) => {
           if (this.encoding === 'aes-256-ctr') {
-            const decipher = this.createDecipher((pos + bytesRead) / 16);
-            return cb(Buffer.concat([buffer, decipher.update(buffer2),
+            const decipher = this.createDecipher((pos + subBytesRead) / 16);
+            return cb(Buffer.concat([readBuffer, decipher.update(buffer2),
               decipher.final()]));
           } else if (this.encoding === 'xor-2048') {
-            for (let i = posoffset; i < bytesRead; i++) {
+            for (let i = posoffset; i < subBytesRead; i++) {
               buffer2[i] ^= this.encKey[i % 256];
             }
           }
 
-          return cb(Buffer.concat([buffer, buffer2]));
+          return cb(Buffer.concat([readBuffer, buffer2]));
         });
       } catch (e) {
         console.log('Error ', e, 'for file', this.filename);
@@ -644,11 +646,11 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
 Pcap.prototype.nflog = function (buffer, obj, pos) {
   let offset = 4;
   while (offset + 4 < buffer.length) {
-    const length = buffer.readUInt16LE(offset);
+    const len = buffer.readUInt16LE(offset);
     if (buffer[offset + 3] === 0 && buffer[offset + 2] === 9) {
       if (buffer[0] === 2) { return this.ip4(buffer.slice(offset + 4), obj, pos + offset + 4); } else { return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4); }
     } else {
-      offset += (length + 3) & 0xfffc;
+      offset += (len + 3) & 0xfffc;
     }
   }
 
@@ -982,8 +984,8 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
 
     const results = [];
     packets.forEach((item) => {
-      const key = item.ip.addr1 + ':' + item.tcp.sport;
-      if (key === clientKey) {
+      const pkey = item.ip.addr1 + ':' + item.tcp.sport;
+      if (pkey === clientKey) {
         if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
           return;
         }
@@ -996,10 +998,10 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
       }
 
       let result;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
+      if (results.length === 0 || pkey !== results[results.length - 1].key) {
         previous = start = item.tcp.seq;
         result = {
-          key: key,
+          key: pkey,
           data: item.tcp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
@@ -1009,7 +1011,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         // Larger then max window size packets missing
         previous = start = item.tcp.seq;
         result = {
-          key: key,
+          key: pkey,
           data: item.tcp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };

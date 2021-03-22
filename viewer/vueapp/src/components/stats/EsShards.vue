@@ -220,10 +220,10 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    columnClick (name) {
-      if (!name) { return; }
+    columnClick (colName) {
+      if (!colName) { return; }
 
-      this.query.sortField = name;
+      this.query.sortField = colName;
       this.query.desc = !this.query.desc;
       this.loadData();
     },

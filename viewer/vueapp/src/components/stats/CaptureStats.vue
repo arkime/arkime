@@ -221,8 +221,8 @@ export default {
 
       this.loadData();
     },
-    columnClick (name) {
-      this.query.sortField = name;
+    columnClick (colName) {
+      this.query.sortField = colName;
       this.query.desc = !this.query.desc;
       this.loadData();
     },
@@ -276,7 +276,7 @@ export default {
         .step(60e3)
         .size(1440);
 
-      function dmetric (name, mname) {
+      function dmetric (headerName, mname) {
         return dcontext.metric(function (startV, stopV, stepV, callback) {
           const config = {
             method: 'GET',
@@ -296,7 +296,7 @@ export default {
             }, (error) => {
               return callback(new Error('Unable to load data'));
             });
-        }, name);
+        }, headerName);
       }
 
       // TODO instead of just showing the default columns, show the ones currently in the table

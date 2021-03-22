@@ -73,9 +73,10 @@ class WISESource {
       this.formatSetting(options.formatSetting);
     }
 
+    let items;
     // Domain and Email wildcards to exclude from source
     ['excludeDomains', 'excludeEmails', 'excludeURLs'].forEach((type) => {
-      const items = api.getConfig(section, type);
+      items = api.getConfig(section, type);
       this[type] = [];
       if (!items) { return; }
       items.split(';').map(item => item.trim()).forEach((item) => {
@@ -88,7 +89,7 @@ class WISESource {
 
     // IP CIDRs to exclude from source
     this.excludeIPs = new iptrie.IPTrie();
-    let items = api.getConfig(section, 'excludeIPs', '');
+    items = api.getConfig(section, 'excludeIPs', '');
     items.split(';').map(item => item.trim()).forEach((item) => {
       if (item === '') {
         return;

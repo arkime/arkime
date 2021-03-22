@@ -89,7 +89,7 @@ export default {
             Object.keys(this.sourceStats[0]).forEach(key => {
               const obj = { key: key, sortable: true };
               if (key !== 'source') {
-                obj.formatter = (value, key, item) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
                 obj.thClass = 'text-right';
               }
@@ -101,7 +101,7 @@ export default {
             Object.keys(this.typeStats[0]).forEach(key => {
               const obj = { key: key, sortable: true };
               if (key !== 'type') {
-                obj.formatter = (value, key, item) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
                 obj.thClass = 'text-right';
               }

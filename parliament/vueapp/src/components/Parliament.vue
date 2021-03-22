@@ -1217,14 +1217,14 @@ export default {
       draggableGroups = Sortable.create(this.$refs.draggableGroups, {
         animation: 100,
         handle: '.group-handle',
-        onMove: (event) => { // don't allow drag/drop if clusters are filtered
+        onMove: (e) => { // don't allow drag/drop if clusters are filtered
           // or when the user is not logged in
           if (this.searchTerm || !this.loggedIn) { return false; }
           this.stopAutoRefresh();
         },
-        onEnd: (event) => { // dragged group was dropped
-          const newIdx = event.newIndex;
-          const oldIdx = event.oldIndex;
+        onEnd: (e) => { // dragged group was dropped
+          const newIdx = e.newIndex;
+          const oldIdx = e.oldIndex;
 
           if (newIdx === oldIdx) {
             return;
@@ -1257,22 +1257,22 @@ export default {
           group: 'clusters',
           handle: '.cluster-handle',
           animation: 100,
-          onMove: (event) => { // don't allow drag/drop if clusters are filtered
+          onMove: (e) => { // don't allow drag/drop if clusters are filtered
             // or whent he user is not logged in
             if (this.searchTerm || !this.loggedIn) { return false; }
             this.stopAutoRefresh();
           },
-          onEnd: (event) => { // dragged cluster was dropped
-            const newIdx = event.newIndex;
-            const oldIdx = event.oldIndex;
-            const newGroupId = parseInt(event.to.id);
-            const oldGroupId = parseInt(event.from.id);
+          onEnd: (e) => { // dragged cluster was dropped
+            const newIdx = e.newIndex;
+            const oldIdx = e.oldIndex;
+            const newGroupId = parseInt(e.to.id);
+            const oldGroupId = parseInt(e.from.id);
 
             if (newIdx === oldIdx && newGroupId === oldGroupId) {
               return;
             }
 
-            const clusterId = parseInt(event.item.id);
+            const clusterId = parseInt(e.item.id);
             const oldGroup = this.getGroup(oldGroupId);
             const newGroup = this.getGroup(newGroupId);
             const cluster = this.getCluster(oldGroupId, clusterId);

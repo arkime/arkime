@@ -134,8 +134,8 @@ app.use((req, res, next) => {
 
 function hasBody (req) {
   const encoding = 'transfer-encoding' in req.headers;
-  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
-  return encoding || length;
+  const len = 'content-length' in req.headers && req.headers['content-length'] !== '0';
+  return encoding || len;
 }
 
 function saveBody (req, res, next) {

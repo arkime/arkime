@@ -118,7 +118,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   function readyToProcess () {
     let itemPos = 0;
 
-    function process (data, nextCb) {
+    function doProcess (data, nextCb) {
       // console.log("NEXT", data);
       data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
       s3.getObject(data.params, function (err, s3data) {
@@ -138,20 +138,20 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                 { finishFlush: zlib.constants.Z_SYNC_FLUSH });
             }
           }
-          async.each(data.subPackets, function (sp, nextCb) {
+          async.each(data.subPackets, (sp, nextSubCb) => {
             const block = decompressed[sp.rangeStart];
-            const packetData = block.subarray(sp.packetStart, sp.packetEnd);
-            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+            const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
+            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
+            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
           },
           nextCb);
         } else {
-          async.each(data.subPackets, function (sp, nextCb) {
-            const packetData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
-            const len = (pcap.bigEndian ? packetData.readUInt32BE(8) : packetData.readUInt32LE(8));
+          async.each(data.subPackets, (sp, nextSubCb) => {
+            const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-            packetCb(pcap, packetData.subarray(0, len + 16), nextCb, sp.itemPos);
+            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
           },
           nextCb);
         }
@@ -170,7 +170,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           p = parseInt(p);
           const compressed = info.name.endsWith('.gz');
           for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
-            const pos = fields.packetPos[pp];
+            const packetPos = fields.packetPos[pp];
             let len = 65536;
             if (fields.packetLen) {
               len = fields.packetLen[pp];
@@ -185,15 +185,15 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               compressed: compressed
             };
             if (compressed) {
-              pd.rangeStart = Math.floor(pos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
+              pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
               pd.rangeEnd = pd.rangeStart + COMPRESSED_BLOCK_SIZE;
-              pd.packetStart = pos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
+              pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
               pd.packetEnd = pd.packetStart + len;
             } else {
-              pd.rangeStart = pos;
-              pd.rangeEnd = pos + len;
-              pd.packetStart = pos;
-              pd.packetEnd = pos + len;
+              pd.rangeStart = packetPos;
+              pd.rangeEnd = packetPos + len;
+              pd.packetStart = packetPos;
+              pd.packetEnd = packetPos + len;
             }
             packetData[pp].subPackets = [packetData[pp]];
           }
@@ -230,11 +230,10 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           previousData = data;
         }
       }
-      async.eachLimit(packetDataOpt, limit || 1, function (data, nextCb) {
-        process(data, nextCb);
-      },
-      function (pcapErr, results) {
-        endCb(pcapErr, fields);
+      async.eachLimit(packetDataOpt, limit || 1, (data, nextCb) => {
+        doProcess(data, nextCb);
+      }, (pcapEachErr) => {
+        endCb(pcapEachErr, fields);
       });
     });
   }
@@ -255,20 +254,20 @@ function s3Expire () {
     },
     sort: { first: { order: 'asc' } }
   };
-  Db.search('files', 'file', query, function (err, data) {
+  Db.search('files', 'file', query, (err, data) => {
     if (err || !data.hits || !data.hits.hits) {
       return;
     }
     // console.log("HITS", data.hits.hits);
 
-    data.hits.hits.forEach(function (item) {
+    data.hits.hits.forEach((item) => {
       const parts = splitRemain(item._source.name, '/', 4);
       const s3 = makeS3(item._source.node, parts[2]);
-      s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, function (err, data) {
+      s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, (err) => {
         if (err) {
           console.log('Couldn\'t delete from S3', item._id, item._source);
         } else {
-          Db.deleteDocument('files', 'file', item._id, function (err, data) {
+          Db.deleteDocument('files', 'file', item._id, (err) => {
             if (err) {
               console.log("Couldn't delete from ES", item._id, item._source);
             }

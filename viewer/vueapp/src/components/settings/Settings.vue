@@ -2715,14 +2715,14 @@ export default {
     /**
      * Deletes a view given its name
      * @param {Object} view The view to delete
-     * @param {string} name The name of the view to delete
+     * @param {string} viewName The name of the view to delete
      */
-    deleteView: function (view, name) {
+    deleteView: function (view, viewName) {
       UserService.deleteView(view, this.userId)
         .then((response) => {
           // remove the view from the view list
-          this.views[name] = null;
-          delete this.views[name];
+          this.views[viewName] = null;
+          delete this.views[viewName];
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
@@ -2935,11 +2935,11 @@ export default {
     /* COLUMN CONFIGURATIONS --------------------------- */
     /**
      * Deletes a previously saved custom column configuration
-     * @param {string} name The name of the column config to remove
-     * @param {int} index   The index in the array of the column config to remove
+     * @param {string} colName  The name of the column config to remove
+     * @param {int} index       The index in the array of the column config to remove
      */
-    deleteColConfig: function (name, index) {
-      UserService.deleteColumnConfig(name, this.userId)
+    deleteColConfig: function (colName, index) {
+      UserService.deleteColumnConfig(colName, this.userId)
         .then((response) => {
           this.colConfigs.splice(index, 1);
           // display success message to user
@@ -2955,11 +2955,11 @@ export default {
     /* SPIVIEW FIELD CONFIGURATIONS -------------------- */
     /**
      * Deletes a previously saved custom spiview field configuration
-     * @param {string} name The name of the field config to remove
-     * @param {int} index   The index in the array of the field config to remove
+     * @param {string} spiName  The name of the field config to remove
+     * @param {int} index       The index in the array of the field config to remove
      */
-    deleteSpiviewConfig: function (name, index) {
-      UserService.deleteSpiviewFieldConfig(name, this.userId)
+    deleteSpiviewConfig: function (spiName, index) {
+      UserService.deleteSpiviewFieldConfig(spiName, this.userId)
         .then((response) => {
           this.spiviewConfigs.splice(index, 1);
           // display success message to user
@@ -3142,13 +3142,13 @@ export default {
       this.$set(field, 'showValue', !field.showValue);
     },
     /* deletes a notifier */
-    removeNotifier: function (name) {
-      this.$http.delete(`api/notifier/${name}`)
+    removeNotifier: function (notifierName) {
+      this.$http.delete(`api/notifier/${notifierName}`)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully deleted notifier.';
           this.msgType = 'success';
-          delete this.notifiers[name];
+          delete this.notifiers[notifierName];
           this.notifiersError = '';
         })
         .catch((error) => {
@@ -3176,23 +3176,23 @@ export default {
         });
     },
     /* tests a notifier */
-    testNotifier: function (name) {
-      if (this.notifiers[name].loading) {
+    testNotifier: function (notifierName) {
+      if (this.notifiers[notifierName].loading) {
         return;
       }
 
-      this.$set(this.notifiers[name], 'loading', true);
-      this.$http.post(`api/notifier/${name}/test`, {})
+      this.$set(this.notifiers[notifierName], 'loading', true);
+      this.$http.post(`api/notifier/${notifierName}/test`, {})
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully issued alert.';
           this.msgType = 'success';
-          this.$set(this.notifiers[name], 'loading', false);
+          this.$set(this.notifiers[notifierName], 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text || 'Error issuing alert.';
           this.msgType = 'danger';
-          this.$set(this.notifiers[name], 'loading', false);
+          this.$set(this.notifiers[notifierName], 'loading', false);
         });
     },
     /* SHORTCUTS --------------------------------------- */
@@ -3425,7 +3425,7 @@ export default {
           this.timelineDataFilters = [];
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
             const filter = this.settings.timelineDataFilters[i];
-            const fieldOBJ = this.integerFields.find(i => i.dbField === filter);
+            const fieldOBJ = this.integerFields.find(j => j.dbField === filter);
             if (fieldOBJ) {
               this.timelineDataFilters.push(fieldOBJ);
             }
@@ -3464,11 +3464,11 @@ export default {
 
           // get the visible headers for the sessions table configuration
           UserService.getState('sessionsNew')
-            .then((response) => {
-              this.setupColumns(response.data.visibleHeaders);
+            .then((sessionsTableRes) => {
+              this.setupColumns(sessionsTableRes.data.visibleHeaders);
               // if the sort column setting does not match any of the visible
               // headers, set the sort column setting to last
-              if (response.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
+              if (sessionsTableRes.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
                 this.settings.sortColumn = 'last';
               }
             })

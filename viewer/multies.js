@@ -51,8 +51,8 @@ const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMse
 
 function hasBody (req) {
   const encoding = 'transfer-encoding' in req.headers;
-  const length = 'content-length' in req.headers && req.headers['content-length'] !== '0';
-  return encoding || length;
+  const len = 'content-length' in req.headers && req.headers['content-length'] !== '0';
+  return encoding || len;
 }
 
 function saveBody (req, res, next) {
@@ -153,11 +153,11 @@ function simpleGather (req, res, bodies, doneCb) {
     req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
     delete req.query.cluster;
   }
-  const nodes = getActiveNodes(cluster);
-  if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
+  const activeNodes = getActiveNodes(cluster);
+  if (activeNodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
     return doneCb(true, [{}]);
   }
-  async.map(nodes, (node, asyncCb) => {
+  async.map(activeNodes, (node, asyncCb) => {
     let result = '';
     let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
@@ -560,26 +560,26 @@ function fixQuery (node, body, doneCb) {
   let finished = 0;
   const err = null;
 
-  function convert (parent, obj) {
+  function convert (qParent, obj) {
     for (const item in obj) {
-      process(parent, obj, item);
+      doProcess(qParent, obj, item);
     }
   };
 
-  function process (parent, obj, item) {
+  function doProcess (qParent, obj, item) {
     let query;
 
     if (item === 'fileand' && typeof obj[item] === 'string') {
-      const name = obj.fileand;
+      const qName = obj.fileand;
       delete obj.fileand;
       outstanding++;
 
-      if (name[0] === '/' && name[name.length - 1] === '/') {
-        query = { query: { regexp: { name: name.substring(1, name.length - 1) } } };
-      } else if (name.indexOf('*') !== -1) {
-        query = { query: { wildcard: { name: name } } };
+      if (qName[0] === '/' && qName[qName.length - 1] === '/') {
+        query = { query: { regexp: { name: qName.substring(1, qName.length - 1) } } };
+      } else if (qName.indexOf('*') !== -1) {
+        query = { query: { wildcard: { name: qName } } };
       } else {
-        query = { query: { term: { name: name } } };
+        query = { query: { term: { name: qName } } };
       }
       clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, result) => {
         outstanding--;
@@ -721,8 +721,8 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   const bodies = {};
   const search = JSON.parse(req.body);
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  const nodes = getActiveNodes();
-  async.each(nodes, (node, asyncCb) => {
+  const activeNodes = getActiveNodes();
+  async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
       bodies[node] = JSON.stringify(body);
@@ -754,8 +754,8 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
 function msearch (req, res) {
   const lines = req.body.split(/[\r\n]/);
   const bodies = {};
-  const nodes = getActiveNodes();
-  async.each(nodes, (node, nodeCb) => {
+  const activeNodes = getActiveNodes();
+  async.each(activeNodes, (node, nodeCb) => {
     const nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
       if (line === '{}' || line === '') {
@@ -858,12 +858,12 @@ if (nodes.length === 0 || nodes[0] === '') {
 }
 
 for (let i = 0; i < nodes.length; i++) {
-  const name = node2Name(nodes[i]);
-  if (!name) {
+  const nodeName = node2Name(nodes[i]);
+  if (!nodeName) {
     console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
     process.exit(1);
   }
-  clusterList[i] = name; // name
+  clusterList[i] = nodeName; // name
 
   // Maintain a mapping of node to cluster and cluster to node
   clusters[nodes[i]] = clusterList[i]; // node -> cluster

@@ -335,19 +335,19 @@ export default {
                 }
                 return this.$parent.fields[expr];
               },
-              actionFormDone: function (message, success, reload) {
+              actionFormDone: function (doneMsg, success, reload) {
                 this.form = undefined; // clear the form
-                const messageType = success ? 'success' : 'warning';
+                const doneMsgType = success ? 'success' : 'warning';
 
                 if (reload) {
-                  this.$parent.getDetailData(message, messageType);
+                  this.$parent.getDetailData(doneMsg, doneMsgType);
                   this.getPackets();
                   return;
                 }
 
-                if (message) {
-                  this.message = message;
-                  this.messageType = messageType;
+                if (doneMsg) {
+                  this.message = doneMsg;
+                  this.messageType = doneMsgType;
                 }
               },
               messageDone: function () {

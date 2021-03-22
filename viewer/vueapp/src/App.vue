@@ -93,15 +93,15 @@ export default {
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:
     // $store.state.shiftKeyHold, focusSearch, and focusTimeRange
-    window.addEventListener('keyup', (event) => {
+    window.addEventListener('keyup', (e) => {
       const activeElement = document.activeElement;
 
-      if (event.keyCode === 27) { // esc
+      if (e.keyCode === 27) { // esc
         activeElement.blur(); // remove focus from all inputs
         this.$store.commit('setFocusSearch', false);
         this.$store.commit('setFocusTimeRange', false);
         return;
-      } else if (event.keyCode === 16) { // shift
+      } else if (e.keyCode === 16) { // shift
         this.shiftKeyHold = false;
         return;
       }
@@ -111,7 +111,7 @@ export default {
         return;
       }
 
-      switch (event.keyCode) {
+      switch (e.keyCode) {
       case 81: // q
         // focus on search expression input
         this.$store.commit('setFocusSearch', true);
@@ -167,26 +167,26 @@ export default {
       }
     });
 
-    window.addEventListener('keydown', (event) => {
+    window.addEventListener('keydown', (e) => {
       const activeElement = document.activeElement;
       // quit if the user is in an input or not holding the shift key
       if (activeElement && this.inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1) {
         return;
       }
-      if (event.keyCode === 16) { // shift
+      if (e.keyCode === 16) { // shift
         this.shiftKeyHold = true;
-      } else if (event.keyCode === 27) { // esc
+      } else if (e.keyCode === 27) { // esc
         this.shiftKeyHold = false;
       }
     });
 
     // if the user clicks something, remove shift hold
-    window.addEventListener('mousedown', (event) => {
+    window.addEventListener('mousedown', (e) => {
       this.shiftKeyHold = false;
     });
 
     // if the user focus is not in the web page, remove shift hold
-    window.addEventListener('blur', (event) => {
+    window.addEventListener('blur', (e) => {
       this.shiftKeyHold = false;
     });
   },

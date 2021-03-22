@@ -44,6 +44,7 @@ module.exports = {
     'node/handle-callback-err': 'off',
     'no-case-declarations': 'off',
     'no-empty': 'off',
-    'default-case-last': 'off'
+    'default-case-last': 'off',
+    'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }]
   }
 }

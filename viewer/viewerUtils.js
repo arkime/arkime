@@ -5,9 +5,9 @@ const http = require('http');
 const https = require('https');
 
 module.exports = (Config, Db, molochparser, internals) => {
-  const module = {};
+  const vModule = {};
 
-  module.addAuth = (options, user, node, path, secret) => {
+  vModule.addAuth = (options, user, node, path, secret) => {
     if (!options.headers) {
       options.headers = {};
     }
@@ -19,7 +19,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }, false, secret);
   };
 
-  module.addCaTrust = (options, node) => {
+  vModule.addCaTrust = (options, node) => {
     if (!Config.isHTTPS(node)) {
       return;
     }
@@ -36,7 +36,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  module.noCache = (req, res, ct) => {
+  vModule.noCache = (req, res, ct) => {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     if (ct) {
       res.setHeader('Content-Type', ct);
@@ -44,7 +44,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  module.queryValueToArray = (val) => {
+  vModule.queryValueToArray = (val) => {
     if (val === undefined || val === null) {
       return [];
     }
@@ -63,7 +63,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   //
   // This code was factored out from buildSessionQuery.
   // -------------------------------------------------------------------------
-  module.determineQueryTimes = (reqQuery) => {
+  vModule.determineQueryTimes = (reqQuery) => {
     let startTimeSec = null;
     let stopTimeSec = null;
     let interval = 60 * 60;
@@ -137,7 +137,7 @@ module.exports = (Config, Db, molochparser, internals) => {
    * understands.  This includes mapping all the tag fields from strings to numbers
    * and any of the filename stuff
    */
-  module.lookupQueryItems = (query, doneCb) => {
+  vModule.lookupQueryItems = (query, doneCb) => {
     if (Config.get('multiES', false)) {
       return doneCb(null);
     }
@@ -146,16 +146,16 @@ module.exports = (Config, Db, molochparser, internals) => {
     let finished = 0;
     let err = null;
 
-    function process (parent, obj, item) {
+    function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
-        const name = obj.fileand;
+        const fileName = obj.fileand;
         delete obj.fileand;
         outstanding++;
-        Db.fileNameToFiles(name, function (files) {
+        Db.fileNameToFiles(fileName, function (files) {
           outstanding--;
           if (files === null || files.length === 0) {
-            err = "File '" + name + "' not found";
+            err = "File '" + fileName + "' not found";
           } else if (files.length > 1) {
             obj.bool = { should: [] };
             files.forEach(function (file) {
@@ -175,9 +175,9 @@ module.exports = (Config, Db, molochparser, internals) => {
       }
     }
 
-    function convert (parent, obj) {
+    function convert (qParent, obj) {
       for (const item in obj) {
-        process(parent, obj, item);
+        doProcess(qParent, obj, item);
       }
     }
 
@@ -189,7 +189,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     finished = 1;
   };
 
-  module.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
+  vModule.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -205,7 +205,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       }
     }
 
-    module.lookupQueryItems(query.query.bool.filter, function (lerr) {
+    vModule.lookupQueryItems(query.query.bool.filter, function (lerr) {
       if (reqQuery.date === '-1' || // An all query
           Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
         return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
@@ -221,7 +221,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  module.mapMerge = (aggregations) => {
+  vModule.mapMerge = (aggregations) => {
     const map = { src: {}, dst: {}, xffGeo: {} };
 
     if (!aggregations || !aggregations.mapG1) {
@@ -243,7 +243,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return map;
   };
 
-  module.graphMerge = (req, query, aggregations) => {
+  vModule.graphMerge = (req, query, aggregations) => {
     const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
     const graph = {
@@ -326,7 +326,7 @@ module.exports = (Config, Db, molochparser, internals) => {
    * @param {object} fields The object containing fields to be flattened
    * @returns {object} fields The object with fields flattened
    */
-  module.flattenFields = (fields) => {
+  vModule.flattenFields = (fields) => {
     const newFields = {};
 
     for (const key in fields) {
@@ -371,7 +371,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return fields;
   };
 
-  module.fixFields = (fields, fixCb) => {
+  vModule.fixFields = (fields, fixCb) => {
     if (!fields.fileId) {
       fields.fileId = [];
       return fixCb(null, fields);
@@ -392,7 +392,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  module.errorString = (err, result) => {
+  vModule.errorString = (err, result) => {
     let str;
     if (err && typeof err === 'string') {
       str = err;
@@ -412,7 +412,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  module.loadFields = () => {
+  vModule.loadFields = () => {
     return new Promise((resolve, reject) => {
       Db.loadFields((err, data) => {
         if (err) {
@@ -445,12 +445,12 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  module.oldDB2newDB = (x) => {
+  vModule.oldDB2newDB = (x) => {
     if (!internals.oldDBFields[x]) { return x; }
     return internals.oldDBFields[x].dbField2;
   };
 
-  module.mergeUnarray = (to, from) => {
+  vModule.mergeUnarray = (to, from) => {
     for (const key in from) {
       if (Array.isArray(from[key])) {
         to[key] = from[key][0];
@@ -460,7 +460,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  module.commaStringToArray = (commaString) => {
+  vModule.commaStringToArray = (commaString) => {
     // split string on commas and newlines
     let values = commaString.split(/[,\n]+/g);
 
@@ -472,7 +472,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return values;
   };
 
-  module.safeStr = (str) => {
+  vModule.safeStr = (str) => {
     return str.replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -482,7 +482,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
-  module.arrayToObject = (array, key) => {
+  vModule.arrayToObject = (array, key) => {
     return array.reduce((obj, item) => {
       obj[item[key]] = item;
       return obj;
@@ -490,7 +490,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-  module.splitRemain = (str, separator, limit) => {
+  vModule.splitRemain = (str, separator, limit) => {
     str = str.split(separator);
     if (str.length <= limit) { return str; }
 
@@ -500,7 +500,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return ret;
   };
 
-  module.arrayZeroFill = (n) => {
+  vModule.arrayZeroFill = (n) => {
     const a = [];
 
     while (n > 0) {
@@ -511,7 +511,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return a;
   };
 
-  module.getViewUrl = (node, cb) => {
+  vModule.getViewUrl = (node, cb) => {
     if (Array.isArray(node)) {
       node = node[0];
     }
@@ -542,8 +542,8 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  module.makeRequest = (node, path, user, cb) => {
-    module.getViewUrl(node, (err, viewUrl, client) => {
+  vModule.makeRequest = (node, path, user, cb) => {
+    vModule.getViewUrl(node, (err, viewUrl, client) => {
       const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
       const url = new URL(nodePath, viewUrl);
       const options = {
@@ -551,8 +551,8 @@ module.exports = (Config, Db, molochparser, internals) => {
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      module.addAuth(options, user, node, nodePath);
-      module.addCaTrust(options, node);
+      vModule.addAuth(options, user, node, nodePath);
+      vModule.addCaTrust(options, node);
 
       function responseFunc (pres) {
         let response = '';
@@ -579,7 +579,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  module.addCluster = (cluster, options) => {
+  vModule.addCluster = (cluster, options) => {
     if (!options) options = {};
     if (cluster && Config.get('multiES', false)) {
       options.cluster = cluster;
@@ -589,7 +589,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  module.getUserCacheIncAnon = (userId, cb) => {
+  vModule.getUserCacheIncAnon = (userId, cb) => {
     if (internals.noPasswordSecret) { // user is anonymous
       Db.getUserCache('anonymous', (err, anonUser) => {
         const anon = internals.anonymousUser;
@@ -611,7 +611,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  module.validateUserIds = (userIdList) => {
+  vModule.validateUserIds = (userIdList) => {
     return new Promise((resolve, reject) => {
       const query = {
         _source: ['userId'],
@@ -651,5 +651,5 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  return module;
+  return vModule;
 };

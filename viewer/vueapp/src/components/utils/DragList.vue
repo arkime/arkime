@@ -41,13 +41,13 @@ export default {
   methods: {
     // need this so removeField doesn't get called when clicking label
     doNothing () {},
-    drag (event, index) {
+    drag (e, index) {
       this.dragging = index; // index of the field being dragged
     },
-    dragOver (event, index) {
+    dragOver (e, index) {
       this.draggedOver = index; // index of the field that is being dragged over
     },
-    drop (event, index) {
+    drop (e, index) {
       const listClone = [...this.list];
       // remove the dragged field from the list
       const draggedField = listClone.splice(this.dragging, 1)[0];

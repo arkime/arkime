@@ -5,7 +5,7 @@ const async = require('async');
 let fieldsMap;
 
 module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
-  const module = {};
+  const cModule = {};
 
   if (!fieldsMap) {
     setTimeout(() => { // make sure db.js loads before fetching fields
@@ -212,8 +212,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
-    let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-    if (req.query.fields) { fields = req.query.fields.split(','); }
+    let reqFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    if (req.query.fields) { reqFields = req.query.fields.split(','); }
 
     let options = {};
     if (req.query.cancelId) {
@@ -259,7 +259,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     } // updateValues
 
     // ------------------------------------------------------------------------
-    function process (vsrc, vdst, f, fields, resultId) {
+    function doProcess (vsrc, vdst, f, fields, resultId) {
       // ES 6 is returning formatted timestamps instead of ms like pre 6 did
       // https://github.com/elastic/elasticsearch/issues/27740
       if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
@@ -300,7 +300,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     // ------------------------------------------------------------------------
     // processResultSets - process the hits of each search resultset into nodesHash and connects
-    function processResultSets (connResultSets, cb) {
+    function processResultSets (connResultSets, processResultSetsCb) {
       const resultSetStatus = {
         resultId: null,
         err: null,
@@ -314,7 +314,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
           // propogate errors up (and stop processing)
           console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, resultSetStatus.err);
-          return cb([resultSetStatus]);
+          return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
             let f = hit._source;
@@ -339,7 +339,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
                     vdst += ':' + f.dstPort;
                   }
                 }
-                process(vsrc, vdst, f, fields, connResultSets[0].resultId);
+                doProcess(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
               } // let vdst of adst
             } // for vsrc of asrc
             setImmediate(hitCb);
@@ -348,21 +348,21 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
             resultSetStatus.hits = connResultSets[0].graph.hits.total;
             if (connResultSets.length > 1) {
               processResultSets(connResultSets.slice(1), (baselineResultSetStatus) => {
-                return cb([resultSetStatus].concat(baselineResultSetStatus));
+                return processResultSetsCb([resultSetStatus].concat(baselineResultSetStatus));
               });
             } else {
-              return cb([resultSetStatus]);
+              return processResultSetsCb([resultSetStatus]);
             }
           }); // async.eachLimit(graph.hits.hits) / function(err)
         } // if connResultSets[0].err) / else
       } else {
-        return cb([null]);
+        return processResultSetsCb([null]);
       } // (connResultSets.length > 0) / else
     } // processResultSets
 
     // ------------------------------------------------------------------------
     // call to build the session query|queries and indices
-    buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
+    buildConnectionQuery(req, reqFields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
       if (Config.debug) {
         console.log('buildConnections.connQueries', connQueries.length, JSON.stringify(connQueries, null, 2));
       }
@@ -476,7 +476,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @returns {array} nodes - The list of nodes
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  module.getConnections = (req, res) => {
+  cModule.getConnections = (req, res) => {
     let health;
     Db.healthCache((err, h) => { health = h; });
     buildConnections(req, res, (err, nodes, links, total) => {
@@ -500,7 +500,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @returns {csv} csv - The csv with the connections requested
    */
-  module.getConnectionsCSV = (req, res) => {
+  cModule.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator || ',';
@@ -542,5 +542,5 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     });
   };
 
-  return module;
+  return cModule;
 };

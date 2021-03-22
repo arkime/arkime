@@ -616,7 +616,7 @@ export default {
       }, 1000);
 
       // triggered when an area of the graph is selected
-      $(this.plotArea).on('plotselected', (event, ranges) => {
+      $(this.plotArea).on('plotselected', (e, ranges) => {
         const result = {
           startTime: (ranges.xaxis.from / 1000).toFixed(),
           stopTime: (ranges.xaxis.to / 1000).toFixed()
@@ -627,7 +627,7 @@ export default {
 
       let previousPoint;
       // triggered when hovering over the graph
-      $(this.plotArea).on('plothover', (event, pos, item) => {
+      $(this.plotArea).on('plothover', (e, pos, item) => {
         if (item) {
           if (!previousPoint ||
             previousPoint.dataIndex !== item.dataIndex ||

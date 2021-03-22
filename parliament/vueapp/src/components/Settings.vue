@@ -926,9 +926,9 @@ export default {
         });
     },
     /* toggles alert types on an existing notifier */
-    updateAlert: function (notifier, alert) {
-      this.settings.notifiers[notifier].alerts[alert] =
-        !this.settings.notifiers[notifier].alerts[alert];
+    updateAlert: function (notifier, a) {
+      this.settings.notifiers[notifier].alerts[a] =
+        !this.settings.notifiers[notifier].alerts[a];
     },
     getFieldInputType: function (field) {
       if (field.type === 'checkbox') {

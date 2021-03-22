@@ -517,9 +517,9 @@ export default {
             .replace('%NODE%', nodename)
             .replace('%ID%', sessionid);
 
-          let name = this.molochClickables[key].name || key;
+          let clickableName = this.molochClickables[key].name || key;
 
-          name = (name)
+          clickableName = (clickableName)
             .replace('%FIELD%', info.field)
             .replace('%DBFIELD%', info.info.dbField)
             .replace('%TEXT%', text)
@@ -548,12 +548,12 @@ export default {
 
           if (this.molochClickables[key].actionType !== undefined) {
             if (this.molochClickables[key].actionType === 'fetch') {
-              this.$set(this.asyncMenuItems, key, { name: name, value: value, url: result });
+              this.$set(this.asyncMenuItems, key, { name: clickableName, value: value, url: result });
               continue;
             }
           }
 
-          this.$set(this.menuItems, key, { name: name, value: value, url: result });
+          this.$set(this.menuItems, key, { name: clickableName, value: value, url: result });
         }
       }
     }

@@ -502,16 +502,16 @@ export default {
 
   /**
    * Deletes a user's specified custom column configuration
-   * @param {string} name       The name of the column configuration to be removed
+   * @param {string} colName    The name of the column configuration to be removed
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteColumnConfig (name, userId) {
+  deleteColumnConfig (colName, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/column/${name}`,
+        url: `api/user/column/${colName}`,
         method: 'DELETE',
         params: { userId: userId }
       };
@@ -604,18 +604,18 @@ export default {
 
   /**
    * Deletes a user's specified custom spiview fields configuration
-   * @param {string} name       The name of the spiview fields configuration to be removed
+   * @param {string} spiName   The name of the spiview fields configuration to be removed
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteSpiviewFieldConfig (name, userId) {
+  deleteSpiviewFieldConfig (spiName, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/spiview/${name}`,
+        url: `api/user/spiview/${spiName}`,
         method: 'POST',
-        data: { name: name },
+        data: { name: spiName },
         params: { userId: userId }
       };
 
@@ -683,13 +683,13 @@ export default {
 
   /**
    * Gets a state
-   * @param {string} name       The name of the state to get
+   * @param {string} stateName  The name of the state to get
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getState (name) {
+  getState (stateName) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/user/state/${name}`)
+      Vue.axios.get(`api/user/state/${stateName}`)
         .then((response) => {
           resolve(response);
         }, (error) => {
@@ -701,14 +701,14 @@ export default {
   /**
    * Saves a state
    * @param {object} state      The object to save as the state
-   * @param {string} name       The name of the state to save
+   * @param {string} stateName  The name of the state to save
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  saveState (state, name) {
+  saveState (state, stateName) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/state/${name}`,
+        url: `api/user/state/${stateName}`,
         method: 'POST',
         data: state
       };
@@ -756,8 +756,8 @@ export default {
    *                          properties on each view object
    */
   parseViews (views) {
-    for (const name in views) {
-      views[name].name = name;
+    for (const viewName in views) {
+      views[viewName].name = viewName;
     }
     return views;
   }

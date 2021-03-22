@@ -287,19 +287,19 @@ export default {
      * Pressing the up and down arrows navigate the dropdown.
      * Pressing enter, adds the active item in the dropdown to the query.
      * Pressing escape, removes the typeahead results.
-     * @param {Object} event The keydown event fired by the input
+     * @param {Object} e The keydown event fired by the input
      */
-    keyup: function (event) {
+    keyup: function (e) {
       let target;
 
       // always check for escape before anything else
-      if (event.keyCode === 27) {
+      if (e.keyCode === 27) {
         // if there's a request in progress, cancel it
         this.cancelPromise();
 
         // if there's no results blur the input
         if (!this.results || !this.results.length) {
-          event.target.blur();
+          e.target.blur();
           this.focusInput = false;
         }
 
@@ -313,8 +313,8 @@ export default {
       }
 
       // check for tab click when results are visible
-      if (this.results && this.results.length && event.keyCode === 9) {
-        event.preventDefault();
+      if (this.results && this.results.length && e.keyCode === 9) {
+        e.preventDefault();
 
         // if there is no item in the results is selected, use the first one
         if (this.activeIdx < 0) { this.activeIdx = 0; }
@@ -335,7 +335,7 @@ export default {
 
       // if there are no results, just check for enter click to remove typeahead
       if (!this.results || this.results.length === 0) {
-        if (event.keyCode === 13) {
+        if (e.keyCode === 13) {
           this.cancelPromise();
 
           this.loadingValues = false;
@@ -350,9 +350,9 @@ export default {
 
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
-      switch (event.keyCode) {
+      switch (e.keyCode) {
       case 40: // down arrow
-        event.preventDefault();
+        e.preventDefault();
         this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
@@ -360,7 +360,7 @@ export default {
         }
         break;
       case 38: // up arrow
-        event.preventDefault();
+        e.preventDefault();
         this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
@@ -369,7 +369,7 @@ export default {
         break;
       case 13: // enter
         if (this.activeIdx >= 0) {
-          event.preventDefault();
+          e.preventDefault();
           let result;
           if (this.activeIdx < this.fieldHistoryResults.length) {
             result = this.fieldHistoryResults[this.activeIdx];

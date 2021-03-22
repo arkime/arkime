@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (Db) => {
-  const module = {};
+  const hModule = {};
 
   // --------------------------------------------------------------------------
   // APIs
@@ -46,7 +46,7 @@ module.exports = (Db) => {
    * @returns {number} recordsTotal - The total number of history results stored.
    * @returns {number} recordsFiltered - The number of history items returned in this result.
    */
-  module.getHistories = (req, res) => {
+  hModule.getHistories = (req, res) => {
     let userId;
     if (req.user.createEnabled) { // user is an admin, they can view all logs
       // if the admin has requested a specific user
@@ -163,7 +163,7 @@ module.exports = (Db) => {
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteHistory = (req, res) => {
+  hModule.deleteHistory = (req, res) => {
     if (!req.query.index) {
       return res.serverError(403, 'Missing history index');
     }
@@ -181,5 +181,5 @@ module.exports = (Db) => {
     });
   };
 
-  return module;
+  return hModule;
 };

@@ -189,13 +189,13 @@ export default {
         return item.nodeName;
       });
 
-      function metric (name) {
+      function metric (nodeName) {
         return context.metric((startV, stopV, stepV, callback) => {
           const config = {
             method: 'GET',
             url: 'api/dstats',
             params: {
-              nodeName: name,
+              nodeName: nodeName,
               start: startV / 1000,
               stop: stopV / 1000,
               step: stepV / 1000,
@@ -209,7 +209,7 @@ export default {
             }, (error) => {
               return callback(new Error('Unable to load data'));
             });
-        }, name);
+        }, nodeName);
       }
 
       const wrap = document.getElementById('statsGraph');

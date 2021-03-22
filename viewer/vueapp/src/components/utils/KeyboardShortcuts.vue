@@ -51,15 +51,15 @@ export default {
     close: function () {
       this.$store.commit('setDisplayKeyboardShortcutsHelp', false);
     },
-    escEvent: function (event) {
-      if (event.keyCode === 27) { // esc
+    escEvent: function (e) {
+      if (e.keyCode === 27) { // esc
         this.close();
       }
     },
-    isOutsideClick: function (event) {
+    isOutsideClick: function (e) {
       const element = $('#keyboardShortcutsHelp');
-      if (!$(element).is(event.target) &&
-        $(element).has(event.target).length === 0) {
+      if (!$(element).is(e.target) &&
+        $(element).has(e.target).length === 0) {
         this.close();
       }
     }
