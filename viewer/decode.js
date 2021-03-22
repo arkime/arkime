@@ -59,7 +59,7 @@ function ItemTransform (options) {
   };
 }
 util.inherits(ItemTransform, Transform);
-ItemTransform.prototype._transform = (item, encoding, callback) => {
+ItemTransform.prototype._transform = function (item, encoding, callback) {
   if (!item) {
     return callback();
   }
@@ -70,9 +70,9 @@ ItemTransform.prototype._transform = (item, encoding, callback) => {
     self._itemTransform.items.push(item);
     if (self._shouldProcess(item)) {
       self._itemTransform.state = 1;
-      async.each(self._itemTransform.items, (eachItem, cb) => {
+      async.each(self._itemTransform.items, function (eachItem, cb) {
         try {
-          self._process(eachItem, (err, data) => {
+          self._process(eachItem, function (err, data) {
             if (data) {
               self.push(data);
             }
@@ -82,7 +82,7 @@ ItemTransform.prototype._transform = (item, encoding, callback) => {
           cb(err);
           console.log("Couldn't decode", err);
         };
-      }, (err) => {
+      }, function (err) {
         self._itemTransform.items = [];
         return callback();
       });
