@@ -64,12 +64,12 @@ class URLSource extends SimpleSource {
           return cb('URL Scrape not found');
         }
 
-        request(match[0], { headers: this.headers }, (err, response, body) => {
-          if (err || response.statusCode !== 200) {
+        request(match[0], { headers: this.headers }, (err, subResponse, subBody) => {
+          if (err || subResponse.statusCode !== 200) {
             return cb(err);
           }
 
-          return cb(null, body);
+          return cb(null, subBody);
         });
       } else {
         return cb(null, body);

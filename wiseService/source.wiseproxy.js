@@ -150,8 +150,8 @@ class WiseProxySource extends WISESource {
       let offset = 0;
       this.fieldsTS = buf.readUInt32BE(offset); offset += 4;
       // const version = buf.readUInt32BE(offset); offset += 4;
-      const length = buf[offset]; offset += 1;
-      for (let i = 0; i < length; i++) {
+      offset += 1;
+      for (let i = 0; i < buf[offset]; i++) {
         offset++;
         const len = buf[offset]; offset += 1;
         const str = buf.toString('ascii', offset, offset + len);
@@ -171,8 +171,8 @@ class WiseProxySource extends WISESource {
         console.log(this.section, 'problem fetching /views', this.section, err || response);
         return;
       }
-      for (const name in body) {
-        this.api.addView(name, body[name]);
+      for (const viewName in body) {
+        this.api.addView(viewName, body[viewName]);
       }
     });
 
@@ -186,8 +186,8 @@ class WiseProxySource extends WISESource {
         console.log(this.section, 'problem fetching /rightClicks', this.section, err || response);
         return;
       }
-      for (const name in body) {
-        this.api.addView(name, body[name]);
+      for (const viewName in body) {
+        this.api.addView(viewName, body[viewName]);
       }
     });
   };

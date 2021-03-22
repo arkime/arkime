@@ -529,8 +529,8 @@ export default {
         this.atLeastOneIssueSelected = true;
       } else {
         this.atLeastOneIssueSelected = false;
-        for (const issue of this.issues) {
-          if (issue.selected) {
+        for (const i of this.issues) {
+          if (i.selected) {
             this.atLeastOneIssueSelected = true;
             return;
           }

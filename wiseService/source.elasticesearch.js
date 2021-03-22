@@ -86,8 +86,8 @@ class ElasticsearchSource extends WISESource {
         return cb(null, undefined);
       }
       const json = result.hits.hits[0]._source;
-      const key = json[this.esResultField];
-      if (key === undefined) {
+      const eskey = json[this.esResultField];
+      if (eskey === undefined) {
         return cb(null, undefined);
       }
       const args = [];

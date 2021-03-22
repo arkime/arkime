@@ -45,6 +45,6 @@ module.exports = {
     'no-case-declarations': 'off',
     'no-empty': 'off',
     'default-case-last': 'off',
-    'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'stop', 'self'] }]
+    'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }]
   }
 }

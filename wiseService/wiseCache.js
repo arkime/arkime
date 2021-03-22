@@ -74,19 +74,19 @@ class WISERedisCache extends WISECache {
         if (err || reply === null) {
           return cb(null, undefined);
         }
-        const result = BSON.deserialize(reply, { promoteBuffers: true });
+        const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
 
-        for (const source in result) {
+        for (const source in bsonResult) {
           // Redis uses old encoding, convert old to new when needed
-          if (!Buffer.isBuffer(result[source].result)) {
-            const newResult = Buffer.allocUnsafe(result[source].result.buffer.length + 1);
-            newResult[0] = result[source].result.num;
-            result[source].result.buffer.copy(newResult, 1);
-            result[source].result = newResult;
+          if (!Buffer.isBuffer(bsonResult[source].result)) {
+            const newResult = Buffer.allocUnsafe(bsonResult[source].result.buffer.length + 1);
+            newResult[0] = bsonResult[source].result.num;
+            bsonResult[source].result.buffer.copy(newResult, 1);
+            bsonResult[source].result = newResult;
           }
         }
-        super.set(query.value, result); // Set memory cache
-        cb(null, result);
+        super.set(query.value, bsonResult); // Set memory cache
+        cb(null, bsonResult);
       });
     });
   };
@@ -134,9 +134,9 @@ class WISEMemcachedCache extends WISECache {
         if (err || reply === null) {
           return cb(err, undefined);
         }
-        const result = BSON.deserialize(reply, { promoteBuffers: true });
-        super.set(query.value, result); // Set memory cache
-        cb(null, result);
+        const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
+        super.set(query.value, bsonResult); // Set memory cache
+        cb(null, bsonResult);
       });
     });
   };

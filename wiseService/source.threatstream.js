@@ -468,8 +468,8 @@ class ThreatStreamSource extends WISESource {
               this.db.close();
             }
             this.db = null;
-            exec(`/bin/rm -f ${dbFile}.moloch`, (err, stdout, stderr) => {
-              exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, stdout, stderr) => {
+            exec(`/bin/rm -f ${dbFile}.moloch`, (err, subStdout, subStderr) => {
+              exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, subSubStdout, subSubStderr) => {
                 this.db = new sqlite3.Database(`${dbFile}.moloch`, sqlite3.OPEN_READONLY);
                 console.log(`${this.section} - Loaded DB`);
                 this.reloadTime = new Date();
@@ -532,8 +532,8 @@ class ThreatStreamSource extends WISESource {
       this.truncating = true;
       this.db.all('PRAGMA main.wal_checkpoint(TRUNCATE)', (err, data) => {
         if (data.length > 0 && data[0].busy) {
-          this.db.all('PRAGMA main.wal_checkpoint(PASSIVE)', (err, data) => {
-            console.log('Threatstream Passive - ', err, data);
+          this.db.all('PRAGMA main.wal_checkpoint(PASSIVE)', (err, subData) => {
+            console.log('Threatstream Passive - ', err, subData);
             this.truncating = false;
           });
         } else {

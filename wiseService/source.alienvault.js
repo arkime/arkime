@@ -112,8 +112,8 @@ class AlienVaultSource extends WISESource {
         }
 
         // Fetch new data file
-        WISESource.request('https://reputation.alienvault.com/' + this.key + '/reputation.data', '/tmp/alienvault.data', (statusCode) => {
-          if (statusCode === 200) {
+        WISESource.request('https://reputation.alienvault.com/' + this.key + '/reputation.data', '/tmp/alienvault.data', (subStatusCode) => {
+          if (subStatusCode === 200) {
             this.loaded = true;
             this.parseFile();
             delete this.retry;
