@@ -30,6 +30,7 @@ const iptrie = require('iptrie');
 const WISESource = require('./wiseSource.js');
 const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
+const cryptoLib = require('crypto');
 const Redis = require('ioredis');
 const memjs = require('memjs');
 const favicon = require('serve-favicon');
@@ -94,7 +95,7 @@ const internals = {
   workers: 1,
   regressionTests: false,
   webconfig: false,
-  configCode: crypto.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
+  configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
   startTime: Date.now()
 };
 
@@ -220,14 +221,14 @@ function store2ha1 (passstore) {
     const parts = passstore.split('.');
     if (parts.length === 2) {
       // New style with IV: IV.E
-      const c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      const c = cryptoLib.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
       let d = c.update(parts[1], 'hex', 'binary');
       d += c.final('binary');
       return d;
     } else {
       // Old style without IV: E
       // eslint-disable-next-line node/no-deprecated-api
-      const c = crypto.createDecipher('aes192', internals.passwordSecret);
+      const c = cryptoLib.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
@@ -241,7 +242,7 @@ function store2ha1 (passstore) {
 function setupAuth () {
   internals.userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
   internals.passwordSecret = getConfig('wiseService', 'passwordSecret', 'password');
-  internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
+  internals.passwordSecret256 = cryptoLib.createHash('sha256').update(internals.passwordSecret).digest();
 
   if (internals.userNameHeader === 'anonymous') {
     return;
@@ -480,7 +481,7 @@ class WISESourceAPI {
     }
     internals.fieldsBuf1 = internals.fieldsBuf1.slice(0, offset);
 
-    internals.fieldsMd5 = crypto.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
+    internals.fieldsMd5 = cryptoLib.createHash('md5').update(internals.fieldsBuf1.slice(8)).digest('hex');
 
     WISESource.pos2Field[pos] = fieldName;
     WISESource.field2Pos[fieldName] = pos;
@@ -1901,7 +1902,7 @@ function main () {
     const keyFileData = fs.readFileSync(getConfig('wiseService', 'keyFile'));
     const certFileData = fs.readFileSync(getConfig('wiseService', 'certFile'));
 
-    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
+    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: cryptoLib.constants.SSL_OP_NO_TLSv1 }, app);
   } else {
     server = http.createServer(app);
   }
