@@ -91,9 +91,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         sessionsColConfig: req.body.sessionsColConfig
       };
 
-      Db.setUser(user.userId, user, (err, info) => {
+      Db.setUser(user.userId, user, (err, subInfo) => {
         if (err) {
-          console.log(endpoint, 'failed', err, info);
+          console.log(endpoint, 'failed', err, subInfo);
           return res.serverError(500, errorMessage);
         }
 

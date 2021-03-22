@@ -419,8 +419,8 @@ export default {
 
       // calculate table width and set showFitButton accordingly
       let tableWidth = 0;
-      for (const column of this.computedColumns) {
-        tableWidth += column.width;
+      for (const computedCol of this.computedColumns) {
+        tableWidth += computedCol.width;
       }
       this.tableWidth = tableWidth;
 
@@ -516,9 +516,9 @@ export default {
       if (this.zeroMap[column.id] !== undefined) {
         for (let v = 0; v < this.data.length; v++) {
           const realValue = this.data[v];
-          let value = realValue[column.id];
-          value = value - this.zeroMap[column.id][v];
-          sum += value;
+          let val = realValue[column.id];
+          val = val - this.zeroMap[column.id][v];
+          sum += val;
         }
         value = sum / this.data.length;
       }
@@ -595,8 +595,8 @@ export default {
 
             // recalculate table width
             let tableWidth = 0;
-            for (const column of this.computedColumns) {
-              tableWidth += column.width;
+            for (const computedCol of this.computedColumns) {
+              tableWidth += computedCol.width;
             }
             this.tableWidth = tableWidth;
 

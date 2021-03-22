@@ -71,7 +71,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       });
     } else if (options.type === 'raw') {
       const packets = [];
-      sessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, cb, i) => {
+      sessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
         if (options.src === options.dst) {
           packets.push(buffer);
         } else {
@@ -80,7 +80,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           packet.data = buffer.slice(16);
           packets.push(packet);
         }
-        cb(null);
+        processSessionIdCb(null);
       }, (err, session) => {
         if (err) {
           return cb(null, false);
@@ -726,17 +726,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       }
     };
 
-    function doneCb (hunt, invalidUsers) {
-      Db.createHunt(hunt, (err, result) => {
+    function doneCb (doneHunt, invalidUsers) {
+      Db.createHunt(doneHunt, (err, result) => {
         if (err) {
           console.log('create hunt error', err, result);
           return res.serverError(500, 'Error creating hunt - ' + err);
         }
-        hunt.id = result._id;
+        doneHunt.id = result._id;
         module.processHuntJobs(() => {
           const response = {
             success: true,
-            hunt: hunt
+            hunt: doneHunt
           };
 
           if (invalidUsers) {

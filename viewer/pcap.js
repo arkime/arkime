@@ -196,23 +196,25 @@ Pcap.prototype.readPacket = function (pos, cb) {
 
   try {
     // Try and read full packet and header in one read
-    fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, buffer) => {
+    fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, readBuffer) => {
       if (bytesRead - posoffset < 16) {
         return cb(null);
       }
 
       if (this.encoding === 'aes-256-ctr') {
         const decipher = this.createDecipher(pos / 16);
-        buffer = Buffer.concat([decipher.update(buffer),
-          decipher.final()]).slice(posoffset);
+        readBuffer = Buffer.concat([
+          decipher.update(readBuffer),
+          decipher.final()
+        ]).slice(posoffset);
       } else if (this.encoding === 'xor-2048') {
         for (let i = posoffset; i < bytesRead; i++) {
-          buffer[i] ^= this.encKey[i % 256];
+          readBuffer[i] ^= this.encKey[i % 256];
         }
-        buffer = buffer.slice(posoffset);
+        readBuffer = readBuffer.slice(posoffset);
       }
 
-      const len = (this.bigEndian ? buffer.readUInt32BE(8) : buffer.readUInt32LE(8));
+      const len = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
         return cb(undefined);
@@ -220,23 +222,23 @@ Pcap.prototype.readPacket = function (pos, cb) {
 
       // Full packet fit
       if ((16 + len) <= (bytesRead - posoffset)) {
-        return cb(buffer.slice(0, 16 + len));
+        return cb(readBuffer.slice(0, 16 + len));
       }
       // Full packet didn't fit, get what was missed
       try {
         const buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
-        fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, bytesRead, ignore) => {
+        fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, subBytesRead, ignore) => {
           if (this.encoding === 'aes-256-ctr') {
-            const decipher = this.createDecipher((pos + bytesRead) / 16);
-            return cb(Buffer.concat([buffer, decipher.update(buffer2),
+            const decipher = this.createDecipher((pos + subBytesRead) / 16);
+            return cb(Buffer.concat([readBuffer, decipher.update(buffer2),
               decipher.final()]));
           } else if (this.encoding === 'xor-2048') {
-            for (let i = posoffset; i < bytesRead; i++) {
+            for (let i = posoffset; i < subBytesRead; i++) {
               buffer2[i] ^= this.encKey[i % 256];
             }
           }
 
-          return cb(Buffer.concat([buffer, buffer2]));
+          return cb(Buffer.concat([readBuffer, buffer2]));
         });
       } catch (e) {
         console.log('Error ', e, 'for file', this.filename);
@@ -982,8 +984,8 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
 
     const results = [];
     packets.forEach((item) => {
-      const key = item.ip.addr1 + ':' + item.tcp.sport;
-      if (key === clientKey) {
+      const pkey = item.ip.addr1 + ':' + item.tcp.sport;
+      if (pkey === clientKey) {
         if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
           return;
         }
@@ -996,10 +998,10 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
       }
 
       let result;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
+      if (results.length === 0 || pkey !== results[results.length - 1].pkey) {
         previous = start = item.tcp.seq;
         result = {
-          key: key,
+          key: pkey,
           data: item.tcp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };
@@ -1009,7 +1011,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
         // Larger then max window size packets missing
         previous = start = item.tcp.seq;
         result = {
-          key: key,
+          key: pkey,
           data: item.tcp.data,
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
         };

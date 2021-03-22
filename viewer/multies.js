@@ -153,11 +153,11 @@ function simpleGather (req, res, bodies, doneCb) {
     req.url = req.url.replace(/cluster=[^&]*(&|$)/g, ''); // remove cluster from URL
     delete req.query.cluster;
   }
-  const nodes = getActiveNodes(cluster);
-  if (nodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
+  const activeNodes = getActiveNodes(cluster);
+  if (activeNodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
     return doneCb(true, [{}]);
   }
-  async.map(nodes, (node, asyncCb) => {
+  async.map(activeNodes, (node, asyncCb) => {
     let result = '';
     let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
@@ -721,8 +721,8 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   const bodies = {};
   const search = JSON.parse(req.body);
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
-  const nodes = getActiveNodes();
-  async.each(nodes, (node, asyncCb) => {
+  const activeNodes = getActiveNodes();
+  async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
       bodies[node] = JSON.stringify(body);
@@ -754,8 +754,8 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
 function msearch (req, res) {
   const lines = req.body.split(/[\r\n]/);
   const bodies = {};
-  const nodes = getActiveNodes();
-  async.each(nodes, (node, nodeCb) => {
+  const activeNodes = getActiveNodes();
+  async.each(activeNodes, (node, nodeCb) => {
     const nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
       if (line === '{}' || line === '') {

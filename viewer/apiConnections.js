@@ -212,8 +212,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
-    let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-    if (req.query.fields) { fields = req.query.fields.split(','); }
+    let reqFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    if (req.query.fields) { reqFields = req.query.fields.split(','); }
 
     let options = {};
     if (req.query.cancelId) {
@@ -300,7 +300,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     // ------------------------------------------------------------------------
     // processResultSets - process the hits of each search resultset into nodesHash and connects
-    function processResultSets (connResultSets, cb) {
+    function processResultSets (connResultSets, processResultSetsCb) {
       const resultSetStatus = {
         resultId: null,
         err: null,
@@ -314,7 +314,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
           // propogate errors up (and stop processing)
           console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, resultSetStatus.err);
-          return cb([resultSetStatus]);
+          return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
             let f = hit._source;
@@ -339,7 +339,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
                     vdst += ':' + f.dstPort;
                   }
                 }
-                process(vsrc, vdst, f, fields, connResultSets[0].resultId);
+                process(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
               } // let vdst of adst
             } // for vsrc of asrc
             setImmediate(hitCb);
@@ -348,21 +348,21 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
             resultSetStatus.hits = connResultSets[0].graph.hits.total;
             if (connResultSets.length > 1) {
               processResultSets(connResultSets.slice(1), (baselineResultSetStatus) => {
-                return cb([resultSetStatus].concat(baselineResultSetStatus));
+                return processResultSetsCb([resultSetStatus].concat(baselineResultSetStatus));
               });
             } else {
-              return cb([resultSetStatus]);
+              return processResultSetsCb([resultSetStatus]);
             }
           }); // async.eachLimit(graph.hits.hits) / function(err)
         } // if connResultSets[0].err) / else
       } else {
-        return cb([null]);
+        return processResultSetsCb([null]);
       } // (connResultSets.length > 0) / else
     } // processResultSets
 
     // ------------------------------------------------------------------------
     // call to build the session query|queries and indices
-    buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
+    buildConnectionQuery(req, reqFields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
       if (Config.debug) {
         console.log('buildConnections.connQueries', connQueries.length, JSON.stringify(connQueries, null, 2));
       }

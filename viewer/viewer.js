@@ -958,15 +958,15 @@ function sendSessionWorker (options, cb) {
       return cb();
     }
 
-    const path = '/api/sessions/receive?saveId=' + options.saveId;
-    const url = new URL(path, sobj.url);
+    const receivePath = '/api/sessions/receive?saveId=' + options.saveId;
+    const url = new URL(receivePath, sobj.url);
     const client = url.protocol === 'https:' ? https : http;
     const reqOptions = {
       method: 'POST',
       agent: client === http ? internals.httpAgent : internals.httpsAgent
     };
 
-    ViewerUtils.addAuth(reqOptions, options.user, options.nodeName, path, sobj.serverSecret || sobj.passwordSecret);
+    ViewerUtils.addAuth(reqOptions, options.user, options.nodeName, receivePath, sobj.serverSecret || sobj.passwordSecret);
     ViewerUtils.addCaTrust(reqOptions, options.nodeName);
 
     let result = '';
@@ -1040,15 +1040,15 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
     function () {
       // Get from remote DISK
       ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-        let path = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
-        if (pOptions.tags) { path += `&tags=${pOptions.tags}`; }
-        const url = new URL(path, viewUrl);
+        let sendPath = `${Config.basePath(node) + node}/sendSessions?saveId=${pOptions.saveId}&cluster=${pOptions.cluster}`;
+        if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
+        const url = new URL(sendPath, viewUrl);
         const reqOptions = {
           method: 'POST',
           agent: client === http ? internals.httpAgent : internals.httpsAgent
         };
 
-        ViewerUtils.addAuth(reqOptions, pOptions.user, node, path);
+        ViewerUtils.addAuth(reqOptions, pOptions.user, node, sendPath);
         ViewerUtils.addCaTrust(reqOptions, node);
 
         const preq = client.request(url, reqOptions, (pres) => {

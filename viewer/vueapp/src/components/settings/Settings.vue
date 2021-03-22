@@ -3425,7 +3425,7 @@ export default {
           this.timelineDataFilters = [];
           for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
             const filter = this.settings.timelineDataFilters[i];
-            const fieldOBJ = this.integerFields.find(i => i.dbField === filter);
+            const fieldOBJ = this.integerFields.find(j => j.dbField === filter);
             if (fieldOBJ) {
               this.timelineDataFilters.push(fieldOBJ);
             }
@@ -3464,11 +3464,11 @@ export default {
 
           // get the visible headers for the sessions table configuration
           UserService.getState('sessionsNew')
-            .then((response) => {
-              this.setupColumns(response.data.visibleHeaders);
+            .then((sessionsTableRes) => {
+              this.setupColumns(sessionsTableRes.data.visibleHeaders);
               // if the sort column setting does not match any of the visible
               // headers, set the sort column setting to last
-              if (response.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
+              if (sessionsTableRes.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
                 this.settings.sortColumn = 'last';
               }
             })

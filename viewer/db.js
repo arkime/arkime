@@ -216,9 +216,9 @@ exports.getSession = function (id, options, cb) {
             async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
               if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
-              exports.fileIdToFile(fields.node, -1 * item, (fileInfo) => {
+              exports.fileIdToFile(fields.node, -1 * item, (idToFileInfo) => {
                 try {
-                  const fd = fs.openSync(fileInfo.indexFilename, 'r');
+                  const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
                   if (!fd) { return nextCb(); }
                   const buffer = Buffer.alloc(fields.packetPos[key + 2]);
                   fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
@@ -648,10 +648,10 @@ exports.updateSession = function (index, id, document, cb) {
     // Did it fail with FORBIDDEN msg?
     if (err && err.message && err.message.match('FORBIDDEN')) {
       // Try clearing the index.blocks.write
-      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } }, (err, data) => {
+      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } }, (err) => {
         // Try doing the update again
-        internals.elasticSearchClient.update(params, (err, data) => {
-          return cb(err, data);
+        internals.elasticSearchClient.update(params, (err, retryData) => {
+          return cb(err, retryData);
         });
       });
       return;
@@ -1229,8 +1229,8 @@ exports.updateFileSize = function (item, filesize) {
 
 exports.checkVersion = function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
-  const version = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (version < 81200) {
+  const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
+  if (nodeVersion < 81200) {
     console.log(`ERROR - Need at least node 8.12.0, currently using ${process.version}`);
     process.exit(1);
   }
@@ -1250,10 +1250,10 @@ exports.checkVersion = function (minVersion, checkUsers) {
       process.exit(0);
     }
     try {
-      const version = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      const molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
 
-      if (version < minVersion) {
-        console.log(`ERROR - Current database version (${version}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
+      if (molochDbVersion < minVersion) {
+        console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
         if (doc._node) {
           console.log(`On node ${doc._node}`);
         }

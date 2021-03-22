@@ -708,7 +708,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           .then((result) => {
             if (result.relocating_shards === 0) {
               clearInterval(shrinkCheckInterval);
-              Db.shrinkIndex(req.params.index, shrinkParams, (err, results) => {
+              Db.shrinkIndex(req.params.index, shrinkParams, (err) => {
                 if (err) {
                   console.log(`ERROR - ${req.params.index} shrink failed`, err);
                 }
@@ -717,7 +717,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                     console.log(`Error fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
                   } else if (indexResult[0] && indexResult[1] &&
                     indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                    Db.deleteIndex([req.params.index], {}, (err, result) => {
+                    Db.deleteIndex([req.params.index], {}, (err) => {
                       if (err) {
                         console.log(`Error deleting ${req.params.index} index after shrinking`);
                       }
@@ -1331,7 +1331,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      Db.putClusterSettings(query, (err, settings) => {
+      Db.putClusterSettings(query, (err) => {
         if (err) { console.log('putSettings', JSON.stringify(err, false, 2), 'query', query); }
         return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
       });
@@ -1375,7 +1375,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      Db.putClusterSettings(query, (err, settings) => {
+      Db.putClusterSettings(query, (err) => {
         if (err) { console.log('putSettings', err); }
         return res.send(JSON.stringify({ success: true, text: 'Included' }));
       });

@@ -37,8 +37,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         }
         const list = result.hits.hits;
         if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
-          sessionsListAddSegments(req, indices, query, list, (err, list) => {
-            cb(err, list);
+          sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
+            cb(err, addSegmentsList);
           });
         } else {
           cb(err, list);
@@ -284,10 +284,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           console.log('ERROR fetching matching sessions', err, result);
           return nextCb(null);
         }
-        result.hits.hits.forEach((item) => {
-          if (!haveIds[item._id]) {
-            haveIds[item._id] = true;
-            list.push(item);
+        result.hits.hits.forEach((subItem) => {
+          if (!haveIds[subItem._id]) {
+            haveIds[subItem._id] = true;
+            list.push(subItem);
           }
         });
         return nextCb(null);
@@ -695,13 +695,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
           let bufpos = 0;
 
-          const path = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
-          const url = new URL(path, viewUrl);
+          const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
+          const url = new URL(sessionPath, viewUrl);
           const options = {
             agent: client === http ? internals.httpAgent : internals.httpsAgent
           };
 
-          ViewerUtils.addAuth(options, req.user, fields.node, path);
+          ViewerUtils.addAuth(options, req.user, fields.node, sessionPath);
           ViewerUtils.addCaTrust(options, fields.node);
 
           const preq = client.request(url, options, (pres) => {
@@ -802,12 +802,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let path = `api/sessions/${sid}/${fields.node}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let sendPath = `api/sessions/${sid}/${fields.node}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
         if (req.body.tags) {
-          path += `&tags=${req.body.tags}`;
+          sendPath += `&tags=${req.body.tags}`;
         }
 
-        ViewerUtils.makeRequest(fields.node, path, req.user, (err, response) => {
+        ViewerUtils.makeRequest(fields.node, sendPath, req.user, (err, response) => {
           setImmediate(nextCb);
         });
       });
@@ -1047,8 +1047,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
       }, () => {
         // Get from remote DISK
-        const path = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
-        ViewerUtils.makeRequest(fields.node, path, req.user, (err, response) => {
+        const scrubPath = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
+        ViewerUtils.makeRequest(fields.node, scrubPath, req.user, (err, response) => {
           setImmediate(nextCb);
         });
       });
@@ -1117,16 +1117,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           psid = writer.processSessionId;
         }
 
-        psid(session, headerCb, packetCb, (err, fields) => {
-          if (!fields) {
-            return endCb(err, fields);
+        psid(session, headerCb, packetCb, (err, psidFields) => {
+          if (!psidFields) {
+            return endCb(err, psidFields);
           }
 
-          if (!fields.tags) {
-            fields.tags = [];
+          if (!psidFields.tags) {
+            psidFields.tags = [];
           }
 
-          ViewerUtils.fixFields(fields, endCb);
+          ViewerUtils.fixFields(psidFields, endCb);
         }, limit);
       }
     });
@@ -1369,8 +1369,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (processSegments) {
         module.buildSessionQuery(req, (err, query, indices) => {
           query._source = fields;
-          sessionsListAddSegments(req, indices, query, list, (err, list) => {
-            cb(err, list);
+          sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
+            cb(err, addSegmentsList);
           });
         });
       } else {
@@ -1888,12 +1888,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         let nresults = [];
         async.each(sessions.aggregations.fileand.buckets, (nobucket, cb) => {
           sodc += nobucket.fileId.sum_other_doc_count;
-          async.each(nobucket.fileId.buckets, (fsitem, cb) => {
+          async.each(nobucket.fileId.buckets, (fsitem, subCb) => {
             Db.fileIdToFile(nobucket.key, fsitem.key, (file) => {
               if (file && file.name) {
                 nresults.push({ key: file.name, doc_count: fsitem.doc_count });
               }
-              cb();
+              subCb();
             });
           }, () => {
             cb();
@@ -1991,20 +1991,20 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
           const queries = queriesInfo.map((item) => { return item.query; });
 
-          Db.msearch(indices, 'session', queries, options, (err, result) => {
-            if (!result.responses) {
+          Db.msearch(indices, 'session', queries, options, (err, searchResult) => {
+            if (!searchResult.responses) {
               return res.send(results);
             }
 
-            result.responses.forEach((item, i) => {
+            searchResult.responses.forEach((item, i) => {
               const response = {
                 name: queriesInfo[i].key,
                 count: queriesInfo[i].doc_count
               };
 
-              response.graph = ViewerUtils.graphMerge(req, query, result.responses[i].aggregations);
+              response.graph = ViewerUtils.graphMerge(req, query, searchResult.responses[i].aggregations);
 
-              const histoKeys = Object.keys(results.graph).filter(i => i.toLowerCase().includes('histo'));
+              const histoKeys = Object.keys(results.graph).filter(j => j.toLowerCase().includes('histo'));
               const xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
               const histoXMin = results.graph[xMinName][0][0];
               const xMaxName = histoKeys.reduce((prev, curr) => {
@@ -2020,18 +2020,18 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 response.graph.xmax = results.graph.xmax || histoXMax;
               }
 
-              response.map = ViewerUtils.mapMerge(result.responses[i].aggregations);
+              response.map = ViewerUtils.mapMerge(searchResult.responses[i].aggregations);
 
               results.items.push(response);
-              histoKeys.forEach(item => {
-                response[item] = 0.0;
+              histoKeys.forEach(key => {
+                response[key] = 0.0;
               });
 
               const graph = response.graph;
               for (let j = 0; j < histoKeys.length; j++) {
                 item = histoKeys[j];
-                for (let i = 0; i < graph[item].length; i++) {
-                  response[item] += graph[item][i][1];
+                for (let k = 0; k < graph[item].length; k++) {
+                  response[item] += graph[item][k][1];
                 }
               }
 
@@ -2045,16 +2045,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 response.totBytesHisto = graph.totBytesTotal;
               }
 
-              if (results.items.length === result.responses.length) {
+              if (results.items.length === searchResult.responses.length) {
                 const s = req.query.sort || 'sessionsHisto';
                 results.items = results.items.sort((a, b) => {
-                  let result;
+                  let sortResult;
                   if (s === 'name') {
-                    result = a.name.localeCompare(b.name);
+                    sortResult = a.name.localeCompare(b.name);
                   } else {
-                    result = b[s] - a[s];
+                    sortResult = b[s] - a[s];
                   }
-                  return result;
+                  return sortResult;
                 }).slice(0, size);
                 return res.send(results);
               }
@@ -2786,11 +2786,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         return res.send(internals.emptyPNG);
       }
 
-      for (let i = (req.query.type !== 'dst' ? 0 : 1); i < results.length; i += 2) {
-        results[i].data.copy(buffer, pos);
-        pos += results[i].data.length;
+      for (let j = (req.query.type !== 'dst' ? 0 : 1); j < results.length; j += 2) {
+        results[j].data.copy(buffer, pos);
+        pos += results[j].data.length;
         const fillpos = pos;
-        pos += 2 * internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+        pos += 2 * internals.PNG_LINE_WIDTH - (results[j].data.length % internals.PNG_LINE_WIDTH);
         buffer.fill(0xff, fillpos, pos);
       }
 
