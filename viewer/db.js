@@ -288,12 +288,12 @@ exports.getSession = function (id, options, cb) {
   }
 };
 
-exports.index = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: document, id: id }, cb);
+exports.index = function (index, type, id, doc, cb) {
+  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id }, cb);
 };
 
-exports.indexNow = function (index, type, id, document, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: document, id: id, refresh: true }, cb);
+exports.indexNow = function (index, type, id, doc, cb) {
+  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id, refresh: true }, cb);
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -624,22 +624,22 @@ exports.nodesInfo = function (options, cb) {
   return internals.elasticSearchClient.nodes.info(options, cb);
 };
 
-exports.update = function (index, type, id, document, options, cb) {
+exports.update = function (index, type, id, doc, options, cb) {
   if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
   }
 
-  const params = { index: fixIndex(index), body: document, id: id, timeout: '10m' };
+  const params = { index: fixIndex(index), body: doc, id: id, timeout: '10m' };
   exports.merge(params, options);
   return internals.elasticSearchClient.update(params, cb);
 };
 
-exports.updateSession = function (index, id, document, cb) {
+exports.updateSession = function (index, id, doc, cb) {
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
-    body: document,
+    body: doc,
     id: id,
     timeout: '10m'
   };
@@ -798,25 +798,25 @@ exports.searchUsers = function (query, cb) {
 };
 
 // Return a user from DB, callback only
-exports.getUser = function (name, cb) {
-  internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: name }, (err, result) => {
+exports.getUser = function (userId, cb) {
+  internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: userId }, (err, result) => {
     cb(err, result.body || { found: false });
   });
 };
 
 // Return a user from cache, callback only
-exports.getUserCache = function (name, cb) {
-  if (internals.usersCache[name] && internals.usersCache[name]._timeStamp > Date.now() - 5000) {
-    return cb(null, internals.usersCache[name]);
+exports.getUserCache = function (userId, cb) {
+  if (internals.usersCache[userId] && internals.usersCache[userId]._timeStamp > Date.now() - 5000) {
+    return cb(null, internals.usersCache[userId]);
   }
 
-  exports.getUser(name, (err, suser) => {
+  exports.getUser(userId, (err, suser) => {
     if (err) {
       return cb(err, suser);
     }
 
     suser._timeStamp = Date.now();
-    internals.usersCache[name] = suser;
+    internals.usersCache[userId] = suser;
 
     cb(null, suser);
   });
@@ -832,34 +832,34 @@ exports.numberOfUsers = function () {
 };
 
 // Delete user, callback only
-exports.deleteUser = function (name, cb) {
-  delete internals.usersCache[name];
-  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: name, refresh: true }, (err) => {
-    delete internals.usersCache[name]; // Delete again after db says its done refreshing
+exports.deleteUser = function (userId, cb) {
+  delete internals.usersCache[userId];
+  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: userId, refresh: true }, (err) => {
+    delete internals.usersCache[userId]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
 // Set user, callback only
-exports.setUser = function (name, doc, cb) {
-  delete internals.usersCache[name];
+exports.setUser = function (userId, doc, cb) {
+  delete internals.usersCache[userId];
   const createOnly = !!doc._createOnly;
   delete doc._createOnly;
   internals.usersClient7.index({
     index: internals.usersPrefix + 'users',
     body: doc,
-    id: name,
+    id: userId,
     refresh: true,
     timeout: '10m',
     op_type: createOnly ? 'create' : 'index'
   }, (err) => {
-    delete internals.usersCache[name]; // Delete again after db says its done refreshing
+    delete internals.usersCache[userId]; // Delete again after db says its done refreshing
     cb(err);
   });
 };
 
-exports.setLastUsed = function (name, now, cb) {
-  const params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: name, retry_on_conflict: 3 };
+exports.setLastUsed = function (userId, now, cb) {
+  const params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: userId, retry_on_conflict: 3 };
 
   return internals.usersClient7.update(params, cb);
 };
@@ -924,9 +924,9 @@ exports.setShortcut = function (id, username, doc, cb) {
 exports.getShortcut = function (id, cb) {
   return internals.elasticSearchClient.get({ index: fixIndex('lookups'), id: id }, cb);
 };
-exports.getShortcutsCache = function (name, cb) {
-  if (internals.shortcutsCache[name] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.shortcutsCache[name]);
+exports.getShortcutsCache = function (shortcutName, cb) {
+  if (internals.shortcutsCache[shortcutName] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.shortcutsCache[shortcutName]);
   }
 
   // only get shortcuts for this user or shared
@@ -935,7 +935,7 @@ exports.getShortcutsCache = function (name, cb) {
       bool: {
         should: [
           { term: { shared: true } },
-          { term: { userId: name } }
+          { term: { userId: shortcutName } }
         ]
       }
     }
@@ -950,37 +950,37 @@ exports.getShortcutsCache = function (name, cb) {
       shortcutsMap[shortcut._source.name] = shortcut;
     }
 
-    internals.shortcutsCache[name] = shortcutsMap;
+    internals.shortcutsCache[shortcutName] = shortcutsMap;
     internals.shortcutsCache._timeStamp = Date.now();
 
     cb(null, shortcutsMap);
   });
 };
 
-exports.molochNodeStats = function (name, cb) {
-  exports.get('stats', 'stat', name, (err, stat) => {
+exports.molochNodeStats = function (nodeName, cb) {
+  exports.get('stats', 'stat', nodeName, (err, stat) => {
     if (err || !stat.found) {
       // Even if an error, if we have a cached value use it
-      if (err && internals.molochNodeStatsCache[name]) {
-        return cb(null, internals.molochNodeStatsCache[name]);
+      if (err && internals.molochNodeStatsCache[nodeName]) {
+        return cb(null, internals.molochNodeStatsCache[nodeName]);
       }
 
-      cb(err || 'Unknown node ' + name, internals.molochNodeStatsCache[name]);
+      cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
     } else {
-      internals.molochNodeStatsCache[name] = stat._source;
-      internals.molochNodeStatsCache[name]._timeStamp = Date.now();
+      internals.molochNodeStatsCache[nodeName] = stat._source;
+      internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
 
       cb(null, stat._source);
     }
   });
 };
 
-exports.molochNodeStatsCache = function (name, cb) {
-  if (internals.molochNodeStatsCache[name] && internals.molochNodeStatsCache[name]._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.molochNodeStatsCache[name]);
+exports.molochNodeStatsCache = function (nodeName, cb) {
+  if (internals.molochNodeStatsCache[nodeName] && internals.molochNodeStatsCache[nodeName]._timeStamp > Date.now() - 30000) {
+    return cb(null, internals.molochNodeStatsCache[nodeName]);
   }
 
-  return exports.molochNodeStats(name, cb);
+  return exports.molochNodeStats(nodeName, cb);
 };
 
 exports.healthCache = function (cb) {
@@ -1163,20 +1163,20 @@ exports.fileIdToFile = function (node, num, cb) {
   });
 };
 
-exports.fileNameToFiles = function (name, cb) {
+exports.fileNameToFiles = function (fileName, cb) {
   let query;
-  if (name[0] === '/' && name[name.length - 1] === '/') {
-    query = { query: { regexp: { name: name.substring(1, name.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
-  } else if (name.indexOf('*') !== -1) {
-    query = { query: { wildcard: { name: name } }, sort: [{ num: { order: 'desc' } }] };
+  if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
+    query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
+  } else if (fileName.indexOf('*') !== -1) {
+    query = { query: { wildcard: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
   // Not wildcard/regex check the cache
   if (!query) {
-    if (internals.fileName2File[name]) {
-      return cb([internals.fileName2File[name]]);
+    if (internals.fileName2File[fileName]) {
+      return cb([internals.fileName2File[fileName]]);
     }
-    query = { size: 100, query: { term: { name: name } }, sort: [{ num: { order: 'desc' } }] };
+    query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
   exports.search('files', 'file', query, (err, data) => {
@@ -1195,8 +1195,8 @@ exports.fileNameToFiles = function (name, cb) {
   });
 };
 
-exports.getSequenceNumber = function (name, cb) {
-  exports.index('sequence', 'sequence', name, {}, (err, sinfo) => {
+exports.getSequenceNumber = function (sName, cb) {
+  exports.index('sequence', 'sequence', sName, {}, (err, sinfo) => {
     cb(err, sinfo._version);
   });
 };
@@ -1236,9 +1236,9 @@ exports.checkVersion = function (minVersion, checkUsers) {
   }
 
   ['stats', 'dstats', 'sequence', 'files'].forEach((index) => {
-    exports.indexStats(index, (err, status) => {
-      if (err || status.error) {
-        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, status);
+    exports.indexStats(index, (err, indexStatus) => {
+      if (err || indexStatus.error) {
+        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, indexStatus);
         process.exit(1);
       }
     });
@@ -1363,7 +1363,7 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
         index = index.substring(0, index.length - 8);
       }
       index = index.substring(internals.prefix.length + 10);
-      let year; let month; let day = 0; let hour = 0; let length;
+      let year; let month; let day = 0; let hour = 0; let len;
 
       if (+index[0] >= 6) {
         year = 1900 + (+index[0]) * 10 + (+index[1]);
@@ -1372,26 +1372,26 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       }
 
       if (index[2] === 'w') {
-        length = 7 * 24 * 60 * 60;
+        len = 7 * 24 * 60 * 60;
         month = 1;
         day = (+index[3] * 10 + (+index[4])) * 7;
       } else if (index[2] === 'm') {
         month = (+index[3]) * 10 + (+index[4]);
         day = 1;
-        length = 31 * 24 * 60 * 60;
+        len = 31 * 24 * 60 * 60;
       } else if (index.length === 6) {
         month = (+index[2]) * 10 + (+index[3]);
         day = (+index[4]) * 10 + (+index[5]);
-        length = 24 * 60 * 60;
+        len = 24 * 60 * 60;
       } else {
         month = (+index[2]) * 10 + (+index[3]);
         day = (+index[4]) * 10 + (+index[5]);
         hour = (+index[7]) * 10 + (+index[8]);
-        length = hlength;
+        len = hlength;
       }
 
       const start = Date.UTC(year, month - 1, day, hour) / 1000;
-      const stop = Date.UTC(year, month - 1, day, hour) / 1000 + length;
+      const stop = Date.UTC(year, month - 1, day, hour) / 1000 + len;
 
       switch (bounding) {
       default:
@@ -1404,7 +1404,7 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
       case 'both':
       case 'either':
       case 'database':
-        if (stop >= (startTime - length) && start <= (stopTime + length)) {
+        if (stop >= (startTime - len) && start <= (stopTime + len)) {
           indices.push(iname);
         }
         break;
@@ -1443,10 +1443,10 @@ exports.getILMPolicy = function () {
   });
 };
 
-exports.setILMPolicy = function (name, policy) {
-  console.log('name', name, 'policy', policy);
+exports.setILMPolicy = function (ilmName, policy) {
+  console.log('name', ilmName, 'policy', policy);
   return new Promise((resolve, reject) => {
-    internals.client7.ilm.putLifecycle({ policy: name, body: { policy: policy.policy } }, (err, data) => {
+    internals.client7.ilm.putLifecycle({ policy: ilmName, body: { policy: policy.policy } }, (err, data) => {
       if (err) {
         console.log('ERROR', err, 'data', data);
         reject(err);
@@ -1457,10 +1457,10 @@ exports.setILMPolicy = function (name, policy) {
   });
 };
 
-exports.getTemplate = function (name) {
-  return internals.elasticSearchClient.indices.getTemplate({ name: fixIndex(name), flat_settings: true });
+exports.getTemplate = function (templateName) {
+  return internals.elasticSearchClient.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
 };
 
-exports.putTemplate = function (name, body) {
-  return internals.elasticSearchClient.indices.putTemplate({ name: fixIndex(name), body: body });
+exports.putTemplate = function (templateName, body) {
+  return internals.elasticSearchClient.indices.putTemplate({ name: fixIndex(templateName), body: body });
 };

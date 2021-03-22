@@ -720,11 +720,11 @@ export default {
           // don't show text for tiny slices or the root node text
           if (d.depth && (d.y0 + d.y1) / 2 * (d.x1 - d.x0) < 15) { return ''; }
           // truncate long values
-          let name = d.parent ? d.data.name : '';
-          if (name.length > 8) {
-            name = name.substr(0, 8) + '...';
+          let sliceName = d.parent ? d.data.name : '';
+          if (sliceName.length > 8) {
+            sliceName = sliceName.substr(0, 8) + '...';
           }
-          return name;
+          return sliceName;
         });
     },
     /**
@@ -909,8 +909,8 @@ export default {
     closeInfo () {
       this.popupInfo = undefined;
     },
-    closeInfoOnEsc (event) {
-      if (event.keyCode === 27) { // esc
+    closeInfoOnEsc (e) {
+      if (e.keyCode === 27) { // esc
         this.popupInfo = undefined;
       }
     }

@@ -1048,12 +1048,12 @@ export default {
       this.query.searchTerm = undefined;
       this.loadData();
     },
-    columnClick: function (name) {
-      if (name === this.query.sortField) {
+    columnClick: function (colName) {
+      if (colName === this.query.sortField) {
         // same sort field, so toggle order direction
         this.query.desc = !this.query.desc;
       } else { // new sort field, so set default order (desc)
-        this.query.sortField = name;
+        this.query.sortField = colName;
         this.query.desc = true;
       }
 

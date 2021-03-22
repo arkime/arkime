@@ -112,12 +112,12 @@ export default {
     /**
      * Limits the length an array of session field values
      * @param {array} array   The array to limit the length of
-     * @param {number} length The desired length of the array
+     * @param {number} len The desired length of the array
      */
-    limitArrayLength: function (array, length) {
-      if (!length) { length = this.initialLimit; }
+    limitArrayLength: function (array, len) {
+      if (!len) { len = this.initialLimit; }
 
-      const limitCount = parseInt(length, 10);
+      const limitCount = parseInt(len, 10);
 
       if (limitCount <= 0) { return array; }
 

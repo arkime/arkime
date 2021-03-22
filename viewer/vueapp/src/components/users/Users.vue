@@ -713,8 +713,8 @@ export default {
     onOffFocus: function () {
       this.focusInput = false;
     },
-    columnClick (name) {
-      this.query.sortField = name;
+    columnClick (colName) {
+      this.query.sortField = colName;
       this.query.desc = !this.query.desc;
       this.reloadData();
     },

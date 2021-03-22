@@ -6,10 +6,10 @@ const https = require('https');
 const RE2 = require('re2');
 
 module.exports = (app, Config) => {
-  const module = {};
+  const iModule = {};
 
   // build internals
-  module.internals = {
+  iModule.internals = {
     isProduction: app.get('env') === 'production',
     CYBERCHEFVERSION: '9.16.2',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
@@ -95,23 +95,23 @@ module.exports = (app, Config) => {
     }
   };
 
-  module.internals.scriptAggs['ip.dst:port'] = {
+  iModule.internals.scriptAggs['ip.dst:port'] = {
     script: 'if (doc.dstIp.value.indexOf(".") > 0) {return doc.dstIp.value + ":" + doc.dstPort.value} else {return doc.dstIp.value + "." + doc.dstPort.value}',
     dbField: 'dstIp'
   };
 
   // make sure there's an _ after the prefix
-  if (module.internals.prefix && !module.internals.prefix.endsWith('_')) {
-    module.internals.prefix = `${module.internals.prefix}_`;
+  if (iModule.internals.prefix && !iModule.internals.prefix.endsWith('_')) {
+    iModule.internals.prefix = `${iModule.internals.prefix}_`;
   }
 
   if (Config.get('uploadFileSizeLimit')) {
-    module.internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
+    iModule.internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
   }
 
-  if (module.internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
-    module.internals.elasticBase[0] = 'http://' + module.internals.elasticBase[0];
+  if (iModule.internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
+    iModule.internals.elasticBase[0] = 'http://' + iModule.internals.elasticBase[0];
   }
 
-  return module;
+  return iModule;
 };

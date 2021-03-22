@@ -482,7 +482,7 @@ function dragstarted (d) {
   draggingNode = d;
   d.fx = d.x;
   d.fy = d.y;
-  focus(d);
+  itemFocus(d);
 }
 
 function dragged (d) {
@@ -496,7 +496,7 @@ function dragended (d) {
   // keep the node where it was dragged
   d.fx = d.x;
   d.fy = d.y;
-  focus(d);
+  itemFocus(d);
 }
 
 // highlighting helpers
@@ -507,7 +507,7 @@ function isConnected (a, b) {
     a.index === b.index;
 }
 
-function focus (d) {
+function itemFocus (d) {
   // don't apply focus styles if dragging a node
   if (!draggingNode) {
     node.style('opacity', (o) => {
@@ -1130,7 +1130,7 @@ export default {
         popupTimer = setTimeout(() => {
           this.showNodePopup(d);
         }, 600);
-        focus(d);
+        itemFocus(d);
       }).on('mouseout', (d) => {
         if (popupTimer) { clearTimeout(popupTimer); }
         unfocus(d);

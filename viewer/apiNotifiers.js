@@ -4,7 +4,7 @@ const glob = require('glob');
 const path = require('path');
 
 module.exports = (Config, Db, internals) => {
-  const module = {};
+  const nModule = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -26,7 +26,7 @@ module.exports = (Config, Db, internals) => {
     });
   };
 
-  module.issueAlert = (notifierName, alertMessage, continueProcess) => {
+  nModule.issueAlert = (notifierName, alertMessage, continueProcess) => {
     if (!notifierName) {
       return continueProcess('No name supplied for notifier');
     }
@@ -118,7 +118,7 @@ module.exports = (Config, Db, internals) => {
    * @name /notifiertypes
    * @returns {object} notifiers - The notifiers that Arkime knows about.
    */
-  module.getNotifierTypes = (req, res) => {
+  nModule.getNotifierTypes = (req, res) => {
     if (!internals.notifiers) { buildNotifiers(); }
     return res.send(internals.notifiers);
   };
@@ -130,7 +130,7 @@ module.exports = (Config, Db, internals) => {
    * @name /notifiers
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
-  module.getNotifiers = (req, res) => {
+  nModule.getNotifiers = (req, res) => {
     function cloneNotifiers (notifiers) {
       const clone = {};
 
@@ -174,7 +174,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - If successful, the name of the new notifier.
    */
-  module.createNotifier = (req, res) => {
+  nModule.createNotifier = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing a unique notifier name');
     }
@@ -276,7 +276,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - If successful, the name of the updated notifier.
    */
-  module.updateNotifier = (req, res) => {
+  nModule.updateNotifier = (req, res) => {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser || !sharedUser.found) {
         return res.serverError(404, 'Cannot find notifer to udpate');
@@ -366,7 +366,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - If successful, the name of the deleted notifier.
    */
-  module.deleteNotifier = (req, res) => {
+  nModule.deleteNotifier = (req, res) => {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser || !sharedUser.found) {
         return res.serverError(404, 'Cannot find notifer to remove');
@@ -404,7 +404,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {boolean} success - Whether the test notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.testNotifier = (req, res) => {
+  nModule.testNotifier = (req, res) => {
     function continueProcess (err) {
       if (err) {
         return res.serverError(500, `Error testing alert: ${err}`);
@@ -416,8 +416,8 @@ module.exports = (Config, Db, internals) => {
       }));
     }
 
-    module.issueAlert(req.params.name, 'Test alert', continueProcess);
+    nModule.issueAlert(req.params.name, 'Test alert', continueProcess);
   };
 
-  return module;
+  return nModule;
 };

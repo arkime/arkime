@@ -541,17 +541,17 @@ export default {
           animation: 100,
           filter: '.ignore-element',
           preventOnFilter: false, // allow clicks within the ignored element
-          onMove: (event) => { // col header is being dragged
+          onMove: (e) => { // col header is being dragged
             // don't allow a column to be dropped in the far left column
-            return !event.related.classList.contains('ignore-element');
+            return !e.related.classList.contains('ignore-element');
           },
-          onEnd: (event) => { // dragged col header was dropped
+          onEnd: (e) => { // dragged col header was dropped
             // nothing has changed, so don't do stuff
-            if (event.oldIndex === event.newIndex) { return; }
+            if (e.oldIndex === e.newIndex) { return; }
 
             // update the headers to the new order
-            let oldIdx = event.oldIndex;
-            let newIdx = event.newIndex;
+            let oldIdx = e.oldIndex;
+            let newIdx = e.newIndex;
 
             // account for the index of the action column
             if (this.actionColumn) {
@@ -581,7 +581,7 @@ export default {
           resizeMode: 'overflow',
           hoverCursor: 'col-resize',
           removePadding: false,
-          onResize: (event, col, colIdx) => {
+          onResize: (e, col, colIdx) => {
             // account for the index of the action column
             if (this.actionColumn) { colIdx--; }
 

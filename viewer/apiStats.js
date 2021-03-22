@@ -5,7 +5,7 @@ const util = require('util');
 const async = require('async');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
-  const module = {};
+  const sModule = {};
 
   // --------------------------------------------------------------------------
   // APIs
@@ -46,7 +46,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  module.getESHealth = (req, res) => {
+  sModule.getESHealth = (req, res) => {
     Db.healthCache((err, health) => {
       res.send(health);
     });
@@ -72,7 +72,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of nodes.
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
-  module.getStats = (req, res) => {
+  sModule.getStats = (req, res) => {
     const query = {
       from: 0,
       size: 10000,
@@ -89,12 +89,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     if (req.query.filter !== undefined && req.query.filter !== '') {
       const names = req.query.filter.split(',');
-      for (let name of names) {
-        name = name.trim();
-        if (name !== '') {
-          if (name.endsWith('$')) { name = name.slice(0, -1); } else { name += '.*'; }
+      for (let n of names) {
+        n = n.trim();
+        if (n !== '') {
+          if (n.endsWith('$')) { n = n.slice(0, -1); } else { n += '.*'; }
           query.query.bool.should.push({
-            regexp: { nodeName: name }
+            regexp: { nodeName: n }
           });
         }
       }
@@ -190,12 +190,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       const from = +req.query.start || 0;
-      const stop = from + (+req.query.length || 500);
+      const stopLen = from + (+req.query.length || 500);
 
       const r = {
         recordsTotal: total.count,
         recordsFiltered: results.results.length,
-        data: results.results.slice(from, stop)
+        data: results.results.slice(from, stopLen)
       };
 
       res.send(r);
@@ -220,7 +220,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
    */
-  module.getDetailedStats = (req, res) => {
+  sModule.getDetailedStats = (req, res) => {
     const nodeName = req.query.nodeName;
 
     const query = {
@@ -343,7 +343,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
    * @returns {ESHealth} health - The Elasticsearch cluster health status and info.
    */
-  module.getESStats = (req, res) => {
+  sModule.getESStats = (req, res) => {
     let stats = [];
     let r;
 
@@ -506,7 +506,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES indices.
    * @returns {number} recordsFiltered - The number of ES indices returned in this result.
    */
-  module.getESIndices = (req, res) => {
+  sModule.getESIndices = (req, res) => {
     async.parallel({
       indices: Db.indicesCache,
       indicesSettings: Db.indicesSettingsCache
@@ -590,7 +590,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteESIndex = (req, res) => {
+  sModule.deleteESIndex = (req, res) => {
     Db.deleteIndex([req.params.index], {}, (err, result) => {
       if (err) {
         res.status(404);
@@ -610,7 +610,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
-  module.optimizeESIndex = (req, res) => {
+  sModule.optimizeESIndex = (req, res) => {
     Db.optimizeIndex([req.params.index], {}, (err, result) => {
       if (err) {
         console.log('ERROR -', req.params.index, 'optimize failed', err);
@@ -629,7 +629,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.closeESIndex = (req, res) => {
+  sModule.closeESIndex = (req, res) => {
     Db.closeIndex([req.params.index], {}, (err, result) => {
       if (err) {
         res.status(404);
@@ -649,7 +649,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
-  module.openESIndex = (req, res) => {
+  sModule.openESIndex = (req, res) => {
     Db.openIndex([req.params.index], {}, (err, result) => {
       if (err) {
         console.log('ERROR -', req.params.index, 'open failed', err);
@@ -670,7 +670,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.shrinkESIndex = (req, res) => {
+  sModule.shrinkESIndex = (req, res) => {
     if (!req.body || !req.body.target) {
       return res.serverError(403, 'Missing target');
     }
@@ -749,7 +749,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES tasks.
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
-  module.getESTasks = (req, res) => {
+  sModule.getESTasks = (req, res) => {
     Db.tasks((err, tasks) => {
       if (err) {
         console.log('ERROR -  /api/estask', err);
@@ -835,7 +835,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.cancelESTask = (req, res) => {
+  sModule.cancelESTask = (req, res) => {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
@@ -859,7 +859,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.cancelUserESTask = (req, res) => {
+  sModule.cancelUserESTask = (req, res) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
@@ -882,7 +882,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.cancelAllESTasks = (req, res) => {
+  sModule.cancelAllESTasks = (req, res) => {
     Db.taskCancel(undefined, (err, result) => {
       return res.send(JSON.stringify({ success: true, text: result }));
     });
@@ -896,7 +896,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
-  module.getESAdminSettings = (req, res) => {
+  sModule.getESAdminSettings = (req, res) => {
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
@@ -908,10 +908,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         return settings.transient[key] || settings.persistent[key] || settings.defaults[key];
       }
 
-      function addSetting (key, type, name, url, regex, current) {
+      function addSetting (key, type, settingName, url, regex, current) {
         if (current === undefined) { current = getValue(key); }
         if (current === undefined) { return; }
-        rsettings.push({ key: key, current: current, name: name, type: type, url: url, regex: regex });
+        rsettings.push({ key: key, current: current, name: settingName, type: type, url: url, regex: regex });
       }
 
       addSetting('search.max_buckets', 'Integer',
@@ -991,8 +991,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         '^(|\\d+)$',
         template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
 
-      function addIlm (key, current, name, type, regex) {
-        rsettings.push({ key: key, current: current, name: name, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
+      function addIlm (key, current, ilmName, type, regex) {
+        rsettings.push({ key: key, current: current, name: ilmName, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
       }
 
       if (ilm[`${internals.prefix}molochsessions`]) {
@@ -1025,7 +1025,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.setESAdminSettings = (req, res) => {
+  sModule.setESAdminSettings = (req, res) => {
     if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
     if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
 
@@ -1143,7 +1143,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.rerouteES = (req, res) => {
+  sModule.rerouteES = (req, res) => {
     Db.reroute((err) => {
       if (err) {
         return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
@@ -1161,7 +1161,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  module.flushES = (req, res) => {
+  sModule.flushES = (req, res) => {
     Db.refresh('*');
     Db.flush('*');
     return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
@@ -1175,7 +1175,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  module.unfloodES = (req, res) => {
+  sModule.unfloodES = (req, res) => {
     Db.setIndexSettings('*', {
       body: { 'index.blocks.read_only_allow_delete': null }
     });
@@ -1190,7 +1190,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.clearCacheES = (req, res) => {
+  sModule.clearCacheES = (req, res) => {
     Db.clearCache((err, data) => {
       if (err) {
         return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
@@ -1219,7 +1219,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} nodeExcludes - List of node names that disallow the allocation of shards.
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
-  module.getESShards = (req, res) => {
+  sModule.getESShards = (req, res) => {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
@@ -1303,7 +1303,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.excludeESShard = (req, res) => {
+  sModule.excludeESShard = (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1346,7 +1346,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.includeESShard = (req, res) => {
+  sModule.includeESShard = (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1396,7 +1396,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of indices.
    * @returns {number} recordsFiltered - The number of indices returned in this result.
    */
-  module.getESRecovery = (req, res) => {
+  sModule.getESRecovery = (req, res) => {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
     Promise.all([
@@ -1460,7 +1460,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of stats.
    * @returns {number} recordsFiltered - The number of stats returned in this result.
    */
-  module.getParliament = (req, res) => {
+  sModule.getParliament = (req, res) => {
     const query = {
       size: 1000,
       query: {
@@ -1518,5 +1518,5 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
-  return module;
+  return sModule;
 };

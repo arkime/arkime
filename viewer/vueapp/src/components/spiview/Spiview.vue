@@ -568,31 +568,31 @@ export default {
     },
     /**
      * Saves the open categories to spiview-collapsible localStorage
-     * @param {string} name The name of the category
+     * @param {string} catName The name of the category
      */
-    toggleCategory: function (name) {
-      this.categoryObjects[name].isopen = !this.categoryObjects[name].isopen;
+    toggleCategory: function (catName) {
+      this.categoryObjects[catName].isopen = !this.categoryObjects[catName].isopen;
 
       if (localStorage) {
         if (localStorage['spiview-collapsible']) {
           let visiblePanels = localStorage['spiview-collapsible'];
-          if (!this.categoryObjects[name].isopen) {
+          if (!this.categoryObjects[catName].isopen) {
             const split = visiblePanels.split(',');
             for (let i = 0, len = split.length; i < len; ++i) {
-              if (split[i].includes(name)) {
+              if (split[i].includes(catName)) {
                 split.splice(i, 1);
                 break;
               }
             }
             visiblePanels = split.join(',');
-          } else if (!visiblePanels.includes(name)) {
+          } else if (!visiblePanels.includes(catName)) {
             if (visiblePanels !== '') { visiblePanels += ','; }
-            visiblePanels += `${name}`;
+            visiblePanels += `${catName}`;
           }
 
           localStorage['spiview-collapsible'] = visiblePanels;
         } else {
-          localStorage['spiview-collapsible'] = name;
+          localStorage['spiview-collapsible'] = catName;
         }
       }
     },
@@ -745,11 +745,11 @@ export default {
     },
     /**
      * Deletes a previously saved custom spiview fields configuration
-     * @param {string} name The name of the spiview fields config to remove
-     * @param {int} index   The index in the array of the spiview fields config to remove
+     * @param {string} spiName  The name of the spiview fields config to remove
+     * @param {int} index       The index in the array of the spiview fields config to remove
      */
-    deleteFieldConfiguration: function (name, index) {
-      UserService.deleteSpiviewFieldConfig(name)
+    deleteFieldConfiguration: function (spiName, index) {
+      UserService.deleteSpiviewFieldConfig(spiName)
         .then(() => {
           this.fieldConfigs.splice(index, 1);
           this.fieldConfigError = false;
@@ -760,12 +760,12 @@ export default {
     },
     /**
      * Updates a previously saved custom spiview fields configuration
-     * @param {string} name The name of the spiview fields config to update
-     * @param {int} index   The index in the array of the spiview fields config to update
+     * @param {string} spiName  The name of the spiview fields config to update
+     * @param {int} index       The index in the array of the spiview fields config to update
      */
-    updateFieldConfiguration: function (name, index) {
+    updateFieldConfiguration: function (spiName, index) {
       const data = {
-        name: name,
+        name: spiName,
         fields: this.spiQuery
       };
 

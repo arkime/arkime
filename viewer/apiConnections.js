@@ -5,7 +5,7 @@ const async = require('async');
 let fieldsMap;
 
 module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
-  const module = {};
+  const cModule = {};
 
   if (!fieldsMap) {
     setTimeout(() => { // make sure db.js loads before fetching fields
@@ -259,7 +259,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     } // updateValues
 
     // ------------------------------------------------------------------------
-    function process (vsrc, vdst, f, fields, resultId) {
+    function doProcess (vsrc, vdst, f, fields, resultId) {
       // ES 6 is returning formatted timestamps instead of ms like pre 6 did
       // https://github.com/elastic/elasticsearch/issues/27740
       if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
@@ -339,7 +339,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
                     vdst += ':' + f.dstPort;
                   }
                 }
-                process(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
+                doProcess(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
               } // let vdst of adst
             } // for vsrc of asrc
             setImmediate(hitCb);
@@ -476,7 +476,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @returns {array} nodes - The list of nodes
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  module.getConnections = (req, res) => {
+  cModule.getConnections = (req, res) => {
     let health;
     Db.healthCache((err, h) => { health = h; });
     buildConnections(req, res, (err, nodes, links, total) => {
@@ -500,7 +500,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @returns {csv} csv - The csv with the connections requested
    */
-  module.getConnectionsCSV = (req, res) => {
+  cModule.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator || ',';
@@ -542,5 +542,5 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     });
   };
 
-  return module;
+  return cModule;
 };

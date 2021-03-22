@@ -5,7 +5,7 @@ import Stats from '@/components/stats/Stats';
 import Help from '@/components/help/Help';
 import Files from '@/components/files/Files';
 import Users from '@/components/users/Users';
-import History from '@/components/history/History';
+import ArkimeHistory from '@/components/history/History';
 import Sessions from '@/components/sessions/Sessions';
 import Spiview from '@/components/spiview/Spiview';
 import Spigraph from '@/components/spigraph/Spigraph';
@@ -63,8 +63,8 @@ const router = new Router({
     },
     {
       path: '/history',
-      name: 'History',
-      component: History
+      name: 'ArkimeHistory',
+      component: ArkimeHistory
     },
     {
       path: '/spiview',

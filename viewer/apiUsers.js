@@ -4,7 +4,7 @@ const fs = require('fs');
 const stylus = require('stylus');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
-  const module = {};
+  const uModule = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -185,7 +185,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user
    * @returns {ArkimeUser} user - The currently logged in user.
    */
-  module.getUser = (req, res) => {
+  uModule.getUser = (req, res) => {
     const userProps = [
       'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
@@ -231,7 +231,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the add user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.createUser = (req, res) => {
+  uModule.createUser = (req, res) => {
     if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
       return res.serverError(403, 'Missing/Empty required fields');
     }
@@ -296,7 +296,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteUser = (req, res) => {
+  uModule.deleteUser = (req, res) => {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
       return res.serverError(403, 'Can not delete yourself');
@@ -319,7 +319,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUser = (req, res) => {
+  uModule.updateUser = (req, res) => {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
@@ -394,7 +394,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUserPassword = (req, res) => {
+  uModule.updateUserPassword = (req, res) => {
     if (!req.body.newPassword || req.body.newPassword.length < 3) {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
@@ -428,7 +428,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/css
    * @returns {css} css - The css file that includes user configured styles.
    */
-  module.getUserCSS = (req, res) => {
+  uModule.getUserCSS = (req, res) => {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
         console.log('ERROR - user.css -', msg);
@@ -496,7 +496,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of users Arkime knows about.
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
-  module.getUsers = (req, res) => {
+  uModule.getUsers = (req, res) => {
     const columns = [
       'userId', 'userName', 'expression', 'enabled', 'createEnabled',
       'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
@@ -565,7 +565,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/settings
    * @returns {ArkimeSettings} settings - The user's configured settings
    */
-  module.getUserSettings = (req, res) => {
+  uModule.getUserSettings = (req, res) => {
     const settings = (req.settingUser.settings)
       ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
       : JSON.parse(JSON.stringify(internals.settingDefaults));
@@ -596,7 +596,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUserSettings = (req, res) => {
+  uModule.updateUserSettings = (req, res) => {
     req.settingUser.settings = req.body;
     delete req.settingUser.settings.token;
 
@@ -620,7 +620,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/views
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
-  module.getUserViews = (req, res) => {
+  uModule.getUserViews = (req, res) => {
     if (!req.settingUser) { return res.send({}); }
 
     // Clone the views so we don't modify that cached user
@@ -653,7 +653,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} viewName - The name of the new view.
    * @returns {ArkimeView} view - The new view data.
    */
-  module.createUserView = (req, res) => {
+  uModule.createUserView = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing view name');
     }
@@ -712,9 +712,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteUserView = (req, res) => {
-    const name = req.body.name || req.params.name;
-    if (!name) {
+  uModule.deleteUserView = (req, res) => {
+    const viewName = req.body.name || req.params.name;
+    if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
 
@@ -726,14 +726,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         if (sharedUser && sharedUser.found) {
           sharedUser = sharedUser._source;
           sharedUser.views = sharedUser.views || {};
-          if (sharedUser.views[name] === undefined) {
+          if (sharedUser.views[viewName] === undefined) {
             return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can delete the shared view
-          if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
+          if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
             return res.serverError(401, 'Need admin privelages to delete another user\'s shared view');
           }
-          delete sharedUser.views[name];
+          delete sharedUser.views[viewName];
         }
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
@@ -749,10 +749,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         });
       });
     } else {
-      if (user.views[name] === undefined) {
+      if (user.views[viewName] === undefined) {
         return res.serverError(404, 'View not found');
       }
-      delete user.views[name];
+      delete user.views[viewName];
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
@@ -776,9 +776,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the share view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.userViewToggleShare = (req, res) => {
-    const name = req.params.name || req.body.name;
-    if (!name) {
+  uModule.userViewToggleShare = (req, res) => {
+    const viewName = req.params.name || req.body.name;
+    if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
 
@@ -790,7 +790,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const user = req.settingUser;
     user.views = user.views || {};
 
-    if (share && user.views[name] === undefined) {
+    if (share && user.views[viewName] === undefined) {
       return res.serverError(404, 'View not found');
     }
 
@@ -808,19 +808,19 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       sharedUser.views = sharedUser.views || {};
 
       if (share) { // if sharing, make sure the view doesn't already exist
-        if (sharedUser.views[name]) { // duplicate detected
+        if (sharedUser.views[viewName]) { // duplicate detected
           return res.serverError(403, 'A shared view already exists with this name.');
         }
         return shareView(req, res, user, '/api/user/view/toggleshare', 'Shared view successfully', 'Sharing view failed');
       } else {
         // if unsharing, remove it from shared user and add it to current user
-        if (sharedUser.views[name] === undefined) { return res.serverError(404, 'View not found'); }
+        if (sharedUser.views[viewName] === undefined) { return res.serverError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
-        if (!user.createEnabled && sharedUser.views[name].user !== user.userId) {
+        if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
           return res.serverError(401, 'Need admin privelages to unshare another user\'s shared view');
         }
         // delete the shared view
-        delete sharedUser.views[name];
+        delete sharedUser.views[viewName];
         return unshareView(req, res, user, sharedUser, '/api/user/view/toggleshare', 'Unshared view successfully', 'Unsharing view failed');
       }
     });
@@ -834,7 +834,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUserView = (req, res) => {
+  uModule.updateUserView = (req, res) => {
     const key = req.body.key || req.params.key;
 
     if (!key) {
@@ -929,7 +929,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/crons
    * @returns {object} queries - A list of cron query objects.
    */
-  module.getUserCron = (req, res) => {
+  uModule.getUserCron = (req, res) => {
     if (!req.settingUser) {
       return res.serverError(403, 'Unknown user');
     }
@@ -965,7 +965,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} key - The cron query id
    */
-  module.createUserCron = (req, res) => {
+  uModule.createUserCron = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing cron query name');
     }
@@ -979,7 +979,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing cron query tag(s)');
     }
 
-    const document = {
+    const doc = {
       doc: {
         enabled: true,
         name: req.body.name,
@@ -990,7 +990,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     };
 
     if (req.body.notifier) {
-      document.doc.notifier = req.body.notifier;
+      doc.doc.notifier = req.body.notifier;
     }
 
     const userId = req.settingUser.userId;
@@ -1003,16 +1003,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       if (+req.body.since === -1) {
-        document.doc.lpValue = document.doc.lastRun = minTimestamp;
+        doc.doc.lpValue = doc.doc.lastRun = minTimestamp;
       } else {
-        document.doc.lpValue = document.doc.lastRun =
+        doc.doc.lpValue = doc.doc.lastRun =
            Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
       }
 
-      document.doc.count = 0;
-      document.doc.creator = userId || 'anonymous';
+      doc.doc.count = 0;
+      doc.doc.creator = userId || 'anonymous';
 
-      Db.indexNow('queries', 'query', null, document.doc, (err, info) => {
+      Db.indexNow('queries', 'query', null, doc.doc, (err, info) => {
         if (err) {
           console.log('/api/user/cron create error', err, info);
           return res.serverError(500, 'Create cron query failed');
@@ -1039,7 +1039,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteUserCron = (req, res) => {
+  uModule.deleteUserCron = (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
@@ -1065,7 +1065,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUserCron = (req, res) => {
+  uModule.updateUserCron = (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
@@ -1083,7 +1083,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing cron query tag(s)');
     }
 
-    const document = {
+    const doc = {
       doc: {
         enabled: req.body.enabled,
         name: req.body.name,
@@ -1095,7 +1095,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     };
 
     if (req.body.notifier) {
-      document.doc.notifier = req.body.notifier;
+      doc.doc.notifier = req.body.notifier;
     }
 
     Db.get('queries', 'query', key, (err, sq) => {
@@ -1104,9 +1104,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         return res.serverError(403, 'Unknown query');
       }
 
-      Db.update('queries', 'query', key, document, { refresh: true }, (err, data) => {
+      Db.update('queries', 'query', key, doc, { refresh: true }, (err, data) => {
         if (err) {
-          console.log('/user/cron update error', err, document, data);
+          console.log('/user/cron update error', err, doc, data);
           return res.serverError(500, 'Cron query update failed');
         }
 
@@ -1129,7 +1129,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/columns
    * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
-  module.getUserColumns = (req, res) => {
+  uModule.getUserColumns = (req, res) => {
     if (!req.settingUser) { return res.send([]); }
 
     // Fix for new names
@@ -1155,7 +1155,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new custom Sessions column configuration.
    */
-  module.createUserColumns = (req, res) => {
+  uModule.createUserColumns = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
@@ -1210,9 +1210,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeColumnConfig} colConfig - The udpated custom Sessions column configuration.
    */
-  module.updateUserColumns = (req, res) => {
-    const name = req.body.name || req.params.name;
-    if (!name) {
+  uModule.updateUserColumns = (req, res) => {
+    const colName = req.body.name || req.params.name;
+    if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
     if (!req.body.columns) {
@@ -1228,7 +1228,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // find the custom column configuration to update
     let found = false;
     for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
-      if (name === user.columnConfigs[i].name) {
+      if (colName === user.columnConfigs[i].name) {
         user.columnConfigs[i] = req.body;
         found = true;
         break;
@@ -1261,9 +1261,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete Sessions column configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteUserColumns = (req, res) => {
-    const name = req.body.name || req.params.name;
-    if (!name) {
+  uModule.deleteUserColumns = (req, res) => {
+    const colName = req.body.name || req.params.name;
+    if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
 
@@ -1272,7 +1272,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let found = false;
     for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-      if (name === user.columnConfigs[i].name) {
+      if (colName === user.columnConfigs[i].name) {
         user.columnConfigs.splice(i, 1);
         found = true;
         break;
@@ -1303,7 +1303,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/spiview
    * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
    */
-  module.getUserSpiviewFields = (req, res) => {
+  uModule.getUserSpiviewFields = (req, res) => {
     if (!req.settingUser) { return res.send([]); }
 
     return res.send(req.settingUser.spiviewFieldConfigs || []);
@@ -1318,7 +1318,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new SPI View fields configuration.
    */
-  module.createUserSpiviewFields = (req, res) => {
+  uModule.createUserSpiviewFields = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
@@ -1370,9 +1370,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {object} colConfig - The udpated SPI View fields configuration.
    */
-  module.updateUserSpiviewFields = (req, res) => {
-    const name = req.body.name || req.params.name;
-    if (!name) {
+  uModule.updateUserSpiviewFields = (req, res) => {
+    const spiName = req.body.name || req.params.name;
+    if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
     if (!req.body.fields) {
@@ -1385,7 +1385,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // find the custom SPI View fields configuration to update
     let found = false;
     for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
-      if (name === user.spiviewFieldConfigs[i].name) {
+      if (spiName === user.spiviewFieldConfigs[i].name) {
         user.spiviewFieldConfigs[i] = req.body;
         found = true;
         break;
@@ -1418,9 +1418,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete SPI View fields configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteUserSpiviewFields = (req, res) => {
-    const name = req.params.name || req.body.name;
-    if (!name) {
+  uModule.deleteUserSpiviewFields = (req, res) => {
+    const spiName = req.params.name || req.body.name;
+    if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
 
@@ -1429,7 +1429,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let found = false;
     for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-      if (name === user.spiviewFieldConfigs[i].name) {
+      if (spiName === user.spiviewFieldConfigs[i].name) {
         user.spiviewFieldConfigs.splice(i, 1);
         found = true;
         break;
@@ -1461,7 +1461,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.acknowledgeMsg = (req, res) => {
+  uModule.acknowledgeMsg = (req, res) => {
     if (!req.body.msgNum) {
       return res.serverError(403, 'Message number required');
     }
@@ -1500,7 +1500,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/state/:name
    * @returns {object} tableState - The table state requested.
    */
-  module.getUserState = (req, res) => {
+  uModule.getUserState = (req, res) => {
     if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
       return res.send('{}');
     }
@@ -1527,7 +1527,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.updateUserState = (req, res) => {
+  uModule.updateUserState = (req, res) => {
     Db.getUser(req.user.userId, (err, user) => {
       if (err || !user.found) {
         console.log('save state failed', err, user);
@@ -1556,5 +1556,5 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
-  return module;
+  return uModule;
 };

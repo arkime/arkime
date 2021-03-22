@@ -118,7 +118,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   function readyToProcess () {
     let itemPos = 0;
 
-    function process (data, nextCb) {
+    function doProcess (data, nextCb) {
       // console.log("NEXT", data);
       data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
       s3.getObject(data.params, function (err, s3data) {
@@ -231,7 +231,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         }
       }
       async.eachLimit(packetDataOpt, limit || 1, (data, nextCb) => {
-        process(data, nextCb);
+        doProcess(data, nextCb);
       }, (pcapEachErr) => {
         endCb(pcapEachErr, fields);
       });

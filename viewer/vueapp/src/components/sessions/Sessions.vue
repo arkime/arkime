@@ -806,13 +806,13 @@ export default {
      * @param {Object} event  The click event that triggered the sort
      * @param {string} id     The id of the column to sort by
      */
-    sortBy: function (event, id) {
+    sortBy: function (e, id) {
       // if the column click was a click and hold/drag, don't issue new query
       if (holdingClick) { return; }
 
       if (this.isSorted(id) >= 0) {
         // the table is already sorted by this element
-        if (!event.shiftKey) {
+        if (!e.shiftKey) {
           const item = this.toggleSortOrder(id);
           this.tableState.order = [item];
         } else {
@@ -830,7 +830,7 @@ export default {
           }
         }
       } else { // sort by a new column
-        if (!event.shiftKey) {
+        if (!e.shiftKey) {
           // if it's a regular click - remove other sorts and add this one
           this.tableState.order = [[id, 'asc']];
         } else {
@@ -1038,11 +1038,11 @@ export default {
     },
     /**
      * Deletes a previously saved custom column configuration
-     * @param {string} name The name of the column config to remove
-     * @param {int} index   The index in the array of the column config to remove
+     * @param {string} colName  The name of the column config to remove
+     * @param {int} index       The index in the array of the column config to remove
      */
-    deleteColumnConfiguration: function (name, index) {
-      UserService.deleteColumnConfig(name)
+    deleteColumnConfiguration: function (colName, index) {
+      UserService.deleteColumnConfig(colName)
         .then((response) => {
           this.colConfigs.splice(index, 1);
           this.colConfigError = false;
@@ -1053,12 +1053,12 @@ export default {
     },
     /**
      * Updates a previously saved custom column configuration
-     * @param {string} name The name of the column config to udpate
-     * @param {int} index   The index in the array of the column config to udpate
+     * @param {string} colName  The name of the column config to udpate
+     * @param {int} index       The index in the array of the column config to udpate
      */
-    updateColumnConfiguration: function (name, index) {
+    updateColumnConfiguration: function (colName, index) {
       const data = {
-        name: name,
+        name: colName,
         columns: this.tableState.visibleHeaders.slice(),
         order: JSON.parse(JSON.stringify(this.tableState.order))
       };
@@ -1609,19 +1609,19 @@ export default {
         animation: 100,
         filter: '.ignore-element',
         preventOnFilter: false, // allow clicks within the ignored element
-        onMove: (event) => { // col header is being dragged
+        onMove: (e) => { // col header is being dragged
           // don't allow a column to be dropped in the far left column
-          return !event.related.classList.contains('ignore-element');
+          return !e.related.classList.contains('ignore-element');
         },
-        onEnd: (event) => { // dragged col header was dropped
+        onEnd: (e) => { // dragged col header was dropped
           // nothing has changed, so don't do stuff
-          if (event.oldIndex === event.newIndex) { return; }
+          if (e.oldIndex === e.newIndex) { return; }
 
           this.loading = true;
 
           // update the headers to the new order
-          const oldIdx = event.oldIndex - 1;
-          const newIdx = event.newIndex - 1;
+          const oldIdx = e.oldIndex - 1;
+          const newIdx = e.newIndex - 1;
           const element = this.tableState.visibleHeaders[oldIdx];
           this.tableState.visibleHeaders.splice(oldIdx, 1);
           this.tableState.visibleHeaders.splice(newIdx, 0, element);
@@ -1652,7 +1652,7 @@ export default {
           resizeMode: 'overflow',
           disabledColumns: [0],
           hoverCursor: 'col-resize',
-          onResize: (event, column, colIdx) => {
+          onResize: (e, column, colIdx) => {
             this.loading = true;
 
             const header = this.headers[colIdx - 1];

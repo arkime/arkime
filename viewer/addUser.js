@@ -21,7 +21,7 @@
 'use strict';
 const Config = require('./config.js');
 const Db = require('./db.js');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 
 const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
@@ -87,7 +87,7 @@ function main () {
 
     case '--webauthonly':
     case '-webauthonly':
-      nuser.passStore = Config.pass2store(process.argv[2], crypto.randomBytes(48));
+      nuser.passStore = Config.pass2store(process.argv[2], cryptoLib.randomBytes(48));
       break;
 
     case '--webauth':

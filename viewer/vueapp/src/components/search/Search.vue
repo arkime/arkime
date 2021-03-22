@@ -529,16 +529,16 @@ export default {
         this.messageType = success ? 'success' : 'warning';
       }
     },
-    deleteView: function (view, name) {
+    deleteView: function (view, viewName) {
       // check if deleting current view
-      if (this.view === name) {
+      if (this.view === viewName) {
         this.setView(undefined);
       }
 
       UserService.deleteView(view, this.user.userId)
         .then((response) => {
           // remove the view from the view list
-          this.$store.commit('deleteViews', name);
+          this.$store.commit('deleteViews', viewName);
           this.getViews();
           // display success message to user
           this.msg = response.text;

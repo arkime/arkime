@@ -360,7 +360,7 @@ function parseCustomView (key, input) {
     console.log(`custom-view ${key} missing require section`);
     process.exit(1);
   }
-  const require = match[1];
+  const req = match[1];
 
   match = input.match(/title:([^;]+)/);
   const title = match[1] || key;
@@ -372,7 +372,7 @@ function parseCustomView (key, input) {
   }
   const fields = match[1];
 
-  let output = `  if (session.${require})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+  let output = `  if (session.${req})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
 
   for (const field of fields.split(',')) {
     const info = fieldsMap[field];
@@ -479,8 +479,8 @@ function createRightClicks () {
 // API MIDDLEWARE
 // ============================================================================
 // error middleware -----------------------------------------------------------
-function serverError (status, text) {
-  this.status(status || 403);
+function serverError (resStatus, text) {
+  this.status(resStatus || 403);
   return this.send(JSON.stringify({ success: false, text: text }));
 }
 
@@ -2183,8 +2183,8 @@ function processCronQuery (cq, options, query, endTime, cb) {
           Db.clearScroll({ body: { scroll_id: result._scroll_id } });
           return setImmediate(whilstCb, 'DONE');
         } else {
-          const document = { doc: { count: (query.count || 0) + count } };
-          Db.update('queries', 'query', options.qid, document, { refresh: true }, function () {});
+          const doc = { doc: { count: (query.count || 0) + count } };
+          Db.update('queries', 'query', options.qid, doc, { refresh: true }, function () {});
         }
 
         query = {
@@ -2347,7 +2347,7 @@ internals.processCronQueries = () => {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
                 // Do the ES update
-                const document = {
+                const doc = {
                   doc: {
                     lpValue: lpValue,
                     lastRun: Math.floor(Date.now() / 1000),
@@ -2356,7 +2356,7 @@ internals.processCronQueries = () => {
                 };
 
                 function continueProcess () {
-                  Db.update('queries', 'query', qid, document, { refresh: true }, function () {
+                  Db.update('queries', 'query', qid, doc, { refresh: true }, function () {
                     // If there is more time to catch up on, repeat the loop, although other queries
                     // will get processed first to be fair
                     if (lpValue !== endTime) { repeat = true; }
@@ -2365,10 +2365,10 @@ internals.processCronQueries = () => {
                 }
 
                 // issue alert via notifier if the count has changed and it has been at least 10 minutes
-                if (cq.notifier && count && queries[qid].count !== document.doc.count &&
+                if (cq.notifier && count && queries[qid].count !== doc.doc.count &&
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                  const newMatchCount = document.doc.lastNotifiedCount ? (document.doc.count - document.doc.lastNotifiedCount) : document.doc.count;
-                  const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${document.doc.count} total* matches`;
+                  const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
+                  const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${doc.doc.count} total* matches`;
                   notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
                 } else {
                   return continueProcess();

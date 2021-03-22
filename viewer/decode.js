@@ -30,7 +30,7 @@ const through = require('through2');
 const peek = require('peek-stream');
 const sprintf = require('./public/sprintf.js');
 const async = require('async');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 
 const internals = {
   registry: {},
@@ -39,11 +39,11 @@ const internals = {
 };
 
 /// /////////////////////////////////////////////////////////////////////////////
-function mkname (stream, name) {
+function mkname (stream, streamName) {
   if (!mkname.cnt) { mkname.cnt = {}; }
-  if (!mkname.cnt[name]) { mkname.cnt[name] = 0; }
-  mkname.cnt[name]++;
-  stream.molochName = name + '-' + mkname.cnt[name];
+  if (!mkname.cnt[streamName]) { mkname.cnt[streamName] = 0; }
+  mkname.cnt[streamName]++;
+  stream.molochName = streamName + '-' + mkname.cnt[streamName];
 }
 /// /////////////////////////////////////////////////////////////////////////////
 function safeStr (str) {
@@ -706,10 +706,10 @@ function createItemSorterStream (options) {
 
 module.exports = exports = {};
 
-exports.register = function (name, ClassOrCreate, settings) {
-  internals.registry[name] = ClassOrCreate;
+exports.register = function (regName, ClassOrCreate, settings) {
+  internals.registry[regName] = ClassOrCreate;
   if (settings) {
-    internals.settings[name] = settings;
+    internals.settings[regName] = settings;
   }
 };
 exports.settings = function () {
@@ -764,8 +764,8 @@ exports.register('ITEM-BYTES', through.ctor({ objectMode: true }, function (item
 }));
 exports.register('ITEM-HASH', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.data !== undefined) {
-    const md5 = crypto.createHash('md5').update(item.data).digest('hex');
-    const sha256 = crypto.createHash('sha256').update(item.data).digest('hex');
+    const md5 = cryptoLib.createHash('md5').update(item.data).digest('hex');
+    const sha256 = cryptoLib.createHash('sha256').update(item.data).digest('hex');
     if (this.options['ITEM-HASH'].hash === md5 || this.options['ITEM-HASH'].hash === sha256) { return callback(null, item); }
   }
   return callback();

@@ -25,7 +25,7 @@
 const ini = require('iniparser');
 const os = require('os');
 const fs = require('fs');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const version = require('./version');
 
 exports.debug = 0;
@@ -88,7 +88,7 @@ processArgs();
 // Encryption stuff
 /// ///////////////////////////////////////////////////////////////////////////////
 exports.md5 = function (str, encoding) {
-  return crypto
+  return cryptoLib
     .createHash('md5')
     .update(str)
     .digest(encoding || 'hex');
@@ -102,15 +102,15 @@ exports.pass2store = function (userid, password) {
 
   if (internals.aes256Encryption) {
     // New style with IV: IV.E
-    const iv = crypto.randomBytes(16);
-    const c = crypto.createCipheriv('aes-256-cbc', internals.passwordSecret256, iv);
+    const iv = cryptoLib.randomBytes(16);
+    const c = cryptoLib.createCipheriv('aes-256-cbc', internals.passwordSecret256, iv);
     let e = c.update(m, 'binary', 'hex');
     e += c.final('hex');
     return iv.toString('hex') + '.' + e;
   } else {
     // Old style without IV: E
     // eslint-disable-next-line node/no-deprecated-api
-    const c = crypto.createCipher('aes192', internals.passwordSecret);
+    const c = cryptoLib.createCipher('aes192', internals.passwordSecret);
     let e = c.update(m, 'binary', 'hex');
     e += c.final('hex');
     return e;
@@ -123,14 +123,14 @@ exports.store2ha1 = function (passstore) {
     const parts = passstore.split('.');
     if (parts.length === 2) {
       // New style with IV: IV.E
-      const c = crypto.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
+      const c = cryptoLib.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
       let d = c.update(parts[1], 'hex', 'binary');
       d += c.final('binary');
       return d;
     } else {
       // Old style without IV: E
       // eslint-disable-next-line node/no-deprecated-api
-      const c = crypto.createDecipher('aes192', internals.passwordSecret);
+      const c = cryptoLib.createDecipher('aes192', internals.passwordSecret);
       let d = c.update(passstore, 'hex', 'binary');
       d += c.final('binary');
       return d;
@@ -146,28 +146,28 @@ exports.obj2auth = function (obj, c2s, secret) {
   if (internals.aes256Encryption) {
     // New style with IV: IV.E.H
     if (secret) {
-      secret = crypto.createHash('sha256').update(secret).digest();
+      secret = cryptoLib.createHash('sha256').update(secret).digest();
     } else {
       secret = internals.serverSecret256;
     }
 
-    const iv = crypto.randomBytes(16);
-    const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
+    const iv = cryptoLib.randomBytes(16);
+    const c = cryptoLib.createCipheriv('aes-256-cbc', secret, iv);
     let e = c.update(JSON.stringify(obj), 'binary', 'hex');
     e += c.final('hex');
     e = iv.toString('hex') + '.' + e;
-    const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
+    const h = cryptoLib.createHmac('sha256', secret).update(e).digest('hex');
     return e + '.' + h;
   } else {
     // Old style without IV: E or E.H
     secret = secret || internals.serverSecret;
 
     // eslint-disable-next-line node/no-deprecated-api
-    const c = crypto.createCipher('aes192', secret);
+    const c = cryptoLib.createCipher('aes192', secret);
     let e = c.update(JSON.stringify(obj), 'binary', 'hex');
     e += c.final('hex');
 
-    const h = crypto.createHmac('sha256', secret).update(e, 'hex').digest('hex');
+    const h = cryptoLib.createHmac('sha256', secret).update(e, 'hex').digest('hex');
 
     // include sig if c2s or s2sSignedAuth
     if (c2s || internals.s2sSignedAuth) {
@@ -185,20 +185,20 @@ exports.auth2obj = function (auth, c2s, secret) {
   if (parts.length === 3) {
     // New style with IV: IV.E.H
     if (secret) {
-      secret = crypto.createHash('sha256').update(secret).digest();
+      secret = cryptoLib.createHash('sha256').update(secret).digest();
     } else {
       secret = internals.serverSecret256;
     }
 
     const signature = Buffer.from(parts[2], 'hex');
-    const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
+    const h = cryptoLib.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-    if (!crypto.timingSafeEqual(signature, h)) {
+    if (!cryptoLib.timingSafeEqual(signature, h)) {
       throw new Error('Incorrect signature');
     }
 
     try {
-      const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
+      const c = cryptoLib.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
       let d = c.update(parts[1], 'hex', 'binary');
       d += c.final('binary');
       return JSON.parse(d);
@@ -218,16 +218,16 @@ exports.auth2obj = function (auth, c2s, secret) {
 
     if (parts.length > 1) {
       const signature = Buffer.from(parts[1], 'hex');
-      const h = crypto.createHmac('sha256', secret).update(parts[0], 'hex').digest();
+      const h = cryptoLib.createHmac('sha256', secret).update(parts[0], 'hex').digest();
 
-      if (!crypto.timingSafeEqual(signature, h)) {
+      if (!cryptoLib.timingSafeEqual(signature, h)) {
         throw new Error('Incorrect signature');
       }
     }
 
     try {
       // eslint-disable-next-line node/no-deprecated-api
-      const c = crypto.createDecipher('aes192', secret);
+      const c = cryptoLib.createDecipher('aes192', secret);
       let d = c.update(parts[0], 'hex', 'binary');
       d += c.final('binary');
       return JSON.parse(d);
@@ -464,7 +464,7 @@ exports.headers = function (section) {
   return headers;
 };
 
-exports.configMap = function (section, name, d) {
+exports.configMap = function (section, configName, d) {
   const data = internals.config[section] || d;
   if (data === undefined) { return {}; }
   const keys = Object.keys(data);
@@ -565,11 +565,11 @@ internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', true
 
 // If passwordSecret isn't set, viewer will treat accounts as anonymous
 internals.passwordSecret = exports.getFull('default', 'passwordSecret', 'password');
-internals.passwordSecret256 = crypto.createHash('sha256').update(internals.passwordSecret).digest();
+internals.passwordSecret256 = cryptoLib.createHash('sha256').update(internals.passwordSecret).digest();
 
 if (exports.getFull('default', 'serverSecret')) {
   internals.serverSecret = exports.getFull('default', 'serverSecret');
-  internals.serverSecret256 = crypto.createHash('sha256').update(internals.serverSecret).digest();
+  internals.serverSecret256 = cryptoLib.createHash('sha256').update(internals.serverSecret).digest();
 } else {
   internals.serverSecret = internals.passwordSecret;
   internals.serverSecret256 = internals.passwordSecret256;

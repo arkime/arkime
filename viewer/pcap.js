@@ -19,7 +19,7 @@
 'use strict';
 
 const fs = require('fs');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 
 const Pcap = module.exports = exports = function Pcap (key) {
@@ -87,7 +87,7 @@ Pcap.prototype.open = function (filename, info) {
     this.encoding = info.encoding || 'normal';
     if (info.dek) {
       // eslint-disable-next-line node/no-deprecated-api
-      const decipher = crypto.createDecipher('aes-192-cbc', info.kek);
+      const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
@@ -139,7 +139,7 @@ Pcap.prototype.unref = function () {
 
 Pcap.prototype.createDecipher = function (pos) {
   this.iv.writeUInt32BE(pos, 12);
-  return crypto.createDecipheriv(this.encoding, this.encKey, this.iv);
+  return cryptoLib.createDecipheriv(this.encoding, this.encKey, this.iv);
 };
 
 Pcap.prototype.readHeader = function (cb) {
@@ -646,11 +646,11 @@ Pcap.prototype.radiotap = function (buffer, obj, pos) {
 Pcap.prototype.nflog = function (buffer, obj, pos) {
   let offset = 4;
   while (offset + 4 < buffer.length) {
-    const length = buffer.readUInt16LE(offset);
+    const len = buffer.readUInt16LE(offset);
     if (buffer[offset + 3] === 0 && buffer[offset + 2] === 9) {
       if (buffer[0] === 2) { return this.ip4(buffer.slice(offset + 4), obj, pos + offset + 4); } else { return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4); }
     } else {
-      offset += (length + 3) & 0xfffc;
+      offset += (len + 3) & 0xfffc;
     }
   }
 

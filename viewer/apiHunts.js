@@ -4,7 +4,7 @@ const async = require('async');
 const RE2 = require('re2');
 
 module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils) => {
-  const module = {};
+  const hModule = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -144,7 +144,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           console.log('Error adding errors and pausing hunt job', err, info);
           return;
         }
-        module.processHuntJobs();
+        hModule.processHuntJobs();
       });
     }
 
@@ -240,7 +240,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
   }
 
-  function updateHuntStatus (req, res, status, successText, errorText) {
+  function updateHuntStatus (req, res, huntStatus, successText, errorText) {
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
         console.log(errorText, err, hit);
@@ -248,20 +248,20 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       }
 
       // don't let a user play a hunt job if one is already running
-      if (status === 'running' && internals.runningHuntJob) {
+      if (huntStatus === 'running' && internals.runningHuntJob) {
         return res.serverError(403, 'You cannot start a new hunt until the running job completes or is paused.');
       }
 
       const hunt = hit._source;
 
       // if hunt is finished, don't allow pause
-      if (hunt.status === 'finished' && status === 'paused') {
+      if (hunt.status === 'finished' && huntStatus === 'paused') {
         return res.serverError(403, 'You cannot pause a completed hunt.');
       }
 
       // clear the running hunt job if this is it
       if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
-      hunt.status = status; // update the hunt job
+      hunt.status = huntStatus; // update the hunt job
 
       Db.setHunt(req.params.id, hunt, (err, info) => {
         if (err) {
@@ -269,7 +269,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           return res.serverError(500, errorText);
         }
         res.send(JSON.stringify({ success: true, text: successText }));
-        module.processHuntJobs();
+        hModule.processHuntJobs();
       });
     });
   }
@@ -323,7 +323,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       function continueProcess () {
         Db.setHunt(huntId, hunt, (err, info) => {
           internals.runningHuntJob = undefined;
-          module.processHuntJobs(); // Start new hunt
+          hModule.processHuntJobs(); // Start new hunt
         });
       }
 
@@ -445,7 +445,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         function continueProcess () {
           Db.setHunt(huntId, hunt, (err, info) => {
             internals.runningHuntJob = undefined;
-            module.processHuntJobs(); // start new hunt or go back over failedSessionIds
+            hModule.processHuntJobs(); // start new hunt or go back over failedSessionIds
           });
         }
 
@@ -550,7 +550,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
-  module.processHuntJobs = (cb) => {
+  hModule.processHuntJobs = (cb) => {
     if (Config.debug) {
       console.log('HUNT - processing hunt jobs');
     }
@@ -667,7 +667,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {Hunt} hunt - The newly created hunt object.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  module.createHunt = (req, res) => {
+  hModule.createHunt = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
     if (!req.body.name) { return res.serverError(403, 'Missing hunt name'); }
@@ -733,7 +733,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           return res.serverError(500, 'Error creating hunt - ' + err);
         }
         doneHunt.id = result._id;
-        module.processHuntJobs(() => {
+        hModule.processHuntJobs(() => {
           const response = {
             success: true,
             hunt: doneHunt
@@ -782,7 +782,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {number} recordsTotal - The total number of hunts Arkime has.
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */
-  module.getHunts = (req, res) => {
+  hModule.getHunts = (req, res) => {
     const query = {
       sort: {},
       from: parseInt(req.query.start) || 0,
@@ -869,7 +869,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} success - Whether the delete hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.deleteHunt = (req, res) => {
+  hModule.deleteHunt = (req, res) => {
     Db.deleteHuntItem(req.params.id, (err, result) => {
       if (err || result.error) {
         console.log('ERROR - deleting hunt', err || result.error);
@@ -891,7 +891,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} success - Whether the pause hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.pauseHunt = (req, res) => {
+  hModule.pauseHunt = (req, res) => {
     updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
   };
 
@@ -903,7 +903,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} success - Whether the play hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  module.playHunt = (req, res) => {
+  hModule.playHunt = (req, res) => {
     updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
   };
 
@@ -917,7 +917,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {array} users - The list of users that were added to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  module.addUsers = (req, res) => {
+  hModule.addUsers = (req, res) => {
     if (!req.body.users) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
@@ -971,7 +971,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {array} users - The list of users who have access to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
    */
-  module.removeUsers = (req, res) => {
+  hModule.removeUsers = (req, res) => {
     Db.getHunt(req.params.id, (err, hit) => {
       if (err) {
         console.log('Unable to fetch hunt to remove user', err, hit);
@@ -1011,7 +1011,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
    * @returns {string} error - If an error occurred, describes the error.
    */
-  module.remoteHunt = (req, res) => {
+  hModule.remoteHunt = (req, res) => {
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
@@ -1046,5 +1046,5 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     });
   };
 
-  return module;
+  return hModule;
 };

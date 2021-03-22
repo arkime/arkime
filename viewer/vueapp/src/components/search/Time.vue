@@ -422,14 +422,14 @@ export default {
       this.timeRange = '0';
     },
     /* Fired when start datetime is changed */
-    changeStartTime: function (event) {
-      const msDate = event.date.valueOf();
+    changeStartTime: function (e) {
+      const msDate = e.date.valueOf();
       this.time.startTime = Math.floor(msDate / 1000);
       this.validateDate();
     },
     /* Fired when stop datetime is changed */
-    changeStopTime: function (event) {
-      const msDate = event.date.valueOf();
+    changeStopTime: function (e) {
+      const msDate = e.date.valueOf();
       this.time.stopTime = Math.floor(msDate / 1000);
       this.validateDate();
     },

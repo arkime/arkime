@@ -22,7 +22,7 @@
 'use strict';
 const Config = require('./config.js');
 const Db = require('./db.js');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const fs = require('fs');
 
 const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
@@ -53,7 +53,7 @@ function main () {
 
     // Decrypt the dek
     // eslint-disable-next-line node/no-deprecated-api
-    const kdecipher = crypto.createDecipher('aes-192-cbc', kek);
+    const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     // Setup IV
@@ -62,7 +62,7 @@ function main () {
 
     // Setup streams
     const r = fs.createReadStream(process.argv[2]);
-    const d = crypto.createDecipheriv(info.encoding, encKey, iv);
+    const d = cryptoLib.createDecipheriv(info.encoding, encKey, iv);
     d.on('end', function () {
       process.exit();
     });
