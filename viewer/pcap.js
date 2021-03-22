@@ -998,7 +998,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
       }
 
       let result;
-      if (results.length === 0 || pkey !== results[results.length - 1].pkey) {
+      if (results.length === 0 || pkey !== results[results.length - 1].key) {
         previous = start = item.tcp.seq;
         result = {
           key: pkey,
