@@ -280,7 +280,7 @@ function mouseleaveBox (d, self) {
   d3.select(self).select('rect').style('stroke', background);
 }
 
-// apply foreground color for outer most level and black for the rest
+// apply foreground color for outermost level and black for the rest
 // to compensate for opacity changes
 function fillBoxText (d) {
   return d.depth === 1 ? foreground : 'black';
@@ -878,7 +878,7 @@ export default {
         this.tableData = response.data.tableResults;
         this.sortTable();
         this.applyColorsToTableData(this.tableData);
-        this.showHiddenColumns(); // initalizes resizeable cols
+        this.showHiddenColumns(); // initializes resizeable cols
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);

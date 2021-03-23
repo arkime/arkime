@@ -678,7 +678,7 @@
           <p>
             Allow queries to be run periodically that can perform actions on
             sessions that match the queries. The query runs against sessions
-            delayed by 90 second to make sure all updates have been completed
+            delayed by 90 seconds to make sure all updates have been completed
             for that session.
           </p>
 
@@ -1449,7 +1449,7 @@
             <p v-if="displayHelp"
               class="help-block">
               Main theme colors are lightened/darkened programmatically to
-              provide dark boarders, active buttons, hover colors, etc.
+              provide dark borders, active buttons, hover colors, etc.
             </p>
 
             <!-- main colors -->
@@ -2565,7 +2565,7 @@ export default {
         });
     },
     resetSettings: function () {
-      // Chosing to skip reset of theme. UserService will save state to store
+      // Choosing to skip reset of theme. UserService will save state to store
       UserService.resetSettings(this.userId, this.settings.theme)
         .then((response) => {
           // display success message to user

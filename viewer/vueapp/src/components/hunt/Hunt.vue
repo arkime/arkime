@@ -810,7 +810,7 @@ export default {
         recordsTotal: 0,
         recordsFiltered: 0
       },
-      runningJob: undefined, // the currenty running hunt job obj
+      runningJob: undefined, // the currently running hunt job obj
       sessions: {}, // sessions a new job applies to
       loadingSessionsError: '',
       loadingSessions: false,
