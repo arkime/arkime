@@ -95,7 +95,7 @@ import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';
 
 let reqPromise; // promise returned from setInterval for recurring requests
-let respondedAt; // the time that the last data load succesfully responded
+let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsStats',

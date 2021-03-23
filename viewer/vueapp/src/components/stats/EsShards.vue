@@ -150,7 +150,7 @@ import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
-let respondedAt; // the time that the last data load succesfully responded
+let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsShards',
