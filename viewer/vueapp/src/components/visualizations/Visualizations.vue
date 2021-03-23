@@ -491,7 +491,7 @@ export default {
         return routeFilter;
       }
 
-      // user has selected a filter and it hasnt been removed from settings page
+      // user has selected a filter and it hasn't been removed from settings page
       if (this.graphType && storedFilters.includes(this.graphType.slice(0, -5))) {
         return this.graphType;
       }
@@ -852,7 +852,7 @@ export default {
       }
     },
     expandMapElement: function () {
-      // onMapResize function expandes the map
+      // onMapResize function expands the map
       $(this.mapEl).resize();
     },
     shrinkMapElement: function () {
@@ -1248,7 +1248,7 @@ export default {
   left: 0;
 }
 
-/* sticky vizualization styles --------------- */
+/* sticky visualizations styles --------------- */
 .sticky-viz {
   padding-bottom: 178px;
 }

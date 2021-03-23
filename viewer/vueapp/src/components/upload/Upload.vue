@@ -148,7 +148,7 @@ export default {
         this.error = '';
         this.uploading = false;
         this.msgType = 'success';
-        this.msg = 'File succesfully uploaded';
+        this.msg = 'File successfully uploaded';
       }).catch((error) => {
         this.error = error;
         this.uploading = false;

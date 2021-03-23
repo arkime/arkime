@@ -799,7 +799,7 @@ export default {
   display: block !important;
 }
 
-/* src/dst packet visiblity */
+/* src/dst packet visibility */
 .packet-container .sessionsrc {
   visibility: visible;
 }

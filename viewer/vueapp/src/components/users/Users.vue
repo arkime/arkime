@@ -741,7 +741,7 @@ export default {
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
 
       // Iterate over user keys that come from store.
-      // The newUser is populated with other values like "expanded" that we dont need to check for
+      // The newUser is populated with other values like "expanded" that we don't need to check for
       return !Object.keys(oldUser).every(key => oldUser[key] === newUser[key]);
     },
     updateUser: function (user) {

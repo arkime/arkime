@@ -750,7 +750,7 @@ export default {
         .attr('visibility', this.calculateNodeBaselineVisibility);
 
       // TODO: is there a way to get each label's/link's associated node(s)
-      // and just get its visibility rather than re-runing
+      // and just get its visibility rather than re-running
       // calculateNodeBaselineVisibility/calculateLinkBaselineVisibility
       // for all of them?
 

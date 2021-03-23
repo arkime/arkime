@@ -417,7 +417,7 @@ export default {
      * rather than the date range input
      */
     closePicker: function () {
-      // start or stop time was udpated, so set the timerange to custom
+      // start or stop time was updated, so set the timerange to custom
       this.timeRange = '0';
     },
     /* Fired when start datetime is changed */
