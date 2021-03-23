@@ -1071,7 +1071,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   sModule.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
-      options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,ipProtocol,packetLen' };
+      options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,dstIp,dstPort,ipProtocol,packetLen' };
     }
 
     Db.getSession(id, options, (err, session) => {
@@ -2221,7 +2221,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
         }
 
-        // TODO ECR - go infinity levels deep here too?
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
         addDataToTable([], result.aggregations.field.buckets);
 

@@ -12,16 +12,14 @@ else
     div.col-md-6
       h4
         span.srccol Source
-          if (showFrames && session.sourceKey)
-            span.small
-              | &nbsp;(#{session.sourceKey})
+          span.small
+            | &nbsp;(#{session.sourceKey || `${session.srcIp}:${session.srcPort}`})
           span.src-col-tip
     div.col-md-6
       h4
         span.dstcol Destination
-          if (showFrames && session.destinationKey)
-            span.small
-              | &nbsp;(#{session.destinationKey})
+          span.small
+            | &nbsp;(#{session.destinationKey || `${session.dstIp}:${session.dstPort}`})
           span.dst-col-tip
 
   if (showFrames)
