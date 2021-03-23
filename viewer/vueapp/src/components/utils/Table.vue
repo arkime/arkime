@@ -250,7 +250,7 @@ export default {
     data: { // table data
       type: Array
     },
-    noResults: { // whether or not to dispaly a no results row if data array is empty
+    noResults: { // whether or not to display a no results row if data array is empty
       type: Boolean,
       default: false
     },
@@ -487,7 +487,7 @@ export default {
       if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
       let value = this.totalValues[column.id];
-      // need to recalucate the value if this column has been zeroed
+      // need to recalculate the value if this column has been zeroed
       if (this.zeroMap[column.id] !== undefined) {
         // subtract all zeroed values for this column
         for (const zeroVal of this.zeroMap[column.id]) {
@@ -512,7 +512,7 @@ export default {
 
       let sum = 0;
       let value = this.averageValues[column.id];
-      // need to recalucate the value if this column has been zeroed
+      // need to recalculate the value if this column has been zeroed
       if (this.zeroMap[column.id] !== undefined) {
         for (let v = 0; v < this.data.length; v++) {
           const realValue = this.data[v];
@@ -755,7 +755,7 @@ table > thead:hover button.fit-btn {
   padding: .25rem .5rem 0;
 }
 
-/* average/total delimeters ------------------ */
+/* average/total delimiters ------------------ */
 tr.bold {
   font-weight: bold;
 }

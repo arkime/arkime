@@ -327,7 +327,7 @@ p.shortcut-letter.holding-shift::first-letter {
 }
 
 /* move the top nav content to the left to accommodate the sticky sessions
- button when the user has the tool bars collapsed and session(s) open */
+ button when the user has the toolbars collapsed and session(s) open */
 span.show-sticky-sessions-btn.hide-tool-bars > nav > div.navbar-collapse.collapse {
   margin-right: 32px;
 }
