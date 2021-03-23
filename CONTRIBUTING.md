@@ -92,7 +92,7 @@ To implement something new, please create an issue first so we can discuss it to
 * Include the relevant issue number(s) if applicable
 * If changes are made to the capture component, verify all tests in the tests direction pass by running `./tests.pl`
 * Run `npm run lint` from the top level directory and correct any errors
-* Additionally, for any viewer or parliament changes, verify that all UI tests pass by runnning `./tests.pl --viewer`
+* Additionally, for any viewer or parliament changes, verify that all UI tests pass by running `./tests.pl --viewer`
 * The README file in the tests directory provides additional information on the test cases
 * When creating a Pull Request please follow [best practices](https://github.com/trein/dev-best-practices/wiki/Git-Commit-Best-Practices) for creating git commits.
 * When your code is ready to be submitted, submit a Pull Request to begin the code review process.
