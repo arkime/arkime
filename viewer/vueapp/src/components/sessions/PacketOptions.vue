@@ -101,7 +101,7 @@
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
           :title="`Toggle ${value.name} Decoding`"
-          :class="{'active':activeDecodings[key]}"
+          :class="{'active':decodings[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
         </button>
@@ -166,8 +166,7 @@ export default {
   },
   data () {
     return {
-      decodingForm: false,
-      activeDecodings: {}
+      decodingForm: false
     };
   },
   methods: {
@@ -179,8 +178,8 @@ export default {
     toggleDecoding (key) {
       const decoding = this.decodings[key];
 
-      const isActive = !this.activeDecodings[key];
-      this.$set(this.activeDecodings, key, isActive);
+      const isActive = !this.decodings[key].active;
+      this.$emit('toggleDecoding', key, isActive);
 
       if (decoding.fields && isActive) {
         this.decodingForm = key;
@@ -195,7 +194,7 @@ export default {
      */
     closeDecodingForm (active) {
       if (this.decodingForm) {
-        this.$set(this.activeDecodings, this.decodingForm, active);
+        this.$emit('toggleDecoding', this.decodingForm, active);
       }
 
       this.decodingForm = false;
@@ -210,7 +209,7 @@ export default {
 
       const decoding = this.decodings[key];
 
-      if (this.activeDecodings[key]) {
+      if (this.decodings[key].active) {
         if (decoding.fields) {
           for (const field of decoding.fields) {
             this.$set(decodeClone[key], field.key, field.value);
@@ -221,7 +220,7 @@ export default {
       }
 
       this.$emit('updateDecodings', decodeClone);
-      this.closeDecodingForm(this.activeDecodings[key]);
+      this.closeDecodingForm(this.decodings[key]);
 
       // update local storage
       localStorage['moloch-decodings'] = JSON.stringify(decodeClone);

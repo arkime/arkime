@@ -26,7 +26,7 @@
     <!-- packet options -->
     <div v-show="!loading && !hidePackets && !user.hidePcap"
       class="packet-options mr-1 ml-1">
-      <form class="form-inline mb-2 pt-2">
+      <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loading || loadingPackets || errorPackets || renderingPackets">
           <packet-options
             :params="params"
@@ -37,6 +37,7 @@
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
+            @toggleDecoding="toggleDecoding"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
@@ -110,6 +111,7 @@
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
+            @toggleDecoding="toggleDecoding"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
@@ -259,6 +261,9 @@ export default {
     updateDecodings: function (decodings) {
       this.params.decode = decodings;
       this.getPackets();
+    },
+    toggleDecoding: function (key, isActive) {
+      this.$set(this.decodings[key], 'active', isActive);
     },
     /* helper functions ---------------------------------------------------- */
     /**

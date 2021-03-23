@@ -55,7 +55,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new ESLintPlugin({
       emitError: true,
       emitWarning: true,
-      failOnError: true,
+      failOnError: false,
       extensions: ['js', 'vue'],
       context: path.resolve(__dirname, '../'),
       overrideConfigFile: path.resolve(__dirname, '../../../.eslintrc.js')
