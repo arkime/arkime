@@ -191,9 +191,9 @@ exports.getSession = function (id, options, cb) {
       return cb(null, session);
     }
     exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
-      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-      if (fileInfo) {
+      if (fileInfo && fileInfo.packetPosEncoding) {
         if (fileInfo.packetPosEncoding === 'gap0') {
+          // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
           let last = 0;
           let lastgap = 0;
           for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
@@ -211,6 +211,7 @@ exports.getSession = function (id, options, cb) {
           }
           return cb(null, session);
         } else if (fileInfo.packetPosEncoding === 'localIndex') {
+          // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
           exports.isLocalView(fields.node, () => {
             const newPacketPos = [];
             async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
@@ -258,7 +259,7 @@ exports.getSession = function (id, options, cb) {
             return cb(null, session);
           });
         } else {
-          console.log('Unsupported packetPosEncoding', fileInfo);
+          console.log('Unknown packetPosEncoding', fileInfo);
           return cb(null, session);
         }
       } else {
