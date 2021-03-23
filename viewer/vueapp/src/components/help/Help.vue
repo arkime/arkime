@@ -164,7 +164,7 @@
       <p>
         Most Arkime tabs have a search bar on the top of the page.
         Arkime uses a very simple query language for building expressions. It
-        supports grouping using parenthesis as well as logical AND and OR statements using
+        supports grouping using parentheses as well as logical AND and OR statements using
         <code>&amp;&amp;</code> and <code>||</code> respectively.
         Fields can be accessed directly using the field names
         and operators described in the
@@ -227,7 +227,7 @@
           </dd>
           <dt>Lists</dt>
           <dd>
-            In Arkime, lists are used as a short hand method for doing multiple OR queries. For example
+            In Arkime, lists are used as a shorthand method for doing multiple OR queries. For example
             <code>protocols == [http,ssh]</code>. This query will search for any sessions containing either http OR ssh.
             <strong>Note:</strong> A list containing wildcard or regex strings will be processed as normal strings instead
             of wildcards and regexes.
@@ -253,7 +253,7 @@
         </h6>
         <p>
           Numeric fields support simple range operators besides the default equals
-          and not equals query types. For example, to show events with bytes transferred being less then 10000,
+          and not equals query types. For example, to show events with bytes transferred being less than 10000,
           use this query: <code>bytes &lt;= 10000</code>.
           Numeric fields also support lists for a simple OR query. For example, <code>port == [80,443,23]</code>
         </p>
@@ -405,7 +405,7 @@
           <ul>
             <li>
               Apply a view by clicking its name. This overlays the view onto the current query and issues a search.
-              If the Session's table colums were saved with the view, the table columns are updated.
+              If the Session's table columns were saved with the view, the table columns are updated.
             </li>
             <li>
               Click "New View" to add the current query as a new view.
@@ -442,8 +442,8 @@
             <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
             <li>Tags may be added or removed from the sessions which have been detected by the analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.</li>
             <li>Send the selected data to another system for further analysis.</li>
-            <li>Scrub packet data by overwriting the packets (if a user has data removal privelages).</li>
-            <li>Delete SPI and PCAP data entirely (if a user has data removal privelages).</li>
+            <li>Scrub packet data by overwriting the packets (if a user has data removal privileges).</li>
+            <li>Delete SPI and PCAP data entirely (if a user has data removal privileges).</li>
           </ol>
           Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
           any items visible (on the current page), or all items which have matched the query string.
@@ -530,7 +530,7 @@
         an analyst can hover over field values within the SPI View to add the specific item as an AND or AND NOT to their query. This page also allows an
         analyst a quick view into counts of each item that the user is interested in. As an example, if a analyst wanted to see all BASIC authorization headers that have been recorded
         over the current time window, an analyst could open the http drawer and click to enable the http.authorization field. The analyst could then update their search query to either
-        include a specific authorization string which has been observed, or use a wild card to see all of a certain type of authorization header (Basic *, BEARER *, etc). Additionally,
+        include a specific authorization string which has been observed, or use a wildcard to see all of a certain type of authorization header (Basic *, BEARER *, etc). Additionally,
         the SPI View allows an analyst a quick view of observed IP addresses within the time window, http response codes, IRC NICKs/Channels, and much, much more.
       </p>
       <p>
@@ -548,7 +548,7 @@
       <p>
         The SPI Graph page allows a user to visualize, via bar charts over time, any item within the SPI View page. This page is very useful for both at a glance views of activity per SPI type,
         as well as deep dive analysis. For example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection typeahead.
-        Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigates SPI type is noisy.
+        Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigated SPI type is noisy.
         An analyst can sort by either the noisiest value (graph) or by alphabetical order (name). This page also has the ability to update every X seconds.
       </p>
 
@@ -640,7 +640,7 @@
         </h6>
         <p>
           You can specify a "Baseline" time range to show changes in the network by
-          highlighting new or old conections appearing in and disappearing from the network.
+          highlighting new or old connections appearing in and disappearing from the network.
           You'll see indications next to each node label and in node popups to describe the state of each node:
           <ul>
             <li>New nodes ( ✨) - in actual but not baseline results.</li>
@@ -681,7 +681,7 @@
           <dt>Max number of packets to examine per session</dt>
           <dd>The maximum number of packets that the hunt will search within each session</dd>
           <dt>Notify</dt>
-          <dd>An otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
+          <dd>An optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
           <dt>Search</dt>
           <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
           <dt>Search src/dst packets</dt>
@@ -704,7 +704,7 @@
       </p>
       <p>
         <strong>Info:</strong> A normal user can only view/pause/delete their own hunts, but an admin can view/pause/delete all hunts.<br>
-        <strong>Warning:</strong> The packet search will take a long time and possibly slow down viewer if you search many sessions.
+        <strong>Warning:</strong> The packet search will take a long time and possibly slow down the viewer if you search many sessions.
         Users will be alerted if they are trying to search for more than 100,000 sessions. Normal users cannot search more than 1,000,000
         sessions, and admins cannot search more than 10,000,000 sessions (these values can be overwritten in the config).
       </p>
@@ -734,7 +734,7 @@
           Capture Graphs
         </h6>
         <p>
-          The Capture Graphs tab displays realtime graphs representing what the capture node is doing.
+          The Capture Graphs tab displays real time graphs representing what the capture node is doing.
           Larger values are overplotted in successively darker colors.
           Hover over the graph to see what each capture node is capturing at any specific time.
         </p>
@@ -763,7 +763,7 @@
           <dt>CPU</dt>
           <dd>CPU percentage that Arkime is using</dd>
           <dt>Memory %</dt>
-          <dd>Perentage of memory that Arkime is using</dd>
+          <dd>Percentage of memory that Arkime is using</dd>
           <dt>Packet Q</dt>
           <dd>Number of packets that are waiting to processed</dd>
           <dt>Packets/s</dt>
@@ -799,7 +799,7 @@
           <dt>Closing Q</dt>
           <dd>Number of TCP sessions that have received a FIN and Arkime is waiting to see if actually closed</dd>
           <dt>Waiting Q</dt>
-          <dd>Number of sessions that are ready to be written but are waiting on an asynchronus request (wise, plugins) to finish</dd>
+          <dd>Number of sessions that are ready to be written but are waiting on an asynchronous request (wise, plugins) to finish</dd>
           <dt>Active Fragments</dt>
           <dd>Number of packets that are waiting on remaining IP fragments to show up</dd>
           <dt>Fragments Dropped/Sec</dt>
@@ -916,7 +916,7 @@
         <p>
           <em>
             <strong>Tip:</strong>
-            If you have data removal privelages, you can cancel tasks by clicking the
+            If you have data removal privileges, you can cancel tasks by clicking the
             <span class="fa fa-trash"></span> button.
             This is useful when you run a query that is taking longer than intended.
             <br>
@@ -937,7 +937,7 @@
         </p>
         <h6>
           <span class="fa fa-fw fa-line-chart"></span>&nbsp;
-          ES Recoveery
+          ES Recovery
         </h6>
         <p>
           The ES Recovery tab displays a table containing information for each Elasticsearch index
@@ -1073,7 +1073,7 @@
             <li>Set their default Sessions table sort</li>
             <li>Set their default SPI Graph field</li>
             <li>Set their default Connections source field</li>
-            <li>Set their default Connetions destination field</li>
+            <li>Set their default Connections destination field</li>
           </ol>
         </p>
         <h6>
@@ -1118,7 +1118,7 @@
           <br>
           <em>
             <strong>Note:</strong>
-            Be careful with this feature, it is easy to make the UI completley unusable.
+            Be careful with this feature, it is easy to make the UI completely unusable.
           </em>
         </p>
         <h6>
