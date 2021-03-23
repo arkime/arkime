@@ -157,7 +157,7 @@ export default {
         })
         .catch((error) => {
           // display the error under the form so that user
-          // has an oportunity to try again (don't close the form)
+          // has an opportunity to try again (don't close the form)
           this.error = error.text;
           this.loading = false;
         });

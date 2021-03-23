@@ -1053,8 +1053,8 @@ export default {
     },
     /**
      * Updates a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to udpate
-     * @param {int} index       The index in the array of the column config to udpate
+     * @param {string} colName  The name of the column config to update
+     * @param {int} index       The index in the array of the column config to update
      */
     updateColumnConfiguration: function (colName, index) {
       const data = {

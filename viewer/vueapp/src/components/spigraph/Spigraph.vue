@@ -269,7 +269,7 @@ import Utils from '../utils/utils';
 
 let oldFieldObj;
 let refreshInterval;
-let respondedAt; // the time that the last data load succesfully responded
+let respondedAt; // the time that the last data load successfully responded
 let pendingPromise; // save a pending promise to be able to cancel it
 
 export default {

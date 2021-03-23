@@ -419,7 +419,7 @@ export default {
         index++;
       }
 
-      // remove the item from the field history resutls
+      // remove the item from the field history results
       this.fieldHistoryResults.splice(index, 1);
 
       // save the field history for the user
@@ -463,7 +463,7 @@ export default {
       return found;
     },
     /**
-     * Filters the field history results and sets varaibles so that the view
+     * Filters the field history results and sets variables so that the view
      * and other functions know that a field is being searched in the typeahead
      * @param {string} strToMatch The string to compare the field history to
      */
