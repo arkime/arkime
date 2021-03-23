@@ -17,10 +17,10 @@ This Code of Conduct makes our expectations of participants in this community ex
 We expect participants in this community to conduct themselves professionally. Since our primary mode of communication is text on an online forum (e.g. issues, pull requests, comments, emails, or chats) devoid of vocal tone, gestures, or other context that is often vital to understanding, it is important that participants are attentive to their interaction style.
 
 * **Assume positive intent.** We ask community members to assume positive intent on the part of other people’s communications. We may disagree on details, but we expect all suggestions to be supportive of the community goals.
-* **Respect participants.** We expect participants will occasionally disagree. Even if we reject an idea, we welcome everyone’s participation. Open Source projects are learning experiences. Ask, explore, challenge, and then respectfully assert if you agree or disagree. If your idea is rejected, be more persuasive not bitter.
+* **Respect participants.** We expect participants will occasionally disagree. Even if we reject an idea, we welcome everyone’s participation. Open Source projects are learning experiences. Ask, explore, challenge, and then respectfully assert if you agree or disagree. If your idea is rejected, be more persuasive, not bitter.
 * **Welcoming to new members.** New members bring new perspectives. Some may raise questions that have been addressed before. Kindly point them to existing discussions. Everyone is new to every project once.
 * **Be kind to beginners.** Beginners use open source projects to get experience. They might not be talented coders yet, and projects should not accept poor quality code. But we were all beginners once, and we need to engage kindly.
-* **Consider your impact on others.** Your work will be used by others, and you depend on the work of others. We expect community members to be considerate and establish a balance their self-interest with communal interest.
+* **Consider your impact on others.** Your work will be used by others, and you depend on the work of others. We expect community members to be considerate and establish a balance between their self-interest and communal interest.
 * **Use words carefully.** We may not understand intent when you say something ironic. Poe’s Law suggests that without an emoticon people will misinterpret sarcasm. We ask community members to communicate plainly.
 * **Leave with class.** When you wish to resign from participating in this project for any reason, you are free to fork the code and create a competitive project. Open Source explicitly allows this. Your exit should not be dramatic or bitter. 
 
@@ -34,7 +34,7 @@ Participants remain in good standing when they do not engage in misconduct or ha
 * **Don't disrupt.** Sustained disruptions in a discussion.
 * **Let us help.** Refusal to assist the Response Team to resolve an issue in the community.
 
-We do not list all forms of harassment, nor imply some forms of harassment are not worthy of action. Any participant who *feels* harassed or *observes* harassment, should report the incident. Victim of harassment should not address grievances in the public forum, as this often intensifies the problem. Report it, and let us address it off-line.
+We do not list all forms of harassment, nor imply some forms of harassment are not worthy of action. Any participant who *feels* harassed or *observes* harassment, should report the incident. Victims of harassment should not address grievances in the public forum, as this often intensifies the problem. Report it, and let us address it off-line.
 
 ### Reporting Issues
 If you experience or witness misconduct, or have any other concerns about the conduct of members of this project, please report it by contacting our Response Team at opensource-conduct@verizonmedia.com who will handle your report with discretion. Your report should include:

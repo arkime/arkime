@@ -135,7 +135,7 @@ The documentation lives on our website at [arkime.com/api](https://arkime.com/ap
 
 ### Code of Conduct
 
-We encourage inclusive and professional interactions on our project. We welcome everyone to open an issue, improve the documentation, report bug or submit a pull request. By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). If you feel there is a conduct issue related to this project, please raise it per the Code of Conduct process and we will address it.
+We encourage inclusive and professional interactions on our project. We welcome everyone to open an issue, improve the documentation, report a bug or submit a pull request. By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). If you feel there is a conduct issue related to this project, please raise it per the Code of Conduct process and we will address it.
 
 ---
 
