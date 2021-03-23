@@ -528,7 +528,7 @@
       <p>
         The SPI (Session Profile Information) View is used to dive into specific metrics of a session which an analyst wishes to investigate further. Instead of manually writing a query,
         an analyst can hover over field values within the SPI View to add the specific item as an AND or AND NOT to their query. This page also allows an
-        analyst a quick view into counts of each item that the user is interested in. As an example, if a analyst wanted to see all BASIC authorization headers that have been recorded
+        analyst a quick view into counts of each item that the user is interested in. As an example, if an analyst wanted to see all BASIC authorization headers that have been recorded
         over the current time window, an analyst could open the http drawer and click to enable the http.authorization field. The analyst could then update their search query to either
         include a specific authorization string which has been observed, or use a wildcard to see all of a certain type of authorization header (Basic *, BEARER *, etc). Additionally,
         the SPI View allows an analyst a quick view of observed IP addresses within the time window, http response codes, IRC NICKs/Channels, and much, much more.
@@ -1163,7 +1163,7 @@
       </h3>
       <p v-has-permission="'createEnabled'">
         The Users page, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
-        These options in include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
+        These options include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
         if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
         This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users <a href="help#settings" class="no-decoration">Settings</a> page.
       </p>
