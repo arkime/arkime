@@ -60,7 +60,7 @@ import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
 
 let reqPromise; // promise returned from setInterval for recurring requests
-let respondedAt; // the time that the last data load succesfully responded
+let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'NodeStats',
