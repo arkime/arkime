@@ -75,7 +75,7 @@ mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
     else
       +clickableValue('ip.' + expr, ipstr)
     - if (port !== undefined)
-      strong :
+      strong #{sep}
       if (full)
         +clickableValue(`${expr}.port`, port)
       else
