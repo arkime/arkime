@@ -4,7 +4,7 @@ Capture is a multithreaded glib2 application
 
 In general capture tries to not use locks for anything but queues when communicating between threads.
 When possible we use read only complex data structures shared across threads.
-When those data structures need to be updated we create a new one and replace the old one, which is schedule to be freed at a later time (moloch_free_later) so any curernt readers don't crash.
+When those data structures need to be updated we create a new one and replace the old one, which is scheduled to be freed at a later time (moloch_free_later) so any current readers don't crash.
 
 ## capture
 The main thread, all http requests are on the main thread.  
@@ -36,7 +36,7 @@ A single thread that is responsible for writing out to disk the completed pcap b
 
 # Parsers vs Plugins
 
-In reality there isn't much difference between parsers and plugins, other then when they are loaded and when they are initialized.
+In reality there isn't much difference between parsers and plugins, other than when they are loaded and when they are initialized.
 
 ## Parsers
 Anything in the parsers directories (parsersDir) are auto loaded and the moloch_parser_init function is called when loaded.
