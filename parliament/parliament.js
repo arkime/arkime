@@ -649,13 +649,12 @@ function getStats (cluster) {
 
           // look for no packets issue
           if (stat.deltaPacketsPerSec <= getGeneralSetting('noPackets')) {
-            now = Date.now();
             const id = cluster.title + stat.nodeName;
 
             // only set the noPackets issue if there is a record of this cluster/node
             // having noPackets and that issue has persisted for the set length of time
             if (noPacketsMap[id] &&
-              now - noPacketsMap[id] >= (getGeneralSetting('noPacketsLength') * 1000)) {
+              Date.now() - noPacketsMap[id] >= (getGeneralSetting('noPacketsLength') * 1000)) {
               setIssue(cluster, {
                 type: 'noPackets',
                 node: stat.nodeName,
