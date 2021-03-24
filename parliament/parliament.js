@@ -590,7 +590,7 @@ function getStats (cluster) {
     };
 
     // Get now before the query since we don't know how long query/response will take
-    let now = Date.now() / 1000;
+    const now = Date.now() / 1000;
     rp(options)
       .then((response) => {
         cluster.statsError = undefined;
