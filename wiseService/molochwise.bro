@@ -177,7 +177,7 @@ event file_hash(f: fa_file, kind: string, hash: string)
     flush_all();
 }
 
-# Make sure nothing is waiting more then 5 seconds
+# Make sure nothing is waiting more than 5 seconds
 event wisetimer()
 {
     if (|wise_next_lookups["md5"]| > 0 || |wise_next_lookups["ip"]| > 0) {
