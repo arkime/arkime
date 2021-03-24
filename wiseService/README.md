@@ -56,7 +56,7 @@ To start the app for development and testing:
 * Move to the top level Arkime directory
 * run `npm run wise:dev`
 
-This command starts the app with the necessary config options set (`-c ../tests/config.test.ini`) and bundles the unminified application files into into the `wiseService/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../tests/config.test.ini`) and bundles the unminified application files into the `wiseService/vueapp/dist` folder.
 
 `npm run wise:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 

@@ -253,7 +253,7 @@ NOTICE: Restart wiseService before capture when upgrading
 2.2.1 2020/01/21
   - capture - fix --skip not working with ES 7.x
   - capture - update TLS ciphers
-  - capture - increaase offlineDispatchAfter default to 2500
+  - capture - increase offlineDispatchAfter default to 2500
   - capture - cert decode publicAlgorithm and curve
   - db - optimize-admin doesn't wait for other optimizations to finish
   - lua - save/pre_save callbacks, can now get most fields
@@ -282,7 +282,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - disable the 100-Continue feature of curl to reduce bulk errors
   - capture - smtp parse now maps a few encodings to standards glib understands
   - s3 - support maxFileTimeM
-  - db - support creating ILM policys and assigning them for sessions2 and history
+  - db - support creating ILM policies and assigning them for sessions2 and history
   - db - new optimize-admin that only optimizes admin indices
   - parliament - Click on ES health goes to ES Nodes tab
 
@@ -330,7 +330,7 @@ NOTICE: Restart wiseService before capture when upgrading
              new maxAggSize setting
   - viewer - added right-click replacer for %DBFIELD% (thanks tlacuache)
   - viewer - display JA3s and hassh
-  - viewer - support file expresssion in more places (issue #1172)
+  - viewer - support file expression in more places (issue #1172)
   - viewer - fix files date display (issue #1164)
   - viewer - csp header support
   - viewer - Fix some XSS/rXSS by setting correct content type
@@ -372,7 +372,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - add bytes as a graphing choice
   - viewer - support ip == ipv4 and ip == ipv6 expressions
   - viewer - pivot dropdown option in spiview (issue #1135)
-  - viewer - optional milisecond display
+  - viewer - optional millisecond display
   - viewer - Support view parameter for unique/multiunique
   - viewer - Support ES client auth and insecure better (thanks Scott)
   - viewer - Lots of stats summing, avg, sorting fixes
@@ -383,7 +383,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fixed ja3 mishandling of 11 extension types (thanks Norwegian Healthcare CERT)
   - capture - Added startsWith,contains,endsWith rule expression modifier
   - capture - honor the caTrustFile directive (thanks Matt)
-  - capture - fix data bytes calulations for icmp/udp (thanks Brian)
+  - capture - fix data bytes calculations for icmp/udp (thanks Brian)
   - capture - initial vxlan support
   - capture - Myricom/AFPacket improvements (thanks Scott)
   - capture - updates to classifiers: telnet, mpls
@@ -427,7 +427,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - libfuzzer support and initial fixes
   - parliament - add no alert cluster type
   - parliament - remove selected acknowledged issues
-  - parliment - add help page
+  - parliament - add help page
 
 
 1.7.0 2019/01/17
@@ -471,7 +471,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - parliament - add option to provide link to dashboard in alert notifications
   - viewer - configure connection node/link popup data
   - release - build snf plugin with screwdriver
-  - capture - fix tls parser inifite loop
+  - capture - fix tls parser infinite loop
   - viewer - can customize fields in the info column
   - viewer - new es recovery tab
   - viewer - stats page shows when data is being loaded from server
@@ -617,7 +617,7 @@ NOTICE: Restart wiseService before capture when upgrading
 
 1.1.0 2018/04/30
   - all - basic sctp capturing, no decoding (issue #828)
-  - all - intial unencrypted 802.11 Data Frame support (issue #834)
+  - all - initial unencrypted 802.11 Data Frame support (issue #834)
   - db - new segments option to expire and optimize
   - release - curl, node, cyberchef
   - viewer - http.uri and host* allows pasting a URL and doing the right thing (pull #831)
@@ -666,7 +666,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - fix disable fields
   - capture - src/dst ip/port can be used to trigger rules now
   - capture - ip fields in rules can now be CIDR
-  - capture - simple writer now flushes after 10 seconds of no writting
+  - capture - simple writer now flushes after 10 seconds of no writing
               there still can be pagesize bytes unwritten (issue #777)
 
 1.0.0-alpha2 2018/01/31
@@ -696,7 +696,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - new hourly6 rotateIndex, for every 6 hours
   - parliament - first version of alerts
   - parliament - rename server.js to parliament.js
-  - wise - trim spaces after spliting config values
+  - wise - trim spaces after splitting config values
   - capture - better pop3 detection
   - capture - correctly lowercase user
   - release - added --install to easybutton (issue #812)
@@ -791,7 +791,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - add href to nav tab links (issue #651)
   - viewer - save spiview fields (issue #715)
   - easybutton - Upgrade yara, glib, curl versions
-  - viewer - session columns are resizeable (issue #676)
+  - viewer - session columns are resizable (issue #676)
   - wise - ja3 support
   - capture - fixed capture crash when wiseService is restarted
   - release - build a better NOTICE file for binary releases
@@ -878,7 +878,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - handle certs with pre epoch times
   - capture - more magicMode basic detections
   - db - Handle timeouts and nodeNames better with upgrading from db version 30 to 34
-  - capture - fix race condition when quiting and processing unsaved sessions
+  - capture - fix race condition when quitting and processing unsaved sessions
 
 0.18.0 2017/03/21
   - NOTICE: Upgrading to 0.18 requires an outage for db.pl upgrade (~5 min)
@@ -936,7 +936,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - Initial pcap encoding support, variables
     * simpleEncoding: aes-256-ctr or xor-2048
     * simpleKEKId - The kek id to use from the keks section
-    * [keks] - A section with multipl kekid=passwords
+    * [keks] - A section with multiple kekid=passwords
   - capture - Fixed yara 1.7 multithread crash (issue #568)
   - capture - Handle frag gre with frag ip inside
   - viewer - New Help UI (based on new ui)
@@ -1050,7 +1050,7 @@ NOTICE: Restart wiseService before capture when upgrading
 0.14.1 2016/06/02
   - NOTICE: glib 2.40 required (should be using 2.47 or higher)
   - capture - initial lua scripting support
-  - wise - initial bro quering support
+  - wise - initial bro querying support
   - capture - debug all config requests with --debug
   - viewer - fixed XSS (issue #471)
   - capture - simple ldap parser
@@ -1102,9 +1102,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - tests - http.referer tests
   - capture - smtp now handles no space for mail from, rcpt to (issue #442)
   - capture - basic jabber/sip protocol detection
-  - capture - http:password set for case insensitve password= now
+  - capture - http:password set for case insensitive password= now
   - capture - rdp "Cookie" if present is stored in user field
-  - viewer - support auto complete on all fields (experimental)
+  - viewer - support autocomplete on all fields (experimental)
   - capture - fix for tagger.so crash on XFF fields introduced in 0.12.2
   - easybutton - node 0.10.43, libpcap 1.7.3
   - easybutton - disable bluetooth in libpcap (issue #445)
@@ -1184,7 +1184,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Switched hacking viewer
   - viewer - Decoding is now handled with node streams which will allow
              chaining and plugin decoders eventually - npm update required
-  - capture - Added cookie value parsing, default off controled by
+  - capture - Added cookie value parsing, default off controlled by
               parseCookieValue (issue #371)
   - viewer - EXISTS! fixes, tests, and docs (issue #367)
   - viewer - Reuse Uncompress and Files settings between sessions
@@ -1192,7 +1192,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Switch actions/views menu to jquery-ContextMenu which looks more like a menu
   - capture - Handle ASCII formated SMB strings
   - capture - payload8 wasn't always all 8 bytes
-  - viewer - Initial configration of displayed columns (issue #257)
+  - viewer - Initial configuration of displayed columns (issue #257)
   - capture - reenabled ftp/lmtp classify
   - capture - vnc classify (issue #382)
   - capture - fixed tcp_flags for netflow (pr #386)
@@ -1268,7 +1268,7 @@ NOTICE: Restart wiseService before capture when upgrading
     - if upgrading (cd plugins ; rm emergingthreats.detail.jade opendns.detail.jade threatq.detail.jade threatstream.detail.jade)
   - New offlineFilenameRegex setting to control witch files are matched with -R (issue #313)
   - monitor + recursive should monitor new directories (issue #305)
-  - Fixed addUser.js error with when mulitple es nodes are listed in config.ini (issue #322)
+  - Fixed addUser.js error with when multiple es nodes are listed in config.ini (issue #322)
   - WISE - Tagger files can have views defined with #view:
   - New cert.notbefore, cert.notafter, cert.validfor fields (issue #329)
   - New starttime, stoptime, view fields (issue #307)
@@ -1341,7 +1341,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Mouse over view names shows expression (issue #220)
   - Display SPI Data even if node is unavailabe (issue #219)
   - Netflow plugin timestamp fixes (issue #241)
-  - Comma separate list of elasticsearch hosts (issue #176)
+  - Comma separated list of elasticsearch hosts (issue #176)
   - New includes directive (issue #144)
   - Initial bigendian support in viewer (issue #259)
   - List queries can now have wildcard and regex items.
@@ -1397,7 +1397,7 @@ NOTICE: Restart wiseService before capture when upgrading
     round robin is supported
   - UI: Fix Search/Actions showing up on second line on page load
   - capture now does memlock and max schedule priority on startup (issue #199)
-  - when yara is disabled dont retain extra data
+  - when yara is disabled don't retain extra data
   - parse email user names
   - antiSynDrop config option
   - remove schedule priority change for now
@@ -1550,7 +1550,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Work around for tcp seq number wrapping causing viewer exit
   - dns parsing core fix
   - switch to nonblocking pcap saves
-  - more debuging info on proxy failure
+  - more debugging info on proxy failure
   - Fixed bug when setting viewUrl
   - Limit number of libnids errors (issue #115)
   - Display possible reasons for libnids IP Header error
@@ -1586,7 +1586,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Deal with non data ES nodes
   - Viewer prints error if it can't find pcapDir setting
   - New setting dbFlushTimeout that controls how often we flush to ES
-  - New setting compressES that turns on compresesion to ES, requires
+  - New setting compressES that turns on compression to ES, requires
     http.compression: true in elasticsearch yml file
   - libnids was overreporting traffic, switch to libpcap stats,
     bytes/sec and total bytes/sec in stats will be lower
@@ -1678,7 +1678,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - config spiDataMaxIndices controls how many indices to run against since
     spiview feature can cause elastic search to blowup memory.
   - display date as year/mon/day
-  - Lots of UI cleanup, slighly less ugly as before hopefully
+  - Lots of UI cleanup, slightly less ugly as before hopefully
   - 32 bit builds should work
   - Fixed bug where status codes/http methods weren't always recorded
   - New SMTP plugin callbacks, more to come
@@ -1694,7 +1694,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - fixed user name XSS issue [thanks z0mbiehunt3r]
   - fixed many viewer exits
   - timestamp display option in sessionDetail
-  - graph now uses seconds if less then 30 minutes and hours if more
+  - graph now uses seconds if less than 30 minutes and hours if more
     then 5 days.  This makes display faster
   - Refactored how capture stores spi data in memory
   - Refactored hash table code

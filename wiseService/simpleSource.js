@@ -31,7 +31,7 @@ const iptrie = require('iptrie');
  * Sources need to
  * * implement WISESource#initSource
  * * implement SimpleSource#simpleSourceLoad
- * * they can optionaly call this.load() if they want to force a reload of data
+ * * they can optionally call this.load() if they want to force a reload of data
  * @extends WISESource
  */
 class SimpleSource extends WISESource {

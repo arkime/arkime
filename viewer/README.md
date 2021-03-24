@@ -61,7 +61,7 @@ npm run start:testuser
 
 For this to work, your `tests/config.test.ini` must be valid.
 
-These first command adds an "admin" user. The second command starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
+The first command adds an "admin" user. The second command starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
 
 Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
 

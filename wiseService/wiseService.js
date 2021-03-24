@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* wiseService.js -- Server requests between moloch and various intel services
+/* wiseService.js -- Server requests between Arkime and various intel services
  *                   and files
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
