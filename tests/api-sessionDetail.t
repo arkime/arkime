@@ -1,4 +1,4 @@
-use Test::More tests => 26;
+use Test::More tests => 28;
 
 use Cwd;
 use URI::Escape;
@@ -106,3 +106,14 @@ my $pwd = "*/pcap";
 
     $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/bodyHash/a4a7b8b5eaf4c2cf356b105c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
     is($sd, "No match", "No Match");
+
+# ipv6/4 port separators
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/detail")->content;
+    ok($sd =~ m{Export Unique Src IP.Port}s, "ipv6 separator");
+
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+    $sd = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/detail")->content;
+    ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
