@@ -93,7 +93,7 @@ export default {
     }
   },
   computed: {
-    // compute the route param becuase watcher only accepts dot-delimited paths
+    // compute the route param because watcher only accepts dot-delimited paths
     routeParams: function () {
       return this.$route.query[this.queryParam];
     }
@@ -230,7 +230,7 @@ export default {
         index++;
       }
 
-      // remove the item from the field history resutls
+      // remove the item from the field history results
       this.filteredFieldHistory.splice(index, 1);
 
       // save the field history for the user
