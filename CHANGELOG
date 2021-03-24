@@ -276,7 +276,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - Intersection export allows editing of fields
   - viewer - Panning graph left/right allows selection of how much
   - viewer - Refresh interval on spigraph page increments time (if it's a date range)
-  - capture - geoLite2ASN and geoLite2Country are now semicolon separatedd
+  - capture - geoLite2ASN and geoLite2Country are now semicolon separated
               lists.  The first one that exists will be used or warning
               printed.  To disable warning set to blank.
   - capture - disable the 100-Continue feature of curl to reduce bulk errors
@@ -363,7 +363,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - all - elasticsearch 7 support
   - db - backup command now saves meta data so restore can do a rollback (thanks codesniffer)
   - db - improve optimize to deal with connection closed better
-  - parliament - Can configure multiplee of each type of notifier
+  - parliament - Can configure multiple of each type of notifier
   - viewer - Can display pcap retention in Capture Stats tab
   - viewer - Added uploadFileSizeLimit
   - viewer - Can interact with users in multiES if usersElasticsearch is set
@@ -498,7 +498,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - option to add sessions table column configuration to a view
   - viewer - files and stats tables can be customized
   - suricata - parse severity
-  - capture - new _don'tCheckYara rule ops
+  - capture - new _dontCheckYara rule ops
   - parliament - add --debug option
   - parliament - add --dasboardOnly flag
   - capture - set vlan field for afpacket
@@ -509,7 +509,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new setting parseSMTPHeaderAll, which will parse ALL email headers
               not already parsed into 1 ES field (pr #914)
   - capture - new setting parseDNSRecordAll, which will parse a full DNS record
-              into multiplee new ES fields (pr #914)
+              into multiple new ES fields (pr #914)
   - viewer - show shortcuts on shift
   - capture - initial gtp tunnel support (issue #926)
   - wise - new wiseLogEvery to control how often plugin logs (0 disables)
@@ -523,7 +523,7 @@ NOTICE: Restart wiseService before capture when upgrading
 1.5.3 2018/09/10
   - release - libpcap 1.9.0
   - all - new hourly[2348]/hourly12 rotateIndex
-  - all - deal with talking to multiplee wise servers better
+  - all - deal with talking to multiple wise servers better
   - all - --insecure option
   - all - use package-lock.json so all builds use the same packages
   - viewer - fix some spiview display issues (dns ip, email headers)
@@ -691,7 +691,7 @@ NOTICE: Restart wiseService before capture when upgrading
 0.50.1 2018/03/29
   - NOTICE: Supported ES Versions: >= 5.5.0, 6.x is NOT supported
   - release - upgrade curl, yara, glib
-  - viewer - sessions.csv handle multiplee fields parameters
+  - viewer - sessions.csv handle multiple fields parameters
   - parliament - better dismissing
   - all - new hourly6 rotateIndex, for every 6 hours
   - parliament - first version of alerts
@@ -814,7 +814,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - CyberChef integration (must always add hex decoding)
   - viewer - spigraph sort and refreshing improvements
   - viewer - spiview fixed unique malform url
-  - viewer - stats allow comma separatedd list
+  - viewer - stats allow comma separated list
   - capture - rulesFiles and rules support
   - capture - fixed daq building
   - viewer - ES scrolling didn't work (issue #697)
@@ -867,7 +867,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - connections tab links are rendered correctly (issue #641)
   - viewer - make sure connections popup renders inside view (issue #644)
   - capture - support ES basic auth (issue #679)
-  - release - Configure supports multiplee interfaces
+  - release - Configure supports multiple interfaces
   - release - only use systemd files if systemctl and /etc/systemd exists
 
 0.18.1 2017/03/28
@@ -905,7 +905,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - pcapWriteMethod=simple-nodirect uses the simple writer without direct
               writes.  Required for some file systems like zfs
   - viewer - spigraph tab uses new ui (/spigraph.old available temporarily)
-  - capture - tpacketv3 handles multiplee interfaces correctly (issue #658)
+  - capture - tpacketv3 handles multiple interfaces correctly (issue #658)
   - easybutton - singlehost and config removed, build remains for now
                  make install & make config should work
   - capture -
@@ -921,7 +921,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - new settings page
   - capture - tpacketv3 no longer requires a bpf
   - capture - pfring uses batch packet api
-  - capture - fix libpcap multiplee interface crash (issue #610)
+  - capture - fix libpcap multiple interface crash (issue #610)
   - release - Configure improvements
 
 0.17.0 2017/01/05
@@ -931,7 +931,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - New sessions UI (newUI=true)
   - all - Initial ES 5.0 support (do not use in production!)
   - all - Refactor many ES calls to remove depreciated syntax
-  - viewer - Handle multiplee query parameters better
+  - viewer - Handle multiple query parameters better
   - WISE - basic elasticsearch source
   - all - Initial pcap encoding support, variables
     * simpleEncoding: aes-256-ctr or xor-2048
@@ -992,7 +992,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - http passer now tags passwd= and pass= as http:password
   - capture - running on ipv6 improvements (issue #545)
   - capture - 0.15.1 broke antiSynDrop=false, now works again
-  - viewer - supports multiplee --debug on command line to up level
+  - viewer - supports multiple --debug on command line to up level
   - release - supports systemd and lua plugin, slightly more user friendly
 
 0.15.1 2016/10/05
@@ -1077,7 +1077,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - basic ipv6
   - viewer - Columns can be hidden/moved on stats, sessions pages
   - capture - pfring and daq support are now plugins (capture/plugins)
-  - capture - can monitor multiplee interfaces
+  - capture - can monitor multiple interfaces
   - capture - udp can parse all packets in session now
   - dns - now parses all requests/responses
   - dns - parse multi packet tcp requests
@@ -1157,8 +1157,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - db - Added warning for ES below 1.6.2
   - wise - use native hashtable, required for threatstream
   - viewer - fixed addTags to work with session that have no tags
-  - capture - fixed multiplee smtp, smb and ssh buffer overflow read/writes (reported by jbremer)
-  - viewer - fixed multiplee XSS injections (reported by jbremer)
+  - capture - fixed multiple smtp, smb and ssh buffer overflow read/writes (reported by jbremer)
+  - viewer - fixed multiple XSS injections (reported by jbremer)
   - viewer - fixed crash when viewing large mime messages
   - capture - irc detection improvement
   - capture - --quiet flag (issue #427)
@@ -1233,10 +1233,10 @@ NOTICE: Restart wiseService before capture when upgrading
   - NOTICE: Requires running db.pl host:port upgrade
   - For NEW installs can now set a prefix= config variable and
     db.pl --prefix option that will prefix all ES tables.  This makes
-    it easier for Moloch to share ES with other services OR multiplee
+    it easier for Moloch to share ES with other services OR multiple
     Moloch clusters can use 1 ES cluster with different prefixes.
   - New usersElasticsearch= and usersPrefix= config that make it possible
-    for multiplee Moloch clusters to share a single users table.
+    for multiple Moloch clusters to share a single users table.
   - viewer: removal of pre 1.2 ES things
   - Some cron efficiency improvements
   - Check more often if files need to be expired
@@ -1298,7 +1298,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Cache user lookups for 5 seconds
   - don'tSaveTags config can now have a :<num> for each tag which
     specifies the total packets to save. (issue #278)
-  - Allow multiplee -r and -R options
+  - Allow multiple -r and -R options
   - Fixed update vs upgrade message (issue #287)
   - Fixed expression errors not displayed on connections tab (issue #288)
   - Added vlan and mac.src, mac.dst, mac indexing/expressions (issue #284)
@@ -1393,7 +1393,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - New email.hasheader
   - New packets.(src|dst), bytes.(src|dst), databytes.(src|dst) (issue #206)
   - New payload8.(src|dst), payload.(hex|utf8), payload.(src|dst).(hex|utf8) (issue #209)
-  - pcapDir can now be a semicolon separatedd list of directories, currently just
+  - pcapDir can now be a semicolon separated list of directories, currently just
     round robin is supported
   - UI: Fix Search/Actions showing up on second line on page load
   - capture now does memlock and max schedule priority on startup (issue #199)
@@ -1432,9 +1432,9 @@ NOTICE: Restart wiseService before capture when upgrading
   - Non standard date param added to menu
   - Http file parsing improvements
   - ES health loaded on page load (issue #172)
-  - Session detail check boxes work multiplee times again
+  - Session detail check boxes work multiple times again
   - core fix with empty tagging plugin information
-  - multiplee connections.csv files (issue #163)
+  - multiple connections.csv files (issue #163)
   - fixed view editing
   - unique.txt tags fixed
   - plugins can add fields
@@ -1638,7 +1638,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - regex and wildcard searches full text instead of tokenized
   - fixed bug with uri.cnt not be recorded
   - filenumber generation rewritten, can now deal with
-    multiplee instances running and other edge cases
+    multiple instances running and other edge cases
   - http body content is md5, although the encoded
     and non encoded version will get different md5s
   - detect when npm install needs to be run
@@ -1657,7 +1657,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - record capture memory in stats
   - record filesize for offline pcap
   - remove port from http host header (issue #63)
-  - db.pl prints more info by default,  multiplee -v even more
+  - db.pl prints more info by default,  multiple -v even more
     information, and new info command
   - fixed viewer crashes if pcap can't be read (issue #67)
   - minor css cleanup
