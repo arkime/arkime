@@ -1101,13 +1101,14 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
 
 exports.key = function (packet) {
   if (!packet.ip) { return packet.ether.addr1; }
+  const sep = packet.ip.addr1.includes(':') ? '.' : ':';
   switch (packet.ip.p) {
   case 6: // tcp
-    return packet.ip.addr1 + ':' + packet.tcp.sport;
+    return `${packet.ip.addr1}${sep}${packet.tcp.sport}`;
   case 17: // udp
-    return packet.ip.addr1 + ':' + packet.udp.sport;
+    return `${packet.ip.addr1}${sep}${packet.udp.sport}`;
   case 132: // sctp
-    return packet.ip.addr1 + ':' + packet.sctp.sport;
+    return `${packet.ip.addr1}${sep}${packet.sctp.sport}`;
   default:
     return packet.ip.addr1;
   }
@@ -1121,7 +1122,8 @@ exports.keyFromSession = function (session) {
   case 'udp':
   case 132: // sctp
   case 'sctp':
-    return session.srcIp + ':' + session.srcPort;
+    const sep = session.srcIp.includes(':') ? '.' : ':';
+    return `${session.srcIp}${sep}${session.srcPort}`;
   default:
     return session.srcIp;
   }

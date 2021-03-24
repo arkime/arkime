@@ -508,6 +508,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       session.id = req.params.id;
       sortFields(session);
 
+      const sep = session.srcIp.includes(':') ? '.' : ':';
+      session.sourceKey = `${session.srcIp}${sep}${session.srcPort}`;
+      session.destinationKey = `${session.dstIp}${sep}${session.dstPort}`;
+
       if (req.query.showFrames && packets.length !== 0) {
         Pcap.packetFlow(session, packets, +req.query.packets || 200, (err, results, sourceKey, destinationKey) => {
           session._err = err;
@@ -2490,6 +2494,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           compileDebug: !internals.isProduction,
           user: req.user,
           session: session,
+          sep: session.srcIp.includes(':') ? '.' : ':',
           Db: Db,
           query: req.query,
           basedir: '/',

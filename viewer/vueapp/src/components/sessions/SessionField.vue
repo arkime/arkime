@@ -43,28 +43,28 @@
             </b-dropdown-item>
             <span v-if="session && field.portField && session[field.portField] !== undefined">
               <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '==', '&&')"
+                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')"
                 :title="'&& ' + expr + ' == ' + pd.value">
                 <strong>and</strong>
-                {{ pd.value }}:{{ session[field.portField] }}
+                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '!=', '&&')"
+                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')"
                 :title="'&& ' + expr + ' != ' + pd.value">
                 <strong>and not</strong>
-                {{ pd.value }}:{{ session[field.portField] }}
+                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '==', '||')"
+                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')"
                 :title="'|| ' + expr + ' == ' + pd.value">
                 <strong>or</strong>
-                {{ pd.value }}:{{ session[field.portField] }}
+                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + ':' + session[field.portField], '!=', '||')"
+                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')"
                 :title="'|| ' + expr + ' != ' + pd.value">
                 <strong>or not</strong>
-                {{ pd.value }}:{{ session[field.portField] }}
+                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
             </span>
             <b-dropdown-divider></b-dropdown-divider>
@@ -218,6 +218,9 @@ export default {
         return true;
       }
       return false;
+    },
+    sep () {
+      return this.session[this.field.dbField].includes(':') ? '.' : ':';
     },
     parsed: function () {
       if (!this.field || this.value === '' || this.value === undefined) { return; }
