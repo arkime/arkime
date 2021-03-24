@@ -17,8 +17,7 @@
             <!-- query size select -->
             <div class="input-group input-group-sm">
               <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Query Size">
+                v-b-tooltip.hover.bottom.d300="'Query Size'">
                 <span class="input-group-text">
                   Query Size
                 </span>
@@ -41,8 +40,7 @@
               v-if="fields && fields.length && srcFieldTypeahead">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover
-                  title="Select a field for the source nodes">
+                  v-b-tooltip.hover.bottom.d300="'Select a field for the source nodes. This is the color of a source node.'">
                   <span class="input-group-text primary-legend">
                     Src:
                   </span>
@@ -62,8 +60,7 @@
               v-if="fields && dstFieldTypeahead">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover
-                  title="Select a field for the destination nodes">
+                  v-b-tooltip.hover.bottom.d300="'Select a field for the destination nodes. This is the color of a destination node.'">
                   <span class="input-group-text tertiary-legend">
                     Dst:
                   </span>
@@ -82,8 +79,7 @@
             <div class="form-group ml-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover
-                  title="This is the color of a node that is both a source and destination node">
+                  v-b-tooltip.hover.bottom.d300="'This is the color of a node that is both a source and destination node'">
                   <span class="input-group-text secondary-legend">
                     Src &amp; Dst
                   </span>
@@ -94,8 +90,7 @@
             <!-- min connections select -->
             <div class="input-group input-group-sm ml-1">
               <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Minimum number of sessions between nodes">
+                v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
                 <span class="input-group-text">
                   Min. Connections
                 </span>
@@ -114,8 +109,7 @@
             <!-- weight select -->
             <div class="input-group input-group-sm ml-1">
               <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Change the field that calculates the radius of nodes and the width links">
+                v-b-tooltip.hover.bottom.d300="'Change the field that calculates the radius of nodes and the width links'">
                 <span class="input-group-text">
                   Node/Link Weight
                 </span>
@@ -142,8 +136,7 @@
               v-if="fields && groupedFields && nodeFields">
               <template slot="button-content">
                 <span class="fa fa-circle-o"
-                  v-b-tooltip.hover
-                  title="Toggle visible fields in the node popups">
+                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the node popups'">
                 </span>
               </template>
               <b-dropdown-header>
@@ -193,8 +186,7 @@
               v-if="fields && groupedFields && linkFields">
               <template slot="button-content">
                 <span class="fa fa-link"
-                  v-b-tooltip.hover
-                  title="Toggle visible fields in the link popups">
+                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the link popups'">
                 </span>
               </template>
               <b-dropdown-header>
@@ -236,8 +228,7 @@
             <!-- network baseline time range -->
             <div class="input-group input-group-sm ml-1">
               <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Time range for baseline (preceding query time range)">
+                v-b-tooltip.hover.bottom.d300="'Time range for baseline (preceding query time range)'">
                 <span class="input-group-text">
                   Baseline
                 </span>
@@ -270,8 +261,7 @@
             <div class="input-group input-group-sm ml-1"
               v-show="query.baselineDate !== '0'">
               <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Toggle node visibility based on baseline result set membership">
+                v-b-tooltip.hover.bottom.d300="'Toggle node visibility based on baseline result set membership'">
                 <span class="input-group-text">
                   Baseline Visibility
                 </span>
@@ -328,23 +318,21 @@
       </div> <!-- /popup area -->
 
       <!-- Button group -->
-      <span class="connections-buttons" :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
+      <span class="connections-buttons"
+        :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
         <div class="btn-group-vertical unlock-btn overlay-btns">
           <!-- unlock button-->
           <span class="unlock-btn">
             <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover
-              title="Unlock any nodes that you have set into place"
+              v-b-tooltip.hover.lefttop="'Unlock any nodes that you have set into place'"
               @click.stop.prevent="unlock">
               <span class="fa fa-unlock"></span>
             </button>
           </span> <!-- /unlock button-->
-
           <!-- export button-->
           <span class="export-btn">
             <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover
-              title="Export this graph as a PNG"
+              v-b-tooltip.hover.lefttop="'Export this graph as a PNG'"
               @click.stop.prevent="exportPng">
               <span class="fa fa-download"></span>
             </button>
@@ -353,8 +341,7 @@
 
         <!-- node distance -->
         <div class="btn-group-vertical node-distance-btns overlay-btns">
-          <span title="Increase node distance"
-            v-b-tooltip.hover.lefttop>
+          <span v-b-tooltip.hover.lefttop="'Increase node distance'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':query.nodeDist >= 200}"
@@ -365,8 +352,7 @@
               </span>
             </button>
           </span>
-          <span title="Decrease node distance"
-            v-b-tooltip.hover.lefttop>
+          <span v-b-tooltip.hover.lefttop="'Decrease node distance'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':query.nodeDist <= 10}"
@@ -381,8 +367,7 @@
 
         <!-- text size increase/decrease -->
         <div class="btn-group-vertical text-size-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop
-            title="Increase text size (you might also want to update the node distance using the buttons just to the left)">
+          <span v-b-tooltip.hover.lefttop="'Increase text size (you might also want to update the node distance using the buttons just to the left)'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':fontSize >= 1}"
@@ -393,8 +378,7 @@
               </span>
             </button>
           </span>
-          <span v-b-tooltip.hover.lefttop
-            title="Decrease text size (you might also want to update the node distance using the buttons just to the left)">
+          <span v-b-tooltip.hover.lefttop="'Decrease text size (you might also want to update the node distance using the buttons just to the left)'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':fontSize <= 0.2}"
@@ -409,8 +393,7 @@
 
         <!-- zoom in/out -->
         <div class="btn-group-vertical zoom-btns overlay-btns">
-          <span title="Zoom in"
-            v-b-tooltip.hover.lefttop>
+          <span v-b-tooltip.hover.lefttop="'Zoom in'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':zoomLevel >= 4}"
@@ -419,8 +402,7 @@
               </span>
             </button>
           </span>
-          <span title="Zoom out"
-            v-b-tooltip.hover.lefttop>
+          <span v-b-tooltip.hover.lefttop="'Zoom out'">
             <button type="button"
               class="btn btn-default btn-sm"
               :class="{'disabled':zoomLevel <= 0.0625}"
@@ -688,7 +670,7 @@ export default {
     this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
     this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-    nodeFillColors = ['', this.primaryColor, this.tertiaryColor, this.secondaryColor];
+    nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
 
     this.cancelAndLoad(true);
 
@@ -1649,28 +1631,7 @@ export default {
   fill: var(--color-foreground, #333);
 }
 
-/* zoom/font size/node distance buttons overlaying the graph */
-.connections-content .zoom-btns {
-}
-.connections-content .text-size-btns {
-
-}
-.connections-content .node-distance-btns {
-
-}
-.connections-content .unlock-btn {
-
-}
-.connections-content .unlock-btn > button {
-  height: 29px;
-}
-.connections-content .export-btn {
-
-}
-.connections-content .export-btn > button {
-  height: 29px;
-}
-
+/* buttons overlaying the graph */
 .connections-content .overlay-btns > span:first-child > button {
   border-bottom: none;
   border-radius: 4px 4px 0 0;
