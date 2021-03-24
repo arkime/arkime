@@ -955,7 +955,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - Use inotify directly since glib2 monitor doesn't expose close write
   - capture - support yara 3.5 (issue #521)
   - capture - new --op option to set any field (issue #412)
-  - capture - added don'tSaveSPI=1 support to tagger/wise to not save SPI data (issue #505)
+  - capture - added dontSaveSPI=1 support to tagger/wise to not save SPI data (issue #505)
   - capture - basic kafka, dropbox-lan-sync detection
   - capture - new scrubspi plugin
   - viewer - Apply user setting timezone
@@ -1276,7 +1276,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Use ELS doc_values for some fields to reduce ES memory
   - Added cert.cnt back
   - Handle bad ip.protocol strings better (issue #330)
-  - Added don'tSaveBPFs config
+  - Added dontSaveBPFs config
   - Switched capture memory reporting to more accurate getrusage
   - Added capture cpu reporting to stats (requires db.pl upgrade)
 
@@ -1296,7 +1296,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - Regex and wildcard support for file expression
   - Regex is stricter about back slashing (issue #281)
   - Cache user lookups for 5 seconds
-  - don'tSaveTags config can now have a :<num> for each tag which
+  - dontSaveTags config can now have a :<num> for each tag which
     specifies the total packets to save. (issue #278)
   - Allow multiple -r and -R options
   - Fixed update vs upgrade message (issue #287)
