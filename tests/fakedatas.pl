@@ -22,7 +22,7 @@ $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
 
 ################################################################################
-my @USERS = qw( andy elyse katie corey matt mark kyle gretchen aileen brandon abdullah paul sadiah sean);
+my @USERS = qw( andy elyse katie corey matt mark kyle gretchen aileen brandon abdullah paul sadiah sean art);
 sub user() { return $USERS[ rand @USERS ]; }
 
 ################################################################################

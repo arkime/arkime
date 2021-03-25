@@ -1,5 +1,5 @@
 Instructions for using the prebuilt Arkime packages.
-Please report any bugs or feature requests by opening an issue at https://github.com/aol/moloch/issues
+Please report any bugs or feature requests by opening an issue at https://github.com/arkime/arkime/issues 
 
 Basic Arkime Installation steps:
  1) Download a Arkime build for 64bit Ubuntu 14.04, Ubuntu 16.04, Centos 6, or Centos 7 from http://arkime.com/index.html#downloads

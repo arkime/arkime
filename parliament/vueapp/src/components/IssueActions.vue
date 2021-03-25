@@ -93,7 +93,7 @@ export default {
   methods: {
     /* page functions -------------------------------------------------------- */
     /* Sends a request to acknowledge an issue
-     * If succesful, updates the issue in the view, otherwise displays error */
+     * If successful, updates the issue in the view, otherwise displays error */
     acknowledgeIssue: function () {
       ParliamentService.acknowledgeIssues([this.issue])
         .then((data) => {
@@ -106,7 +106,7 @@ export default {
         });
     },
     /* Sends a request to remove an issue
-     * If succesful, removes the issue from the view, otherwise displays error */
+     * If successful, removes the issue from the view, otherwise displays error */
     removeIssue: function () {
       ParliamentService.removeIssue(this.groupId, this.clusterId, this.issue)
         .then((data) => {
@@ -118,7 +118,7 @@ export default {
     },
     /**
      * Sends a request to ignore an issue
-     * If succesful, updates the issue in the view, otherwise displays error
+     * If successful, updates the issue in the view, otherwise displays error
      * @param {number} forMs - the amount of time (in ms) that the issue should be ignored
      */
     ignoreIssue: function (forMs) {
@@ -133,7 +133,7 @@ export default {
         });
     },
     /* Sends a request to remove an ignore for an issue
-     * If succesful, updates the issue in the view, otherwise displays error */
+     * If successful, updates the issue in the view, otherwise displays error */
     removeIgnore: function () {
       ParliamentService.removeIgnoreIssues([this.issue])
         .then((data) => {
