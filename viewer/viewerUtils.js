@@ -134,10 +134,10 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   /* This method fixes up parts of the query that jison builds to what ES actually
-   * understands.  This includes mapping all the tag fields from strings to numbers
-   * and any of the filename stuff
+   * understands.  This includes using the collapse function and the filename mapping.
    */
   vModule.lookupQueryItems = (query, doneCb) => {
+    vModule.collapseQuery(query);
     if (Config.get('multiES', false)) {
       return doneCb(null);
     }
@@ -187,6 +187,49 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
 
     finished = 1;
+  };
+
+  /* This method collapses cascading bool should/must into one. I couldn't figure
+   * out how to do this in jison.
+   */
+  vModule.collapseQuery = (query) => {
+    for (const prop in query) {
+      if (prop === 'bool') {
+        let kind;
+        if (query.bool.should && query.bool.should.length > 0) {
+          kind = 'should';
+        } else if (query.bool.must && query.bool.must.length > 0) {
+          kind = 'must';
+        } else {
+          vModule.collapseQuery(query.bool);
+          return;
+        }
+
+        let newItems = [];
+        const items = query.bool[kind];
+        const len = items.length;
+
+        for (let i = 0; i < len; i++) {
+          if (items[i].bool && items[i].bool[kind]) {
+            newItems = newItems.concat(items[i].bool[kind]);
+          } else {
+            newItems.push(items[i]);
+          }
+        }
+
+        query.bool[kind] = newItems;
+
+        if (len === newItems.length) {
+          // No change, just recurse down
+          vModule.collapseQuery(newItems);
+        } else {
+          // Change, check this level again
+          vModule.collapseQuery(query);
+        }
+      } else if (typeof query[prop] === 'object') {
+        vModule.collapseQuery(query[prop]);
+      }
+    }
   };
 
   vModule.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
