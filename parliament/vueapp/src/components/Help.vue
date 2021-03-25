@@ -185,7 +185,7 @@
                 </em>
               </li>
               <li>
-                <strong>Elasticsearch query timeout</strong> controls the maxiumum Elasticsearch
+                <strong>Elasticsearch query timeout</strong> controls the maximum Elasticsearch
                 status query duration. If the query exceeds this time setting, an
                 <strong>ES Down</strong> issue is added to the cluster.
                 <br>
@@ -194,7 +194,7 @@
                 </em>
               </li>
               <li>
-                <strong>Low Packets Threshold</strong> controls the minumum number of packets that
+                <strong>Low Packets Threshold</strong> controls the minimum number of packets that
                 the capture node must receive. If the capture node is not receiving enough packets,
                 a <strong>Low Packets</strong> issue is added to the cluster. You can set this value
                 to <strong>-1</strong> to ignore this issue altogether. This setting also includes a

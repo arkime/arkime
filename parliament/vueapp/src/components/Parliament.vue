@@ -389,7 +389,7 @@
                   <span v-if="cluster.type === 'multiviewer'"
                     class="fa fa-sitemap text-muted cursor-help"
                     v-b-tooltip.hover.top
-                    title="Mutiviewer cluster">
+                    title="Multiviewer cluster">
                   </span>
                   <span v-if="cluster.type === 'disabled'"
                     class="text-muted fa fa-eye-slash cursor-help"
@@ -1258,7 +1258,7 @@ export default {
           handle: '.cluster-handle',
           animation: 100,
           onMove: (e) => { // don't allow drag/drop if clusters are filtered
-            // or whent he user is not logged in
+            // or when the user is not logged in
             if (this.searchTerm || !this.loggedIn) { return false; }
             this.stopAutoRefresh();
           },
