@@ -94,14 +94,14 @@
       <!-- decodings -->
       <div class="btn-group">
         <button
-          v-for="(value, key) in decodings"
+          v-for="(value, key) in decodingsClone"
           :key="key"
           type="button"
           v-b-tooltip.hover
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
           :title="`Toggle ${value.name} Decoding`"
-          :class="{'active':decodings[key].active}"
+          :class="{'active':decodingsClone[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
         </button>
@@ -110,7 +110,7 @@
     <!-- decoding form -->
     <div v-if="decodingForm">
       <form class="form-inline well well-sm mt-1">
-        <span v-for="field in decodings[decodingForm].fields"
+        <span v-for="field in decodingsClone[decodingForm].fields"
           :key="field.name">
           <div class="form-group mr-1 mt-1"
             v-if="!field.disabled">
@@ -120,7 +120,8 @@
                   {{ field.name }}
                 </span>
               </span>
-              <input v-model="field.value"
+              <input
+                v-model="field.value"
                 class="form-control"
                 type="field.type"
               />
@@ -146,10 +147,10 @@
           </button>
         </div>
       </form>
-      <div class="help-block">
+      <div class="help-block ml-2">
         <span class="fa fa-info-circle">
         </span>&nbsp;
-        {{ decodings[decodingForm].title }}
+        {{ decodingsClone[decodingForm].title }}
       </div>
     </div> <!-- /decoding form -->
   </span>
@@ -166,8 +167,14 @@ export default {
   },
   data () {
     return {
-      decodingForm: false
+      decodingForm: false,
+      decodingsClone: JSON.parse(JSON.stringify(this.decodings))
     };
+  },
+  watch: {
+    decodings (newVal) {
+      this.decodingsClone = JSON.parse(JSON.stringify(newVal));
+    }
   },
   methods: {
     /**
@@ -176,10 +183,11 @@ export default {
      * @param {string} key Identifier of the decoding to toggle
      */
     toggleDecoding (key) {
-      const decoding = this.decodings[key];
+      const decoding = this.decodingsClone[key];
 
-      const isActive = !this.decodings[key].active;
-      this.$emit('toggleDecoding', key, isActive);
+      const isActive = !decoding.active;
+      decoding.active = isActive;
+      this.$emit('updateDecodings', this.decodingsClone);
 
       if (decoding.fields && isActive) {
         this.decodingForm = key;
@@ -194,7 +202,7 @@ export default {
      */
     closeDecodingForm (active) {
       if (this.decodingForm) {
-        this.$emit('toggleDecoding', this.decodingForm, active);
+        this.$emit('updateDecodings', this.decodingsClone);
       }
 
       this.decodingForm = false;
@@ -204,26 +212,26 @@ export default {
      * @param {key} key Identifier of the decoding to apply
      */
     applyDecoding (key) {
-      const decodeClone = JSON.parse(JSON.stringify(this.params.decode));
-      decodeClone[key] = {};
+      const paramsClone = JSON.parse(JSON.stringify(this.params.decode));
+      paramsClone[key] = {};
 
-      const decoding = this.decodings[key];
+      const decoding = this.decodingsClone[key];
 
-      if (this.decodings[key].active) {
+      if (decoding.active) {
         if (decoding.fields) {
           for (const field of decoding.fields) {
-            this.$set(decodeClone[key], field.key, field.value);
+            this.$set(paramsClone[key], field.key, field.value);
           }
         }
       } else {
-        this.$delete(decodeClone, key);
+        this.$delete(paramsClone, key);
       }
 
-      this.$emit('updateDecodings', decodeClone);
-      this.closeDecodingForm(this.decodings[key]);
+      this.$emit('applyDecodings', paramsClone);
+      this.closeDecodingForm();
 
       // update local storage
-      localStorage['moloch-decodings'] = JSON.stringify(decodeClone);
+      localStorage['moloch-decodings'] = JSON.stringify(paramsClone);
     }
   }
 };

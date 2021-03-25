@@ -37,7 +37,7 @@
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
-            @toggleDecoding="toggleDecoding"
+            @applyDecodings="applyDecodings"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
@@ -111,7 +111,7 @@
             @toggleImages="toggleImages"
             @toggleShowSrc="toggleShowSrc"
             @toggleShowDst="toggleShowDst"
-            @toggleDecoding="toggleDecoding"
+            @applyDecodings="applyDecodings"
             @updateDecodings="updateDecodings"
             @toggleTimestamps="toggleTimestamps"
             @toggleShowFrames="toggleShowFrames"
@@ -223,10 +223,13 @@ export default {
       if (this.params.showFrames) {
         // show timestamps and info by default for show frames option
         this.params.ts = true;
-        // disable other options
+        // disable other options that don't make sense for raw packets
         this.params.gzip = false;
         this.params.image = false;
         this.params.decode = {};
+      } else {
+        // reset showFrames/gzip/image/decode options back to what was last used
+        this.setBrowserParams();
       }
 
       this.getPackets();
@@ -258,12 +261,12 @@ export default {
         localStorage['moloch-ts'] = this.params.ts;
       }
     },
-    updateDecodings: function (decodings) {
+    applyDecodings (decodings) {
       this.params.decode = decodings;
       this.getPackets();
     },
-    toggleDecoding: function (key, isActive) {
-      this.$set(this.decodings[key], 'active', isActive);
+    updateDecodings (decodings) {
+      this.$set(this, 'decodings', decodings);
     },
     /* helper functions ---------------------------------------------------- */
     /**
@@ -549,6 +552,7 @@ export default {
         if (localStorage['moloch-decodings']) {
           this.params.decode = JSON.parse(localStorage['moloch-decodings']);
           for (const key in this.decodings) {
+            this.decodings[key].active = false;
             if (this.params.decode[key]) {
               this.decodings[key].active = true;
               for (const field in this.params.decode[key]) {
