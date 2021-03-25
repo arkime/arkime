@@ -2501,7 +2501,9 @@ void moloch_db_exit()
         if (!config.noStats) {
             moloch_db_update_stats(0, 1);
         }
-        moloch_http_get(esServer, "/_refresh", 9, NULL);
+        unsigned char *data = moloch_http_get(esServer, "/_refresh", 9, NULL);
+        if (data)
+            free(data);
         moloch_http_free_server(esServer);
     }
 
