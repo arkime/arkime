@@ -95,11 +95,11 @@
                   Min. Connections
                 </span>
               </div>
-              <select class="form-control input-sm"
+              <b-select class="form-control input-sm"
                 v-model="query.minConn"
                 @change="changeMinConn"
                 :options="[1,2,3,4,5]">
-              </select>
+              </b-select>
             </div> <!-- /min connections select -->
 
             <!-- weight select -->

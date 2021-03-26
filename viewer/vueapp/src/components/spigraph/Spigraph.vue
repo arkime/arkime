@@ -45,11 +45,11 @@
                     Max Elements:
                   </span>
                 </span>
-                <select class="form-control"
+                <b-select class="form-control"
                   v-model="query.size"
                   @change="changeMaxElements"
                   :options="[5,10,15,20,30,50,100,200,500]">
-                </select>
+                </b-select>
               </div>
             </div> <!-- /maxElements select -->
 
@@ -105,11 +105,11 @@
                     Refresh every:
                   </span>
                 </span>
-                <select class="form-control"
+                <b-select class="form-control"
                   v-model="refresh"
                   @change="changeRefreshInterval"
                   :options="[0,5,10,15,30,45,60]">
-                </select>
+                </b-select>
                 <span class="input-group-append">
                   <span class="input-group-text">
                     seconds
