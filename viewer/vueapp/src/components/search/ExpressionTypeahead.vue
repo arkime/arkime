@@ -559,11 +559,8 @@ export default {
       }
       // Autocomplete view names
       if (field.type === 'viewand') {
-        const views = {};
-        for (const key in this.views) {
-          views[key] = key;
-        }
-        console.log(JSON.stringify(views), lastToken, JSON.stringify(this.findMatch(lastToken, views)));
+        // findMatch expects an object with keys/values
+        const views = Object.fromEntries(Object.values(a).map((v) => [v, v]));
         this.results = this.findMatch(lastToken, views);
       }
 
