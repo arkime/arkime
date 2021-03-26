@@ -136,7 +136,7 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData && capStartTimes.length"
+      v-if="mapData && graphData && capStartTimes.length && showToolBars"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
@@ -451,6 +451,9 @@ export default {
     timelineDataFilters: function () {
       const filters = this.$store.state.user.settings.timelineDataFilters;
       return filters.map(i => this.fields.find(f => f.dbField === i));
+    },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   mounted: function () {

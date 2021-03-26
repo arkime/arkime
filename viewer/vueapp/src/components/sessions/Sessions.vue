@@ -34,7 +34,7 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData && capStartTimes.length"
+      v-if="mapData && graphData && capStartTimes.length && showToolBars"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
