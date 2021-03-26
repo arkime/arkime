@@ -279,10 +279,6 @@ export default {
     graphData: Object,
     mapData: Object,
     primary: Boolean,
-    timezone: {
-      type: String,
-      default: 'local'
-    },
     id: {
       type: String,
       default: 'primary'
@@ -370,6 +366,9 @@ export default {
           this.$store.commit('updateSeriesType', newValue);
         }
       }
+    },
+    timezone: function () {
+      return this.$store.state.user.timezone;
     }
   },
   watch: {

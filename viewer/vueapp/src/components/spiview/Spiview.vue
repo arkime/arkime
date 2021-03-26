@@ -140,7 +140,6 @@
       :map-data="mapData"
       :primary="true"
       :cap-start-times="capStartTimes"
-      :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="fetchMapData">
     </moloch-visualizations> <!-- /visualizations -->
@@ -316,8 +315,7 @@
                             :expr="value.field.exp"
                             :parse="true"
                             :pull-left="true"
-                            :session-btn="true"
-                            :timezone="user.settings.timezone">
+                            :session-btn="true">
                           </moloch-session-field>
                           <sup>({{ bucket.doc_count | commaString }})</sup>
                         </span>
@@ -448,7 +446,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      const filters = this.$store.state.user.settings.timelineDataFilters;
+      const filters = this.user.settings.timelineDataFilters;
       return filters.map(i => this.fields.find(f => f.dbField === i));
     },
     showToolBars: function () {

@@ -56,7 +56,7 @@
               </span>
             </div>
             <div class="form-inline mt-1">
-              <moloch-time :timezone="user.settings.timezone"
+              <moloch-time
                 @timeChange="loadData"
                 :hide-bounding="true"
                 :hide-interval="true">

@@ -205,7 +205,7 @@
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
-      <moloch-time :timezone="user.settings.timezone"
+      <moloch-time
         @timeChange="timeChange"
         :hide-interval="hideInterval"
         :updateTime="updateTime">

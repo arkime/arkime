@@ -115,7 +115,7 @@ let oldLength = 1;
 
 export default {
   name: 'MolochStickySessions',
-  props: ['sessions', 'timezone', 'ms'],
+  props: ['sessions', 'ms'],
   data: function () {
     return {
       open: false,
@@ -176,6 +176,9 @@ export default {
       } else {
         return this.sessions;
       }
+    },
+    timezone: function () {
+      return this.$store.state.user.timezone;
     }
   },
   methods: {
