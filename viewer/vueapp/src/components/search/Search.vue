@@ -205,7 +205,7 @@
       </expression-typeahead> <!-- /search box typeahead -->
 
       <!-- time inputs -->
-      <moloch-time :timezone="timezone"
+      <moloch-time :timezone="user.settings.timezone"
         @timeChange="timeChange"
         :hide-interval="hideInterval"
         :updateTime="updateTime">
@@ -347,7 +347,6 @@ export default {
     'numVisibleSessions',
     'numMatchingSessions',
     'start',
-    'timezone',
     'fields',
     'hideActions',
     'hideInterval'

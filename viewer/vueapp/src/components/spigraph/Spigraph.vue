@@ -6,7 +6,6 @@
         <!-- search navbar -->
         <moloch-search
           :num-matching-sessions="filtered"
-          :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)">
         </moloch-search> <!-- /search navbar -->
 

@@ -12,7 +12,6 @@
           :num-visible-sessions="query.length"
           :num-matching-sessions="sessions.recordsFiltered"
           :start="query.start"
-          :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
           @setColumns="loadColumns">

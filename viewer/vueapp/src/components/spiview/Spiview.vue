@@ -8,7 +8,6 @@
         <!-- search navbar -->
         <moloch-search
           :num-matching-sessions="filtered"
-          :timezone="user.settings.timezone"
           @changeSearch="changeSearch">
         </moloch-search> <!-- /search navbar -->
 
