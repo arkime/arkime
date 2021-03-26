@@ -560,7 +560,7 @@ export default {
       // Autocomplete view names
       if (field.type === 'viewand') {
         // findMatch expects an object with keys/values
-        const views = Object.fromEntries(Object.values(a).map((v) => [v, v]));
+        const views = Object.fromEntries(Object.keys(this.views).map((v) => [v, v]));
         this.results = this.findMatch(lastToken, views);
       }
 
