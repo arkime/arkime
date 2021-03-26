@@ -152,7 +152,7 @@
                   <b-form-radio-group
                     size="sm"
                     buttons
-                    @change="updateTime"
+                    @change="updateTimezone"
                     v-model="settings.timezone">
                     <b-radio value="local"
                       class="btn-radio">
@@ -176,7 +176,7 @@
                     size="sm"
                     v-b-tooltip.hover
                     class="btn-checkbox"
-                    @change="updateTime"
+                    @change="updateMs"
                     v-model="settings.ms"
                     :active="settings.ms"
                     title="(for session and packet timestamps only)">
@@ -2579,9 +2579,17 @@ export default {
           this.msgType = 'danger';
         });
     },
+    updateTimezone (newTimezone) {
+      this.settings.timezone = newTimezone;
+      this.updateTime();
+    },
+    updateMs (newMs) {
+      this.settings.ms = newMs;
+      this.updateTime();
+    },
     /* updates the displayed date for the timzeone setting
-     * triggered by the user changing the timezone setting */
-    updateTime: function (newTimezone) {
+     * triggered by the user changing the timezone/ms settings */
+    updateTime: function () {
       this.tick();
       this.update();
     },
