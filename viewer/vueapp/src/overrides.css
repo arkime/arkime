@@ -30,6 +30,13 @@ textarea.form-control:focus {
 }
 
 
+/* themed native selects --------------------------------------------------- */
+select.custom-select {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-color: var(--color-background);
+}
+
 /* themed input groups ----------------------------------------------------- */
 .input-group-prepend > .input-group-text,
 .input-group-append:not(.color) > .input-group-text {
