@@ -1153,7 +1153,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
