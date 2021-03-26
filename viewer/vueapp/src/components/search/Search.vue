@@ -206,6 +206,7 @@
 
       <!-- time inputs -->
       <moloch-time
+        :timezone="user.settings.timezone"
         @timeChange="timeChange"
         :hide-interval="hideInterval"
         :updateTime="updateTime">

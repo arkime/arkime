@@ -254,6 +254,7 @@ export default {
   components: { datePicker },
   directives: { FocusInput },
   props: [
+    'timezone',
     'hideBounding',
     'hideInterval',
     'updateTime'
@@ -271,7 +272,7 @@ export default {
       datePickerOptions: {
         useCurrent: false,
         format: 'YYYY/MM/DD HH:mm:ss',
-        timeZone: this.user.settings.timezone === 'local' || this.user.settings.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
+        timeZone: this.timezone === 'local' || this.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
         showClose: true,
         focusOnShow: false,
         showTodayButton: true,
@@ -604,9 +605,9 @@ export default {
     findTimeInTimezone: function (time) {
       let newTime = moment(time);
 
-      if (this.user.settings.timezone === 'gmt') {
+      if (this.timezone === 'gmt') {
         newTime = moment.tz(time, 'utc');
-      } else if (this.user.settings.timezone === 'localtz') {
+      } else if (this.timezone === 'localtz') {
         newTime = moment.tz(
           time,
           Intl.DateTimeFormat().resolvedOptions().timeZone
