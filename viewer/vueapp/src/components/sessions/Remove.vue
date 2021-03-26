@@ -33,26 +33,7 @@
     </div>
 
     <!-- segments select input -->
-    <div class="col-md-4">
-      <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Include
-          </span>
-        </div>
-        <select v-model="segments"
-          class="form-control"
-          style="-webkit-appearance:none;">
-          <option value="no">no</option>
-          <option value="all">all</option>
-          <option value="time">same time period</option>
-        </select>
-        <div class="input-group-append">
-          <span class="input-group-text">
-            linked segments (slow)
-          </span>
-        </div>
-      </div>
+    <SegmentSelect :segments.sync="segments">
       <!-- delete error -->
       <p v-if="error"
         class="small text-danger mb-0">
@@ -60,7 +41,7 @@
         </span>&nbsp;
         {{ error }}
       </p> <!-- /delete error -->
-    </div> <!-- /segments select input -->
+    </SegmentSelect>
 
     <!-- buttons -->
     <div class="col-md-4">

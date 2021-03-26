@@ -129,14 +129,11 @@
                         Max number of packets to examine per session
                       </span>
                     </span>
-                    <select class="form-control"
+                    <b-select class="form-control"
                       v-model="jobSize"
-                      style="-webkit-appearance: none;">
-                      <option value="50">50 packets</option>
-                      <option value="500">500 packets</option>
-                      <option value="5000">5000 packets</option>
-                      <option value="10000">All packets</option>
-                    </select>
+                      style="-webkit-appearance: none;"
+                      :options="[50, 500, 5000, 10000]">
+                    </b-select>
                   </div>
                 </div> <!-- /packet search size -->
                 <!-- notifier -->
