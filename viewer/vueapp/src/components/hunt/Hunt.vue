@@ -131,11 +131,8 @@
                     </span>
                     <select class="form-control"
                       v-model="jobSize"
-                      style="-webkit-appearance: none;">
-                      <option value="50">50 packets</option>
-                      <option value="500">500 packets</option>
-                      <option value="5000">5000 packets</option>
-                      <option value="10000">All packets</option>
+                      style="-webkit-appearance: none;"
+                      :options="[50, 500, 5000, 10000]">
                     </select>
                   </div>
                 </div> <!-- /packet search size -->

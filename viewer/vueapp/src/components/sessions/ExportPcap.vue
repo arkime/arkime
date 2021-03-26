@@ -5,28 +5,7 @@
     @keyup.stop.prevent.enter="exportPcap">
 
     <!-- segments select input -->
-    <div class="col-md-4">
-      <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Include
-          </span>
-        </div>
-        <select v-model="segments"
-          class="form-control"
-          style="-webkit-appearance:none;">
-          <option value="no">no</option>
-          <option value="all">all</option>
-          <option value="time">same time period</option>
-        </select>
-        <div class="input-group-append">
-          <span class="input-group-text">
-            linked segments (slow)
-          </span>
-        </div>
-      </div>
-    </div> <!-- /segments select input -->
-
+    <SegmentSelect :segments.sync="segments"/> <!-- /segments select input -->
     <div class="col-md-5">
 
       <!-- filename input -->
@@ -82,9 +61,11 @@
 <script>
 import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochExportPcap',
+  components: { SegmentSelect },
   directives: { FocusInput },
   props: {
     start: Number,

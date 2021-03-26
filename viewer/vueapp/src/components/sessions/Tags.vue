@@ -4,28 +4,7 @@
   <div class="row"
     @keyup.stop.prevent.enter="apply(add)">
 
-    <!-- segments select input -->
-    <div class="col-md-4">
-      <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Include
-          </span>
-        </div>
-        <select v-model="segments"
-          class="form-control"
-          style="-webkit-appearance:none;">
-          <option value="no">no</option>
-          <option value="all">all</option>
-          <option value="time">same time period</option>
-        </select>
-        <div class="input-group-append">
-          <span class="input-group-text">
-            linked segments (slow)
-          </span>
-        </div>
-      </div>
-    </div> <!-- /segments select input -->
+    <SegmentSelect :segments.sync="segments"/>
 
     <div class="col-md-5">
 
