@@ -146,7 +146,7 @@
     </MolochCollapsible>
 
     <!-- main visualization -->
-    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length">
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length && showToolBars">
       <moloch-visualizations
         id="primary"
         :graph-data="graphData"
@@ -344,6 +344,9 @@ export default {
         }
       }
       return oldFieldObj;
+    },
+    showToolBars: function () {
+      return this.$store.state.showToolBars;
     }
   },
   watch: {
