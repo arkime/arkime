@@ -80,12 +80,12 @@
           <i v-if="showToolBars"
             v-b-tooltip.hover
             class="fa fa-chevron-circle-up fa-fw fa-lg"
-            title="Hide toolbars">
+            title="Hide toolbars and visualization">
           </i>
           <i v-else
             v-b-tooltip.hover
             class="fa fa-chevron-circle-down fa-fw fa-lg"
-            title="Unhide toolbars">
+            title="Unhide toolbars and visualization">
           </i>
         </div>
 
