@@ -695,9 +695,12 @@ function logAction (uiPage) {
     function finish () {
       log.queryTime = new Date() - req._molochStartTime;
       res.removeListener('finish', finish);
-      Db.historyIt(log, function (err, info) {
-        if (err) { console.log('log history error', err, info); }
-      });
+
+      try {
+        Db.historyIt(log);
+      } catch (err) {
+        console.log('log history error', err);
+      }
     }
 
     res.on('finish', finish);

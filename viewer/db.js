@@ -869,23 +869,23 @@ function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
 }
 
-exports.historyIt = function (doc, cb) {
+exports.historyIt = async (doc) => {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return internals.elasticSearchClient.index({ index: iname, body: doc, refresh: true, timeout: '10m' }, cb);
+  return await internals.client7.index({ index: iname, body: doc, refresh: true, timeout: '10m' });
 };
-exports.searchHistory = function (query, cb) {
-  return internals.elasticSearchClient.search({ index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true }, cb);
+exports.searchHistory = async (query) => {
+  return await internals.client7.search({ index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true });
 };
-exports.numberOfLogs = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('history_v1-*'), ignoreUnavailable: true }, cb);
+exports.countHistory = async () => {
+  return await internals.client7.count({ index: fixIndex('history_v1-*'), ignoreUnavailable: true });
 };
-exports.deleteHistoryItem = function (id, index, cb) {
-  return internals.elasticSearchClient.delete({ index: index, id: id, refresh: true }, cb);
+exports.deleteHistoryItem = async (id, index) => {
+  return await internals.client7.delete({ index: index, id: id, refresh: true });
 };
 
 exports.createHunt = function (doc, cb) {
