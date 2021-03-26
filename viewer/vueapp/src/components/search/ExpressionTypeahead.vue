@@ -192,6 +192,9 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
+    },
+    views: function () { // set by search.vue
+      return this.$store.state.views;
     }
   },
   watch: {
@@ -553,6 +556,12 @@ export default {
         }
 
         return;
+      }
+      // Autocomplete view names
+      if (field.type === 'viewand') {
+        // findMatch expects an object with keys/values
+        const views = Object.fromEntries(Object.keys(this.views).map((v) => [v, v]));
+        this.results = this.findMatch(lastToken, views);
       }
 
       // Don't try and autocomplete these fields
