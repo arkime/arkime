@@ -143,7 +143,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         internals.runningHuntJob = undefined;
         hModule.processHuntJobs();
       } catch (err) {
-        return console.log('Error adding errors and pausing hunt job', err);
+        return console.log('ERROR - adding errors and pausing hunt job', err);
       }
     }
 
@@ -302,7 +302,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           const json = JSON.parse(response);
 
           if (json.error) {
-            console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+            console.log(`ERROR - hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
 
@@ -415,7 +415,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
             }
             const json = JSON.parse(response);
             if (json.error) {
-              console.log(`Error hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
+              console.log(`ERROR - hunting on remote viewer: ${json.error} - ${huntRemotePath}`);
               return pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
             }
             if (json.matched) { hunt.matchedSessions++; }
@@ -743,8 +743,8 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           return res.send(JSON.stringify(response));
         });
       } catch (err) {
-        console.log('ERROR - creating hunt', err);
-        return res.serverError(500, 'Error creating hunt - ' + err);
+        console.log('ERROR - POST /api/hunt', err);
+        return res.serverError(500, 'Error creating hunt');
       }
     }
 
@@ -852,8 +852,8 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         runningJob: runningJob
       });
     }).catch(err => {
-      console.log('ERROR - /api/hunts', err);
-      return res.serverError(500, 'Error retrieving hunts - ' + err);
+      console.log('ERROR - GET /api/hunts', err);
+      return res.serverError(500, 'Error retrieving hunts');
     });
   };
 
@@ -873,7 +873,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         text: 'Deleted hunt successfully'
       }));
     } catch (err) {
-      console.log('ERROR - deleting hunt', err);
+      console.log(`ERROR - DELETE /api/hunt/${req.params.id}`, err);
       return res.serverError(500, 'Error deleting hunt');
     }
   };
@@ -944,15 +944,15 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
             invalidUsers: response.invalidUsers
           }));
         } catch (err) {
-          console.log('ERROR - Unable to add user(s) to hunt', err);
+          console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
           return res.serverError(500, 'Unable to add user(s)');
         }
       }).catch((error) => {
         res.serverError(500, error);
       });
     } catch (err) {
-      console.log('ERROR - Unable to fetch hunt to add user(s)', err);
-      return res.serverError(500, 'Unable to fetch hunt to add user(s)');
+      console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
+      return res.serverError(500, 'Unable to add user(s)');
     }
   };
 
@@ -985,12 +985,12 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, users: hunt.users }));
       } catch (err) {
-        console.log('ERROR - Unable to remove user from hunt', err);
+        console.log(`ERROR - DELETE /api/hunt/${req.params.id}/user/${req.params.user}`, err);
         return res.serverError(500, 'Unable to remove user');
       }
     } catch (err) {
-      console.log('ERROR - Unable to fetch hunt to remove user', err);
-      return res.serverError(500, 'Unable to fetch hunt to remove user');
+      console.log(`ERROR - DELETE /api/hunt/${req.params.id}/user/${req.params.user}`, err);
+      return res.serverError(500, 'Unable to remove user');
     }
   };
 
@@ -1033,7 +1033,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return res.send({ matched: matched });
       });
     }).catch((err) => {
-      console.log('ERROR - /api/hunt/remote', err);
+      console.log(`ERROR - GET /api/${req.params.nodeName}/hunt/${req.params.huntId}/remote/${req.params.sessionId}`, err);
       res.send({ matched: false, error: err });
     });
   };

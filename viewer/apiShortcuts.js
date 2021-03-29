@@ -123,11 +123,9 @@ module.exports = (Db, internals, ViewerUtils) => {
     Promise.all([
       Db.searchShortcuts(query),
       Db.numberOfDocuments('lookups')
-    ]).then(([shortcuts, total]) => {
-      if (shortcuts.error) { throw shortcuts.error; }
-
+    ]).then(([{ body: { hits: shortcuts } }, total]) => {
       const results = { list: [], map: {} };
-      for (const hit of shortcuts.hits.hits) {
+      for (const hit of shortcuts.hits) {
         const shortcut = hit._source;
         shortcut.id = hit._id;
 
@@ -170,7 +168,7 @@ module.exports = (Db, internals, ViewerUtils) => {
 
       res.send(sendResults);
     }).catch((err) => {
-      console.log('ERROR - /api/shortcuts', err);
+      console.log('ERROR - GET /api/shortcuts', err);
       return res.serverError(500, 'Error retrieving shortcuts - ' + err);
     });
   };
@@ -214,10 +212,12 @@ module.exports = (Db, internals, ViewerUtils) => {
       }
     };
 
-    shortcutMutex.lock().then(() => {
-      Db.searchShortcuts(query).then((shortcuts) => {
+    shortcutMutex.lock().then(async () => {
+      try {
+        const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
+
         // search for shortcut name collision
-        for (const hit of shortcuts.hits.hits) {
+        for (const hit of shortcuts.hits) {
           const shortcut = hit._source;
           if (shortcut.name === req.body.name) {
             shortcutMutex.unlock();
@@ -236,12 +236,8 @@ module.exports = (Db, internals, ViewerUtils) => {
         delete newShortcut.type;
         delete newShortcut.value;
 
-        Db.createShortcut(newShortcut, user.userId, (err, result) => {
-          if (err) {
-            console.log('shortcut create failed', err, result);
-            shortcutMutex.unlock();
-            return res.serverError(500, 'Creating shortcut failed');
-          }
+        try {
+          const { body: result } = await Db.createShortcut(newShortcut);
           newShortcut.id = result._id;
           newShortcut.type = type;
           newShortcut.value = values.join('\n');
@@ -254,12 +250,16 @@ module.exports = (Db, internals, ViewerUtils) => {
             success: true,
             shortcut: newShortcut
           }));
-        });
-      }).catch((err) => {
-        console.log('ERROR - /api/shortcut', err);
+        } catch (err) {
+          shortcutMutex.unlock();
+          console.log('ERROR - POST /api/shortcut', err);
+          return res.serverError(500, 'Error creating shortcut');
+        }
+      } catch (err) {
         shortcutMutex.unlock();
-        return res.serverError(500, 'Error creating shortcut - ' + err);
-      });
+        console.log('ERROR - POST /api/shortcut', err);
+        return res.serverError(500, 'Error creating shortcut');
+      }
     });
   };
 
@@ -275,7 +275,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the upate shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.updateShortcut = (req, res) => {
+  sModule.updateShortcut = async (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
       return res.serverError(403, 'Missing shortcut name');
@@ -289,11 +289,8 @@ module.exports = (Db, internals, ViewerUtils) => {
 
     const sentShortcut = req.body;
 
-    Db.getShortcut(req.params.id, (err, fetchedShortcut) => { // fetch shortcut
-      if (err) {
-        console.log('fetching shortcut to update failed', err, fetchedShortcut);
-        return res.serverError(500, 'Fetching shortcut to update failed');
-      }
+    try {
+      const { body: fetchedShortcut } = await Db.getShortcut(req.params.id);
 
       if (fetchedShortcut._source.locked) {
         return res.serverError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
@@ -317,10 +314,12 @@ module.exports = (Db, internals, ViewerUtils) => {
         }
       };
 
-      shortcutMutex.lock().then(() => {
-        Db.searchShortcuts(query).then((shortcuts) => {
+      shortcutMutex.lock().then(async () => {
+        try {
+          const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
+
           // search for shortcut name collision
-          for (const hit of shortcuts.hits.hits) {
+          for (const hit of shortcuts.hits) {
             const shortcut = hit._source;
             if (shortcut.name === req.body.name) {
               shortcutMutex.unlock();
@@ -336,14 +335,9 @@ module.exports = (Db, internals, ViewerUtils) => {
           delete sentShortcut.type;
           delete sentShortcut.value;
 
-          Db.setShortcut(req.params.id, fetchedShortcut.userId, sentShortcut, (err, info) => {
+          try {
+            await Db.setShortcut(req.params.id, sentShortcut);
             shortcutMutex.unlock();
-
-            if (err) {
-              console.log('shortcut update failed', err, info);
-              return res.serverError(500, 'Updating shortcut failed');
-            }
-
             sentShortcut.value = values.join('\n');
 
             return res.send(JSON.stringify({
@@ -351,14 +345,21 @@ module.exports = (Db, internals, ViewerUtils) => {
               shortcut: sentShortcut,
               text: 'Successfully updated shortcut'
             }));
-          });
-        }).catch((err) => {
-          console.log('ERROR - /api/shortcut', err);
+          } catch (err) {
+            shortcutMutex.unlock();
+            console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+            return res.serverError(500, 'Error updating shortcut');
+          }
+        } catch (err) {
           shortcutMutex.unlock();
-          return res.serverError(500, 'Error updating shortcut - ' + err);
-        });
+          console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+          return res.serverError(500, 'Error updating shortcut');
+        }
       });
-    });
+    } catch (err) {
+      console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+      return res.serverError(500, 'Fetching shortcut to update failed');
+    }
   };
 
   /**
@@ -369,30 +370,29 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.deleteShortcut = (req, res) => {
-    Db.getShortcut(req.params.id, (err, shortcut) => { // fetch shortcut
-      if (err) {
-        console.log('fetching shortcut to delete failed', err, shortcut);
-        return res.serverError(500, 'Fetching shortcut to delete failed');
-      }
+  sModule.deleteShortcut = async (req, res) => {
+    try {
+      const { data: shortcut } = await Db.getShortcut(req.params.id);
 
       // only allow admins or shortcut creator to delete shortcut item
       if (!req.user.createEnabled && req.settingUser.userId !== shortcut._source.userId) {
         return res.serverError(403, 'Permission denied');
       }
 
-      Db.deleteShortcut(req.params.id, shortcut.userId, (err, result) => {
-        if (err || result.error) {
-          console.log('ERROR - deleting shortcut', err || result.error);
-          return res.serverError(500, 'Error deleting shortcut');
-        } else {
-          res.send(JSON.stringify({
-            success: true,
-            text: 'Deleted shortcut successfully'
-          }));
-        }
-      });
-    });
+      try {
+        await Db.deleteShortcut(req.params.id);
+        res.send(JSON.stringify({
+          success: true,
+          text: 'Deleted shortcut successfully'
+        }));
+      } catch (err) {
+        console.log(`ERROR - DELETE /api/shortcut/${req.params.id}`, err);
+        return res.serverError(500, 'Error deleting shortcut');
+      }
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/shortcut/${req.params.id}`, err);
+      return res.serverError(500, 'Fetching shortcut to delete failed');
+    }
   };
 
   return sModule;

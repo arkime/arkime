@@ -151,7 +151,7 @@ module.exports = (Db) => {
         recordsFiltered: results.total
       });
     }).catch((err) => {
-      console.log('ERROR - /api/history', err);
+      console.log('ERROR - GET /api/history', err);
       return res.serverError(500, 'Error retrieving history - ' + err);
     });
   };
@@ -177,7 +177,7 @@ module.exports = (Db) => {
         text: 'Deleted history item successfully'
       }));
     } catch (err) {
-      console.log('ERROR - deleting history item', err);
+      console.log(`ERROR - /api/history/${req.params.id}`, err);
       return res.serverError(500, 'Error deleting history item');
     }
   };
