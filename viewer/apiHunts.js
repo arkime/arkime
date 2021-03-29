@@ -137,15 +137,14 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       hunt.errors.push(error);
     }
 
-    function continueProcess () {
-      Db.setHunt(huntId, hunt, (err, info) => {
+    async function continueProcess () {
+      try {
+        await Db.setHunt(huntId, hunt);
         internals.runningHuntJob = undefined;
-        if (err) {
-          console.log('Error adding errors and pausing hunt job', err, info);
-          return;
-        }
         hModule.processHuntJobs();
-      });
+      } catch (err) {
+        return console.log('Error adding errors and pausing hunt job', err);
+      }
     }
 
     const message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
@@ -175,7 +174,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         hunt.searchedSessions = searchedSessions || hunt.searchedSessions;
         hunt.lastPacketTime = lastPacketTime;
 
-        Db.setHunt(huntId, hunt, () => {});
+        Db.setHunt(huntId, hunt);
 
         if (hunt.status === 'paused') {
           return cb('paused');
@@ -240,19 +239,13 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
   }
 
-  function updateHuntStatus (req, res, huntStatus, successText, errorText) {
-    Db.getHunt(req.params.id, (err, hit) => {
-      if (err) {
-        console.log(errorText, err, hit);
-        return res.serverError(500, errorText);
-      }
-
+  async function updateHuntStatus (req, res, huntStatus, successText, errorText) {
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
       // don't let a user play a hunt job if one is already running
       if (huntStatus === 'running' && internals.runningHuntJob) {
         return res.serverError(403, 'You cannot start a new hunt until the running job completes or is paused.');
       }
-
-      const hunt = hit._source;
 
       // if hunt is finished, don't allow pause
       if (hunt.status === 'finished' && huntStatus === 'paused') {
@@ -263,15 +256,18 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
       hunt.status = huntStatus; // update the hunt job
 
-      Db.setHunt(req.params.id, hunt, (err, info) => {
-        if (err) {
-          console.log(errorText, err, info);
-          return res.serverError(500, errorText);
-        }
+      try {
+        await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, text: successText }));
         hModule.processHuntJobs();
-      });
-    });
+      } catch (err) {
+        console.log(errorText, err);
+        return res.serverError(500, errorText);
+      }
+    } catch (err) {
+      console.log(errorText, err);
+      return res.serverError(500, errorText);
+    }
   }
 
   // if there are failed sessions, go through them one by one and do a packet search
@@ -320,11 +316,14 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         });
       });
     }, (err) => { // done running a pass of the failed sessions
-      function continueProcess () {
-        Db.setHunt(huntId, hunt, (err, info) => {
+      async function continueProcess () {
+        try {
+          await Db.setHunt(huntId, hunt);
           internals.runningHuntJob = undefined;
-          hModule.processHuntJobs(); // Start new hunt
-        });
+          hModule.processHuntJobs(); // start new hunt
+        } catch (err) {
+          console.log(`ERROR - updating hunt (${huntId}) while hunting failed sessions`, err);
+        }
       }
 
       if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
@@ -442,11 +441,14 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
         hunt.searchedSessions = hunt.totalSessions;
 
-        function continueProcess () {
-          Db.setHunt(huntId, hunt, (err, info) => {
+        async function continueProcess () {
+          try {
+            await Db.setHunt(huntId, hunt);
             internals.runningHuntJob = undefined;
             hModule.processHuntJobs(); // start new hunt or go back over failedSessionIds
-          });
+          } catch (err) {
+            console.log(`ERROR - updating hunt (${huntId}) while hunting`, err);
+          }
         }
 
         // the hunt is not actually finished, need to go through the failed session ids
@@ -476,11 +478,11 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     hunt.lastUpdated = now;
     if (!hunt.started) { hunt.started = now; }
 
-    Db.setHunt(huntId, hunt, (err, info) => {
-      if (err) {
-        pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err} ${info}` });
-      }
-    });
+    try {
+      Db.setHunt(huntId, hunt);
+    } catch (err) {
+      pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err}` });
+    }
 
     ViewerUtils.getUserCacheIncAnon(hunt.userId, (err, user) => {
       if (err && !user) {
@@ -550,7 +552,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
-  hModule.processHuntJobs = (cb) => {
+  hModule.processHuntJobs = async (cb) => {
     if (Config.debug) {
       console.log('HUNT - processing hunt jobs');
     }
@@ -564,39 +566,37 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       query: { terms: { status: ['queued', 'paused', 'running'] } }
     };
 
-    Db.searchHunt(query)
-      .then((hunts) => {
-        if (hunts.error) { throw hunts.error; }
+    try {
+      const { body: { hits: hunts } } = await Db.searchHunt(query);
+      for (const hit of hunts.hits) {
+        const hunt = hit._source;
+        const id = hit._id;
 
-        for (const hit of hunts.hits.hits) {
-          const hunt = hit._source;
-          const id = hit._id;
-
-          // there is a job already running
-          if (hunt.status === 'running') {
-            internals.runningHuntJob = hunt;
-            if (!internals.proccessHuntJobsInitialized) {
-              internals.proccessHuntJobsInitialized = true;
-              // restart the abandoned or incomplete hunt
-              processHuntJob(id, hunt);
-            }
-            return (cb ? cb() : null);
-          } else if (hunt.status === 'queued') { // get the first queued hunt
-            internals.runningHuntJob = hunt;
-            hunt.status = 'running'; // update the hunt job
+        // there is a job already running
+        if (hunt.status === 'running') {
+          internals.runningHuntJob = hunt;
+          if (!internals.proccessHuntJobsInitialized) {
+            internals.proccessHuntJobsInitialized = true;
+            // restart the abandoned or incomplete hunt
             processHuntJob(id, hunt);
-            return (cb ? cb() : null);
           }
+          return (cb ? cb() : null);
+        } else if (hunt.status === 'queued') { // get the first queued hunt
+          internals.runningHuntJob = hunt;
+          hunt.status = 'running'; // update the hunt job
+          processHuntJob(id, hunt);
+          return (cb ? cb() : null);
         }
+      }
 
-        // Made to the end without starting a job
-        internals.proccessHuntJobsInitialized = true;
-        internals.runningHuntJob = undefined;
-        return (cb ? cb() : null);
-      }).catch(err => {
-        console.log('Error fetching hunt jobs', err);
-        return (cb ? cb() : null);
-      });
+      // Made to the end without starting a job
+      internals.proccessHuntJobsInitialized = true;
+      internals.runningHuntJob = undefined;
+      return (cb ? cb() : null);
+    } catch (err) {
+      console.log('ERROR - fetching hunt jobs', err);
+      return (cb ? cb() : null);
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -726,12 +726,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       }
     };
 
-    function doneCb (doneHunt, invalidUsers) {
-      Db.createHunt(doneHunt, (err, result) => {
-        if (err) {
-          console.log('create hunt error', err, result);
-          return res.serverError(500, 'Error creating hunt - ' + err);
-        }
+    async function doneCb (doneHunt, invalidUsers) {
+      try {
+        const { body: result } = await Db.createHunt(doneHunt);
         doneHunt.id = result._id;
         hModule.processHuntJobs(() => {
           const response = {
@@ -745,7 +742,10 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
           return res.send(JSON.stringify(response));
         });
-      });
+      } catch (err) {
+        console.log('ERROR - creating hunt', err);
+        return res.serverError(500, 'Error creating hunt - ' + err);
+      }
     }
 
     if (!req.body.users || !req.body.users.length) {
@@ -815,14 +815,12 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     Promise.all([
       Db.searchHunt(query),
       Db.numberOfHunts()
-    ]).then(([hunts, total]) => {
-      if (hunts.error) { throw hunts.error; }
-
+    ]).then(([{ body: { hits: hunts } }, { body: { count: total } }]) => {
       let runningJob;
 
-      const results = { total: hunts.hits.total, results: [] };
-      for (let i = 0, ilen = hunts.hits.hits.length; i < ilen; i++) {
-        const hit = hunts.hits.hits[i];
+      const results = { total: hunts.total, results: [] };
+      for (let i = 0, ilen = hunts.hits.length; i < ilen; i++) {
+        const hit = hunts.hits[i];
         const hunt = hit._source;
         hunt.id = hit._id;
         hunt.index = hit._index;
@@ -838,23 +836,21 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.createEnabled && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
           // since hunt isn't cached we can just modify
-          hunt.search = '';
-          hunt.searchType = '';
           hunt.id = '';
+          hunt.search = '';
           hunt.userId = '';
+          hunt.searchType = '';
           delete hunt.query;
         }
         results.results.push(hunt);
       }
 
-      const r = {
-        recordsTotal: total.count,
+      res.send({
+        recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results,
         runningJob: runningJob
-      };
-
-      res.send(r);
+      });
     }).catch(err => {
       console.log('ERROR - /api/hunts', err);
       return res.serverError(500, 'Error retrieving hunts - ' + err);
@@ -869,18 +865,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} success - Whether the delete hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.deleteHunt = (req, res) => {
-    Db.deleteHuntItem(req.params.id, (err, result) => {
-      if (err || result.error) {
-        console.log('ERROR - deleting hunt', err || result.error);
-        return res.serverError(500, 'Error deleting hunt');
-      } else {
-        res.send(JSON.stringify({
-          success: true,
-          text: 'Deleted hunt successfully'
-        }));
-      }
-    });
+  hModule.deleteHunt = async (req, res) => {
+    try {
+      await Db.deleteHunt(req.params.id);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Deleted hunt successfully'
+      }));
+    } catch (err) {
+      console.log('ERROR - deleting hunt', err);
+      return res.serverError(500, 'Error deleting hunt');
+    }
   };
 
   /**
@@ -917,21 +912,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {array} users - The list of users that were added to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  hModule.addUsers = (req, res) => {
+  hModule.addUsers = async (req, res) => {
     if (!req.body.users) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
 
-    Db.getHunt(req.params.id, (err, hit) => {
-      if (err) {
-        console.log('Unable to fetch hunt to add user(s)', err, hit);
-        return res.serverError(500, 'Unable to fetch hunt to add user(s)');
-      }
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
-      const hunt = hit._source;
       const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
 
-      ViewerUtils.validateUserIds(reqUsers).then((response) => {
+      ViewerUtils.validateUserIds(reqUsers).then(async (response) => {
         if (!response.validUsers.length) {
           return res.serverError(404, 'Unable to validate user IDs provided');
         }
@@ -945,21 +936,24 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         // dedupe the array of users
         hunt.users = [...new Set(hunt.users)];
 
-        Db.setHunt(req.params.id, hunt, (err, info) => {
-          if (err) {
-            console.log('Unable to add user(s)', err, info);
-            return res.serverError(500, 'Unable to add user(s)');
-          }
+        try {
+          await Db.setHunt(req.params.id, hunt);
           res.send(JSON.stringify({
             success: true,
             users: hunt.users,
             invalidUsers: response.invalidUsers
           }));
-        });
+        } catch (err) {
+          console.log('ERROR - Unable to add user(s) to hunt', err);
+          return res.serverError(500, 'Unable to add user(s)');
+        }
       }).catch((error) => {
         res.serverError(500, error);
       });
-    });
+    } catch (err) {
+      console.log('ERROR - Unable to fetch hunt to add user(s)', err);
+      return res.serverError(500, 'Unable to fetch hunt to add user(s)');
+    }
   };
 
   /**
@@ -971,14 +965,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {array} users - The list of users who have access to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
    */
-  hModule.removeUsers = (req, res) => {
-    Db.getHunt(req.params.id, (err, hit) => {
-      if (err) {
-        console.log('Unable to fetch hunt to remove user', err, hit);
-        return res.serverError(500, 'Unable to fetch hunt to remove user');
-      }
-
-      const hunt = hit._source;
+  hModule.removeUsers = async (req, res) => {
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
       if (!hunt.users || !hunt.users.length) {
         return res.serverError(404, 'There are no users that have access to view this hunt');
@@ -992,14 +981,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       hunt.users.splice(userIdx, 1); // remove the user from the list
 
-      Db.setHunt(req.params.id, hunt, (err, info) => {
-        if (err) {
-          console.log('Unable to remove user', err, info);
-          return res.serverError(500, 'Unable to remove user');
-        }
+      try {
+        await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, users: hunt.users }));
-      });
-    });
+      } catch (err) {
+        console.log('ERROR - Unable to remove user from hunt', err);
+        return res.serverError(500, 'Unable to remove user');
+      }
+    } catch (err) {
+      console.log('ERROR - Unable to fetch hunt to remove user', err);
+      return res.serverError(500, 'Unable to fetch hunt to remove user');
+    }
   };
 
   /**

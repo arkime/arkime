@@ -171,7 +171,7 @@ module.exports = (Db) => {
     }
 
     try {
-      await Db.deleteHistoryItem(req.params.id, req.query.index);
+      await Db.deleteHistory(req.params.id, req.query.index);
       return res.send(JSON.stringify({
         success: true,
         text: 'Deleted history item successfully'

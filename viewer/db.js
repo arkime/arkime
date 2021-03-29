@@ -884,27 +884,27 @@ exports.searchHistory = async (query) => {
 exports.countHistory = async () => {
   return await internals.client7.count({ index: fixIndex('history_v1-*'), ignoreUnavailable: true });
 };
-exports.deleteHistoryItem = async (id, index) => {
+exports.deleteHistory = async (id, index) => {
   return await internals.client7.delete({ index: index, id: id, refresh: true });
 };
 
-exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
+exports.createHunt = async (doc) => {
+  return await internals.client7.index({ index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m' });
 };
-exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({ index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true }, cb);
+exports.searchHunt = async (query) => {
+  return await internals.client7.search({ index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true });
 };
-exports.numberOfHunts = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('hunts') }, cb);
+exports.numberOfHunts = async () => {
+  return await internals.client7.count({ index: fixIndex('hunts') });
 };
-exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({ index: fixIndex('hunts'), id: id, refresh: true }, cb);
+exports.deleteHunt = async (id) => {
+  return await internals.client7.delete({ index: fixIndex('hunts'), id: id, refresh: true });
 };
-exports.setHunt = function (id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+exports.setHunt = async (id, doc) => {
+  return await internals.client7.index({ index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m' });
 };
-exports.getHunt = function (id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
+exports.getHunt = async (id) => {
+  return await internals.client7.get({ index: fixIndex('hunts'), id: id });
 };
 
 exports.searchShortcuts = function (query, cb) {
