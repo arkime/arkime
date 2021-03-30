@@ -952,9 +952,9 @@ exports.setShortcut = async (id, doc) => {
 exports.getShortcut = async (id) => {
   return await internals.client7.get({ index: fixIndex('lookups'), id: id });
 };
-exports.getShortcutsCache = function (shortcutName, cb) {
-  if (internals.shortcutsCache[shortcutName] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.shortcutsCache[shortcutName]);
+exports.getShortcutsCache = async (userId) => {
+  if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return internals.shortcutsCache[userId];
   }
 
   // only get shortcuts for this user or shared
@@ -963,26 +963,28 @@ exports.getShortcutsCache = function (shortcutName, cb) {
       bool: {
         should: [
           { term: { shared: true } },
-          { term: { userId: shortcutName } }
+          { term: { userId: userId } }
         ]
       }
     }
   };
 
-  exports.searchShortcuts(query, (err, shortcuts) => {
-    if (err) { return cb(err, shortcuts); }
+  try {
+    const { body: { hits: shortcuts } } = await exports.searchShortcuts(query);
 
     const shortcutsMap = {};
-    for (const shortcut of shortcuts.hits.hits) {
+    for (const shortcut of shortcuts.hits) {
       // need the whole object to test for type mismatch
       shortcutsMap[shortcut._source.name] = shortcut;
     }
 
-    internals.shortcutsCache[shortcutName] = shortcutsMap;
+    internals.shortcutsCache[userId] = shortcutsMap;
     internals.shortcutsCache._timeStamp = Date.now();
 
-    cb(null, shortcutsMap);
-  });
+    return shortcutsMap;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.molochNodeStats = function (nodeName, cb) {

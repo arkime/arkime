@@ -2287,7 +2287,7 @@ internals.processCronQueries = () => {
           cluster = cq.action.substring(8);
         }
 
-        ViewerUtils.getUserCacheIncAnon(cq.creator, (err, user) => {
+        ViewerUtils.getUserCacheIncAnon(cq.creator, async (err, user) => {
           if (err && !user) {
             return forQueriesCb();
           }
@@ -2308,7 +2308,13 @@ internals.processCronQueries = () => {
             qid: qid
           };
 
-          Db.getShortcutsCache(cq.creator, (err, shortcuts) => {
+          let shortcuts;
+          try { // try to fetch shortcuts
+            shortcuts = await Db.getShortcutsCache(cq.creator);
+          } catch (err) { // don't need to do anything, there will just be no
+            // shortcuts sent to the parser. but still log the error.
+            console.log('ERROR - fetching shortcuts cache when processing cron query', err);
+          } finally { // always complete building the query regardless of shortcuts
             molochparser.parser.yy = {
               emailSearch: user.emailSearch === true,
               fieldsMap: Config.getFieldsMap(),
@@ -2378,7 +2384,7 @@ internals.processCronQueries = () => {
                 }
               });
             });
-          });
+          }
         });
       }, (err) => {
         if (Config.debug > 1) {

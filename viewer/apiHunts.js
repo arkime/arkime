@@ -498,53 +498,51 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         return;
       }
 
-      Db.getShortcutsCache(hunt.userId, (err, shortcuts) => {
-        const fakeReq = {
-          user: user,
-          query: {
-            from: 0,
-            size: 100, // only fetch 100 items at a time
-            _source: ['_id', 'node'],
-            sort: 'lastPacket:asc'
-          }
-        };
-
-        if (hunt.query.expression) {
-          fakeReq.query.expression = hunt.query.expression;
+      const fakeReq = {
+        user: user,
+        query: {
+          from: 0,
+          size: 100, // only fetch 100 items at a time
+          _source: ['_id', 'node'],
+          sort: 'lastPacket:asc'
         }
+      };
 
-        if (hunt.query.view) {
-          fakeReq.query.view = hunt.query.view;
-        }
+      if (hunt.query.expression) {
+        fakeReq.query.expression = hunt.query.expression;
+      }
 
-        sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
-          if (err) {
-            pauseHuntJobWithError(huntId, hunt, {
-              value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
-              unrunnable: true
-            });
-            return;
-          }
+      if (hunt.query.view) {
+        fakeReq.query.view = hunt.query.view;
+      }
 
-          ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-            query.query.bool.filter[0] = {
-              range: {
-                lastPacket: {
-                  gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-                  lt: hunt.query.stopTime * 1000
-                }
-              }
-            };
-
-            query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
-
-            if (Config.debug > 2) {
-              console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
-            }
-
-            // do sessions query
-            runHuntJob(huntId, hunt, query, user);
+      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+        if (err) {
+          pauseHuntJobWithError(huntId, hunt, {
+            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+            unrunnable: true
           });
+          return;
+        }
+
+        ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+          query.query.bool.filter[0] = {
+            range: {
+              lastPacket: {
+                gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+                lt: hunt.query.stopTime * 1000
+              }
+            }
+          };
+
+          query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
+
+          if (Config.debug > 2) {
+            console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+          }
+
+          // do sessions query
+          runHuntJob(huntId, hunt, query, user);
         });
       });
     });

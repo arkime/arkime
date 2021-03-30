@@ -1172,7 +1172,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  sModule.buildSessionQuery = (req, buildCb, queryOverride = null) => {
+  sModule.buildSessionQuery = async (req, buildCb, queryOverride = null) => {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
@@ -1312,8 +1312,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     addSortToQuery(query, reqQuery, 'firstPacket');
 
-    Db.getShortcutsCache(req.user.userId, (lerr, shortcuts) => {
-      let err = null;
+    let shortcuts;
+    try { // try to fetch shortcuts
+      shortcuts = await Db.getShortcutsCache(req.user.userId);
+    } catch (err) { // don't need to do anything, there will just be no
+      // shortcuts sent to the parser. but still log the error.
+      console.log('ERROR - fetching shortcuts cache when building sessions query', err);
+    } finally { // always complete building the query regardless of shortcuts
+      let err;
       molochparser.parser.yy = {
         views: req.user.views,
         fieldsMap: Config.getFieldsMap(),
@@ -1338,7 +1344,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       } else {
         ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
       }
-    });
+    }
   };
 
   sModule.sessionsListFromIds = (req, ids, fields, cb) => {
