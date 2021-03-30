@@ -2314,77 +2314,78 @@ internals.processCronQueries = () => {
           } catch (err) { // don't need to do anything, there will just be no
             // shortcuts sent to the parser. but still log the error.
             console.log('ERROR - fetching shortcuts cache when processing cron query', err);
-          } finally { // always complete building the query regardless of shortcuts
-            molochparser.parser.yy = {
-              emailSearch: user.emailSearch === true,
-              fieldsMap: Config.getFieldsMap(),
-              dbFieldsMap: Config.getDBFieldsMap(),
-              prefix: internals.prefix,
-              shortcuts: shortcuts,
-              shortcutTypeMap: internals.shortcutTypeMap
-            };
+          }
 
-            const query = {
-              from: 0,
-              size: 1000,
-              query: { bool: { filter: [{}] } },
-              _source: ['_id', 'node']
-            };
+          // always complete building the query regardless of shortcuts
+          molochparser.parser.yy = {
+            emailSearch: user.emailSearch === true,
+            fieldsMap: Config.getFieldsMap(),
+            dbFieldsMap: Config.getDBFieldsMap(),
+            prefix: internals.prefix,
+            shortcuts: shortcuts,
+            shortcutTypeMap: internals.shortcutTypeMap
+          };
 
+          const query = {
+            from: 0,
+            size: 1000,
+            query: { bool: { filter: [{}] } },
+            _source: ['_id', 'node']
+          };
+
+          try {
+            query.query.bool.filter.push(molochparser.parse(cq.query));
+          } catch (e) {
+            console.log("Couldn't compile cron query expression", cq, e);
+            return forQueriesCb();
+          }
+
+          if (user.expression && user.expression.length > 0) {
             try {
-              query.query.bool.filter.push(molochparser.parse(cq.query));
+              // Expression was set by admin, so assume email search ok
+              molochparser.parser.yy.emailSearch = true;
+              const userExpression = molochparser.parse(user.expression);
+              query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("Couldn't compile cron query expression", cq, e);
+              console.log("Couldn't compile user forced expression", user.expression, e);
               return forQueriesCb();
             }
-
-            if (user.expression && user.expression.length > 0) {
-              try {
-                // Expression was set by admin, so assume email search ok
-                molochparser.parser.yy.emailSearch = true;
-                const userExpression = molochparser.parse(user.expression);
-                query.query.bool.filter.push(userExpression);
-              } catch (e) {
-                console.log("Couldn't compile user forced expression", user.expression, e);
-                return forQueriesCb();
-              }
-            }
-
-            ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-              processCronQuery(cq, options, query, endTime, (count, lpValue) => {
-                if (Config.debug > 1) {
-                  console.log('CRON - setting lpValue', new Date(lpValue * 1000));
-                }
-                // Do the ES update
-                const doc = {
-                  doc: {
-                    lpValue: lpValue,
-                    lastRun: Math.floor(Date.now() / 1000),
-                    count: (queries[qid].count || 0) + count
-                  }
-                };
-
-                function continueProcess () {
-                  Db.update('queries', 'query', qid, doc, { refresh: true }, function () {
-                    // If there is more time to catch up on, repeat the loop, although other queries
-                    // will get processed first to be fair
-                    if (lpValue !== endTime) { repeat = true; }
-                    return forQueriesCb();
-                  });
-                }
-
-                // issue alert via notifier if the count has changed and it has been at least 10 minutes
-                if (cq.notifier && count && queries[qid].count !== doc.doc.count &&
-                  (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                  const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
-                  const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${doc.doc.count} total* matches`;
-                  notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
-                } else {
-                  return continueProcess();
-                }
-              });
-            });
           }
+
+          ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
+            processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+              if (Config.debug > 1) {
+                console.log('CRON - setting lpValue', new Date(lpValue * 1000));
+              }
+              // Do the ES update
+              const doc = {
+                doc: {
+                  lpValue: lpValue,
+                  lastRun: Math.floor(Date.now() / 1000),
+                  count: (queries[qid].count || 0) + count
+                }
+              };
+
+              function continueProcess () {
+                Db.update('queries', 'query', qid, doc, { refresh: true }, function () {
+                  // If there is more time to catch up on, repeat the loop, although other queries
+                  // will get processed first to be fair
+                  if (lpValue !== endTime) { repeat = true; }
+                  return forQueriesCb();
+                });
+              }
+
+              // issue alert via notifier if the count has changed and it has been at least 10 minutes
+              if (cq.notifier && count && queries[qid].count !== doc.doc.count &&
+                (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
+                const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
+                const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${doc.doc.count} total* matches`;
+                notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
+              } else {
+                return continueProcess();
+              }
+            });
+          });
         });
       }, (err) => {
         if (Config.debug > 1) {

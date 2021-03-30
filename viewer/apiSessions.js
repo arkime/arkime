@@ -1318,32 +1318,33 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     } catch (err) { // don't need to do anything, there will just be no
       // shortcuts sent to the parser. but still log the error.
       console.log('ERROR - fetching shortcuts cache when building sessions query', err);
-    } finally { // always complete building the query regardless of shortcuts
-      let err;
-      molochparser.parser.yy = {
-        views: req.user.views,
-        fieldsMap: Config.getFieldsMap(),
-        dbFieldsMap: Config.getDBFieldsMap(),
-        prefix: internals.prefix,
-        emailSearch: req.user.emailSearch === true,
-        shortcuts: shortcuts || {},
-        shortcutTypeMap: internals.shortcutTypeMap
-      };
+    }
 
-      if (reqQuery.expression) {
-        // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-        try {
-          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
-        } catch (e) {
-          err = e;
-        }
-      }
+    // always complete building the query regardless of shortcuts
+    let err;
+    molochparser.parser.yy = {
+      views: req.user.views,
+      fieldsMap: Config.getFieldsMap(),
+      dbFieldsMap: Config.getDBFieldsMap(),
+      prefix: internals.prefix,
+      emailSearch: req.user.emailSearch === true,
+      shortcuts: shortcuts || {},
+      shortcutTypeMap: internals.shortcutTypeMap
+    };
 
-      if (!err && reqQuery.view) {
-        addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
-      } else {
-        ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
+    if (reqQuery.expression) {
+      // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
+      try {
+        query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+      } catch (e) {
+        err = e;
       }
+    }
+
+    if (!err && reqQuery.view) {
+      addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
+    } else {
+      ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
     }
   };
 
