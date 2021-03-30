@@ -26,6 +26,7 @@ typedef struct {
     GString         *hostString;
     GString         *cookieString;
     GString         *authString;
+    GString         *proxyAuthString;
 
     GString         *valueString[2];
 
@@ -519,6 +520,11 @@ LOCAL int moloch_hp_cb_on_header_value (http_parser *parser, const char *at, siz
                 http->authString = g_string_new_len(at, length);
             else
                 g_string_append_len(http->authString, at, length);
+        } else if (strcasecmp("proxy-authorization", http->header[http->which]) == 0) {
+            if (!http->proxyAuthString)
+                http->proxyAuthString = g_string_new_len(at, length);
+            else 
+                g_string_append_len(http->proxyAuthString, at, length);
         }
     }
 
@@ -582,6 +588,12 @@ LOCAL int moloch_hp_cb_on_headers_complete (http_parser *parser)
     if (http->authString && http->authString->str[0]) {
         moloch_http_parse_authorization(session, http->authString->str);
         g_string_truncate(http->authString, 0);
+    }
+
+    /* Adding an additional check for proxy-authorization string*/
+    if (http->proxyAuthString && http->proxyAuthString->str[0]){
+	    moloch_http_parse_authorization(session, http->proxyAuthString->str);
+	    g_string_truncate(http->proxyAuthString, 0);
     }
 
     if (http->hostString) {
@@ -761,6 +773,8 @@ LOCAL void http_free(MolochSession_t UNUSED(*session), void *uw)
         g_string_free(http->cookieString, TRUE);
     if (http->authString)
         g_string_free(http->authString, TRUE);
+    if (http->proxyAuthString)
+        g_string_free(http->proxyAuthString, TRUE);
     if (http->valueString[0])
         g_string_free(http->valueString[0], TRUE);
     if (http->valueString[1])
