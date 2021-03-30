@@ -127,8 +127,8 @@ exports.initialize = function (info, cb) {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    exports.getAliasesCache('sessions2-*', () => {});
-    setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
+    exports.getAliasesCache('sessions2-*');
+    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
   }
 };
 
@@ -522,25 +522,23 @@ exports.indexStats = function (index, cb) {
   return internals.elasticSearchClient.indices.stats({ index: fixIndex(index) }, cb);
 };
 
-exports.getAliases = function (index, cb) {
-  return internals.elasticSearchClient.indices.getAlias({ index: fixIndex(index) }, cb);
+exports.getAliases = async (index) => {
+  return await internals.client7.indices.getAlias({ index: fixIndex(index) });
 };
 
-exports.getAliasesCache = function (index, cb) {
+exports.getAliasesCache = async (index) => {
   if (internals.aliasesCache && internals.aliasesCacheTimeStamp > Date.now() - 5000) {
-    return cb(null, internals.aliasesCache);
+    return internals.aliasesCache;
   }
 
-  exports.getAliases(index, (err, aliases) => {
-    if (err) {
-      return cb(err, aliases);
-    }
-
+  try {
+    const { body: aliases } = await exports.getAliases(index);
     internals.aliasesCacheTimeStamp = Date.now();
     internals.aliasesCache = aliases;
-
-    cb(null, aliases);
-  });
+    return aliases;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.health = function (cb) {
@@ -1364,12 +1362,9 @@ exports.loadFields = function (cb) {
   return exports.search('fields', 'field', { size: 1000 }, cb);
 };
 
-exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
-  exports.getAliasesCache('sessions2-*', (err, aliases) => {
-    if (err || aliases.error) {
-      return cb('');
-    }
-
+exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
+  try {
+    const aliases = await exports.getAliasesCache('sessions2-*');
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1442,11 +1437,13 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
     }
 
     if (indices.length === 0) {
-      return cb(internals.prefix + 'sessions2-*');
+      return internals.prefix + 'sessions2-*';
     }
 
-    return cb(indices.join());
-  });
+    return indices.join();
+  } catch {
+    return '';
+  }
 };
 
 exports.getMinValue = async (index, field) => {
