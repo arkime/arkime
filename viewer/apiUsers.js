@@ -965,7 +965,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} key - The cron query id
    */
-  uModule.createUserCron = (req, res) => {
+  uModule.createUserCron = async (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing cron query name');
     }
@@ -995,39 +995,39 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     const userId = req.settingUser.userId;
 
-    Db.getMinValue('sessions2-*', 'timestamp', (err, minTimestamp) => {
-      if (err || minTimestamp === 0 || minTimestamp === null) {
-        minTimestamp = Math.floor(Date.now() / 1000);
-      } else {
-        minTimestamp = Math.floor(minTimestamp / 1000);
+    let minTimestamp;
+    try {
+      const { body: data } = await Db.getMinValue('sessions2-*', 'timestamp');
+      minTimestamp = Math.floor(data.aggregations.min.value / 1000);
+    } catch (err) {
+      minTimestamp = Math.floor(Date.now() / 1000);
+    }
+
+    if (+req.body.since === -1) {
+      doc.doc.lpValue = doc.doc.lastRun = minTimestamp;
+    } else {
+      doc.doc.lpValue = doc.doc.lastRun =
+         Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
+    }
+
+    doc.doc.count = 0;
+    doc.doc.creator = userId || 'anonymous';
+
+    Db.indexNow('queries', 'query', null, doc.doc, (err, info) => {
+      if (err) {
+        console.log('ERROR - POST /api/user/cron', err, info);
+        return res.serverError(500, 'Create cron query failed');
       }
 
-      if (+req.body.since === -1) {
-        doc.doc.lpValue = doc.doc.lastRun = minTimestamp;
-      } else {
-        doc.doc.lpValue = doc.doc.lastRun =
-           Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
+      if (Config.get('cronQueries', false)) {
+        internals.processCronQueries();
       }
 
-      doc.doc.count = 0;
-      doc.doc.creator = userId || 'anonymous';
-
-      Db.indexNow('queries', 'query', null, doc.doc, (err, info) => {
-        if (err) {
-          console.log('/api/user/cron create error', err, info);
-          return res.serverError(500, 'Create cron query failed');
-        }
-
-        if (Config.get('cronQueries', false)) {
-          internals.processCronQueries();
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Created cron query successfully',
-          key: info._id
-        }));
-      });
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Created cron query successfully',
+        key: info._id
+      }));
     });
   };
 

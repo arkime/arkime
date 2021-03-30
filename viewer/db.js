@@ -673,19 +673,19 @@ exports.reroute = function (cb) {
   }, cb);
 };
 
-exports.flush = function (index, cb) {
+exports.flush = async (index) => {
   if (index === 'users') {
-    return internals.usersClient7.indices.flush({ index: fixIndex(index) }, cb);
+    return await internals.usersClient7.indices.flush({ index: fixIndex(index) });
   } else {
-    return internals.client7.indices.flush({ index: fixIndex(index) }, cb);
+    return await internals.client7.indices.flush({ index: fixIndex(index) });
   }
 };
 
-exports.refresh = function (index, cb) {
+exports.refresh = async (index) => {
   if (index === 'users') {
-    return internals.usersClient7.indices.refresh({ index: fixIndex(index) }, cb);
+    return await internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index) }, cb);
+    return await internals.client7.indices.refresh({ index: fixIndex(index) });
   }
 };
 
@@ -1449,42 +1449,40 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
   });
 };
 
-exports.getMinValue = function (index, field, cb) {
-  const params = { index: fixIndex(index), body: { size: 0, aggs: { min: { min: { field: field } } } } };
-  return internals.elasticSearchClient.search(params, (err, data) => {
-    if (err) { return cb(err, 0); }
-    return cb(null, data.aggregations.min.value);
-  });
+exports.getMinValue = async (index, field) => {
+  const params = {
+    index: fixIndex(index),
+    body: { size: 0, aggs: { min: { min: { field: field } } } }
+  };
+  return await internals.client7.search(params);
 };
 
-exports.getClusterDetails = function (cb) {
-  return internals.elasticSearchClient.get({ index: '_cluster', id: 'details' }, cb);
+exports.getClusterDetails = async () => {
+  return await internals.client7.get({ index: '_cluster', id: 'details' });
 };
 
-exports.getILMPolicy = function () {
-  return new Promise((resolve, reject) => {
-    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
-      if (err) {
-        resolve({});
-      } else {
-        resolve(data.body);
-      }
+exports.getILMPolicy = async () => {
+  try {
+    const data = await internals.client7.ilm.getLifecycle({
+      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`
     });
-  });
+    return data.body;
+  } catch {
+    return {};
+  }
 };
 
-exports.setILMPolicy = function (ilmName, policy) {
+exports.setILMPolicy = async (ilmName, policy) => {
   console.log('name', ilmName, 'policy', policy);
-  return new Promise((resolve, reject) => {
-    internals.client7.ilm.putLifecycle({ policy: ilmName, body: { policy: policy.policy } }, (err, data) => {
-      if (err) {
-        console.log('ERROR', err, 'data', data);
-        reject(err);
-      } else {
-        resolve(data.body);
-      }
+  try {
+    const data = await internals.client7.ilm.putLifecycle({
+      policy: ilmName, body: { policy: policy.policy }
     });
-  });
+    return data.body;
+  } catch (err) {
+    console.log('ERROR - setting ILM Policy', err);
+    throw new Error(err);
+  }
 };
 
 exports.getTemplate = function (templateName) {
