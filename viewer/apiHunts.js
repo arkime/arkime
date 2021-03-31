@@ -812,7 +812,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
     Promise.all([
       Db.searchHunt(query),
-      Db.numberOfHunts()
+      Db.countHunts()
     ]).then(([{ body: { hits: hunts } }, { body: { count: total } }]) => {
       let runningJob;
 

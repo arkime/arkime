@@ -180,6 +180,7 @@ my $hToken = getTokenCookie('huntuser');
     }
   }
 
+
 # verify viewHunt and badHunt
   is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
   is($viewHunt->{unrunnable}, undef, "hunt should be runable");
@@ -192,7 +193,8 @@ my $hToken = getTokenCookie('huntuser');
   my $id7 = $json->{hunt}->{id};
 
 # remove a user from a hunt
-  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  sleep(1); # Wait for user to be set or else test after next fails
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
 # can't delete a user from an hunt with no users

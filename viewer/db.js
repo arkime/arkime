@@ -526,7 +526,7 @@ exports.indexStats = function (index, cb) {
 };
 
 exports.getAliases = async (index) => {
-  return await internals.client7.indices.getAlias({ index: fixIndex(index) });
+  return internals.client7.indices.getAlias({ index: fixIndex(index) });
 };
 
 exports.getAliasesCache = async (index) => {
@@ -676,17 +676,17 @@ exports.reroute = function (cb) {
 
 exports.flush = async (index) => {
   if (index === 'users') {
-    return await internals.usersClient7.indices.flush({ index: fixIndex(index) });
+    return internals.usersClient7.indices.flush({ index: fixIndex(index) });
   } else {
-    return await internals.client7.indices.flush({ index: fixIndex(index) });
+    return internals.client7.indices.flush({ index: fixIndex(index) });
   }
 };
 
 exports.refresh = async (index) => {
   if (index === 'users') {
-    return await internals.usersClient7.indices.refresh({ index: fixIndex(index) });
+    return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
-    return await internals.client7.indices.refresh({ index: fixIndex(index) });
+    return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
 };
 
@@ -878,84 +878,84 @@ exports.historyIt = async (doc) => {
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return await internals.client7.index({
+  return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
 };
 exports.searchHistory = async (query) => {
-  return await internals.client7.search({
+  return internals.client7.search({
     index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true
   });
 };
 exports.countHistory = async () => {
-  return await internals.elasticSearchClient.count({
+  return internals.elasticSearchClient.count({
     index: fixIndex('history_v1-*'), ignoreUnavailable: true
   });
   // TODO why does this hang mutiviewer tests?
-  // return await internals.client7.count({
+  // return internals.client7.count({
   //   index: fixIndex('history_v1-*'), ignoreUnavailable: true
   // });
 };
 exports.deleteHistory = async (id, index) => {
-  return await internals.client7.delete({
+  return internals.client7.delete({
     index: index, id: id, refresh: true
   });
 };
 
 // Hunt DB interactions
 exports.createHunt = async (doc) => {
-  return await internals.client7.index({
+  return internals.client7.index({
     index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
 exports.searchHunt = async (query) => {
-  return await internals.client7.search({
+  return internals.client7.search({
     index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true
   });
 };
-exports.numberOfHunts = async () => {
-  return await internals.client7.count({ index: fixIndex('hunts') });
+exports.countHunts = async () => {
+  return internals.client7.count({ index: fixIndex('hunts') });
 };
 exports.deleteHunt = async (id) => {
-  return await internals.client7.delete({
+  return internals.client7.delete({
     index: fixIndex('hunts'), id: id, refresh: true
   });
 };
 exports.setHunt = async (id, doc) => {
-  return await internals.client7.index({
+  return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m'
   });
 };
 exports.getHunt = async (id) => {
-  return await internals.client7.get({ index: fixIndex('hunts'), id: id });
+  return internals.client7.get({ index: fixIndex('hunts'), id: id });
 };
 
 // Shortcut DB interactions
 exports.searchShortcuts = async (query) => {
-  return await internals.client7.search({
+  return internals.client7.search({
     index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
   });
 };
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
-  return await internals.client7.index({
+  return internals.client7.index({
     index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
 exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
-  return await internals.client7.delete({
+  return internals.client7.delete({
     index: fixIndex('lookups'), id: id, refresh: true
   });
 };
 exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
-  return await internals.client7.index({
+  return internals.client7.index({
     index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m'
   });
 };
 exports.getShortcut = async (id) => {
-  return await internals.client7.get({ index: fixIndex('lookups'), id: id });
+  return internals.client7.get({ index: fixIndex('lookups'), id: id });
 };
 exports.getShortcutsCache = async (userId) => {
   if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
@@ -1458,11 +1458,11 @@ exports.getMinValue = async (index, field) => {
     index: fixIndex(index),
     body: { size: 0, aggs: { min: { min: { field: field } } } }
   };
-  return await internals.client7.search(params);
+  return internals.client7.search(params);
 };
 
 exports.getClusterDetails = async () => {
-  return await internals.client7.get({ index: '_cluster', id: 'details' });
+  return internals.client7.get({ index: '_cluster', id: 'details' });
 };
 
 exports.getILMPolicy = async () => {

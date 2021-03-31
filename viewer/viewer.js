@@ -578,23 +578,25 @@ function disableInMultiES (req, res, next) {
   return next();
 }
 
-function checkHuntAccess (req, res, next) {
+async function checkHuntAccess (req, res, next) {
   if (req.user.createEnabled) {
     // an admin can do anything to any hunt
     return next();
   } else {
-    Db.getHunt(req.params.id, (err, huntHit) => {
-      if (err) {
-        console.log('error', err);
-        return res.serverError(500, err);
-      }
+    try {
+      const { body: huntHit } = await Db.getHunt(req.params.id);
+
       if (!huntHit || !huntHit.found) { throw new Error('Hunt not found'); }
 
       if (huntHit._source.userId === req.user.userId) {
         return next();
       }
+
       return res.serverError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
-    });
+    } catch (err) {
+      console.log('ERROR - fetching hunt to check access', err);
+      return res.serverError(500, err);
+    }
   }
 }
 
