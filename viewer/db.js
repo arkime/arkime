@@ -90,6 +90,26 @@ exports.initialize = function (info, cb) {
     ssl: esSSLOptions
   });
 
+  // TODO needs to be here for tests to pass, otherwise internals.client7 is
+  // undefined when getAliases is called
+  internals.client7 = new Client({
+    node: internals.info.host,
+    maxRetries: 2,
+    requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+    ssl: esSSLOptions
+  });
+
+  if (info.usersHost) {
+    internals.usersClient7 = new Client({
+      node: internals.info.usersHost,
+      maxRetries: 2,
+      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+      ssl: esSSLOptions
+    });
+  } else {
+    internals.usersClient7 = internals.client7;
+  }
+
   internals.elasticSearchClient.info((err, data) => {
     if (err) {
       console.log(err, data);
@@ -99,23 +119,6 @@ exports.initialize = function (info, cb) {
       process.exit();
     }
 
-    internals.client7 = new Client({
-      node: internals.info.host,
-      maxRetries: 2,
-      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    });
-
-    if (info.usersHost) {
-      internals.usersClient7 = new Client({
-        node: internals.info.usersHost,
-        maxRetries: 2,
-        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-        ssl: esSSLOptions
-      });
-    } else {
-      internals.usersClient7 = internals.client7;
-    }
     return cb();
   });
 
@@ -168,7 +171,7 @@ function fixIndex (index) {
   return index;
 }
 
-exports.merge = function (to, from) {
+exports.merge = (to, from) => {
   for (const key in from) {
     to[key] = from[key];
   }
@@ -885,9 +888,13 @@ exports.searchHistory = async (query) => {
   });
 };
 exports.countHistory = async () => {
-  return await internals.client7.count({
+  return await internals.elasticSearchClient.count({
     index: fixIndex('history_v1-*'), ignoreUnavailable: true
   });
+  // TODO why does this hang mutiviewer tests?
+  // return await internals.client7.count({
+  //   index: fixIndex('history_v1-*'), ignoreUnavailable: true
+  // });
 };
 exports.deleteHistory = async (id, index) => {
   return await internals.client7.delete({

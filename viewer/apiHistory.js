@@ -132,7 +132,7 @@ module.exports = (Db) => {
     Promise.all([
       Db.searchHistory(query),
       Db.countHistory()
-    ]).then(([{ body: { hits: histories } }, { body: { count: total } }]) => {
+    ]).then(([{ body: { hits: histories } }, { count: total }]) => {
       const results = { total: histories.total, results: [] };
       for (const hit of histories.hits) {
         const item = hit._source;
