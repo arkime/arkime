@@ -179,14 +179,14 @@ exports.get = async (index, type, id) => {
   return internals.client7.get({ index: fixIndex(index), id: id });
 };
 
-exports.getWithOptions = function (index, type, id, options, cb) {
+exports.getWithOptions = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
-  return internals.elasticSearchClient.get(params, cb);
+  return internals.client7.get(params);
 };
 
 // Get a session from ES and decode packetPos if requested
-exports.getSession = function (id, options, cb) {
+exports.getSession = async (id, options, cb) => {
   function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
@@ -281,12 +281,12 @@ exports.getSession = function (id, options, cb) {
       return fixPacketPos(session, session._source || session.fields);
     });
   } else {
-    exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options, (err, session) => {
-      if (err || (options && options._source && !options._source.includes('packetPos'))) {
-        return cb(err, session);
-      }
+    try {
+      const { body: session } = await exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options);
       return fixPacketPos(session, session._source || session.fields);
-    });
+    } catch (err) {
+      return cb(err);
+    }
   }
 };
 
