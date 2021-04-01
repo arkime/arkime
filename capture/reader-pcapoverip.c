@@ -133,7 +133,7 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
             }
         }
 
-        if (poic->len - pos < 16 + caplen) { // Not enough data for packet
+        if (poic->len - pos < 16 + caplen || 16 + caplen < caplen) { // Not enough data for packet
             MOLOCH_TYPE_FREE(MolochPacket_t, packet);
             break;
         }
