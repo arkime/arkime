@@ -290,8 +290,8 @@ exports.getSession = async (id, options, cb) => {
   }
 };
 
-exports.index = function (index, type, id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id }, cb);
+exports.index = async (index, type, id, doc) => {
+  return internals.client7.index({ index: fixIndex(index), body: doc, id: id });
 };
 
 exports.indexNow = function (index, type, id, doc, cb) {
@@ -1224,10 +1224,13 @@ exports.fileNameToFiles = function (fileName, cb) {
   });
 };
 
-exports.getSequenceNumber = function (sName, cb) {
-  exports.index('sequence', 'sequence', sName, {}, (err, sinfo) => {
-    cb(err, sinfo._version);
-  });
+exports.getSequenceNumber = async (sName) => {
+  try {
+    const { data: sinfo } = await exports.index('sequence', 'sequence', sName, {});
+    return sinfo._version;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.numberOfDocuments = function (index, options) {

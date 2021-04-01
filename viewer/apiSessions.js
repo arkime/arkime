@@ -3113,7 +3113,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     let file;
     let writeHeader;
 
-    function makeFilename (cb) {
+    async function makeFilename (cb) {
       if (saveId.filename) {
         return cb(saveId.filename);
       }
@@ -3124,14 +3124,18 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       saveId.inProgress = 1;
-      Db.getSequenceNumber('fn-' + Config.nodeName(), (err, seq) => {
+      try {
+        const seq = await Db.getSequenceNumber('fn-' + Config.nodeName());
         const filename = Config.get('pcapDir') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
         saveId.seq = seq;
-        Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 }, () => {
+        const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
+        Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, options, () => {
           cb(filename);
           saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
         });
-      });
+      } catch (err) {
+        console.log(`ERROR - POST /api/sessions/receive ${saveId}`, err);
+      }
     }
 
     function saveSession () {
