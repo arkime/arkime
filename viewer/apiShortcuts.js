@@ -163,7 +163,7 @@ module.exports = (Db, internals, ViewerUtils) => {
         : {
           data: results.list,
           recordsTotal: total.count,
-          recordsFiltered: shortcuts.hits.total
+          recordsFiltered: shortcuts.total
         };
 
       res.send(sendResults);
