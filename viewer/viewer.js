@@ -600,20 +600,20 @@ async function checkHuntAccess (req, res, next) {
   }
 }
 
-function checkCronAccess (req, res, next) {
+async function checkCronAccess (req, res, next) {
   if (req.user.createEnabled) {
     // an admin can do anything to any query
     return next();
   } else {
-    Db.get('queries', 'query', req.body.key, (err, query) => {
-      if (err || !query.found) {
-        return res.serverError(403, 'Unknown cron query');
-      }
+    try {
+      const { body: query } = Db.get('queries', 'query', req.body.key);
       if (query._source.creator === req.user.userId) {
         return next();
       }
       return res.serverError(403, 'You cannot change another user\'s cron query unless you have admin privileges');
-    });
+    } catch (err) {
+      return res.serverError(403, 'Unknown cron query');
+    }
   }
 }
 

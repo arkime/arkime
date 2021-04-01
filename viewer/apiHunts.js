@@ -151,23 +151,17 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
   }
 
-  function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
+  async function updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
     // update the hunt with number of matchedSessions and searchedSessions
     // and the date of the first packet of the last searched session
     const lastPacketTime = session.lastPacket;
     const now = Math.floor(Date.now() / 1000);
 
     if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
-      Db.get('hunts', 'hunt', huntId, (err, huntHit) => {
-        if (!huntHit || !huntHit.found) { // hunt hit not found, likely deleted
-          return cb('undefined');
-        }
+      try {
+        const { body: huntHit } = await Db.get('hunts', 'hunt', huntId);
 
-        if (err) {
-          const errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
-          pauseHuntJobWithError(huntId, hunt, { value: errorText });
-          return cb({ success: false, text: errorText });
-        }
+        if (!huntHit) { return cb('undefined'); }
 
         hunt.status = huntHit._source.status;
         hunt.lastUpdated = now;
@@ -181,7 +175,11 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         } else {
           return cb(null);
         }
-      });
+      } catch (err) {
+        const errorText = `Error finding hunt: ${hunt.name} (${huntId}): ${err}`;
+        pauseHuntJobWithError(huntId, hunt, { value: errorText });
+        return cb({ success: false, text: errorText });
+      }
     } else {
       return cb(null);
     }
@@ -1001,7 +999,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
    * @returns {string} error - If an error occurred, describes the error.
    */
-  hModule.remoteHunt = (req, res) => {
+  hModule.remoteHunt = async (req, res) => {
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
@@ -1009,7 +1007,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     Promise.all([
       Db.get('hunts', 'hunt', huntId),
       Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))
-    ]).then(([hunt, session]) => {
+    ]).then(([{ body: hunt }, { body: session }]) => {
       if (hunt.error || session.error) {
         res.send({ matched: false });
       }

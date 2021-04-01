@@ -138,8 +138,6 @@ exports.initialize = function (info, cb) {
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Low level functions to convert from old style to new
 /// ///////////////////////////////////////////////////////////////////////////////
-//
-//
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
@@ -177,8 +175,8 @@ exports.merge = (to, from) => {
   }
 };
 
-exports.get = function (index, type, id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex(index), id: id }, cb);
+exports.get = async (index, type, id) => {
+  return internals.client7.get({ index: fixIndex(index), id: id });
 };
 
 exports.getWithOptions = function (index, type, id, options, cb) {
@@ -992,22 +990,20 @@ exports.getShortcutsCache = async (userId) => {
   }
 };
 
-exports.molochNodeStats = function (nodeName, cb) {
-  exports.get('stats', 'stat', nodeName, (err, stat) => {
-    if (err || !stat.found) {
-      // Even if an error, if we have a cached value use it
-      if (err && internals.molochNodeStatsCache[nodeName]) {
-        return cb(null, internals.molochNodeStatsCache[nodeName]);
-      }
+exports.molochNodeStats = async (nodeName, cb) => {
+  try {
+    const { body: stat } = await exports.get('stats', 'stat', nodeName);
 
-      cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
-    } else {
-      internals.molochNodeStatsCache[nodeName] = stat._source;
-      internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
+    internals.molochNodeStatsCache[nodeName] = stat._source;
+    internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
 
-      cb(null, stat._source);
+    cb(null, stat._source);
+  } catch (err) {
+    if (internals.molochNodeStatsCache[nodeName]) {
+      return cb(null, internals.molochNodeStatsCache[nodeName]);
     }
-  });
+    return cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
+  }
 };
 
 exports.molochNodeStatsCache = function (nodeName, cb) {
@@ -1175,7 +1171,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-exports.fileIdToFile = function (node, num, cb) {
+exports.fileIdToFile = async (node, num, cb) => {
   const key = node + '!' + num;
   const info = internals.fileId2File[key];
   if (info !== undefined) {
@@ -1184,18 +1180,16 @@ exports.fileIdToFile = function (node, num, cb) {
     });
   }
 
-  exports.get('files', 'file', node + '-' + num, (err, fresult) => {
-    if (!err && fresult.found) {
-      const file = fresult._source;
-      internals.fileId2File[key] = file;
-      internals.fileName2File[file.name] = file;
-      return cb(file);
-    }
-
-    // Cache file is unknown
+  try {
+    const { body: fresult } = await exports.get('files', 'file', node + '-' + num);
+    const file = fresult._source;
+    internals.fileId2File[key] = file;
+    internals.fileName2File[file.name] = file;
+    return cb(file);
+  } catch (err) { // Cache file is unknown
     internals.fileId2File[key] = null;
     return cb(null);
-  });
+  }
 };
 
 exports.fileNameToFiles = function (fileName, cb) {

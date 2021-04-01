@@ -1065,7 +1065,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserCron = (req, res) => {
+  uModule.updateUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
@@ -1098,15 +1098,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       doc.doc.notifier = req.body.notifier;
     }
 
-    Db.get('queries', 'query', key, (err, sq) => {
-      if (err || !sq.found) {
-        console.log('/user/cron update failed', err, sq);
-        return res.serverError(403, 'Unknown query');
-      }
+    try {
+      await Db.get('queries', 'query', key);
 
       Db.update('queries', 'query', key, doc, { refresh: true }, (err, data) => {
         if (err) {
-          console.log('/user/cron update error', err, doc, data);
+          console.log(`ERROR - POST /api/user/cron/${key}`, err, doc, data);
           return res.serverError(500, 'Cron query update failed');
         }
 
@@ -1119,7 +1116,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           text: 'Updated cron query successfully'
         }));
       });
-    });
+    } catch (err) {
+      console.log(`ERROR - POST - /api/user/cron/${key}`, err);
+      return res.serverError(403, 'Unknown query');
+    }
   };
 
   /**
