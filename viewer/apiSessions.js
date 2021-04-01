@@ -3126,13 +3126,15 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       saveId.inProgress = 1;
       try {
         const seq = await Db.getSequenceNumber('fn-' + Config.nodeName());
+
         const filename = Config.get('pcapDir') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
         saveId.seq = seq;
         const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
-        Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, options, () => {
-          cb(filename);
-          saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
-        });
+
+        await Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, options);
+
+        cb(filename);
+        saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
       } catch (err) {
         console.log(`ERROR - POST /api/sessions/receive ${saveId}`, err);
       }
@@ -3141,7 +3143,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     function saveSession () {
       const id = session.id;
       delete session.id;
-      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session, (err, info) => {});
+      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session);
     }
 
     function chunkWrite (chunk) {

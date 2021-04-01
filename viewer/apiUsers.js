@@ -1013,11 +1013,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     doc.doc.count = 0;
     doc.doc.creator = userId || 'anonymous';
 
-    Db.indexNow('queries', 'query', null, doc.doc, (err, info) => {
-      if (err) {
-        console.log('ERROR - POST /api/user/cron', err, info);
-        return res.serverError(500, 'Create cron query failed');
-      }
+    try {
+      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
 
       if (Config.get('cronQueries', false)) {
         internals.processCronQueries();
@@ -1025,10 +1022,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Created cron query successfully',
-        key: info._id
+        key: info._id,
+        text: 'Created cron query successfully'
       }));
-    });
+    } catch (err) {
+      console.log('ERROR - POST /api/user/cron', err);
+      return res.serverError(500, 'Create cron query failed');
+    }
   };
 
   /**

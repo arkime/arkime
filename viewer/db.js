@@ -294,8 +294,10 @@ exports.index = async (index, type, id, doc) => {
   return internals.client7.index({ index: fixIndex(index), body: doc, id: id });
 };
 
-exports.indexNow = function (index, type, id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id, refresh: true }, cb);
+exports.indexNow = async (index, type, id, doc) => {
+  return internals.client7.index({
+    index: fixIndex(index), body: doc, id: id, refresh: true
+  });
 };
 
 exports.search = function (index, type, query, options, cb) {
