@@ -1998,14 +1998,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         delete query.aggregations.field;
 
         let queriesInfo = [];
-        function endCb () {
+        async function endCb () {
           queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
           const queries = queriesInfo.map((item) => { return item.query; });
 
-          Db.msearch(indices, 'session', queries, options, (err, searchResult) => {
-            if (!searchResult.responses) {
-              return res.send(results);
-            }
+          try {
+            const { body: searchResult } = await Db.msearch(indices, 'session', queries, options);
 
             searchResult.responses.forEach((item, i) => {
               const response = {
@@ -2070,7 +2068,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 return res.send(results);
               }
             });
-          });
+          } catch (err) {
+            return res.send(results);
+          }
         }
 
         const intermediateResults = [];

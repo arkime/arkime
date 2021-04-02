@@ -427,7 +427,7 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   return exports.searchScroll(index, type, query, params, cb);
 };
 
-exports.msearch = function (index, type, queries, options, cb) {
+exports.msearch = async (index, type, queries, options) => {
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {
@@ -437,12 +437,13 @@ exports.msearch = function (index, type, queries, options, cb) {
 
   const params = { body: body, rest_total_hits_as_int: true };
 
+  let cancelId = null;
   if (options && options.cancelId) {
-    // set X-Opaque-Id header on the params so the task can be canceled
-    params.headers = { 'X-Opaque-Id': options.cancelId };
+    // use opaqueId option so the task can be cancelled
+    cancelId = { opaqueId: options.cancelId };
   }
 
-  return internals.elasticSearchClient.msearch(params, cb);
+  return internals.client7.msearch(params, cancelId);
 };
 
 exports.scroll = function (params, callback) {
