@@ -859,7 +859,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelUserESTask = (req, res) => {
+  sModule.cancelUserESTask = async (req, res) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
@@ -869,9 +869,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing ID of task to cancel');
     }
 
-    Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, (err, result) => {
+    try {
+      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
-    });
+    } catch (err) {
+      console.log(`ERROR - /api/estasks/${cancelId}/cancelwith`, err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   /**

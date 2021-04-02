@@ -318,29 +318,30 @@ exports.search = function (index, type, query, options, cb) {
   return internals.elasticSearchClient.search(params, cb);
 };
 
-exports.cancelByOpaqueId = function (cancelId, cb) {
-  internals.elasticSearchClient.tasks.list({ detailed: false, group_by: 'parents' })
-    .then((results) => {
-      let found = false;
+exports.cancelByOpaqueId = async (cancelId) => {
+  const { body: results } = await internals.client7.tasks.list({
+    detailed: false, group_by: 'parents'
+  });
 
-      for (const resultKey in results.tasks) {
-        const result = results.tasks[resultKey];
-        if (result.headers &&
-          result.headers['X-Opaque-Id'] &&
-          result.headers['X-Opaque-Id'] === cancelId) {
-          found = true;
-          internals.elasticSearchClient.tasks.cancel({ taskId: resultKey }, () => {});
-        }
-      }
+  let found = false;
 
-      // not found, return error
-      if (!found) { return cb('cancel id not found, cannot cancel es task(s)'); }
+  for (const resultKey in results.tasks) {
+    const result = results.tasks[resultKey];
+    if (result.headers &&
+      result.headers['X-Opaque-Id'] &&
+      result.headers['X-Opaque-Id'] === cancelId) {
+      found = true;
+      // don't need to wait for task to cancel, just break out and return
+      internals.client7.tasks.cancel({ taskId: resultKey });
+      break;
+    }
+  }
 
-      return cb();
-    })
-    .catch((error) => {
-      return cb(error);
-    });
+  if (!found) { // not found, return error
+    throw new Error('Cancel ID not found, cannot cancel ES task(s)');
+  }
+
+  return 'ES task cancelled succesfully';
 };
 
 function searchScrollInternal (index, type, query, options, cb) {
