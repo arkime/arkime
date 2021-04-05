@@ -364,7 +364,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
     }
 
-    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, getMoreUntilDone (err, result) => {
       if (err || result.error) {
         pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
         return;
@@ -420,7 +420,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
             return updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         });
-      }, (err) => { // done running this section of hunt job
+      }, async (err) => { // done running this section of hunt job
         // Some kind of error, stop now
         if (err === 'paused' || err === 'undefined') {
           if (result && result._scroll_id) {
@@ -432,7 +432,15 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
         // There might be more, issue another scroll
         if (result.hits.hits.length !== 0) {
-          return Db.scroll({ body: { scroll_id: result._scroll_id }, scroll: internals.esScrollTimeout }, getMoreUntilDone);
+          try {
+            const { body: results } = await Db.scroll({
+              body: { scroll_id: result._scroll_id }, scroll: internals.esScrollTimeout
+            });
+            return getMoreUntilDone(null, results);
+          } catch (err) {
+            console.log('ERROR - issuing scroll for hunt job', err);
+            return getMoreUntilDone(err, {});
+          }
         }
 
         Db.clearScroll({ body: { scroll_id: result._scroll_id } });

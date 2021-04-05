@@ -446,9 +446,9 @@ exports.msearch = async (index, type, queries, options) => {
   return internals.client7.msearch(params, cancelId);
 };
 
-exports.scroll = function (params, callback) {
+exports.scroll = async (params) => {
   params.rest_total_hits_as_int = true;
-  return internals.elasticSearchClient.scroll(params, callback);
+  return internals.client7.scroll(params);
 };
 
 exports.clearScroll = function (params, callback) {

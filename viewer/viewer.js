@@ -2180,7 +2180,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
     }
 
     Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
-      function doNext () {
+      async function doNext () {
         count += result.hits.hits.length;
 
         // No more data, all done
@@ -2199,7 +2199,13 @@ function processCronQuery (cq, options, query, endTime, cb) {
           scroll: internals.esScrollTimeout
         };
 
-        Db.scroll(query, getMoreUntilDone);
+        try {
+          const { body: results } = await Db.scroll(query);
+          return getMoreUntilDone(null, results);
+        } catch (err) {
+          console.log('ERROR - issuing scroll for hunt job', err);
+          return getMoreUntilDone(err, {});
+        }
       }
 
       if (err || result.error) {
