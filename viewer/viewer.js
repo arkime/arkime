@@ -2203,7 +2203,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           const { body: results } = await Db.scroll(query);
           return getMoreUntilDone(null, results);
         } catch (err) {
-          console.log('ERROR - issuing scroll for hunt job', err);
+          console.log('ERROR - issuing scroll for cron job', err);
           return getMoreUntilDone(err, {});
         }
       }

@@ -364,7 +364,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
     }
 
-    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, getMoreUntilDone (err, result) => {
+    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       if (err || result.error) {
         pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
         return;
