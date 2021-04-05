@@ -6,7 +6,6 @@
         <!-- search navbar -->
         <moloch-search
           :num-matching-sessions="filtered"
-          :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)">
         </moloch-search> <!-- /search navbar -->
 
@@ -139,7 +138,6 @@
         :map-data="mapData"
         :primary="true"
         :cap-start-times="capStartTimes"
-        :timezone="user.settings.timezone"
         :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations>
@@ -196,8 +194,7 @@
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
-                  :timelineDataFilters="timelineDataFilters"
-                  :timezone="user.settings.timezone">
+                  :timelineDataFilters="timelineDataFilters">
                 </moloch-visualizations>
               </div>
             </div> <!-- /field visualization -->
@@ -296,7 +293,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      const filters = this.$store.state.user.settings.timelineDataFilters;
+      const filters = this.user.settings.timelineDataFilters;
       return filters.map(i => this.fields.find(f => f.dbField === i));
     },
     graphType: function () {

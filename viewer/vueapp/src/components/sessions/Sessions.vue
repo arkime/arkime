@@ -12,7 +12,6 @@
           :num-visible-sessions="query.length"
           :num-matching-sessions="sessions.recordsFiltered"
           :start="query.start"
-          :timezone="user.settings.timezone"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
           @setColumns="loadColumns">
@@ -39,7 +38,6 @@
       :map-data="mapData"
       :primary="true"
       :cap-start-times="capStartTimes"
-      :timezone="user.settings.timezone"
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)">
     </moloch-visualizations> <!-- /visualizations -->
@@ -53,7 +51,6 @@
           v-if="stickySessions.length"
           :ms="user.settings.ms"
           :sessions="stickySessions"
-          :timezone="user.settings.timezone"
           @closeSession="closeSession"
           @closeAllSessions="closeAllSessions">
         </moloch-sticky-sessions>
@@ -445,8 +442,7 @@
                       :session="session"
                       :expr="col.exp"
                       :value="value"
-                      :parse="true"
-                      :timezone="user.settings.timezone">
+                      :parse="true">
                     </moloch-session-field>
                   </span>
                 </span> <!-- /field value is an array -->
@@ -458,7 +454,6 @@
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :timezone="user.settings.timezone"
                     :info-fields="infoFields">
                   </moloch-session-field>
                 </span> <!-- /field value a single value -->
