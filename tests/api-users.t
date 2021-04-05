@@ -13,6 +13,9 @@ my $pwd = "*/pcap";
     my $token2 = getTokenCookie2();
     my $token3 = getTokenCookie('test1');
 
+# Delete old users
+    esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
 # users
     my $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 0, "Empty users table");

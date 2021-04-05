@@ -31,6 +31,7 @@ my $json;
     cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v4}->{total}->{docs}->{count}, '>=', 1, "dstats count is at least 1");
 
 # _count
+    esPost("/MULTIPREFIX_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
     is ($json->{count}, 0, "Correct count number of users");
 

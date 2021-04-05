@@ -10,6 +10,9 @@ use strict;
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
 
+# Delete old shortcuts
+esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts");
