@@ -283,9 +283,12 @@ exports.getSession = async (id, options, cb) => {
   } else {
     try {
       const { body: session } = await exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options);
+      if (options && options._source && !options._source.includes('packetPos')) {
+        return cb(null, session);
+      }
       return fixPacketPos(session, session._source || session.fields);
     } catch (err) {
-      return cb(err);
+      return cb(err, {});
     }
   }
 };
@@ -458,22 +461,10 @@ exports.clearScroll = async (params) => {
   return internals.client7.clearScroll(params);
 };
 
-exports.bulk = function (params, callback) {
-  return internals.elasticSearchClient.bulk(params, callback);
-};
-
-exports.deleteByQuery = function (index, type, query, cb) {
-  return internals.elasticSearchClient.deleteByQuery({ index: fixIndex(index), body: query }, cb);
-};
-
-exports.deleteDocument = function (index, type, id, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.deleteDocument = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
-  return internals.elasticSearchClient.delete(params, cb);
+  return internals.client7.delete(params);
 };
 
 // This API does not call fixIndex
@@ -1338,9 +1329,7 @@ exports.isLocalView = function (node, yesCB, noCB) {
 
 exports.deleteFile = function (node, id, path, cb) {
   fs.unlink(path, () => {
-    exports.deleteDocument('files', 'file', id, (err, data) => {
-      cb(null);
-    });
+    exports.deleteDocument('files', 'file', id);
   });
 };
 

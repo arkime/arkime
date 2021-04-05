@@ -979,15 +979,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, (err, session) => {
+    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
       const fields = session._source || session.fields;
 
       if (whatToRemove === 'spi') { // just removing es data for session
-        Db.deleteDocument(session._index, 'session', session._id, (err, data) => {
-          return endCb(err, fields);
-        });
+        try {
+          await Db.deleteDocument(session._index, 'session', session._id);
+          return endCb(null, fields);
+        } catch (err) { return endCb(err, fields); }
       } else { // scrub the pcap
         async.eachLimit(fields.packetPos, 10, (pos, nextCb) => {
           if (pos < 0) {
@@ -1018,11 +1019,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           } else {
             processFile(opcap, pos, itemPos++, nextCb);
           }
-        }, (pcapErr, results) => {
+        }, async (pcapErr, results) => {
           if (whatToRemove === 'all') { // also remove the session data
-            Db.deleteDocument(session._index, 'session', session._id, (err, data) => {
-              return endCb(pcapErr, fields);
-            });
+            try {
+              await Db.deleteDocument(session._index, 'session', session._id);
+              return endCb(null, fields);
+            } catch (err) { return endCb(pcapErr, fields); }
           } else { // just set who/when scrubbed the pcap
             // Do the ES update
             const doc = {

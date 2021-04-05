@@ -1039,22 +1039,22 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserCron = (req, res) => {
+  uModule.deleteUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
     }
 
-    Db.deleteDocument('queries', 'query', key, { refresh: true }, (err, sq) => {
-      if (err) {
-        console.log('/api/user/cron delete error', err, sq);
-        return res.serverError(500, 'Delete cron query failed');
-      }
+    try {
+      await Db.deleteDocument('queries', 'query', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted cron query successfully'
       }));
-    });
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/user/cron/${key}`, err);
+      return res.serverError(500, 'Delete cron query failed');
+    }
   };
 
   /**
