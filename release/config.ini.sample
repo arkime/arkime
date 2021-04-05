@@ -1,4 +1,4 @@
-# Latest settings documentation: https://molo.ch/settings
+# Latest settings documentation: https://arkime.com/settings
 #
 # Arkime uses a tiered system for configuration variables.  This allows Arkime
 # to share one config file for many machines.  The ordering of sections in this
@@ -119,10 +119,10 @@ viewPort = 8005
 # By default the viewer process is https://hostname:<viewPort> for each node.
 #viewUrl = https://HOSTNAME:8005
 
-# NOTE: A MaxMind account is now required, we will try and use the old files or new files on the system. See
-# https://molo.ch/faq#maxmind
-geoLite2Country = /usr/share/GeoIP/GeoLite2-Country.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-Country.mmdb
-geoLite2ASN = /usr/share/GeoIP/GeoLite2-ASN.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
+# A MaxMind account is now required, Arkime checks several install locations, or
+# will work without Geo files installed. See https://arkime.com/faq#maxmind
+#geoLite2Country = /var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-Country.mmdb
+#geoLite2ASN = /var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
 # Path of the rir assignments file
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
@@ -322,7 +322,7 @@ logFileCreation = true
 
 
 ### High Performance settings
-# https://molo.ch/settings#high-performance-settings
+# https://arkime.com/settings#high-performance-settings
 # magicMode=basic
 # pcapReadMethod=tpacketv3
 # tpacketv3NumThreads=2
