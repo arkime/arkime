@@ -2207,13 +2207,13 @@ function processCronQuery (cq, options, query, endTime, cb) {
       let i, ilen;
       if (cq.action.indexOf('forward:') === 0) {
         for (i = 0, ilen = hits.length; i < ilen; i++) {
-          ids.push({ id: hits[i]._id, node: hits[i]._source.node });
+          ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
         }
 
         sendSessionsListQL(options, ids, doNext);
       } else if (cq.action.indexOf('tag') === 0) {
         for (i = 0, ilen = hits.length; i < ilen; i++) {
-          ids.push(hits[i]._id);
+          ids.push(Db.session2Sid(hits[i]));
         }
 
         if (Config.debug > 1) {
