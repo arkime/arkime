@@ -178,7 +178,7 @@ export default {
       }
     },
     timezone: function () {
-      return this.$store.state.user.timezone;
+      return this.$store.state.user.settings.timezone;
     }
   },
   methods: {
