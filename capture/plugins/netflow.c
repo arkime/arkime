@@ -101,7 +101,7 @@ LOCAL void netflow_send(const int thread)
 }
 /******************************************************************************/
 /* 
- * Called by moloch when a session is about to be saved
+ * Called by arkime when a session is about to be saved
  */
 LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
@@ -229,7 +229,7 @@ LOCAL void netflow_plugin_save(MolochSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /* 
- * Called by moloch when moloch is quiting
+ * Called by arkime when arkime is quiting
  */
 LOCAL void netflow_plugin_exit()
 {
@@ -241,7 +241,7 @@ LOCAL void netflow_plugin_exit()
 
 /******************************************************************************/
 /*
- * Called by moloch when the plugin is loaded
+ * Called by arkime when the plugin is loaded
  */
 void moloch_plugin_init()
 {

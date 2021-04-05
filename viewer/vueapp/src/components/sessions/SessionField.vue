@@ -182,7 +182,6 @@ export default {
     'value', // the value of the session field (undefined if the field has children)
     'session', // the session object
     'parse', // whether to parse the value
-    'timezone', // what timezone date fields should be in ('gmt' or 'local')
     'sessionBtn', // whether to display a button to add the value to the expression and go to sessions page
     'pullLeft', // whether the dropdown should drop down from the left
     'infoFields' // info fields to display
@@ -243,7 +242,7 @@ export default {
           qVal = val; // save original value as the query value
           val = this.$options.filters.timezoneDateString(
             parseInt(val),
-            this.timezone || this.$store.state.user.settings.timezone,
+            this.$store.state.user.settings.timezone,
             this.$store.state.user.settings.ms
           );
 

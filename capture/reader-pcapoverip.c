@@ -41,7 +41,7 @@ pcap_t                     *deadPcap;
 
 typedef struct {
     GSocket                *socket;
-    char                    data[0xffff];
+    char                    data[MOLOCH_PACKET_MAX_LEN + 24];
     uint32_t                len;
     int                     readWatch;
     int                     interface;
@@ -124,10 +124,21 @@ gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer 
 
         if (unlikely(caplen != origlen)) {
             if (!config.readTruncatedPackets && !config.ignoreErrors) {
-                LOGEXIT("ERROR - Moloch requires full packet captures caplen: %u pktlen: %u. "
+                LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
                     "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
                     caplen, origlen);
             }
+        }
+
+        if (unlikely(caplen > MOLOCH_PACKET_MAX_LEN)) {
+            if (!config.ignoreErrors) {
+                LOGEXIT("ERROR - The packet length %u is too large.", caplen);
+            } else {
+                MOLOCH_TYPE_FREE(MolochPacket_t, packet);
+                pcapoverip_client_free(poic);
+                return FALSE;
+            }
+
         }
 
         if (poic->len - pos < 16 + caplen) { // Not enough data for packet

@@ -477,7 +477,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 
     if (unlikely(h->caplen != h->len)) {
         if (!config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d. "
+            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
                 "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
                 h->caplen, h->len);
         }

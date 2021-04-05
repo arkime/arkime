@@ -8,7 +8,6 @@
         <moloch-search
           v-if="user.settings"
           :start="sessionsQuery.start"
-          :timezone="user.settings.timezone"
           :hide-actions="true"
           :hide-interval="true"
           @changeSearch="cancelAndLoad(true)">

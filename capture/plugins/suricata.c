@@ -151,7 +151,7 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
 }
 /******************************************************************************/
 /*
- * Called by moloch when a session is about to be saved
+ * Called by arkime when a session is about to be saved
  */
 LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
@@ -190,7 +190,7 @@ LOCAL void suricata_plugin_save(MolochSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /*
- * Called by moloch when moloch is quiting
+ * Called by arkime when arkime is quiting
  */
 LOCAL void suricata_plugin_exit()
 {
@@ -481,7 +481,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
 }
 /******************************************************************************/
 /*
- * Called by moloch when the plugin is loaded
+ * Called by arkime when the plugin is loaded
  */
 void moloch_plugin_init()
 {

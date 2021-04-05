@@ -75,7 +75,7 @@ void *tcp_listener(void *vargp)
 
 /******************************************************************************/
 /*
- * Called by moloch when the plugin is loaded
+ * Called by arkime when the plugin is loaded
  */
 void moloch_plugin_init()
 {
