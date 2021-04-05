@@ -454,8 +454,8 @@ exports.scroll = async (params) => {
   return internals.client7.scroll(params);
 };
 
-exports.clearScroll = function (params, callback) {
-  return internals.elasticSearchClient.clearScroll(params, callback);
+exports.clearScroll = async (params) => {
+  return internals.client7.clearScroll(params);
 };
 
 exports.bulk = function (params, callback) {
