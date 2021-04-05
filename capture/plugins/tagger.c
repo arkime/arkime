@@ -121,7 +121,7 @@ LOCAL void tagger_process_match(MolochSession_t *session, GPtrArray *infos)
 }
 /******************************************************************************/
 /*
- * Called by moloch when a session is about to be saved
+ * Called by arkime when a session is about to be saved
  */
 LOCAL void tagger_plugin_save(MolochSession_t *session, int UNUSED(final))
 {
@@ -292,7 +292,7 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 }
 /******************************************************************************/
 /*
- * Called by moloch when moloch is quiting
+ * Called by arkime when arkime is quiting
  */
 LOCAL void tagger_plugin_exit()
 {
@@ -661,7 +661,7 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
 }
 /******************************************************************************/
 /*
- * Called by moloch when the plugin is loaded
+ * Called by arkime when the plugin is loaded
  */
 void moloch_plugin_init()
 {

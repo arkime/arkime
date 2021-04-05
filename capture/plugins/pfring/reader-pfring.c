@@ -48,7 +48,7 @@ void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, con
     MolochPacketBatch_t *batch = (MolochPacketBatch_t *)user_bytes;
 
     if (unlikely(h->caplen != h->len)) {
-        LOGEXIT("ERROR - Moloch requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
+        LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
     }
 
     MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
