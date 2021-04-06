@@ -884,13 +884,9 @@ exports.searchHistory = async (query) => {
   });
 };
 exports.countHistory = async () => {
-  return internals.elasticSearchClient.count({
+  return internals.client7.count({
     index: fixIndex('history_v1-*'), ignoreUnavailable: true
   });
-  // TODO why does this hang mutiviewer tests?
-  // return internals.client7.count({
-  //   index: fixIndex('history_v1-*'), ignoreUnavailable: true
-  // });
 };
 exports.deleteHistory = async (id, index) => {
   return internals.client7.delete({
