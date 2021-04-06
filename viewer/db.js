@@ -468,53 +468,38 @@ exports.deleteDocument = async (index, type, id, options) => {
 };
 
 // This API does not call fixIndex
-exports.deleteIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.deleteIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.delete(params, cb);
+  return internals.client7.indices.delete(params);
 };
 
 // This API does not call fixIndex
-exports.optimizeIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.optimizeIndex = async (index, options) => {
   const params = { index: index, maxNumSegments: 1 };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.forcemerge(params, cb);
+  return internals.client7.indices.forcemerge(params);
 };
 
 // This API does not call fixIndex
-exports.closeIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.closeIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.close(params, cb);
+  return internals.client7.indices.close(params);
 };
 
 // This API does not call fixIndex
-exports.openIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.openIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.open(params, cb);
+  return internals.client7.indices.open(params);
 };
 
-exports.shrinkIndex = function (index, options, cb) {
+// This API does not call fixIndex
+exports.shrinkIndex = async (index, options) => {
   const params = { index: index, target: `${index}-shrink` };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.shrink(params, cb);
+  return internals.client7.indices.shrink(params);
 };
 
 exports.indexStats = function (index, cb) {

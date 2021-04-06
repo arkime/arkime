@@ -47,12 +47,12 @@
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.status === 'open'"
-              @click="closeIndex(item.index)">
+              @click="closeIndex(item)">
               Close Index {{ item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.status === 'close'"
-              @click="openIndex(item.index)">
+              @click="openIndex(item)">
               Open Index {{ item.index }}
             </b-dropdown-item>
             <b-dropdown-item
@@ -197,16 +197,22 @@ export default {
           this.$emit('errored', error.text || error);
         });
     },
-    closeIndex (indexName) {
-      this.$http.post(`api/esindices/${indexName}/close`)
+    closeIndex (index) {
+      this.$http.post(`api/esindices/${index.index}/close`)
         .then((response) => {
+          if (response.data.success) {
+            this.$set(index, 'status', 'close');
+          }
         }, (error) => {
           this.$emit('errored', error.text || error);
         });
     },
-    openIndex (indexName) {
-      this.$http.post(`api/esindices/${indexName}/open`)
+    openIndex (index) {
+      this.$http.post(`api/esindices/${index.index}/open`)
         .then((response) => {
+          if (response.data.success) {
+            this.$set(index, 'status', 'open');
+          }
         }, (error) => {
           this.$emit('errored', error.text || error);
         });

@@ -649,7 +649,7 @@ export default {
       this.shrinkError = undefined;
     },
     executeShrink: function (index) {
-      this.$http.post(`/api/esindices/${index.index}/shrink`, {
+      this.$http.post(`api/esindices/${index.index}/shrink`, {
         target: this.temporaryNode,
         numShards: this.shrinkFactor
       }).then((response) => {
