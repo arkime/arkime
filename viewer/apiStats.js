@@ -512,7 +512,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       indicesSettings: Db.indicesSettingsCache
     }, (err, results) => {
       if (err) {
-        console.log('ERROR -  /api/esindices', err);
+        console.log('ERROR - GET /api/esindices', err);
         return res.send({
           recordsTotal: 0,
           recordsFiltered: 0,
@@ -709,10 +709,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
               } catch (err) {
                 console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
               }
-              Db.indices(async (err, indexResult) => {
-                if (err) {
-                  console.log(`Error fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
-                } else if (indexResult[0] && indexResult[1] &&
+
+              try {
+                const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+                if (indexResult[0] && indexResult[1] &&
                   indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
                   try {
                     await Db.deleteIndex([req.params.index], {});
@@ -720,7 +720,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                     console.log(`Error deleting ${req.params.index} index after shrinking`);
                   }
                 }
-              }, `${req.params.index}-shrink,${req.params.index}`);
+              } catch (err) {
+                console.log(`ERROR - fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+              }
             }
           });
       }, 10000);

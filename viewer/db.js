@@ -502,8 +502,8 @@ exports.shrinkIndex = async (index, options) => {
   return internals.client7.indices.shrink(params);
 };
 
-exports.indexStats = function (index, cb) {
-  return internals.elasticSearchClient.indices.stats({ index: fixIndex(index) }, cb);
+exports.indexStats = async (index) => {
+  return internals.client7.indices.stats({ index: fixIndex(index) });
 };
 
 exports.getAliases = async (index) => {
@@ -536,12 +536,17 @@ exports.health = function (cb) {
   });
 };
 
-exports.indices = function (cb, index) {
-  return internals.elasticSearchClient.cat.indices({ format: 'json', index: fixIndex(index), bytes: 'b', h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal' }, cb);
+exports.indices = async (index) => {
+  return internals.client7.cat.indices({
+    format: 'json',
+    index: fixIndex(index),
+    bytes: 'b',
+    h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal'
+  });
 };
 
-exports.indicesSettings = function (cb, index) {
-  return internals.elasticSearchClient.indices.getSettings({ flatSettings: true, index: fixIndex(index) }, cb);
+exports.indicesSettings = async (index) => {
+  return internals.client7.indices.getSettings({ flatSettings: true, index: fixIndex(index) });
 };
 
 exports.setIndexSettings = (index, options, cb) => {
@@ -1089,52 +1094,43 @@ exports.nodesStatsCache = function () {
   });
 };
 
-exports.indicesCache = function (cb) {
-  if (!cb) {
+exports.indicesCache = async () => {
+  if (internals.indicesCache._timeStamp !== undefined &&
+    internals.indicesCache._timeStamp > Date.now() - 10000) {
     return internals.indicesCache;
   }
 
-  if (internals.indicesCache._timeStamp !== undefined && internals.indicesCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.indicesCache);
-  }
-
-  return exports.indices((err, indices) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.indicesCache._timeStamp !== undefined) {
-        return cb(null, internals.indicesCache);
-      }
-      return cb(err, null);
-    }
-
+  try {
+    const { body: indices } = await exports.indices();
     internals.indicesCache = indices;
     internals.indicesCache._timeStamp = Date.now();
-    cb(null, indices);
-  });
+    return indices;
+  } catch (err) {
+    // Even if an error, if we have a cache use it
+    if (internals.indicesCache._timeStamp !== undefined) {
+      return internals.indicesCache;
+    }
+    throw new Error(err);
+  }
 };
 
-exports.indicesSettingsCache = function (cb) {
-  if (!cb) {
+exports.indicesSettingsCache = async () => {
+  if (internals.indicesSettingsCache._timeStamp !== undefined &&
+    internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
     return internals.indicesSettingsCache;
   }
 
-  if (internals.indicesSettingsCache._timeStamp !== undefined && internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.indicesSettingsCache);
-  }
-
-  return exports.indicesSettings((err, indicesSettings) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.indicesSettingsCache._timeStamp !== undefined) {
-        return cb(null, internals.indicesSettingsCache);
-      }
-      return cb(err, null);
-    }
-
+  try {
+    const { body: indicesSettings } = await exports.indicesSettings('_all');
     internals.indicesSettingsCache = indicesSettings;
     internals.indicesSettingsCache._timeStamp = Date.now();
-    cb(null, indicesSettings);
-  }, '_all');
+    return indicesSettings;
+  } catch (err) {
+    if (internals.indicesSettingsCache._timeStamp !== undefined) {
+      return internals.indicesSettingsCache;
+    }
+    throw new Error(err);
+  }
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
@@ -1246,13 +1242,13 @@ exports.checkVersion = function (minVersion, checkUsers) {
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach((index) => {
-    exports.indexStats(index, (err, indexStatus) => {
-      if (err || indexStatus.error) {
-        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, indexStatus);
-        process.exit(1);
-      }
-    });
+  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+    try {
+      await exports.indexStats(index);
+    } catch (err) {
+      console.log(`ERROR - Issue with index ${index}. Make sure 'db/db.pl <eshost:esport> init' has been run`, err);
+      process.exit(1);
+    }
   });
 
   internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
