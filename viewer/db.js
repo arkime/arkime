@@ -90,8 +90,6 @@ exports.initialize = function (info, cb) {
     ssl: esSSLOptions
   });
 
-  // TODO needs to be here for tests to pass, otherwise internals.client7 is
-  // undefined when getAliases is called
   internals.client7 = new Client({
     node: internals.info.host,
     maxRetries: 2,
