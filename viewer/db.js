@@ -1214,8 +1214,8 @@ exports.numberOfDocuments = async (index, options) => {
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     try {
-      const { body: count } = await internals.client7.count(params);
-      return { count: count.count };
+      const { body: total } = await internals.client7.count(params);
+      return { count: total.count };
     } catch (err) {
       throw new Error(err);
     }
