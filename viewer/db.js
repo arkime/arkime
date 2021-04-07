@@ -1208,26 +1208,35 @@ exports.getSequenceNumber = async (sName) => {
   }
 };
 
-exports.numberOfDocuments = function (index, options) {
+exports.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
-    return internals.elasticSearchClient.count(params);
+    try {
+      const { body: count } = await internals.client7.count(params);
+      return { count: count.count };
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
-  return new Promise((resolve, reject) => {
-    let count = 0;
-    const str = internals.prefix + 'sessions2-';
-    exports.indicesCache((err, indices) => {
-      for (let i = 0; i < indices.length; i++) {
-        if (indices[i].index.includes(str)) {
-          count += parseInt(indices[i]['docs.count']);
-        }
+  let count = 0;
+  const str = `${internals.prefix}sessions2-`;
+
+  try {
+    const indices = await exports.indicesCache();
+
+    for (let i = 0; i < indices.length; i++) {
+      if (indices[i].index.includes(str)) {
+        count += parseInt(indices[i]['docs.count']);
       }
-      resolve({ count: count });
-    });
-  });
+    }
+
+    return { count: count };
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.updateFileSize = function (item, filesize) {
