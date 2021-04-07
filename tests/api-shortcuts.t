@@ -1,4 +1,4 @@
-use Test::More tests => 47;
+use Test::More tests => 49;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,9 +9,6 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
-
-# Delete old shortcuts
-esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");
@@ -138,5 +135,14 @@ $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);
 ok($json->{success}, "delete shortcut success");
 
 # cleanup
-$json = viewerDeleteToken("/lookups/$shortcut2Id?molochRegressionUser=user2", $otherToken);
-$json = viewerDeleteToken("/lookups/$shortcut3Id?molochRegressionUser=user2", $otherToken);
+$json = viewerDeleteToken("/lookups/$shortcut2Id", $token);
+$json = viewerDeleteToken("/lookups/$shortcut3Id", $token);
+
+# make sure cleanup worked
+$shortcuts = viewerGet("/lookups");
+is(@{$shortcuts->{data}}, 0, "Empty shortcuts after cleanup");
+$shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+is(@{$shortcuts->{data}}, 0, "Empty shortcuts for user2 after cleanup");
+
+# remove shared user that gets added when creating shared shortcuts
+viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
