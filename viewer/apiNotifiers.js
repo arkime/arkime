@@ -154,11 +154,13 @@ module.exports = (Config, Db, internals) => {
         sharedUser = sharedUser._source;
       }
 
+      const notifiers = sharedUser.notifiers || {};
+
       if (req.user.createEnabled) {
-        return res.send(sharedUser.notifiers);
+        return res.send(notifiers);
       }
 
-      return res.send(cloneNotifiers(sharedUser.notifiers));
+      return res.send(cloneNotifiers(notifiers));
     });
   };
 

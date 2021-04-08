@@ -143,3 +143,6 @@ $shortcuts = viewerGet("/lookups");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts after cleanup");
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for user2 after cleanup");
+
+# remove shared user that gets added when creating shared shortcuts
+viewerPostToken("/user/delete", "userId=_moloch_shared", $token);

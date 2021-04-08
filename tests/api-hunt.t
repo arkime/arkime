@@ -230,7 +230,6 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id7?molochRegressionUser=anonymous", $token);
   viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
 
-
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");
   is ($mjson->{text}, "Not supported in multies", "Hunt not supported in multies");
@@ -368,3 +367,6 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   #  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
+# remove shared user that gets added when creating shared shortcuts
+  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
