@@ -546,7 +546,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       res.send({
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results
       });

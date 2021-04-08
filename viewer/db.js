@@ -808,13 +808,19 @@ exports.getUserCache = function (userId, cb) {
   });
 };
 
-// Return a user from cache, promise only
-exports.numberOfUsers = function () {
-  return new Promise((resolve, reject) => {
-    internals.usersClient7.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true })
-      .then((results) => { resolve({ count: results.body.count }); })
-      .catch((error) => { reject(error); });
-  });
+exports.numberOfUsers = async () => {
+  try {
+    const { body: count } = await internals.usersClient7.count({
+      index: internals.usersPrefix + 'users',
+      ignoreUnavailable: true ,
+      body: { query: { // exclude the shared user from results
+        bool: { must_not: { term: { userId: '_moloch_shared' } } }
+      } }
+    })
+    return count.count
+  } catch (err) {
+    throw new Error(err)
+  }
 };
 
 // Delete user, callback only
@@ -1241,7 +1247,7 @@ exports.updateFileSize = function (item, filesize) {
   exports.update('files', 'file', item.id, { doc: { filesize: filesize } });
 };
 
-exports.checkVersion = function (minVersion, checkUsers) {
+exports.checkVersion = async function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 81200) {
@@ -1280,11 +1286,10 @@ exports.checkVersion = function (minVersion, checkUsers) {
   });
 
   if (checkUsers) {
-    exports.numberOfUsers((err, num) => {
-      if (num === 0) {
-        console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
-      }
-    });
+    const count = await exports.numberOfUsers();
+    if (count === 0) {
+      console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
+    }
   }
 };
 
