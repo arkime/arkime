@@ -2338,7 +2338,8 @@ sub historyUpdate
       },
       "body": {
         "type": "object",
-        "dynamic": "true"
+        "dynamic": "true",
+        "enabled": "false"
       },
       "forcedExpression": {
         "type": "keyword"
