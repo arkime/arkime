@@ -90,6 +90,24 @@ exports.initialize = function (info, cb) {
     ssl: esSSLOptions
   });
 
+  internals.client7 = new Client({
+    node: internals.info.host,
+    maxRetries: 2,
+    requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+    ssl: esSSLOptions
+  });
+
+  if (info.usersHost) {
+    internals.usersClient7 = new Client({
+      node: internals.info.usersHost,
+      maxRetries: 2,
+      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+      ssl: esSSLOptions
+    });
+  } else {
+    internals.usersClient7 = internals.client7;
+  }
+
   internals.elasticSearchClient.info((err, data) => {
     if (err) {
       console.log(err, data);
@@ -99,23 +117,6 @@ exports.initialize = function (info, cb) {
       process.exit();
     }
 
-    internals.client7 = new Client({
-      node: internals.info.host,
-      maxRetries: 2,
-      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    });
-
-    if (info.usersHost) {
-      internals.usersClient7 = new Client({
-        node: internals.info.usersHost,
-        maxRetries: 2,
-        requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-        ssl: esSSLOptions
-      });
-    } else {
-      internals.usersClient7 = internals.client7;
-    }
     return cb();
   });
 
@@ -127,16 +128,14 @@ exports.initialize = function (info, cb) {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    exports.getAliasesCache('sessions2-*', () => {});
-    setInterval(() => { exports.getAliasesCache('sessions2-*', () => {}); }, 2 * 60 * 1000);
+    exports.getAliasesCache('sessions2-*');
+    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
   }
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Low level functions to convert from old style to new
 /// ///////////////////////////////////////////////////////////////////////////////
-//
-//
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
@@ -168,24 +167,24 @@ function fixIndex (index) {
   return index;
 }
 
-exports.merge = function (to, from) {
+exports.merge = (to, from) => {
   for (const key in from) {
     to[key] = from[key];
   }
 };
 
-exports.get = function (index, type, id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex(index), id: id }, cb);
+exports.get = async (index, type, id) => {
+  return internals.client7.get({ index: fixIndex(index), id: id });
 };
 
-exports.getWithOptions = function (index, type, id, options, cb) {
+exports.getWithOptions = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
-  return internals.elasticSearchClient.get(params, cb);
+  return internals.client7.get(params);
 };
 
 // Get a session from ES and decode packetPos if requested
-exports.getSession = function (id, options, cb) {
+exports.getSession = async (id, options, cb) => {
   function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
@@ -280,21 +279,26 @@ exports.getSession = function (id, options, cb) {
       return fixPacketPos(session, session._source || session.fields);
     });
   } else {
-    exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options, (err, session) => {
-      if (err || (options && options._source && !options._source.includes('packetPos'))) {
-        return cb(err, session);
+    try {
+      const { body: session } = await exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options);
+      if (options && options._source && !options._source.includes('packetPos')) {
+        return cb(null, session);
       }
       return fixPacketPos(session, session._source || session.fields);
-    });
+    } catch (err) {
+      return cb(err, {});
+    }
   }
 };
 
-exports.index = function (index, type, id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id }, cb);
+exports.index = async (index, type, id, doc) => {
+  return internals.client7.index({ index: fixIndex(index), body: doc, id: id });
 };
 
-exports.indexNow = function (index, type, id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex(index), body: doc, id: id, refresh: true }, cb);
+exports.indexNow = async (index, type, id, doc) => {
+  return internals.client7.index({
+    index: fixIndex(index), body: doc, id: id, refresh: true
+  });
 };
 
 exports.search = function (index, type, query, options, cb) {
@@ -315,29 +319,30 @@ exports.search = function (index, type, query, options, cb) {
   return internals.elasticSearchClient.search(params, cb);
 };
 
-exports.cancelByOpaqueId = function (cancelId, cb) {
-  internals.elasticSearchClient.tasks.list({ detailed: false, group_by: 'parents' })
-    .then((results) => {
-      let found = false;
+exports.cancelByOpaqueId = async (cancelId) => {
+  const { body: results } = await internals.client7.tasks.list({
+    detailed: false, group_by: 'parents'
+  });
 
-      for (const resultKey in results.tasks) {
-        const result = results.tasks[resultKey];
-        if (result.headers &&
-          result.headers['X-Opaque-Id'] &&
-          result.headers['X-Opaque-Id'] === cancelId) {
-          found = true;
-          internals.elasticSearchClient.tasks.cancel({ taskId: resultKey }, () => {});
-        }
-      }
+  let found = false;
 
-      // not found, return error
-      if (!found) { return cb('cancel id not found, cannot cancel es task(s)'); }
+  for (const resultKey in results.tasks) {
+    const result = results.tasks[resultKey];
+    if (result.headers &&
+      result.headers['X-Opaque-Id'] &&
+      result.headers['X-Opaque-Id'] === cancelId) {
+      found = true;
+      // don't need to wait for task to cancel, just break out and return
+      internals.client7.tasks.cancel({ taskId: resultKey });
+      break;
+    }
+  }
 
-      return cb();
-    })
-    .catch((error) => {
-      return cb(error);
-    });
+  if (!found) { // not found, return error
+    throw new Error('Cancel ID not found, cannot cancel ES task(s)');
+  }
+
+  return 'ES task cancelled succesfully';
 };
 
 function searchScrollInternal (index, type, query, options, cb) {
@@ -353,7 +358,7 @@ function searchScrollInternal (index, type, query, options, cb) {
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
   exports.search(index, type, query, params,
-    function getMoreUntilDone (error, response) {
+    async function getMoreUntilDone (error, response) {
       if (error) {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
@@ -371,12 +376,15 @@ function searchScrollInternal (index, type, query, options, cb) {
       }
 
       if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
-        exports.scroll({
-          scroll: '5m',
-          body: {
-            scroll_id: response._scroll_id
-          }
-        }, getMoreUntilDone);
+        try {
+          const { body: results } = await exports.scroll({
+            scroll: '5m', body: { scroll_id: response._scroll_id }
+          });
+          getMoreUntilDone(null, results);
+        } catch (err) {
+          console.log('ERROR - issuing scroll', err);
+          getMoreUntilDone(err, {});
+        }
       } else {
         if (totalResults && from > 0) {
           totalResults.hits.hits = totalResults.hits.hits.slice(from);
@@ -423,7 +431,7 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   return exports.searchScroll(index, type, query, params, cb);
 };
 
-exports.msearch = function (index, type, queries, options, cb) {
+exports.msearch = async (index, type, queries, options) => {
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {
@@ -433,114 +441,86 @@ exports.msearch = function (index, type, queries, options, cb) {
 
   const params = { body: body, rest_total_hits_as_int: true };
 
+  let cancelId = null;
   if (options && options.cancelId) {
-    // set X-Opaque-Id header on the params so the task can be canceled
-    params.headers = { 'X-Opaque-Id': options.cancelId };
+    // use opaqueId option so the task can be cancelled
+    cancelId = { opaqueId: options.cancelId };
   }
 
-  return internals.elasticSearchClient.msearch(params, cb);
+  return internals.client7.msearch(params, cancelId);
 };
 
-exports.scroll = function (params, callback) {
+exports.scroll = async (params) => {
   params.rest_total_hits_as_int = true;
-  return internals.elasticSearchClient.scroll(params, callback);
+  return internals.client7.scroll(params);
 };
 
-exports.clearScroll = function (params, callback) {
-  return internals.elasticSearchClient.clearScroll(params, callback);
+exports.clearScroll = async (params) => {
+  return internals.client7.clearScroll(params);
 };
 
-exports.bulk = function (params, callback) {
-  return internals.elasticSearchClient.bulk(params, callback);
-};
-
-exports.deleteByQuery = function (index, type, query, cb) {
-  return internals.elasticSearchClient.deleteByQuery({ index: fixIndex(index), body: query }, cb);
-};
-
-exports.deleteDocument = function (index, type, id, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.deleteDocument = async (index, type, id, options) => {
   const params = { index: fixIndex(index), id: id };
   exports.merge(params, options);
-  return internals.elasticSearchClient.delete(params, cb);
+  return internals.client7.delete(params);
 };
 
 // This API does not call fixIndex
-exports.deleteIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.deleteIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.delete(params, cb);
+  return internals.client7.indices.delete(params);
 };
 
 // This API does not call fixIndex
-exports.optimizeIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.optimizeIndex = async (index, options) => {
   const params = { index: index, maxNumSegments: 1 };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.forcemerge(params, cb);
+  return internals.client7.indices.forcemerge(params);
 };
 
 // This API does not call fixIndex
-exports.closeIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.closeIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.close(params, cb);
+  return internals.client7.indices.close(params);
 };
 
 // This API does not call fixIndex
-exports.openIndex = function (index, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+exports.openIndex = async (index, options) => {
   const params = { index: index };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.open(params, cb);
+  return internals.client7.indices.open(params);
 };
 
-exports.shrinkIndex = function (index, options, cb) {
+// This API does not call fixIndex
+exports.shrinkIndex = async (index, options) => {
   const params = { index: index, target: `${index}-shrink` };
   exports.merge(params, options);
-  return internals.elasticSearchClient.indices.shrink(params, cb);
+  return internals.client7.indices.shrink(params);
 };
 
-exports.indexStats = function (index, cb) {
-  return internals.elasticSearchClient.indices.stats({ index: fixIndex(index) }, cb);
+exports.indexStats = async (index) => {
+  return internals.client7.indices.stats({ index: fixIndex(index) });
 };
 
-exports.getAliases = function (index, cb) {
-  return internals.elasticSearchClient.indices.getAlias({ index: fixIndex(index) }, cb);
+exports.getAliases = async (index) => {
+  return internals.client7.indices.getAlias({ index: fixIndex(index) });
 };
 
-exports.getAliasesCache = function (index, cb) {
+exports.getAliasesCache = async (index) => {
   if (internals.aliasesCache && internals.aliasesCacheTimeStamp > Date.now() - 5000) {
-    return cb(null, internals.aliasesCache);
+    return internals.aliasesCache;
   }
 
-  exports.getAliases(index, (err, aliases) => {
-    if (err) {
-      return cb(err, aliases);
-    }
-
+  try {
+    const { body: aliases } = await exports.getAliases(index);
     internals.aliasesCacheTimeStamp = Date.now();
     internals.aliasesCache = aliases;
-
-    cb(null, aliases);
-  });
+    return aliases;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.health = function (cb) {
@@ -554,12 +534,17 @@ exports.health = function (cb) {
   });
 };
 
-exports.indices = function (cb, index) {
-  return internals.elasticSearchClient.cat.indices({ format: 'json', index: fixIndex(index), bytes: 'b', h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal' }, cb);
+exports.indices = async (index) => {
+  return internals.client7.cat.indices({
+    format: 'json',
+    index: fixIndex(index),
+    bytes: 'b',
+    h: 'health,status,index,uuid,pri,rep,docs.count,store.size,cd,segmentsCount,pri.search.query_current,memoryTotal'
+  });
 };
 
-exports.indicesSettings = function (cb, index) {
-  return internals.elasticSearchClient.indices.getSettings({ flatSettings: true, index: fixIndex(index) }, cb);
+exports.indicesSettings = async (index) => {
+  return internals.client7.indices.getSettings({ flatSettings: true, index: fixIndex(index) });
 };
 
 exports.setIndexSettings = (index, options, cb) => {
@@ -673,19 +658,19 @@ exports.reroute = function (cb) {
   }, cb);
 };
 
-exports.flush = function (index, cb) {
+exports.flush = async (index) => {
   if (index === 'users') {
-    return internals.usersClient7.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.flush({ index: fixIndex(index) });
   } else {
-    return internals.client7.indices.flush({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.flush({ index: fixIndex(index) });
   }
 };
 
-exports.refresh = function (index, cb) {
+exports.refresh = async (index) => {
   if (index === 'users') {
-    return internals.usersClient7.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index) }, cb);
+    return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
 };
 
@@ -823,13 +808,21 @@ exports.getUserCache = function (userId, cb) {
   });
 };
 
-// Return a user from cache, promise only
-exports.numberOfUsers = function () {
-  return new Promise((resolve, reject) => {
-    internals.usersClient7.count({ index: internals.usersPrefix + 'users', ignoreUnavailable: true })
-      .then((results) => { resolve({ count: results.body.count }); })
-      .catch((error) => { reject(error); });
-  });
+exports.numberOfUsers = async () => {
+  try {
+    const { body: count } = await internals.usersClient7.count({
+      index: internals.usersPrefix + 'users',
+      ignoreUnavailable: true,
+      body: {
+        query: { // exclude the shared user from results
+          bool: { must_not: { term: { userId: '_moloch_shared' } } }
+        }
+      }
+    });
+    return count.count;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 // Delete user, callback only
@@ -869,65 +862,92 @@ function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
 }
 
-exports.historyIt = function (doc, cb) {
+// History DB interactions
+exports.historyIt = async (doc) => {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  return internals.elasticSearchClient.index({ index: iname, body: doc, refresh: true, timeout: '10m' }, cb);
+  return internals.client7.index({
+    index: iname, body: doc, refresh: true, timeout: '10m'
+  });
 };
-exports.searchHistory = function (query, cb) {
-  return internals.elasticSearchClient.search({ index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true }, cb);
+exports.searchHistory = async (query) => {
+  return internals.client7.search({
+    index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true
+  });
 };
-exports.numberOfLogs = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('history_v1-*'), ignoreUnavailable: true }, cb);
+exports.countHistory = async () => {
+  return internals.client7.count({
+    index: fixIndex('history_v1-*'), ignoreUnavailable: true
+  });
 };
-exports.deleteHistoryItem = function (id, index, cb) {
-  return internals.elasticSearchClient.delete({ index: index, id: id, refresh: true }, cb);
-};
-
-exports.createHunt = function (doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
-};
-exports.searchHunt = function (query, cb) {
-  return internals.elasticSearchClient.search({ index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true }, cb);
-};
-exports.numberOfHunts = function (cb) {
-  return internals.elasticSearchClient.count({ index: fixIndex('hunts') }, cb);
-};
-exports.deleteHuntItem = function (id, cb) {
-  return internals.elasticSearchClient.delete({ index: fixIndex('hunts'), id: id, refresh: true }, cb);
-};
-exports.setHunt = function (id, doc, cb) {
-  return internals.elasticSearchClient.index({ index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
-};
-exports.getHunt = function (id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex('hunts'), id: id }, cb);
+exports.deleteHistory = async (id, index) => {
+  return internals.client7.delete({
+    index: index, id: id, refresh: true
+  });
 };
 
-exports.searchShortcuts = function (query, cb) {
-  return internals.elasticSearchClient.search({ index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true }, cb);
+// Hunt DB interactions
+exports.createHunt = async (doc) => {
+  return internals.client7.index({
+    index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
+  });
 };
-exports.createShortcut = function (doc, username, cb) {
+exports.searchHunt = async (query) => {
+  return internals.client7.search({
+    index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true
+  });
+};
+exports.countHunts = async () => {
+  return internals.client7.count({ index: fixIndex('hunts') });
+};
+exports.deleteHunt = async (id) => {
+  return internals.client7.delete({
+    index: fixIndex('hunts'), id: id, refresh: true
+  });
+};
+exports.setHunt = async (id, doc) => {
+  return internals.client7.index({
+    index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m'
+  });
+};
+exports.getHunt = async (id) => {
+  return internals.client7.get({ index: fixIndex('hunts'), id: id });
+};
+
+// Shortcut DB interactions
+exports.searchShortcuts = async (query) => {
+  return internals.client7.search({
+    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
+  });
+};
+exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
-  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m' }, cb);
+  return internals.client7.index({
+    index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m'
+  });
 };
-exports.deleteShortcut = function (id, username, cb) {
+exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
-  return internals.elasticSearchClient.delete({ index: fixIndex('lookups'), id: id, refresh: true }, cb);
+  return internals.client7.delete({
+    index: fixIndex('lookups'), id: id, refresh: true
+  });
 };
-exports.setShortcut = function (id, username, doc, cb) {
+exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
-  return internals.elasticSearchClient.index({ index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m' }, cb);
+  return internals.client7.index({
+    index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m'
+  });
 };
-exports.getShortcut = function (id, cb) {
-  return internals.elasticSearchClient.get({ index: fixIndex('lookups'), id: id }, cb);
+exports.getShortcut = async (id) => {
+  return internals.client7.get({ index: fixIndex('lookups'), id: id });
 };
-exports.getShortcutsCache = function (shortcutName, cb) {
-  if (internals.shortcutsCache[shortcutName] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
-    return cb(null, internals.shortcutsCache[shortcutName]);
+exports.getShortcutsCache = async (userId) => {
+  if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
+    return internals.shortcutsCache[userId];
   }
 
   // only get shortcuts for this user or shared
@@ -936,44 +956,44 @@ exports.getShortcutsCache = function (shortcutName, cb) {
       bool: {
         should: [
           { term: { shared: true } },
-          { term: { userId: shortcutName } }
+          { term: { userId: userId } }
         ]
       }
     }
   };
 
-  exports.searchShortcuts(query, (err, shortcuts) => {
-    if (err) { return cb(err, shortcuts); }
+  try {
+    const { body: { hits: shortcuts } } = await exports.searchShortcuts(query);
 
     const shortcutsMap = {};
-    for (const shortcut of shortcuts.hits.hits) {
+    for (const shortcut of shortcuts.hits) {
       // need the whole object to test for type mismatch
       shortcutsMap[shortcut._source.name] = shortcut;
     }
 
-    internals.shortcutsCache[shortcutName] = shortcutsMap;
+    internals.shortcutsCache[userId] = shortcutsMap;
     internals.shortcutsCache._timeStamp = Date.now();
 
-    cb(null, shortcutsMap);
-  });
+    return shortcutsMap;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
-exports.molochNodeStats = function (nodeName, cb) {
-  exports.get('stats', 'stat', nodeName, (err, stat) => {
-    if (err || !stat.found) {
-      // Even if an error, if we have a cached value use it
-      if (err && internals.molochNodeStatsCache[nodeName]) {
-        return cb(null, internals.molochNodeStatsCache[nodeName]);
-      }
+exports.molochNodeStats = async (nodeName, cb) => {
+  try {
+    const { body: stat } = await exports.get('stats', 'stat', nodeName);
 
-      cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
-    } else {
-      internals.molochNodeStatsCache[nodeName] = stat._source;
-      internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
+    internals.molochNodeStatsCache[nodeName] = stat._source;
+    internals.molochNodeStatsCache[nodeName]._timeStamp = Date.now();
 
-      cb(null, stat._source);
+    cb(null, stat._source);
+  } catch (err) {
+    if (internals.molochNodeStatsCache[nodeName]) {
+      return cb(null, internals.molochNodeStatsCache[nodeName]);
     }
-  });
+    return cb(err || 'Unknown node ' + nodeName, internals.molochNodeStatsCache[nodeName]);
+  }
 };
 
 exports.molochNodeStatsCache = function (nodeName, cb) {
@@ -1080,52 +1100,43 @@ exports.nodesStatsCache = function () {
   });
 };
 
-exports.indicesCache = function (cb) {
-  if (!cb) {
+exports.indicesCache = async () => {
+  if (internals.indicesCache._timeStamp !== undefined &&
+    internals.indicesCache._timeStamp > Date.now() - 10000) {
     return internals.indicesCache;
   }
 
-  if (internals.indicesCache._timeStamp !== undefined && internals.indicesCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.indicesCache);
-  }
-
-  return exports.indices((err, indices) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.indicesCache._timeStamp !== undefined) {
-        return cb(null, internals.indicesCache);
-      }
-      return cb(err, null);
-    }
-
+  try {
+    const { body: indices } = await exports.indices();
     internals.indicesCache = indices;
     internals.indicesCache._timeStamp = Date.now();
-    cb(null, indices);
-  });
+    return indices;
+  } catch (err) {
+    // Even if an error, if we have a cache use it
+    if (internals.indicesCache._timeStamp !== undefined) {
+      return internals.indicesCache;
+    }
+    throw new Error(err);
+  }
 };
 
-exports.indicesSettingsCache = function (cb) {
-  if (!cb) {
+exports.indicesSettingsCache = async () => {
+  if (internals.indicesSettingsCache._timeStamp !== undefined &&
+    internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
     return internals.indicesSettingsCache;
   }
 
-  if (internals.indicesSettingsCache._timeStamp !== undefined && internals.indicesSettingsCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.indicesSettingsCache);
-  }
-
-  return exports.indicesSettings((err, indicesSettings) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.indicesSettingsCache._timeStamp !== undefined) {
-        return cb(null, internals.indicesSettingsCache);
-      }
-      return cb(err, null);
-    }
-
+  try {
+    const { body: indicesSettings } = await exports.indicesSettings('_all');
     internals.indicesSettingsCache = indicesSettings;
     internals.indicesSettingsCache._timeStamp = Date.now();
-    cb(null, indicesSettings);
-  }, '_all');
+    return indicesSettings;
+  } catch (err) {
+    if (internals.indicesSettingsCache._timeStamp !== undefined) {
+      return internals.indicesSettingsCache;
+    }
+    throw new Error(err);
+  }
 };
 
 exports.hostnameToNodeids = function (hostname, cb) {
@@ -1141,7 +1152,7 @@ exports.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-exports.fileIdToFile = function (node, num, cb) {
+exports.fileIdToFile = async (node, num, cb) => {
   const key = node + '!' + num;
   const info = internals.fileId2File[key];
   if (info !== undefined) {
@@ -1150,18 +1161,16 @@ exports.fileIdToFile = function (node, num, cb) {
     });
   }
 
-  exports.get('files', 'file', node + '-' + num, (err, fresult) => {
-    if (!err && fresult.found) {
-      const file = fresult._source;
-      internals.fileId2File[key] = file;
-      internals.fileName2File[file.name] = file;
-      return cb(file);
-    }
-
-    // Cache file is unknown
+  try {
+    const { body: fresult } = await exports.get('files', 'file', node + '-' + num);
+    const file = fresult._source;
+    internals.fileId2File[key] = file;
+    internals.fileName2File[file.name] = file;
+    return cb(file);
+  } catch (err) { // Cache file is unknown
     internals.fileId2File[key] = null;
     return cb(null);
-  });
+  }
 };
 
 exports.fileNameToFiles = function (fileName, cb) {
@@ -1196,39 +1205,51 @@ exports.fileNameToFiles = function (fileName, cb) {
   });
 };
 
-exports.getSequenceNumber = function (sName, cb) {
-  exports.index('sequence', 'sequence', sName, {}, (err, sinfo) => {
-    cb(err, sinfo._version);
-  });
+exports.getSequenceNumber = async (sName) => {
+  try {
+    const { data: sinfo } = await exports.index('sequence', 'sequence', sName, {});
+    return sinfo._version;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
-exports.numberOfDocuments = function (index, options) {
+exports.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
-    return internals.elasticSearchClient.count(params);
+    try {
+      const { body: total } = await internals.client7.count(params);
+      return { count: total.count };
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
-  return new Promise((resolve, reject) => {
-    let count = 0;
-    const str = internals.prefix + 'sessions2-';
-    exports.indicesCache((err, indices) => {
-      for (let i = 0; i < indices.length; i++) {
-        if (indices[i].index.includes(str)) {
-          count += parseInt(indices[i]['docs.count']);
-        }
+  let count = 0;
+  const str = `${internals.prefix}sessions2-`;
+
+  try {
+    const indices = await exports.indicesCache();
+
+    for (let i = 0; i < indices.length; i++) {
+      if (indices[i].index.includes(str)) {
+        count += parseInt(indices[i]['docs.count']);
       }
-      resolve({ count: count });
-    });
-  });
+    }
+
+    return { count: count };
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.updateFileSize = function (item, filesize) {
   exports.update('files', 'file', item.id, { doc: { filesize: filesize } });
 };
 
-exports.checkVersion = function (minVersion, checkUsers) {
+exports.checkVersion = async function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 81200) {
@@ -1236,13 +1257,13 @@ exports.checkVersion = function (minVersion, checkUsers) {
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach((index) => {
-    exports.indexStats(index, (err, indexStatus) => {
-      if (err || indexStatus.error) {
-        console.log("ERROR - Issue with index '" + index + "' make sure 'db/db.pl <eshost:esport> init' has been run", err, indexStatus);
-        process.exit(1);
-      }
-    });
+  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+    try {
+      await exports.indexStats(index);
+    } catch (err) {
+      console.log(`ERROR - Issue with index ${index}. Make sure 'db/db.pl <eshost:esport> init' has been run`, err);
+      process.exit(1);
+    }
   });
 
   internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
@@ -1267,11 +1288,10 @@ exports.checkVersion = function (minVersion, checkUsers) {
   });
 
   if (checkUsers) {
-    exports.numberOfUsers((err, num) => {
-      if (num === 0) {
-        console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
-      }
-    });
+    const count = await exports.numberOfUsers();
+    if (count === 0) {
+      console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
+    }
   }
 };
 
@@ -1300,9 +1320,7 @@ exports.isLocalView = function (node, yesCB, noCB) {
 
 exports.deleteFile = function (node, id, path, cb) {
   fs.unlink(path, () => {
-    exports.deleteDocument('files', 'file', id, (err, data) => {
-      cb(null);
-    });
+    exports.deleteDocument('files', 'file', id);
   });
 };
 
@@ -1335,12 +1353,9 @@ exports.loadFields = function (cb) {
   return exports.search('fields', 'field', { size: 1000 }, cb);
 };
 
-exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
-  exports.getAliasesCache('sessions2-*', (err, aliases) => {
-    if (err || aliases.error) {
-      return cb('');
-    }
-
+exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
+  try {
+    const aliases = await exports.getAliasesCache('sessions2-*');
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1413,49 +1428,49 @@ exports.getIndices = function (startTime, stopTime, bounding, rotateIndex, cb) {
     }
 
     if (indices.length === 0) {
-      return cb(internals.prefix + 'sessions2-*');
+      return internals.prefix + 'sessions2-*';
     }
 
-    return cb(indices.join());
-  });
+    return indices.join();
+  } catch {
+    return '';
+  }
 };
 
-exports.getMinValue = function (index, field, cb) {
-  const params = { index: fixIndex(index), body: { size: 0, aggs: { min: { min: { field: field } } } } };
-  return internals.elasticSearchClient.search(params, (err, data) => {
-    if (err) { return cb(err, 0); }
-    return cb(null, data.aggregations.min.value);
-  });
+exports.getMinValue = async (index, field) => {
+  const params = {
+    index: fixIndex(index),
+    body: { size: 0, aggs: { min: { min: { field: field } } } }
+  };
+  return internals.client7.search(params);
 };
 
-exports.getClusterDetails = function (cb) {
-  return internals.elasticSearchClient.get({ index: '_cluster', id: 'details' }, cb);
+exports.getClusterDetails = async () => {
+  return internals.client7.get({ index: '_cluster', id: 'details' });
 };
 
-exports.getILMPolicy = function () {
-  return new Promise((resolve, reject) => {
-    internals.client7.ilm.getLifecycle({ policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory` }, (err, data) => {
-      if (err) {
-        resolve({});
-      } else {
-        resolve(data.body);
-      }
+exports.getILMPolicy = async () => {
+  try {
+    const data = await internals.client7.ilm.getLifecycle({
+      policy: `${internals.prefix}molochsessions,${internals.prefix}molochhistory`
     });
-  });
+    return data.body;
+  } catch {
+    return {};
+  }
 };
 
-exports.setILMPolicy = function (ilmName, policy) {
+exports.setILMPolicy = async (ilmName, policy) => {
   console.log('name', ilmName, 'policy', policy);
-  return new Promise((resolve, reject) => {
-    internals.client7.ilm.putLifecycle({ policy: ilmName, body: { policy: policy.policy } }, (err, data) => {
-      if (err) {
-        console.log('ERROR', err, 'data', data);
-        reject(err);
-      } else {
-        resolve(data.body);
-      }
+  try {
+    const data = await internals.client7.ilm.putLifecycle({
+      policy: ilmName, body: { policy: policy.policy }
     });
-  });
+    return data.body;
+  } catch (err) {
+    console.log('ERROR - setting ILM Policy', err);
+    throw new Error(err);
+  }
 };
 
 exports.getTemplate = function (templateName) {

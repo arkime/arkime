@@ -31,7 +31,7 @@ module.exports = (Db) => {
   /**
    * GET - /api/histories
    *
-   * Retrieves a list of histories.
+   * Retrieves a list of histories, or user client requests to the APIs.
    * @name /histories
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1.
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
@@ -48,11 +48,13 @@ module.exports = (Db) => {
    */
   hModule.getHistories = (req, res) => {
     let userId;
-    if (req.user.createEnabled) { // user is an admin, they can view all logs
+    if (req.user.createEnabled) { // user is an admin, they can view all history items
       // if the admin has requested a specific user
       if (req.query.userId) { userId = req.query.userId; }
-    } else { // user isn't an admin, so they can only view their own logs
-      if (req.query.userId && req.query.userId !== req.user.userId) { return res.serverError(403, 'Need admin privileges'); }
+    } else { // user isn't an admin, so they can only view their own history items
+      if (req.query.userId && req.query.userId !== req.user.userId) {
+        return res.serverError(403, 'Need admin privileges');
+      }
       userId = req.user.userId;
     }
 
@@ -62,7 +64,9 @@ module.exports = (Db) => {
       size: +req.query.length || 1000
     };
 
-    query.sort[req.query.sortField || 'timestamp'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
+    query.sort[req.query.sortField || 'timestamp'] = {
+      order: req.query.desc === 'true' ? 'desc' : 'asc'
+    };
 
     if (req.query.searchTerm || userId) {
       query.query = { bool: { must: [] } };
@@ -127,30 +131,28 @@ module.exports = (Db) => {
 
     Promise.all([
       Db.searchHistory(query),
-      Db.numberOfLogs()
-    ]).then(([logs, total]) => {
-      if (logs.error) { throw logs.error; }
-
-      const results = { total: logs.hits.total, results: [] };
-      for (const hit of logs.hits.hits) {
-        const log = hit._source;
-        log.id = hit._id;
-        log.index = hit._index;
+      Db.countHistory()
+    ]).then(([{ body: { hits: histories } }, { body: { count: total } }]) => {
+      const results = { total: histories.total, results: [] };
+      for (const hit of histories.hits) {
+        const item = hit._source;
+        item.id = hit._id;
+        item.index = hit._index;
         if (!req.user.createEnabled) {
           // remove forced expression for reqs made by nonadmin users
-          log.forcedExpression = undefined;
+          item.forcedExpression = undefined;
         }
-        results.results.push(log);
+        results.results.push(item);
       }
 
       res.send({
         data: results.results,
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total
       });
-    }).catch(err => {
-      console.log('ERROR - /history/logs', err);
-      return res.serverError(500, 'Error retrieving log history - ' + err);
+    }).catch((err) => {
+      console.log('ERROR - GET /api/history', err);
+      return res.serverError(500, 'Error retrieving history - ' + err);
     });
   };
 
@@ -163,22 +165,21 @@ module.exports = (Db) => {
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.deleteHistory = (req, res) => {
+  hModule.deleteHistory = async (req, res) => {
     if (!req.query.index) {
       return res.serverError(403, 'Missing history index');
     }
 
-    Db.deleteHistoryItem(req.params.id, req.query.index, (err, result) => {
-      if (err || result.error) {
-        console.log('ERROR - deleting history item', err || result.error);
-        return res.serverError(500, 'Error deleting history item');
-      } else {
-        res.send(JSON.stringify({
-          success: true,
-          text: 'Deleted history item successfully'
-        }));
-      }
-    });
+    try {
+      await Db.deleteHistory(req.params.id, req.query.index);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Deleted history item successfully'
+      }));
+    } catch (err) {
+      console.log(`ERROR - /api/history/${req.params.id}`, err);
+      return res.serverError(500, 'Error deleting history item');
+    }
   };
 
   return hModule;

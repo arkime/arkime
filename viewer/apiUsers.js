@@ -546,7 +546,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       res.send({
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results
       });
@@ -965,7 +965,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} key - The cron query id
    */
-  uModule.createUserCron = (req, res) => {
+  uModule.createUserCron = async (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing cron query name');
     }
@@ -995,40 +995,40 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     const userId = req.settingUser.userId;
 
-    Db.getMinValue('sessions2-*', 'timestamp', (err, minTimestamp) => {
-      if (err || minTimestamp === 0 || minTimestamp === null) {
-        minTimestamp = Math.floor(Date.now() / 1000);
-      } else {
-        minTimestamp = Math.floor(minTimestamp / 1000);
+    let minTimestamp;
+    try {
+      const { body: data } = await Db.getMinValue('sessions2-*', 'timestamp');
+      minTimestamp = Math.floor(data.aggregations.min.value / 1000);
+    } catch (err) {
+      minTimestamp = Math.floor(Date.now() / 1000);
+    }
+
+    if (+req.body.since === -1) {
+      doc.doc.lpValue = doc.doc.lastRun = minTimestamp;
+    } else {
+      doc.doc.lpValue = doc.doc.lastRun =
+         Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
+    }
+
+    doc.doc.count = 0;
+    doc.doc.creator = userId || 'anonymous';
+
+    try {
+      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
+
+      if (Config.get('cronQueries', false)) {
+        internals.processCronQueries();
       }
 
-      if (+req.body.since === -1) {
-        doc.doc.lpValue = doc.doc.lastRun = minTimestamp;
-      } else {
-        doc.doc.lpValue = doc.doc.lastRun =
-           Math.max(minTimestamp, Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(req.body.since || '0', 10));
-      }
-
-      doc.doc.count = 0;
-      doc.doc.creator = userId || 'anonymous';
-
-      Db.indexNow('queries', 'query', null, doc.doc, (err, info) => {
-        if (err) {
-          console.log('/api/user/cron create error', err, info);
-          return res.serverError(500, 'Create cron query failed');
-        }
-
-        if (Config.get('cronQueries', false)) {
-          internals.processCronQueries();
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Created cron query successfully',
-          key: info._id
-        }));
-      });
-    });
+      return res.send(JSON.stringify({
+        success: true,
+        key: info._id,
+        text: 'Created cron query successfully'
+      }));
+    } catch (err) {
+      console.log('ERROR - POST /api/user/cron', err);
+      return res.serverError(500, 'Create cron query failed');
+    }
   };
 
   /**
@@ -1039,22 +1039,22 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserCron = (req, res) => {
+  uModule.deleteUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
     }
 
-    Db.deleteDocument('queries', 'query', key, { refresh: true }, (err, sq) => {
-      if (err) {
-        console.log('/api/user/cron delete error', err, sq);
-        return res.serverError(500, 'Delete cron query failed');
-      }
+    try {
+      await Db.deleteDocument('queries', 'query', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted cron query successfully'
       }));
-    });
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/user/cron/${key}`, err);
+      return res.serverError(500, 'Delete cron query failed');
+    }
   };
 
   /**
@@ -1065,7 +1065,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserCron = (req, res) => {
+  uModule.updateUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing cron query key');
@@ -1098,15 +1098,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       doc.doc.notifier = req.body.notifier;
     }
 
-    Db.get('queries', 'query', key, (err, sq) => {
-      if (err || !sq.found) {
-        console.log('/user/cron update failed', err, sq);
-        return res.serverError(403, 'Unknown query');
-      }
+    try {
+      await Db.get('queries', 'query', key);
 
       Db.update('queries', 'query', key, doc, { refresh: true }, (err, data) => {
         if (err) {
-          console.log('/user/cron update error', err, doc, data);
+          console.log(`ERROR - POST /api/user/cron/${key}`, err, doc, data);
           return res.serverError(500, 'Cron query update failed');
         }
 
@@ -1119,7 +1116,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           text: 'Updated cron query successfully'
         }));
       });
-    });
+    } catch (err) {
+      console.log(`ERROR - POST - /api/user/cron/${key}`, err);
+      return res.serverError(403, 'Unknown query');
+    }
   };
 
   /**

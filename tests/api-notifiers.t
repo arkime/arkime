@@ -96,5 +96,6 @@ my $notAdminToken = getTokenCookie('notadmin');
   $notifiers = viewerGetToken("/notifiers", $token);
   ok(!exists $notifiers->{test1a}, "removed test1a notifier");
   ok(!exists $notifiers->{test2}, "removed test2 notifier");
-  # remove shared user that gets added when creating notifiers
+
+# remove shared user that gets added when creating notifiers
   viewerPostToken("/user/delete", "userId=_moloch_shared", $token);

@@ -238,20 +238,20 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
    * @returns {Array} active - The active Arkime clusters.
    * @returns {Array} inactive - The inactive Arkime clusters.
    */
-  mModule.getClusters = (req, res) => {
+  mModule.getClusters = async (req, res) => {
     const clusters = { active: [], inactive: [] };
     if (Config.get('multiES', false)) {
-      Db.getClusterDetails((err, results) => {
-        if (err) {
-          console.log('Error: ' + err);
-        } else if (results) {
-          clusters.active = results.active;
-          clusters.inactive = results.inactive;
-        }
-        res.send(clusters);
-      });
+      try {
+        const { body: results } = await Db.getClusterDetails();
+        clusters.active = results.active;
+        clusters.inactive = results.inactive;
+        return res.send(clusters);
+      } catch (err) {
+        console.log('ERROR - GET /api/clusters', err);
+        return res.send(clusters);
+      }
     } else {
-      res.send(clusters);
+      return res.send(clusters);
     }
   };
 

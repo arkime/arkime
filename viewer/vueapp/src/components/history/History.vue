@@ -310,6 +310,12 @@
       v-if="loading && !error">
     </moloch-loading> <!-- /loading overlay -->
 
+    <!-- error -->
+    <moloch-error
+      v-if="!loading && error"
+      :message="error"
+    /> <!-- /error -->
+
     <!-- hack to make vue watch expanded logs -->
     <div style="display:none;">
       {{ expandedLogs }}
@@ -322,6 +328,7 @@
 <script>
 import MolochPaging from '../utils/Pagination';
 import MolochLoading from '../utils/Loading';
+import MolochError from '../utils/Error';
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochTime from '../search/Time';
 import FocusInput from '../utils/FocusInput';
@@ -335,6 +342,7 @@ export default {
   components: {
     MolochPaging,
     MolochLoading,
+    MolochError,
     MolochTime,
     ToggleBtn,
     MolochToast,
@@ -499,7 +507,7 @@ export default {
           this.history = response.data;
         }, (error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     /* event functions ------------------------------------------- */

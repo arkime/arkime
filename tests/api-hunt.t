@@ -180,6 +180,7 @@ my $hToken = getTokenCookie('huntuser');
     }
   }
 
+
 # verify viewHunt and badHunt
   is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
   is($viewHunt->{unrunnable}, undef, "hunt should be runable");
@@ -192,7 +193,8 @@ my $hToken = getTokenCookie('huntuser');
   my $id7 = $json->{hunt}->{id};
 
 # remove a user from a hunt
-  $json = viewerDeleteToken("/hunt/$id7/users/huntuser?molochRegressionUser=anonymous", $token);
+  sleep(1); # Wait for user to be set or else test after next fails
+  $json = viewerDeleteToken("/api/hunt/$id7/user/huntuser?molochRegressionUser=anonymous", $token);
   is (scalar @{$json->{users}}, 0, "hunt should have no users");
 
 # can't delete a user from an hunt with no users
@@ -227,8 +229,6 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id6?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id7?molochRegressionUser=anonymous", $token);
   viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
-  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
-
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");
@@ -367,3 +367,6 @@ my $hToken = getTokenCookie('huntuser');
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
   #  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
+# remove shared user that gets added when creating shared shortcuts
+  viewerPostToken("/user/delete", "userId=_moloch_shared", $token);

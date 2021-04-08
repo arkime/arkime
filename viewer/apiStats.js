@@ -512,7 +512,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       indicesSettings: Db.indicesSettingsCache
     }, (err, results) => {
       if (err) {
-        console.log('ERROR -  /api/esindices', err);
+        console.log('ERROR - GET /api/esindices', err);
         return res.send({
           recordsTotal: 0,
           recordsFiltered: 0,
@@ -590,17 +590,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.deleteESIndex = (req, res) => {
-    Db.deleteIndex([req.params.index], {}, (err, result) => {
-      if (err) {
-        res.status(404);
-        return res.send(JSON.stringify({
-          success: false,
-          text: 'Error deleting index'
-        }));
-      }
-      return res.send(JSON.stringify({ success: true, text: result }));
-    });
+  sModule.deleteESIndex = async (req, res) => {
+    try {
+      await Db.deleteIndex([req.params.index], {});
+      return res.send(JSON.stringify({ success: true }));
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/esindices/${req.params.index}`, err);
+      res.status(404);
+      return res.send(JSON.stringify({ success: false, text: 'Error deleting index' }));
+    }
   };
 
   /**
@@ -611,13 +609,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
   sModule.optimizeESIndex = (req, res) => {
-    Db.optimizeIndex([req.params.index], {}, (err, result) => {
-      if (err) {
-        console.log('ERROR -', req.params.index, 'optimize failed', err);
-      }
-    });
+    try {
+      Db.optimizeIndex([req.params.index], {});
+    } catch (err) {
+      console.log(`ERROR - POST /api/esindices/${req.params.index}/optimize`, err);
+    }
 
-    // always return right away, optimizeIndex might block
+    // always return successfully right away, optimizeIndex might block
     return res.send(JSON.stringify({ success: true }));
   };
 
@@ -629,17 +627,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.closeESIndex = (req, res) => {
-    Db.closeIndex([req.params.index], {}, (err, result) => {
-      if (err) {
-        res.status(404);
-        return res.send(JSON.stringify({
-          success: false,
-          text: 'Error closing index'
-        }));
-      }
-      return res.send(JSON.stringify({ success: true, text: result }));
-    });
+  sModule.closeESIndex = async (req, res) => {
+    try {
+      await Db.closeIndex([req.params.index], {});
+      return res.send(JSON.stringify({ success: true }));
+    } catch (err) {
+      console.log(`ERROR - POST /api/esindices/${req.params.index}/close`, err);
+      res.status(404);
+      return res.send(JSON.stringify({ success: false, text: 'Error closing index' }));
+    }
   };
 
   /**
@@ -650,14 +646,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
   sModule.openESIndex = (req, res) => {
-    Db.openIndex([req.params.index], {}, (err, result) => {
-      if (err) {
-        console.log('ERROR -', req.params.index, 'open failed', err);
-      }
-    });
+    try {
+      Db.openIndex([req.params.index], {});
+    } catch (err) {
+      console.log(`ERROR - POST /api/esindices/${req.params.index}/open`, err);
+    }
 
-    // always return right away, openIndex might block
-    return res.send(JSON.stringify({ success: true, text: {} }));
+    // always return successfully right away, openIndex might block
+    return res.send(JSON.stringify({ success: true }));
   };
 
   /**
@@ -705,26 +701,28 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
         Db.healthCachePromise()
-          .then((result) => {
+          .then(async (result) => {
             if (result.relocating_shards === 0) {
               clearInterval(shrinkCheckInterval);
-              Db.shrinkIndex(req.params.index, shrinkParams, (err) => {
-                if (err) {
-                  console.log(`ERROR - ${req.params.index} shrink failed`, err);
-                }
-                Db.indices((err, indexResult) => {
-                  if (err) {
-                    console.log(`Error fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
-                  } else if (indexResult[0] && indexResult[1] &&
-                    indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                    Db.deleteIndex([req.params.index], {}, (err) => {
-                      if (err) {
-                        console.log(`Error deleting ${req.params.index} index after shrinking`);
-                      }
-                    });
+              try {
+                await Db.shrinkIndex(req.params.index, shrinkParams);
+              } catch (err) {
+                console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
+              }
+
+              try {
+                const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+                if (indexResult[0] && indexResult[1] &&
+                  indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
+                  try {
+                    await Db.deleteIndex([req.params.index], {});
+                  } catch (err) {
+                    console.log(`Error deleting ${req.params.index} index after shrinking`);
                   }
-                }, `${req.params.index}-shrink,${req.params.index}`);
-              });
+                }
+              } catch (err) {
+                console.log(`ERROR - fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+              }
             }
           });
       }, 10000);
@@ -859,7 +857,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelUserESTask = (req, res) => {
+  sModule.cancelUserESTask = async (req, res) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
@@ -869,9 +867,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing ID of task to cancel');
     }
 
-    Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, (err, result) => {
+    try {
+      const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
-    });
+    } catch (err) {
+      console.log(`ERROR - /api/estasks/${cancelId}/cancelwith`, err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   /**

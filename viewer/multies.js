@@ -408,12 +408,6 @@ app.get(/^\/$/, function (req, res) {
   });
 });
 
-app.get(/./, function (req, res) {
-  simpleGather(req, res, null, (err, results) => {
-    console.log('UNKNOWN', req.method, req.url, results);
-  });
-});
-
 // Facets are a pain, we convert from array to map to back to array
 /// ///////////////////////////////////////////////////////////////////////////////
 
@@ -842,6 +836,12 @@ if (Config.get('regressionTests')) {
     process.exit(0);
   });
 }
+
+app.get(/./, function (req, res) {
+  simpleGather(req, res, null, (err, results) => {
+    console.log('UNKNOWN', req.method, req.url, results);
+  });
+});
 
 app.post(/./, function (req, res) {
   console.log('UNKNOWN', req.method, req.url, req.body);

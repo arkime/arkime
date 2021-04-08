@@ -979,15 +979,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, (err, session) => {
+    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
       const fields = session._source || session.fields;
 
       if (whatToRemove === 'spi') { // just removing es data for session
-        Db.deleteDocument(session._index, 'session', session._id, (err, data) => {
-          return endCb(err, fields);
-        });
+        try {
+          await Db.deleteDocument(session._index, 'session', session._id);
+          return endCb(null, fields);
+        } catch (err) { return endCb(err, fields); }
       } else { // scrub the pcap
         async.eachLimit(fields.packetPos, 10, (pos, nextCb) => {
           if (pos < 0) {
@@ -1018,11 +1019,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           } else {
             processFile(opcap, pos, itemPos++, nextCb);
           }
-        }, (pcapErr, results) => {
+        }, async (pcapErr, results) => {
           if (whatToRemove === 'all') { // also remove the session data
-            Db.deleteDocument(session._index, 'session', session._id, (err, data) => {
-              return endCb(pcapErr, fields);
-            });
+            try {
+              await Db.deleteDocument(session._index, 'session', session._id);
+              return endCb(null, fields);
+            } catch (err) { return endCb(pcapErr, fields); }
           } else { // just set who/when scrubbed the pcap
             // Do the ES update
             const doc = {
@@ -1172,7 +1174,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  sModule.buildSessionQuery = (req, buildCb, queryOverride = null) => {
+  sModule.buildSessionQuery = async (req, buildCb, queryOverride = null) => {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
@@ -1312,33 +1314,40 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     addSortToQuery(query, reqQuery, 'firstPacket');
 
-    Db.getShortcutsCache(req.user.userId, (lerr, shortcuts) => {
-      let err = null;
-      molochparser.parser.yy = {
-        views: req.user.views,
-        fieldsMap: Config.getFieldsMap(),
-        dbFieldsMap: Config.getDBFieldsMap(),
-        prefix: internals.prefix,
-        emailSearch: req.user.emailSearch === true,
-        shortcuts: shortcuts || {},
-        shortcutTypeMap: internals.shortcutTypeMap
-      };
+    let shortcuts;
+    try { // try to fetch shortcuts
+      shortcuts = await Db.getShortcutsCache(req.user.userId);
+    } catch (err) { // don't need to do anything, there will just be no
+      // shortcuts sent to the parser. but still log the error.
+      console.log('ERROR - fetching shortcuts cache when building sessions query', err);
+    }
 
-      if (reqQuery.expression) {
-        // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-        try {
-          query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
-        } catch (e) {
-          err = e;
-        }
-      }
+    // always complete building the query regardless of shortcuts
+    let err;
+    molochparser.parser.yy = {
+      views: req.user.views,
+      fieldsMap: Config.getFieldsMap(),
+      dbFieldsMap: Config.getDBFieldsMap(),
+      prefix: internals.prefix,
+      emailSearch: req.user.emailSearch === true,
+      shortcuts: shortcuts || {},
+      shortcutTypeMap: internals.shortcutTypeMap
+    };
 
-      if (!err && reqQuery.view) {
-        addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
-      } else {
-        ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
+    if (reqQuery.expression) {
+      // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
+      try {
+        query.query.bool.filter.push(molochparser.parse(reqQuery.expression));
+      } catch (e) {
+        err = e;
       }
-    });
+    }
+
+    if (!err && reqQuery.view) {
+      addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
+    } else {
+      ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
+    }
   };
 
   sModule.sessionsListFromIds = (req, ids, fields, cb) => {
@@ -1991,14 +2000,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         delete query.aggregations.field;
 
         let queriesInfo = [];
-        function endCb () {
+        async function endCb () {
           queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
           const queries = queriesInfo.map((item) => { return item.query; });
 
-          Db.msearch(indices, 'session', queries, options, (err, searchResult) => {
-            if (!searchResult.responses) {
-              return res.send(results);
-            }
+          try {
+            const { body: searchResult } = await Db.msearch(indices, 'session', queries, options);
 
             searchResult.responses.forEach((item, i) => {
               const response = {
@@ -2063,7 +2070,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 return res.send(results);
               }
             });
-          });
+          } catch (err) {
+            return res.send(results);
+          }
         }
 
         const intermediateResults = [];
@@ -3106,7 +3115,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     let file;
     let writeHeader;
 
-    function makeFilename (cb) {
+    async function makeFilename (cb) {
       if (saveId.filename) {
         return cb(saveId.filename);
       }
@@ -3117,20 +3126,26 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       saveId.inProgress = 1;
-      Db.getSequenceNumber('fn-' + Config.nodeName(), (err, seq) => {
+      try {
+        const seq = await Db.getSequenceNumber('fn-' + Config.nodeName());
+
         const filename = Config.get('pcapDir') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
         saveId.seq = seq;
-        Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 }, () => {
-          cb(filename);
-          saveId.filename = filename; // Don't set the saveId.filename until after the first request completes its callback.
-        });
-      });
+        const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
+
+        await Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, options);
+
+        cb(filename);
+        saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
+      } catch (err) {
+        console.log(`ERROR - POST /api/sessions/receive ${saveId}`, err);
+      }
     }
 
     function saveSession () {
       const id = session.id;
       delete session.id;
-      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session, (err, info) => {});
+      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session);
     }
 
     function chunkWrite (chunk) {
