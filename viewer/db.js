@@ -812,14 +812,16 @@ exports.numberOfUsers = async () => {
   try {
     const { body: count } = await internals.usersClient7.count({
       index: internals.usersPrefix + 'users',
-      ignoreUnavailable: true ,
-      body: { query: { // exclude the shared user from results
-        bool: { must_not: { term: { userId: '_moloch_shared' } } }
-      } }
-    })
-    return count.count
+      ignoreUnavailable: true,
+      body: {
+        query: { // exclude the shared user from results
+          bool: { must_not: { term: { userId: '_moloch_shared' } } }
+        }
+      }
+    });
+    return count.count;
   } catch (err) {
-    throw new Error(err)
+    throw new Error(err);
   }
 };
 
