@@ -666,7 +666,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.shrinkESIndex = (req, res) => {
+  sModule.shrinkESIndex = async (req, res) => {
     if (!req.body || !req.body.target) {
       return res.serverError(403, 'Missing target');
     }
@@ -679,14 +679,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     };
 
-    Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
-      if (err) {
-        return res.send(JSON.stringify({
-          success: false,
-          text: err.message || 'Error shrinking index'
-        }));
-      }
-
+    try {
+      await Db.setIndexSettings(req.params.index, settingsParams);
       const shrinkParams = {
         body: {
           settings: {
@@ -729,7 +723,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // always return right away, shrinking might take a while
       return res.send(JSON.stringify({ success: true }));
-    });
+    } catch (err) {
+      return res.send(JSON.stringify({
+        success: false,
+        text: err
+      }));
+    }
   };
 
   // ES TASK APIS -------------------------------------------------------------

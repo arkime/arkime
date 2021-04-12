@@ -547,19 +547,19 @@ exports.indicesSettings = async (index) => {
   return internals.client7.indices.getSettings({ flatSettings: true, index: fixIndex(index) });
 };
 
-exports.setIndexSettings = (index, options, cb) => {
-  return internals.elasticSearchClient.indices.putSettings(
-    {
+exports.setIndexSettings = async (index, options) => {
+  try {
+    const { body: response } = await internals.client7.indices.putSettings({
       index: index,
       body: options.body,
       timeout: '10m',
       masterTimeout: '10m'
-    },
-    () => {
-      internals.healthCache = {};
-      if (cb) { cb(); }
-    }
-  );
+    });
+    return response;
+  } catch (err) {
+    internals.healthCache = {};
+    throw new Error(err);
+  }
 };
 
 exports.clearCache = function (cb) {
@@ -630,17 +630,17 @@ exports.updateSession = function (index, id, doc, cb) {
     timeout: '10m'
   };
 
-  internals.elasticSearchClient.update(params, (err, data) => {
+  internals.elasticSearchClient.update(params, async (err, data) => {
     // Did it fail with FORBIDDEN msg?
     if (err && err.message && err.message.match('FORBIDDEN')) {
       // Try clearing the index.blocks.write
-      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } }, (err) => {
-        // Try doing the update again
-        internals.elasticSearchClient.update(params, (err, retryData) => {
-          return cb(err, retryData);
-        });
-      });
-      return;
+      try {
+        exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
+        const { body: retryData } = await internals.client7.update(params);
+        return cb(null, retryData);
+      } catch (err) {
+        return cb(err, {});
+      }
     }
     return cb(err, data);
   });
