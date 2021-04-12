@@ -925,9 +925,14 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
 
+<<<<<<< HEAD
       try {
         const users = await ViewerUtils.validateUserIds(reqUsers);
         if (!users.validUsers.length) {
+=======
+      ViewerUtils.validateUserIds(reqUsers).then(async (response) => {
+        if (!response.validUsers.length) {
+>>>>>>> master
           return res.serverError(404, 'Unable to validate user IDs provided');
         }
 
@@ -951,9 +956,15 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
           return res.serverError(500, 'Unable to add user(s)');
         }
+<<<<<<< HEAD
       } catch (err) {
         return res.serverError(500, err);
       }
+=======
+      }).catch((error) => {
+        res.serverError(500, error);
+      });
+>>>>>>> master
     } catch (err) {
       console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
       return res.serverError(500, 'Unable to add user(s)');

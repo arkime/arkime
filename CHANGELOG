@@ -29,7 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - BREAKING - wise - for json data keyColumn has been renamed keyPath
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
   - BREAKING - capture - override-ips will no longer have leading 0s for ASN
-  - release - curl 7.74.0, node 14.16.0, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
+  - release - curl 7.74.0, node 14.16.1, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - capture - fixed possible ABR with time parsing
   - capture - fixed memory leak with dns bad hostname parsing
@@ -40,7 +40,10 @@ NOTICE: Restart wiseService before capture when upgrading
   - capture - new localPcapIndex setting to enable pcap index on capture node instead of ES
   - capture - write long open tcp sessions every tcpSaveTimeout even if no syn
   - capture - fixed possible memory corruption with --flush option
+  - capture - check max packet length in more places
+  - capture - parse proxy-authorization header (PR #1651)
   - db.pl - new urlinfile://filepath where elasticsearch url is the first line of filepath file
+  - db.pl - fix history mapping issue
   - viewer - add POST version session query APIs to support long expressions
              old GET versions still work
   - viewer - reorganize and standardize APIs
@@ -59,6 +62,8 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - improve toolbar for packet display
   - viewer - standardize on . ipv6 and : ipv4 por separator
   - viewer - send shallower queries to ES when possible
+  - viewer - fix cron queries when using autoGenerateId
+  - viewer - improve session settings across sessions
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse

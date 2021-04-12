@@ -86,8 +86,12 @@ export default {
     UserService.getCurrent()
       .then((response) => {
         this.user = response;
+        if (!this.user.settings.theme || this.user.settings.theme === 'default-theme') {
+          this.setTheme();
+        }
       }, (error) => {
         this.user = { settings: { timezone: 'local' } };
+        this.setTheme();
       });
 
     // watch for keyup/down events for the entire app
@@ -200,6 +204,13 @@ export default {
         },
         hash: this.$route.hash
       });
+    },
+    // if the user doesn't have a theme preference, set dark/light theme based on OS color scheme
+    setTheme () {
+      if (window.matchMedia) {
+        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.className = darkMode ? 'arkime-dark-theme' : 'arkime-light-theme';
+      }
     }
   }
 };

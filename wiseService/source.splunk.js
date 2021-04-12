@@ -126,6 +126,15 @@ class SplunkSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  itemCount () {
+    if (this.cache) {
+      return this.type === 'ip' ? this.cache.items.size : this.cache.size;
+    } else {
+      return 0;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   dump (res) {
     if (this.cache === undefined) {
       return res.end();
