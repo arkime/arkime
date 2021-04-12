@@ -1,4 +1,4 @@
-use Test::More tests => 77;
+use Test::More tests => 73;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -26,12 +26,6 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol");
     eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"$fpwd/bigendian.pcap"}]})), "bigendian fileand");
 
-    is ($json->{health}->{number_of_data_nodes}, 1, "Correct health number_of_data_nodes bigendian");
-    is ($mjson->{health}->{number_of_data_nodes}, 2, "Correct health number_of_data_nodes multi bigendian");
-
-    delete $json->{health};
-    delete $mjson->{health};
-    delete $djson->{health};
     $djson->{graph}->{xmax} = undef;
     $djson->{graph}->{xmin} = undef;
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
@@ -49,11 +43,6 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"10.64.11.49"}]}'), "bigendian dstIp no facets");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol no facets");
 
-    is ($json->{health}->{number_of_data_nodes}, 1, "Correct health number_of_data_nodes bigendian no facets");
-    is ($mjson->{health}->{number_of_data_nodes}, 2, "Correct health number_of_data_nodes multi bigendian no facets");
-
-    delete $json->{health};
-    delete $mjson->{health};
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
 # Check facets short
@@ -78,8 +67,6 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"tcp"}]}'), "short ipProtocol");
     eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$fpwd/socks-http-example.pcap"}]})), "bigendian fileand");
 
-    delete $json->{health};
-    delete $mjson->{health};
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
 # Check facets medium
@@ -106,8 +93,6 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":3, "key":"tcp"}]}'), "medium ipProtocol");
 
-    delete $json->{health};
-    delete $mjson->{health};
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
 # Check facets ALL
@@ -158,9 +143,6 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
 
-    delete $json->{health};
-    delete $mjson->{health};
-    delete $djson->{health};
     $djson->{graph}->{xmax} = undef;
     $djson->{graph}->{xmin} = undef;
     eq_or_diff($mjson, $json, "single doesn't match multi", { context => 3 });

@@ -1021,13 +1021,9 @@ exports.molochNodeStatsCache = function (nodeName, cb) {
   return exports.molochNodeStats(nodeName, cb);
 };
 
-exports.healthCache = async (cb) => {
-  if (!cb) {
-    return internals.healthCache;
-  }
-
+exports.healthCache = async () => {
   if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.healthCache);
+    return internals.healthCache;
   }
 
   try {
@@ -1039,24 +1035,15 @@ exports.healthCache = async (cb) => {
       health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
-      cb(null, health);
+      return health;
     } catch (err) {
-      return cb(null, health);
+      return health;
     }
   } catch (err) {
     // Even if an error, if we have a cache use it
     if (internals.healthCache._timeStamp !== undefined) {
-      return cb(null, internals.healthCache);
+      return internals.healthCache;
     }
-    return cb(err, null);
-  }
-};
-
-exports.healthCachePromise = async () => {
-  try {
-    const health = await exports.healthCache();
-    return health;
-  } catch (err) {
     throw new Error(err);
   }
 };

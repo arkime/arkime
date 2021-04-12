@@ -12,10 +12,6 @@ my $pwd = "*/pcap";
 sub testMulti {
     my ($json, $mjson, $url) = @_;
 
-    # health might be different
-    delete $json->{health};
-    delete $mjson->{health};
-
     # recordsTotal might be different
     delete $json->{recordsTotal};
     delete $mjson->{recordsTotal};

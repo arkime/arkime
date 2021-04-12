@@ -474,15 +474,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
      'old' - Baseline Nodes Only: nodes present in the "baseline" but NOT the "current" timeframe are visible.
    * @returns {array} links - The list of links
    * @returns {array} nodes - The list of nodes
-   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   cModule.getConnections = (req, res) => {
-    let health;
-    Db.healthCache((err, h) => { health = h; });
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) { return res.serverError(403, err.toString()); }
       res.send({
-        health: health,
         nodes: nodes,
         links: links,
         recordsFiltered: total

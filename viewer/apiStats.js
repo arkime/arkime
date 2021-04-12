@@ -46,10 +46,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  sModule.getESHealth = (req, res) => {
-    Db.healthCache((err, health) => {
-      res.send(health);
-    });
+  sModule.getESHealth = async (req, res) => {
+    try {
+      const health = await Db.healthCache();
+      return res.send(health);
+    } catch (err) {
+      return res.serverError(500, err);
+    }
   };
 
   // STATS APIS ---------------------------------------------------------------
@@ -341,7 +344,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} data - List of ES clusters with their corresponding stats.
    * @returns {number} recordsTotal - The total number of ES clusters.
    * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
-   * @returns {ESHealth} health - The Elasticsearch cluster health status and info.
    */
   sModule.getESStats = (req, res) => {
     let stats = [];
@@ -350,10 +352,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Promise.all([Db.nodesStatsCache(),
       Db.nodesInfoCache(),
       Db.masterCache(),
-      Db.healthCachePromise(),
       Db.allocation(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([nodesStats, nodesInfo, master, health, allocation, settings]) => {
+    ]).then(([nodesStats, nodesInfo, master, allocation, settings]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
       let ipExcludes = [];
@@ -474,7 +475,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       internals.previousNodesStats.push(nodesStats.nodes);
 
       r = {
-        health: health,
         recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length,
         recordsFiltered: stats.length,
         data: stats
@@ -484,7 +484,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }).catch((err) => {
       console.log('ERROR -  /api/esstats', err);
       r = {
-        health: Db.healthCache(),
         recordsTotal: 0,
         recordsFiltered: 0,
         data: []
@@ -694,7 +693,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
-        Db.healthCachePromise()
+        Db.healthCache()
           .then(async (result) => {
             if (result.relocating_shards === 0) {
               clearInterval(shrinkCheckInterval);

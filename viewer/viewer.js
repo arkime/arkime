@@ -2420,15 +2420,17 @@ internals.processCronQueries = () => {
 // ============================================================================
 // MAIN
 // ============================================================================
-function main () {
+async function main () {
   if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
-  Db.healthCache(function (err, health) {
+
+  try {
+    const health = await Db.healthCache();
     internals.clusterName = health.cluster_name;
-  });
+  } catch {}
 
   Db.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, function (err, info) {
     info.nodes.timestamp = new Date().getTime();

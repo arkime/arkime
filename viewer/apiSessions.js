@@ -1589,7 +1589,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {array} data - The list of sessions with the requested fields
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   sModule.getSessions = (req, res) => {
     let map = {};
@@ -1606,8 +1605,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       map: {},
       graph: {},
       recordsTotal: 0,
-      recordsFiltered: 0,
-      health: Db.healthCache()
+      recordsFiltered: 0
     };
 
     sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
@@ -1646,9 +1644,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       Promise.all([
         Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
-        Db.healthCachePromise()
-      ]).then(([sessions, total, health]) => {
+        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+      ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('sessions.json result', util.inspect(sessions, false, 50));
         }
@@ -1689,7 +1686,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           try {
             response.map = map;
             response.graph = graph;
-            response.health = health;
             response.data = (results ? results.results : []);
             response.recordsTotal = total.count;
             response.recordsFiltered = (results ? results.total : 0);
@@ -1759,7 +1755,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} protocols - The list of protocols with counts
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   sModule.getSPIView = (req, res) => {
     if (req.query.spi === undefined) {
@@ -1772,10 +1767,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
     }
 
-    const response = {
-      spi: {},
-      health: Db.healthCache()
-    };
+    const response = { spi: {} };
 
     sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
@@ -1829,9 +1821,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const options = ViewerUtils.addCluster(req.query.cluster);
 
       Promise.all([Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
-        Db.healthCachePromise()
-      ]).then(([sessions, total, health]) => {
+        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+      ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('spiview.json result', util.inspect(sessions, false, 50));
         }
@@ -1879,7 +1870,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             response.map = map;
             response.graph = graph;
             response.error = bsqErr;
-            response.health = health;
             response.protocols = protocols;
             response.recordsTotal = total.count;
             response.spi = sessions.aggregations;
@@ -1937,7 +1927,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
-   * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
   sModule.getSPIGraph = (req, res) => {
     req.query.facets = 1;
@@ -1971,13 +1960,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       Promise.all([
-        Db.healthCachePromise(),
         Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
         Db.searchPrimary(indices, 'session', query, options)
-      ]).then(([health, total, result]) => {
+      ]).then(([total, result]) => {
         if (result.error) { throw result.error; }
 
-        results.health = health;
         results.recordsTotal = total.count;
         results.recordsFiltered = result.hits.total;
 
