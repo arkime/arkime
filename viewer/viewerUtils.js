@@ -653,44 +653,38 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.validateUserIds = (userIdList) => {
-    return new Promise((resolve, reject) => {
-      const query = {
-        _source: ['userId'],
-        from: 0,
-        size: 10000,
-        query: { // exclude the shared user from results
-          bool: { must_not: { term: { userId: '_moloch_shared' } } }
-        }
-      };
+  vModule.validateUserIds = async (userIdList) => {
+    const query = {
+      _source: ['userId'],
+      from: 0,
+      size: 10000,
+      query: { // exclude the shared user from results
+        bool: { must_not: { term: { userId: '_moloch_shared' } } }
+      }
+    };
 
-      // don't even bother searching for users if in anonymous mode
-      if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
-        resolve({ validUsers: [], invalidUsers: [] });
+    // don't even bother searching for users if in anonymous mode
+    if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
+      return { validUsers: [], invalidUsers: [] };
+    }
+
+    try {
+      const users = await Db.searchUsers(query);
+      let usersList = [];
+      usersList = users.hits.hits.map((user) => {
+        return user._source.userId;
+      });
+
+      const validUsers = [];
+      const invalidUsers = [];
+      for (const user of userIdList) {
+        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
       }
 
-      Db.searchUsers(query)
-        .then((users) => {
-          let usersList = [];
-          usersList = users.hits.hits.map((user) => {
-            return user._source.userId;
-          });
-
-          const validUsers = [];
-          const invalidUsers = [];
-          for (const user of userIdList) {
-            usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
-          }
-
-          resolve({
-            validUsers: validUsers,
-            invalidUsers: invalidUsers
-          });
-        })
-        .catch((error) => {
-          reject('Unable to validate userIds');
-        });
-    });
+      return { validUsers, invalidUsers };
+    } catch (err) {
+      throw new Error('Unable to validate userIds');
+    }
   };
 
   return vModule;

@@ -296,19 +296,23 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUser = (req, res) => {
+  uModule.deleteUser = async (req, res) => {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
       return res.serverError(403, 'Can not delete yourself');
     }
 
-    Db.deleteUser(userId, (err, data) => {
-      setTimeout(() => {
-        res.send(JSON.stringify({
-          success: true, text: 'User deleted successfully'
-        }));
-      }, 200);
-    });
+    try {
+      await Db.deleteUser(userId);
+      res.send(JSON.stringify({
+        success: true, text: 'User deleted successfully'
+      }));
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/user/${userId}`, err);
+      res.send(JSON.stringify({
+        success: false, text: 'User not deleted'
+      }));
+    }
   };
 
   /**
@@ -551,7 +555,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         data: results.results
       });
     }).catch((err) => {
-      console.log('/api/users failed', err);
+      console.log('ERROR - POST /api/users', err);
       return res.send({
         recordsTotal: 0, recordsFiltered: 0, data: []
       });

@@ -774,24 +774,30 @@ exports.flushCache = function () {
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
 };
+
 // search against user index, promise only
-exports.searchUsers = function (query, cb) {
-  return new Promise((resolve, reject) => {
-    internals.usersClient7.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true })
-      .then((results) => { resolve(results.body); })
-      .catch((error) => { reject(error); });
-  });
+exports.searchUsers = async (query) => {
+  try {
+    const { body: users } = await internals.usersClient7.search({
+      index: internals.usersPrefix + 'users',
+      body: query,
+      rest_total_hits_as_int: true
+    });
+    return users;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 // Return a user from DB, callback only
-exports.getUser = function (userId, cb) {
+exports.getUser = (userId, cb) => {
   internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: userId }, (err, result) => {
     cb(err, result.body || { found: false });
   });
 };
 
 // Return a user from cache, callback only
-exports.getUserCache = function (userId, cb) {
+exports.getUserCache = (userId, cb) => {
   if (internals.usersCache[userId] && internals.usersCache[userId]._timeStamp > Date.now() - 5000) {
     return cb(null, internals.usersCache[userId]);
   }
@@ -825,17 +831,23 @@ exports.numberOfUsers = async () => {
   }
 };
 
-// Delete user, callback only
-exports.deleteUser = function (userId, cb) {
+// Delete user, promise only
+exports.deleteUser = async (userId) => {
   delete internals.usersCache[userId];
-  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: userId, refresh: true }, (err) => {
+  try {
+    await internals.usersClient7.delete({
+      index: internals.usersPrefix + 'users',
+      id: userId,
+      refresh: true
+    });
     delete internals.usersCache[userId]; // Delete again after db says its done refreshing
-    cb(err);
-  });
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 // Set user, callback only
-exports.setUser = function (userId, doc, cb) {
+exports.setUser = (userId, doc, cb) => {
   delete internals.usersCache[userId];
   const createOnly = !!doc._createOnly;
   delete doc._createOnly;
@@ -852,10 +864,15 @@ exports.setUser = function (userId, doc, cb) {
   });
 };
 
-exports.setLastUsed = function (userId, now, cb) {
-  const params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: userId, retry_on_conflict: 3 };
+exports.setLastUsed = async (userId, now) => {
+  const params = {
+    index: internals.usersPrefix + 'users',
+    body: { doc: { lastUsed: now } },
+    id: userId,
+    retry_on_conflict: 3
+  };
 
-  return internals.usersClient7.update(params, cb);
+  return internals.usersClient7.update(params);
 };
 
 function twoDigitString (value) {

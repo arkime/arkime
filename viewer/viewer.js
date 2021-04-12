@@ -888,11 +888,13 @@ function userCleanup (suser) {
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
   if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
     suser.lastUsed = now;
-    Db.setLastUsed(suser.userId, now, function (err, info) {
-      if (Config.debug && err) {
-        console.log('DEBUG - user lastUsed update error', err, info);
+    try {
+      Db.setLastUsed(suser.userId, now);
+    } catch (err) {
+      if (Config.debug) {
+        console.log('DEBUG - user lastUsed update error', err);
       }
-    });
+    }
   }
 }
 
