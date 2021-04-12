@@ -523,15 +523,15 @@ exports.getAliasesCache = async (index) => {
   }
 };
 
-exports.health = function (cb) {
-  return internals.elasticSearchClient.info((err, data) => {
-    internals.elasticSearchClient.cluster.health({}, (err, result) => {
-      if (data && result) {
-        result.version = data.version.number;
-      }
-      return cb(err, result);
-    });
-  });
+exports.health = async () => {
+  try {
+    const { body: data } = await internals.client7.info();
+    const { body: result } = await internals.client7.cluster.health({});
+    result.version = data.version.number;
+    return result;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.indices = async (index) => {
@@ -1021,7 +1021,7 @@ exports.molochNodeStatsCache = function (nodeName, cb) {
   return exports.molochNodeStats(nodeName, cb);
 };
 
-exports.healthCache = function (cb) {
+exports.healthCache = async (cb) => {
   if (!cb) {
     return internals.healthCache;
   }
@@ -1030,37 +1030,35 @@ exports.healthCache = function (cb) {
     return cb(null, internals.healthCache);
   }
 
-  return exports.health((err, health) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.healthCache._timeStamp !== undefined) {
-        return cb(null, internals.healthCache);
-      }
-      return cb(err, null);
-    }
-
-    internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
-      if (err) {
-        return cb(null, health);
-      }
+  try {
+    const health = await exports.health();
+    try {
+      const { body: doc } = await internals.client7.indices.getTemplate({
+        name: fixIndex('sessions2_template'), filter_path: '**._meta'
+      });
       health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
       cb(null, health);
-    });
-  });
+    } catch (err) {
+      return cb(null, health);
+    }
+  } catch (err) {
+    // Even if an error, if we have a cache use it
+    if (internals.healthCache._timeStamp !== undefined) {
+      return cb(null, internals.healthCache);
+    }
+    return cb(err, null);
+  }
 };
 
-exports.healthCachePromise = function () {
-  return new Promise(function (resolve, reject) {
-    exports.healthCache((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+exports.healthCachePromise = async () => {
+  try {
+    const health = await exports.healthCache();
+    return health;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.nodesInfoCache = function () {
