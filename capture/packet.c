@@ -1091,7 +1091,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
             n += 2;
             break;
         default:
-            return moloch_packet_run_ethernet_cb(batch, packet, data+n,len-n, ethertype, "Ether");
+            return moloch_packet_run_ethernet_cb(batch, packet, data+n, len-n, ethertype, "Ether");
         } // switch
     }
 #ifdef DEBUG_PACKET
@@ -1397,6 +1397,14 @@ int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * 
 #ifdef DEBUG_PACKET
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
+
+    if (type == MOLOCH_ETHERTYPE_DETECT) {
+        if (len < 2)
+            return MOLOCH_PACKET_CORRUPT;
+        type = data[0] << 8 | data[1];
+        data += 2;
+        len -= 2;
+    }
 
     if (ethernetCbs[type]) {
         return ethernetCbs[type](batch, packet, data, len);

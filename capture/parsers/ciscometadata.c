@@ -26,9 +26,7 @@ LOCAL MolochPacketRC ciscometadata_packet_enqueue(MolochPacketBatch_t * UNUSED(b
 
     // Just ignore 6 bytes for now
 
-    int ethertype = data[6] << 8 | data[7];
-
-    return moloch_packet_run_ethernet_cb(batch, packet, data+8, len-8, ethertype, "CISCOMETADATA");
+    return moloch_packet_run_ethernet_cb(batch, packet, data+6, len-6, MOLOCH_ETHERTYPE_DETECT, "CISCOMETADATA");
 }
 /******************************************************************************/
 void moloch_parser_init()
