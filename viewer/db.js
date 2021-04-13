@@ -591,8 +591,8 @@ exports.master = async () => {
   return internals.client7.cat.master({ format: 'json' });
 };
 
-exports.getClusterSettings = function (options, cb) {
-  return internals.elasticSearchClient.cluster.getSettings(options, cb);
+exports.getClusterSettings = async (options) => {
+  return internals.client7.cluster.getSettings(options);
 };
 
 exports.putClusterSettings = function (options, cb) {

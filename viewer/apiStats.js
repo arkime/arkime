@@ -354,7 +354,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.masterCache(),
       Db.allocation(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([nodesStats, nodesInfo, master, { body: allocation }, settings]) => {
+    ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
       let ipExcludes = [];
@@ -898,7 +898,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
       Db.getTemplate('sessions2_template')
-    ]).then(([settings, ilm, template]) => {
+    ]).then(([{ body: settings }, ilm, template]) => {
       const rsettings = [];
 
       function getValue (key) {
@@ -1223,7 +1223,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([{ body: shards }, settings]) => {
+    ]).then(([{ body: shards }, { body: settings }]) => {
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -1303,12 +1303,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.excludeESShard = (req, res) => {
+  sModule.excludeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
 
-    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+    try {
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
       let exclude = [];
       let settingName;
 
@@ -1335,7 +1336,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         if (err) { console.log('putSettings', JSON.stringify(err, false, 2), 'query', query); }
         return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
       });
-    });
+    } catch (err) {
+      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/exclude`, err);
+      return res.serverError(500, err);
+    }
   };
 
   /**
@@ -1346,12 +1350,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.includeESShard = (req, res) => {
+  sModule.includeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
 
-    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+    try {
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
       let exclude = [];
       let settingName;
 
@@ -1379,7 +1384,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         if (err) { console.log('putSettings', err); }
         return res.send(JSON.stringify({ success: true, text: 'Included' }));
       });
-    });
+    } catch (err) {
+      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/include`, err);
+      return res.serverError(500, err);
+    }
   };
 
   // ES RECOVERY APIS ---------------------------------------------------------
