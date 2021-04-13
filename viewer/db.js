@@ -587,8 +587,8 @@ exports.recovery = async (sortField, activeOnly) => {
   });
 };
 
-exports.master = function (cb) {
-  return internals.elasticSearchClient.cat.master({ format: 'json' }, cb);
+exports.master = async () => {
+  return internals.client7.cat.master({ format: 'json' });
 };
 
 exports.getClusterSettings = function (options, cb) {
@@ -1075,22 +1075,19 @@ exports.nodesInfoCache = function () {
   });
 };
 
-exports.masterCache = function () {
+exports.masterCache = async () => {
   if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
-    return new Promise((resolve, reject) => { resolve(internals.masterCache); });
+    return internals.masterCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.master((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.masterCache = data;
-        internals.masterCache._timeStamp = Date.now();
-        resolve(data);
-      }
-    });
-  });
+  try {
+    const { body: data } = await exports.master();
+    internals.masterCache = data;
+    internals.masterCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.nodesStatsCache = function () {

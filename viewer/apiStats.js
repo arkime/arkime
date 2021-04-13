@@ -347,9 +347,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   sModule.getESStats = (req, res) => {
     let stats = [];
-    let r;
 
-    Promise.all([Db.nodesStatsCache(),
+    Promise.all([
+      Db.nodesStatsCache(),
       Db.nodesInfoCache(),
       Db.masterCache(),
       Db.allocation(),
@@ -474,21 +474,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       nodesStats.nodes.timestamp = new Date().getTime();
       internals.previousNodesStats.push(nodesStats.nodes);
 
-      r = {
-        recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length,
+      res.send({
+        data: stats,
         recordsFiltered: stats.length,
-        data: stats
-      };
-
-      res.send(r);
+        recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length
+      });
     }).catch((err) => {
-      console.log('ERROR -  /api/esstats', err);
-      r = {
+      console.log('ERROR - GET /api/esstats', err);
+      return res.send({
+        data: [],
         recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
-      };
-      return res.send(r);
+        recordsFiltered: 0
+      });
     });
   };
 
