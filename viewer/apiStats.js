@@ -354,7 +354,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.masterCache(),
       Db.allocation(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([nodesStats, nodesInfo, master, allocation, settings]) => {
+    ]).then(([nodesStats, nodesInfo, master, { body: allocation }, settings]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
       let ipExcludes = [];
@@ -1190,14 +1190,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.clearCacheES = (req, res) => {
-    Db.clearCache((err, data) => {
-      if (err) {
-        return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
-      } else {
-        return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
-      }
-    });
+  sModule.clearCacheES = async (req, res) => {
+    try {
+      const { body: data } = await Db.clearCache();
+      return res.send(JSON.stringify({
+        success: true,
+        text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`
+      }));
+    } catch (err) {
+      console.log('ERROR - POST /api/esadmin/clearcache', err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   // ES SHARD APIS ------------------------------------------------------------
@@ -1223,7 +1226,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([shards, settings]) => {
+    ]).then(([{ body: shards }, settings]) => {
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -1396,12 +1399,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of indices.
    * @returns {number} recordsFiltered - The number of indices returned in this result.
    */
-  sModule.getESRecovery = (req, res) => {
+  sModule.getESRecovery = async (req, res) => {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
-    Promise.all([
-      Db.recovery(sortField, req.query.show !== 'all')
-    ]).then(([recoveries]) => {
+    try {
+      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all');
       let regex;
       if (req.query.filter !== undefined) {
         try {
@@ -1435,18 +1437,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       res.send({
-        recordsTotal: recoveries.length,
+        data: result,
         recordsFiltered: result.length,
-        data: result
+        recordsTotal: recoveries.length
       });
-    }).catch((err) => {
-      console.log('ERROR -  /api/esrecovery', err);
+    } catch (err) {
+      console.log('ERROR - GET /api/esrecovery', err);
       return res.send({
+        data: [],
         recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
+        recordsFiltered: 0
       });
-    });
+    }
   };
 
   // PARLIAMENT APIs ----------------------------------------------------------

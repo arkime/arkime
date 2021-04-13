@@ -562,20 +562,29 @@ exports.setIndexSettings = async (index, options) => {
   }
 };
 
-exports.clearCache = function (cb) {
-  return internals.elasticSearchClient.indices.clearCache({}, cb);
+exports.clearCache = async () => {
+  return internals.client7.indices.clearCache({});
 };
 
-exports.shards = function (cb) {
-  return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
+exports.shards = async () => {
+  return internals.client7.cat.shards({
+    format: 'json',
+    bytes: 'b',
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm'
+  });
 };
 
-exports.allocation = function (cb) {
-  return internals.elasticSearchClient.cat.allocation({ format: 'json', bytes: 'b' }, cb);
+exports.allocation = async () => {
+  return internals.client7.cat.allocation({ format: 'json', bytes: 'b' });
 };
 
-exports.recovery = function (sortField, activeOnly, cb) {
-  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField, active_only: activeOnly }, cb);
+exports.recovery = async (sortField, activeOnly) => {
+  return internals.client7.cat.recovery({
+    format: 'json',
+    bytes: 'b',
+    s: sortField,
+    active_only: activeOnly
+  });
 };
 
 exports.master = function (cb) {

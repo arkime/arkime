@@ -210,7 +210,7 @@ export default {
           this.interactionSuccess = response.data.text;
         })
         .catch((error) => {
-          this.interactionError = error;
+          this.interactionError = error.text || error;
         });
     },
     unflood: function () {
@@ -219,7 +219,7 @@ export default {
           this.interactionSuccess = response.data.text;
         })
         .catch((error) => {
-          this.interactionError = error;
+          this.interactionError = error.text || error;
         });
     },
     flush: function () {
@@ -228,7 +228,7 @@ export default {
           this.interactionSuccess = response.data.text;
         })
         .catch((error) => {
-          this.interactionError = error;
+          this.interactionError = error.text || error;
         });
     },
     retryFailed: function () {
@@ -237,7 +237,7 @@ export default {
           this.interactionSuccess = response.data.text;
         })
         .catch((error) => {
-          this.interactionError = error;
+          this.interactionError = error.text || error;
         });
     },
     /* helper functions ------------------------------------------ */
