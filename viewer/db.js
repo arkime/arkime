@@ -595,28 +595,26 @@ exports.getClusterSettings = async (options) => {
   return internals.client7.cluster.getSettings(options);
 };
 
-exports.putClusterSettings = function (options, cb) {
+exports.putClusterSettings = async (options) => {
   options.timeout = '10m';
   options.masterTimeout = '10m';
-  return internals.elasticSearchClient.cluster.putSettings(options, cb);
+  return internals.client7.cluster.putSettings(options);
 };
 
-exports.tasks = function (cb) {
-  return internals.elasticSearchClient.tasks.list({ detailed: true, group_by: 'parents' }, cb);
+exports.tasks = async () => {
+  return internals.client7.tasks.list({ detailed: true, group_by: 'parents' });
 };
 
-exports.taskCancel = function (taskId, cb) {
-  const params = {};
-  if (taskId) { params.taskId = taskId; }
-  return internals.elasticSearchClient.tasks.cancel(params, cb);
+exports.taskCancel = async (taskId) => {
+  return internals.client7.tasks.cancel(taskId ? { taskId: taskId } : {});
 };
 
-exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, cb);
+exports.nodesStats = async (options) => {
+  return internals.client7.nodes.stats(options);
 };
 
-exports.nodesInfo = function (options, cb) {
-  return internals.elasticSearchClient.nodes.info(options, cb);
+exports.nodesInfo = async (options) => {
+  return internals.client7.nodes.info(options);
 };
 
 exports.update = function (index, type, id, doc, options, cb) {
@@ -1057,22 +1055,19 @@ exports.healthCache = async () => {
   }
 };
 
-exports.nodesInfoCache = function () {
+exports.nodesInfoCache = async () => {
   if (internals.nodesInfoCache._timeStamp !== undefined && internals.nodesInfoCache._timeStamp > Date.now() - 30000) {
-    return new Promise((resolve, reject) => { resolve(internals.nodesInfoCache); });
+    return internals.nodesInfoCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.nodesInfo((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.nodesInfoCache = data;
-        internals.nodesInfoCache._timeStamp = Date.now();
-        resolve(data);
-      }
-    });
-  });
+  try {
+    const { body: data } = await exports.nodesInfo();
+    internals.nodesInfoCache = data;
+    internals.nodesInfoCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.masterCache = async () => {
@@ -1090,22 +1085,21 @@ exports.masterCache = async () => {
   }
 };
 
-exports.nodesStatsCache = function () {
+exports.nodesStatsCache = async () => {
   if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
-    return new Promise((resolve, reject) => { resolve(internals.nodesStatsCache); });
+    return internals.nodesStatsCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.nodesStatsCache = data;
-        internals.nodesStatsCache._timeStamp = Date.now();
-        resolve(data);
-      }
+  try {
+    const { body: data } = await exports.nodesStats({
+      metric: 'jvm,process,fs,os,indices,thread_pool'
     });
-  });
+    internals.nodesStatsCache = data;
+    internals.nodesStatsCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.indicesCache = async () => {

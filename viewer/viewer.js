@@ -2432,10 +2432,13 @@ async function main () {
     internals.clusterName = health.cluster_name;
   } catch {}
 
-  Db.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, function (err, info) {
+  try {
+    const { body: info } = await Db.nodesStats({
+      metric: 'jvm,process,fs,os,indices,thread_pool'
+    });
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
-  });
+  } catch {}
 
   setFieldLocals();
   setInterval(setFieldLocals, 2 * 60 * 1000);
