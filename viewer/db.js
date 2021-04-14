@@ -623,7 +623,7 @@ exports.update = async (index, type, id, doc, options) => {
   return internals.client7.update(params);
 };
 
-exports.updateSession = function (index, id, doc, cb) {
+exports.updateSession = async (index, id, doc, cb) => {
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -632,20 +632,19 @@ exports.updateSession = function (index, id, doc, cb) {
     timeout: '10m'
   };
 
-  internals.elasticSearchClient.update(params, async (err, data) => {
-    // Did it fail with FORBIDDEN msg?
-    if (err && err.message && err.message.match('FORBIDDEN')) {
-      // Try clearing the index.blocks.write
-      try {
-        exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
-        const { body: retryData } = await internals.client7.update(params);
-        return cb(null, retryData);
-      } catch (err) {
-        return cb(err, {});
-      }
+  try {
+    const { body: data } = await internals.client7.update(params);
+    return cb(null, data);
+  } catch (err) {
+    if (err.statusCode !== 403) { return cb(err, {}); }
+    try { // try clearing the index.blocks.write if we got a forbidden response
+      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
+      const { body: retryData } = await internals.client7.update(params);
+      return cb(null, retryData);
+    } catch (err) {
+      return cb(err, {});
     }
-    return cb(err, data);
-  });
+  }
 };
 
 exports.close = async () => {
