@@ -1259,11 +1259,12 @@ exports.checkVersion = async function (minVersion, checkUsers) {
     }
   });
 
-  internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
-    if (err) {
-      console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
-      process.exit(0);
-    }
+  try {
+    const { body: doc } = await internals.client7.indices.getTemplate({
+      name: fixIndex('sessions2_template'),
+      filter_path: '**._meta'
+    });
+
     try {
       const molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
 
@@ -1278,7 +1279,10 @@ exports.checkVersion = async function (minVersion, checkUsers) {
       console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
       process.exit(0);
     }
-  });
+  } catch (err) {
+    console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
+    process.exit(0);
+  }
 
   if (checkUsers) {
     const count = await exports.numberOfUsers();
