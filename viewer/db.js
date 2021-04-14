@@ -18,7 +18,6 @@
 
 'use strict';
 
-const ESC = require('elasticsearch');
 const os = require('os');
 const fs = require('fs');
 const async = require('async');
@@ -41,7 +40,7 @@ const internals = {
   q: []
 };
 
-exports.initialize = function (info, cb) {
+exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
   internals.getSessionBySearch = info.getSessionBySearch || false;
@@ -80,16 +79,6 @@ exports.initialize = function (info, cb) {
     }
   }
 
-  internals.elasticSearchClient = new ESC.Client({
-    host: internals.info.host,
-    apiVersion: internals.apiVersion,
-    requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-    keepAlive: true,
-    minSockets: 20,
-    maxSockets: 51,
-    ssl: esSSLOptions
-  });
-
   internals.client7 = new Client({
     node: internals.info.host,
     maxRetries: 2,
@@ -108,17 +97,16 @@ exports.initialize = function (info, cb) {
     internals.usersClient7 = internals.client7;
   }
 
-  internals.elasticSearchClient.info((err, data) => {
-    if (err) {
-      console.log(err, data);
-    }
+  try {
+    const { body: data } = await internals.client7.info();
     if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
-      console.log('ERROR - ES', data.version.number, 'not supported, ES 7.7.1 or later required.');
+      console.log(`ERROR - ES ${data.version.number} not supported, ES 7.7.1 or later required.`);
       process.exit();
     }
-
     return cb();
-  });
+  } catch (err) {
+    console.log('ERROR - getting ES client info', err);
+  }
 
   // Replace tag implementation
   if (internals.multiES) {
