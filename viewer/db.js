@@ -1466,10 +1466,10 @@ exports.setILMPolicy = async (ilmName, policy) => {
   }
 };
 
-exports.getTemplate = function (templateName) {
-  return internals.elasticSearchClient.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
+exports.getTemplate = async (templateName) => {
+  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
 };
 
-exports.putTemplate = function (templateName, body) {
-  return internals.elasticSearchClient.indices.putTemplate({ name: fixIndex(templateName), body: body });
+exports.putTemplate = async (templateName, body) => {
+  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body: body });
 };

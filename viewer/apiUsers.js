@@ -1104,7 +1104,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     try {
       await Db.get('queries', 'query', key);
-      const { body: data } = await Db.update('queries', 'query', key, doc, { refresh: true });
+      await Db.update('queries', 'query', key, doc, { refresh: true });
 
       if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
 

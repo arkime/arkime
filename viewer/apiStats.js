@@ -904,7 +904,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
       Db.getTemplate('sessions2_template')
-    ]).then(([{ body: settings }, ilm, template]) => {
+    ]).then(([{ body: settings }, ilm, { body: template }]) => {
       const rsettings = [];
 
       function getValue (key) {
@@ -1104,7 +1104,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions2_template')]).then(([template]) => {
+      Promise.all([Db.getTemplate('sessions2_template')]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
           template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards'] = req.body.value;
@@ -1123,7 +1123,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           return res.serverError(500, 'Unknown field');
         }
         Db.putTemplate('sessions2_template', template[`${internals.prefix}sessions2_template`]);
-        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+        return res.send(JSON.stringify({ success: true, text: 'Successfully set ES settings' }));
       });
       return;
     }
