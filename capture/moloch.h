@@ -65,7 +65,9 @@
 #define MOLOCH_PACKET_MAX_LEN 0x10000
 
 #define MOLOCH_ETHERTYPE_ETHER   0
+// If an ethertype is unknown this ethertype will be called
 #define MOLOCH_ETHERTYPE_UNKNOWN 1
+// The first 2 bytes have the ethertype
 #define MOLOCH_ETHERTYPE_DETECT  2
 #define MOLOCH_IPPROTO_UNKNOWN 255
 #define MOLOCH_IPPROTO_CORRUPT 256

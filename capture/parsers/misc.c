@@ -553,6 +553,8 @@ void moloch_parser_init()
 
     SIMPLE_CLASSIFY_TCP("rtsp", "RTSP/1.0 ");
 
+    SIMPLE_CLASSIFY_TCP("rmi", "JRMI\x00");
+
     userField = moloch_field_by_db("user");
 }
 
