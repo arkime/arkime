@@ -617,15 +617,10 @@ exports.nodesInfo = async (options) => {
   return internals.client7.nodes.info(options);
 };
 
-exports.update = function (index, type, id, doc, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
-
+exports.update = async (index, type, id, doc, options) => {
   const params = { index: fixIndex(index), body: doc, id: id, timeout: '10m' };
   exports.merge(params, options);
-  return internals.elasticSearchClient.update(params, cb);
+  return internals.client7.update(params);
 };
 
 exports.updateSession = function (index, id, doc, cb) {
@@ -653,16 +648,16 @@ exports.updateSession = function (index, id, doc, cb) {
   });
 };
 
-exports.close = function () {
-  return internals.elasticSearchClient.close();
+exports.close = async () => {
+  return internals.client7.close();
 };
 
-exports.reroute = function (cb) {
-  return internals.elasticSearchClient.cluster.reroute({
+exports.reroute = async () => {
+  return internals.client7.cluster.reroute({
     timeout: '10m',
     masterTimeout: '10m',
     retryFailed: true
-  }, cb);
+  });
 };
 
 exports.flush = async (index) => {
@@ -1245,10 +1240,6 @@ exports.numberOfDocuments = async (index, options) => {
   } catch (err) {
     throw new Error(err);
   }
-};
-
-exports.updateFileSize = function (item, filesize) {
-  exports.update('files', 'file', item.id, { doc: { filesize: filesize } });
 };
 
 exports.checkVersion = async function (minVersion, checkUsers) {

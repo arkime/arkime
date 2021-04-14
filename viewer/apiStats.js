@@ -1151,14 +1151,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.rerouteES = (req, res) => {
-    Db.reroute((err) => {
-      if (err) {
-        return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
-      } else {
-        return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
-      }
-    });
+  sModule.rerouteES = async (req, res) => {
+    try {
+      await Db.reroute();
+      return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
+    } catch (err) {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
+    }
   };
 
   /**

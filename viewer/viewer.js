@@ -2191,7 +2191,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           return setImmediate(whilstCb, 'DONE');
         } else {
           const doc = { doc: { count: (query.count || 0) + count } };
-          Db.update('queries', 'query', options.qid, doc, { refresh: true }, function () {});
+          Db.update('queries', 'query', options.qid, doc, { refresh: true });
         }
 
         query = {
@@ -2376,13 +2376,10 @@ internals.processCronQueries = () => {
                 }
               };
 
-              function continueProcess () {
-                Db.update('queries', 'query', qid, doc, { refresh: true }, function () {
-                  // If there is more time to catch up on, repeat the loop, although other queries
-                  // will get processed first to be fair
-                  if (lpValue !== endTime) { repeat = true; }
-                  return forQueriesCb();
-                });
+              async function continueProcess () {
+                await Db.update('queries', 'query', qid, doc, { refresh: true });
+                if (lpValue !== endTime) { repeat = true; }
+                return forQueriesCb();
               }
 
               // issue alert via notifier if the count has changed and it has been at least 10 minutes

@@ -1104,25 +1104,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     try {
       await Db.get('queries', 'query', key);
+      const { body: data } = await Db.update('queries', 'query', key, doc, { refresh: true });
 
-      Db.update('queries', 'query', key, doc, { refresh: true }, (err, data) => {
-        if (err) {
-          console.log(`ERROR - POST /api/user/cron/${key}`, err, doc, data);
-          return res.serverError(500, 'Cron query update failed');
-        }
+      if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
 
-        if (Config.get('cronQueries', false)) {
-          internals.processCronQueries();
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Updated cron query successfully'
-        }));
-      });
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Updated cron query successfully'
+      }));
     } catch (err) {
       console.log(`ERROR - POST - /api/user/cron/${key}`, err);
-      return res.serverError(403, 'Unknown query');
+      return res.serverError(403, 'Cron update failed');
     }
   };
 

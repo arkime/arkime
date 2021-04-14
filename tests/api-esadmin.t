@@ -67,14 +67,14 @@ use strict;
 
     # set to 1234
     $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=1234", $token);
-    eq_or_diff($json, from_json('{"text": "Set", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Successfully set ES settings", "success": true}'));
 
     $json = esGet("/_cluster/settings?flat_settings");
     is ($json->{persistent}->{'cluster.max_shards_per_node'}, 1234);
 
     # clear with space
     $json = viewerPostToken("/esadmin/set?molochRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=", $token);
-    eq_or_diff($json, from_json('{"text": "Set", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Successfully set ES settings", "success": true}'));
 
     $json = esGet("/_cluster/settings?flat_settings");
     ok (!exists $json->{persistent}->{'cluster.max_shards_per_node'});
