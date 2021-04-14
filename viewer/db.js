@@ -301,7 +301,7 @@ exports.indexNow = async (index, type, id, doc) => {
   });
 };
 
-exports.search = function (index, type, query, options, cb) {
+exports.search = async (index, type, query, options, cb) => {
   if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
@@ -314,9 +314,21 @@ exports.search = function (index, type, query, options, cb) {
     rest_total_hits_as_int: true
   };
 
+  let cancelId = null;
+  if (options && options.cancelId) {
+    // use opaqueId option so the task can be cancelled
+    cancelId = { opaqueId: options.cancelId };
+    delete options.cancelId;
+  }
+
   exports.merge(params, options);
 
-  return internals.elasticSearchClient.search(params, cb);
+  try {
+    const { body: results } = await internals.client7.search(params, cancelId);
+    return cb ? cb(null, results) : results;
+  } catch (err) {
+    return cb ? cb(err, {}) : { error: err.toString() };
+  }
 };
 
 exports.cancelByOpaqueId = async (cancelId) => {
@@ -420,14 +432,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 exports.searchPrimary = function (index, type, query, options, cb) {
   // ALW - FIXME - 6.1+ has removed primary_first :(
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
-
-  if (options && options.cancelId) {
-    // set X-Opaque-Id header on the params so the task can be canceled
-    params.headers = { 'X-Opaque-Id': options.cancelId };
-  }
-
   exports.merge(params, options);
-  delete params.cancelId;
   return exports.searchScroll(index, type, query, params, cb);
 };
 
