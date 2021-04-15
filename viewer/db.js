@@ -97,6 +97,18 @@ exports.initialize = async (info, cb) => {
     internals.usersClient7 = internals.client7;
   }
 
+  // Replace tag implementation
+  if (internals.multiES) {
+    exports.isLocalView = (node, yesCB, noCB) => { return noCB(); };
+    internals.prefix = 'MULTIPREFIX_';
+  }
+
+  // Update aliases cache so -shrink/-reindex works
+  if (internals.nodeName !== undefined) {
+    exports.getAliasesCache('sessions2-*');
+    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+  }
+
   try {
     const { body: data } = await internals.client7.info();
     if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
@@ -106,18 +118,6 @@ exports.initialize = async (info, cb) => {
     return cb();
   } catch (err) {
     console.log('ERROR - getting ES client info', err);
-  }
-
-  // Replace tag implementation
-  if (internals.multiES) {
-    exports.isLocalView = function (node, yesCB, noCB) { return noCB(); };
-    internals.prefix = 'MULTIPREFIX_';
-  }
-
-  // Update aliases cache so -shrink/-reindex works
-  if (internals.nodeName !== undefined) {
-    exports.getAliasesCache('sessions2-*');
-    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
   }
 };
 
