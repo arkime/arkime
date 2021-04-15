@@ -26,7 +26,7 @@
                 </span>
                 <moloch-field-typeahead
                   :fields="fields"
-                  query-param="field"
+                  query-param="exp"
                   :initial-value="fieldTypeahead"
                   @fieldSelected="changeField"
                   page="Spigraph">
@@ -282,7 +282,7 @@ export default {
       items: [],
       showDropdown: false,
       fieldTypeahead: 'node',
-      baseField: this.$route.query.field || 'node',
+      baseField: this.$route.query.exp || 'node',
       sortBy: this.$route.query.sort || 'graph',
       spiGraphType: this.$route.query.spiGraphType || 'default',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
@@ -307,7 +307,7 @@ export default {
       return {
         sort: sort,
         date: this.$store.state.timeRange,
-        exp: this.$route.query.field || this.user.settings.spiGraph || 'node',
+        exp: this.$route.query.exp || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -339,7 +339,7 @@ export default {
     '$route.query.sort': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
-    '$route.query.field': function (newVal, oldVal) {
+    '$route.query.exp': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
     '$route.query.spiGraphType': function (newVal, oldVal) {
@@ -491,7 +491,7 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          field: this.query.exp
+          exp: this.query.exp
         }
       });
     },
@@ -584,7 +584,6 @@ export default {
 </script>
 
 <style scoped>
-
 .spigraph-page form.spigraph-form {
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
@@ -627,4 +626,4 @@ export default {
 .spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
   background-color: var(--color-quaternary-lightest);
 }
-</style> -->
+</style>
