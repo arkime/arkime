@@ -270,4 +270,12 @@ body.dark .btn-outline-dark:hover {
   background-color: #ADB5BD;
   border-color: #ADB5BD;
 }
+
+/* lighten table in dark mode */
+body.dark table.table {
+  color: #EEE;
+}
+body.dark table.table-hover tbody tr:hover {
+  color: #EEE;
+}
 </style>

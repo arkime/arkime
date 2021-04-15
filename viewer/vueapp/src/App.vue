@@ -628,7 +628,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   display: inline-block;
   height: 9px;
   width: 3px;
-  background-color: #FFFFFF;
+  background-color: var(--color-white, #FFFFFF);
   position: relative;
   top: -2px;
   right: 6px;
