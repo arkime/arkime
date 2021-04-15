@@ -2427,7 +2427,9 @@ async function main () {
   try {
     const health = await Db.healthCache();
     internals.clusterName = health.cluster_name;
-  } catch {}
+  } catch (err) {
+    console.log('ERROR - fetching ES health', err);
+  }
 
   try {
     const { body: info } = await Db.nodesStats({
@@ -2435,7 +2437,9 @@ async function main () {
     });
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
-  } catch {}
+  } catch (err) {
+    console.log('ERROR - fetching ES nodes stats', err);
+  }
 
   setFieldLocals();
   setInterval(setFieldLocals, 2 * 60 * 1000);

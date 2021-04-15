@@ -281,7 +281,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             text: 'User created succesfully'
           }));
         } else {
-          console.log('ERROR - add user', err, info);
+          console.log('ERROR - POST /api/user', err, info);
           return res.serverError(403, err);
         }
       });
@@ -435,7 +435,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   uModule.getUserCSS = (req, res) => {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
-        console.log('ERROR - user.css -', msg);
+        console.log('ERROR - GET /api/user/css', msg);
         return res.status(404).end();
       }
 
@@ -1113,7 +1113,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Updated cron query successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - POST - /api/user/cron/${key}`, err);
+      console.log(`ERROR - POST /api/user/cron/${key}`, err);
       return res.serverError(403, 'Cron update failed');
     }
   };

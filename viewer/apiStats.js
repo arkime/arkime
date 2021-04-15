@@ -203,7 +203,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - /api/stats', query, err);
+      console.log('ERROR - GET /api/stats', query, err);
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
@@ -276,7 +276,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.searchScroll('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
       if (err || result.error) {
-        console.log('ERROR - dstats', query, err || result.error);
+        console.log('ERROR - GET /api/dstats', query, err || result.error);
       }
 
       let i, ilen;
@@ -690,31 +690,22 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
-        Db.healthCache()
-          .then(async (result) => {
-            if (result.relocating_shards === 0) {
-              clearInterval(shrinkCheckInterval);
-              try {
-                await Db.shrinkIndex(req.params.index, shrinkParams);
-              } catch (err) {
-                console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
-              }
+        Db.healthCache().then(async (result) => {
+          if (result.relocating_shards === 0) {
+            clearInterval(shrinkCheckInterval);
+            try {
+              await Db.shrinkIndex(req.params.index, shrinkParams);
 
-              try {
-                const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
-                if (indexResult[0] && indexResult[1] &&
-                  indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                  try {
-                    await Db.deleteIndex([req.params.index], {});
-                  } catch (err) {
-                    console.log(`Error deleting ${req.params.index} index after shrinking`);
-                  }
-                }
-              } catch (err) {
-                console.log(`ERROR - fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+              if (indexResult[0] && indexResult[1] &&
+                indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
+                await Db.deleteIndex([req.params.index], {});
               }
+            } catch (err) {
+              console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
             }
-          });
+          }
+        });
       }, 10000);
 
       // always return right away, shrinking might take a while
@@ -809,7 +800,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         data: rtasks
       });
     } catch (err) {
-      console.log('ERROR - /api/estask', err);
+      console.log('ERROR - GET /api/estask', err);
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -868,7 +859,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - /api/estasks/${cancelId}/cancelwith`, err);
+      console.log(`ERROR - POST /api/estasks/${cancelId}/cancelwith`, err);
       return res.serverError(500, err.toString());
     }
   };
@@ -1342,16 +1333,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      try {
-        await Db.putClusterSettings(query);
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Successfully excluded node'
-        }));
-      } catch (err) {
-        console.log(`Error - POST /api/esshards/${req.params.type}/${req.params.value}/exclude`, err);
-        return res.serverError(500, 'Node exclusion failed');
-      }
+      await Db.putClusterSettings(query);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Successfully excluded node'
+      }));
     } catch (err) {
       console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/exclude`, err);
       return res.serverError(500, 'Node exclusion failed');
@@ -1396,16 +1382,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      try {
-        await Db.putClusterSettings(query);
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Successfully included node'
-        }));
-      } catch (err) {
-        console.log(`Error - POST /api/esshards/${req.params.type}/${req.params.value}/include`, err);
-        return res.serverError(500, 'Node inclusion failed');
-      }
+      await Db.putClusterSettings(query);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Successfully included node'
+      }));
     } catch (err) {
       console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/include`, err);
       return res.serverError(500, 'Node inclusion failed');
@@ -1542,7 +1523,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsFiltered: results.total
       });
     }).catch((err) => {
-      console.log('ERROR - /api/parliament', err);
+      console.log('ERROR - GET /api/parliament', err);
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
