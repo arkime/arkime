@@ -79,10 +79,10 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: exclude no token");
 
     $result = viewerPostToken("/esshard/exclude/ip/1.2.3.4", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Excluded"}'), "esshard: exclude ip");
+    eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude ip");
 
     $result = viewerPostToken("/api/esshards/name/thenode/exclude", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Excluded"}'), "esshard: exclude node");
+    eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude node");
 
     $result = viewerPostToken("/esshard/exclude/foobar/1.2.3.4", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown exclude type"}'), "esshard: exclude foobar");
@@ -98,10 +98,10 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: include no token");
 
     $result = viewerPostToken("/api/esshards/ip/1.2.3.4/include", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Included"}'), "esshard: include ip");
+    eq_or_diff($result, from_json('{"success": true, "text": "Successfully included node"}'), "esshard: include ip");
 
     $result = viewerPostToken("/api/esshards/name/thenode/include", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Included"}'), "esshard: include node");
+    eq_or_diff($result, from_json('{"success": true, "text": "Successfully included node"}'), "esshard: include node");
 
     $result = viewerPostToken("/esshard/include/foobar/1.2.3.4", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Unknown include type"}'), "esshard: include foodbar");

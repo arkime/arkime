@@ -46,10 +46,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  sModule.getESHealth = (req, res) => {
-    Db.healthCache((err, health) => {
-      res.send(health);
-    });
+  sModule.getESHealth = async (req, res) => {
+    try {
+      const health = await Db.healthCache();
+      return res.send(health);
+    } catch (err) {
+      return res.serverError(500, err.toString());
+    }
   };
 
   // STATS APIS ---------------------------------------------------------------
@@ -200,7 +203,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - /api/stats', query, err);
+      console.log('ERROR - GET /api/stats', query, err);
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
@@ -273,7 +276,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.searchScroll('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
       if (err || result.error) {
-        console.log('ERROR - dstats', query, err || result.error);
+        console.log('ERROR - GET /api/dstats', query, err || result.error);
       }
 
       let i, ilen;
@@ -341,19 +344,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} data - List of ES clusters with their corresponding stats.
    * @returns {number} recordsTotal - The total number of ES clusters.
    * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
-   * @returns {ESHealth} health - The Elasticsearch cluster health status and info.
    */
   sModule.getESStats = (req, res) => {
     let stats = [];
-    let r;
 
-    Promise.all([Db.nodesStatsCache(),
+    Promise.all([
+      Db.nodesStatsCache(),
       Db.nodesInfoCache(),
       Db.masterCache(),
-      Db.healthCachePromise(),
       Db.allocation(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([nodesStats, nodesInfo, master, health, allocation, settings]) => {
+    ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
       let ipExcludes = [];
@@ -473,23 +474,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       nodesStats.nodes.timestamp = new Date().getTime();
       internals.previousNodesStats.push(nodesStats.nodes);
 
-      r = {
-        health: health,
-        recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length,
+      res.send({
+        data: stats,
         recordsFiltered: stats.length,
-        data: stats
-      };
-
-      res.send(r);
+        recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length
+      });
     }).catch((err) => {
-      console.log('ERROR -  /api/esstats', err);
-      r = {
-        health: Db.healthCache(),
+      console.log('ERROR - GET /api/esstats', err);
+      return res.send({
+        data: [],
         recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
-      };
-      return res.send(r);
+        recordsFiltered: 0
+      });
     });
   };
 
@@ -666,7 +662,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.shrinkESIndex = (req, res) => {
+  sModule.shrinkESIndex = async (req, res) => {
     if (!req.body || !req.body.target) {
       return res.serverError(403, 'Missing target');
     }
@@ -679,14 +675,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     };
 
-    Db.setIndexSettings(req.params.index, settingsParams, (err, results) => {
-      if (err) {
-        return res.send(JSON.stringify({
-          success: false,
-          text: err.message || 'Error shrinking index'
-        }));
-      }
-
+    try {
+      await Db.setIndexSettings(req.params.index, settingsParams);
       const shrinkParams = {
         body: {
           settings: {
@@ -700,36 +690,32 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       // wait for no more reloacting shards
       const shrinkCheckInterval = setInterval(() => {
-        Db.healthCachePromise()
-          .then(async (result) => {
-            if (result.relocating_shards === 0) {
-              clearInterval(shrinkCheckInterval);
-              try {
-                await Db.shrinkIndex(req.params.index, shrinkParams);
-              } catch (err) {
-                console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
-              }
+        Db.healthCache().then(async (result) => {
+          if (result.relocating_shards === 0) {
+            clearInterval(shrinkCheckInterval);
+            try {
+              await Db.shrinkIndex(req.params.index, shrinkParams);
 
-              try {
-                const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
-                if (indexResult[0] && indexResult[1] &&
-                  indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
-                  try {
-                    await Db.deleteIndex([req.params.index], {});
-                  } catch (err) {
-                    console.log(`Error deleting ${req.params.index} index after shrinking`);
-                  }
-                }
-              } catch (err) {
-                console.log(`ERROR - fetching ${req.params.index} and ${req.params.index}-shrink indices after shrinking`);
+              const { body: indexResult } = await Db.indices(`${req.params.index}-shrink,${req.params.index}`);
+              if (indexResult[0] && indexResult[1] &&
+                indexResult[0]['docs.count'] === indexResult[1]['docs.count']) {
+                await Db.deleteIndex([req.params.index], {});
               }
+            } catch (err) {
+              console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
             }
-          });
+          }
+        });
       }, 10000);
 
       // always return right away, shrinking might take a while
       return res.send(JSON.stringify({ success: true }));
-    });
+    } catch (err) {
+      return res.send(JSON.stringify({
+        success: false,
+        text: err
+      }));
+    }
   };
 
   // ES TASK APIS -------------------------------------------------------------
@@ -747,18 +733,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES tasks.
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
-  sModule.getESTasks = (req, res) => {
-    Db.tasks((err, tasks) => {
-      if (err) {
-        console.log('ERROR -  /api/estask', err);
-        return res.send({
-          recordsTotal: 0,
-          recordsFiltered: 0,
-          data: []
-        });
-      }
-
-      tasks = tasks.tasks;
+  sModule.getESTasks = async (req, res) => {
+    try {
+      const { body: { tasks } } = await Db.tasks();
 
       let regex;
       if (req.query.filter !== undefined) {
@@ -822,7 +799,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsFiltered: rtasks.length,
         data: rtasks
       });
-    });
+    } catch (err) {
+      console.log('ERROR - GET /api/estask', err);
+      return res.send({
+        data: [],
+        recordsTotal: 0,
+        recordsFiltered: 0
+      });
+    }
   };
 
   /**
@@ -833,7 +817,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelESTask = (req, res) => {
+  sModule.cancelESTask = async (req, res) => {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
@@ -843,9 +827,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing ID of task to cancel');
     }
 
-    Db.taskCancel(taskId, (err, result) => {
+    try {
+      const { body: result } = await Db.taskCancel(taskId);
       return res.send(JSON.stringify({ success: true, text: result }));
-    });
+    } catch (err) {
+      console.log(`ERROR - POST /api/estasks/${taskId}/cancel`, err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   /**
@@ -871,7 +859,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - /api/estasks/${cancelId}/cancelwith`, err);
+      console.log(`ERROR - POST /api/estasks/${cancelId}/cancelwith`, err);
       return res.serverError(500, err.toString());
     }
   };
@@ -884,10 +872,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelAllESTasks = (req, res) => {
-    Db.taskCancel(undefined, (err, result) => {
+  sModule.cancelAllESTasks = async (req, res) => {
+    try {
+      const { body: result } = await Db.taskCancel();
       return res.send(JSON.stringify({ success: true, text: result }));
-    });
+    } catch (err) {
+      console.log('ERROR - POST /api/estasks/cancelall', err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   // ES ADMIN APIS ------------------------------------------------------------
@@ -903,7 +895,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
       Db.getTemplate('sessions2_template')
-    ]).then(([settings, ilm, template]) => {
+    ]).then(([{ body: settings }, ilm, { body: template }]) => {
       const rsettings = [];
 
       function getValue (key) {
@@ -1027,7 +1019,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.setESAdminSettings = (req, res) => {
+  sModule.setESAdminSettings = async (req, res) => {
     if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
     if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
 
@@ -1052,14 +1044,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query.body.persistent['cluster.routing.allocation.disk.watermark.flood_stage'] = parts[2];
       }
 
-      Db.putClusterSettings(query, (err, result) => {
-        if (err) {
-          console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(query, false, 2));
-          return res.serverError(500, 'Set failed');
-        }
-        return res.send(JSON.stringify({ success: true, text: 'Set' }));
-      });
-      return;
+      try {
+        await Db.putClusterSettings(query);
+        return res.send(JSON.stringify({
+          success: true,
+          text: 'Successfully set ES settings'
+        }));
+      } catch (err) {
+        console.log('ERROR - POST /api/esadmin/set', err);
+        return res.serverError(500, 'Set failed');
+      }
     }
 
     if (req.body.key.startsWith('arkime.ilm')) {
@@ -1101,7 +1095,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions2_template')]).then(([template]) => {
+      Promise.all([Db.getTemplate('sessions2_template')]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
           template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards'] = req.body.value;
@@ -1120,7 +1114,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           return res.serverError(500, 'Unknown field');
         }
         Db.putTemplate('sessions2_template', template[`${internals.prefix}sessions2_template`]);
-        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+        return res.send(JSON.stringify({ success: true, text: 'Successfully set ES settings' }));
       });
       return;
     }
@@ -1128,13 +1122,16 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const clusterQuery = { body: { persistent: {} } };
     clusterQuery.body.persistent[req.body.key] = req.body.value || null;
 
-    Db.putClusterSettings(clusterQuery, (err, result) => {
-      if (err) {
-        console.log('putSettings failed', JSON.stringify(result, false, 2), 'query', JSON.stringify(clusterQuery, false, 2));
-        return res.serverError(500, 'Set failed');
-      }
-      return res.send(JSON.stringify({ success: true, text: 'Set' }));
-    });
+    try {
+      await Db.putClusterSettings(clusterQuery);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Successfully set ES settings'
+      }));
+    } catch (err) {
+      console.log('ERROR - POST /api/esadmin/set', err);
+      return res.serverError(500, 'Set failed');
+    }
   };
 
   /**
@@ -1145,14 +1142,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.rerouteES = (req, res) => {
-    Db.reroute((err) => {
-      if (err) {
-        return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
-      } else {
-        return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
-      }
-    });
+  sModule.rerouteES = async (req, res) => {
+    try {
+      await Db.reroute();
+      return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
+    } catch (err) {
+      return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
+    }
   };
 
   /**
@@ -1192,14 +1188,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.clearCacheES = (req, res) => {
-    Db.clearCache((err, data) => {
-      if (err) {
-        return res.send(JSON.stringify({ success: false, text: 'Cache clear failed' }));
-      } else {
-        return res.send(JSON.stringify({ success: true, text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing` }));
-      }
-    });
+  sModule.clearCacheES = async (req, res) => {
+    try {
+      const { body: data } = await Db.clearCache();
+      return res.send(JSON.stringify({
+        success: true,
+        text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`
+      }));
+    } catch (err) {
+      console.log('ERROR - POST /api/esadmin/clearcache', err);
+      return res.serverError(500, err.toString());
+    }
   };
 
   // ES SHARD APIS ------------------------------------------------------------
@@ -1225,7 +1224,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
-    ]).then(([shards, settings]) => {
+    ]).then(([{ body: shards }, { body: settings }]) => {
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
         ipExcludes = settings.persistent['cluster.routing.allocation.exclude._ip'].split(',');
@@ -1305,12 +1304,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.excludeESShard = (req, res) => {
+  sModule.excludeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
 
-    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+    try {
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
       let exclude = [];
       let settingName;
 
@@ -1333,11 +1333,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      Db.putClusterSettings(query, (err) => {
-        if (err) { console.log('putSettings', JSON.stringify(err, false, 2), 'query', query); }
-        return res.send(JSON.stringify({ success: true, text: 'Excluded' }));
-      });
-    });
+      await Db.putClusterSettings(query);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Successfully excluded node'
+      }));
+    } catch (err) {
+      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/exclude`, err);
+      return res.serverError(500, 'Node exclusion failed');
+    }
   };
 
   /**
@@ -1348,12 +1352,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.includeESShard = (req, res) => {
+  sModule.includeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
 
-    Db.getClusterSettings({ flatSettings: true }, (err, settings) => {
+    try {
+      const { body: settings } = await Db.getClusterSettings({ flatSettings: true });
       let exclude = [];
       let settingName;
 
@@ -1377,11 +1382,15 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const query = { body: { persistent: {} } };
       query.body.persistent[settingName] = exclude.join(',');
 
-      Db.putClusterSettings(query, (err) => {
-        if (err) { console.log('putSettings', err); }
-        return res.send(JSON.stringify({ success: true, text: 'Included' }));
-      });
-    });
+      await Db.putClusterSettings(query);
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Successfully included node'
+      }));
+    } catch (err) {
+      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/include`, err);
+      return res.serverError(500, 'Node inclusion failed');
+    }
   };
 
   // ES RECOVERY APIS ---------------------------------------------------------
@@ -1398,12 +1407,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of indices.
    * @returns {number} recordsFiltered - The number of indices returned in this result.
    */
-  sModule.getESRecovery = (req, res) => {
+  sModule.getESRecovery = async (req, res) => {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
-    Promise.all([
-      Db.recovery(sortField, req.query.show !== 'all')
-    ]).then(([recoveries]) => {
+    try {
+      const { body: recoveries } = await Db.recovery(sortField, req.query.show !== 'all');
       let regex;
       if (req.query.filter !== undefined) {
         try {
@@ -1437,18 +1445,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       res.send({
-        recordsTotal: recoveries.length,
+        data: result,
         recordsFiltered: result.length,
-        data: result
+        recordsTotal: recoveries.length
       });
-    }).catch((err) => {
-      console.log('ERROR -  /api/esrecovery', err);
+    } catch (err) {
+      console.log('ERROR - GET /api/esrecovery', err);
       return res.send({
+        data: [],
         recordsTotal: 0,
-        recordsFiltered: 0,
-        data: []
+        recordsFiltered: 0
       });
-    });
+    }
   };
 
   // PARLIAMENT APIs ----------------------------------------------------------
@@ -1515,7 +1523,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsFiltered: results.total
       });
     }).catch((err) => {
-      console.log('ERROR - /api/parliament', err);
+      console.log('ERROR - GET /api/parliament', err);
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };

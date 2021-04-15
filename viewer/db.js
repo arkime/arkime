@@ -18,7 +18,6 @@
 
 'use strict';
 
-const ESC = require('elasticsearch');
 const os = require('os');
 const fs = require('fs');
 const async = require('async');
@@ -41,7 +40,7 @@ const internals = {
   q: []
 };
 
-exports.initialize = function (info, cb) {
+exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
   internals.getSessionBySearch = info.getSessionBySearch || false;
@@ -80,16 +79,6 @@ exports.initialize = function (info, cb) {
     }
   }
 
-  internals.elasticSearchClient = new ESC.Client({
-    host: internals.info.host,
-    apiVersion: internals.apiVersion,
-    requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-    keepAlive: true,
-    minSockets: 20,
-    maxSockets: 51,
-    ssl: esSSLOptions
-  });
-
   internals.client7 = new Client({
     node: internals.info.host,
     maxRetries: 2,
@@ -108,21 +97,9 @@ exports.initialize = function (info, cb) {
     internals.usersClient7 = internals.client7;
   }
 
-  internals.elasticSearchClient.info((err, data) => {
-    if (err) {
-      console.log(err, data);
-    }
-    if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
-      console.log('ERROR - ES', data.version.number, 'not supported, ES 7.7.1 or later required.');
-      process.exit();
-    }
-
-    return cb();
-  });
-
   // Replace tag implementation
   if (internals.multiES) {
-    exports.isLocalView = function (node, yesCB, noCB) { return noCB(); };
+    exports.isLocalView = (node, yesCB, noCB) => { return noCB(); };
     internals.prefix = 'MULTIPREFIX_';
   }
 
@@ -130,6 +107,17 @@ exports.initialize = function (info, cb) {
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*');
     setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+  }
+
+  try {
+    const { body: data } = await internals.client7.info();
+    if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
+      console.log(`ERROR - ES ${data.version.number} not supported, ES 7.7.1 or later required.`);
+      process.exit();
+    }
+    return cb();
+  } catch (err) {
+    console.log('ERROR - getting ES client info', err);
   }
 };
 
@@ -301,7 +289,7 @@ exports.indexNow = async (index, type, id, doc) => {
   });
 };
 
-exports.search = function (index, type, query, options, cb) {
+exports.search = async (index, type, query, options, cb) => {
   if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
@@ -314,9 +302,21 @@ exports.search = function (index, type, query, options, cb) {
     rest_total_hits_as_int: true
   };
 
+  let cancelId = null;
+  if (options && options.cancelId) {
+    // use opaqueId option so the task can be cancelled
+    cancelId = { opaqueId: options.cancelId };
+    delete options.cancelId;
+  }
+
   exports.merge(params, options);
 
-  return internals.elasticSearchClient.search(params, cb);
+  try {
+    const { body: results } = await internals.client7.search(params, cancelId);
+    return cb ? cb(null, results) : results;
+  } catch (err) {
+    return cb ? cb(err, {}) : { error: err.toString() };
+  }
 };
 
 exports.cancelByOpaqueId = async (cancelId) => {
@@ -420,14 +420,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
 exports.searchPrimary = function (index, type, query, options, cb) {
   // ALW - FIXME - 6.1+ has removed primary_first :(
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
-
-  if (options && options.cancelId) {
-    // set X-Opaque-Id header on the params so the task can be canceled
-    params.headers = { 'X-Opaque-Id': options.cancelId };
-  }
-
   exports.merge(params, options);
-  delete params.cancelId;
   return exports.searchScroll(index, type, query, params, cb);
 };
 
@@ -523,15 +516,15 @@ exports.getAliasesCache = async (index) => {
   }
 };
 
-exports.health = function (cb) {
-  return internals.elasticSearchClient.info((err, data) => {
-    internals.elasticSearchClient.cluster.health({}, (err, result) => {
-      if (data && result) {
-        result.version = data.version.number;
-      }
-      return cb(err, result);
-    });
-  });
+exports.health = async () => {
+  try {
+    const { body: data } = await internals.client7.info();
+    const { body: result } = await internals.client7.cluster.health({});
+    result.version = data.version.number;
+    return result;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.indices = async (index) => {
@@ -547,81 +540,83 @@ exports.indicesSettings = async (index) => {
   return internals.client7.indices.getSettings({ flatSettings: true, index: fixIndex(index) });
 };
 
-exports.setIndexSettings = (index, options, cb) => {
-  return internals.elasticSearchClient.indices.putSettings(
-    {
+exports.setIndexSettings = async (index, options) => {
+  try {
+    const { body: response } = await internals.client7.indices.putSettings({
       index: index,
       body: options.body,
       timeout: '10m',
       masterTimeout: '10m'
-    },
-    () => {
-      internals.healthCache = {};
-      if (cb) { cb(); }
-    }
-  );
+    });
+    return response;
+  } catch (err) {
+    internals.healthCache = {};
+    throw new Error(err);
+  }
 };
 
-exports.clearCache = function (cb) {
-  return internals.elasticSearchClient.indices.clearCache({}, cb);
+exports.clearCache = async () => {
+  return internals.client7.indices.clearCache({});
 };
 
-exports.shards = function (cb) {
-  return internals.elasticSearchClient.cat.shards({ format: 'json', bytes: 'b', h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm' }, cb);
+exports.shards = async () => {
+  return internals.client7.cat.shards({
+    format: 'json',
+    bytes: 'b',
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm'
+  });
 };
 
-exports.allocation = function (cb) {
-  return internals.elasticSearchClient.cat.allocation({ format: 'json', bytes: 'b' }, cb);
+exports.allocation = async () => {
+  return internals.client7.cat.allocation({ format: 'json', bytes: 'b' });
 };
 
-exports.recovery = function (sortField, activeOnly, cb) {
-  return internals.elasticSearchClient.cat.recovery({ format: 'json', bytes: 'b', s: sortField, active_only: activeOnly }, cb);
+exports.recovery = async (sortField, activeOnly) => {
+  return internals.client7.cat.recovery({
+    format: 'json',
+    bytes: 'b',
+    s: sortField,
+    active_only: activeOnly
+  });
 };
 
-exports.master = function (cb) {
-  return internals.elasticSearchClient.cat.master({ format: 'json' }, cb);
+exports.master = async () => {
+  return internals.client7.cat.master({ format: 'json' });
 };
 
-exports.getClusterSettings = function (options, cb) {
-  return internals.elasticSearchClient.cluster.getSettings(options, cb);
+exports.getClusterSettings = async (options) => {
+  return internals.client7.cluster.getSettings(options);
 };
 
-exports.putClusterSettings = function (options, cb) {
+exports.putClusterSettings = async (options) => {
   options.timeout = '10m';
   options.masterTimeout = '10m';
-  return internals.elasticSearchClient.cluster.putSettings(options, cb);
+  return internals.client7.cluster.putSettings(options);
 };
 
-exports.tasks = function (cb) {
-  return internals.elasticSearchClient.tasks.list({ detailed: true, group_by: 'parents' }, cb);
+exports.tasks = async () => {
+  return internals.client7.tasks.list({ detailed: true, group_by: 'parents' });
 };
 
-exports.taskCancel = function (taskId, cb) {
-  const params = {};
-  if (taskId) { params.taskId = taskId; }
-  return internals.elasticSearchClient.tasks.cancel(params, cb);
+exports.taskCancel = async (taskId) => {
+  return internals.client7.tasks.cancel(taskId ? { taskId: taskId } : {});
 };
 
-exports.nodesStats = function (options, cb) {
-  return internals.elasticSearchClient.nodes.stats(options, cb);
+exports.nodesStats = async (options) => {
+  return internals.client7.nodes.stats(options);
 };
 
-exports.nodesInfo = function (options, cb) {
-  return internals.elasticSearchClient.nodes.info(options, cb);
+exports.nodesInfo = async (options) => {
+  return internals.client7.nodes.info(options);
 };
 
-exports.update = function (index, type, id, doc, options, cb) {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
-
+exports.update = async (index, type, id, doc, options) => {
   const params = { index: fixIndex(index), body: doc, id: id, timeout: '10m' };
   exports.merge(params, options);
-  return internals.elasticSearchClient.update(params, cb);
+  return internals.client7.update(params);
 };
 
-exports.updateSession = function (index, id, doc, cb) {
+exports.updateSession = async (index, id, doc, cb) => {
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -630,32 +625,31 @@ exports.updateSession = function (index, id, doc, cb) {
     timeout: '10m'
   };
 
-  internals.elasticSearchClient.update(params, (err, data) => {
-    // Did it fail with FORBIDDEN msg?
-    if (err && err.message && err.message.match('FORBIDDEN')) {
-      // Try clearing the index.blocks.write
-      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } }, (err) => {
-        // Try doing the update again
-        internals.elasticSearchClient.update(params, (err, retryData) => {
-          return cb(err, retryData);
-        });
-      });
-      return;
+  try {
+    const { body: data } = await internals.client7.update(params);
+    return cb(null, data);
+  } catch (err) {
+    if (err.statusCode !== 403) { return cb(err, {}); }
+    try { // try clearing the index.blocks.write if we got a forbidden response
+      exports.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
+      const { body: retryData } = await internals.client7.update(params);
+      return cb(null, retryData);
+    } catch (err) {
+      return cb(err, {});
     }
-    return cb(err, data);
-  });
+  }
 };
 
-exports.close = function () {
-  return internals.elasticSearchClient.close();
+exports.close = async () => {
+  return internals.client7.close();
 };
 
-exports.reroute = function (cb) {
-  return internals.elasticSearchClient.cluster.reroute({
+exports.reroute = async () => {
+  return internals.client7.cluster.reroute({
     timeout: '10m',
     masterTimeout: '10m',
     retryFailed: true
-  }, cb);
+  });
 };
 
 exports.flush = async (index) => {
@@ -774,24 +768,30 @@ exports.flushCache = function () {
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
 };
+
 // search against user index, promise only
-exports.searchUsers = function (query, cb) {
-  return new Promise((resolve, reject) => {
-    internals.usersClient7.search({ index: internals.usersPrefix + 'users', body: query, rest_total_hits_as_int: true })
-      .then((results) => { resolve(results.body); })
-      .catch((error) => { reject(error); });
-  });
+exports.searchUsers = async (query) => {
+  try {
+    const { body: users } = await internals.usersClient7.search({
+      index: internals.usersPrefix + 'users',
+      body: query,
+      rest_total_hits_as_int: true
+    });
+    return users;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 // Return a user from DB, callback only
-exports.getUser = function (userId, cb) {
+exports.getUser = (userId, cb) => {
   internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: userId }, (err, result) => {
     cb(err, result.body || { found: false });
   });
 };
 
 // Return a user from cache, callback only
-exports.getUserCache = function (userId, cb) {
+exports.getUserCache = (userId, cb) => {
   if (internals.usersCache[userId] && internals.usersCache[userId]._timeStamp > Date.now() - 5000) {
     return cb(null, internals.usersCache[userId]);
   }
@@ -825,17 +825,23 @@ exports.numberOfUsers = async () => {
   }
 };
 
-// Delete user, callback only
-exports.deleteUser = function (userId, cb) {
+// Delete user, promise only
+exports.deleteUser = async (userId) => {
   delete internals.usersCache[userId];
-  internals.usersClient7.delete({ index: internals.usersPrefix + 'users', id: userId, refresh: true }, (err) => {
+  try {
+    await internals.usersClient7.delete({
+      index: internals.usersPrefix + 'users',
+      id: userId,
+      refresh: true
+    });
     delete internals.usersCache[userId]; // Delete again after db says its done refreshing
-    cb(err);
-  });
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 // Set user, callback only
-exports.setUser = function (userId, doc, cb) {
+exports.setUser = (userId, doc, cb) => {
   delete internals.usersCache[userId];
   const createOnly = !!doc._createOnly;
   delete doc._createOnly;
@@ -852,10 +858,15 @@ exports.setUser = function (userId, doc, cb) {
   });
 };
 
-exports.setLastUsed = function (userId, now, cb) {
-  const params = { index: internals.usersPrefix + 'users', body: { doc: { lastUsed: now } }, id: userId, retry_on_conflict: 3 };
+exports.setLastUsed = async (userId, now) => {
+  const params = {
+    index: internals.usersPrefix + 'users',
+    body: { doc: { lastUsed: now } },
+    id: userId,
+    retry_on_conflict: 3
+  };
 
-  return internals.usersClient7.update(params, cb);
+  return internals.usersClient7.update(params);
 };
 
 function twoDigitString (value) {
@@ -1004,100 +1015,78 @@ exports.molochNodeStatsCache = function (nodeName, cb) {
   return exports.molochNodeStats(nodeName, cb);
 };
 
-exports.healthCache = function (cb) {
-  if (!cb) {
+exports.healthCache = async () => {
+  if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
     return internals.healthCache;
   }
 
-  if (internals.healthCache._timeStamp !== undefined && internals.healthCache._timeStamp > Date.now() - 10000) {
-    return cb(null, internals.healthCache);
-  }
-
-  return exports.health((err, health) => {
-    if (err) {
-      // Even if an error, if we have a cache use it
-      if (internals.healthCache._timeStamp !== undefined) {
-        return cb(null, internals.healthCache);
-      }
-      return cb(err, null);
-    }
-
-    internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
-      if (err) {
-        return cb(null, health);
-      }
+  try {
+    const health = await exports.health();
+    try {
+      const { body: doc } = await internals.client7.indices.getTemplate({
+        name: fixIndex('sessions2_template'), filter_path: '**._meta'
+      });
       health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
-      cb(null, health);
-    });
-  });
+      return health;
+    } catch (err) {
+      return health;
+    }
+  } catch (err) {
+    // Even if an error, if we have a cache use it
+    if (internals.healthCache._timeStamp !== undefined) {
+      return internals.healthCache;
+    }
+    throw new Error(err);
+  }
 };
 
-exports.healthCachePromise = function () {
-  return new Promise(function (resolve, reject) {
-    exports.healthCache((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-};
-
-exports.nodesInfoCache = function () {
+exports.nodesInfoCache = async () => {
   if (internals.nodesInfoCache._timeStamp !== undefined && internals.nodesInfoCache._timeStamp > Date.now() - 30000) {
-    return new Promise((resolve, reject) => { resolve(internals.nodesInfoCache); });
+    return internals.nodesInfoCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.nodesInfo((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.nodesInfoCache = data;
-        internals.nodesInfoCache._timeStamp = Date.now();
-        resolve(data);
-      }
-    });
-  });
+  try {
+    const { body: data } = await exports.nodesInfo();
+    internals.nodesInfoCache = data;
+    internals.nodesInfoCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
-exports.masterCache = function () {
+exports.masterCache = async () => {
   if (internals.masterCache._timeStamp !== undefined && internals.masterCache._timeStamp > Date.now() - 60000) {
-    return new Promise((resolve, reject) => { resolve(internals.masterCache); });
+    return internals.masterCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.master((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.masterCache = data;
-        internals.masterCache._timeStamp = Date.now();
-        resolve(data);
-      }
-    });
-  });
+  try {
+    const { body: data } = await exports.master();
+    internals.masterCache = data;
+    internals.masterCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
-exports.nodesStatsCache = function () {
+exports.nodesStatsCache = async () => {
   if (internals.nodesStatsCache._timeStamp !== undefined && internals.nodesStatsCache._timeStamp > Date.now() - 2500) {
-    return new Promise((resolve, reject) => { resolve(internals.nodesStatsCache); });
+    return internals.nodesStatsCache;
   }
 
-  return new Promise((resolve, reject) => {
-    exports.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        internals.nodesStatsCache = data;
-        internals.nodesStatsCache._timeStamp = Date.now();
-        resolve(data);
-      }
+  try {
+    const { body: data } = await exports.nodesStats({
+      metric: 'jvm,process,fs,os,indices,thread_pool'
     });
-  });
+    internals.nodesStatsCache = data;
+    internals.nodesStatsCache._timeStamp = Date.now();
+    return data;
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 exports.indicesCache = async () => {
@@ -1245,10 +1234,6 @@ exports.numberOfDocuments = async (index, options) => {
   }
 };
 
-exports.updateFileSize = function (item, filesize) {
-  exports.update('files', 'file', item.id, { doc: { filesize: filesize } });
-};
-
 exports.checkVersion = async function (minVersion, checkUsers) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
@@ -1266,11 +1251,12 @@ exports.checkVersion = async function (minVersion, checkUsers) {
     }
   });
 
-  internals.elasticSearchClient.indices.getTemplate({ name: fixIndex('sessions2_template'), filter_path: '**._meta' }, (err, doc) => {
-    if (err) {
-      console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
-      process.exit(0);
-    }
+  try {
+    const { body: doc } = await internals.client7.indices.getTemplate({
+      name: fixIndex('sessions2_template'),
+      filter_path: '**._meta'
+    });
+
     try {
       const molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
 
@@ -1285,7 +1271,10 @@ exports.checkVersion = async function (minVersion, checkUsers) {
       console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
       process.exit(0);
     }
-  });
+  } catch (err) {
+    console.log("ERROR - Couldn't retrieve database version, is ES running?  Have you run ./db.pl host:port init?", err);
+    process.exit(0);
+  }
 
   if (checkUsers) {
     const count = await exports.numberOfUsers();
@@ -1473,10 +1462,10 @@ exports.setILMPolicy = async (ilmName, policy) => {
   }
 };
 
-exports.getTemplate = function (templateName) {
-  return internals.elasticSearchClient.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
+exports.getTemplate = async (templateName) => {
+  return internals.client7.indices.getTemplate({ name: fixIndex(templateName), flat_settings: true });
 };
 
-exports.putTemplate = function (templateName, body) {
-  return internals.elasticSearchClient.indices.putTemplate({ name: fixIndex(templateName), body: body });
+exports.putTemplate = async (templateName, body) => {
+  return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body: body });
 };

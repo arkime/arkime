@@ -281,7 +281,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             text: 'User created succesfully'
           }));
         } else {
-          console.log('ERROR - add user', err, info);
+          console.log('ERROR - POST /api/user', err, info);
           return res.serverError(403, err);
         }
       });
@@ -296,19 +296,23 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUser = (req, res) => {
+  uModule.deleteUser = async (req, res) => {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
       return res.serverError(403, 'Can not delete yourself');
     }
 
-    Db.deleteUser(userId, (err, data) => {
-      setTimeout(() => {
-        res.send(JSON.stringify({
-          success: true, text: 'User deleted successfully'
-        }));
-      }, 200);
-    });
+    try {
+      await Db.deleteUser(userId);
+      res.send(JSON.stringify({
+        success: true, text: 'User deleted successfully'
+      }));
+    } catch (err) {
+      console.log(`ERROR - DELETE /api/user/${userId}`, err);
+      res.send(JSON.stringify({
+        success: false, text: 'User not deleted'
+      }));
+    }
   };
 
   /**
@@ -431,7 +435,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   uModule.getUserCSS = (req, res) => {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
-        console.log('ERROR - user.css -', msg);
+        console.log('ERROR - GET /api/user/css', msg);
         return res.status(404).end();
       }
 
@@ -551,7 +555,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         data: results.results
       });
     }).catch((err) => {
-      console.log('/api/users failed', err);
+      console.log('ERROR - POST /api/users', err);
       return res.send({
         recordsTotal: 0, recordsFiltered: 0, data: []
       });
@@ -1100,25 +1104,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     try {
       await Db.get('queries', 'query', key);
+      await Db.update('queries', 'query', key, doc, { refresh: true });
 
-      Db.update('queries', 'query', key, doc, { refresh: true }, (err, data) => {
-        if (err) {
-          console.log(`ERROR - POST /api/user/cron/${key}`, err, doc, data);
-          return res.serverError(500, 'Cron query update failed');
-        }
+      if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
 
-        if (Config.get('cronQueries', false)) {
-          internals.processCronQueries();
-        }
-
-        return res.send(JSON.stringify({
-          success: true,
-          text: 'Updated cron query successfully'
-        }));
-      });
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Updated cron query successfully'
+      }));
     } catch (err) {
-      console.log(`ERROR - POST - /api/user/cron/${key}`, err);
-      return res.serverError(403, 'Unknown query');
+      console.log(`ERROR - POST /api/user/cron/${key}`, err);
+      return res.serverError(403, 'Cron update failed');
     }
   };
 

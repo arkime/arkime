@@ -671,7 +671,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
    * @returns {Hunt} hunt - The newly created hunt object.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  hModule.createHunt = (req, res) => {
+  hModule.createHunt = async (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
     if (!req.body.name) { return res.serverError(403, 'Missing hunt name'); }
@@ -758,16 +758,15 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
     const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
 
-    ViewerUtils.validateUserIds(reqUsers).then((response) => {
-      hunt.users = response.validUsers;
-
+    try {
+      const users = await ViewerUtils.validateUserIds(reqUsers);
+      hunt.users = users.validUsers;
       // dedupe the array of users
       hunt.users = [...new Set(hunt.users)];
-
-      return doneCb(hunt, response.invalidUsers);
-    }).catch((error) => {
-      res.serverError(500, error);
-    });
+      return doneCb(hunt, users.invalidUsers);
+    } catch (err) {
+      return res.serverError(500, err);
+    }
   };
 
   /**
@@ -926,15 +925,16 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
       const reqUsers = ViewerUtils.commaStringToArray(req.body.users);
 
-      ViewerUtils.validateUserIds(reqUsers).then(async (response) => {
-        if (!response.validUsers.length) {
+      try {
+        const users = await ViewerUtils.validateUserIds(reqUsers);
+        if (!users.validUsers.length) {
           return res.serverError(404, 'Unable to validate user IDs provided');
         }
 
         if (!hunt.users) {
-          hunt.users = response.validUsers;
+          hunt.users = users.validUsers;
         } else {
-          hunt.users = hunt.users.concat(response.validUsers);
+          hunt.users = hunt.users.concat(users.validUsers);
         }
 
         // dedupe the array of users
@@ -945,15 +945,15 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           res.send(JSON.stringify({
             success: true,
             users: hunt.users,
-            invalidUsers: response.invalidUsers
+            invalidUsers: users.invalidUsers
           }));
         } catch (err) {
           console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
           return res.serverError(500, 'Unable to add user(s)');
         }
-      }).catch((error) => {
-        res.serverError(500, error);
-      });
+      } catch (err) {
+        return res.serverError(500, err);
+      }
     } catch (err) {
       console.log(`ERROR - POST /api/hunt/${req.params.id}/users`, err);
       return res.serverError(500, 'Unable to add user(s)');

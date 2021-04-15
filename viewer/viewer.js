@@ -888,11 +888,13 @@ function userCleanup (suser) {
   // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
   if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
     suser.lastUsed = now;
-    Db.setLastUsed(suser.userId, now, function (err, info) {
-      if (Config.debug && err) {
-        console.log('DEBUG - user lastUsed update error', err, info);
+    try {
+      Db.setLastUsed(suser.userId, now);
+    } catch (err) {
+      if (Config.debug) {
+        console.log('DEBUG - user lastUsed update error', err);
       }
-    });
+    }
   }
 }
 
@@ -2189,7 +2191,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
           return setImmediate(whilstCb, 'DONE');
         } else {
           const doc = { doc: { count: (query.count || 0) + count } };
-          Db.update('queries', 'query', options.qid, doc, { refresh: true }, function () {});
+          Db.update('queries', 'query', options.qid, doc, { refresh: true });
         }
 
         query = {
@@ -2374,13 +2376,10 @@ internals.processCronQueries = () => {
                 }
               };
 
-              function continueProcess () {
-                Db.update('queries', 'query', qid, doc, { refresh: true }, function () {
-                  // If there is more time to catch up on, repeat the loop, although other queries
-                  // will get processed first to be fair
-                  if (lpValue !== endTime) { repeat = true; }
-                  return forQueriesCb();
-                });
+              async function continueProcess () {
+                await Db.update('queries', 'query', qid, doc, { refresh: true });
+                if (lpValue !== endTime) { repeat = true; }
+                return forQueriesCb();
               }
 
               // issue alert via notifier if the count has changed and it has been at least 10 minutes
@@ -2418,20 +2417,29 @@ internals.processCronQueries = () => {
 // ============================================================================
 // MAIN
 // ============================================================================
-function main () {
+async function main () {
   if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
     console.log('WARNING - ./vueapp/dist/index.html missing - The viewer app must be run from inside the viewer directory');
   }
 
   Db.checkVersion(MIN_DB_VERSION, Config.get('passwordSecret') !== undefined);
-  Db.healthCache(function (err, health) {
-    internals.clusterName = health.cluster_name;
-  });
 
-  Db.nodesStats({ metric: 'jvm,process,fs,os,indices,thread_pool' }, function (err, info) {
+  try {
+    const health = await Db.healthCache();
+    internals.clusterName = health.cluster_name;
+  } catch (err) {
+    console.log('ERROR - fetching ES health', err);
+  }
+
+  try {
+    const { body: info } = await Db.nodesStats({
+      metric: 'jvm,process,fs,os,indices,thread_pool'
+    });
     info.nodes.timestamp = new Date().getTime();
     internals.previousNodesStats.push(info.nodes);
-  });
+  } catch (err) {
+    console.log('ERROR - fetching ES nodes stats', err);
+  }
 
   setFieldLocals();
   setInterval(setFieldLocals, 2 * 60 * 1000);
