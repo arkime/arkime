@@ -43,7 +43,7 @@ my ($url) = @_;
     is ($item->{expression}, "(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise", "Test1: expression");
     is ($item->{uiPage}, "sessions", "Test1: uiPage");
     is ($item->{api}, "/sessions.json", "Test1: api");
-    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"), "Test1: query");
+    is ($item->{query}, "molochRegressionUser=historytest1&date=-1&expression=(file=*/pcap/socks-https-example.pcap||file=*/pcap/dns-mx.pcap)&&tags=domainwise", "Test1: query");
     is ($item->{userId}, "historytest1", "Test1: userId");
     is ($item->{recordsReturned}, 4, "Test1: recordsReturned");
     is ($item->{recordsFiltered}, 4, "Test1: recordsFiltered");
