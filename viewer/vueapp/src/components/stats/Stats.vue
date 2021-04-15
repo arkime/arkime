@@ -410,7 +410,8 @@
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :pageSize="pageSize"
-            :user="user">
+            :user="user"
+            @errored="onError">
           </es-tasks>
         </b-tab>
         <b-tab title="ES Shards"

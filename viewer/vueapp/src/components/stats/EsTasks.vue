@@ -161,10 +161,31 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     cancelTask (taskId) {
-      this.$http.post(`api/estasks/${taskId}/cancel`);
+      this.$http.post(`api/estasks/${taskId}/cancel`)
+        .then((response) => {
+          // remove the task from the list
+          for (let i = 0, len = this.stats.length; i < len; i++) {
+            if (this.stats[i].taskId === taskId) {
+              this.stats.splice(i, 1);
+              return;
+            }
+          }
+        }).catch((error) => {
+          this.$emit('errored', error.text || error);
+        });
     },
     cancelTasks () {
-      this.$http.post('api/estasks/cancelall');
+      this.$http.post('api/estasks/cancelall')
+        .then((response) => {
+          // remove cancellable tasks
+          for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
+            if (this.stats[i].cancellable) {
+              this.stats.splice(i, 1);
+            }
+          }
+        }).catch((error) => {
+          this.$emit('errored', error.text || error);
+        });
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

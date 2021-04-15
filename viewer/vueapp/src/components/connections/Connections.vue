@@ -683,24 +683,30 @@ export default {
      *                            canceling the request
      */
     cancelAndLoad: function (runNewQuery) {
+      const clientCancel = () => {
+        if (pendingPromise) {
+          pendingPromise.source.cancel();
+          pendingPromise = null;
+        }
+
+        if (!runNewQuery) {
+          this.loading = false;
+          if (!this.fields.length) {
+            // show a page error if there is no data on the page
+            this.error = 'You canceled the search';
+          }
+          return;
+        }
+
+        this.loadData();
+      };
+
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            if (pendingPromise) {
-              pendingPromise.source.cancel();
-              pendingPromise = null;
-            }
-
-            if (!runNewQuery) {
-              this.loading = false;
-              if (!this.fields.length) {
-                // show a page error if there is no data on the page
-                this.error = 'You canceled the search';
-              }
-              return;
-            }
-
-            this.loadData();
+            clientCancel();
+          }).catch((error) => {
+            clientCancel();
           });
       } else if (runNewQuery) {
         this.loadData();

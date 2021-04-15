@@ -492,7 +492,7 @@
 
       <!-- no results -->
       <moloch-no-results
-        v-if="!error && !loading && !sessions.data.length"
+        v-if="!error && !loading && !(sessions.data && sessions.data.length)"
         class="mt-5 mb-5"
         :records-total="sessions.recordsTotal"
         :view="query.view">
@@ -716,23 +716,30 @@ export default {
      * @param {bool} updateTable  Whether the table needs updating
      */
     cancelAndLoad: function (runNewQuery, updateTable) {
+      const clientCancel = () => {
+        if (pendingPromise) {
+          pendingPromise.source.cancel();
+          pendingPromise = null;
+        }
+
+        if (!runNewQuery) {
+          this.loading = false;
+          if (!this.sessions.data) {
+            // show a page error if there is no data on the page
+            this.error = 'You canceled the search';
+          }
+          return;
+        }
+
+        this.loadData(updateTable);
+      };
+
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            if (pendingPromise) {
-              pendingPromise.source.cancel();
-              pendingPromise = null;
-            }
-
-            if (!runNewQuery) {
-              this.loading = false;
-              if (!this.sessions.data) {
-                // show a page error if there is no data on the page
-                this.error = 'You canceled the search';
-              }
-              return;
-            }
-            this.loadData(updateTable);
+            clientCancel();
+          }).catch((error) => {
+            clientCancel();
           });
       } else if (runNewQuery) {
         this.loadData(updateTable);

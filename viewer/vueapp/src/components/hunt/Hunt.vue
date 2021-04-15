@@ -882,22 +882,30 @@ export default {
      *                            canceling the request
      */
     cancelAndLoad: function (runNewQuery) {
+      const clientCancel = () => {
+        if (pendingPromise) {
+          pendingPromise.source.cancel();
+          pendingPromise = null;
+        }
+
+        if (!runNewQuery) {
+          this.loadingSessions = false;
+          if (!this.sessions.data) {
+            // show a page error if there is no data on the page
+            this.loadingSessionsError = 'You canceled the search';
+          }
+          return;
+        }
+
+        this.loadSessions();
+      };
+
       if (pendingPromise) {
         ConfigService.cancelEsTask(pendingPromise.cancelId)
           .then((response) => {
-            pendingPromise.source.cancel();
-            pendingPromise = null;
-
-            if (!runNewQuery) {
-              this.loadingSessions = false;
-              if (!this.sessions.data) {
-                // show a page error if there is no data on the page
-                this.loadingSessionsError = 'You canceled the search';
-              }
-              return;
-            }
-
-            this.loadSessions();
+            clientCancel();
+          }).catch((error) => {
+            clientCancel();
           });
       } else if (runNewQuery) {
         this.loadSessions();
