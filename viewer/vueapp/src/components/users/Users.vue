@@ -753,15 +753,13 @@ export default {
           this.reloadData();
           // update the current user if they were changed
           if (this.user.userId === user.userId) {
-            // update all the fields
-            for (const field in user) {
-              if (this.user[field] &&
-                user[field] !== undefined) {
-                this.user[field] = user[field];
-              }
-            }
+            const combined = { // last object property overwrites the previous one
+              ...this.user,
+              ...user
+            };
             // time limit is special because it can be undefined
-            this.user.timeLimit = user.timeLimit || undefined;
+            combined.timeLimit = user.timeLimit || undefined;
+            this.$set(this, 'user', combined);
           }
         })
         .catch((error) => {
