@@ -3082,7 +3082,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|reindex)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|reindex|force-sessions2-update)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -3530,6 +3530,21 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esDelete("/${PREFIX}fields", 1);
     fieldsCreate();
     exit 0;
+} elsif ($ARGV[1] eq "force-sessions2-update") {
+    my $nodes = esGet("/_nodes");
+    $main::numberOfNodes = dataNodes($nodes->{nodes});
+    if (int($SHARDS) > $main::numberOfNodes) {
+        die "Can't set shards ($SHARDS) greater then the number of nodes ($main::numberOfNodes)";
+    } elsif ($SHARDS == -1) {
+        $SHARDS = $main::numberOfNodes;
+        if ($SHARDS > 24) {
+            logmsg "Setting # of shards to 24, use --shards for a different number\n";
+            $SHARDS = 24;
+        }
+    }
+    waitFor("SESSIONS2UPDATE", "This will update the sessions2 template and all sessions2 indices");
+    sessions2Update();
+    exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
     my $esversion = dbESVersion();
@@ -3791,7 +3806,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
-    die "This command doesn't work anymore";
+    die "This command doesn't work anymore, use force-sessions2-update";
     exit 0;
 } elsif ($ARGV[1] =~ /^set-?replicas$/) {
     esPost("/_flush/synced", "", 1);
