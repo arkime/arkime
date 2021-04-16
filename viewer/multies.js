@@ -41,7 +41,7 @@ if (esClientKey) {
   }
 }
 
-const clients7 = {};
+const clients = {};
 let nodes = [];
 const clusters = {};
 const clusterList = [];
@@ -337,7 +337,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
-    const { body: user } = await clients7[nodes[0]].get({
+    const { body: user } = await clients[nodes[0]].get({
       index: 'users', type: '_doc', id: req.params.user
     });
     return res.send(user);
@@ -349,7 +349,7 @@ app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
 
 app.post(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
-    const { body: result } = await clients7[nodes[0]].index({
+    const { body: result } = await clients[nodes[0]].index({
       index: 'users', type: '_doc', id: req.params.user, body: req.body, refresh: true
     });
     return res.send(result);
@@ -361,7 +361,7 @@ app.post(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
 
 app.get('/_cat/master', async (req, res) => {
   try {
-    const { body: result } = await clients7[nodes[0]].cat.master({ format: 'json' });
+    const { body: result } = await clients[nodes[0]].cat.master({ format: 'json' });
     return res.send(result);
   } catch (err) {
     console.log('ERROR - GET /_cat/master', err);
@@ -591,7 +591,7 @@ function fixQuery (node, body, doneCb) {
       } else {
         query = { query: { term: { name: qName } } };
       }
-      clients7[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, { body: result }) => {
+      clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, { body: result }) => {
         outstanding--;
         obj.bool = { should: [] };
         result.hits.hits.forEach((file) => {
@@ -826,7 +826,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     };
 
     try {
-      const { body: result } = await clients7[node].update(params);
+      const { body: result } = await clients[node].update(params);
       return res.send(result);
     } catch (err) {
       console.log(`ERROR - /${req.params.index}/${req.params.type}/${req.params.id}/_update`, err);
@@ -895,9 +895,8 @@ nodes.forEach((node) => {
 
   let nodeName = node.split(',')[0];
 
-  // TODO - 127.0.0.1:9200 throws error: "TypeError [ERR_INVALID_URL]: Invalid URL: 127.0.0.1:9200"
-  nodeName = nodeName === '127.0.0.1:9200' ? 'http://localhost:9200' : nodeName;
-  clients7[node] = new Client({
+  nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
+  clients[node] = new Client({
     node: nodeName,
     requestTimeout: 300000,
     maxRetries: 2,
@@ -908,7 +907,7 @@ nodes.forEach((node) => {
 // Now check version numbers
 nodes.forEach(async (node) => {
   try {
-    const { body: data } = await clients7[node].info();
+    const { body: data } = await clients[node].info();
     if (data.version.number.match(/^([012345])/)) {
       console.log('ES', data.version.number, 'is not supported, upgrade to >= 6.8.x:', node);
       process.exit();
@@ -924,9 +923,9 @@ activeESNodes = nodes.slice();
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
-    client.ping({
+    client.ping({}, {
       requestTimeout: 3 * 1000 // ping usually has a 3000ms timeout
-    }, function (error) {
+    }, function (error, { body: response }) {
       resolve({ isActive: !error, node: node });
     });
   });
@@ -935,7 +934,7 @@ function pingESNode (client, node) {
 function enumerateActiveNodes () {
   const pingTasks = [];
   for (let i = 0; i < nodes.length; i++) {
-    pingTasks.push(pingESNode(clients7[nodes[i]], nodes[i]));
+    pingTasks.push(pingESNode(clients[nodes[i]], nodes[i]));
   }
   Promise.all(pingTasks).then(function (values) {
     const activeNodes = [];
