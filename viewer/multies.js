@@ -23,7 +23,7 @@
 const Config = require('./config.js');
 const express = require('express');
 const async = require('async');
-const ESC = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -335,22 +335,38 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
   });
 });
 
-app.get(['/users/user/:user', '/users/_doc/:user'], (req, res) => {
-  clients[nodes[0]].get({ index: 'users', type: '_doc', id: req.params.user }, (err, result) => {
-    res.send(result);
-  });
+app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
+  try {
+    const { body: user } = await clients[nodes[0]].get({
+      index: 'users', type: '_doc', id: req.params.user
+    });
+    return res.send(user);
+  } catch (err) {
+    console.log(`ERROR - GET /users/user/${req.params.user}`, err);
+    return res.send({});
+  }
 });
 
-app.post(['/users/user/:user', '/users/_doc/:user'], (req, res) => {
-  clients[nodes[0]].index({ index: 'users', type: '_doc', id: req.params.user, body: req.body, refresh: true }, (err, result) => {
-    res.send(result);
-  });
+app.post(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
+  try {
+    const { body: result } = await clients[nodes[0]].index({
+      index: 'users', type: '_doc', id: req.params.user, body: req.body, refresh: true
+    });
+    return res.send(result);
+  } catch (err) {
+    console.log(`ERROR - POST /users/user/${req.params.user}`, err);
+    return res.send({});
+  }
 });
 
-app.get('/_cat/master', (req, res) => {
-  clients[nodes[0]].cat.master({ format: 'json' }, (err, result) => {
-    res.send(result);
-  });
+app.get('/_cat/master', async (req, res) => {
+  try {
+    const { body: result } = await clients[nodes[0]].cat.master({ format: 'json' });
+    return res.send(result);
+  } catch (err) {
+    console.log('ERROR - GET /_cat/master', err);
+    return res.send({});
+  }
 });
 
 app.get('/_cat/*', (req, res) => {
@@ -575,7 +591,7 @@ function fixQuery (node, body, doneCb) {
       } else {
         query = { query: { term: { name: qName } } };
       }
-      clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, result) => {
+      clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, { body: result }) => {
         outstanding--;
         obj.bool = { should: [] };
         result.hits.hits.forEach((file) => {
@@ -792,7 +808,7 @@ function msearch (req, res) {
   });
 }
 
-app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, res) {
+app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) => {
   const body = JSON.parse(req.body);
   if (body.cluster && clusters[body.cluster]) {
     const node = clusters[body.cluster];
@@ -809,12 +825,13 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], function (req, re
       timeout: '10m'
     };
 
-    clients[node].update(params, (err, result) => {
-      if (err) {
-        console.log('ERROR - failed to update the document' + ' err:' + err);
-      }
+    try {
+      const { body: result } = await clients[node].update(params);
       return res.send(result);
-    });
+    } catch (err) {
+      console.log(`ERROR - /${req.params.index}/${req.params.type}/${req.params.id}/_update`, err);
+      return res.send({});
+    }
   } else {
     console.log('ERROR - body of the request does not contain cluster field', req.method, req.url, req.body);
     return res.end();
@@ -875,26 +892,29 @@ nodes.forEach((node) => {
   if (node.toLowerCase().includes(',http')) {
     console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
   }
-  clients[node] = new ESC.Client({
-    host: node.split(',')[0],
-    apiVersion: '7.7',
+
+  let nodeName = node.split(',')[0];
+
+  nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
+  clients[node] = new Client({
+    node: nodeName,
     requestTimeout: 300000,
-    keepAlive: true,
+    maxRetries: 2,
     ssl: esSSLOptions
   });
 });
 
 // Now check version numbers
-nodes.forEach((node) => {
-  clients[node].info((err, data) => {
-    if (err) {
-      console.log(err);
-    }
+nodes.forEach(async (node) => {
+  try {
+    const { body: data } = await clients[node].info();
     if (data.version.number.match(/^([012345])/)) {
       console.log('ES', data.version.number, 'is not supported, upgrade to >= 6.8.x:', node);
       process.exit();
     }
-  });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 // list of active nodes
@@ -903,9 +923,9 @@ activeESNodes = nodes.slice();
 // Ping (HEAD /) periodically to maintian a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
-    client.ping({
+    client.ping({}, {
       requestTimeout: 3 * 1000 // ping usually has a 3000ms timeout
-    }, function (error) {
+    }, function (error, { body: response }) {
       resolve({ isActive: !error, node: node });
     });
   });
