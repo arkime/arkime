@@ -678,9 +678,6 @@ export default {
   methods: {
     loadNewView: function () {
       this.viewChanged = true;
-      this.$nextTick(() => {
-        this.loadData(true);
-      });
     },
     loadColumns: function (colConfig) {
       this.tableState = colConfig;
