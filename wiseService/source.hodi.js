@@ -18,7 +18,7 @@
 'use strict';
 
 const WISESource = require('./wiseSource.js');
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 const LRU = require('lru-cache');
 
 class HODISource extends WISESource {
@@ -57,15 +57,18 @@ class HODISource extends WISESource {
       maxAge: 1000 * 60 * +this.api.getConfig('hodi', 'cacheAgeMin', '5')
     });
 
-    this.client = new elasticsearch.Client({
-      host: this.esHost,
-      keepAlive: true,
-      minSockets: 5,
-      maxSockets: 51
-    });
+    try {
+      this.client = new Client({
+        node: this.esHost.startsWith('http') ? this.esHost : `http://${this.esHost}`,
+        requestTimeout: 300000,
+        maxRetries: 2
+      });
+    } catch (err) {
+      console.log('ERROR - creating Elasticsearch client for new HODI source', err);
+    }
 
     ['hodi-domain', 'hodi-ip', 'hodi-md5', 'hodi-email'].forEach((index) => {
-      this.client.indices.exists({ index: index }, (err, exists) => {
+      this.client.indices.exists({ index: index }, (err, { body: exists }) => {
         if (exists) {
           this.client.indices.putSettings({
             index: index,

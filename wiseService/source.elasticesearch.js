@@ -43,7 +43,7 @@ class ElasticsearchSource extends WISESource {
     try {
       let nodeName = this.elasticsearch.split(',')[0];
       nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
-      this.client7 = new Client({
+      this.client = new Client({
         node: nodeName,
         requestTimeout: 300000,
         maxRetries: 2
@@ -85,7 +85,7 @@ class ElasticsearchSource extends WISESource {
     // TODO: Should be option to do search vs get
     // TODO: Should be an option to add more then most recent
 
-    this.client7.search({ index: this.esIndex, body: query }, (err, { body: result }) => {
+    this.client.search({ index: this.esIndex, body: query }, (err, { body: result }) => {
       if (err || result.error || !result.hits || result.hits.hits.length === 0) {
         return cb(null, undefined);
       }
