@@ -16,7 +16,6 @@
     "console-stamp": "^0.2.9",
     "cryptiles": ">=4.1.2",
     "csv": "^5.3.2",
-    "elasticsearch": "^16.7.1",
     "express": "^4.17.1",
     "font-awesome": "^4.7.0",
     "fstream": "^1.0.12",
