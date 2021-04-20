@@ -208,8 +208,7 @@
       <moloch-time
         :timezone="user.settings.timezone"
         @timeChange="timeChange"
-        :hide-interval="hideInterval"
-        :updateTime="updateTime">
+        :hide-interval="hideInterval">
       </moloch-time> <!-- /time inputs -->
 
       <!-- form message -->
@@ -369,7 +368,6 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false,
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
@@ -658,11 +656,6 @@ export default {
           }
         });
       }
-
-      this.updateTime = true;
-      setTimeout(() => {
-        this.updateTime = false;
-      }, 1000);
     },
     /* event functions ------------------------------------------- */
     /**
