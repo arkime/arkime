@@ -11,7 +11,7 @@ shared:
         beta.screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/master"
+        MOLOCH_COPY_BRANCH: "origin/main"
         MOLOCH_FILE_NAME: "master"
         ARKIME_FILE_NAME: "main"
         GIT_SHALLOW_CLONE: false
