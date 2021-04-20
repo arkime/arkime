@@ -117,7 +117,7 @@ exports.initialize = async (info, cb) => {
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting ES client info', err);
+    console.log('ERROR - getting ES client info, is ES running?', err.toString());
   }
 };
 
@@ -315,7 +315,8 @@ exports.search = async (index, type, query, options, cb) => {
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
-    return cb ? cb(err, {}) : { error: err.toString() };
+    if (cb) { return cb(err, null); }
+    throw new Error(err);
   }
 };
 
@@ -512,7 +513,7 @@ exports.getAliasesCache = async (index) => {
     internals.aliasesCache = aliases;
     return aliases;
   } catch (err) {
-    throw new Error(err);
+    console.log('ERROR - fetching aliases', err.toString());
   }
 };
 
@@ -1338,8 +1339,8 @@ exports.sid2Index = function (id) {
   return 'sessions2-' + id.substr(0, id.indexOf('-'));
 };
 
-exports.loadFields = function (cb) {
-  return exports.search('fields', 'field', { size: 1000 }, cb);
+exports.loadFields = async () => {
+  return exports.search('fields', 'field', { size: 1000 });
 };
 
 exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
