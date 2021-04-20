@@ -172,7 +172,7 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.focus.top="field.help">
+              v-b-popover.hover.top="field.help">
             </b-form-input>
             <b-form-textarea
               v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
@@ -182,7 +182,7 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.focus.top="field.help">
+              v-b-popover.hover.top="field.help">
             </b-form-textarea>
           </div>
 

@@ -18,7 +18,7 @@
 'use strict';
 
 const WISESource = require('./wiseSource.js');
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 
 class ElasticsearchSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -40,13 +40,17 @@ class ElasticsearchSource extends WISESource {
 
     this[this.api.funcName(this.type)] = this.sendResult;
 
-    this.client = new elasticsearch.Client({
-      host: this.elasticsearch.split(','),
-      keepAlive: true,
-      minSockets: 5,
-      maxSockets: 51,
-      apiVersion: '7.7'
-    });
+    try {
+      let nodeName = this.elasticsearch.split(',')[0];
+      nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
+      this.client = new Client({
+        node: nodeName,
+        requestTimeout: 300000,
+        maxRetries: 2
+      });
+    } catch (err) {
+      console.log('ERROR - creating Elasticsearch client for new Elasticsearch source', err);
+    }
 
     api.addSource(section, this, [this.type]);
 
@@ -81,7 +85,7 @@ class ElasticsearchSource extends WISESource {
     // TODO: Should be option to do search vs get
     // TODO: Should be an option to add more then most recent
 
-    this.client.search({ index: this.esIndex, body: query }, (err, result) => {
+    this.client.search({ index: this.esIndex, body: query }, (err, { body: result }) => {
       if (err || result.error || !result.hits || result.hits.hits.length === 0) {
         return cb(null, undefined);
       }

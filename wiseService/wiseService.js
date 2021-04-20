@@ -41,7 +41,7 @@ const jsonParser = bp.json();
 const axios = require('axios');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
-const elasticsearch = require('elasticsearch');
+const { Client } = require('@elastic/elasticsearch');
 const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
@@ -208,9 +208,13 @@ function noCacheJson (req, res, next) {
 // Authentication
 // ----------------------------------------------------------------------------
 function getUser (userId, cb) {
-  internals.usersElasticSearch.get({ index: internals.usersPrefix + 'users', type: '_doc', id: userId }, (err, result) => {
-    console.log(err, result);
-    if (err) { return cb(err); }
+  internals.usersElasticSearch.get({
+    index: internals.usersPrefix + 'users', type: '_doc', id: userId
+  }, (err, { body: result }) => {
+    if (err) {
+      console.log(err, result);
+      return cb(err);
+    }
     return cb(null, result._source);
   });
 }
@@ -257,13 +261,10 @@ function setupAuth () {
     internals.usersPrefix = internals.usersPrefix || '';
   }
 
-  internals.usersElasticSearch = new elasticsearch.Client({
-    host: es,
-    apiVersion: '7.4',
-    requestTimeout: 300000,
-    keepAlive: true,
-    minSockets: 5,
-    maxSockets: 6
+  internals.usersElasticSearch = new Client({
+    node: es,
+    maxRetries: 2,
+    requestTimeout: 300000
   });
 
   if (internals.userNameHeader === 'digest') {
