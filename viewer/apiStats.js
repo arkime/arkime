@@ -1051,7 +1051,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           text: 'Successfully set ES settings'
         }));
       } catch (err) {
-        console.log('ERROR - POST /api/esadmin/set', err);
+        console.log('ERROR - POST /api/esadmin/set', util.inspect(err, false, 50));
         return res.serverError(500, 'Set failed');
       }
     }
@@ -1129,7 +1129,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully set ES settings'
       }));
     } catch (err) {
-      console.log('ERROR - POST /api/esadmin/set', err);
+      console.log('ERROR - POST /api/esadmin/set', util.inspect(err, false, 50));
       return res.serverError(500, 'Set failed');
     }
   };
