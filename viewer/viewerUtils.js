@@ -454,37 +454,34 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.loadFields = () => {
-    return new Promise((resolve, reject) => {
-      Db.loadFields((err, data) => {
-        if (err) {
-          reject({ fieldsMap: {}, fieldsArr: [] });
+  vModule.loadFields = async () => {
+    try {
+      let data = await Db.loadFields();
+      data = data.hits.hits;
+
+      // Everything will use dbField2 as dbField
+      for (let i = 0, ilen = data.length; i < ilen; i++) {
+        internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+        data[i]._source.dbField = data[i]._source.dbField2;
+        if (data[i]._source.portField2) {
+          data[i]._source.portField = data[i]._source.portField2;
         } else {
-          data = data.hits.hits;
+          delete data[i]._source.portField;
         }
+        delete data[i]._source.rawField;
+      }
 
-        // Everything will use dbField2 as dbField
-        for (let i = 0, ilen = data.length; i < ilen; i++) {
-          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
-          data[i]._source.dbField = data[i]._source.dbField2;
-          if (data[i]._source.portField2) {
-            data[i]._source.portField = data[i]._source.portField2;
-          } else {
-            delete data[i]._source.portField;
-          }
-          delete data[i]._source.rawField;
-        }
+      Config.loadFields(data);
 
-        Config.loadFields(data);
-
-        resolve({
-          fieldsMap: JSON.stringify(Config.getFieldsMap()),
-          fieldsArr: Config.getFields().sort((a, b) => {
-            return (a.exp > b.exp ? 1 : -1);
-          })
-        });
-      });
-    });
+      return {
+        fieldsMap: JSON.stringify(Config.getFieldsMap()),
+        fieldsArr: Config.getFields().sort((a, b) => {
+          return (a.exp > b.exp ? 1 : -1);
+        })
+      };
+    } catch (err) {
+      return { fieldsMap: {}, fieldsArr: [] };
+    }
   };
 
   vModule.oldDB2newDB = (x) => {
