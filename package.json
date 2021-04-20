@@ -124,6 +124,7 @@
     "terser-webpack-plugin": "^5.1.1",
     "url-loader": "^4.1.1",
     "vue-axios": "^3.2.4",
+    "vue-bootstrap-datetimepicker": "^5.0.1",
     "vue-json-editor": "^1.4.3",
     "vue-json-pretty": "^1.7.1",
     "vue-loader": "^15.9.6",
