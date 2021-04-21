@@ -736,9 +736,11 @@ export default {
       Object.assign(canceledUser, oldUser);
     },
     userHasChanged: function (userId) {
-      const newUser = this.users.data.find(u => u.userId === userId);
-      const oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      const newUser = JSON.parse(JSON.stringify(this.users.data.find(u => u.userId === userId)));
+      const oldUser = JSON.parse(JSON.stringify(this.dbUserList.data.find(u => u.userId === userId)));
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
+      oldUser.lastUsed = undefined;
+      newUser.lastUsed = undefined;
 
       // Iterate over user keys that come from store.
       // The newUser is populated with other values like "expanded" that we don't need to check for
