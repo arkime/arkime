@@ -208,7 +208,8 @@
       <moloch-time
         :timezone="user.settings.timezone"
         @timeChange="timeChange"
-        :hide-interval="hideInterval">
+        :hide-interval="hideInterval"
+        :updateTime="updateTime">
       </moloch-time> <!-- /time inputs -->
 
       <!-- form message -->
@@ -368,6 +369,7 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
+      updateTime: false,
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
     };
@@ -475,13 +477,15 @@ export default {
       });
     },
     changeExpression: function () {
-      this.timeUpdate();
+      this.timeUpdate(true); // update time, this issues search request
     },
     applyParams: function () {
       if (this.$route.query.expression !== this.expression) {
         this.applyExpression();
+        this.timeUpdate(true); // update time, this issues search request
+      } else { // a parameter other than expression has changed
+        this.timeUpdate(false); // don't update time, search req already issued from time component
       }
-      this.timeUpdate();
     },
     exportPCAP: function () {
       this.actionForm = 'export:pcap';
@@ -632,8 +636,11 @@ export default {
      * If just a search was issued:
      * Update the start/stop time in the time component so that the query that is
      * issued has the correct start/stop time (date only sent if -1)
+     * @param {boolean} updateTime - Whether to update the time in the time component
+     * Time component issues search when updateParams is called if
+     * date, startTime, stopTime, interval, or bounding parameters change
      */
-    timeUpdate: function () {
+    timeUpdate: function (updateTime) {
       if (this.$store.state.timeRange === '0' &&
         this.$store.state.time.startTime && this.$store.state.time.stopTime) {
         if (this.user.timeLimit) {
@@ -655,6 +662,13 @@ export default {
             startTime: this.$store.state.time.startTime
           }
         });
+
+        if (updateTime) {
+          this.updateTime = true;
+          this.$nextTick(() => {
+            this.updateTime = false;
+          });
+        }
       }
     },
     /* event functions ------------------------------------------- */

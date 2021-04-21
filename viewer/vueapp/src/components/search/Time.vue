@@ -256,7 +256,8 @@ export default {
   props: [
     'timezone',
     'hideBounding',
-    'hideInterval'
+    'hideInterval',
+    'updateTime'
   ],
   data: function () {
     return {
@@ -342,6 +343,14 @@ export default {
             this.localStartTime = moment(newVal.startTime * 1000);
           }
         }
+      }
+    },
+    updateTime: function (newVal, oldVal) {
+      if (newVal) {
+        // calculate new stop/start time
+        this.updateStartStopTime();
+        // tell the parent the time params have changed
+        this.$emit('timeChange');
       }
     }
   },

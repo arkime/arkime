@@ -1464,7 +1464,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * GET - /api/parliament
    *
    * Returns information all the Arkime clusters configured in your Parliament.
-   * See the parliament definition <a href="https://github.com/arkime/arkime/tree/master/parliament#parliament-definition">here</a> (subject to change).
+   * See the parliament definition <a href="https://github.com/arkime/arkime/tree/main/parliament#parliament-definition">here</a> (subject to change).
    * @name /parliament
    * @returns {array} data - List of fields that describe the cluster stats.
    * @returns {number} recordsTotal - The total number of stats.
