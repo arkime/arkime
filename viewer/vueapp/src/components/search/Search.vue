@@ -477,14 +477,13 @@ export default {
       });
     },
     changeExpression: function () {
-      this.timeUpdate(true); // update time, this issues search request
+      this.timeUpdate();
     },
     applyParams: function () {
       if (this.$route.query.expression !== this.expression) {
         this.applyExpression();
-        this.timeUpdate(true); // update time, this issues search request
-      } else { // a parameter other than expression has changed
-        this.timeUpdate(false); // don't update time, search req already issued from time component
+      } else {
+        this.timeUpdate();
       }
     },
     exportPCAP: function () {
@@ -636,11 +635,10 @@ export default {
      * If just a search was issued:
      * Update the start/stop time in the time component so that the query that is
      * issued has the correct start/stop time (date only sent if -1)
-     * @param {boolean} updateTime - Whether to update the time in the time component
-     * Time component issues search when updateParams is called if
-     * date, startTime, stopTime, interval, or bounding parameters change
      */
-    timeUpdate: function (updateTime) {
+    timeUpdate: function () {
+      let changed = false;
+
       if (this.$store.state.timeRange === '0' &&
         this.$store.state.time.startTime && this.$store.state.time.stopTime) {
         if (this.user.timeLimit) {
@@ -654,6 +652,11 @@ export default {
           }
         }
 
+        if (parseInt(this.$store.state.time.startTime) !== parseInt(this.$route.query.startTime) ||
+          parseInt(this.$store.state.time.stopTime) !== parseInt(this.$route.query.stopTime)) {
+          changed = true;
+        }
+
         this.$router.push({
           query: {
             ...this.$route.query,
@@ -662,14 +665,11 @@ export default {
             startTime: this.$store.state.time.startTime
           }
         });
-
-        if (updateTime) {
-          this.updateTime = true;
-          this.$nextTick(() => {
-            this.updateTime = false;
-          });
-        }
       }
+
+      this.updateTime = !changed ? 'query' : true; // issue a query if the time
+      // hasn't changed, otherwise just update the time in the time component
+      this.$nextTick(() => { this.updateTime = false; });
     },
     /* event functions ------------------------------------------- */
     /**

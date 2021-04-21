@@ -349,8 +349,8 @@ export default {
       if (newVal) {
         // calculate new stop/start time
         this.updateStartStopTime();
-        // tell the parent the time params have changed
-        this.$emit('timeChange');
+        // tell the parent the time params have changed, which will issue a query
+        if (newVal === 'query') { this.$emit('timeChange'); }
       }
     }
   },
