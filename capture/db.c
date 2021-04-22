@@ -409,6 +409,8 @@ LOCAL struct {
     time_t  lastSave;
     char    prefix[100];
     time_t  prefixTime;
+    short   sortedFieldsIndex[MOLOCH_FIELDS_DB_MAX];
+    short   sortedFieldsIndexCnt;
     MOLOCH_LOCK_EXTERN(lock);
 } dbInfo[MOLOCH_MAX_PACKET_THREADS];
 
@@ -437,6 +439,9 @@ if (HEAD.s_count > 0) { \
     BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", certs->alt.s_count); \
 }
 
+int moloch_db_field_sort(const void *a, const void *b) {
+    return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
+}
 
 void moloch_db_save_session(MolochSession_t *session, int final)
 {
@@ -496,6 +501,16 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     const int thread = session->thread;
 
+    /* Rebuild field order, we keep a sort list of fields per thread */
+    if (session->maxFields > dbInfo[thread].sortedFieldsIndexCnt) {
+        for (int i = 0; i < session->maxFields; i++) {
+            dbInfo[thread].sortedFieldsIndex[i] = i;
+        }
+        qsort(&dbInfo[thread].sortedFieldsIndex, session->maxFields, 2, moloch_db_field_sort);
+        dbInfo[thread].sortedFieldsIndexCnt = session->maxFields;
+    }
+
+    /* figure out ES index name per thread, can change every second */
     if (dbInfo[thread].prefixTime != session->lastPacket.tv_sec) {
         dbInfo[thread].prefixTime = session->lastPacket.tv_sec;
 
@@ -794,9 +809,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     BSB_EXPORT_cstr(jbsb, "],");
 
     int inGroupNum = 0;
-    for (pos = 0; pos < session->maxFields; pos++) {
+    for (int sortedFieldsIndexPos = 0; sortedFieldsIndexPos < dbInfo[thread].sortedFieldsIndexCnt; sortedFieldsIndexPos++) {
+        const int pos = dbInfo[thread].sortedFieldsIndex[sortedFieldsIndexPos];
+        if (pos >= session->maxFields || !session->fields[pos])
+            continue;
+
         const int flags = config.fields[pos]->flags;
-        if (!session->fields[pos] || flags & MOLOCH_FIELD_FLAG_DISABLED)
+        if (flags & MOLOCH_FIELD_FLAG_DISABLED)
             continue;
 
         const int freeField = final || ((flags & MOLOCH_FIELD_FLAG_LINKED_SESSIONS) == 0);
