@@ -275,6 +275,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       Db.setUser(req.body.userId, nuser, (err, info) => {
+        console.log('ALWUSER', nuser, err, info);
         if (!err) {
           return res.send(JSON.stringify({
             success: true,
@@ -1001,7 +1002,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let minTimestamp;
     try {
-      const { body: data } = await Db.getMinValue('sessions2-*', 'timestamp');
+      const { body: data } = await Db.getMinValue(['sessions2-*', 'sessions3-*'], 'timestamp');
       minTimestamp = Math.floor(data.aggregations.min.value / 1000);
     } catch (err) {
       minTimestamp = Math.floor(Date.now() / 1000);

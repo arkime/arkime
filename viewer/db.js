@@ -50,13 +50,17 @@ exports.initialize = async (info, cb) => {
 
   internals.info = info;
 
-  if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
+  if (info.prefix === '') {
+    internals.prefix = '';
+  } else if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
     internals.prefix = info.prefix + '_';
   } else {
     internals.prefix = info.prefix || '';
   }
 
-  if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
+  if (info.usersPrefix === '') {
+    internals.usersPrefix = '';
+  } else if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
     internals.usersPrefix = info.usersPrefix + '_';
   } else {
     internals.usersPrefix = info.usersPrefix || internals.prefix;
@@ -103,10 +107,14 @@ exports.initialize = async (info, cb) => {
     internals.prefix = 'MULTIPREFIX_';
   }
 
+  if (internals.debug) {
+    console.log(`prefix:${internals.prefix} usersPrefix:${internals.usersPrefix}`);
+  }
+
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    exports.getAliasesCache('sessions2-*');
-    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+    exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    setInterval(() => { exports.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
   }
 
   try {
@@ -134,7 +142,7 @@ function fixIndex (index) {
       } else {
         return internals.prefix + val;
       }
-    });
+    }).join(',');
   }
 
   // If prefix isn't there, add it
@@ -154,6 +162,7 @@ function fixIndex (index) {
 
   return index;
 }
+exports.fixIndex = fixIndex;
 
 exports.merge = (to, from) => {
   for (const key in from) {
@@ -875,13 +884,14 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-exports.historyIt = async (doc) => {
+exports.historyIt = async function (doc) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
+  console.log('ALWFIX historyId', iname, doc);
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
@@ -1025,9 +1035,9 @@ exports.healthCache = async () => {
     const health = await exports.health();
     try {
       const { body: doc } = await internals.client7.indices.getTemplate({
-        name: fixIndex('sessions2_template'), filter_path: '**._meta'
+        name: fixIndex('sessions3_template'), filter_path: '**._meta'
       });
-      health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
       return health;
@@ -1207,6 +1217,7 @@ exports.getSequenceNumber = async (sName) => {
 exports.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
+    console.log('ALWFIX - MAYBE?');
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     try {
@@ -1254,12 +1265,12 @@ exports.checkVersion = async function (minVersion, checkUsers) {
 
   try {
     const { body: doc } = await internals.client7.indices.getTemplate({
-      name: fixIndex('sessions2_template'),
+      name: fixIndex('sessions3_template'),
       filter_path: '**._meta'
     });
 
     try {
-      const molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      const molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
 
       if (molochDbVersion < minVersion) {
         console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
@@ -1333,10 +1344,19 @@ exports.sid2Id = function (id) {
 
 exports.sid2Index = function (id) {
   const colon = id.indexOf(':');
-  if (colon > 0) {
-    return 'sessions2-' + id.substr(0, colon);
+  const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+  const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+
+  console.log('ALWFIX - Doesnt work right if both exist', s2, s3);
+  if (!internals.aliasesCache) {
+    return s3;
   }
-  return 'sessions2-' + id.substr(0, id.indexOf('-'));
+
+  if (internals.aliasesCache[s2] || internals.aliasesCache[s2 + '-reindex'] || internals.aliasesCache[s2 + '-shrink']) {
+    return s2;
+  }
+
+  return s3;
 };
 
 exports.loadFields = async () => {
@@ -1345,7 +1365,7 @@ exports.loadFields = async () => {
 
 exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
   try {
-    const aliases = await exports.getAliasesCache('sessions2-*');
+    const aliases = await exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1418,7 +1438,7 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
     }
 
     if (indices.length === 0) {
-      return internals.prefix + 'sessions2-*';
+      return fixIndex(['sessions2-*', 'sessions3-*']);
     }
 
     return indices.join();

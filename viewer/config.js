@@ -277,7 +277,7 @@ exports.getFull = function (node, key, defaultValue) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
     value = internals.config[internals.config[node].nodeClass][key];
-  } else if (internals.config.default[key]) {
+  } else if (internals.config.default[key] !== undefined) {
     value = internals.config.default[key];
   } else {
     value = defaultValue;

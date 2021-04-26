@@ -179,8 +179,8 @@ function simpleGather (req, res, bodies, doneCb) {
       });
       pres.on('end', () => {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions2|sessions|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4])"', 'g'), '$1"MULTIPREFIX_$2"');
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
           result = JSON.parse(result);
         } else {
           result = {};
@@ -327,7 +327,22 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
+      if (results[i].MULTIPREFIX_sessions2_template &&
+          results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
+        obj = results[i];
+      }
+    }
+    res.send(obj);
+  });
+});
+
+app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  simpleGather(req, res, null, (err, results) => {
+    // console.log("DEBUG -", JSON.stringify(results, null, 2));
+
+    let obj = results[0];
+    for (let i = 1; i < results.length; i++) {
+      if (results[i].MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
     }

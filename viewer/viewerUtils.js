@@ -251,12 +251,12 @@ module.exports = (Config, Db, molochparser, internals) => {
     vModule.lookupQueryItems(query.query.bool.filter, async (lerr) => {
       if (reqQuery.date === '-1' || // An all query
           Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-        return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
+        return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*'])); // Then we just go against all indices for a slight overhead
       }
 
       const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'));
       if (indices.length > 3000) { // Will url be too long
-        return finalCb(err || lerr, query, 'sessions2-*');
+        return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*']));
       } else {
         return finalCb(err || lerr, query, indices);
       }

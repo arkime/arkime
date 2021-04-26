@@ -458,7 +458,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     unsigned char         *startPtr;
     unsigned char         *dataPtr;
     uint32_t               jsonSize;
-    int                    pos;
     gpointer               ikey;
     char                   ipsrc[INET6_ADDRSTRLEN];
     char                   ipdst[INET6_ADDRSTRLEN];
@@ -490,7 +489,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         jsonSize += 10*session->fileLenArray->len;
     }
 
-    for (pos = 0; pos < session->maxFields; pos++) {
+    for (int pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
         }
@@ -600,9 +599,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (config.autoGenerateId) {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
     } else {
-        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions2-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
+        BSB_EXPORT_sprintf(jbsb, "{\"index\": {\"_index\": \"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
     }
 
     dataPtr = BSB_WORK_PTR(jbsb);
@@ -1943,7 +1942,7 @@ LOCAL void moloch_db_check()
     char               tname[100];
     unsigned char     *data;
 
-    snprintf(tname, sizeof(tname), "%ssessions2_template", config.prefix);
+    snprintf(tname, sizeof(tname), "%ssessions3_template", config.prefix);
 
     key_len = snprintf(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
     data = moloch_http_get(esServer, key, key_len, &data_len);
@@ -2427,7 +2426,7 @@ void moloch_db_init()
 {
     if (config.tests) {
         MOLOCH_LOCK(outputed);
-        fprintf(stderr, "{\"sessions2\": [\n");
+        fprintf(stderr, "{\"sessions3\": [\n");
         fflush(stderr);
         MOLOCH_UNLOCK(outputed);
     }

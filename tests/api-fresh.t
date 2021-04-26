@@ -10,7 +10,7 @@ use strict;
 # Clear out node2
     system("../db/db.pl --prefix tests2 $MolochTest::elasticsearch initnoprompt 2>&1 1>/dev/null");
     esCopy("tests_fields", "tests2_fields");
-
+    sleep(1);
 
 # Make sure no items
     viewerPost2("/flushCache");

@@ -68,7 +68,10 @@ const getExact = {
   '/_nodes/stats/jvm,process,fs,os,indices,thread_pool': 1
 };
 getExact[`/_template/${prefix}sessions2_template`] = 1;
+getExact[`/_template/${prefix}sessions3_template`] = 1;
 getExact[`/${prefix}sessions2-*/_alias`] = 1;
+getExact[`/${prefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
+getExact[`/${prefix}sessions3-*/_alias`] = 1;
 getExact[`/${prefix}stats/_stats`] = 1;
 getExact[`/${prefix}users/_stats`] = 1;
 getExact[`/${prefix}users/_count`] = 1;
@@ -218,6 +221,7 @@ app.get('*', (req, res) => {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
+  } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:${path}`);
     return res.status(400).send('Not authorized for API');
@@ -234,7 +238,7 @@ function validateBulk (req) {
 
   const index = req.body.toString('utf8').match(/{"_index": *"[^"]*"}/g);
   for (const i in index) {
-    if (!index[i].includes('sessions2')) {
+    if (!index[i].includes('sessions2') && !index[i].includes('sessions3')) {
       console.log(`Invalid index ${index[i]} for bulk`);
       return false;
     }

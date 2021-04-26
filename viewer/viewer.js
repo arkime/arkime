@@ -2191,7 +2191,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
       console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
     }
 
-    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.search(['sessions2-*', 'sessions3-*'], 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       async function doNext () {
         count += result.hits.hits.length;
 
@@ -2526,11 +2526,17 @@ processArgs(process.argv);
 // ============================================================================
 // DB
 // ============================================================================
+process.on('unhandledRejection', (reason, p) => {
+  console.dir('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
+  // application specific logging, throwing an error, or other logic here
+});
+
 Db.initialize({
   host: internals.elasticBase,
-  prefix: Config.get('prefix', ''),
+  prefix: Config.get('prefix', 'arkime_'),
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
-  usersPrefix: Config.get('usersPrefix'),
+  // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
+  usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
   nodeName: Config.nodeName(),
   hostName: Config.hostName(),
   esClientKey: Config.get('esClientKey', null),

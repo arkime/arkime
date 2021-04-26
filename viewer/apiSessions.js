@@ -1644,7 +1644,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       Promise.all([
         Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('sessions.json result', util.inspect(sessions, false, 50));
@@ -1770,6 +1770,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const response = { spi: {} };
 
     sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+      console.log('ALW FIX INDICES', indices);
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -1821,7 +1822,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const options = ViewerUtils.addCluster(req.query.cluster);
 
       Promise.all([Db.searchPrimary(indices, 'session', query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('spiview.json result', util.inspect(sessions, false, 50));
@@ -1960,7 +1961,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       Promise.all([
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {}),
         Db.searchPrimary(indices, 'session', query, options)
       ]).then(([total, result]) => {
         if (result.error) { throw result.error; }
@@ -2749,7 +2750,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       console.log('entirePcap query', JSON.stringify(query));
     }
 
-    Db.searchPrimary('sessions2-*', 'session', query, null, (err, data) => {
+    Db.searchPrimary(['sessions2-*', 'sessions3-*'], 'session', query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
         writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
