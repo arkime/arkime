@@ -12,6 +12,9 @@ my ($param) = @_;
     my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8123/unique.txt?$param")->content;
     my $mtxt = $MolochTest::userAgent->get("http://$MolochTest::host:8125/unique.txt?$param")->content;
 
+    $txt =~ s,/[A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $mtxt =~ s,/[A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+
     my @lines = split(/\n/, $txt);
     my @mlines = split(/\n/, $mtxt);
 
@@ -182,15 +185,14 @@ fe80::2d0:9ff:fee3:e8de.0, 1
 ", "ip count", { context => 3 });
 
 #
-my $fpwd = getcwd() . "/pcap";
 $txt = get("date=-1&field=fileand&expression=$files&counts=1");
 eq_or_diff($txt,
-"$fpwd/socks-http-example.pcap, 3
-$fpwd/socks-http-pass.pcap, 3
-$fpwd/socks-https-example.pcap, 3
-$fpwd/socks5-http-302.pcap, 1
-$fpwd/socks5-rdp.pcap, 1
-$fpwd/socks5-reverse.pcap, 1
-$fpwd/socks5-smtp-503.pcap, 1
-$fpwd/v6-http.pcap, 6
+"/DIR/tests/pcap/socks-http-example.pcap, 3
+/DIR/tests/pcap/socks-http-pass.pcap, 3
+/DIR/tests/pcap/socks-https-example.pcap, 3
+/DIR/tests/pcap/socks5-http-302.pcap, 1
+/DIR/tests/pcap/socks5-rdp.pcap, 1
+/DIR/tests/pcap/socks5-reverse.pcap, 1
+/DIR/tests/pcap/socks5-smtp-503.pcap, 1
+/DIR/tests/pcap/v6-http.pcap, 6
 ", "filename counts");
