@@ -71,8 +71,7 @@
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
                   @click="fitTable"
-                  v-b-tooltip.hover
-                  title="Fit the table to the current window size">
+                  v-b-tooltip.hover.right="'Fit the table to the current window size'">
                   <span class="fa fa-arrows-h">
                   </span>
                 </button>
@@ -216,7 +215,10 @@
                 class="moloch-col-header"
                 :style="{'width': header.width > 0 ? `${header.width}px` : '50px'}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
-                <div class="grip">&nbsp;</div>
+                <div class="grip"
+                  v-if="header.dbField !== 'info'">
+                  &nbsp;
+                </div>
                 <!-- non-sortable column -->
                 <span v-if="header.dbField === 'info'"
                   class="cursor-pointer">
@@ -586,14 +588,17 @@ function gripUnclick (e, vueThis) { // update column width
 
     const newWidth = colStartOffset + e.pageX;
     selectedColElem.style.width = `${newWidth}px`;
-    const diff = newWidth - colWidthBeforeResize;
-    table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
 
+    let hasInfo = false;
     for (let i = 0; i < cols.length; i++) { // get width of each col
       const col = cols[i];
-      const colW = Math.max(parseInt(col.style.width.slice(0, -2)), 50); // min is 50px
-      if (vueThis.headers[i]) { // TODO ECR ignore info column unless it is mutated directly?
+      const colW = Math.max(parseInt(col.style.width.slice(0, -2)), 50); // min col width is 50px
+      if (vueThis.headers[i]) {
         const header = vueThis.headers[i];
+        if (header.exp === 'info') { // ignore info col, it resizes to fit the window
+          hasInfo = true;
+          continue;
+        }
         header.width = colW;
         vueThis.colWidths[header.dbField] = colW;
       }
@@ -601,6 +606,15 @@ function gripUnclick (e, vueThis) { // update column width
 
     vueThis.saveColumnWidths();
     vueThis.mapHeadersToFields();
+
+    // update the width of the table. need to do this or else the table
+    // cannot overflow its container
+    if (!hasInfo) { // if there is no info column update the table width
+      // if there is an info column, don't do anything, the info column
+      // resizes to take up the rest of the window
+      const diff = newWidth - colWidthBeforeResize;
+      table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
+    }
 
     selectedGripElem.style.borderLeft = 'unset';
     selectedGripElem.style.left = 'unset';
@@ -670,7 +684,7 @@ export default {
       if (resizeTimeout) { clearTimeout(resizeTimeout); }
       resizeTimeout = setTimeout(() => {
         this.mapHeadersToFields();
-      }, 300);
+      }, 500);
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
@@ -1613,7 +1627,7 @@ export default {
 
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
-      this.calculateInfoColumnWidth(defaultColWidths.info); // TODO ECR send actual width if it's been saved
+      this.calculateInfoColumnWidth(defaultColWidths.info);
       this.toggleStickyHeader();
     },
     /* Opens up to 10 session details in the table */
@@ -1682,7 +1696,9 @@ export default {
 
       for (const col of cols) { // listen for grip dragging
         const grip = col.getElementsByClassName('grip')[0];
-        grip.addEventListener('mousedown', (e) => gripClick(e, col));
+        if (grip) {
+          grip.addEventListener('mousedown', (e) => gripClick(e, col));
+        }
       }
 
       document.addEventListener('mousemove', gripDrag);
@@ -1717,7 +1733,6 @@ export default {
      * @param infoColWidth
      */
     calculateInfoColumnWidth: function (infoColWidth) {
-      // TODO ECR if info column exists and a column has been resized, resize the info column
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
