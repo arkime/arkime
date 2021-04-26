@@ -8,7 +8,6 @@ use Data::Dumper;
 use strict;
 
 my $pwd = "*/pcap";
-my $fpwd = getcwd() . "/pcap";
 
 # bigendian pcap file tests
     my $json = viewerGet("/spiview.json?map=true&date=-1&facets=1&spi=srcIp,dstIp,ipProtocol,fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
@@ -24,7 +23,7 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"192.168.177.160"}]}'), "bigendian srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"10.64.11.49"}]}'), "bigendian dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"icmp"}]}'), "bigendian ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"$fpwd/bigendian.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":1, "key":"/DIR/tests/pcap/bigendian.pcap"}]})), "bigendian fileand");
 
     $djson->{graph}->{xmax} = undef;
     $djson->{graph}->{xmin} = undef;
@@ -65,7 +64,7 @@ my $fpwd = getcwd() . "/pcap";
     eq_or_diff($json->{spi}->{srcIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.185"}]}'), "short srcIp");
     eq_or_diff($json->{spi}->{dstIp}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.249"}]}'), "short dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"tcp"}]}'), "short ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$fpwd/socks-http-example.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}]})), "bigendian fileand");
 
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
@@ -126,7 +125,7 @@ my $fpwd = getcwd() . "/pcap";
             "buckets":[{"doc_count":3, "key":"10.180.156.249"}, {"doc_count":1, "key":"10.0.0.2"}, {"doc_count":1, "key":"10.11.11.11"}, {"doc_count":1, "key":"10.64.11.49"}]}'), "ALL dstIp");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":5, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"$fpwd/socks-http-example.pcap"}, {"doc_count":2, "key":"$fpwd/bt-tcp.pcap"},{"doc_count":1, "key":"$fpwd/bigendian.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}, {"doc_count":2, "key":"/DIR/tests/pcap/bt-tcp.pcap"},{"doc_count":1, "key":"/DIR/tests/pcap/bigendian.pcap"}]})), "bigendian fileand");
 
     my @buckets = sort {$a->{key} cmp $b->{key}} @{$json->{spi}->{tags}->{buckets}};
     $json->{spi}->{tags}->{buckets} = \@buckets;
