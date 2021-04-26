@@ -42,7 +42,9 @@
       @fetchMapData="cancelAndLoad(true)">
     </moloch-visualizations> <!-- /visualizations -->
 
-    <div class="sessions-content ml-2 mr-2">
+    <div class="sessions-content ml-2"
+      id="sessions-content"
+      ref="sessionsContent">
 
       <!-- sticky (opened) sessions -->
       <transition name="leave">
@@ -60,11 +62,14 @@
       <table class="table-striped sessions-table"
         :style="`width:${tableWidth}px`"
         :class="{'sticky-header':stickyHeader}"
+        ref="sessionsTable"
         id="sessionsTable">
-        <thead ref="tableHeader">
+        <thead ref="tableHeader"
+          id="sessions-table-header"
+          style="overflow:scroll">
           <tr ref="draggableColumns">
             <!-- table options -->
-            <th class="ignore-element">
+            <th class="ignore-element" style="width:85px;">
               <!-- table fit button -->
               <div class="fit-btn-container">
                 <button type="button"
@@ -403,10 +408,10 @@
           </tr>
         </thead>
 
-        <tbody class="small">
+        <tbody class="small"
+          id="sessions-table-body">
           <!-- session + detail -->
           <template v-for="(session, index) of sessions.data">
-          <!-- TODO ECR :class="{'no-table-header-overflow':!tableHeaderOverflow}" -->
             <tr :key="session.id"
               class="sessions-scroll-margin"
               :ref="`tableRow${index}`"
@@ -554,7 +559,7 @@ const defaultColWidths = {
   info: 250
 };
 
-/* column resize */
+// column resize variables and functions
 let colResizeInitialized = false;
 let selectedColElem; // store selected column to watch drag and calculate new column width
 let colStartOffset; // store column offset width to calculate new column width
@@ -564,6 +569,8 @@ let table; // store table element to update its width after column resize
 let cols; // store cols to add grip event handlers and save new widths
 let selectedGripElem; // store the grip to style it while resizing column
 
+// fired when a column resize grip is clicked
+// stores values for calculations when the grip is unclicked
 function gripClick (e, col) {
   e.preventDefault();
   e.stopPropagation();
@@ -574,6 +581,8 @@ function gripClick (e, col) {
   selectedGripElem = col.getElementsByClassName('grip')[0];
 };
 
+// fired when the column resize grip is dragged
+// styles the grip to show where it's being dragged
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedColElem && selectedGripElem) {
     const newWidth = colStartOffset + e.pageX;
@@ -582,7 +591,9 @@ function gripDrag (e) { // move the grip where the user moves their cursor
   }
 }
 
-function gripUnclick (e, vueThis) { // update column width
+// fired when a clicked and dragged grip is dropped
+// updates the column and table width and saves the values
+function gripUnclick (e, vueThis) {
   if (selectedColElem && selectedGripElem) {
     vueThis.loading = true;
 
@@ -624,6 +635,22 @@ function gripUnclick (e, vueThis) { // update column width
 
   selectedGripElem = undefined;
   selectedColElem = undefined;
+}
+
+// fired when a scroll event is captured on this page
+// scrolls the table header and body together if the header is sticky
+function docScroll (e, vueThis) {
+  if (!vueThis.stickyHeader) { return; }
+
+  let sibling;
+  if (e.target.id === 'sessions-content') {
+    sibling = vueThis.$refs.tableHeader;
+  } else if (e.target.id === 'sessions-table-header') {
+    sibling = vueThis.$refs.sessionsContent;
+  } else {
+    return;
+  }
+  sibling.scrollLeft = e.target.scrollLeft;
 }
 
 // save a pending promise to be able to cancel it
@@ -668,7 +695,7 @@ export default {
       tableHeaderOverflow: undefined,
       showFitButton: false,
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      tableWidth: window.innerWidth - 20 // account for right and left margins
+      tableWidth: window.innerWidth - 20 // account for margins
     };
   },
   created: function () {
@@ -731,7 +758,7 @@ export default {
       return this.$store.state.views;
     },
     tableWidthStyle () {
-      return { width: `${table.clientWidth}px` };
+      return { width: `${table.clientWidth - 2}px` };
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -758,8 +785,7 @@ export default {
       const target = $(bvEvent.target);
       if (!target) { return; }
       if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'visible');
-      $('thead > tr').css('overflow-x', 'visible');
+      $('thead').css('overflow', 'visible');
     },
     /* when the column header dropdown is hidden, go back to the default scroll
      * behavior so that the table can overflow the window width */
@@ -768,8 +794,7 @@ export default {
       const target = $(bvEvent.target);
       if (!target) { return; }
       if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow-x', 'scroll');
-      $('thead > tr').css('overflow-x', 'scroll');
+      $('thead').css('overflow', 'scroll');
     },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
@@ -1231,7 +1256,7 @@ export default {
     },
     /* Fits the table to the width of the current window size */
     fitTable: function () {
-      const windowWidth = window.innerWidth - 20; // account for right and left margins
+      const windowWidth = window.innerWidth - 20; // account for margins
       const leftoverWidth = windowWidth - this.sumOfColWidths;
       const percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
 
@@ -1245,7 +1270,10 @@ export default {
       this.tableWidth = windowWidth;
       this.showFitButton = false;
 
+      this.$refs.sessionsTable.style.width = `${windowWidth}px`;
+
       this.saveColumnWidths();
+      this.toggleStickyHeader();
     },
     /**
      * Opens the spi graph page in a new browser tab
@@ -1692,7 +1720,7 @@ export default {
       colResizeInitialized = true;
 
       cols = document.getElementsByClassName('moloch-col-header');
-      table = document.getElementById('sessionsTable');
+      table = this.$refs.sessionsTable;
 
       for (const col of cols) { // listen for grip dragging
         const grip = col.getElementsByClassName('grip')[0];
@@ -1704,18 +1732,23 @@ export default {
       document.addEventListener('mousemove', gripDrag);
       const self = this;
       document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+
+      document.addEventListener('scroll', (e) => docScroll(e, self), true);
     },
     destroyColResizable () {
       if (!cols) return;
 
       for (const col of cols) { // remove all grip dragging listeners
         const grip = col.getElementsByClassName('grip')[0];
-        grip.removeEventListener('mousedown', gripClick);
+        if (grip) {
+          grip.removeEventListener('mousedown', gripClick);
+        }
       }
 
       // remove document listeners
       document.removeEventListener('mousemove', gripDrag);
       document.removeEventListener('mouseup', gripUnclick);
+      document.removeEventListener('scroll', docScroll);
 
       cols = undefined;
       table = undefined;
@@ -1736,7 +1769,7 @@ export default {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
-      const windowWidth = window.innerWidth - 20; // account for right and left margins
+      const windowWidth = window.innerWidth - 20; // account for margins
 
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
         const fillWithInfoCol = windowWidth - this.sumOfColWidths;
@@ -1760,39 +1793,39 @@ export default {
     },
     /* Toggles the sticky table header */
     toggleStickyHeader: function () {
-      // TODO ECR add back
-      // const firstTableRow = this.$refs.tableRow0;
-      // if (this.stickyHeader) {
-      //   // calculate the height of the header row
-      //   const height = this.$refs.draggableColumns.clientHeight + 2;
-      //   const windowWidth = window.innerWidth;
-      //   // calculate how much the header row is under or overflowing the window
-      //   const tableHeaderOverflow = windowWidth - this.tableWidth;
-      //   if (tableHeaderOverflow !== 0) { // if it's overflowing the window
-      //     this.tableHeaderOverflow = tableHeaderOverflow;
-      //     // set the right style to the amount of the overflow
-      //     if (tableHeaderOverflow < 0) {
-      //       this.$refs.tableHeader.style.right = `${tableHeaderOverflow}px`;
-      //       this.$refs.draggableColumns.style.right = `${tableHeaderOverflow}px`;
-      //     }
-      //   } else { // otherwise unset it (default = auto, see css)
-      //     this.tableHeaderOverflow = undefined;
-      //     this.$refs.tableHeader.style = undefined;
-      //     this.$refs.draggableColumns.style = undefined;
-      //   }
-      //   if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
-      //     // set the margin top to the height of the header so it renders below it
-      //     firstTableRow[0].style.marginTop = `${height}px`;
-      //   }
-      // } else { // if the header is not sticky
-      //   if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
-      //     // unset the top margin because the table header won't overlay it
-      //     firstTableRow[0].style = undefined;
-      //   }
-      //   // set the overflow to visible so that the dropdowns overflow the header
-      //   $('thead').css('overflow-x', 'visible');
-      //   $('thead > tr').css('overflow-x', 'visible');
-      // }
+      const firstTableRow = this.$refs.tableRow0;
+      if (this.stickyHeader) {
+        // calculate the height of the header row
+        const height = this.$refs.draggableColumns.clientHeight + 6;
+        const windowWidth = window.innerWidth - 20; // account for margins
+        // calculate how much the header row is under or overflowing the window
+        const tableHeaderOverflow = windowWidth - this.tableWidth;
+        if (tableHeaderOverflow !== 0) { // if it's overflowing the window
+          this.tableHeaderOverflow = tableHeaderOverflow;
+          // set the right style to the amount of the overflow
+          if (tableHeaderOverflow < 0) {
+            this.$refs.tableHeader.style.width = `${window.innerWidth}px`;
+            this.$refs.draggableColumns.style.width = `${table.clientWidth}px`;
+          }
+        } else { // otherwise unset it (default = auto, see css)
+          this.tableHeaderOverflow = undefined;
+          this.$refs.tableHeader.style = undefined;
+          this.$refs.draggableColumns.style = undefined;
+        }
+        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
+          // set the margin top to the height of the header so it renders below it
+          firstTableRow[0].style.marginTop = `${height}px`;
+        }
+        // set the overflow to scroll so that the header can scroll horizontally
+        $('thead').css('overflow', 'scroll');
+      } else { // if the header is not sticky
+        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
+          // unset the top margin because the table header won't overlay it
+          firstTableRow[0].style = undefined;
+        }
+        // set the overflow to visible so that the dropdowns overflow the header
+        $('thead').css('overflow', 'visible');
+      }
     },
     /* event handlers ------------------------------------------------------ */
     /**
@@ -1913,6 +1946,10 @@ table.sessions-table thead tr th:first-child {
   padding: 0;
   vertical-align: middle;
 }
+/* remove scrollbar from table header */
+table.sessions-table thead::-webkit-scrollbar {
+  display: none;
+}
 
 /* table hover */
 table.sessions-table tbody tr:not(.session-detail-row):hover,
@@ -1939,7 +1976,35 @@ table.sessions-table tbody tr td.ignore-element {
   white-space: nowrap;
 }
 
-/* TODO ECR sticky table header ----------------------- */
+/* sticky table header ----------------------- */
+table.sessions-table.sticky-header > thead {
+  left: 0;
+  z-index: 3;
+  /* need to unset right because sometimes the header overflows the window */
+  right: auto;
+  position: fixed;
+  margin-top: -20px;
+  padding-top: 24px;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  padding-left: 8px;
+  box-shadow: 0 6px 9px -6px black;
+  background-color: var(--color-background, white);
+}
+table.sessions-table.sticky-header > thead > tr {
+  display: table;
+  /* need x overflow for the table to be able to overflow the window width */
+  overflow-x: scroll;
+  table-layout: fixed;
+}
+table.sessions-table.sticky-header > thead > tr > th {
+  border-top: 1px solid rgb(238, 238, 238);
+}
+/* need this to make sure that the body cells are the correct width */
+table.sessions-table.sticky-header > tbody > tr {
+  display: table;
+  table-layout: fixed;
+}
 
 /* table column headers -------------------- */
 .moloch-col-header {
