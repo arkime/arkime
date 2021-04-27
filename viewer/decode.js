@@ -649,7 +649,7 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
     const line = input.slice(pos, Math.min(pos + 16, input.length));
     if (this.showOffsets) {
       const paddedPos = pos.toString().padStart(8, '0');
-      out += '<span class="sessionln">' + paddedPos + '</span> ';
+      out += '<span class="sessionln">' + paddedPos + ':</span> ';
     }
 
     for (i = 0; i < 16; i++) {
