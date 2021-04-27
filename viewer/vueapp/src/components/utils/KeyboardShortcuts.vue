@@ -76,7 +76,7 @@ export default {
   position: fixed;
   top: 155px;
   width: 465px;
-  z-index: 1;
+  z-index: 9;
   background: var(--color-background, white);
   border: 1px solid var(--color-gray);
   border-left: none;

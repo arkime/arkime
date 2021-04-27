@@ -16,17 +16,18 @@
         <router-link
           :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
           <div id="helpTooltipContainer">
-            <img :src="userLogo"
-              class="arkime-logo"
+            <img
               alt="hoot"
-              v-b-tooltip.hover
-              title="HOOT! Can I help you? Click me to see the help page"
+              :src="userLogo"
               id="tooltipHelp"
+              class="arkime-logo"
+              v-b-tooltip.hover="'HOOT! Can I help you? Click me to see the help page'"
             />
           </div>
         </router-link>
-        <b-tooltip :show="shiftKeyHold"
+        <b-tooltip
           triggers=""
+          :show="shiftKeyHold"
           target="tooltipHelp"
           placement="leftbottom"
           container="helpTooltipContainer">
@@ -233,16 +234,17 @@ export default {
 /* add an H tooltip by the owl but move it down a bit so
    that the links in the navbar are not covered up */
 #helpTooltipContainer > div.tooltip {
-  top: 16px !important;
+  top: 12px !important;
 }
 /* move the arrow up to line up with the owl (since the
    tooltip was moved down) */
 #helpTooltipContainer > div.tooltip > div.arrow {
-  top: 2px !important;
+  top: -2px !important;
 }
 /* make the tooltip smaller */
 #helpTooltipContainer > div.tooltip > div.tooltip-inner {
   padding: 0 0.2rem !important;
+  color: var(--color-tertiary-lighter) !important;
 }
 </style>
 
@@ -319,11 +321,7 @@ li.nav-item.router-link-active > a.nav-link p.shortcut-letter::first-letter {
 }
 /* style the sortcut letter */
 p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-foreground-accent-dark) !important;
-}
-/* color the help shortcut letter in the tooltip */
-.help-shortcut {
-  color: var(--color-foreground-accent-dark);
+  color: var(--color-gray-dark) !important;
 }
 
 /* move the top nav content to the left to accommodate the sticky sessions

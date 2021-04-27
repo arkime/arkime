@@ -218,7 +218,7 @@
               <th v-for="header of headers"
                 :key="header.dbField"
                 class="moloch-col-header"
-                :style="{'width': header.width > 0 ? `${header.width}px` : '50px'}"
+                :style="{'width': header.width > 0 ? `${header.width}px` : '100px'}"
                 :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
                 <div class="grip"
                   v-if="header.dbField !== 'info'">
@@ -241,7 +241,7 @@
                     <template slot="button-content">
                       <span class="fa fa-th-list"
                         v-b-tooltip.hover.left
-                        title="Toggle visible fields">
+                        title="Toggle visible info column fields">
                       </span>
                     </template>
                     <b-dropdown-header>
@@ -597,13 +597,13 @@ function gripUnclick (e, vueThis) {
   if (selectedColElem && selectedGripElem) {
     vueThis.loading = true;
 
-    const newWidth = colStartOffset + e.pageX;
+    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
     selectedColElem.style.width = `${newWidth}px`;
 
     let hasInfo = false;
     for (let i = 0; i < cols.length; i++) { // get width of each col
       const col = cols[i];
-      const colW = Math.max(parseInt(col.style.width.slice(0, -2)), 50); // min col width is 50px
+      const colW = parseInt(col.style.width.slice(0, -2));
       if (vueThis.headers[i]) {
         const header = vueThis.headers[i];
         if (header.exp === 'info') { // ignore info col, it resizes to fit the window
@@ -758,7 +758,7 @@ export default {
       return this.$store.state.views;
     },
     tableWidthStyle () {
-      return { width: `${table.clientWidth - 2}px` };
+      return { width: `${table.clientWidth}px` };
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
