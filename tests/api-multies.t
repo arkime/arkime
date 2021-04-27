@@ -34,7 +34,7 @@ my $json;
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
     is ($json->{count}, 0, "Correct count number of users");
 
-    $json = mesPost("/MULTIPREFIX_sessions3-*/_count?ignore_unavailable=true", "");
+    $json = mesPost("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_count?ignore_unavailable=true", "");
     cmp_ok ($json->{count}, '>=', 80, "Correct count number of sessions");
 
     $json = mesPost("/MULTIPREFIX_stats*/_count?ignore_unavailable=true", "");
@@ -68,9 +68,9 @@ my $json;
     is ($json->{cluster}, "test", "Correct _node status");
 
 # aliases
-    $json = mesGet("/MULTIPREFIX_sessions3-*/_alias");
-    is (exists $json->{"MULTIPREFIX_sessions3-050330"}, 1, "Correct session alias");
-    is (exists $json->{"MULTIPREFIX_sessions3-140113"}, 1, "Correct session alias");
+    $json = mesGet("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_alias");
+    is (exists $json->{"MULTIPREFIX_sessions2-050330"} || exists $json->{"MULTIPREFIX_sessions3-050330"}, 1, "Correct session alias");
+    is (exists $json->{"MULTIPREFIX_sessions2-140113"} || exists $json->{"MULTIPREFIX_sessions3-140113"}, 1, "Correct session alias");
 
 # _search
 
@@ -88,7 +88,12 @@ my $json;
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
 
     $json = mesGet("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-141015", "Correct sessions index name");
+    if ($json->{hits}->{total} == 0) {
+        $json = mesGet("/MULTIPREFIX_sessions2-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
+        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions2-141015", "Correct sessions index name");
+    } else {
+        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-141015", "Correct sessions index name");
+    }
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 
     #print Dumper($json);

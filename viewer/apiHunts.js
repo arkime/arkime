@@ -1014,7 +1014,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     // fetch hunt and session
     Promise.all([
       Db.get('hunts', 'hunt', huntId),
-      Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId))
+      Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId)) // ALWFIX - This should be getSession
     ]).then(([{ body: hunt }, { body: session }]) => {
       if (hunt.error || session.error) {
         res.send({ matched: false });

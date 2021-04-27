@@ -25,8 +25,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 
     viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1", "ids=" . $idQuery->{data}->[0]->{id}, $token);
 
-    esGet("/_refresh");
     esGet("/_flush");
+    esGet("/_refresh");
 
     countTest(1, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==anonymous"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by!=anonymous"));
@@ -39,8 +39,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # scrub expression
     viewerPostToken("/api/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
 
-    esGet("/_refresh");
     esGet("/_flush");
+    esGet("/_refresh");
 
     countTest(3, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==anonymous"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by!=anonymous"));
@@ -53,8 +53,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # delete
     viewerPostToken("/delete?removePcap=true&removeSpi=true&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
 
-    esGet("/_refresh");
     esGet("/_flush");
+    esGet("/_refresh");
 
     countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
@@ -62,3 +62,5 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     unlink("copytest.pcap");
     system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
     viewerPost("/flushCache");
+    esGet("/_flush");
+    esGet("/_refresh");

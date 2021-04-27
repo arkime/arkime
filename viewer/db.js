@@ -777,6 +777,7 @@ exports.flushCache = function () {
   internals.usersCache = {};
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
+  exports.getAliasesCache();
 };
 
 // search against user index, promise only
@@ -891,7 +892,6 @@ exports.historyIt = async function (doc) {
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
-  console.log('ALWFIX historyId', iname, doc);
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
@@ -1346,13 +1346,13 @@ exports.sid2Index = function (id) {
   const colon = id.indexOf(':');
   const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
   const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+  const fs2 = fixIndex(s2);
 
-  console.log('ALWFIX - Doesnt work right if both exist', s2, s3);
   if (!internals.aliasesCache) {
     return s3;
   }
 
-  if (internals.aliasesCache[s2] || internals.aliasesCache[s2 + '-reindex'] || internals.aliasesCache[s2 + '-shrink']) {
+  if (internals.aliasesCache[fs2] || internals.aliasesCache[fs2 + '-reindex'] || internals.aliasesCache[fs2 + '-shrink']) {
     return s2;
   }
 
