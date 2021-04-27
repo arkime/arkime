@@ -54,13 +54,16 @@
     <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
       class="m-1 pt-5">
       <table class="table-bordered table-hover spigraph-table"
-        id="spigraphTable">
+        id="spigraphTable"
+        ref="table">
         <thead>
           <tr>
             <template v-for="(field, index) in fieldList">
               <th v-if="field"
                 :colspan="field.hide ? 1 : 2"
-                :key="index">
+                :key="index"
+                class="col-header">
+                <div class="grip">&nbsp;</div>
                 <span v-if="field">
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
@@ -126,7 +129,8 @@
                       :value="parent.name"
                       :expr="fieldList[index].exp"
                       :parse="true"
-                      :session-btn="true">
+                      :session-btn="true"
+                      :pull-left="true">
                     </moloch-session-field>
                   </td>
                   <td :key="`${index}-${parent.name}-1`"
@@ -182,7 +186,6 @@
 // import external
 import Vue from 'vue';
 import * as d3 from 'd3';
-import '../../../../public/colResizable.js';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
@@ -214,6 +217,58 @@ let gtree, newBox;
 const treemapMargin = 10;
 let treemapWidth = getTreemapWidth();
 let treemapHeight = getTreemapHeight();
+
+// column resize variables ------------------------------------------------- //
+let selectedColElem; // store selected column to watch drag and calculate new column width
+let colStartOffset; // store column offset width to calculate new column width
+let colWidthBeforeResize; // sore column width before resize to calculate diff
+let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
+let table; // store table element to update its width after column resize
+let cols; // store cols to add grip event handlers and save new widths
+let selectedGripElem; // store the grip to style it while resizing column
+
+// column resize functions ------------------------------------------------- //
+// fired when a column resize grip is clicked
+// stores values for calculations when the grip is unclicked
+function gripClick (e, col) {
+  e.preventDefault();
+  e.stopPropagation();
+  selectedColElem = col;
+  colWidthBeforeResize = col.style.width.slice(0, -2);
+  tableWidthBeforeResize = table.style.width.slice(0, -2);
+  colStartOffset = col.offsetWidth - e.pageX;
+  selectedGripElem = col.getElementsByClassName('grip')[0];
+};
+
+// fired when the column resize grip is dragged
+// styles the grip to show where it's being dragged
+function gripDrag (e) { // move the grip where the user moves their cursor
+  if (selectedColElem && selectedGripElem) {
+    const newWidth = colStartOffset + e.pageX;
+    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
+    selectedGripElem.style.left = `${newWidth}px`;
+  }
+}
+
+// fired when a clicked and dragged grip is dropped
+// updates the column and table width and saves the values
+function gripUnclick (e, vueThis) {
+  if (selectedColElem && selectedGripElem) {
+    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
+    selectedColElem.style.width = `${newWidth}px`;
+
+    // update the width of the table. need to do this or else the table
+    // cannot overflow its container
+    const diff = newWidth - colWidthBeforeResize;
+    table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
+
+    selectedGripElem.style.borderLeft = 'unset';
+    selectedGripElem.style.left = 'unset';
+  }
+
+  selectedGripElem = undefined;
+  selectedColElem = undefined;
+}
 
 // pie functions ----------------------------------------------------------- //
 function getWindowWidth () {
@@ -886,17 +941,40 @@ export default {
       });
     },
     initializeColResizable: function () {
-      $('#spigraphTable').colResizable({ disable: true });
+      this.destroyColResizable();
 
-      setTimeout(() => {
-        $('#spigraphTable').colResizable({
-          minWidth: 50,
-          headerOnly: true,
-          removePadding: false,
-          resizeMode: 'overflow',
-          hoverCursor: 'col-resize'
-        });
+      this.$nextTick(() => {
+        cols = document.getElementsByClassName('col-header');
+        table = this.$refs.table;
+
+        for (const col of cols) { // listen for grip dragging
+          const grip = col.getElementsByClassName('grip')[0];
+          if (grip) {
+            grip.addEventListener('mousedown', (e) => gripClick(e, col));
+          }
+        }
+
+        document.addEventListener('mousemove', gripDrag);
+        const self = this;
+        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
       });
+    },
+    destroyColResizable () {
+      if (!cols) return;
+
+      for (const col of cols) { // remove all grip dragging listeners
+        const grip = col.getElementsByClassName('grip')[0];
+        if (grip) {
+          grip.removeEventListener('mousedown', gripClick);
+        }
+      }
+
+      // remove document listeners
+      document.removeEventListener('mousemove', gripDrag);
+      document.removeEventListener('mouseup', gripUnclick);
+
+      cols = undefined;
+      table = undefined;
     },
     /**
      * Displays the information about a pie slice
@@ -1005,14 +1083,8 @@ export default {
   margin-top: 4px;
 }
 
-/* add padding to spigraph table since we can't use bootstrap's .table
-/* without messing up the colresizable stuff */
-.spigraph-table td,
-.spigraph-table th,
-.spigraph-table > tbody > tr > td,
-.spigraph-table > tbody > tr > th {
-  padding-left: .15rem !important;
-  padding-right: .15rem !important;
+.col-header {
+  position: relative;
 }
 
 /* make sure field dropdowns are visible in the table */
