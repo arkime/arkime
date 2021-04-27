@@ -679,9 +679,9 @@ export default {
       this.$refs.packetContainer.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
         <br>
         <img src="${this.session.node}/raw/${this.session.id}.png?type=src">
-        <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=src" download="${this.session.id}-src.png">
+        <a class="no-decoration download-bytes" href="${this.session.node}/raw/${this.session.id}.png?type=src" download="${this.session.id}-src.png">
           <span class="fa fa-download"></span>&nbsp;
-          Download src bytes image
+          Download source bytes image
         </button>
       `;
       this.$refs.packetContainer.getElementsByClassName('srccol')[0].removeEventListener('mouseenter', this.showSrcBytesImg);
@@ -690,9 +690,9 @@ export default {
       this.$refs.packetContainer.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
         <br>
         <img src="${this.session.node}/raw/${this.session.id}.png?type=dst">
-        <a class="btn small" href="${this.session.node}/raw/${this.session.id}.png?type=dst" download="${this.session.id}-dst.png">
+        <a class="no-decoration download-bytes" href="${this.session.node}/raw/${this.session.id}.png?type=dst" download="${this.session.id}-dst.png">
           <span class="fa fa-download"></span>&nbsp;
-          Download dst bytes image
+          Download destination bytes image
         </button>
       `;
       this.$refs.packetContainer.getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', this.showDstBytesImg);
@@ -791,6 +791,14 @@ export default {
   left: 8px;
 }
 
+.packet-container .srccol .src-col-tip .download-bytes,
+.packet-container .dstcol .dst-col-tip .download-bytes,
+.packet-container .imagetag .img-tip .download-bytes {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
 /* timestamps */
 .packet-container .session-detail-ts {
   display: none;
@@ -833,7 +841,7 @@ export default {
   white-space: pre-wrap;
 }
 .packet-container pre .sessionln {
-  color: darkgreen;
+  color: var(--color-foreground-accent, green);
 }
 /* src/dst packet text colors */
 .packet-container .sessiondst {
