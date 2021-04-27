@@ -687,6 +687,17 @@ table.table {
   color: var(--color-foreground, #555);
 }
 
+/* column resize grips */
+.grip {
+  width: 8px;
+  top: -2px;
+  right: -4px;
+  bottom: -2px;
+  cursor: col-resize;
+  position: absolute;
+  z-index: 9;
+}
+
 /* remove lastpass icons from all inputs
    could also use 'data-lpignore="true"' on each individual input
    that we want to exclude */

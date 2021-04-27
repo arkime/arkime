@@ -1,9 +1,10 @@
 <template>
 
   <table v-if="computedColumns && computedColumns.length"
-    style="{ width: tableWidth + 'px' }"
+    :style="`width:${tableWidth}px`"
     class="table-striped"
     :class="tableClasses"
+    ref="table"
     :id="id">
     <thead>
       <button type="button"
@@ -18,7 +19,7 @@
       <tr ref="draggableColumns">
         <th v-if="actionColumn"
           class="ignore-element text-left"
-          style="min-width:50px;">
+           style="width:70px;">
           <div class="d-flex align-items-center">
             <!-- column visibility button -->
             <b-dropdown
@@ -77,7 +78,9 @@
           :title="column.help"
           @click.self="sort(column.sort)"
           :class="{'cursor-pointer':column.sort}"
-          :style="{'width': column.width + 'px'}">
+          :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
+          class="col-header">
+          <div class="grip">&nbsp;</div>
           {{ column.name }}
           <span v-if="column.canClear"
             class="btn-zero">
@@ -205,7 +208,73 @@ import Sortable from 'sortablejs';
 import UserService from '../users/UserService';
 import ToggleBtn from '../utils/ToggleBtn';
 
-let tableDestroyed;
+// column resize variables and functions
+let selectedColElem; // store selected column to watch drag and calculate new column width
+let colStartOffset; // store column offset width to calculate new column width
+let colWidthBeforeResize; // sore column width before resize to calculate diff
+let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
+let table; // store table element to update its width after column resize
+let cols; // store cols to add grip event handlers and save new widths
+let selectedGripElem; // store the grip to style it while resizing column
+
+// fired when a column resize grip is clicked
+// stores values for calculations when the grip is unclicked
+function gripClick (e, col) {
+  e.preventDefault();
+  e.stopPropagation();
+  selectedColElem = col;
+  colWidthBeforeResize = col.style.width.slice(0, -2);
+  tableWidthBeforeResize = table.style.width.slice(0, -2);
+  colStartOffset = col.offsetWidth - e.pageX;
+  selectedGripElem = col.getElementsByClassName('grip')[0];
+};
+
+// fired when the column resize grip is dragged
+// styles the grip to show where it's being dragged
+function gripDrag (e) { // move the grip where the user moves their cursor
+  if (selectedColElem && selectedGripElem) {
+    const newWidth = colStartOffset + e.pageX;
+    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
+    selectedGripElem.style.left = `${newWidth}px`;
+  }
+}
+
+// fired when a clicked and dragged grip is dropped
+// updates the column and table width and saves the values
+function gripUnclick (e, vueThis) {
+  if (selectedColElem && selectedGripElem) {
+    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
+    selectedColElem.style.width = `${newWidth}px`;
+
+    for (let i = 0; i < cols.length; i++) { // get width of each col
+      const col = cols[i];
+      const colW = parseInt(col.style.width.slice(0, -2));
+      if (vueThis.computedColumns[i]) {
+        const header = vueThis.computedColumns[i];
+        header.width = colW;
+        vueThis.columnWidths[header.id] = colW;
+      }
+    }
+
+    vueThis.saveColumnWidths();
+
+    // update the width of the table. need to do this or else the table
+    // cannot overflow its container
+    const newTableWidth = parseInt(tableWidthBeforeResize) + newWidth - colWidthBeforeResize;
+    table.style.width = `${newTableWidth}px`;
+    vueThis.tableWidth = newTableWidth;
+
+    if (Math.abs(vueThis.tableWidth - window.innerWidth) > 15) {
+      vueThis.showFitButton = true;
+    }
+
+    selectedGripElem.style.borderLeft = 'unset';
+    selectedGripElem.style.left = 'unset';
+  }
+
+  selectedGripElem = undefined;
+  selectedColElem = undefined;
+}
 
 /**
  * IMPORTANT! This component kicks off the loading of the
@@ -296,7 +365,8 @@ export default {
       averageValues: {}, // list of total values
       totalValues: {}, // list of total values
       zeroMap: {}, // list of values that have been cleared
-      zeroedAt: {} // list of times each column was cleared
+      zeroedAt: {}, // list of times each column was cleared
+      tableWidth: $(this.tableDiv).width()
     };
   },
   computed: {
@@ -360,14 +430,7 @@ export default {
     },
     /* fits the table to the width of the current window size */
     fitTable: function () {
-      // disable resizable columns so it can be initialized after columns are resized
-      $(this.tableDiv).colResizable({ disable: true });
-
-      if (!this.tableWidth) {
-        this.tableWidth = $(this.tableDiv).width();
-      }
-
-      const windowWidth = window.innerWidth;
+      const windowWidth = window.innerWidth - 30; // account for margins
       const leftoverWidth = windowWidth - this.tableWidth;
       const percentChange = 1 + (leftoverWidth / this.tableWidth);
 
@@ -386,9 +449,9 @@ export default {
       this.tableWidth = windowWidth;
       this.showFitButton = false;
 
-      this.saveColumnWidths();
+      this.$refs.table.style.width = `${windowWidth}px`;
 
-      this.initializeColResizable();
+      this.saveColumnWidths();
     },
     toggleMoreInfo: function (item) {
       this.$set(item, 'opened', !item.opened);
@@ -410,6 +473,8 @@ export default {
       return -1;
     },
     toggleVisibility: function (column) {
+      this.destroyColResizable();
+
       const index = this.isVisible(column.id);
       if (index >= 0) { // it's visible
         this.computedColumns.splice(index, 1);
@@ -423,26 +488,32 @@ export default {
         tableWidth += computedCol.width;
       }
       this.tableWidth = tableWidth;
+      this.$refs.table.style.width = `${tableWidth}px`;
 
-      if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
-        this.showFitButton = true;
-      } else {
-        this.showFitButton = false;
-      }
+      this.showFitButton = Math.abs(this.tableWidth - window.innerWidth) > 15;
 
       this.saveTableState();
+      this.initializeColResizable();
     },
     resetDefault: function () {
-      tableDestroyed = true;
+      this.destroyColResizable();
       this.displayDefaultColumns();
 
       this.columnWidths = {};
+      let tableWidth = 0;
       for (const column of this.columns) {
         for (const col of this.computedColumns) {
           if (col.id === column.id) {
             col.width = JSON.parse(JSON.stringify(column.width));
+            tableWidth += col.width;
           }
         }
+      }
+
+      this.tableWidth = tableWidth;
+      this.$refs.table.style.width = `${tableWidth}px`;
+      if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
+        this.showFitButton = true;
       }
 
       // space out these calls so saving the column widths table state
@@ -569,50 +640,38 @@ export default {
       });
     },
     initializeColResizable: function () {
-      if (tableDestroyed) {
-        $(this.tableDiv).colResizable({ disable: true });
-        tableDestroyed = false;
-      }
+      this.$nextTick(() => {
+        cols = document.getElementsByClassName('col-header');
+        table = this.$refs.table;
 
-      setTimeout(() => { // wait for columns to render
-        const options = {
-          minWidth: 50,
-          headerOnly: true,
-          resizeMode: 'overflow',
-          hoverCursor: 'col-resize',
-          removePadding: false,
-          onResize: (e, col, colIdx) => {
-            // account for the index of the action column
-            if (this.actionColumn) { colIdx--; }
-
-            const column = this.computedColumns[colIdx];
-
-            if (column) {
-              column.width = col.w;
-              this.columnWidths[column.id] = col.w;
-              this.saveColumnWidths();
-            }
-
-            // recalculate table width
-            let tableWidth = 0;
-            for (const computedCol of this.computedColumns) {
-              tableWidth += computedCol.width;
-            }
-            this.tableWidth = tableWidth;
-
-            if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
-              this.showFitButton = true;
-            }
+        for (const col of cols) { // listen for grip dragging
+          const grip = col.getElementsByClassName('grip')[0];
+          if (grip) {
+            grip.addEventListener('mousedown', (e) => gripClick(e, col));
           }
-        };
-
-        // don't allow the action column to be resized
-        if (this.actionColumn) {
-          options.disabledColumns = [0];
         }
 
-        $(this.tableDiv).colResizable(options);
+        document.addEventListener('mousemove', gripDrag);
+        const self = this;
+        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
       });
+    },
+    destroyColResizable () {
+      if (!cols) return;
+
+      for (const col of cols) { // remove all grip dragging listeners
+        const grip = col.getElementsByClassName('grip')[0];
+        if (grip) {
+          grip.removeEventListener('mousedown', gripClick);
+        }
+      }
+
+      // remove document listeners
+      document.removeEventListener('mousemove', gripDrag);
+      document.removeEventListener('mouseup', gripUnclick);
+
+      cols = undefined;
+      table = undefined;
     },
     getTableState: function () {
       UserService.getState(this.tableStateName)
@@ -714,7 +773,7 @@ export default {
     }
   },
   beforeDestroy: function () {
-    tableDestroyed = true;
+    this.destroyColResizable();
   }
 };
 </script>

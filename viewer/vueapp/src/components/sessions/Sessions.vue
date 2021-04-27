@@ -1918,17 +1918,6 @@ form.sessions-paging {
   min-height: 300px;
 }
 
-/* column resize grips ----------------------- */
-.grip {
-  width: 8px;
-  top: -2px;
-  right: -4px;
-  bottom: -2px;
-  cursor: col-resize;
-  position: absolute;
-  z-index: 9;
-}
-
 /* sessions table styles --------------------- */
 table.sessions-table {
   margin-bottom: 20px;
