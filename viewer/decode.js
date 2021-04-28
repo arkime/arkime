@@ -28,7 +28,6 @@ const HTTPParser = process.version.startsWith('v12') ? process.binding('http_par
 const zlib = require('zlib');
 const through = require('through2');
 const peek = require('peek-stream');
-const sprintf = require('./public/sprintf.js');
 const async = require('async');
 const cryptoLib = require('crypto');
 
@@ -649,7 +648,8 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
   for (let pos = 0, poslen = input.length; pos < poslen; pos += 16) {
     const line = input.slice(pos, Math.min(pos + 16, input.length));
     if (this.showOffsets) {
-      out += sprintf.sprintf('<span class="sessionln">%08d:</span> ', pos);
+      const paddedPos = pos.toString().padStart(8, '0');
+      out += '<span class="sessionln">' + paddedPos + ':</span> ';
     }
 
     for (i = 0; i < 16; i++) {
@@ -657,7 +657,8 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
         out += ' ';
       }
       if (i < line.length) {
-        out += sprintf.sprintf('%02x', line[i]);
+        const paddedLine = line[i].toString(16).padStart(2, '0');
+        out += paddedLine;
       } else {
         out += '  ';
       }

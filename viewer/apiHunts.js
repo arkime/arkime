@@ -1000,7 +1000,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
 
   /**
    * @ignore
-   * GET - /api/:nodeName/hunt/:huntId/remote/:sessionId
+   * GET - /api/hunt/:nodeName/:huntId/remote/:sessionId
    *
    * Searches a session on a remote node.
    * @name /:nodeName/hunt/:huntId/remote/:sessionId
@@ -1014,8 +1014,8 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     // fetch hunt and session
     Promise.all([
       Db.get('hunts', 'hunt', huntId),
-      Db.get(Db.sid2Index(sessionId), 'session', Db.sid2Id(sessionId)) // ALWFIX - This should be getSession
-    ]).then(([{ body: hunt }, { body: session }]) => {
+      Db.getSessionPromise(sessionId)
+    ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
         res.send({ matched: false });
       }

@@ -180,6 +180,15 @@ exports.getWithOptions = async (index, type, id, options) => {
   return internals.client7.get(params);
 };
 
+exports.getSessionPromise = (id, options) => {
+  return new Promise((resolve, reject) => {
+    exports.getSession(id, options, (err, session) => {
+      if (err) { reject(err); }
+      resolve(session);
+    });
+  });
+};
+
 // Get a session from ES and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
   function fixPacketPos (session, fields) {
