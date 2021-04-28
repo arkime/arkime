@@ -111,7 +111,7 @@ export default {
   },
   search: function (source, type, value) {
     return new Promise((resolve, reject) => {
-      const url = ((source ? source.replace(':', '%3A') + '/' : '') + type + '/' + value);
+      const url = ((source ? source.replace(':', '%3A') + '/' : '') + type + '/' + value.replaceAll('/', '%2F'));
       Vue.axios.get(url)
         .then((response) => {
           resolve(response.data);

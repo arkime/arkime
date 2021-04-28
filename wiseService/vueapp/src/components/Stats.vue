@@ -3,10 +3,12 @@
     <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
 
     <div v-if="sourceStats.length">
-      <b-tabs content-class="mt-3">
+      <b-tabs content-class="mt-3"
+        :dark="getTheme ==='dark'">
         <b-tab title="Sources" active>
           <div v-if="sourceStats.length > 0">
             <b-table striped hover small borderless
+              :dark="getTheme ==='dark'"
               :items="sourceStats"
               :fields="sourceTableFields">
             </b-table>
@@ -15,6 +17,7 @@
         <b-tab title="Types">
           <div v-if="typeStats.length > 0">
             <b-table striped hover small borderless
+              :dark="getTheme ==='dark'"
               :items="typeStats"
               :fields="typeTableFields">
             </b-table>
@@ -54,6 +57,7 @@
 
 <script>
 import moment from 'moment-timezone';
+import { mapGetters } from 'vuex';
 
 import WiseService from './wise.service';
 import Alert from './Alert';
@@ -75,6 +79,9 @@ export default {
   },
   mounted: function () {
     this.loadResourceStats();
+  },
+  computed: {
+    ...mapGetters(['getTheme'])
   },
   methods: {
     loadResourceStats: function () {

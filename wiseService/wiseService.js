@@ -1004,7 +1004,7 @@ function processQuery (req, query, cb) {
         delete cacheResult[src.section];
 
         // If already in progress then add to the list and return, cb called later;
-        if (query.value in src.srcInProgress[query.typeName]) {
+        if (src.srcInProgress[query.typeName] && query.value in src.srcInProgress[query.typeName]) {
           src.srcInProgress[query.typeName][query.value].push(mapCb);
           return;
         }
