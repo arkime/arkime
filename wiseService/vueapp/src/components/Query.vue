@@ -1,8 +1,6 @@
 <template>
   <!-- container -->
   <div class="container-fluid">
-    <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
-
     <div class="d-flex flex-row">
       <!-- source select -->
       <div class="form-group">
@@ -17,6 +15,7 @@
           </span>
           <select class="form-control"
             v-model="chosenSource"
+            @change="debounceSearch"
             tabindex="1">
             <option value="">
               Any
@@ -65,7 +64,7 @@
             tabindex="3"
             v-model="searchTerm"
             class="form-control"
-            placeholder="Search wise data"
+            :placeholder="`Search ${chosenType} values for WISE data`"
             @input="debounceSearch"
             @keyup.enter="sendSearchQuery"
           />
@@ -81,6 +80,12 @@
         </div>
       </div> <!-- /search -->
     </div>
+
+    <Alert
+      variant="alert-danger"
+      :initialAlert="alertMessage"
+      v-on:clear-initialAlert="alertMessage = ''"
+    />
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
@@ -111,7 +116,11 @@
     <!-- tabbed view options -->
     <b-tabs content-class="mt-3" v-else-if="searchResult.length > 0">
       <b-tab title="Table View" active>
-        <b-table striped hover small borderless :items="searchResult" :fields="tableFields"></b-table>
+        <b-table striped hover small borderless
+          :dark="getTheme ==='dark'"
+          :items="searchResult"
+          :fields="tableFields">
+        </b-table>
       </b-tab>
 
       <b-tab title="JSON View">
@@ -154,6 +163,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import WiseService from './wise.service';
 import Alert from './Alert';
 
@@ -178,11 +189,6 @@ export default {
       types: []
     };
   },
-  watch: {
-    chosenSource: function () {
-      this.loadTypeOptions();
-    }
-  },
   mounted: function () {
     this.loadSourceOptions();
     this.loadTypeOptions();
@@ -191,9 +197,25 @@ export default {
       this.debounceSearch();
     }
   },
+  watch: {
+    chosenSource: function () {
+      this.loadTypeOptions();
+    },
+    '$route.query' (newParams) { // watch for url query changes and issue search
+      this.searchTerm = newParams.searchTerm || '';
+      this.chosenType = newParams.searchType || 'ip';
+      this.chosenSource = newParams.searchSource || '';
+      this.debounceSearch();
+    }
+  },
+  computed: {
+    ...mapGetters(['getTheme'])
+  },
   methods: {
     calcCSV: function () {
       let csv = '';
+      if (!this.searchResult) { return csv; }
+
       this.searchResult.forEach((item, i) => {
         if (i === 0) {
           csv += Object.keys(item).join(',');
@@ -240,7 +262,6 @@ export default {
     sendSearchQuery: function () {
       if (!this.searchTerm) {
         if (this.hasMadeASearch) {
-          this.alertMessage = 'Search term is empty';
           this.searchResult = [];
           this.tableFields = [];
           this.hasMadeASearch = false;

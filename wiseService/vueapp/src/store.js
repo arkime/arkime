@@ -5,15 +5,16 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    // hasAuth: false,
-    // loggedIn: false,
+    theme: 'light'
   },
   mutations: {
-    // setLoggedIn (state, value) {
-    //   state.loggedIn = value;
-    // },
-    // setHasAuth (state, value) {
-    //   state.hasAuth = value;
-    // }
+    SET_THEME (state, newTheme) {
+      state.theme = newTheme;
+    }
+  },
+  getters: {
+    getTheme: (state) => {
+      return state.theme;
+    }
   }
 });

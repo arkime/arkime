@@ -63,12 +63,20 @@
 
 export default {
   name: 'WiseNavbar',
-  // directives: { focusInput },
   data: function () {
     return {
-      theme: 'light',
       queryParams: {}
     };
+  },
+  computed: {
+    theme: {
+      get () {
+        return this.$store.state.theme;
+      },
+      set (theme) {
+        this.$store.commit('SET_THEME', theme);
+      }
+    }
   },
   watch: {
     '$route.query': function (newVal, oldVal) {
