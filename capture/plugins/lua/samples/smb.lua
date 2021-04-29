@@ -205,7 +205,7 @@ end
 function smbClassify(session, str, direction)
   if str:len() >= 64 then
     local tbl = session:table()
-    if str:sub(5,8) == string.char(0xfe, 0x53, 0x4d, 0x42) then
+    if str:sub(5,8) == string.char(0xff, 0x53, 0x4d, 0x42) then
       if tbl['ver'] == nil then
         tbl.opcodes = {} 
         tbl.cmd = {}
