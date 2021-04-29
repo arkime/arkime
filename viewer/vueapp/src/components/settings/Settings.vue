@@ -762,7 +762,7 @@
                       v-b-tooltip.hover
                       title="Save changes to this cron query"
                       @click="updateCronQuery(key)">
-                      <span class="fa fa-save">
+                      <span class="fa fa-save fa-fw">
                       </span>
                     </button>
                     <button type="button"
@@ -770,18 +770,27 @@
                       v-b-tooltip.hover
                       title="Undo changes to this cron query"
                       @click="cancelCronQueryChange(key)">
-                      <span class="fa fa-ban">
+                      <span class="fa fa-ban fa-fw">
                       </span>
                     </button>
                   </div>
-                  <button type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    v-if="!item.changed"
-                    @click="deleteCronQuery(key)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
+                  <div v-else class="btn-group btn-group-sm pull-right">
+                    <button type="button"
+                      class="btn btn-info"
+                      v-if="!item.changed"
+                      @click="openCronSessions(item)"
+                      v-b-tooltip.hover="'Open sessions that this cron query tagged in the last hour.'">
+                      <span class="fa fa-folder-open fa-fw">
+                      </span>
+                    </button>
+                    <button type="button"
+                      class="btn btn-danger"
+                      v-if="!item.changed"
+                      @click="deleteCronQuery(key)">
+                      <span class="fa fa-trash-o fa-fw">
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr> <!-- /cron queries -->
               <!-- cron query form error -->
@@ -2864,6 +2873,21 @@ export default {
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    },
+    openCronSessions: function (cron) {
+      if (cron.tags) {
+        const tags = cron.tags.split(',');
+        let url = 'sessions?expression=';
+        for (let t = 0, tlen = tags.length; t < tlen; t++) {
+          const tag = tags[t];
+          url += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+          if (t !== tlen - 1) { url += '%20%26%26%20'; } // encoded ' && '
+        }
+        window.open(url, '_blank'); // open in new tab
+      } else {
+        this.msg = 'This cron query has not tagged any sessions';
+        this.msgType = 'danger';
+      }
     },
     /**
      * Deletes a cron query given its key
