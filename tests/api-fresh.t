@@ -1,8 +1,9 @@
 # Tests on a fresh install
-use Test::More tests => 40;
+use Test::More tests => 41;
 use Cwd;
 use URI::Escape;
 use MolochTest;
+use Test::Differences;
 use JSON;
 use Data::Dumper;
 use strict;
@@ -79,3 +80,6 @@ my $json;
 
     my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8124/unique.txt?field=tags")->content;
     is ($txt, "", "Empty unique.txt");
+
+    $json = viewerGet2("/remoteclusters");
+    eq_or_diff($json, from_json('{"test2": {"name": "Test2", "url": "http://localhost:8124" }}'));

@@ -464,8 +464,8 @@ exports.headers = function (section) {
   return headers;
 };
 
-exports.configMap = function (section, configName, d) {
-  const data = internals.config[section] || d;
+exports.configMap = function (section, dSection, d) {
+  const data = internals.config[section] || internals.config[dSection] || d;
   if (data === undefined) { return {}; }
   const keys = Object.keys(data);
   if (!keys) { return {}; }

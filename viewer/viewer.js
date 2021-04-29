@@ -971,7 +971,7 @@ function sendSessionWorker (options, cb) {
 
     const sobj = remoteClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
+      console.log('ERROR - [remote-clusters] does not contain ' + options.cluster);
       return cb();
     }
 
