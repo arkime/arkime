@@ -109,6 +109,9 @@ module.exports = (Config, Db, internals) => {
    * @property {string} name - The human readable name of the notifier. Must be unique.
    * @property {string} type - The type of notifier (e.g. email, slack, twilio).
    * @property {array} fields - The list of fields that need to be configured to use the notifier.
+   * @property {number} created - The time the notifier was created. Format is seconds since Unix EPOC.
+   * @property {number} updated - The time the notifier was last updated. Format is seconds since Unix EPOC.
+   * @property {string} user - The ID of the user that created the notifier.
    */
 
   /**
@@ -134,7 +137,7 @@ module.exports = (Config, Db, internals) => {
     function cloneNotifiers (notifiers) {
       const clone = {};
 
-      for (const key in notifiers) {
+      for (const key in notifiers) { // strip sensitive notifier fields
         if (notifiers[key]) {
           const notifier = notifiers[key];
           clone[key] = {
@@ -147,20 +150,32 @@ module.exports = (Config, Db, internals) => {
       return clone;
     }
 
+    // send client an array so it can be sorted and is always in the same order
+    function arrayifyAndSort (notifiers) {
+      const notifierArray = [];
+      for (const key in notifiers) {
+        const notifier = notifiers[key];
+        notifier.key = key;
+        notifierArray.push(notifier);
+      }
+      notifierArray.sort((a, b) => { return a.created < b.created; });
+      return notifierArray;
+    }
+
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser || !sharedUser.found) {
-        return res.send({});
+        return res.send([]);
       } else {
         sharedUser = sharedUser._source;
       }
 
-      const notifiers = sharedUser.notifiers || {};
+      const notifiers = sharedUser.notifiers || [];
 
       if (req.user.createEnabled) {
-        return res.send(notifiers);
+        return res.send(arrayifyAndSort(notifiers));
       }
 
-      return res.send(cloneNotifiers(notifiers));
+      return res.send(arrayifyAndSort(cloneNotifiers(notifiers)));
     });
   };
 
@@ -174,7 +189,7 @@ module.exports = (Config, Db, internals) => {
    * @param {array} fields - The fields to configure the notifier.
    * @returns {boolean} success - Whether the create notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} name - If successful, the name of the new notifier.
+   * @returns {Notifier} notifier - If successful, the notifier with name sanitized and created/user fields added.
    */
   nModule.createNotifier = (req, res) => {
     if (!req.body.name) {
@@ -220,6 +235,10 @@ module.exports = (Config, Db, internals) => {
       }
     }
 
+    // add user and created date
+    req.body.user = req.user.userId;
+    req.body.created = Math.floor(Date.now() / 1000);
+
     // save the notifier on the shared user
     Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser || !sharedUser.found) {
@@ -260,7 +279,7 @@ module.exports = (Config, Db, internals) => {
         return res.send(JSON.stringify({
           success: true,
           text: 'Successfully created notifier',
-          name: req.body.name
+          notifier: { ...req.body, key: req.body.name }
         }));
       });
     });
@@ -276,7 +295,7 @@ module.exports = (Config, Db, internals) => {
    * @param {array} fields - The new field values to configure the notifier.
    * @returns {boolean} success - Whether the update notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} name - If successful, the name of the updated notifier.
+   * @returns {Notifier} notifier - If successful, the updated notifier with name sanitized and updated field added/updated.
    */
   nModule.updateNotifier = (req, res) => {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
@@ -334,9 +353,12 @@ module.exports = (Config, Db, internals) => {
       }
 
       sharedUser.notifiers[req.body.name] = {
-        name: req.body.name,
-        type: req.body.type,
-        fields: req.body.fields
+        name: req.body.name, // update name
+        type: sharedUser.notifiers[req.params.name].type, // type can't change
+        user: sharedUser.notifiers[req.params.name].user, // user can't change
+        created: sharedUser.notifiers[req.params.name].created, // created can't change
+        updated: Math.floor(Date.now() / 1000), // update/add updated time
+        fields: req.body.fields // update fields
       };
 
       // delete the old notifier if the name has changed
@@ -353,7 +375,7 @@ module.exports = (Config, Db, internals) => {
         return res.send(JSON.stringify({
           success: true,
           text: 'Successfully updated notifier',
-          name: req.body.name
+          notifier: { ...sharedUser.notifiers[req.body.name], key: req.body.name }
         }));
       });
     });

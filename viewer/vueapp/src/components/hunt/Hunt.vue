@@ -139,8 +139,7 @@
                 <div class="form-group col-lg-4 col-md-12">
                   <div class="input-group input-group-sm">
                     <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Notifies upon completion">
+                      v-b-tooltip.hover="'Notifies upon completion. Admins can configure Notifiers on the Settings page.'">
                       <span class="input-group-text">
                         Notify
                       </span>
