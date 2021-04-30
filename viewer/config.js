@@ -434,9 +434,12 @@ exports.hostName = function () {
 };
 
 exports.arkimeWebURL = () => {
-  const webUrl = exports.get('arkimeWebURL', `${exports.hostName()}${exports.basePath()}`);
-  return exports.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
-}
+  let webUrl = exports.get('arkimeWebURL', `${exports.hostName()}${exports.basePath()}`);
+  if (!webUrl.startsWith('http')) {
+    webUrl = exports.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
+  }
+  return webUrl;
+};
 
 exports.keys = function (section) {
   if (internals.config[section] === undefined) { return []; }

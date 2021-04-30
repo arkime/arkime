@@ -2397,19 +2397,19 @@ internals.processCronQueries = () => {
                 (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                 const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
 
-                let path = 'sessions?expression=';
+                let urlPath = 'sessions?expression=';
                 const tags = cq.tags.split(',');
                 for (let t = 0, tlen = tags.length; t < tlen; t++) {
                   const tag = tags[t];
-                  path += `tags%20%3D%3D%20${tag}`; // encoded ' == '
-                  if (t !== tlen - 1) { path += '%20%26%26%20'; } // encoded ' && '
+                  urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+                  if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
                 }
 
                 const message = `
 *${cq.name}* cron query match alert:
 *${newMatchCount} new* matches
 *${doc.doc.count} total* matches.
-${Config.arkimeWebURL()}${path}
+${Config.arkimeWebURL()}${urlPath}
                 `;
 
                 notifierAPIs.issueAlert(cq.notifier, message, continueProcess);

@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 32;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -99,8 +99,7 @@ my $notAdminToken = getTokenCookie('notadmin');
   ok($json->{success}, "notifier delete success");
   esGet("/_refresh");
   $notifiers = viewerGetToken("/notifiers", $token);
-  ok(!exists $notifiers->[0], "removed test1a notifier");
-  ok(!exists $notifiers->[1], "removed test2 notifier");
+  is (@{$notifiers}, 0, "Removed notifiers");
 
 # remove shared user that gets added when creating notifiers
   viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
