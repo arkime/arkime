@@ -157,13 +157,12 @@
 
         <div v-else>
           <div
-            class="input-group mb-3"
+            class="input-group input-group-sm mb-3"
             v-for="field in activeFields"
             :key="field.name + '-field'">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ field.name }}</span>
             </div>
-
             <b-form-input
               v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
               :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
@@ -172,8 +171,8 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.hover.top="field.help">
-            </b-form-input>
+              v-b-popover.hover.top="field.help"
+            />
             <b-form-textarea
               v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
               :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
@@ -182,10 +181,9 @@
               @input="(val) => inputChanged(val, field)"
               :placeholder="field.help"
               :required="field.required"
-              v-b-popover.hover.top="field.help">
-            </b-form-textarea>
+              v-b-popover.hover.top="field.help"
+            />
           </div>
-
           <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
             <b-icon icon="trash" scale="1"></b-icon>
             Delete Source

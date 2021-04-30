@@ -13,7 +13,7 @@ module.exports = (app, Config) => {
     isProduction: app.get('env') === 'production',
     CYBERCHEFVERSION: '9.16.2',
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
-    remoteClusters: Config.configMap('remote-clusters', Config.configMap('moloch-clusters')),
+    remoteClusters: Config.configMap('remote-clusters', 'moloch-clusters'),
     esQueryTimeout: Config.get('elasticsearchTimeout', 300) + 's',
     esScrollTimeout: Config.get('elasticsearchScrollTimeout', 900) + 's',
     userNameHeader: Config.get('userNameHeader'),

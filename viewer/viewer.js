@@ -971,7 +971,7 @@ function sendSessionWorker (options, cb) {
 
     const sobj = remoteClusters[options.cluster];
     if (!sobj) {
-      console.log('ERROR - arkime-clusters is not configured for ' + options.cluster);
+      console.log('ERROR - [remote-clusters] does not contain ' + options.cluster);
       return cb();
     }
 
@@ -2396,7 +2396,22 @@ internals.processCronQueries = () => {
               if (cq.notifier && count && queries[qid].count !== doc.doc.count &&
                 (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                 const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
-                const message = `*${cq.name}* cron query match alert:\n*${newMatchCount} new* matches\n*${doc.doc.count} total* matches`;
+
+                let urlPath = 'sessions?expression=';
+                const tags = cq.tags.split(',');
+                for (let t = 0, tlen = tags.length; t < tlen; t++) {
+                  const tag = tags[t];
+                  urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+                  if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
+                }
+
+                const message = `
+*${cq.name}* cron query match alert:
+*${newMatchCount} new* matches
+*${doc.doc.count} total* matches.
+${Config.arkimeWebURL()}${urlPath}
+                `;
+
                 notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
               } else {
                 return continueProcess();

@@ -691,7 +691,9 @@
                 <th>Expression</th>
                 <th>Action</th>
                 <th>Tags</th>
-                <th>Notify</th>
+                <th v-b-tooltip.hover="'Admins can configure Notifiers on the Notifiers tab to the left.'">
+                  Notify
+                </th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -762,7 +764,7 @@
                       v-b-tooltip.hover
                       title="Save changes to this cron query"
                       @click="updateCronQuery(key)">
-                      <span class="fa fa-save">
+                      <span class="fa fa-save fa-fw">
                       </span>
                     </button>
                     <button type="button"
@@ -770,18 +772,27 @@
                       v-b-tooltip.hover
                       title="Undo changes to this cron query"
                       @click="cancelCronQueryChange(key)">
-                      <span class="fa fa-ban">
+                      <span class="fa fa-ban fa-fw">
                       </span>
                     </button>
                   </div>
-                  <button type="button"
-                    class="btn btn-sm btn-danger pull-right"
-                    v-if="!item.changed"
-                    @click="deleteCronQuery(key)">
-                    <span class="fa fa-trash-o">
-                    </span>&nbsp;
-                    Delete
-                  </button>
+                  <div v-else class="btn-group btn-group-sm pull-right">
+                    <button type="button"
+                      class="btn btn-info"
+                      v-if="!item.changed"
+                      @click="openCronSessions(item)"
+                      v-b-tooltip.hover="'Open sessions that this cron query tagged in the last hour.'">
+                      <span class="fa fa-folder-open fa-fw">
+                      </span>
+                    </button>
+                    <button type="button"
+                      class="btn btn-danger"
+                      v-if="!item.changed"
+                      @click="deleteCronQuery(key)">
+                      <span class="fa fa-trash-o fa-fw">
+                      </span>
+                    </button>
+                  </div>
                 </td>
               </tr> <!-- /cron queries -->
               <!-- cron query form error -->
@@ -1755,8 +1766,8 @@
             </strong>
             <br>
             <br>
-            Create one by clicking the create button above
-            and add it to your cron queries on the cron tab!
+            Create one by clicking one of the create buttons above.
+            Then use it by adding it to your cron queries or hunt jobs!
           </div>
 
           <!-- new notifier -->
@@ -1777,7 +1788,7 @@
                     </span>
                   </h4> <!-- /new notifier title -->
                   <!-- new notifier name -->
-                  <div class="input-group mb-2">
+                  <div class="input-group">
                     <span class="input-group-prepend cursor-help"
                       :title="`Give your ${newNotifier.type} notifier a unique name`"
                       v-b-tooltip.hover.bottom-left>
@@ -1790,7 +1801,11 @@
                       v-model="newNotifier.name"
                       type="text"
                     />
-                  </div> <!-- /new notifier name -->
+                  </div>
+                  <small class="form-text text-muted mb-2 mt-0">
+                    Be specific! There can be multiple {{ newNotifier.type }}
+                    notifiers.
+                  </small> <!-- /new notifier name -->
                   <!-- new notifier fields -->
                   <div v-for="field of newNotifier.fields"
                     :key="field.name">
@@ -1856,8 +1871,8 @@
           <div class="row"
             v-if="notifiers">
             <div class="col-12 col-xl-6"
-              v-for="(notifier, key) of notifiers"
-              :key="key">
+              v-for="(notifier, index) of notifiers"
+              :key="notifier.key">
               <div class="card mb-3">
                 <div class="card-body">
                   <!-- notifier title -->
@@ -1911,13 +1926,26 @@
                       &nbsp;{{ field.name }}
                     </label>
                   </div> <!-- /notifier fields -->
+                  <!-- notifier info -->
+                  <div class="row">
+                    <div class="col-12 small">
+                      <span v-if="notifier.created || notifier.user">
+                        Created by {{ notifier.user }} at
+                        {{ notifier.created * 1000 | timezoneDateString(settings.timezone, false) }}
+                      </span>
+                      <span v-if="notifier.updated"
+                        class="pull-right">
+                        Last updated at {{ notifier.updated * 1000 | timezoneDateString(settings.timezone, false) }}
+                      </span>
+                    </div>
+                  </div> <!-- /notifier info -->
                   <!-- notifier actions -->
                   <div class="row mt-3">
                     <div class="col-12">
                       <button type="button"
                         :disabled="notifier.loading"
                         class="btn btn-sm btn-outline-warning cursor-pointer"
-                        @click="testNotifier(notifier.name)">
+                        @click="testNotifier(notifier.name, index)">
                         <span v-if="notifier.loading"
                           class="fa fa-spinner fa-spin">
                         </span>
@@ -1927,14 +1955,14 @@
                       </button>
                       <button type="button"
                         class="btn btn-sm btn-success cursor-pointer pull-right ml-1"
-                        @click="updateNotifier(key, notifier)">
+                        @click="updateNotifier(notifier.key, index, notifier)">
                         <span class="fa fa-save">
                         </span>&nbsp;
                         Save
                       </button>
                       <button type="button"
                         class="btn btn-sm btn-danger cursor-pointer pull-right"
-                        @click="removeNotifier(notifier.name)">
+                        @click="removeNotifier(notifier.name, index)">
                         <span class="fa fa-trash-o">
                         </span>&nbsp;
                         Delete
@@ -2865,6 +2893,21 @@ export default {
           this.msgType = 'danger';
         });
     },
+    openCronSessions: function (cron) {
+      if (cron.tags) {
+        const tags = cron.tags.split(',');
+        let url = 'sessions?expression=';
+        for (let t = 0, tlen = tags.length; t < tlen; t++) {
+          const tag = tags[t];
+          url += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+          if (t !== tlen - 1) { url += '%20%26%26%20'; } // encoded ' && '
+        }
+        window.open(url, '_blank'); // open in new tab
+      } else {
+        this.msg = 'This cron query has not tagged any sessions';
+        this.msgType = 'danger';
+      }
+    },
     /**
      * Deletes a cron query given its key
      * @param {string} key The cron query's key
@@ -3137,7 +3180,7 @@ export default {
           this.msgType = 'success';
           this.notifiersError = '';
           // add notifier to the list
-          this.notifiers[response.data.name] = this.newNotifier;
+          this.notifiers.push(response.data.notifier);
           this.newNotifier = undefined;
         })
         .catch((error) => {
@@ -3150,13 +3193,13 @@ export default {
       this.$set(field, 'showValue', !field.showValue);
     },
     /* deletes a notifier */
-    removeNotifier: function (notifierName) {
+    removeNotifier: function (notifierName, index) {
       this.$http.delete(`api/notifier/${notifierName}`)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully deleted notifier.';
           this.msgType = 'success';
-          delete this.notifiers[notifierName];
+          this.notifiers.splice(index, 1);
           this.notifiersError = '';
         })
         .catch((error) => {
@@ -3165,17 +3208,13 @@ export default {
         });
     },
     /* updates a notifier */
-    updateNotifier: function (key, notifier) {
+    updateNotifier: function (key, index, notifier) {
       this.$http.put(`api/notifier/${key}`, notifier)
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully updated notifier.';
           this.msgType = 'success';
-          this.notifiers[response.data.name] = notifier;
-          if (key !== response.data.name) {
-            // the name has changed, delete the old one
-            delete this.notifiers[key];
-          }
+          this.notifiers.splice(index, 1, response.data.notifier);
           this.notifiersError = '';
         })
         .catch((error) => {
@@ -3184,23 +3223,23 @@ export default {
         });
     },
     /* tests a notifier */
-    testNotifier: function (notifierName) {
-      if (this.notifiers[notifierName].loading) {
+    testNotifier: function (notifierName, index) {
+      if (this.notifiers[index].loading) {
         return;
       }
 
-      this.$set(this.notifiers[notifierName], 'loading', true);
+      this.$set(this.notifiers[index], 'loading', true);
       this.$http.post(`api/notifier/${notifierName}/test`, {})
         .then((response) => {
           // display success message to user
           this.msg = response.data.text || 'Successfully issued alert.';
           this.msgType = 'success';
-          this.$set(this.notifiers[notifierName], 'loading', false);
+          this.$set(this.notifiers[index], 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text || 'Error issuing alert.';
           this.msgType = 'danger';
-          this.$set(this.notifiers[notifierName], 'loading', false);
+          this.$set(this.notifiers[index], 'loading', false);
         });
     },
     /* SHORTCUTS --------------------------------------- */

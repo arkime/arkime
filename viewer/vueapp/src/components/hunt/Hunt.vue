@@ -139,8 +139,7 @@
                 <div class="form-group col-lg-4 col-md-12">
                   <div class="input-group input-group-sm">
                     <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Notifies upon completion">
+                      v-b-tooltip.hover="'Notifies upon completion. Admins can configure Notifiers on the Settings page.'">
                       <span class="input-group-text">
                         Notify
                       </span>
@@ -463,7 +462,7 @@
                         sessions searched.
                         (Still need to search
                         <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
                         total sessions.)
                       </span>
                       <span v-else>
@@ -471,7 +470,7 @@
                         sessions searched.
                         (Still need to search
                         <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
                         total sessions.)
                       </span>
                     </div>

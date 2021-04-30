@@ -195,38 +195,6 @@ body.dark .cluster-handle {
   background: #303030;
 }
 
-/* darken tables */
-body.dark .table-danger,
-body.dark .table-danger > th,
-body.dark .table-danger > td {
-  background-color: #871D45;
-}
-body.dark .table-hover .table-danger:hover,
-body.dark .table-hover .table-danger:hover > th,
-body.dark .table-hover .table-danger:hover > td {
-  background-color: #A32252;
-}
-body.dark .table-warning,
-body.dark .table-warning > th,
-body.dark .table-warning > td {
-  background-color: #895A10;
-}
-body.dark .table-hover .table-warning:hover,
-body.dark .table-hover .table-warning:hover > th,
-body.dark .table-hover .table-warning:hover > td {
-  background-color: #9B6611;
-}
-body.dark .table-secondary,
-body.dark .table-secondary > th,
-body.dark .table-secondary > td {
-  background-color: #494949;
-}
-body.dark .table-hover .table-secondary:hover,
-body.dark .table-hover .table-secondary:hover > th,
-body.dark .table-hover .table-secondary:hover > td {
-  background-color: #4F4F4F;
-}
-
 .subtext {
   color: #777777;
 }
@@ -241,11 +209,7 @@ body.dark .info-area > div {
   color: #CCC !important;
 }
 
-/* darken elements */
-body.dark table {
-  background-color: #444;
-  color: white !important;
-}
+/* darken pre */
 body.dark pre {
   color: white !important;
 }
@@ -294,5 +258,42 @@ hr {
 }
 body.dark hr {
   background-color: #ADB5BD;
+}
+
+/* dark form controls */
+body.dark input.form-control,
+body.dark input.form-control:focus,
+body.dark select.form-control,
+body.dark select.form-control:focus,
+body.dark textarea.form-control,
+body.dark textarea.form-control:focus {
+  color: #FFF;
+  background-color: #000;
+}
+body.dark .input-group-prepend > .input-group-text,
+body.dark .input-group-append:not(.color) > .input-group-text {
+  border-color: gray !important;
+  color: #EEE !important;
+  background-color: #555 !important;
+}
+
+/* darken navs */
+body.dark .nav > li > a:hover,
+body.dark .nav > li > a:focus {
+  color: #2B91FF;
+  background-color: #222;
+}
+body.dark .nav-tabs > li.nav-item > a.nav-link.active,
+body.dark .nav-tabs > li.nav-item > a.nav-link.active:hover,
+body.dark .nav-tabs > li.nav-item > a.nav-link.active:focus {
+  color: #FFF;
+  background-color: #222;
+  border-bottom: 1px solid transparent;
+}
+
+/* dark wells */
+body.dark .well {
+  background-color: #333;
+  border-color: #444;
 }
 </style>

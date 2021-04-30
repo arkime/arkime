@@ -433,6 +433,14 @@ exports.hostName = function () {
   return internals.hostName;
 };
 
+exports.arkimeWebURL = () => {
+  let webUrl = exports.get('arkimeWebURL', `${exports.hostName()}${exports.basePath()}`);
+  if (!webUrl.startsWith('http')) {
+    webUrl = exports.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
+  }
+  return webUrl;
+};
+
 exports.keys = function (section) {
   if (internals.config[section] === undefined) { return []; }
   return Object.keys(internals.config[section]);
@@ -464,8 +472,8 @@ exports.headers = function (section) {
   return headers;
 };
 
-exports.configMap = function (section, configName, d) {
-  const data = internals.config[section] || d;
+exports.configMap = function (section, dSection, d) {
+  const data = internals.config[section] || internals.config[dSection] || d;
   if (data === undefined) { return {}; }
   const keys = Object.keys(data);
   if (!keys) { return {}; }

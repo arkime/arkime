@@ -217,6 +217,7 @@ app.get('*', (req, res) => {
   if (getExact[path]) {
   } else if (path.startsWith('/tagger')) {
   } else if (path.startsWith(`/${prefix}users/_doc/`)) {
+  } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {

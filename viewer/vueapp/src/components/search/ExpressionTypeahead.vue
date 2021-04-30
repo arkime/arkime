@@ -557,11 +557,32 @@ export default {
 
         return;
       }
+
       // Autocomplete view names
       if (field.type === 'viewand') {
         // findMatch expects an object with keys/values
         const views = Object.fromEntries(Object.keys(this.views).map((v) => [v, v]));
         this.results = this.findMatch(lastToken, views);
+      }
+
+      // autocomplete variables
+      if (/^(\$)/.test(lastToken)) {
+        this.loadingValues = true;
+        let url = 'api/shortcuts?fieldFormat=true&map=true';
+        if (field && field.type) {
+          url += `&fieldType=${field.type}`;
+        }
+        this.$http.get(url)
+          .then((response) => {
+            this.loadingValues = false;
+            const escapedToken = lastToken.replace('$', '\\$');
+            this.results = this.findMatch(escapedToken, response.data);
+          }, (error) => {
+            this.loadingValues = false;
+            this.loadingError = error.text || error;
+          });
+
+        return;
       }
 
       // Don't try and autocomplete these fields
@@ -585,26 +606,6 @@ export default {
           .catch((error) => {
             this.loadingValues = false;
             this.loadingError = error;
-          });
-
-        return;
-      }
-
-      // autocomplete variables
-      if (/^(\$)/.test(lastToken)) {
-        this.loadingValues = true;
-        let url = 'api/shortcuts?fieldFormat=true&map=true';
-        if (field && field.type) {
-          url += `&fieldType=${field.type}`;
-        }
-        this.$http.get(url)
-          .then((response) => {
-            this.loadingValues = false;
-            const escapedToken = lastToken.replace('$', '\\$');
-            this.results = this.findMatch(escapedToken, response.data);
-          }, (error) => {
-            this.loadingValues = false;
-            this.loadingError = error.text || error;
           });
 
         return;
