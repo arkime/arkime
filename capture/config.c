@@ -381,7 +381,7 @@ void moloch_config_load()
 
     status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
     if (!status || error) {
-        printf("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
+        printf("FATAL ERROR: Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
         exit(1);
     }
 
@@ -399,7 +399,7 @@ void moloch_config_load()
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 
     if (!rotateIndex) {
-        printf("rotateIndex can't be empty if in config file\n");
+        printf("FATAL ERROR: The rotateIndex= can't be empty in config file (%s)\n", config.configFile);
         exit(1);
     } else if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
@@ -422,7 +422,7 @@ void moloch_config_load()
     else if (strcmp(rotateIndex, "monthly") == 0)
         config.rotate = MOLOCH_ROTATE_MONTHLY;
     else {
-        printf("Unknown rotateIndex '%s'\n", rotateIndex);
+        printf("FATAL ERROR: Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex\n", rotateIndex, config.configFile);
         exit(1);
     }
     g_free(rotateIndex);
@@ -493,14 +493,14 @@ void moloch_config_load()
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
-        printf("Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
+        printf("FATAL ERROR: Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
         exit(1);
     }
     g_free(offlineRegex);
 
     config.pcapDirTemplate  = moloch_config_str(keyfile, "pcapDirTemplate", NULL);
     if (config.pcapDirTemplate && config.pcapDirTemplate[0] != '/') {
-        printf("pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
+        printf("FATAL ERROR: pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
         exit(1);
     }
 
@@ -508,7 +508,7 @@ void moloch_config_load()
     if (strcmp(config.pcapDirAlgorithm, "round-robin") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
-        printf("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
+        printf("FATAL ERROR: '%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
         exit(1);
     }
 
@@ -939,17 +939,17 @@ void moloch_config_init()
     }
 
     if (config.interface && !config.interface[0]) {
-        printf("interface set in config file, but it is empty\n");
+        printf("\nFATAL ERROR: The interface= is set in the config file (%s), but it is empty. :( You need to fix this before Arkime can continue.\n", config.configFile);
         exit (1);
     }
 
     if (!config.interface && !config.pcapReadOffline) {
-        printf("Need to set interface, pcap file (-r) or pcap directory (-R) \n");
+        printf("\nFATAL ERROR: Please set interface= in the [default] or [%s] section of the config file (%s) OR on the capture command line use either a pcap file (-r) or pcap directory (-R) switch. You need to fix this before Arkime can continue.\n", config.nodeName, config.configFile);
         exit (1);
     }
 
     if (!config.pcapDir || !config.pcapDir[0]) {
-        printf("Must set a non empty pcapDir to save files to\n");
+        printf("\nFATAL ERROR: You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.\n", config.configFile);
         exit(1);
     }
 
