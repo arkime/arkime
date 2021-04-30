@@ -31,6 +31,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchPrimary(indices, 'session', query, options, (err, result) => {
+        console.log(result.hits.hits);
         if (err || result.error) {
           console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
           return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
@@ -207,6 +208,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (fields) {
       const columnHeaders = [];
       for (let i = 0; i < fields.length; ++i) {
+        console.log('ALW', fields[i]);
         if (fieldObjects[fields[i]] !== undefined) {
           columnHeaders.push(fieldObjects[fields[i]].friendlyName);
         }

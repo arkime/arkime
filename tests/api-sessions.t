@@ -48,6 +48,7 @@ sub post {
 sub getBinary {
 my ($url) = @_;
 
+    diag "http://$MolochTest::host:8123$url";
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url");
     my $mresponse = $MolochTest::userAgent->get("http://$MolochTest::host:8125$url");
 

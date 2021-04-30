@@ -461,9 +461,18 @@ module.exports = (Config, Db, molochparser, internals) => {
 
       // Everything will use dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
-        internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
-        data[i]._source.dbField = data[i]._source.dbField2;
-        if (data[i]._source.portField2) {
+        if (data[i]._source.fieldECS) {
+          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+          internals.oldDBFields[data[i]._source.dbField2] = data[i]._source;
+          data[i]._source.dbField = data[i]._source.fieldECS;
+        } else {
+          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+          data[i]._source.dbField = data[i]._source.dbField2;
+        }
+
+        if (data[i]._source.portFieldECS) {
+          data[i]._source.portField = data[i]._source.portFieldECS;
+        } else if (data[i]._source.portField2) {
           data[i]._source.portField = data[i]._source.portField2;
         } else {
           delete data[i]._source.portField;
@@ -486,7 +495,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   vModule.oldDB2newDB = (x) => {
     if (!internals.oldDBFields[x]) { return x; }
-    return internals.oldDBFields[x].dbField2;
+    return internals.oldDBFields[x].dbFieldECS || internals.oldDBFields[x].dbField2;
   };
 
   vModule.mergeUnarray = (to, from) => {

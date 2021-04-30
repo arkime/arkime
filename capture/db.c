@@ -680,6 +680,9 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
         }
         BSB_EXPORT_sprintf(jbsb,
+                          "\"@timestamp\":%" PRIu64 ",",
+                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000);
+        BSB_EXPORT_sprintf(jbsb,
                           "\"timestamp\":%" PRIu64 ","
                           "\"srcIp\":\"%s\","
                           "\"dstIp\":\"%s\","
