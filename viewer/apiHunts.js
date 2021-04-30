@@ -147,7 +147,12 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
       }
     }
 
-    const message = `*${hunt.name}* hunt job paused with error: *${error.value}*\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+    const message = `
+*${hunt.name}* hunt job paused with error: *${error.value}*
+*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
+${Config.arkimeWebURL()}hunt
+    `;
+
     notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
   }
 
@@ -331,7 +336,11 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         hunt.status = 'finished';
 
         if (hunt.notifier) {
-          const message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+          const message = `
+*${hunt.name}* hunt job finished:
+*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
+${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
+          `;
           notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();
@@ -468,7 +477,12 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
         hunt.status = 'finished';
 
         if (hunt.notifier) {
-          const message = `*${hunt.name}* hunt job finished:\n*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions`;
+          const message = `
+*${hunt.name}* hunt job finished:
+*${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
+${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
+          `;
+
           notifierAPIs.issueAlert(hunt.notifier, message, continueProcess);
         } else {
           return continueProcess();

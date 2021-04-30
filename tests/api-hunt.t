@@ -366,7 +366,7 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/user/delete", "userId=huntuser", $token);
   viewerDeleteToken("/hunt/$id1?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id3?molochRegressionUser=anonymous", $token);
-  #  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+  esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # remove shared user that gets added when creating shared shortcuts
   viewerPostToken("/user/delete", "userId=_moloch_shared", $token);
