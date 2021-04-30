@@ -902,7 +902,7 @@ nodes.forEach((node) => {
     requestTimeout: 300000,
     maxRetries: 2,
     ssl: esSSLOptions
-  }
+  };
 
   const esAPIKey = Config.get('esAPIKey', null);
   if (esAPIKey) {
