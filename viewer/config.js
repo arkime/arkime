@@ -433,6 +433,11 @@ exports.hostName = function () {
   return internals.hostName;
 };
 
+exports.arkimeWebURL = () => {
+  const webUrl = exports.get('arkimeWebURL', `${exports.hostName()}${exports.basePath()}`);
+  return exports.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
+}
+
 exports.keys = function (section) {
   if (internals.config[section] === undefined) { return []; }
   return Object.keys(internals.config[section]);

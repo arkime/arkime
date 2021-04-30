@@ -462,7 +462,7 @@
                         sessions searched.
                         (Still need to search
                         <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
                         total sessions.)
                       </span>
                       <span v-else>
@@ -470,7 +470,7 @@
                         sessions searched.
                         (Still need to search
                         <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions }}</strong>
+                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
                         total sessions.)
                       </span>
                     </div>

@@ -1766,8 +1766,8 @@
             </strong>
             <br>
             <br>
-            Create one by clicking the create button above
-            and add it to your cron queries on the cron tab!
+            Create one by clicking one of the create buttons above.
+            Then use it by adding it to your cron queries or hunt jobs!
           </div>
 
           <!-- new notifier -->
