@@ -896,12 +896,22 @@ nodes.forEach((node) => {
   let nodeName = node.split(',')[0];
 
   nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
-  clients[node] = new Client({
+
+  const esClientOptions = {
     node: nodeName,
     requestTimeout: 300000,
     maxRetries: 2,
     ssl: esSSLOptions
-  });
+  }
+
+  const esAPIKey = Config.get('esAPIKey', null);
+  if (esAPIKey) {
+    esClientOptions.auth = {
+      apiKey: esAPIKey
+    };
+  }
+
+  clients[node] = new Client(esClientOptions);
 });
 
 // Now check version numbers

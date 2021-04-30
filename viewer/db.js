@@ -18,6 +18,8 @@
 
 'use strict';
 
+const Config = require('./config.js');
+
 const os = require('os');
 const fs = require('fs');
 const async = require('async');
@@ -79,20 +81,25 @@ exports.initialize = async (info, cb) => {
     }
   }
 
-  internals.client7 = new Client({
+  const esClientOptions = {
     node: internals.info.host,
     maxRetries: 2,
     requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
     ssl: esSSLOptions
-  });
+  };
+
+  const esAPIKey = Config.get('esAPIKey', null);
+  if (esAPIKey) {
+    esClientOptions.auth = {
+      apiKey: esAPIKey
+    };
+  }
+
+  internals.client7 = new Client(esClientOptions);
 
   if (info.usersHost) {
-    internals.usersClient7 = new Client({
-      node: internals.info.usersHost,
-      maxRetries: 2,
-      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    });
+    esClientOptions.node = internals.info.usersHost;
+    internals.usersClient7 = new Client(esClientOptions);
   } else {
     internals.usersClient7 = internals.client7;
   }
