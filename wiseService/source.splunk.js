@@ -214,7 +214,7 @@ exports.initSource = function (api) {
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'username', required: true, help: 'The Splunk username' },
-      { name: 'password', required: true, help: 'The Splunk password' },
+      { name: 'password', required: true, password: true, help: 'The Splunk password' },
       { name: 'host', required: true, help: 'The Splunk hostname' },
       // { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },

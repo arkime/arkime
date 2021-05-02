@@ -1251,6 +1251,7 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  */
 app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
+    .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
     .reduce((obj, key) => {
       // Deep Copy
@@ -1316,9 +1317,9 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
     for (const key in config[section]) {
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
-        return res.send({ success: false, text: `Section ${section} field ${key} unknown` });
-      }
-      if (field.password === true) {
+        console.log(`Section ${section} field ${key} unknown, deleting`);
+        delete config[section][key];
+      } else if (field.password === true) {
         if (config[section][key] === '********') {
           config[section][key] = internals.config[section][key];
         }
@@ -1640,7 +1641,7 @@ function printStats () {
     console.log(lines[i]);
   }
 
-  for (const section in internals.sources) {
+  for (const section of Object.keys(internals.sources).sort()) {
     const src = internals.sources[section];
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
