@@ -1265,6 +1265,9 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
       return obj;
     }, {});
 
+  if (config.wiseService === undefined) { config.wiseService = {}; }
+  if (config.cache === undefined) { config.cache = {}; }
+
   return res.send({
     success: true,
     config: config,
@@ -1785,7 +1788,7 @@ internals.configSchemes.elasticsearch = {
   save: function (config, cb) {
     const url = internals.configFile.replace('elasticsearch', 'http');
 
-    axios.post(url, JSON.stringify(config))
+    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         cb(null);
       })
@@ -1819,7 +1822,7 @@ internals.configSchemes.elasticsearchs = {
   save: function (config, cb) {
     const url = internals.configFile.replace('elasticsearchs', 'https');
 
-    axios.post(url, JSON.stringify(config))
+    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         cb();
       })
