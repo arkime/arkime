@@ -174,6 +174,11 @@ class SimpleSource extends WISESource {
         this.api.addSource(this.section, this, [this.type]);
       }
 
+      // Treat null like empty response
+      if (body === null) {
+        body = '';
+      }
+
       // Process results
       this.parse(body, setFunc, (err) => {
         if (err) {

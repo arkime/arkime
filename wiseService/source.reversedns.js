@@ -74,7 +74,6 @@ class ReverseDNSSource extends WISESource {
     }
 
     resolver.reverse(ip, (err, domains) => {
-      // console.log("answer", ip, err, domains);
       if (err || domains.length === 0) {
         return cb(null, WISESource.emptyResult);
       }

@@ -456,7 +456,6 @@ class ThreatStreamSource extends WISESource {
 
       console.log(this.section, '- Copying DB', dbStat.mtime);
       exec(`/bin/cp -f ${dbFile} ${dbFile}.temp`, (err, stdout, stderr) => {
-        console.log(stdout, stderr);
         realDb.run('END', (err) => {
           realDb.close();
           realDb = null;

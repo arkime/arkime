@@ -49,7 +49,7 @@ class ElasticsearchSource extends WISESource {
         maxRetries: 2
       });
     } catch (err) {
-      console.log('ERROR - creating Elasticsearch client for new Elasticsearch source', err);
+      console.log(this.section, 'ERROR - creating Elasticsearch client for new Elasticsearch source', err);
     }
 
     api.addSource(section, this, [this.type]);

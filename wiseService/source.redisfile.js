@@ -23,19 +23,19 @@ class RedisFileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { reload: true });
-    this.url = api.getConfig(section, 'url');
-    if (this.url === undefined) {
+    if (api.getConfig(section, 'redisURL') === undefined) {
       console.log(this.section, '- ERROR not loading since no url specified in config file');
       return;
     }
     this.key = api.getConfig(section, 'key');
-    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
 
     if (this.key === undefined) {
       console.log(this.section, '- ERROR not loading since no key specified in config file');
       delete this.client;
       return;
     }
+
+    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
   }
 
   // ----------------------------------------------------------------------------
