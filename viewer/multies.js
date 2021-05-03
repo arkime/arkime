@@ -123,6 +123,17 @@ function node2Name (node) {
   return null;
 }
 
+function node2ESAPIKey (node) {
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const kv = parts[p].split(':');
+    if (kv[0] === 'elasticsearchAPIKey') {
+      return kv[1];
+    }
+  }
+  return null;
+}
+
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -904,7 +915,7 @@ nodes.forEach((node) => {
     ssl: esSSLOptions
   };
 
-  const esAPIKey = Config.get('esAPIKey', null);
+  const esAPIKey = node2ESAPIKey(node);
   if (esAPIKey) {
     esClientOptions.auth = {
       apiKey: esAPIKey

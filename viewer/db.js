@@ -18,8 +18,6 @@
 
 'use strict';
 
-const Config = require('./config.js');
-
 const os = require('os');
 const fs = require('fs');
 const async = require('async');
@@ -88,10 +86,9 @@ exports.initialize = async (info, cb) => {
     ssl: esSSLOptions
   };
 
-  const esAPIKey = Config.get('esAPIKey', null);
-  if (esAPIKey) {
+  if (info.esApiKey) {
     esClientOptions.auth = {
-      apiKey: esAPIKey
+      apiKey: info.esApiKey
     };
   }
 
@@ -99,6 +96,11 @@ exports.initialize = async (info, cb) => {
 
   if (info.usersHost) {
     esClientOptions.node = internals.info.usersHost;
+    if (info.usersEsApiKey) {
+      esClientOptions.auth = {
+        apiKey: info.usersEsApiKey
+      };
+    }
     internals.usersClient7 = new Client(esClientOptions);
   } else {
     internals.usersClient7 = internals.client7;
