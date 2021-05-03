@@ -17,67 +17,44 @@
  */
 'use strict';
 
-const fs = require('fs');
 const WISESource = require('./wiseSource.js');
 const ini = require('iniparser');
 
-class ValueActionsSource extends WISESource {
+class ValueActionsRedisSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { });
 
-    if (section === 'right-click') {
-      this.process(api.getConfigSection(section));
+    if (api.getConfig(section, 'redisURL') === undefined) {
+      console.log(this.section, '- ERROR not loading', this.section, 'since no redisURL specified in config file');
       return;
     }
 
-    this.file = api.getConfig(section, 'file');
-
-    if (this.file === undefined) {
-      console.log(this.section, '- ERROR not loading', this.section, 'since no file specified in config file');
-      return;
-    }
-
-    if (!fs.existsSync(this.file)) {
-      console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
+    this.key = api.getConfig(section, 'key');
+    if (this.key === undefined) {
+      console.log(this.section, '- ERROR not loading', this.section, 'since no key specified in config file');
       return;
     }
 
     this.api.addSource(section, this, []);
 
-    setImmediate(this.load.bind(this));
+    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
 
-    // Watch file for changes, combine multiple changes into one, on move restart watch after a pause
-    this.watchTimeout = null;
-    const watchCb = (e, filename) => {
-      clearTimeout(this.watchTimeout);
-      if (e === 'rename') {
-        this.watch.close();
-        setTimeout(() => {
-          this.load();
-          this.watch = fs.watch(this.file, watchCb);
-        }, 500);
-      } else {
-        this.watchTimeout = setTimeout(() => {
-          this.watchTimeout = null;
-          this.load();
-        }, 2000);
-      }
-    };
-    this.watch = fs.watch(this.file, watchCb);
+    setImmediate(this.load.bind(this));
+    setInterval(this.load.bind(this), 5 * 1000 * 60); // Eventually could just monitor
   }
 
   // ----------------------------------------------------------------------------
   load () {
-    if (!fs.existsSync(this.file)) {
-      console.log(this.section, '- ERROR not loading', this.section, 'since', this.file, "doesn't exist");
-      return;
+    if (this.client && this.key) {
+      this.client.get(this.key, (err, data) => {
+        if (err) {
+          console.log(this.section, '- ERROR', err);
+          return;
+        }
+        this.process(ini.parseSync(data));
+      });
     }
-
-    const config = ini.parseSync(this.file);
-    const data = config.valueactions || config;
-
-    this.process(data);
   };
 
   // ----------------------------------------------------------------------------
@@ -117,18 +94,14 @@ class ValueActionsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   getSourceRaw (cb) {
-    fs.readFile(this.file, (err, body) => {
-      if (err) {
-        return cb(err);
-      }
-      return cb(null, body);
-    });
+    this.client.get(this.key, cb);
   }
 
   // ----------------------------------------------------------------------------
-  putSourceRaw (body, cb) {
-    fs.writeFile(this.file, body, (err) => {
-      return cb(err);
+  putSourceRaw (file, cb) {
+    this.client.set(this.key, file, (err) => {
+      this.load();
+      cb(err);
     });
   }
 }
@@ -143,13 +116,14 @@ exports.initSource = function (api) {
     editable: true,
     types: [], // This is a fake source, no types
     fields: [
-      { name: 'file', required: true, help: 'The file to load' }
+      { name: 'redisURL', password: true, required: true, help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
+      { name: 'key', required: true, help: 'When using redis the document key to fetch the value actions from' }
     ]
   });
 
   const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|valueactions:)/); });
   sections.forEach((section) => {
-    return new ValueActionsSource(api, section);
+    return new ValueActionsRedisSource(api, section);
   });
 };
 // ----------------------------------------------------------------------------

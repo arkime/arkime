@@ -69,7 +69,7 @@ exports.initSource = function (api) {
     editable: true,
     displayable: true,
     fields: [
-      { name: 'redisURL', password: true, required: false, help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
+      { name: 'redisURL', password: true, required: true, help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
       { name: 'key', required: true, help: 'The document key in redis to fetch' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
