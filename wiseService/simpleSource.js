@@ -176,7 +176,8 @@ class SimpleSource extends WISESource {
 
       // Treat null like empty response
       if (body === null) {
-        body = '';
+        this.cache = newCache;
+        return;
       }
 
       // Process results

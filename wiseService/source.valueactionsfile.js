@@ -137,7 +137,7 @@ class ValueActionsFileSource extends WISESource {
 exports.initSource = function (api) {
   api.addSourceConfigDef('valueactionsfile', {
     singleton: false,
-    name: 'valueactions',
+    name: 'valueactionsfile',
     description: "This source monitors configured files for value actions to send to all the viewer instances that connect to this WISE Server. It isn't really a source in the true WISE sense, but makes it easy to edit.",
     cacheable: false,
     editable: true,

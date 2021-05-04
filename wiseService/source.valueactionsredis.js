@@ -52,13 +52,16 @@ class ValueActionsRedisSource extends WISESource {
           console.log(this.section, '- ERROR', err);
           return;
         }
-        this.process(ini.parseSync(data));
+        if (data === null) { data = ''; }
+        this.process(ini.parse(data));
       });
     }
   };
 
   // ----------------------------------------------------------------------------
   process (data) {
+    if (!data) { return; }
+
     const keys = Object.keys(data);
     if (!keys) { return; }
 
@@ -108,9 +111,9 @@ class ValueActionsRedisSource extends WISESource {
 
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef('valueactions', {
+  api.addSourceConfigDef('valueactionsredis', {
     singleton: false,
-    name: 'valueactions',
+    name: 'valueactionsredis',
     description: "This source monitors configured files for value actions to send to all the viewer instances that connect to this WISE Server. It isn't really a source in the true WISE sense, but makes it easy to edit.",
     cacheable: false,
     editable: true,
@@ -121,7 +124,7 @@ exports.initSource = function (api) {
     ]
   });
 
-  const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|valueactions:)/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^(valueactionsredis:)/); });
   sections.forEach((section) => {
     return new ValueActionsRedisSource(api, section);
   });
