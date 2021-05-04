@@ -79,20 +79,29 @@ exports.initialize = async (info, cb) => {
     }
   }
 
-  internals.client7 = new Client({
+  const esClientOptions = {
     node: internals.info.host,
     maxRetries: 2,
     requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
     ssl: esSSLOptions
-  });
+  };
+
+  if (info.esApiKey) {
+    esClientOptions.auth = {
+      apiKey: info.esApiKey
+    };
+  }
+
+  internals.client7 = new Client(esClientOptions);
 
   if (info.usersHost) {
-    internals.usersClient7 = new Client({
-      node: internals.info.usersHost,
-      maxRetries: 2,
-      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    });
+    esClientOptions.node = internals.info.usersHost;
+    if (info.usersEsApiKey) {
+      esClientOptions.auth = {
+        apiKey: info.usersEsApiKey
+      };
+    }
+    internals.usersClient7 = new Client(esClientOptions);
   } else {
     internals.usersClient7 = internals.client7;
   }
