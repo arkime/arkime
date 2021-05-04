@@ -53,7 +53,7 @@ class ValueActionsRedisSource extends WISESource {
           return;
         }
         if (data === null) { data = ''; }
-        this.process(ini.parse(data));
+        this.process(ini.parseString(data));
       });
     }
   };
