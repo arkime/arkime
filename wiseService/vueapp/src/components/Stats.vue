@@ -1,39 +1,72 @@
 <template>
   <div class="container-fluid">
-    <Alert :initialAlert="alertMessage" variant="alert-danger" v-on:clear-initialAlert="alertMessage = ''"/>
+    <Alert :initialAlert="alertMessage"
+      variant="alert-danger"
+      v-on:clear-initialAlert="alertMessage = ''"
+    />
 
-    <div v-if="sourceStats.length">
-      <b-tabs content-class="mt-3"
-        :dark="getTheme ==='dark'">
-        <b-tab title="Sources" active>
-          <div v-if="sourceStats.length > 0">
-            <b-table striped hover small borderless
-              :dark="getTheme ==='dark'"
-              :items="sourceStats"
-              :fields="sourceTableFields">
-            </b-table>
+    <div class="row">
+      <div class="col-12">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              <span class="fa fa-search fa-fw" />
+            </span>
           </div>
-        </b-tab>
-        <b-tab title="Types">
-          <div v-if="typeStats.length > 0">
-            <b-table striped hover small borderless
-              :dark="getTheme ==='dark'"
-              :items="typeStats"
-              :fields="typeTableFields">
-            </b-table>
-          </div>
-        </b-tab>
-        <template #tabs-end>
-          <li role="presentation"
-            class="nav-item align-self-center startup-time">
-            Started at
-            <strong>{{ startTime }}</strong>
-          </li>
-        </template>
-      </b-tabs>
+          <input type="text"
+            class="form-control"
+            v-model="searchTerm"
+            @input="debounceInput"
+            placeholder="Search WISE Sources..."
+          />
+        </div>
+      </div>
     </div>
 
-    <div v-else
+    <b-tabs content-class="mt-3"
+      :dark="getTheme ==='dark'">
+      <b-tab title="Sources" active>
+        <div v-if="sourceStats.length > 0">
+          <b-table striped hover small borderless
+            :dark="getTheme ==='dark'"
+            :items="sourceStats"
+            :fields="sourceTableFields">
+          </b-table>
+        </div>
+        <div v-else-if="searchTerm"
+          class="vertical-center info-area mt-5 pt-5">
+          <div>
+            <h1><b-icon-folder2-open /></h1>
+            No sources match your search.
+          </div>
+        </div>
+      </b-tab>
+      <b-tab title="Types">
+        <div v-if="typeStats.length > 0">
+          <b-table striped hover small borderless
+            :dark="getTheme ==='dark'"
+            :items="typeStats"
+            :fields="typeTableFields">
+          </b-table>
+        </div>
+        <div v-else-if="searchTerm"
+          class="vertical-center info-area mt-5 pt-5">
+          <div>
+            <h1><b-icon-folder2-open /></h1>
+            No types match your search.
+          </div>
+        </div>
+      </b-tab>
+      <template #tabs-end>
+        <li role="presentation"
+          class="nav-item align-self-center startup-time">
+          Started at
+          <strong>{{ startTime }}</strong>
+        </li>
+      </template>
+    </b-tabs>
+
+    <div v-if="showEmpty && !searchTerm && !sourceStats.length"
       class="vertical-center info-area mt-5 pt-5">
       <div>
         <h1><b-icon-folder2-open /></h1>
@@ -62,36 +95,50 @@ import { mapGetters } from 'vuex';
 import WiseService from './wise.service';
 import Alert from './Alert';
 
+let dataInterval;
+let searchTimeout;
+
 export default {
   name: 'Stats',
   components: {
     Alert
   },
-  data: function () {
+  data () {
     return {
+      showEmpty: false,
       alertMessage: '',
       sourceStats: [],
       typeStats: [],
       sourceTableFields: [],
       typeTableFields: [],
-      startTime: undefined
+      startTime: undefined,
+      searchTerm: ''
     };
   },
-  mounted: function () {
+  mounted () {
     this.loadResourceStats();
+    this.setLoadInterval();
   },
   computed: {
-    ...mapGetters(['getTheme'])
+    ...mapGetters(['getTheme', 'getStatsDataInterval'])
+  },
+  watch: {
+    getStatsDataInterval (newVal, oldVal) {
+      this.setLoadInterval();
+    }
   },
   methods: {
-    loadResourceStats: function () {
-      WiseService.getResourceStats()
-        .then((data) => {
-          this.alertMessage = '';
-          if (data && data.startTime) {
-            this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
-          }
-          if (data && data.sources && data.sources.length > 0) {
+    loadResourceStats () {
+      WiseService.getResourceStats({ search: this.searchTerm }).then((data) => {
+        this.showEmpty = true;
+        this.alertMessage = '';
+        if (data && data.startTime) {
+          this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
+        }
+        if (data && data.sources) {
+          if (data.sources.length === 0) {
+            this.sourceStats = [];
+          } else {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
               const obj = { key: key, sortable: true };
@@ -103,7 +150,11 @@ export default {
               this.sourceTableFields.push(obj);
             });
           }
-          if (data && data.types && data.types.length > 0) {
+        }
+        if (data && data.types) {
+          if (data.types.length === 0) {
+            this.typeStats = [];
+          } else {
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
               const obj = { key: key, sortable: true };
@@ -115,11 +166,28 @@ export default {
               this.typeTableFields.push(obj);
             });
           }
-        })
-        .catch((error) => {
-          this.alertMessage = error.text ||
-            'Error fetching resource stats for wise.';
-        });
+        }
+      }).catch((error) => {
+        this.showEmpty = true;
+        this.alertMessage = error.text ||
+          'Error fetching resource stats for wise.';
+      });
+    },
+    setLoadInterval () {
+      if (dataInterval) { clearInterval(dataInterval); }
+      if (!this.getStatsDataInterval) { return; }
+
+      dataInterval = setInterval(() => {
+        this.loadResourceStats();
+      }, this.getStatsDataInterval);
+    },
+    debounceInput () {
+      if (!this.searchTerm) { this.showEmpty = false; }
+      if (searchTimeout) { clearTimeout(searchTimeout); }
+      searchTimeout = setTimeout(() => {
+        searchTimeout = null;
+        this.loadResourceStats();
+      }, 500);
     }
   }
 };

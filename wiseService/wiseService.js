@@ -1497,7 +1497,7 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
  * @name "/stats"
  * @returns {object} - Object with array of stats per type and array of stats per source
  */
-app.get('/stats', [noCacheJson], function (req, res) {
+app.get('/stats', [noCacheJson], (req, res) => {
   const types = Object.keys(internals.types).sort();
   const sections = Object.keys(internals.sources).sort();
 
@@ -1505,6 +1505,11 @@ app.get('/stats', [noCacheJson], function (req, res) {
 
   for (const type of types) {
     const typeInfo = internals.types[type];
+    let match = true;
+    if (req.query.search) {
+      match = type.toLowerCase().match(req.query.search.toLowerCase());
+    }
+    if (!match) { continue; }
     stats.types.push({
       type: type,
       request: typeInfo.requestStats,
@@ -1518,6 +1523,11 @@ app.get('/stats', [noCacheJson], function (req, res) {
 
   for (const section of sections) {
     const src = internals.sources[section];
+    let match = true;
+    if (req.query.search) {
+      match = section.toLowerCase().match(req.query.search.toLowerCase());
+    }
+    if (!match) { continue; }
     stats.sources.push({
       source: section,
       request: src.requestStat,

@@ -15,15 +15,15 @@
             active-class="active"
             class="nav-link"
             exact>
-            Query
+            Stats
           </router-link>
         </li>
         <li class="nav-item mr-2">
-          <router-link to="/statistics"
+          <router-link to="/query"
             active-class="active"
             class="nav-link"
             exact>
-            Stats
+            Query
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -36,11 +36,35 @@
         </li>
       </ul> <!-- /page links -->
 
+      <!-- data refresh interval select -->
+      <div v-if="$route.name === 'Stats'"
+        style="width:auto;"
+        class="input-group input-group-sm ml-1">
+        <div class="input-group-prepend help-cursor"
+          v-b-tooltip.hover="'Refresh interval for stats data'">
+          <span class="input-group-text">
+            Refresh Data Every
+          </span>
+        </div>
+        <b-select class="form-control input-sm"
+          v-model="statsDataInterval"
+          :options="[
+            { value: 0, text: 'None' },
+            { value:5000, text: '5 seconds' },
+            { value:15000, text: '15 seconds' },
+            { value:30000, text: '30 seconds' },
+            { value:60000, text: '1 minute' }
+          ]">
+        </b-select>
+
+      </div> <!-- /data interval select -->
+
+      <!-- help -->
       <router-link to="help">
         <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
           v-b-tooltip.hover="'HELP!'">
         </span>
-      </router-link>
+      </router-link> <!-- /help -->
 
       <!-- dark/light mode -->
       <button type="button"
@@ -48,10 +72,10 @@
         @click="toggleTheme"
         v-b-tooltip.hover.left
         title="Toggle light/dark theme">
-        <span v-if="theme === 'light'"
+        <span v-if="wiseTheme === 'light'"
           class="fa fa-sun-o">
         </span>
-        <span v-if="theme === 'dark'"
+        <span v-if="wiseTheme === 'dark'"
           class="fa fa-moon-o">
         </span>
       </button> <!-- /dark/light mode -->
@@ -65,16 +89,25 @@ export default {
   name: 'WiseNavbar',
   data: function () {
     return {
-      queryParams: {}
+      queryParams: {},
+      dataInterval: 0
     };
   },
   computed: {
-    theme: {
+    wiseTheme: {
       get () {
-        return this.$store.state.theme;
+        return this.$store.state.wiseTheme;
       },
-      set (theme) {
-        this.$store.commit('SET_THEME', theme);
+      set (wiseTheme) {
+        this.$store.commit('SET_THEME', wiseTheme);
+      }
+    },
+    statsDataInterval: {
+      get () {
+        return this.$store.state.statsDataInterval;
+      },
+      set (dataInterval) {
+        this.$store.commit('SET_STATS_DATA_INTERVAL', dataInterval);
       }
     }
   },
@@ -84,11 +117,8 @@ export default {
     }
   },
   mounted: function () {
-    if (localStorage.getItem('wiseTheme')) {
-      this.theme = localStorage.getItem('wiseTheme');
-      if (this.theme === 'dark') {
-        document.body.classList = [this.theme];
-      }
+    if (this.wiseTheme === 'dark') {
+      document.body.classList = [this.wiseTheme];
     }
 
     this.queryParams = this.$route.query;
@@ -96,15 +126,13 @@ export default {
   methods: {
     /* page functions -------------------------------------------------------- */
     toggleTheme: function () {
-      if (this.theme === 'light') {
-        this.theme = 'dark';
-        document.body.classList = [this.theme];
+      if (this.wiseTheme === 'light') {
+        this.wiseTheme = 'dark';
+        document.body.classList = [this.wiseTheme];
       } else {
-        this.theme = 'light';
+        this.wiseTheme = 'light';
         document.body.classList = [];
       }
-
-      localStorage.setItem('wiseTheme', this.theme);
     }
   }
 };

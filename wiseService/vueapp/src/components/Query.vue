@@ -54,9 +54,9 @@
         <div class="input-group">
           <span class="input-group-prepend">
             <span class="input-group-text">
-              <span v-if="!loading" class="fa fa-search">
+              <span v-if="!loading" class="fa fa-search fa-fw">
               </span>
-              <span v-else class="spinner-border spinner-border-sm">
+              <span v-else class="fa fa-spinner fa-spin fa-fw">
               </span>
             </span>
           </span>
@@ -290,7 +290,10 @@ export default {
       WiseService.search(this.chosenSource, this.chosenType, this.searchTerm)
         .then((data) => {
           this.alertMessage = '';
-          this.loading = false;
+          setTimeout(() => {
+            this.loading = false;
+          }, 500);
+          // this.loading = false;
           this.searchResult = data;
           if (data.length >= 1) {
             this.tableFields = Object.keys(data[0]).map(key => {

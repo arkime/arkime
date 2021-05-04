@@ -26,9 +26,9 @@ export default {
         });
     });
   },
-  getResourceStats: function () {
+  getResourceStats: function (query) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('stats')
+      Vue.axios.get('stats', { params: query })
         .then((response) => {
           resolve(response.data);
         })
