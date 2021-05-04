@@ -1991,13 +1991,13 @@ function buildConfigAndStart () {
       if (err) { return; }
       const updateTime = config.wiseService.updateTime || 0;
       if (updateTime > internals.updateTime) {
-        console.log(`New config file, restarting`);
+        console.log('New config file, restarting');
         // Because of nodemon
         setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
         setTimeout(() => { process.exit(0); }, 1500);
       }
     });
-  }, (3000*60 + Math.random() * 3000*60)); // Check 3min + 0-3min
+  }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
 }
 
 buildConfigAndStart();
