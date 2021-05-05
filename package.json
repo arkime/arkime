@@ -13,7 +13,7 @@
     "bson": "^1.1.5",
     "chalk": "^4.1.0",
     "connect-timeout": "^1.7.0",
-    "console-stamp": "^0.2.9",
+    "console-stamp": "^3.0.2",
     "cryptiles": ">=4.1.2",
     "csv": "^5.3.2",
     "express": "^4.17.1",
