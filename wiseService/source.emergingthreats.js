@@ -159,6 +159,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'emergingthreats',
     description: 'Link to the emergingthreats data',
+    link: 'https://arkime.com/wise#emerging-threats-pro',
     types: ['ip', 'domain'],
     cacheable: false,
     displayable: true,

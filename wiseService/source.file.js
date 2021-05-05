@@ -91,6 +91,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'file',
     description: 'Use a local file to load data into wise. The file is automatically reloaded if it changes.',
+    link: 'https://arkime.com/wise#file',
     cacheable: false,
     editable: true,
     displayable: true,

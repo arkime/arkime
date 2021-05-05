@@ -115,6 +115,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'valueactionsredis',
     description: "This source monitors configured files for value actions to send to all the viewer instances that connect to this WISE Server. It isn't really a source in the true WISE sense, but makes it easy to edit.",
+    link: 'https://arkime.com/wise#valueactionsredis',
     cacheable: false,
     editable: true,
     types: [], // This is a fake source, no types

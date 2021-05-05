@@ -64,7 +64,24 @@
       <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2>
-          <form class="form-inline pull-right ml-5">
+          <form v-if="configViewSelected === 'edit'"
+            class="form-inline pull-right ml-5">
+            <b-button
+              class="mr-2"
+              variant="warning"
+              :disabled="fileResetDisabled"
+              @click="loadSourceFile">
+              Reset File
+            </b-button>
+            <b-button
+              variant="primary"
+              :disabled="fileSaveDisabled"
+              @click="saveSourceFile">
+              Save File
+            </b-button>
+          </form>
+          <form v-else-if="configViewSelected === 'config'"
+            class="form-inline pull-right ml-5">
             <div class="input-group">
               <input type="text"
                 class="form-control"
@@ -89,6 +106,12 @@
         <div v-if="configDefs[selectedSourceSplit]" class="subtext mt-1 mb-4">
           <div v-if="configDefs[selectedSourceSplit].description">
             {{ configDefs[selectedSourceSplit].description }}
+            <a v-if="configDefs[selectedSourceSplit].link"
+              :href="configDefs[selectedSourceSplit].link"
+              class="no-decoration"
+              target="_blank">
+              Learn More!
+            </a>
           </div>
 
           <div v-if="configDefs[selectedSourceSplit].editable || configDefs[selectedSourceSplit].displayable">
@@ -146,21 +169,6 @@
             :expandedOnStart="true"
             @json-change="onJsonChange"
           />
-          <span class="d-flex justify-content-between mt-4">
-            <b-button
-              variant="warning"
-              :disabled="fileResetDisabled"
-              @click="loadSourceFile">
-              Reset File
-            </b-button>
-            <b-button
-              variant="primary"
-              class="float-right"
-              :disabled="fileSaveDisabled"
-              @click="saveSourceFile">
-              Save File
-            </b-button>
-          </span>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -259,8 +267,14 @@
             </option>
           </select>
         </div>
-        <p v-if="newSource && configDefs[newSource]">
+        <p v-if="newSource && configDefs[newSource] && configDefs[newSource].description">
           {{ configDefs[newSource].description }}
+          <a v-if="configDefs[newSource].link"
+            :href="configDefs[newSource].link"
+            class="no-decoration"
+            target="_blank">
+            Learn More!
+          </a>
         </p>
         <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
           <b-form-input

@@ -177,6 +177,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'threatq',
     description: 'ThreatQ source',
+    link: 'https://arkime.com/wise#threatq',
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
     displayable: true,

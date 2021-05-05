@@ -117,6 +117,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'elasticsearch',
     description: 'Link to the elasticsearch data',
+    link: 'https://arkime.com/wise#elasticsearch',
     fields: [
       { name: 'type', required: true, help: 'The wise type of this source' },
       { name: 'tag', required: true, help: 'The tags to set on matches' },

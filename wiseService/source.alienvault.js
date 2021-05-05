@@ -159,6 +159,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'alienvault',
     description: 'Link to the alienvault data',
+    link: 'https://arkime.com/wise#alien-vault',
     types: ['ip'],
     cacheable: false,
     displayable: true,
