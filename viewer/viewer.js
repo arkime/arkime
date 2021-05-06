@@ -2563,5 +2563,7 @@ Db.initialize({
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
   debug: Config.debug,
-  getSessionBySearch: Config.get('getSessionBySearch', '')
+  getSessionBySearch: Config.get('getSessionBySearch', ''),
+  esApiKey: Config.get('elasticsearchAPIKey', null),
+  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null)
 }, main);

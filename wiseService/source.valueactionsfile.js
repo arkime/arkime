@@ -21,7 +21,7 @@ const fs = require('fs');
 const WISESource = require('./wiseSource.js');
 const ini = require('iniparser');
 
-class ValueActionsSource extends WISESource {
+class ValueActionsFileSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { });
@@ -135,21 +135,21 @@ class ValueActionsSource extends WISESource {
 
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  api.addSourceConfigDef('valueactions', {
+  api.addSourceConfigDef('valueactionsfile', {
     singleton: false,
-    name: 'valueactions',
+    name: 'valueactionsfile',
     description: "This source monitors configured files for value actions to send to all the viewer instances that connect to this WISE Server. It isn't really a source in the true WISE sense, but makes it easy to edit.",
     cacheable: false,
     editable: true,
     types: [], // This is a fake source, no types
     fields: [
-      { name: 'file', required: true, help: 'The file to load' }
+      { name: 'file', required: true, help: 'The file to load, or set redis variables' }
     ]
   });
 
-  const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|valueactions:)/); });
+  const sections = api.getConfigSections().filter((e) => { return e.match(/^(right-click$|right-click:|valueactions:|valueactionsfile:)/); });
   sections.forEach((section) => {
-    return new ValueActionsSource(api, section);
+    return new ValueActionsFileSource(api, section);
   });
 };
 // ----------------------------------------------------------------------------

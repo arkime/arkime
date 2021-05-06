@@ -149,5 +149,7 @@ Db.initialize({
   insecure: Config.insecure,
   ca: Config.getCaTrustCerts(Config.nodeName()),
   usersHost: Config.get('usersElasticsearch'),
-  usersPrefix: Config.get('usersPrefix')
+  usersPrefix: Config.get('usersPrefix'),
+  esApiKey: Config.get('elasticsearchAPIKey', null),
+  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null)
 }, main);

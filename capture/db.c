@@ -2435,7 +2435,16 @@ void moloch_db_init()
     }
     if (!config.dryRun) {
         esServer = moloch_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
-        static char *headers[] = {"Content-Type: application/json", "Expect:", NULL};
+
+        static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
+
+        char* elasticsearchAPIKey = moloch_config_str(NULL, "elasticsearchAPIKey", NULL);
+        if (elasticsearchAPIKey) {
+            static char auth[1024];
+            snprintf(auth, sizeof(auth), "Authorization: ApiKey %s", elasticsearchAPIKey);
+            headers[2] = auth;
+        }
+
         moloch_http_set_headers(esServer, headers);
         moloch_http_set_print_errors(esServer);
 

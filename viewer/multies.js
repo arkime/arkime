@@ -123,6 +123,17 @@ function node2Name (node) {
   return null;
 }
 
+function node2ESAPIKey (node) {
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const kv = parts[p].split(':');
+    if (kv[0] === 'elasticsearchAPIKey') {
+      return kv[1];
+    }
+  }
+  return null;
+}
+
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -911,12 +922,22 @@ nodes.forEach((node) => {
   let nodeName = node.split(',')[0];
 
   nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
-  clients[node] = new Client({
+
+  const esClientOptions = {
     node: nodeName,
     requestTimeout: 300000,
     maxRetries: 2,
     ssl: esSSLOptions
-  });
+  };
+
+  const esAPIKey = node2ESAPIKey(node);
+  if (esAPIKey) {
+    esClientOptions.auth = {
+      apiKey: esAPIKey
+    };
+  }
+
+  clients[node] = new Client(esClientOptions);
 });
 
 // Now check version numbers

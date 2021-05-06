@@ -1251,6 +1251,7 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  */
 app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
+    .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
     .reduce((obj, key) => {
       // Deep Copy
@@ -1264,6 +1265,9 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
       });
       return obj;
     }, {});
+
+  if (config.wiseService === undefined) { config.wiseService = {}; }
+  if (config.cache === undefined) { config.cache = {}; }
 
   return res.send({
     success: true,
@@ -1313,9 +1317,9 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
     for (const key in config[section]) {
       const field = configDef.fields.find(element => element.name === key);
       if (field === undefined) {
-        return res.send({ success: false, text: `Section ${section} field ${key} unknown` });
-      }
-      if (field.password === true) {
+        console.log(`Section ${section} field ${key} unknown, deleting`);
+        delete config[section][key];
+      } else if (field.password === true) {
         if (config[section][key] === '********') {
           config[section][key] = internals.config[section][key];
         }
@@ -1323,11 +1327,14 @@ app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParse
     };
   }
 
-  internals.configScheme.save(req.body.config, (err) => {
+  // Make sure updateTime has increased incase of clock sku
+  config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
+  internals.configScheme.save(config, (err) => {
     if (err) {
       return res.send({ success: false, text: err });
     } else {
       res.send({ success: true, text: 'Saved & Restarting' });
+      // Because of nodemon
       setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
       setTimeout(() => { process.exit(0); }, 1500);
     }
@@ -1637,7 +1644,7 @@ function printStats () {
     console.log(lines[i]);
   }
 
-  for (const section in internals.sources) {
+  for (const section of Object.keys(internals.sources).sort()) {
     const src = internals.sources[section];
     console.log(sprintf('SRC %-30s    cached: %7d lookup: %9d refresh: %7d dropped: %7d avgMS: %7d',
       section, src.cacheHitStat, src.cacheMissStat, src.cacheRefreshStat, src.requestDroppedStat, src.recentAverageMS));
@@ -1681,12 +1688,12 @@ internals.configSchemes.redis = {
       if (err) {
         return cb(err);
       }
+
       if (result === null) {
-        internals.config = {};
+        return cb(null, {});
       } else {
-        internals.config = JSON.parse(result);
+        return cb(null, JSON.parse(result));
       }
-      return cb();
     });
   },
   save: function (config, cb) {
@@ -1716,11 +1723,10 @@ internals.configSchemes['redis-sentinel'] = {
         return cb(err);
       }
       if (result === null) {
-        internals.config = {};
+        return cb(null, {});
       } else {
-        internals.config = JSON.parse(result);
+        return cb(JSON.parse(result));
       }
-      return cb();
     });
   },
   save: function (config, cb) {
@@ -1747,11 +1753,10 @@ internals.configSchemes['redis-cluster'] = {
         return cb(err);
       }
       if (result === null) {
-        internals.config = {};
+        return cb(null, {});
       } else {
-        internals.config = JSON.parse(result);
+        return cb(null, JSON.parse(result));
       }
-      return cb();
     });
   },
   save: function (config, cb) {
@@ -1771,13 +1776,11 @@ internals.configSchemes.elasticsearch = {
 
     axios.get(url)
       .then((response) => {
-        internals.config = response.data._source;
-        cb(null);
+        cb(null, response.data._source);
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {
-          internals.config = {};
-          return cb();
+          return cb(null, {});
         }
         return cb(error);
       });
@@ -1785,7 +1788,7 @@ internals.configSchemes.elasticsearch = {
   save: function (config, cb) {
     const url = internals.configFile.replace('elasticsearch', 'http');
 
-    axios.post(url, JSON.stringify(config))
+    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         cb(null);
       })
@@ -1805,13 +1808,11 @@ internals.configSchemes.elasticsearchs = {
 
     axios.get(url)
       .then((response) => {
-        internals.config = response.data._source;
-        cb(null);
+        return cb(null, response.data._source);
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {
-          internals.config = {};
-          return cb();
+          return cb(null, {});
         }
         return cb(error);
       });
@@ -1819,7 +1820,7 @@ internals.configSchemes.elasticsearchs = {
   save: function (config, cb) {
     const url = internals.configFile.replace('elasticsearchs', 'https');
 
-    axios.post(url, JSON.stringify(config))
+    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         cb();
       })
@@ -1832,8 +1833,7 @@ internals.configSchemes.elasticsearchs = {
 // ----------------------------------------------------------------------------
 internals.configSchemes.json = {
   load: function (cb) {
-    internals.config = JSON.parse(fs.readFileSync(internals.configFile, 'utf8'));
-    return cb();
+    return cb(null, JSON.parse(fs.readFileSync(internals.configFile, 'utf8')));
   },
   save: function (config, cb) {
     try {
@@ -1848,8 +1848,7 @@ internals.configSchemes.json = {
 // ----------------------------------------------------------------------------
 internals.configSchemes.ini = {
   load: function (cb) {
-    internals.config = ini.parseSync(internals.configFile);
-    return cb();
+    return cb(null, ini.parseSync(internals.configFile));
   },
   save: function (config, cb) {
     function encode (str) {
@@ -1966,21 +1965,39 @@ function buildConfigAndStart () {
     throw new Error('Unknown scheme');
   }
 
-  internals.configScheme.load((err) => {
+  internals.configScheme.load((err, config) => {
     if (err) {
       console.log(`Error reading ${internals.configFile}:\n\n`, err);
       process.exit(1);
     }
 
+    internals.config = config;
     if (internals.debug > 1) {
       console.log('Config', internals.config);
     }
+
+    internals.updateTime = internals.config.wiseService.updateTime || 0;
+    delete internals.config.wiseService.updateTime;
 
     setupAuth();
     if (internals.workers <= 1 || cluster.isWorker) {
       main();
     }
   });
+
+  // Check if we need to restart, this is if there are multiple instances
+  setInterval(() => {
+    internals.configScheme.load((err, config) => {
+      if (err) { return; }
+      const updateTime = config.wiseService.updateTime || 0;
+      if (updateTime > internals.updateTime) {
+        console.log('New config file, restarting');
+        // Because of nodemon
+        setTimeout(() => { process.kill(process.pid, 'SIGUSR2'); }, 500);
+        setTimeout(() => { process.exit(0); }, 1500);
+      }
+    });
+  }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
 }
 
 buildConfigAndStart();

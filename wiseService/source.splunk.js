@@ -34,7 +34,7 @@ class SplunkSource extends WISESource {
     this.port = api.getConfig(section, 'port', 8089);
     this.periodic = api.getConfig(section, 'periodic');
     this.query = api.getConfig(section, 'query');
-    this.arrayPath = api.getConfig(section, 'arrayPath');
+    // this.arrayPath = api.getConfig(section, 'arrayPath');
     this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
 
     ['host', 'username', 'password', 'query', 'keyPath'].forEach((item) => {
@@ -55,14 +55,14 @@ class SplunkSource extends WISESource {
 
     this.service.login((err, success) => {
       if (err) {
-        console.log("ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
+        console.log(this.section, "ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
         return;
       }
       if (this.periodic) {
         this.periodicRefresh();
       }
 
-      console.log('Login was successful: ' + success);
+      console.log(this.section, 'Login was successful: ' + success);
     });
 
     api.addSource(section, this, [this.type]);
@@ -214,10 +214,10 @@ exports.initSource = function (api) {
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'username', required: true, help: 'The Splunk username' },
-      { name: 'password', required: true, help: 'The Splunk password' },
+      { name: 'password', required: true, password: true, help: 'The Splunk password' },
       { name: 'host', required: true, help: 'The Splunk hostname' },
-      { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
-      { name: 'keyColumn', required: true, help: 'The column to use from the returned data to use as the key' },
+      // { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
+      { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
       { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
       { name: 'port', required: true, help: 'The Splunk port' },
       { name: 'query', required: true, help: 'The query to run against Splunk. For non periodic queries the string %%SEARCHTERM%% will be replaced with the key' },

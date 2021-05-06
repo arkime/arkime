@@ -344,7 +344,7 @@ export default {
       const options = {};
       // Note: Services are alredy added to currConfig. This assists rendering them first
       options.services = Object.keys(this.configDefs).filter(key => this.configDefs[key].service);
-      options.sources = Object.keys(this.currConfig).filter(key => !options.services.includes(key));
+      options.sources = Object.keys(this.currConfig).filter(key => !options.services.includes(key)).sort();
       return options;
     },
     activeFields: function () {
