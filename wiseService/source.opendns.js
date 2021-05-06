@@ -194,6 +194,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'opendns',
     description: 'OpenDNS source for domain names',
+    link: 'https://arkime.com/wise#opendns-umbrella',
     types: ['domain'],
     fields: [
       { name: 'key', password: true, required: true, help: 'The API key' }]

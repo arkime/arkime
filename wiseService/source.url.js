@@ -84,6 +84,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'url',
     description: 'Use a web url to load data into wise. The url can be periodically reloaded.',
+    link: 'https://arkime.com/wise#url',
     cacheable: false,
     displayable: true,
     fields: [

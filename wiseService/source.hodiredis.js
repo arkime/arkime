@@ -93,6 +93,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'hodiredis',
     description: 'Experimental “History of Observed Data Indicators” plugin using Redis. This watches all queries to WISE and sends a feed to a configured elasticsearch cluster with firstSeen, lastSeen, and VERY rough count metric.',
+    link: 'https://arkime.com/wise#hodi',
     types: ['ip', 'domain', 'md5', 'email'],
     cacheable: false,
     fields: [

@@ -209,6 +209,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'splunk',
     description: 'This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server',
+    link: 'https://arkime.com/wise#splunk',
     displayable: true,
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
