@@ -139,12 +139,20 @@
                 View {{ rawConfig ? 'Config Fields' : 'Raw Config' }}
               </b-button>
             </template>
+            <template v-if="configViewSelected === 'edit' && currCSV">
+              <b-button
+                class="pull-right"
+                variant="outline-info"
+                @click="toggleCSVEditor">
+                Use {{ rawCSV ? 'CSV Editor' : 'CSV Text Area' }}
+              </b-button>
+            </template>
           </div>
         </div>
 
         <div v-if="configViewSelected === 'edit'">
-          <p v-if="currConfig[selectedSourceKey].format">
-            This config uses {{ currConfig[selectedSourceKey].format }} format
+          <p>
+            This config uses {{ currConfig[selectedSourceKey].format ? currConfig[selectedSourceKey].format : (currCSV ? 'csv' : 'an unknown') }} format
             <template v-if="currConfig[selectedSourceKey].format === 'tagger'">
               -
               <a target="_blank"
@@ -154,21 +162,107 @@
               </a>
             </template>
           </p>
-          <!-- text area input for non json -->
-          <b-form-textarea
-            v-if="!currJSONFile"
-            v-model="currFile"
-            rows="18"
-          />
+          <!-- text area input for non json/csv -->
+          <template
+            v-if="(!currJSONFile && currConfig[selectedSourceKey].format === 'tagger') || rawCSV">
+            <b-form-textarea
+              v-model="currFile"
+              rows="18"
+            />
+          </template>
           <!-- json editor -->
           <vue-json-editor
-            v-else
+            v-else-if="currJSONFile"
             v-model="currJSONFile"
             :mode="'code'"
             :show-btns="false"
             :expandedOnStart="true"
             @json-change="onJsonChange"
           />
+          <div v-else-if="currCSV && !rawCSV">
+            <div class="mb-2 border-bottom pb-2">
+              <b-button
+                size="sm"
+                variant="outline-success"
+                @click="addCSVRow(-1)"
+                v-b-tooltip.hover="'Add a new row at the beginning'">
+                <b-icon-plus /> Add Row
+              </b-button>
+            </div>
+            <b-form inline
+              v-for="(row, rowIndex) in currCSV"
+              :key="rowIndex + 'csvrow'"
+              class="border-bottom mb-2">
+              <b-button
+                size="sm"
+                class="mr-2 mb-2"
+                variant="outline-success"
+                @click="addCSVCell(rowIndex, -1)"
+                v-b-tooltip.hover="'Add new cell at the beginning of this row'">
+                <b-icon-plus />
+              </b-button>
+              <template v-for="(cell, cellIndex) in row">
+                <b-input-group
+                  class="mr-2 mb-2"
+                  :key="cellIndex + 'csvcell'">
+                  <b-form-input
+                    size="sm"
+                    v-model="currCSV[rowIndex][cellIndex]"
+                    @input="debounceCSVChange"
+                  />
+                  <b-input-group-append>
+                    <b-button
+                      size="sm"
+                      variant="outline-danger"
+                      @click="removeCSVCell(rowIndex, cellIndex)"
+                      v-b-tooltip.hover="'Remove this cell'">
+                      <b-icon-dash />
+                    </b-button>
+                    <b-button
+                      size="sm"
+                      variant="outline-success"
+                      @click="addCSVCell(rowIndex, cellIndex)"
+                      v-b-tooltip.hover="'Add a new cell after this one'">
+                      <b-icon-plus />
+                    </b-button>
+                  </b-input-group-append>
+                </b-input-group>
+              </template>
+              <b-button
+                size="sm"
+                class="mr-2 mb-2"
+                variant="outline-danger"
+                @click="removeCSVRow(rowIndex)"
+                v-b-tooltip.hover="'Remove this row'">
+                <b-icon-dash /> Remove Row
+              </b-button>
+              <b-button
+                size="sm"
+                class="mr-2 mb-2"
+                variant="outline-success"
+                @click="addCSVRow(rowIndex)"
+                v-b-tooltip.hover="'Add a row after this one'">
+                <b-icon-plus /> Add Row
+              </b-button>
+            </b-form>
+            <b-button
+              size="sm"
+              variant="outline-success"
+              @click="addCSVRow(rowIndex)"
+              v-b-tooltip.hover="'Add a new row at the end'">
+              <b-icon-plus /> Add Row
+            </b-button>
+          </div>
+          <p v-else
+            class="text-danger">
+            We couldn't parse your config file. It might be in a format we do
+            not support. Please see our
+            <a href="https://arkime.com/wise"
+              target="_blank"
+              class="no-decoration">
+              WISE Documentation</a>
+            for more information on WISE Source Configuration.
+          </p>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -381,7 +475,8 @@ import 'vue-json-pretty/lib/styles.css';
 import WiseService from './wise.service';
 import Alert from './Alert';
 
-let timeout;
+let jsonTimeout;
+let csvTimeout;
 
 export default {
   name: 'Config',
@@ -406,6 +501,7 @@ export default {
       currFile: '',
       currFileBefore: '', // Used to determine if changes have been made
       currJSONFile: null,
+      currCSV: null,
       displayData: '',
       displayJSON: null,
       showPrettyJSON: false,
@@ -417,7 +513,8 @@ export default {
       showImportConfigModal: false,
       importConfigText: '',
       importConfigError: '',
-      rawConfig: false
+      rawConfig: false,
+      rawCSV: false
     };
   },
   computed: {
@@ -472,6 +569,8 @@ export default {
       this.currFile = '';
       this.currFileBefore = '';
       this.displayData = '';
+      this.currJSONFile = null;
+      this.currCSV = null;
     },
     configViewSelected: function () {
       if (this.configViewSelected === 'edit') {
@@ -576,8 +675,8 @@ export default {
       }
     },
     onJsonChange: function (value) {
-      if (timeout) { clearTimeout(timeout); }
-      timeout = setTimeout(() => {
+      if (jsonTimeout) { clearTimeout(jsonTimeout); }
+      jsonTimeout = setTimeout(() => {
         this.currFile = JSON.stringify(value, null, 4);
       }, 1000);
     },
@@ -708,6 +807,10 @@ export default {
             this.currJSONFile = JSON.parse(data.raw);
           } catch (err) {
             this.currJSONFile = null;
+            if (this.currConfig[this.selectedSourceKey].format !== 'tagger') {
+              // it might be a csv file
+              this.parseCSV();
+            }
           }
         })
         .catch((err) => {
@@ -716,6 +819,49 @@ export default {
             variant: 'alert-danger'
           };
         });
+    },
+    parseCSV () {
+      this.currCSV = [];
+      const rows = this.currFile.split('\n');
+      for (const row of rows) {
+        if (!row.length) { continue; } // emtpy row
+        if (row.startsWith('#')) { // comment row
+          this.currCSV.push([row]);
+          continue;
+        }
+        const cells = row.split(',');
+        this.currCSV.push(cells);
+      }
+    },
+    debounceCSVChange () {
+      if (csvTimeout) { clearTimeout(csvTimeout); }
+      csvTimeout = setTimeout(() => {
+        let csvStr = '';
+        for (const row of this.currCSV) {
+          csvStr += `${row.join(',')}\n`;
+        }
+        this.currFile = csvStr;
+      }, 1000);
+    },
+    toggleCSVEditor () {
+      this.rawCSV = !this.rawCSV;
+      this.rawCSV ? this.debounceCSVChange() : this.parseCSV();
+    },
+    addCSVCell (rowIndex, cellIndex) {
+      this.currCSV[rowIndex].splice(cellIndex + 1, 0, '');
+      this.debounceCSVChange();
+    },
+    removeCSVCell (rowIndex, cellIndex) {
+      this.currCSV[rowIndex].splice(cellIndex, 1);
+      this.debounceCSVChange();
+    },
+    addCSVRow (rowIndex) {
+      this.currCSV.splice(rowIndex + 1, 0, ['']);
+      this.debounceCSVChange();
+    },
+    removeCSVRow (rowIndex) {
+      this.currCSV.splice(rowIndex, 1);
+      this.debounceCSVChange();
     },
     saveSourceFile: function () {
       if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
