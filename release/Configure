@@ -214,5 +214,5 @@ fi
 echo ""
 echo "Arkime - Configured - Now continue with step 4 in $ARKIME_INSTALL_DIR/README.txt"
 echo ""
-tail -n +10 $ARKIME_INSTALL_DIR/README.txt
+tail -n +9 $ARKIME_INSTALL_DIR/README.txt
 
