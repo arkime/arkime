@@ -89,8 +89,7 @@ export default {
   name: 'WiseNavbar',
   data: function () {
     return {
-      queryParams: {},
-      dataInterval: 0
+      queryParams: {}
     };
   },
   computed: {
@@ -147,11 +146,6 @@ nav.navbar img {
 
 .navbar-nav {
   margin-left: 4rem;
-}
-
-/* remove browser select box styling */
-.refresh-interval-control {
-  -webkit-appearance: none;
 }
 
 /* animations -------------------------------- */

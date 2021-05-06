@@ -7,7 +7,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     wiseTheme: 'light',
-    statsDataInterval: 0
+    statsDataInterval: 30000
   },
   mutations: {
     SET_THEME (state, newTheme) {
