@@ -162,7 +162,7 @@
               </a>
             </template>
           </p>
-          <!-- text area input for non json/csv -->
+          <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
           <template
             v-if="(!currJSONFile && currConfig[selectedSourceKey].format === 'tagger') || rawCSV">
             <b-form-textarea
