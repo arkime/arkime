@@ -21,7 +21,7 @@
     "d3": "^5.16.0",
     "jquery": "^3.5.1",
     "qs": "^6.9.4",
-    "sanitize-html": "^1.27.5",
+    "sanitize-html": "^2.3.2",
     "vue-clickaway": "^2.2.2",
     "vue-clipboard2": "^0.3.0",
     "vue-color": "^2.4.6"
