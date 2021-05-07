@@ -62,7 +62,7 @@
       </div> <!-- /Sources sidebar -->
 
       <!-- Selected Source Input Fields -->
-      <div class="d-flex flex-column px-5 pt-2 flex-fill">
+      <div class="d-flex flex-column px-5 pt-2 flex-grow-1 source-container">
         <h2>
           <form v-if="configViewSelected === 'edit'"
             class="form-inline pull-right ml-5">
@@ -165,7 +165,7 @@
           <p v-if="!currConfig[selectedSourceKey].format && currCSV">
             Rows are delimited by newlines (<code>\n</code>).
             Cells are delimited by commas (<code>,</code>).
-            Comments are delimited by <code>#</code> and should be an entire row by itself.
+            Comments are delimited by <code>#</code> and should be at the start of the row.
           </p>
           <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
           <template
@@ -185,101 +185,102 @@
             @json-change="onJsonChange"
           />
           <!-- csv editor -->
-          <div class="d-flex pt-2 pb-2" v-else-if="currCSV && !rawCSV">
-            <div class="w-100">
-              <b-form inline
-                 class="flex-nowrap">
-                <b-input-group>
+          <div v-else-if="currCSV && !rawCSV"
+            class="pt-3 pb-3 csv-editor">
+            <b-form inline
+               class="flex-nowrap">
+              <b-input-group>
+                <input
+                  type="text"
+                  disabled="true"
+                  style="width:65px;"
+                  class="form-control form-control-sm br-0 csv-cell disabled"
+                />
+                <b-input-group-append>
+                </b-input-group-append>
+              </b-input-group>
+              <template v-for="(cell, cellIndex) in currCSV.longestRow">
+                <b-input-group :key="cellIndex + 'colheader'">
                   <input
                     type="text"
                     disabled="true"
-                    style="width:65px;"
                     class="form-control form-control-sm br-0 csv-cell disabled"
-                  />
-                  <b-input-group-append>
-                  </b-input-group-append>
-                </b-input-group>
-                <template v-for="(cell, cellIndex) in currCSV.longestRow">
-                  <b-input-group :key="cellIndex + 'colheader'">
-                    <input
-                      type="text"
-                      disabled="true"
-                      class="form-control form-control-sm br-0 csv-cell disabled"
-                      :placeholder="cellIndex"
-                    />
-                    <b-dropdown
-                      size="sm"
-                      class="col-control">
-                      <b-dropdown-item
-                        class="small"
-                        @click="addCSVColumn(cellIndex)">
-                        Add column left
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        class="small"
-                        @click="addCSVColumn(cellIndex + 1)">
-                        Add column right
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        class="small"
-                        @click="removeCSVColumn(cellIndex)">
-                        Remove column
-                      </b-dropdown-item>
-                    </b-dropdown>
-                    <b-input-group-append>
-                    </b-input-group-append>
-                  </b-input-group>
-                </template>
-              </b-form>
-              <b-form inline
-                class="flex-nowrap"
-                v-for="(row, rowIndex) in currCSV.rows"
-                :key="rowIndex + 'csvrow'">
-                <b-input-group :key="rowIndex + 'rowheader'">
-                  <input
-                    type="text"
-                    disabled="true"
-                    style="width:65px;"
-                    :placeholder="rowIndex"
-                    class="form-control form-control-sm br-0 csv-cell disabled"
+                    :placeholder="cellIndex"
                   />
                   <b-dropdown
                     size="sm"
                     class="col-control">
                     <b-dropdown-item
                       class="small"
-                      @click="addCSVRow(rowIndex)">
-                      Add row top
+                      @click="addCSVColumn(cellIndex)">
+                      Add column left
                     </b-dropdown-item>
                     <b-dropdown-item
                       class="small"
-                      @click="addCSVRow(rowIndex + 1)">
-                      Add row bottom
+                      @click="addCSVColumn(cellIndex + 1)">
+                      Add column right
                     </b-dropdown-item>
                     <b-dropdown-item
                       class="small"
-                      @click="removeCSVRow(rowIndex)">
-                      Remove row
+                      @click="removeCSVColumn(cellIndex)">
+                      Remove column
                     </b-dropdown-item>
                   </b-dropdown>
                   <b-input-group-append>
                   </b-input-group-append>
                 </b-input-group>
-                <template v-for="(cell, cellIndex) in currCSV.longestRow">
-                  <b-input-group
-                    :key="cellIndex + 'csvcell'">
-                    <input
-                      type="text"
-                      class="form-control form-control-sm br-0 csv-cell"
-                      v-model="currCSV.rows[rowIndex][cellIndex]"
-                      @input="debounceCSVChange"
-                    />
-                    <b-input-group-append>
-                    </b-input-group-append>
-                  </b-input-group>
-                </template>
-              </b-form>
-            </div>
+              </template>
+            </b-form>
+            <b-form inline
+              class="flex-nowrap"
+              v-for="(row, rowIndex) in currCSV.rows"
+              :key="rowIndex + 'csvrow'">
+              <b-input-group :key="rowIndex + 'rowheader'">
+                <input
+                  type="text"
+                  disabled="true"
+                  style="width:65px;"
+                  :placeholder="rowIndex"
+                  class="form-control form-control-sm br-0 csv-cell disabled"
+                />
+                <b-dropdown
+                  size="sm"
+                  class="col-control">
+                  <b-dropdown-item
+                    class="small"
+                    @click="addCSVRow(rowIndex)">
+                    Add row above
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    class="small"
+                    @click="addCSVRow(rowIndex + 1)">
+                    Add row below
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    class="small"
+                    @click="removeCSVRow(rowIndex)">
+                    Remove row
+                  </b-dropdown-item>
+                </b-dropdown>
+                <b-input-group-append>
+                </b-input-group-append>
+              </b-input-group>
+              <template v-for="(cell, cellIndex) in currCSV.longestRow">
+                <b-input-group
+                  :key="cellIndex + 'csvcell'">
+                  <input
+                    type="text"
+                    @input="debounceCSVChange"
+                    :id="rowIndex + '-' + cellIndex"
+                    v-model="currCSV.rows[rowIndex][cellIndex]"
+                    @keyup.enter="cellEnterClick(rowIndex, cellIndex)"
+                    class="form-control form-control-sm br-0 csv-cell"
+                  />
+                  <b-input-group-append>
+                  </b-input-group-append>
+                </b-input-group>
+              </template>
+            </b-form>
           </div> <!-- /csv editor -->
           <p v-else
             class="text-danger">
@@ -865,7 +866,6 @@ export default {
       for (const row of rows) { // parse rows
         if (!row.length) { continue; } // emtpy row
         if (row.startsWith('#')) { // comment row
-          // TODO disallow adding more fields to comment rows?
           this.currCSV.rows.push([row]);
           continue;
         }
@@ -883,6 +883,18 @@ export default {
         }
         this.currFile = csvStr;
       }, 1000);
+    },
+    cellEnterClick (rowIndex, colIndex) {
+      if (this.currCSV.rows.length - 1 === rowIndex) {
+        // need to add a new row
+        this.addCSVRow(rowIndex + 1);
+      }
+      this.$nextTick(() => {
+        // otherwise set cursor to the same column in the next row
+        const ref = `${rowIndex + 1}-${colIndex}`;
+        const cell = document.getElementById(ref);
+        if (cell) { cell.focus(); }
+      });
     },
     toggleCSVEditor () {
       this.rawCSV = !this.rawCSV;
@@ -965,6 +977,11 @@ export default {
 </script>
 
 <style scoped>
+.source-container {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
 .source-btn {
   width: 100%;
   font-size: .9rem;
@@ -994,10 +1011,16 @@ input.br-0 {
 }
 
 /* csv editor styles */
+.csv-editor {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
 input.csv-cell {
   margin-top: -1px;
   width: 130px !important;
 }
+
 .col-control {
   position: relative;
   right: 30px;
