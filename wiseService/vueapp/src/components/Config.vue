@@ -44,17 +44,19 @@
             block
             variant="warning"
             class="text-nowrap mt-3"
-            @click="showImportConfigModal = true">
-            <b-icon icon="download" scale="1"></b-icon>
-            <span>Import Config</span>
+            @click="showImportConfigModal = true"
+            v-b-tooltip.hover.right="'Import a new Source Configuration (JSON or INI)'">
+            <b-icon-download />
+            <span>Import</span>
           </b-button>
           <b-button
             block
             variant="success"
             class="text-nowrap"
-            @click="showSourceModal = true">
-            <b-icon icon="plus" scale="1"></b-icon>
-            <span>Add Source</span>
+            @click="showSourceModal = true"
+            v-b-tooltip.hover.right="'Create a new Source through the UI'">
+            <b-icon-plus />
+            <span>Create</span>
           </b-button>
         </span>
       </div> <!-- /Sources sidebar -->
@@ -62,7 +64,24 @@
       <!-- Selected Source Input Fields -->
       <div class="d-flex flex-column px-5 pt-2 w-100">
         <h2>
-          <form class="form-inline pull-right ml-5">
+          <form v-if="configViewSelected === 'edit'"
+            class="form-inline pull-right ml-5">
+            <b-button
+              class="mr-2"
+              variant="warning"
+              :disabled="fileResetDisabled"
+              @click="loadSourceFile">
+              Reset File
+            </b-button>
+            <b-button
+              variant="primary"
+              :disabled="fileSaveDisabled"
+              @click="saveSourceFile">
+              Save File
+            </b-button>
+          </form>
+          <form v-else-if="configViewSelected === 'config'"
+            class="form-inline pull-right ml-5">
             <div class="input-group">
               <input type="text"
                 class="form-control"
@@ -87,6 +106,12 @@
         <div v-if="configDefs[selectedSourceSplit]" class="subtext mt-1 mb-4">
           <div v-if="configDefs[selectedSourceSplit].description">
             {{ configDefs[selectedSourceSplit].description }}
+            <a v-if="configDefs[selectedSourceSplit].link"
+              :href="configDefs[selectedSourceSplit].link"
+              class="no-decoration"
+              target="_blank">
+              Learn More!
+            </a>
           </div>
 
           <div v-if="configDefs[selectedSourceSplit].editable || configDefs[selectedSourceSplit].displayable">
@@ -105,10 +130,30 @@
               v-if="configViewSelected === 'display' && displayJSON">
               Format JSON
             </b-form-checkbox>
+            <template v-if="configViewSelected === 'config'">
+              <b-button
+                class="pull-right"
+                :pressed="rawConfig"
+                variant="outline-info"
+                @click="rawConfig = !rawConfig">
+                View {{ rawConfig ? 'Config Fields' : 'Raw Config' }}
+              </b-button>
+            </template>
           </div>
         </div>
 
         <div v-if="configViewSelected === 'edit'">
+          <p v-if="currConfig[selectedSourceKey].format">
+            This config uses {{ currConfig[selectedSourceKey].format }} format
+            <template v-if="currConfig[selectedSourceKey].format === 'tagger'">
+              -
+              <a target="_blank"
+                class="no-decoration"
+                href="https://arkime.com/taggerformat">
+                learn more here
+              </a>
+            </template>
+          </p>
           <!-- text area input for non json -->
           <b-form-textarea
             v-if="!currJSONFile"
@@ -124,21 +169,6 @@
             :expandedOnStart="true"
             @json-change="onJsonChange"
           />
-          <span class="d-flex justify-content-between mt-4">
-            <b-button
-              variant="warning"
-              :disabled="fileResetDisabled"
-              @click="loadSourceFile">
-              Reset File
-            </b-button>
-            <b-button
-              variant="primary"
-              class="float-right"
-              :disabled="fileSaveDisabled"
-              @click="saveSourceFile">
-              Save File
-            </b-button>
-          </span>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -156,35 +186,47 @@
        </div> <!-- /display -->
 
         <div v-else>
-          <div
-            class="input-group input-group-sm mb-3"
-            v-for="field in activeFields"
-            :key="field.name + '-field'">
-            <div class="input-group-prepend">
-              <span class="input-group-text">{{ field.name }}</span>
+          <template v-if="!rawConfig">
+            <div
+              class="input-group input-group-sm mb-3"
+              v-for="field in activeFields"
+              :key="field.name + '-field'">
+              <div class="input-group-prepend">
+                <span class="input-group-text">{{ field.name }}</span>
+              </div>
+              <b-form-input
+                v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
+                :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
+                class="input-box"
+                :value="currConfig[selectedSourceKey][field.name]"
+                @input="(val) => inputChanged(val, field)"
+                :placeholder="field.help"
+                :required="field.required"
+                v-b-popover.hover.top="field.help"
+              />
+              <b-form-textarea
+                v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
+                :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
+                class="input-box"
+                :value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
+                @input="(val) => inputChanged(val, field)"
+                :placeholder="field.help"
+                :required="field.required"
+                v-b-popover.hover.top="field.help"
+              />
             </div>
-            <b-form-input
-              v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
-              :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
-              class="input-box"
-              :value="currConfig[selectedSourceKey][field.name]"
-              @input="(val) => inputChanged(val, field)"
-              :placeholder="field.help"
-              :required="field.required"
-              v-b-popover.hover.top="field.help"
-            />
-            <b-form-textarea
-              v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
-              :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
-              class="input-box"
-              :value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
-              @input="(val) => inputChanged(val, field)"
-              :placeholder="field.help"
-              :required="field.required"
-              v-b-popover.hover.top="field.help"
-            />
-          </div>
-          <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service" variant="danger" class="mx-auto mt-4" style="display:block" @click="deleteSource()">
+          </template>
+          <pre v-show="rawConfig"
+            class="mt-4 mb-4"
+            :ref="selectedSourceKey + '-pre'"
+            style="white-space:break-spaces;word-break:break-all;">{{ currConfig[selectedSourceKey] }}</pre>
+          <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
+            variant="success" class="mx-auto mt-4" @click="copySource(selectedSourceKey)">
+            <b-icon icon="files" scale="1"></b-icon>
+            Copy Raw Source
+          </b-button>
+          <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
+            variant="danger" class="mx-auto mt-4 pull-right" @click="deleteSource()">
             <b-icon icon="trash" scale="1"></b-icon>
             Delete Source
           </b-button>
@@ -195,7 +237,13 @@
     <!-- add source modal -->
     <b-modal
       v-model="showSourceModal"
-      title="New Source">
+      title="New Source"
+      :header-bg-variant="getTheme"
+      :header-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
+      :body-bg-variant="getTheme"
+      :body-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
+      :footer-bg-variant="getTheme"
+      :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
       <b-container fluid>
         <div class="input-group">
           <span class="input-group-prepend cursor-help"
@@ -219,6 +267,15 @@
             </option>
           </select>
         </div>
+        <p v-if="newSource && configDefs[newSource] && configDefs[newSource].description">
+          {{ configDefs[newSource].description }}
+          <a v-if="configDefs[newSource].link"
+            :href="configDefs[newSource].link"
+            class="no-decoration"
+            target="_blank">
+            Learn More!
+          </a>
+        </p>
         <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
           <b-form-input
             :state="inputState(newSourceName, true, null)"
@@ -253,8 +310,21 @@
     <!-- import config modal -->
     <b-modal size="xl"
       v-model="showImportConfigModal"
-      title="Import Config">
+      title="Import Config"
+      :header-bg-variant="getTheme"
+      :header-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
+      :body-bg-variant="getTheme"
+      :body-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
+      :footer-bg-variant="getTheme"
+      :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
       <b-container fluid>
+        <p>
+          Learn more about WISE Source configurations
+          <a href="https://arkime.com/wise#common-source-settings"
+            target="_blank">here</a> and view examples
+          <a href="https://arkime.com/wise-configs"
+            target="_blank">here</a>.
+        </p>
         <b-alert variant="danger"
           :show="!!importConfigError">
           {{ importConfigError }}
@@ -275,14 +345,26 @@
             @click="cancelImportConfig">
             Cancel
           </b-button>
-          <b-button
-            :disabled="!importConfigText"
-            variant="success"
-            size="sm"
-            class="float-right mr-2"
-            @click="importConfig">
-            Parse
-          </b-button>
+          <form class="form-inline pull-right ml-5">
+            <div class="input-group input-group-sm">
+              <input type="text"
+                class="form-control"
+                v-model="configCode"
+                placeholder="Config pin code"
+                v-b-tooltip.hover.left
+                title="The config pin code can be found in the output from running the WISE UI"
+              />
+              <div class="input-group-append">
+                <b-button
+                  class="ml-auto"
+                  variant="success"
+                  :disabled="!importConfigText || !configCode"
+                  @click="importConfig">
+                  Save Config &amp; Restart
+                </b-button>
+              </div>
+            </div>
+          </form>
         </div>
       </template>
     </b-modal> <!-- /import config modal -->
@@ -291,6 +373,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import vueJsonEditor from 'vue-json-editor';
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
@@ -333,10 +416,12 @@ export default {
       configCode: '',
       showImportConfigModal: false,
       importConfigText: '',
-      importConfigError: ''
+      importConfigError: '',
+      rawConfig: false
     };
   },
   computed: {
+    ...mapGetters(['getTheme']),
     selectedSourceSplit: function () {
       return this.selectedSourceKey.split(':')[0];
     },
@@ -438,6 +523,8 @@ export default {
       return value;
     },
     importConfig: function () {
+      // save current config in case of error
+      const currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
       const text = this.importConfigText.trim();
       if (text[0] === '"' || text[0] === '{') {
         // JSON input
@@ -462,9 +549,15 @@ export default {
         return; // Don't clear
       }
 
-      this.showImportConfigModal = false;
-      this.importConfigError = '';
-      this.importConfigText = '';
+      this.saveConfig(true).then(() => {
+        this.showImportConfigModal = false;
+        this.importConfigError = '';
+        this.importConfigText = '';
+      }).catch((err) => {
+        this.importConfigError = err;
+        // just set the config back to what is was before import
+        this.currConfig = currConfigBefore;
+      });
     },
     cancelImportConfig: function () {
       this.showImportConfigModal = false;
@@ -492,6 +585,16 @@ export default {
       this.$delete(this.currConfig, this.selectedSourceKey);
       this.selectedSourceKey = 'wiseService';
     },
+    copySource: function (source) {
+      const copyContent = this.$refs[`${source}-pre`].innerHTML;
+      // create an input to copy from
+      const input = document.createElement('textarea');
+      document.body.appendChild(input);
+      input.value = copyContent;
+      input.select();
+      document.execCommand('copy', false);
+      input.remove();
+    },
     inputState: function (inputVal, isReq, regex) {
       if (inputVal && regex && !RegExp(regex).test(inputVal)) {
         return false;
@@ -505,48 +608,41 @@ export default {
         return null;
       }
     },
-    saveConfig: function () {
-      // Iterate through user config before saving and test for missing required fields and improper regex
-      for (const sourceName in this.currConfig) {
-        const defSource = this.configDefs[sourceName.split(':')[0]];
+    saveConfig: function (noError) {
+      return new Promise((resolve, reject) => {
+        // Iterate through user config before saving and test for missing required fields and improper regex
+        for (const sourceName in this.currConfig) {
+          const defSource = this.configDefs[sourceName.split(':')[0]];
 
-        for (const item of defSource.fields) {
-          if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
-            this.alertState = {
-              text: "Regex error: '" + item.name + "' for '" + sourceName + "' must match " + item.regex,
-              variant: 'alert-danger'
-            };
-            return;
-          } else if (!this.currConfig[sourceName][item.name] && item.required) {
-            this.alertState = {
-              text: "Required error: '" + sourceName + "' requires '" + item.name + "'",
-              variant: 'alert-danger'
-            };
-            return;
+          for (const item of defSource.fields) {
+            if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
+              const errorMsg = `Regex error: "${item.name}" for "${sourceName}" must match ${item.regex}`;
+              if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+              reject(errorMsg);
+            } else if (!this.currConfig[sourceName][item.name] && item.required) {
+              const errorMsg = `Required error: "${sourceName}" requires "${item.name}"`;
+              if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+              reject(errorMsg);
+            }
           }
         }
-      }
 
-      WiseService.saveCurrConfig(this.currConfig, this.configCode)
-        .then((data) => {
+        WiseService.saveCurrConfig(this.currConfig, this.configCode).then((data) => {
           if (!data.success) {
-            throw data;
+            reject(data.text || 'Config save failed');
           } else {
-            this.alertState = {
-              text: 'Config saved',
-              variant: 'alert-success'
-            };
+            this.alertState = { text: 'Config saved', variant: 'alert-success' };
             // Resync object that tests for changes
             this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
             this.configCode = '';
+            resolve();
           }
-        })
-        .catch((err) => {
-          this.alertState = {
-            text: err.text || 'Error saving config for wise.',
-            variant: 'alert-danger'
-          };
+        }).catch((err) => {
+          const errorMsg = err.text || 'Error savign config.';
+          if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+          reject(errorMsg);
         });
+      });
     },
     loadConfigDefs: function () {
       WiseService.getConfigDefs()

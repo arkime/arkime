@@ -104,6 +104,7 @@ exports.initSource = function (api) {
     singleton: true,
     name: 'reversedns',
     description: 'For IPs that are included by the ips setting, do a reverse lookup and place everything before the first dot in the field specified',
+    link: 'https://arkime.com/wise#reversedns',
     types: ['ip'],
     fields: [
       { name: 'field', required: true, help: 'The field to set with the hostname' },

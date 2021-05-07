@@ -102,6 +102,7 @@ my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
+my $ESAPIKEY = "";
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -137,6 +138,7 @@ sub showHelp($)
     print "  --insecure                   - Don't verify http certificates\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
+    print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
@@ -6793,6 +6795,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     } elsif ($ARGV[0] =~ /--timeout$/) {
         $ESTIMEOUT = int($ARGV[1]);
         shift @ARGV;
+    } elsif ($ARGV[0] =~ /(--esapikey|--elasticsearchAPIKey)$/) {
+        $ESAPIKEY = $ARGV[1];
+        shift @ARGV;
     } else {
         showHelp("Unknkown global option $ARGV[0]")
     }
@@ -6816,6 +6821,11 @@ parseArgs(3) if ($ARGV[1] =~ /^(restore|backup)$/);
 $ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
+
+if ($ESAPIKEY ne "") {
+    $main::userAgent->default_header('Authorization' => "ApiKey $ESAPIKEY");
+}
+
 if ($CLIENTCERT ne "") {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,

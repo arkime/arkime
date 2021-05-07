@@ -77,6 +77,7 @@ exports.initSource = function (api) {
     singleton: false,
     name: 'redis',
     description: 'Link to the redis data',
+    link: 'https://arkime.com/wise#redis',
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },

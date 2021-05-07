@@ -79,6 +79,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - help page
   - all - renamed rightclicks to valueactions
   - all - many typos fixed
+  - all - support Elasticsearch API Keys (elasticsearchAPIKey setting)
   - esproxy - first version, see https://arkime.com/esproxy
 
 2.7.1 2020/12/01
