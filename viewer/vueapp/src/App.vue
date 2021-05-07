@@ -698,17 +698,6 @@ table.table {
   z-index: 9;
 }
 
-/* remove lastpass icons from all inputs
-   could also use 'data-lpignore="true"' on each individual input
-   that we want to exclude */
-div[id^=__lpform_] {
-  display: none;
-}
-input {
-  background-image: none !important;
-  background-attachment: none !important;
-}
-
 /* badge remove button */
 .badge > button.close {
   line-height: 0.4;
