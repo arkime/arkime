@@ -185,7 +185,6 @@
             @json-change="onJsonChange"
           />
           <!-- csv editor -->
-          <!-- TODO ECR REMOVE STYLES -->
           <div class="d-flex pt-2 pb-2" v-else-if="currCSV && !rawCSV">
             <div class="w-100">
               <b-form inline
