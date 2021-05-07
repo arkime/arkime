@@ -105,7 +105,7 @@
         </h2>
         <div v-if="configDefs[selectedSourceSplit]" class="subtext mt-1 mb-4">
           <div v-if="configDefs[selectedSourceSplit].description"
-            class="mb-2">
+            class="mb-2 wrapit">
             {{ configDefs[selectedSourceSplit].description }}
             <a v-if="configDefs[selectedSourceSplit].link"
               :href="configDefs[selectedSourceSplit].link"
@@ -151,8 +151,8 @@
         </div>
 
         <div v-if="configViewSelected === 'edit'">
-          <p>
-            This config uses {{ currConfig[selectedSourceKey].format ? currConfig[selectedSourceKey].format : (currCSV ? 'csv' : 'an unknown') }} format
+          <p class="wrapit">
+            This config uses {{ currConfig[selectedSourceKey].format ? currConfig[selectedSourceKey].format : (currCSV ? 'CSV' : 'an unknown') }} format
             <template v-if="currConfig[selectedSourceKey].format === 'tagger'">
               -
               <a target="_blank"
@@ -162,7 +162,8 @@
               </a>
             </template>
           </p>
-          <p v-if="!currConfig[selectedSourceKey].format && currCSV">
+          <p v-if="!currConfig[selectedSourceKey].format && currCSV"
+           class="wrapit">
             Rows are delimited by newlines (<code>\n</code>).
             Cells are delimited by commas (<code>,</code>).
             Comments are delimited by <code>#</code> and should be at the start of the row.
@@ -869,6 +870,10 @@ export default {
           this.currCSV.rows.push([row]);
           continue;
         }
+        // if we support double quotes in csv field values, we should
+        // split string by commas but ignore commas between double quotes
+        // https://stackoverflow.com/questions/11456850/split-a-string-by-commas-but-ignore-commas-within-double-quotes-using-javascript
+        // const cells = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
         const cells = row.split(',');
         this.currCSV.rows.push(cells);
         this.currCSV.longestRow = cells.length > this.currCSV.longestRow.length ? cells : this.currCSV.longestRow;
@@ -1008,6 +1013,10 @@ export default {
 
 input.br-0 {
   border-radius: 0;
+}
+
+.wrapit {
+  white-space: normal;
 }
 
 /* csv editor styles */
