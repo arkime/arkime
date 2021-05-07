@@ -62,7 +62,7 @@
       </div> <!-- /Sources sidebar -->
 
       <!-- Selected Source Input Fields -->
-      <div class="d-flex flex-column px-5 pt-2 w-100">
+      <div class="d-flex flex-column px-5 pt-2 flex-grow-1 source-container">
         <h2>
           <form v-if="configViewSelected === 'edit'"
             class="form-inline pull-right ml-5">
@@ -104,7 +104,8 @@
           {{ selectedSourceKey }}
         </h2>
         <div v-if="configDefs[selectedSourceSplit]" class="subtext mt-1 mb-4">
-          <div v-if="configDefs[selectedSourceSplit].description">
+          <div v-if="configDefs[selectedSourceSplit].description"
+            class="mb-2 wrapit">
             {{ configDefs[selectedSourceSplit].description }}
             <a v-if="configDefs[selectedSourceSplit].link"
               :href="configDefs[selectedSourceSplit].link"
@@ -118,7 +119,6 @@
             <b-form-radio-group
               v-model="configViewSelected"
               :options="configViews"
-              class="mt-1"
               buttons
               button-variant="outline-secondary"
               size="md"
@@ -132,19 +132,27 @@
             </b-form-checkbox>
             <template v-if="configViewSelected === 'config'">
               <b-button
-                class="pull-right"
+                class="ml-2"
                 :pressed="rawConfig"
                 variant="outline-info"
                 @click="rawConfig = !rawConfig">
                 View {{ rawConfig ? 'Config Fields' : 'Raw Config' }}
               </b-button>
             </template>
+            <template v-if="configViewSelected === 'edit' && currCSV">
+              <b-button
+                class="ml-2"
+                variant="outline-info"
+                @click="toggleCSVEditor">
+                Use {{ rawCSV ? 'CSV Editor' : 'CSV Text Area' }}
+              </b-button>
+            </template>
           </div>
         </div>
 
         <div v-if="configViewSelected === 'edit'">
-          <p v-if="currConfig[selectedSourceKey].format">
-            This config uses {{ currConfig[selectedSourceKey].format }} format
+          <p class="wrapit">
+            This config uses {{ currConfig[selectedSourceKey].format ? currConfig[selectedSourceKey].format : (currCSV ? 'CSV' : 'an unknown') }} format
             <template v-if="currConfig[selectedSourceKey].format === 'tagger'">
               -
               <a target="_blank"
@@ -154,21 +162,137 @@
               </a>
             </template>
           </p>
-          <!-- text area input for non json -->
-          <b-form-textarea
-            v-if="!currJSONFile"
-            v-model="currFile"
-            rows="18"
-          />
+          <p v-if="!currConfig[selectedSourceKey].format && currCSV"
+           class="wrapit">
+            Rows are delimited by newlines (<code>\n</code>).
+            Cells are delimited by commas (<code>,</code>).
+            Comments are delimited by <code>#</code> and should be at the start of the row.
+          </p>
+          <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
+          <template
+            v-if="(!currJSONFile && currConfig[selectedSourceKey].format === 'tagger') || rawCSV">
+            <b-form-textarea
+              v-model="currFile"
+              rows="18"
+            />
+          </template>
           <!-- json editor -->
           <vue-json-editor
-            v-else
+            v-else-if="currJSONFile"
             v-model="currJSONFile"
             :mode="'code'"
             :show-btns="false"
             :expandedOnStart="true"
             @json-change="onJsonChange"
           />
+          <!-- csv editor -->
+          <div v-else-if="currCSV && !rawCSV"
+            class="pt-3 pb-3 csv-editor">
+            <b-form inline
+               class="flex-nowrap">
+              <b-input-group>
+                <input
+                  type="text"
+                  disabled="true"
+                  style="width:65px;"
+                  class="form-control form-control-sm br-0 csv-cell disabled"
+                />
+                <b-input-group-append>
+                </b-input-group-append>
+              </b-input-group>
+              <template v-for="(cell, cellIndex) in currCSV.longestRow">
+                <b-input-group :key="cellIndex + 'colheader'">
+                  <input
+                    type="text"
+                    disabled="true"
+                    class="form-control form-control-sm br-0 csv-cell disabled"
+                    :placeholder="cellIndex"
+                  />
+                  <b-dropdown
+                    size="sm"
+                    class="col-control">
+                    <b-dropdown-item
+                      class="small"
+                      @click="addCSVColumn(cellIndex)">
+                      Add column left
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      class="small"
+                      @click="addCSVColumn(cellIndex + 1)">
+                      Add column right
+                    </b-dropdown-item>
+                    <b-dropdown-item
+                      class="small"
+                      @click="removeCSVColumn(cellIndex)">
+                      Remove column
+                    </b-dropdown-item>
+                  </b-dropdown>
+                  <b-input-group-append>
+                  </b-input-group-append>
+                </b-input-group>
+              </template>
+            </b-form>
+            <b-form inline
+              class="flex-nowrap"
+              v-for="(row, rowIndex) in currCSV.rows"
+              :key="rowIndex + 'csvrow'">
+              <b-input-group :key="rowIndex + 'rowheader'">
+                <input
+                  type="text"
+                  disabled="true"
+                  style="width:65px;"
+                  :placeholder="rowIndex"
+                  class="form-control form-control-sm br-0 csv-cell disabled"
+                />
+                <b-dropdown
+                  size="sm"
+                  class="col-control">
+                  <b-dropdown-item
+                    class="small"
+                    @click="addCSVRow(rowIndex)">
+                    Add row above
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    class="small"
+                    @click="addCSVRow(rowIndex + 1)">
+                    Add row below
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    class="small"
+                    @click="removeCSVRow(rowIndex)">
+                    Remove row
+                  </b-dropdown-item>
+                </b-dropdown>
+                <b-input-group-append>
+                </b-input-group-append>
+              </b-input-group>
+              <template v-for="(cell, cellIndex) in currCSV.longestRow">
+                <b-input-group
+                  :key="cellIndex + 'csvcell'">
+                  <input
+                    type="text"
+                    @input="debounceCSVChange"
+                    :id="rowIndex + '-' + cellIndex"
+                    v-model="currCSV.rows[rowIndex][cellIndex]"
+                    @keyup.enter="cellEnterClick(rowIndex, cellIndex)"
+                    class="form-control form-control-sm br-0 csv-cell"
+                  />
+                  <b-input-group-append>
+                  </b-input-group-append>
+                </b-input-group>
+              </template>
+            </b-form>
+          </div> <!-- /csv editor -->
+          <p v-else
+            class="text-danger">
+            We couldn't parse your config file. It might be in a format we do
+            not support. Please see our
+            <a href="https://arkime.com/wise"
+              target="_blank"
+              class="no-decoration">
+              WISE Documentation</a>
+            for more information on WISE Source Configuration.
+          </p>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -381,7 +505,8 @@ import 'vue-json-pretty/lib/styles.css';
 import WiseService from './wise.service';
 import Alert from './Alert';
 
-let timeout;
+let jsonTimeout;
+let csvTimeout;
 
 export default {
   name: 'Config',
@@ -406,6 +531,7 @@ export default {
       currFile: '',
       currFileBefore: '', // Used to determine if changes have been made
       currJSONFile: null,
+      currCSV: null,
       displayData: '',
       displayJSON: null,
       showPrettyJSON: false,
@@ -417,7 +543,8 @@ export default {
       showImportConfigModal: false,
       importConfigText: '',
       importConfigError: '',
-      rawConfig: false
+      rawConfig: false,
+      rawCSV: true
     };
   },
   computed: {
@@ -472,6 +599,8 @@ export default {
       this.currFile = '';
       this.currFileBefore = '';
       this.displayData = '';
+      this.currJSONFile = null;
+      this.currCSV = null;
     },
     configViewSelected: function () {
       if (this.configViewSelected === 'edit') {
@@ -576,8 +705,8 @@ export default {
       }
     },
     onJsonChange: function (value) {
-      if (timeout) { clearTimeout(timeout); }
-      timeout = setTimeout(() => {
+      if (jsonTimeout) { clearTimeout(jsonTimeout); }
+      jsonTimeout = setTimeout(() => {
         this.currFile = JSON.stringify(value, null, 4);
       }, 1000);
     },
@@ -708,6 +837,10 @@ export default {
             this.currJSONFile = JSON.parse(data.raw);
           } catch (err) {
             this.currJSONFile = null;
+            if (this.currConfig[this.selectedSourceKey].format !== 'tagger') {
+              // it might be a csv file
+              this.parseCSV();
+            }
           }
         })
         .catch((err) => {
@@ -716,6 +849,86 @@ export default {
             variant: 'alert-danger'
           };
         });
+    },
+    parseCSV () {
+      this.currCSV = {
+        rows: [],
+        longestRow: [''] // rows have at least one column (for creating new csv)
+      };
+
+      if (!this.currFile || this.currFile === '\n') {
+        // there must be at least one row (for creating new csv)
+        this.currCSV.rows.push(['']);
+        return;
+      }
+
+      const rows = this.currFile.split('\n');
+
+      for (const row of rows) { // parse rows
+        if (!row.length) { continue; } // emtpy row
+        if (row.startsWith('#')) { // comment row
+          this.currCSV.rows.push([row]);
+          continue;
+        }
+        // if we support double quotes in csv field values, we should
+        // split string by commas but ignore commas between double quotes
+        // https://stackoverflow.com/questions/11456850/split-a-string-by-commas-but-ignore-commas-within-double-quotes-using-javascript
+        // const cells = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+        const cells = row.split(',');
+        this.currCSV.rows.push(cells);
+        this.currCSV.longestRow = cells.length > this.currCSV.longestRow.length ? cells : this.currCSV.longestRow;
+      }
+    },
+    debounceCSVChange () {
+      if (csvTimeout) { clearTimeout(csvTimeout); }
+      csvTimeout = setTimeout(() => {
+        let csvStr = '';
+        for (const row of this.currCSV.rows) {
+          csvStr += `${row.filter(Boolean).join(',')}\n`; // filter out empty values
+        }
+        this.currFile = csvStr;
+      }, 1000);
+    },
+    cellEnterClick (rowIndex, colIndex) {
+      if (this.currCSV.rows.length - 1 === rowIndex) {
+        // need to add a new row
+        this.addCSVRow(rowIndex + 1);
+      }
+      this.$nextTick(() => {
+        // otherwise set cursor to the same column in the next row
+        const ref = `${rowIndex + 1}-${colIndex}`;
+        const cell = document.getElementById(ref);
+        if (cell) { cell.focus(); }
+      });
+    },
+    toggleCSVEditor () {
+      this.rawCSV = !this.rawCSV;
+      this.rawCSV ? this.debounceCSVChange() : this.parseCSV();
+    },
+    addCSVColumn (colIndex) {
+      for (const row of this.currCSV.rows) {
+        row.splice(colIndex, 0, '');
+        // need to recalculate longest row
+        this.currCSV.longestRow = row.length > this.currCSV.longestRow.length ? row : this.currCSV.longestRow;
+      }
+    },
+    removeCSVColumn (colIndex) {
+      for (const row of this.currCSV.rows) {
+        row.splice(colIndex, 1);
+        // need to recalculate longest row
+        this.currCSV.longestRow = row.length > this.currCSV.longestRow.length ? row : this.currCSV.longestRow;
+      }
+    },
+    addCSVRow (rowIndex) {
+      const newArr = [];
+      for (let i = 0; i < this.currCSV.longestRow.length; i++) {
+        newArr.push(''); // add empty values
+      }
+
+      this.currCSV.rows.splice(rowIndex, 0, newArr);
+    },
+    removeCSVRow (rowIndex) {
+      this.currCSV.rows.splice(rowIndex, 1);
     },
     saveSourceFile: function () {
       if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
@@ -769,6 +982,11 @@ export default {
 </script>
 
 <style scoped>
+.source-container {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
 .source-btn {
   width: 100%;
   font-size: .9rem;
@@ -792,6 +1010,34 @@ export default {
   height: 54px;
   justify-content: center;
 }
+
+input.br-0 {
+  border-radius: 0;
+}
+
+.wrapit {
+  white-space: normal;
+}
+
+/* csv editor styles */
+.csv-editor {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+input.csv-cell {
+  margin-top: -1px;
+  width: 130px !important;
+}
+
+.col-control {
+  position: relative;
+  right: 30px;
+  top: 5px;
+  width: 20px;
+  height: 20px;
+  margin-right: -20px;
+}
 </style>
 
 <style>
@@ -804,5 +1050,10 @@ export default {
 }
 .editor {
   height: 500px;
+}
+
+/* move up the dropdown toggle caret in the csv-editor */
+.col-control .dropdown-toggle:after {
+  vertical-align: 0.55em !important;
 }
 </style>

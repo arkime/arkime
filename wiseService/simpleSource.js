@@ -130,6 +130,7 @@ class SimpleSource extends WISESource {
     if (this.type === 'ip') {
       newCache = { items: new Map(), trie: new iptrie.IPTrie() };
       setFunc = (key, value) => {
+        if (!key) { return; }
         key.split(',').forEach((cidr) => {
           const parts = cidr.split('/');
           try {

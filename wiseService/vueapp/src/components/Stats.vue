@@ -189,6 +189,9 @@ export default {
         this.loadResourceStats();
       }, 500);
     }
+  },
+  beforeDestroy () {
+    if (dataInterval) { clearInterval(dataInterval); }
   }
 };
 </script>

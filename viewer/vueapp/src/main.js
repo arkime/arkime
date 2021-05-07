@@ -21,6 +21,8 @@ import interceptorSetup from './interceptors';
 import router from './router';
 import store from './store';
 import './filters.js';
+
+import '../../../common.css';
 // bootstrap overrides
 import './overrides.css';
 // themed css deps
