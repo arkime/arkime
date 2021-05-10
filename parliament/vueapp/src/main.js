@@ -15,6 +15,8 @@ import store from './store';
 import interceptorSetup from './interceptors';
 import './filters.js';
 
+import '../../../common.css';
+
 Vue.config.productionTip = false;
 
 Vue.use(VueAxios, axios);
