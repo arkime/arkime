@@ -30,8 +30,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
       }
       const options = ViewerUtils.addCluster(req.query.cluster);
-      Db.searchPrimary(indices, 'session', query, options, (err, result) => {
-        console.log(result.hits.hits);
+      Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result.error) {
           console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
           return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
@@ -281,7 +280,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-      Db.searchPrimary(indices, 'session', query, options, (err, result) => {
+      Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
           console.log('ERROR fetching matching sessions', err, result);
           return nextCb(null);
@@ -1645,7 +1644,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       Promise.all([
-        Db.searchPrimary(indices, 'session', query, options),
+        Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
@@ -1823,7 +1822,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       let recordsFiltered = 0;
       const options = ViewerUtils.addCluster(req.query.cluster);
 
-      Promise.all([Db.searchPrimary(indices, 'session', query, options),
+      Promise.all([Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
@@ -1964,7 +1963,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       Promise.all([
         Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {}),
-        Db.searchPrimary(indices, 'session', query, options)
+        Db.searchSessions(indices, query, options)
       ]).then(([total, result]) => {
         if (result.error) { throw result.error; }
 
@@ -2170,7 +2169,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
-      Db.searchPrimary(indices, 'session', query, options, (err, result) => {
+      Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
           console.log('spigraphpie ERROR', err);
           res.status(400);
@@ -2346,7 +2345,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
-      Db.searchPrimary(indices, 'session', query, options, (err, result) => {
+      Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
           console.log('Error', query, err);
           return doneCb ? doneCb() : res.end();
@@ -2435,7 +2434,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
-      Db.searchPrimary(indices, 'session', query, options, (err, result) => {
+      Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
           console.log('multiunique ERROR', err);
           res.status(400);
@@ -2752,7 +2751,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       console.log('entirePcap query', JSON.stringify(query));
     }
 
-    Db.searchPrimary(['sessions2-*', 'sessions3-*'], 'session', query, null, (err, data) => {
+    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
         writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
@@ -2862,7 +2861,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
       }
 
-      Db.searchPrimary(indices, 'session', query, null, (err, sessions) => {
+      Db.searchSessions(indices, query, null, (err, sessions) => {
         if (err) {
           console.log('Error -> Db Search ', err);
           res.status(400);

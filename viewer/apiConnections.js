@@ -161,8 +161,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, resultSet.err);
         return cb([resultSet]);
       } else {
-        console.log('ALW', connQueries[0].indices, JSON.stringify(connQueries[0].query, false, 2), connQueries[0].options);
-        Db.searchPrimary(connQueries[0].indices, 'session', connQueries[0].query, connQueries[0].options, (err, graph) => {
+        Db.searchSessions(connQueries[0].indices, connQueries[0].query, connQueries[0].options, (err, graph) => {
           if (err || graph.error) {
             console.log('ERROR - dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, err, graph.error);
             resultSet.err = err || graph.error;

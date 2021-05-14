@@ -199,8 +199,8 @@ exports.getSessionPromise = (id, options) => {
 };
 
 const ecsFields = [];
-function addECSMap(exp, db, ecs) {
-  ecsFields.push({db: db.split('.'), ecs: ecs.split('.')});
+function addECSMap (exp, db, ecs) {
+  ecsFields.push({ db: db.split('.'), ecs: ecs.split('.') });
 }
 
 addECSMap('communityId', 'communityId', 'network.community_id');
@@ -222,7 +222,7 @@ addECSMap('port.src', 'srcPort', 'source.port');
 addECSMap('bytes', 'totBytes', 'network.bytes');
 addECSMap('packets', 'totPackets', 'network.packets');
 
-function fixFields(fields) {
+function fixFields (fields) {
   for (const f of ecsFields) {
     let value = fields;
     for (let i = 0; value && i < f.db.length; i++) {
@@ -247,7 +247,6 @@ function fixFields(fields) {
       }
       key = key[f.ecs[i]];
     }
-
   }
 
   console.log(fields);
@@ -533,6 +532,12 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);
   return exports.searchScroll(index, type, query, params, cb);
+};
+
+exports.searchSessions = function (index, query, options, cb) {
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  exports.merge(params, options);
+  return exports.searchScroll(index, 'session', query, params, cb);
 };
 
 exports.msearch = async (index, type, queries, options) => {

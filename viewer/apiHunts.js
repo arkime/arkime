@@ -373,7 +373,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
     }
 
-    Db.search(['sessions2-*', 'sessions3-*'], 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       if (err || result.error) {
         pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
         return;
