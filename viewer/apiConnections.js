@@ -203,11 +203,11 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     let dstipport;
     if (req.query.dstField === 'ip.dst:port') {
       dstipport = true;
-      req.query.dstField = 'dstIp';
+      req.query.dstField = 'destination.ip';
     }
 
-    req.query.srcField = req.query.srcField || 'srcIp';
-    req.query.dstField = req.query.dstField || 'dstIp';
+    req.query.srcField = req.query.srcField || 'source.ip';
+    req.query.dstField = req.query.dstField || 'destination.ip';
     const fsrc = req.query.srcField;
     const fdst = req.query.dstField;
     const minConn = req.query.minConn || 1;

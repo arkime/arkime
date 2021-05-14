@@ -383,7 +383,7 @@ import MolochCollapsible from '../utils/CollapsibleWrapper';
 // import utils
 import Utils from '../utils/utils';
 
-const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
+const defaultSpi = 'destination.ip:100,protocol:100,source.ip:100';
 
 let newQuery = true;
 let openedCategories = false;
@@ -796,7 +796,7 @@ export default {
     fetchMapData: function () {
       const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
-      if (!field) { field = 'dstIp'; }
+      if (!field) { field = 'destination.ip'; }
 
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map data

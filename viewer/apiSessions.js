@@ -510,9 +510,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       session.id = req.params.id;
       sortFields(session);
 
-      const sep = session.srcIp.includes(':') ? '.' : ':';
-      session.sourceKey = `${session.srcIp}${sep}${session.srcPort}`;
-      session.destinationKey = `${session.dstIp}${sep}${session.dstPort}`;
+      const sep = session.source.ip.includes(':') ? '.' : ':';
+      session.sourceKey = `${session.source.ip}${sep}${session.srcPort}`;
+      session.destinationKey = `${session.destination.ip}${sep}${session.dstPort}`;
 
       if (req.query.showFrames && packets.length !== 0) {
         Pcap.packetFlow(session, packets, +req.query.packets || 200, (err, results, sourceKey, destinationKey) => {
@@ -538,7 +538,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.srcIp;
+        const key = session.source.ip;
         Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, (err, results) => {
           session._err = err;
           localSessionDetailReturn(req, res, session, results || []);
@@ -1079,7 +1079,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   sModule.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
-      options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,dstIp,dstPort,ipProtocol,packetLen' };
+      options = { _source: 'node,totPackets,packetPos,source.ip,srcPort,destination.ip,dstPort,ipProtocol,packetLen' };
     }
 
     Db.getSession(id, options, (err, session) => {
@@ -1157,7 +1157,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
+     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, source.ip, srcPort, destination.ip, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1360,7 +1360,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     const list = [];
-    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
+    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'srcPort', 'srcGEO', 'destination.ip', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
 
     const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: fields.join(',') });
@@ -1532,7 +1532,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           return doneCb(err, session, results);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.srcIp;
+        const key = session.source.ip;
         Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.srcPort, (err, results) => {
           return doneCb(err, session, results);
         });
@@ -1619,7 +1619,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       let addMissing = false;
       if (req.query.fields) {
         query._source = ViewerUtils.queryValueToArray(req.query.fields);
-        ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
+        ['node', 'source.ip', 'srcPort', 'destination.ip', 'dstPort'].forEach((item) => {
           if (query._source.indexOf(item) === -1) {
             query._source.push(item);
           }
@@ -1628,8 +1628,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         addMissing = true;
         query._source = [
           'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
-          'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
-          'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
+          'dstDataBytes', 'firstPacket', 'lastPacket', 'source.ip', 'srcPort',
+          'destination.ip', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
           'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
           'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
           'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
@@ -1720,8 +1720,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     // default fields to display in csv
     let fields = [
-      'ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO',
-      'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'
+      'ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'srcPort', 'srcGEO',
+      'destination.ip', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'
     ];
 
     // save requested fields because sessionsListFromQuery returns fields with
@@ -1955,7 +1955,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
       if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+        query.aggregations.field = { terms: { field: 'destination.ip', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
       } else if (field === 'fileand') {
         query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
       } else {
@@ -2084,7 +2084,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         aggs.forEach((item) => {
           if (field === 'ip.dst:port') {
-            filter.term.dstIp = item.key;
+            filter.term.destination.ip = item.key;
             const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
             item.sub.buckets.forEach((sitem) => {
               sfilter.term.dstPort = sitem.key;
@@ -2294,7 +2294,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         item.field2.buckets.forEach((item2) => {
@@ -2308,8 +2308,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       delete query.sort;
       delete query.aggregations;
 
-      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
-        query.aggregations = { field: { terms: { field: 'srcIp', size: aggSize }, aggregations: { field2: { terms: { field: 'srcPort', size: 100 } } } } };
+      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|source.ip:source.port)/)) {
+        query.aggregations = { field: { terms: { field: 'source.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'srcPort', size: 100 } } } } };
       } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
         query.aggregations = { field: { terms: { field: 'dstIp', size: aggSize }, aggregations: { field2: { terms: { field: 'dstPort', size: 100 } } } } };
       } else if (req.query.field === 'fileand') {
@@ -2493,7 +2493,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           compileDebug: !internals.isProduction,
           user: req.user,
           session: session,
-          sep: session.srcIp.includes(':') ? '.' : ':',
+          sep: session.source.ip.includes(':') ? '.' : ':',
           Db: Db,
           query: req.query,
           basedir: '/',

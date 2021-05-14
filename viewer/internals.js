@@ -74,7 +74,7 @@ module.exports = (app, Config) => {
       sortColumn: 'firstPacket',
       sortDirection: 'desc',
       spiGraph: 'node',
-      connSrcField: 'srcIp',
+      connSrcField: 'source.ip',
       connDstField: 'ip.dst:port',
       numPackets: 'last',
       theme: 'default-theme',
@@ -96,8 +96,8 @@ module.exports = (app, Config) => {
   };
 
   iModule.internals.scriptAggs['ip.dst:port'] = {
-    script: 'if (doc.dstIp.value.indexOf(".") > 0) {return doc.dstIp.value + ":" + doc.dstPort.value} else {return doc.dstIp.value + "." + doc.dstPort.value}',
-    dbField: 'dstIp'
+    script: 'if (doc.destination.ip.value.indexOf(".") > 0) {return doc.destination.ip.value + ":" + doc.dstPort.value} else {return doc.destination.ip.value + "." + doc.dstPort.value}',
+    dbField: 'destination.ip'
   };
 
   // make sure there's an _ after the prefix

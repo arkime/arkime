@@ -149,7 +149,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {string} sortColumn=firstPacket - Which column to sort the sesssions table by default. Default is start time.
    * @param {string} sortDirection=desc - Whether to sort the sessions table ascending or descending.
    * @param {string} spiGraph=node - The default field to show spigraph data for.
-   * @param {string} connSrcField=srcIp - The default connections graph source node field.
+   * @param {string} connSrcField=source.ip - The default connections graph source node field.
    * @param {string} connDstField=ip.dst:port - The default connections graph destination node field.
    * @param {string} numPackets=last - The number of packets to show in the session packet area.
    * @param {string} theme=default-theme - The color theme to apply to the UI. Can be a name of a predefined field or a list of color codes if using a custom theme.

@@ -198,6 +198,87 @@ exports.getSessionPromise = (id, options) => {
   });
 };
 
+const ecsFields = [];
+function addECSMap(exp, db, ecs) {
+  ecsFields.push({db: db.split('.'), ecs: ecs.split('.')});
+}
+
+addECSMap('communityId', 'communityId', 'network.community_id');
+
+addECSMap('asn.dst', 'dstASN', 'destination.as.full');
+addECSMap('bytes.dst', 'dstBytes', 'destination.bytes');
+addECSMap('databytes.dst', 'dstDataBytes', 'server.bytes');
+addECSMap('packets.dst', 'dstPackets', 'destination.packets');
+addECSMap('ip.dst', 'dstIp', 'destination.ip');
+addECSMap('port.dst', 'dstPort', 'destination.port');
+
+addECSMap('asn.src', 'srcASN', 'source.as.full');
+addECSMap('bytes.src', 'srcBytes', 'source.bytes');
+addECSMap('databytes.src', 'srcDataBytes', 'client.bytes');
+addECSMap('packets.src', 'srcPackets', 'source.packets');
+addECSMap('ip.src', 'srcIp', 'source.ip');
+addECSMap('port.src', 'srcPort', 'source.port');
+
+addECSMap('bytes', 'totBytes', 'network.bytes');
+addECSMap('packets', 'totPackets', 'network.packets');
+
+function fixFields(fields) {
+  for (const f of ecsFields) {
+    let value = fields;
+    for (let i = 0; value && i < f.db.length; i++) {
+      if (i === f.db.length - 1) {
+        const tv = value[f.db[i]];
+        delete value[f.db[i]];
+        value = tv;
+      } else {
+        value = value[f.db[i]];
+      }
+    }
+    if (value === undefined) { continue; }
+
+    console.log(f, value);
+    let key = fields;
+    for (let i = 0; i < f.ecs.length; i++) {
+      if (i === f.ecs.length - 1) {
+        key[f.ecs[i]] = value;
+        break;
+      } else if (key[f.ecs[i]] === undefined) {
+        key[f.ecs[i]] = {};
+      }
+      key = key[f.ecs[i]];
+    }
+
+  }
+
+  console.log(fields);
+/*
+  if (fields.communityId !== undefined) {
+    if (!fields.network) { fields.network = {}; }
+    fields.network.community_id = fields.communityId;
+    delete fields.communityId;
+  }
+
+  if (!fields.source) {
+    fields.source = {};
+  }
+  if (fields.srcBytes !== undefined) {
+    fields.source.bytes = fields.srcBytes;
+  }
+
+  fields.source.bytes = fields.
+  if (!fields.destination) {
+    fields.destination = {};
+  }
+  if (!fields.client) {
+    fields.client = {};
+  }
+  if (!fields.server) {
+    fields.server = {};
+  }
+  if (fields.communityId) {
+  */
+}
+
 // Get a session from ES and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
   function fixPacketPos (session, fields) {
@@ -291,6 +372,7 @@ exports.getSession = async (id, options, cb) => {
       if (options && options._source && !options._source.includes('packetPos')) {
         return cb(null, session);
       }
+      fixFields(session._source || session.fields);
       return fixPacketPos(session, session._source || session.fields);
     });
   } else {
@@ -299,6 +381,7 @@ exports.getSession = async (id, options, cb) => {
       if (options && options._source && !options._source.includes('packetPos')) {
         return cb(null, session);
       }
+      fixFields(session._source || session.fields);
       return fixPacketPos(session, session._source || session.fields);
     } catch (err) {
       return cb(err, {});

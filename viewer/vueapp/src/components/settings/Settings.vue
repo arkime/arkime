@@ -2339,7 +2339,7 @@ let clockInterval;
 
 let shortcutsInputTimeout;
 
-const defaultSpiviewConfig = { fields: ['dstIp', 'protocol', 'srcIp'] };
+const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
 const defaultColConfig = {
   order: [['firstPacket', 'desc']],
   columns: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']

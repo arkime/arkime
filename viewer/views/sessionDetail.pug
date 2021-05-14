@@ -58,9 +58,9 @@ dl
     if (session.rootId)
       strong.ml-4 Root Id:
       +clickableValue('rootId', session.rootId)
-    if (session.communityId)
+    if (session.network && session.network.community_id)
       strong.ml-4 Community Id:
-      +clickableValue('communityId', session.communityId)
+      +clickableValue('communityId', session.network.community_id)
 
   dt Time
   dd
@@ -115,11 +115,11 @@ dl
           | Add Src Databytes EXISTS! to query
     dd
       strong.medium.ml-1 Packets
-      +clickableValue('packets.src', session.srcPackets)
+      +clickableValue('packets.src', session.source.packets)
       strong.medium.ml-4 Bytes
-      +clickableValue('bytes.src', session.srcBytes)
+      +clickableValue('bytes.src', session.source.bytes)
       strong.medium.ml-4 Databytes
-      +clickableValue('databytes.src', session.srcDataBytes)
+      +clickableValue('databytes.src', session.client.bytes)
 
     dt
       b-dropdown.clickable-label(text="Dst", size="sm", variant="default")
@@ -151,11 +151,11 @@ dl
           | Add Dst Databytes EXISTS! to query
     dd
       strong.medium.ml-1 Packets
-      +clickableValue('packets.dst', session.dstPackets)
+      +clickableValue('packets.dst', session.destination.packets)
       strong.medium.ml-4 Bytes
-      +clickableValue('bytes.dst', session.dstBytes)
+      +clickableValue('bytes.dst', session.destination.bytes)
       strong.medium.ml-4 Databytes
-      +clickableValue('databytes.dst', session.dstDataBytes)
+      +clickableValue('databytes.dst', session.server.bytes)
 
   if (session["srcMac"])
     dt
@@ -271,7 +271,7 @@ dl
         | Add Src RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.srcIp, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
+    +ipPrint(session, session.source.ip, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -321,7 +321,7 @@ dl
         | Add Dst RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.dstIp, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
+    +ipPrint(session, session.destination.ip, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
 
   if (session.srcPayload8 || session.dstPayload8)
     dt

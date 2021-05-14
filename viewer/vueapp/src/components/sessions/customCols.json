@@ -25,9 +25,9 @@
     "group": "general",
     "friendlyName": "Src IP / Country",
     "help": "Src IP & Country",
-    "sortBy": "srcIp",
+    "sortBy": "source.ip",
     "children": [
-      "srcIp",
+      "source.ip",
       "srcGEO"
     ]
   },
@@ -38,9 +38,9 @@
     "group": "general",
     "friendlyName": "Dst IP / Country",
     "help": "Dst IP & Country",
-    "sortBy": "dstIp",
+    "sortBy": "destination.ip",
     "children": [
-      "dstIp",
+      "destination.ip",
       "dstGEO"
     ]
   },

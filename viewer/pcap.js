@@ -1122,9 +1122,9 @@ exports.keyFromSession = function (session) {
   case 'udp':
   case 132: // sctp
   case 'sctp':
-    const sep = session.srcIp.includes(':') ? '.' : ':';
-    return `${session.srcIp}${sep}${session.srcPort}`;
+    const sep = session.source.ip.includes(':') ? '.' : ':';
+    return `${session.source.ip}${sep}${session.srcPort}`;
   default:
-    return session.srcIp;
+    return session.source.ip;
   }
 };
