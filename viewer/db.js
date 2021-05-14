@@ -443,6 +443,12 @@ exports.searchPrimary = function (index, type, query, options, cb) {
   return exports.searchScroll(index, type, query, params, cb);
 };
 
+exports.searchSessions = function (index, query, options, cb) {
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  exports.merge(params, options);
+  return exports.searchScroll(index, 'session', query, params, cb);
+};
+
 exports.msearch = async (index, type, queries, options) => {
   const body = [];
 

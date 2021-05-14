@@ -2191,7 +2191,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
       console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
     }
 
-    Db.search('sessions2-*', 'session', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.searchSessions('sessions2-*', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       async function doNext () {
         count += result.hits.hits.length;
 
