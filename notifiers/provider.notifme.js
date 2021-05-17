@@ -1,6 +1,6 @@
 'use strict';
 
-const Notifme = require('notifme-sdk');
+const Notifme = require('mjlescano-notifme-sdk');
 
 exports.init = function (api) {
   api.register('slack', {
