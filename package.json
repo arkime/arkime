@@ -32,7 +32,7 @@
     "morgan": "^1.10.0",
     "native-dns": "^0.7.0",
     "natives": "^1.1.6",
-    "notifme-sdk": "^1.10.0",
+    "notifme-sdk": "https://github.com/mjlescano/notifme-sdk.git",
     "on-headers": "^1.0.2",
     "passport": "^0.3.2",
     "passport-http": "^0.3.0",
