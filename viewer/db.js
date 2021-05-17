@@ -43,7 +43,6 @@ const internals = {
 exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
-  internals.getSessionBySearch = info.getSessionBySearch || false;
 
   delete info.multiES;
   delete info.debug;
@@ -198,84 +197,87 @@ exports.getSessionPromise = (id, options) => {
   });
 };
 
-const ecsFields = [];
-function addECSMap (exp, db, ecs) {
-  ecsFields.push({ db: db.split('.'), ecs: ecs.split('.') });
-}
+// Fields too hard to leave as arrays for now
+const singletonFields = {
+  'destination.ip': true,
+  'destination.port': true,
+  'destination.packets': true,
+  'destination.bytes': true,
+  dstPayload8: true,
+  'server.bytes': true,
+  dstGEO: true,
+  dstASN: true,
+  dstRIR: true,
 
-addECSMap('communityId', 'communityId', 'network.community_id');
+  'source.ip': true,
+  'source.port': true,
+  'source.packets': true,
+  'source.bytes': true,
+  srcPayload8: true,
+  'client.bytes': true,
+  srcGEO: true,
+  srcASN: true,
+  srcRIR: true,
 
-addECSMap('asn.dst', 'dstASN', 'destination.as.full');
-addECSMap('bytes.dst', 'dstBytes', 'destination.bytes');
-addECSMap('databytes.dst', 'dstDataBytes', 'server.bytes');
-addECSMap('packets.dst', 'dstPackets', 'destination.packets');
-addECSMap('ip.dst', 'dstIp', 'destination.ip');
-addECSMap('port.dst', 'dstPort', 'destination.port');
+  firstPacket: true,
+  lastPacket: true,
+  ipProtocol: true,
+  node: true,
+  'tcpflags.rst': true,
+  'tcpflags.syn': true,
+  'tcpflags.srcZero': true,
+  'tcpflags.psh': true,
+  'tcpflags.dstZero': true,
+  'tcpflags.syn-ack': true,
+  'tcpflags.fin': true,
+  'tcpflags.ack': true,
+  'tcpflags.urg': true,
+  'network.community_id': true
+};
 
-addECSMap('asn.src', 'srcASN', 'source.as.full');
-addECSMap('bytes.src', 'srcBytes', 'source.bytes');
-addECSMap('databytes.src', 'srcDataBytes', 'client.bytes');
-addECSMap('packets.src', 'srcPackets', 'source.packets');
-addECSMap('ip.src', 'srcIp', 'source.ip');
-addECSMap('port.src', 'srcPort', 'source.port');
+const dateFields = {
+  firstPacket: true,
+  lastPacket: true
+};
 
-addECSMap('bytes', 'totBytes', 'network.bytes');
-addECSMap('packets', 'totPackets', 'network.packets');
-
-function fixFields (fields) {
-  for (const f of ecsFields) {
-    let value = fields;
-    for (let i = 0; value && i < f.db.length; i++) {
-      if (i === f.db.length - 1) {
-        const tv = value[f.db[i]];
-        delete value[f.db[i]];
-        value = tv;
-      } else {
-        value = value[f.db[i]];
-      }
-    }
-    if (value === undefined) { continue; }
-
-    console.log(f, value);
+// Change foo.bar to foo: {bar:}
+// Unarray singleton fields
+// Change string dates to MS
+function fixSessionFields (fields) {
+  for (const f in fields) {
+    const path = f.split('.');
     let key = fields;
-    for (let i = 0; i < f.ecs.length; i++) {
-      if (i === f.ecs.length - 1) {
-        key[f.ecs[i]] = value;
-        break;
-      } else if (key[f.ecs[i]] === undefined) {
-        key[f.ecs[i]] = {};
+
+    // No dot in name, maybe no change
+    if (path.length === 1) {
+      if (fields[f].length > 0 && singletonFields[f]) {
+        fields[f] = fields[f][0];
       }
-      key = key[f.ecs[i]];
+      if (dateFields[f]) {
+        fields[f] = Date.parse(fields[f]);
+      }
+      continue;
+    }
+
+    // Dot in name, will be moving
+    let value = fields[f];
+    if (singletonFields[f]) {
+      value = value[0];
+    }
+    if (dateFields[f]) {
+      value = Date.parse(value);
+    }
+    delete fields[f];
+    for (let i = 0; i < path.length; i++) {
+      if (i === path.length - 1) {
+        key[path[i]] = value;
+        break;
+      } else if (key[path[i]] === undefined) {
+        key[path[i]] = {};
+      }
+      key = key[path[i]];
     }
   }
-
-  console.log(fields);
-/*
-  if (fields.communityId !== undefined) {
-    if (!fields.network) { fields.network = {}; }
-    fields.network.community_id = fields.communityId;
-    delete fields.communityId;
-  }
-
-  if (!fields.source) {
-    fields.source = {};
-  }
-  if (fields.srcBytes !== undefined) {
-    fields.source.bytes = fields.srcBytes;
-  }
-
-  fields.source.bytes = fields.
-  if (!fields.destination) {
-    fields.destination = {};
-  }
-  if (!fields.client) {
-    fields.client = {};
-  }
-  if (!fields.server) {
-    fields.server = {};
-  }
-  if (fields.communityId) {
-  */
 }
 
 // Get a session from ES and decode packetPos if requested
@@ -362,30 +364,24 @@ exports.getSession = async (id, options, cb) => {
     });
   }
 
-  if (internals.getSessionBySearch) {
-    exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
-      if (err) { return cb(err); }
-      if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
-      const session = results.hits.hits[0];
-      session.found = true;
-      if (options && options._source && !options._source.includes('packetPos')) {
-        return cb(null, session);
-      }
-      fixFields(session._source || session.fields);
-      return fixPacketPos(session, session._source || session.fields);
-    });
-  } else {
-    try {
-      const { body: session } = await exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options);
-      if (options && options._source && !options._source.includes('packetPos')) {
-        return cb(null, session);
-      }
-      fixFields(session._source || session.fields);
-      return fixPacketPos(session, session._source || session.fields);
-    } catch (err) {
-      return cb(err, {});
-    }
+  if (!options) {
+    options = { _source: false, fields: ['*'] };
   }
+  const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
+  delete options._source;
+  delete options.fields;
+
+  exports.search(exports.sid2Index(id), '_doc', query, options, (err, results) => {
+    if (err) { return cb(err); }
+    if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+    const session = results.hits.hits[0];
+    session.found = true;
+    if (options && options._source && !options._source.includes('packetPos')) {
+      return cb(null, session);
+    }
+    fixSessionFields(session._source || session.fields);
+    return fixPacketPos(session, session._source || session.fields);
+  });
 };
 
 exports.index = async (index, type, id, doc) => {
@@ -424,6 +420,7 @@ exports.search = async (index, type, query, options, cb) => {
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
+    console.log('ALW ES ERROR', err.toString());
     if (cb) { return cb(err, null); }
     throw new Error(err);
   }
@@ -535,9 +532,24 @@ exports.searchPrimary = function (index, type, query, options, cb) {
 };
 
 exports.searchSessions = function (index, query, options, cb) {
+  if (cb === undefined) {
+    return new Promise((resolve, reject) => {
+      exports.searchSessions(index, query, options, (err, result) => {
+        err ? reject(err) : resolve(result);
+      });
+    });
+  }
+
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);
-  return exports.searchScroll(index, 'session', query, params, cb);
+  exports.searchScroll(index, 'session', query, params, (err, result) => {
+    if (err || result.hits.hits.length === 0) { return cb(err, result); }
+
+    for (let i = 0; i < result.hits.hits.length; i++) {
+      fixSessionFields(result.hits.hits[i].fields);
+    }
+    return cb(null, result);
+  });
 };
 
 exports.msearch = async (index, type, queries, options) => {

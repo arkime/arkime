@@ -84,7 +84,7 @@ dl
 
   +arrayList(session, "asset", "Assets", "asset")
 
-  if (session.srcBytes || session.dstBytes)
+  if (session.source.bytes || session.source.bytes)
     dt
       b-dropdown.clickable-label(text="Src", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('packets.src', 0)")
@@ -271,7 +271,7 @@ dl
         | Add Src RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.source.ip, session.srcPort, session.srcGEO, session.srcASN, session.srcRIR, "src")
+    +ipPrint(session, session.source.ip, session.source.port, session.srcGEO, session.srcASN, session.srcRIR, "src")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -321,7 +321,7 @@ dl
         | Add Dst RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.destination.ip, session.dstPort, session.dstGEO, session.dstASN, session.dstRIR, "dst")
+    +ipPrint(session, session.destination.ip, session.destination.port, session.dstGEO, session.dstASN, session.dstRIR, "dst")
 
   if (session.srcPayload8 || session.dstPayload8)
     dt

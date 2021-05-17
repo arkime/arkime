@@ -2542,7 +2542,7 @@ processArgs(process.argv);
 // DB
 // ============================================================================
 process.on('unhandledRejection', (reason, p) => {
-  console.dir('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
+  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
   // application specific logging, throwing an error, or other logic here
 });
 
@@ -2563,7 +2563,6 @@ Db.initialize({
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
   debug: Config.debug,
-  getSessionBySearch: Config.get('getSessionBySearch', ''),
   esApiKey: Config.get('elasticsearchAPIKey', null),
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null)
 }, main);

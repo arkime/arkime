@@ -92,8 +92,8 @@
                     {{ session.lastPacket | timezoneDateString(timezone, ms) }}
                   </em>
                   <br>
-                  <strong>{{ session.source.ip }}</strong>:{{ session.srcPort }} <strong>{{ session.srcGEO }}</strong> -
-                  <strong>{{ session.destination.ip }}</strong>:{{ session.dstPort }} <strong>{{ session.dstGEO }}</strong>
+                  <strong>{{ session.source.ip }}</strong>:{{ session.source.port }} <strong>{{ session.srcGEO }}</strong> -
+                  <strong>{{ session.destination.ip }}</strong>:{{ session.destination.port }} <strong>{{ session.dstGEO }}</strong>
                   <br>
                   <strong>{{ session.ipProtocol | protocol }}</strong> - {{ session.node }}
                 </small>

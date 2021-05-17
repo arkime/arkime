@@ -1123,7 +1123,7 @@ exports.keyFromSession = function (session) {
   case 132: // sctp
   case 'sctp':
     const sep = session.source.ip.includes(':') ? '.' : ':';
-    return `${session.source.ip}${sep}${session.srcPort}`;
+    return `${session.source.ip}${sep}${session.source.port}`;
   default:
     return session.source.ip;
   }

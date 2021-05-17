@@ -175,7 +175,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @typedef ArkimeColumnConfig
    * @type {object}
    * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
-   * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"] - The list of Sessions table columns.
+   * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","source.port","dst","destination.port","totPackets","dbby","node"] - The list of Sessions table columns.
    */
 
   /**
