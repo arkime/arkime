@@ -21,8 +21,7 @@
         <li class="nav-item mr-2">
           <router-link to="/query"
             active-class="active"
-            class="nav-link"
-            exact>
+            class="nav-link">
             Query
           </router-link>
         </li>

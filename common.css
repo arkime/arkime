@@ -248,7 +248,6 @@ body.dark .dropdown-menu .dropdown-item:focus {
 /* lighten dark buttons */
 body.dark .btn-outline-dark {
   color: #ADB5BD;
-  border-color: #ADB5BD;
 }
 body.dark .btn-outline-dark:hover {
   color: #222;
@@ -335,6 +334,50 @@ body.dark .nav-tabs > li.nav-item > a.nav-link.active:focus {
 body.dark .well {
   background-color: #333;
   border-color: #444;
+}
+
+/* dark paging controls */
+body.dark .pagination-info {
+  display: inline-block;
+  font-size: .8rem;
+  color: #999;
+  border: 1px solid #F6F6F6;
+  padding: 5px 10px;
+  margin-left: -6px;
+  border-radius: 0 var(--px-sm) var(--px-sm) 0;
+  background-color: #333;
+}
+body.dark .pagination > .page-item > .page-link {
+  cursor: pointer !important;
+  color: #FFF;
+  background-color: #333;
+  border: 1px solid #F6F6F6;
+}
+body.dark .pagination > .page-item.disabled {
+  cursor: not-allowed !important;
+}
+body.dark .pagination > .page-item.disabled > span,
+body.dark .pagination > .page-item.disabled > span:hover,
+body.dark .pagination > .page-item.disabled > span:focus,
+body.dark .pagination > .page-item.disabled > a,
+body.dark .pagination > .page-item.disabled > a:hover,
+body.dark .pagination > .page-item.disabled > a:focus {
+  color: #777;
+  border-color: #F6F6F6;
+  background-color: #333;
+}
+
+body.dark .pagination > .page-item.active > a,
+body.dark .pagination > .page-item.active > span,
+body.dark .pagination > .page-item.active > a:hover,
+body.dark .pagination > .page-item.active > span:hover,
+body.dark .pagination > .page-item.active > a:focus,
+body.dark .pagination > .page-item.active > span:focus {
+  z-index: 3;
+  cursor: default;
+  color: #FFF;
+  border-color: #F6F6F6;
+  background-color: #111;
 }
 
 /* MEDIA QUERIES ----------------------------- */
