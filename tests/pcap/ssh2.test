@@ -1,32 +1,46 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:eCGZrs2oS78hdxeW5zAzN+gSTUc=",
-            "dstASN" : "AS1",
-            "dstBytes" : 2037,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 2037,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "02:21:59:a1:83:b2"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 11,
+               "port" : 22
+            },
             "dstDataBytes" : 1407,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "02:21:59:a1:83:b2"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 11,
             "dstPayload8" : "5353482d312e3939",
-            "dstPort" : 22,
-            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1387565111946,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1387565112051,
             "length" : 106,
+            "network" : {
+               "bytes" : 3752,
+               "community_id" : "1:eCGZrs2oS78hdxeW5zAzN+gSTUc=",
+               "packets" : 22
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -82,22 +96,32 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 1715,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 1715,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:0c:29:62:b6:75"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 61672
+            },
             "srcDataBytes" : 1109,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:0c:29:62:b6:75"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 11,
             "srcPayload8" : "5353482d322e302d",
-            "srcPort" : 61672,
             "ssh" : {
                "hassh" : [
                   "21b457a327ce7a2d4fce5ef2c42400bd"
@@ -153,15 +177,11 @@
                   "16777226:61672,33554442:22"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 3752,
-            "totDataBytes" : 2516,
-            "totPackets" : 22
+            "totDataBytes" : 2516
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131220",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131220"
             }
          }
       }

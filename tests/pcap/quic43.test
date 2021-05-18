@@ -1,28 +1,43 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:k96H39F7ImRu5hB1dQ2ksaY2vgE=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2607:f8b0:4005:1e::8",
+               "mac" : [
+                  "00:10:db:ff:20:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 443
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "2607:f8b0:4005:001e:0000:0000:0000:0008",
-            "dstMac" : [
-               "00:10:db:ff:20:01"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 443,
             "fileId" : [],
             "firstPacket" : 1550968206562,
             "ipProtocol" : 17,
             "lastPacket" : 1550968206562,
             "length" : 0,
+            "network" : {
+               "bytes" : 1412,
+               "community_id" : "1:k96H39F7ImRu5hB1dQ2ksaY2vgE=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                1428
@@ -31,8 +46,8 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "quic"
+               "quic",
+               "udp"
             ],
             "protocolCnt" : 2,
             "quic" : {
@@ -50,31 +65,37 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
-            "srcASN" : "AS7233 Yahoo",
-            "srcBytes" : 1412,
+            "source" : {
+               "as" : {
+                  "full" : "AS7233 Yahoo",
+                  "number" : 7233,
+                  "organization" : {
+                     "name" : "Yahoo"
+                  }
+               },
+               "bytes" : 1412,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2001:4998:effd:7801::1058",
+               "mac" : [
+                  "a4:93:4c:43:04:fb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 51485
+            },
             "srcDataBytes" : 1350,
-            "srcGEO" : "US",
-            "srcIp" : "2001:4998:effd:7801:0000:0000:0000:1058",
-            "srcMac" : [
-               "a4:93:4c:43:04:fb"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0da4b104dcf2fe28",
-            "srcPort" : 51485,
-            "timestamp" : "SET",
-            "totBytes" : 1412,
-            "totDataBytes" : 1350,
-            "totPackets" : 1
+            "totDataBytes" : 1350
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190224",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190224"
             }
          }
       }

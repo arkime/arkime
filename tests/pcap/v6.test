@@ -1,11 +1,21 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:JBeyh8m0a90BZxNrl8qsXhtgfcQ=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 510,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
-                  "AS4713 NTT Communications Corporation"
+                  "AS4713"
                ],
                "GEO" : [
                   "JP"
@@ -22,16 +32,16 @@
                ],
                "ipCnt" : 1,
                "mailserverASN" : [
-                  "AS4713 NTT Communications Corporation",
                   "---",
-                  "AS4713 NTT Communications Corporation",
-                  "---"
+                  "---",
+                  "AS4713",
+                  "AS4713"
                ],
                "mailserverGEO" : [
-                  "JP",
+                  "---",
                   "---",
                   "JP",
-                  "---"
+                  "JP"
                ],
                "mailserverHost" : [
                   "coconut.itojun.org",
@@ -40,20 +50,20 @@
                "mailserverHostCnt" : 2,
                "mailserverIp" : [
                   "210.160.95.97",
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
                   "210.160.95.99",
+                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
                   "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
                ],
                "mailserverIpCnt" : 4,
                "mailserverRIR" : [
-                  "APNIC",
+                  "",
                   "",
                   "APNIC",
-                  ""
+                  "APNIC"
                ],
                "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
+                  "AS4713",
+                  "AS4713"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -65,8 +75,8 @@
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
-                  "210.160.95.97",
-                  "210.145.33.242"
+                  "210.145.33.242",
+                  "210.160.95.97"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -90,25 +100,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 510,
             "dstDataBytes" : 448,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "0006858000010006",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159902141,
             "ipProtocol" : 17,
             "lastPacket" : 921159902215,
             "length" : 73,
+            "network" : {
+               "bytes" : 600,
+               "community_id" : "1:JBeyh8m0a90BZxNrl8qsXhtgfcQ=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                106,
@@ -119,52 +126,53 @@
                130
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 90,
+            "source" : {
+               "bytes" : 90,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2396
+            },
             "srcDataBytes" : 28,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0006010000010000",
-            "srcPort" : 2396,
-            "timestamp" : "SET",
-            "totBytes" : 600,
-            "totDataBytes" : 476,
-            "totPackets" : 2
+            "totDataBytes" : 476
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 406,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 406,
+               "ip" : "fe80::260:97ff:fe07:69ea",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
             "dstDataBytes" : 136,
-            "dstIp" : "fe80:0000:0000:0000:0260:97ff:fe07:69ea",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159907494,
             "icmp" : {
@@ -179,6 +187,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159966755,
             "length" : 59261,
+            "network" : {
+               "bytes" : 820,
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                102,
@@ -209,46 +221,47 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 414,
+            "source" : {
+               "bytes" : 414,
+               "ip" : "fe80::200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
             "srcDataBytes" : 144,
-            "srcIp" : "fe80:0000:0000:0000:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 820,
-            "totDataBytes" : 280,
-            "totPackets" : 10
+            "totDataBytes" : 280
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 592,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 592,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 0
+            },
             "dstDataBytes" : 160,
-            "dstIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "dstMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 8,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159907620,
             "icmp" : {
@@ -256,16 +269,20 @@
                   0
                ],
                "type" : [
-                  135,
-                  136,
                   3,
                   128,
-                  129
+                  129,
+                  135,
+                  136
                ]
             },
             "ipProtocol" : 58,
             "lastPacket" : 921159965778,
             "length" : 58158,
+            "network" : {
+               "bytes" : 1644,
+               "packets" : 20
+            },
             "node" : "test",
             "packetLen" : [
                102,
@@ -316,41 +333,49 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 1052,
+            "source" : {
+               "bytes" : 1052,
+               "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 12,
+               "port" : 0
+            },
             "srcDataBytes" : 404,
-            "srcIp" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 12,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 1644,
-            "totDataBytes" : 564,
-            "totPackets" : 20
+            "totDataBytes" : 564
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:TAfNmOf2SE9RgHaSxnnX6snX4Ww=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 358,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "www.yahoo.com"
                ],
                "hostCnt" : 1,
                "mailserverASN" : [
-                  "AS11590 Cumberland Technologies International"
+                  "AS11590"
                ],
                "mailserverGEO" : [
                   "US"
@@ -367,10 +392,10 @@
                   "ARIN"
                ],
                "nameserverASN" : [
-                  "AS3301 Telia Company AB",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC"
+                  "AS3301",
+                  "AS3561",
+                  "AS3561",
+                  "AS3561"
                ],
                "nameserverGEO" : [
                   "SE",
@@ -380,8 +405,8 @@
                ],
                "nameserverHost" : [
                   "ns.europe.yahoo.com",
-                  "ns2.dca.yahoo.com",
                   "ns1.yahoo.com",
+                  "ns2.dca.yahoo.com",
                   "ns5.dcx.yahoo.com"
                ],
                "nameserverHostCnt" : 4,
@@ -393,10 +418,10 @@
                ],
                "nameserverIpCnt" : 4,
                "nameserverRIR" : [
-                  "RIPE",
                   "ARIN",
                   "ARIN",
-                  "ARIN"
+                  "ARIN",
+                  "RIPE"
                ],
                "opcode" : [
                   "QUERY"
@@ -415,25 +440,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 358,
             "dstDataBytes" : 296,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "0006818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159908759,
             "ipProtocol" : 17,
             "lastPacket" : 921159908894,
             "length" : 135,
+            "network" : {
+               "bytes" : 451,
+               "community_id" : "1:TAfNmOf2SE9RgHaSxnnX6snX4Ww=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                109,
@@ -444,54 +466,59 @@
                1157
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 93,
+            "source" : {
+               "bytes" : 93,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2397
+            },
             "srcDataBytes" : 31,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0006010000010000",
-            "srcPort" : 2397,
-            "timestamp" : "SET",
-            "totBytes" : 451,
-            "totDataBytes" : 327,
-            "totPackets" : 2
+            "totDataBytes" : 327
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:rVJbatlZZnoXe+eex1w9w0qUxE8=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::9",
+               "mac" : [
+                  "33:33:00:00:00:09"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 521
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0009",
-            "dstMac" : [
-               "33:33:00:00:00:09"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 521,
             "fileId" : [],
             "firstPacket" : 921159914439,
             "ipProtocol" : 17,
             "lastPacket" : 921159941530,
             "length" : 27091,
+            "network" : {
+               "bytes" : 2412,
+               "community_id" : "1:rVJbatlZZnoXe+eex1w9w0qUxE8=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                1222,
@@ -506,35 +533,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 2412,
+            "source" : {
+               "bytes" : 2412,
+               "ip" : "fe80::260:97ff:fe07:69ea",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 521
+            },
             "srcDataBytes" : 2288,
-            "srcIp" : "fe80:0000:0000:0000:0260:97ff:fe07:69ea",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
             "srcPayload8" : "020100003ffe0507",
-            "srcPort" : 521,
-            "timestamp" : "SET",
-            "totBytes" : 2412,
-            "totDataBytes" : 2288,
-            "totPackets" : 2
+            "totDataBytes" : 2288
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:2og62ygpvkvOHHBzrbmT+iTofTM=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 282,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
                   "---",
@@ -558,8 +593,8 @@
                ],
                "ipCnt" : 2,
                "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
+                  "AS4713",
+                  "AS4713"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -571,8 +606,8 @@
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
-                  "210.160.95.97",
-                  "210.145.33.242"
+                  "210.145.33.242",
+                  "210.160.95.97"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -596,25 +631,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 282,
             "dstDataBytes" : 220,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "2c72818000010002",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159918251,
             "ipProtocol" : 17,
             "lastPacket" : 921159918263,
             "length" : 12,
+            "network" : {
+               "bytes" : 377,
+               "community_id" : "1:2og62ygpvkvOHHBzrbmT+iTofTM=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                111,
@@ -625,60 +657,65 @@
                3256
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 95,
+            "source" : {
+               "bytes" : 95,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2398
+            },
             "srcDataBytes" : 33,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "2c72010000010000",
-            "srcPort" : 2398,
-            "timestamp" : "SET",
-            "totBytes" : 377,
-            "totDataBytes" : 253,
-            "totPackets" : 2
+            "totDataBytes" : 253
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:KCHULnC2GCfanzHfU34Gr1Za/Zo=",
-            "dstBytes" : 6335,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 6335,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 30,
+               "port" : 22
+            },
             "dstDataBytes" : 3747,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 30,
             "dstPayload8" : "5353482d312e352d",
-            "dstPort" : 22,
             "fileId" : [],
             "firstPacket" : 921159918266,
             "initRTT" : 28,
             "ipProtocol" : 6,
             "lastPacket" : 921159923604,
             "length" : 5338,
+            "network" : {
+               "bytes" : 9974,
+               "community_id" : "1:KCHULnC2GCfanzHfU34Gr1Za/Zo=",
+               "packets" : 62
+            },
             "node" : "test",
             "packetLen" : [
                110,
@@ -814,20 +851,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 3639,
+            "source" : {
+               "bytes" : 3639,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 32,
+               "port" : 1022
+            },
             "srcDataBytes" : 879,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 32,
             "srcPayload8" : "5353482d312e352d",
-            "srcPort" : 1022,
             "ssh" : {
                "version" : [
                   "ssh-1.5-1.2.26"
@@ -845,21 +884,27 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 9974,
-            "totDataBytes" : 4626,
-            "totPackets" : 62
+            "totDataBytes" : 4626
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:+n2Xm0RMkkAREj2667uE6/dobbM=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 282,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
                   "---",
@@ -883,8 +928,8 @@
                ],
                "ipCnt" : 2,
                "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
+                  "AS4713",
+                  "AS4713"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -896,8 +941,8 @@
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
-                  "210.160.95.97",
-                  "210.145.33.242"
+                  "210.145.33.242",
+                  "210.160.95.97"
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
@@ -921,25 +966,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 282,
             "dstDataBytes" : 220,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "7ef5818000010002",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159929568,
             "ipProtocol" : 17,
             "lastPacket" : 921159929580,
             "length" : 11,
+            "network" : {
+               "bytes" : 377,
+               "community_id" : "1:+n2Xm0RMkkAREj2667uE6/dobbM=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                111,
@@ -950,58 +992,63 @@
                14827
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 95,
+            "source" : {
+               "bytes" : 95,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2399
+            },
             "srcDataBytes" : 33,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "7ef5010000010000",
-            "srcPort" : 2399,
-            "timestamp" : "SET",
-            "totBytes" : 377,
-            "totDataBytes" : 253,
-            "totPackets" : 2
+            "totDataBytes" : 253
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:Rrq8mpQOqi9txAgqnIKyTjBP65M=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33435
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33435,
             "fileId" : [],
             "firstPacket" : 921159929585,
             "ipProtocol" : 17,
             "lastPacket" : 921159929585,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:Rrq8mpQOqi9txAgqnIKyTjBP65M=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1014,42 +1061,50 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "01010000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:lJ2EpPqi0BT6qTU7EMhhJ+SUXVU=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 240,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc."
+                  "AS2497"
                ],
                "nameserverGEO" : [
                   "JP"
@@ -1082,25 +1137,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 240,
             "dstDataBytes" : 178,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "7ef6818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159929588,
             "ipProtocol" : 17,
             "lastPacket" : 921159929600,
             "length" : 11,
+            "network" : {
+               "bytes" : 391,
+               "community_id" : "1:lJ2EpPqi0BT6qTU7EMhhJ+SUXVU=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -1111,58 +1163,63 @@
                15520
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2401
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "7ef6010000010000",
-            "srcPort" : 2401,
-            "timestamp" : "SET",
-            "totBytes" : 391,
-            "totDataBytes" : 267,
-            "totPackets" : 2
+            "totDataBytes" : 267
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:jZbgHwfnj1bPaKBDiIRmffpeZk4=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33436
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33436,
             "fileId" : [],
             "firstPacket" : 921159929601,
             "ipProtocol" : 17,
             "lastPacket" : 921159929601,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:jZbgHwfnj1bPaKBDiIRmffpeZk4=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1175,53 +1232,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "02010000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:VZWBbt3717+pOvzLkDY5NmKLsVw=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33437
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33437,
             "fileId" : [],
             "firstPacket" : 921159929603,
             "ipProtocol" : 17,
             "lastPacket" : 921159929603,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:VZWBbt3717+pOvzLkDY5NmKLsVw=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1234,53 +1296,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "03010000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:PrhM2bX7u4cS7xpN4UdVyWzRXZ4=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33438
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33438,
             "fileId" : [],
             "firstPacket" : 921159929604,
             "ipProtocol" : 17,
             "lastPacket" : 921159929604,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:PrhM2bX7u4cS7xpN4UdVyWzRXZ4=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1293,47 +1360,48 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "04020000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "dstMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159929611,
             "icmp" : {
@@ -1347,6 +1415,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159929642,
             "length" : 31,
+            "network" : {
+               "bytes" : 366,
+               "packets" : 3
+            },
             "node" : "test",
             "packetLen" : [
                138,
@@ -1363,52 +1435,60 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 366,
+            "source" : {
+               "bytes" : 366,
+               "ip" : "3ffe:501:0:1802:260:97ff:feb6:7ff0",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
             "srcDataBytes" : 204,
-            "srcIp" : "3ffe:0501:0000:1802:0260:97ff:feb6:7ff0",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 366,
-            "totDataBytes" : 204,
-            "totPackets" : 3
+            "totDataBytes" : 204
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:6fW9tSY4vOSbkT1OommJEIbAgOs=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 330,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "---"
+                  "---",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "ns2.v6.wide.ad.jp",
-                  "ns1.v6.wide.ad.jp"
+                  "ns1.v6.wide.ad.jp",
+                  "ns2.v6.wide.ad.jp"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
@@ -1418,9 +1498,9 @@
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -1439,25 +1519,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 330,
             "dstDataBytes" : 268,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "7ef7818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159929612,
             "ipProtocol" : 17,
             "lastPacket" : 921159929626,
             "length" : 13,
+            "network" : {
+               "bytes" : 481,
+               "community_id" : "1:6fW9tSY4vOSbkT1OommJEIbAgOs=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -1468,58 +1545,63 @@
                16627
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2402
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "7ef7010000010000",
-            "srcPort" : 2402,
-            "timestamp" : "SET",
-            "totBytes" : 481,
-            "totDataBytes" : 357,
-            "totPackets" : 2
+            "totDataBytes" : 357
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:FuiRMncy2mhAkCJ4mYumMiRK0uw=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33439
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33439,
             "fileId" : [],
             "firstPacket" : 921159929627,
             "ipProtocol" : 17,
             "lastPacket" : 921159929627,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:FuiRMncy2mhAkCJ4mYumMiRK0uw=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1532,53 +1614,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "05020000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:pzh5zVYL61xkF2XP5r6N4T4UZzs=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33440
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33440,
             "fileId" : [],
             "firstPacket" : 921159929635,
             "ipProtocol" : 17,
             "lastPacket" : 921159929635,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:pzh5zVYL61xkF2XP5r6N4T4UZzs=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1591,53 +1678,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "06020000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:GCMi8ajuhuVeMeNiDHgP/XG0/Fo=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33441
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33441,
             "fileId" : [],
             "firstPacket" : 921159929679,
             "ipProtocol" : 17,
             "lastPacket" : 921159929679,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:GCMi8ajuhuVeMeNiDHgP/XG0/Fo=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1650,47 +1742,48 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "07030000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "dstMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159929691,
             "icmp" : {
@@ -1704,6 +1797,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159929728,
             "length" : 37,
+            "network" : {
+               "bytes" : 366,
+               "packets" : 3
+            },
             "node" : "test",
             "packetLen" : [
                138,
@@ -1720,52 +1817,60 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 366,
+            "source" : {
+               "bytes" : 366,
+               "ip" : "3ffe:501:1800:2345::2",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
             "srcDataBytes" : 204,
-            "srcIp" : "3ffe:0501:1800:2345:0000:0000:0000:0002",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 366,
-            "totDataBytes" : 204,
-            "totPackets" : 3
+            "totDataBytes" : 204
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:2cUeFYFpuMSs0fxGv+ak3hNZ/V8=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 325,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "---"
+                  "---",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "ns2.v6.wide.ad.jp",
-                  "ns1.v6.wide.ad.jp"
+                  "ns1.v6.wide.ad.jp",
+                  "ns2.v6.wide.ad.jp"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
@@ -1775,9 +1880,9 @@
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -1796,25 +1901,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 325,
             "dstDataBytes" : 263,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "7ef8818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159929692,
             "ipProtocol" : 17,
             "lastPacket" : 921159929706,
             "length" : 13,
+            "network" : {
+               "bytes" : 476,
+               "community_id" : "1:2cUeFYFpuMSs0fxGv+ak3hNZ/V8=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -1825,58 +1927,63 @@
                17824
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2403
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "7ef8010000010000",
-            "srcPort" : 2403,
-            "timestamp" : "SET",
-            "totBytes" : 476,
-            "totDataBytes" : 352,
-            "totPackets" : 2
+            "totDataBytes" : 352
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:eXykMyBXKmtuhixXdk+pC1vq4Lg=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33442
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33442,
             "fileId" : [],
             "firstPacket" : 921159929708,
             "ipProtocol" : 17,
             "lastPacket" : 921159929708,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:eXykMyBXKmtuhixXdk+pC1vq4Lg=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1889,53 +1996,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "08030000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:1/77V7ArBY5fw8OFEgnq0HRK4Io=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33443
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33443,
             "fileId" : [],
             "firstPacket" : 921159929718,
             "ipProtocol" : 17,
             "lastPacket" : 921159929718,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:1/77V7ArBY5fw8OFEgnq0HRK4Io=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -1948,53 +2060,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "09030000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:I5ZJdS8rgZWIL4cUqtQijFePD1U=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33444
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33444,
             "fileId" : [],
             "firstPacket" : 921159929730,
             "ipProtocol" : 17,
             "lastPacket" : 921159929730,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:I5ZJdS8rgZWIL4cUqtQijFePD1U=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -2007,47 +2124,48 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0a040000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "dstMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159929788,
             "icmp" : {
@@ -2061,6 +2179,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159929931,
             "length" : 142,
+            "network" : {
+               "bytes" : 366,
+               "packets" : 3
+            },
             "node" : "test",
             "packetLen" : [
                138,
@@ -2077,41 +2199,49 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 366,
+            "source" : {
+               "bytes" : 366,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
             "srcDataBytes" : 204,
-            "srcIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 366,
-            "totDataBytes" : 204,
-            "totPackets" : 3
+            "totDataBytes" : 204
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:MxtfBMwM5+MDHy9yBdlSflxBHso=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 246,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation"
+                  "AS4713"
                ],
                "nameserverGEO" : [
                   "JP"
@@ -2144,25 +2274,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 246,
             "dstDataBytes" : 184,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "7ef9818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159929789,
             "ipProtocol" : 17,
             "lastPacket" : 921159929803,
             "length" : 13,
+            "network" : {
+               "bytes" : 397,
+               "community_id" : "1:MxtfBMwM5+MDHy9yBdlSflxBHso=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -2173,58 +2300,63 @@
                19016
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2404
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "7ef9010000010000",
-            "srcPort" : 2404,
-            "timestamp" : "SET",
-            "totBytes" : 397,
-            "totDataBytes" : 273,
-            "totPackets" : 2
+            "totDataBytes" : 273
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:hu9f8vJP/peFHO9YZu3fQzSeA/k=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33445
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33445,
             "fileId" : [],
             "firstPacket" : 921159929805,
             "ipProtocol" : 17,
             "lastPacket" : 921159929805,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:hu9f8vJP/peFHO9YZu3fQzSeA/k=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -2237,53 +2369,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0b040000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:hjcQwKOvkwTtfnBCXaDVU6u7WU4=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 33446
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 33446,
             "fileId" : [],
             "firstPacket" : 921159929873,
             "ipProtocol" : 17,
             "lastPacket" : 921159929873,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:hjcQwKOvkwTtfnBCXaDVU6u7WU4=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -2296,35 +2433,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 74,
+            "source" : {
+               "bytes" : 74,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 41077
+            },
             "srcDataBytes" : 12,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0c040000f9c8e736",
-            "srcPort" : 41077,
-            "timestamp" : "SET",
-            "totBytes" : 74,
-            "totDataBytes" : 12,
-            "totPackets" : 1
+            "totDataBytes" : 12
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:PL+Hx3+dyZ2Y3rpTAH6dRtDSO30=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 322,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
                   "---"
@@ -2336,8 +2481,8 @@
                   ""
                ],
                "host" : [
-                  "www.wide.ad.jp",
-                  "endo.wide.ad.jp"
+                  "endo.wide.ad.jp",
+                  "www.wide.ad.jp"
                ],
                "hostCnt" : 2,
                "ip" : [
@@ -2345,9 +2490,9 @@
                ],
                "ipCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
+                  "AS2500",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -2355,15 +2500,15 @@
                   "JP"
                ],
                "nameserverHost" : [
-                  "ns.wide.ad.jp",
                   "ns.rcac.tdi.co.jp",
-                  "ns.tokyo.wide.ad.jp"
+                  "ns.tokyo.wide.ad.jp",
+                  "ns.wide.ad.jp"
                ],
                "nameserverHostCnt" : 3,
                "nameserverIp" : [
+                  "202.249.17.17",
                   "203.178.136.61",
-                  "203.178.136.63",
-                  "202.249.17.17"
+                  "203.178.136.63"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
@@ -2388,25 +2533,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 322,
             "dstDataBytes" : 260,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "b362858000010002",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159936681,
             "ipProtocol" : 17,
             "lastPacket" : 921159937360,
             "length" : 679,
+            "network" : {
+               "bytes" : 416,
+               "community_id" : "1:PL+Hx3+dyZ2Y3rpTAH6dRtDSO30=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                110,
@@ -2417,52 +2559,53 @@
                19844
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 94,
+            "source" : {
+               "bytes" : 94,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2405
+            },
             "srcDataBytes" : 32,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "b362010000010000",
-            "srcPort" : 2405,
-            "timestamp" : "SET",
-            "totBytes" : 416,
-            "totDataBytes" : 292,
-            "totPackets" : 2
+            "totDataBytes" : 292
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 210,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 210,
+               "ip" : "3ffe:501:0:1001::2",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
             "dstDataBytes" : 48,
-            "dstIp" : "3ffe:0501:0000:1001:0000:0000:0000:0002",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 3,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159937408,
             "icmp" : {
@@ -2477,6 +2620,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159939423,
             "length" : 2014,
+            "network" : {
+               "bytes" : 420,
+               "packets" : 6
+            },
             "node" : "test",
             "packetLen" : [
                86,
@@ -2499,64 +2646,72 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 210,
+            "source" : {
+               "bytes" : 210,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
             "srcDataBytes" : 48,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 420,
-            "totDataBytes" : 96,
-            "totPackets" : 6
+            "totDataBytes" : 96
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:eqkepZjUXBd6FRCDWLx9UiqGwk8=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 323,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "---"
+                  "---",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "ns2.v6.wide.ad.jp",
-                  "ns1.v6.wide.ad.jp"
+                  "ns1.v6.wide.ad.jp",
+                  "ns2.v6.wide.ad.jp"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
-                  "203.178.141.212",
                   "203.178.136.188",
+                  "203.178.141.212",
                   "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -2575,25 +2730,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 323,
             "dstDataBytes" : 261,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "b363858000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159937432,
             "ipProtocol" : 17,
             "lastPacket" : 921159937449,
             "length" : 16,
+            "network" : {
+               "bytes" : 474,
+               "community_id" : "1:eqkepZjUXBd6FRCDWLx9UiqGwk8=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -2604,58 +2756,66 @@
                20521
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2407
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "b363010000010000",
-            "srcPort" : 2407,
-            "timestamp" : "SET",
-            "totBytes" : 474,
-            "totDataBytes" : 350,
-            "totPackets" : 2
+            "totDataBytes" : 350
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:DDTJae3ti7Hy+J9ixs257S0tiAo=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 323,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "---"
+                  "---",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "ns2.v6.wide.ad.jp",
-                  "ns1.v6.wide.ad.jp"
+                  "ns1.v6.wide.ad.jp",
+                  "ns2.v6.wide.ad.jp"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
@@ -2665,9 +2825,9 @@
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -2686,25 +2846,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 323,
             "dstDataBytes" : 261,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "b364818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159938429,
             "ipProtocol" : 17,
             "lastPacket" : 921159938443,
             "length" : 13,
+            "network" : {
+               "bytes" : 474,
+               "community_id" : "1:DDTJae3ti7Hy+J9ixs257S0tiAo=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -2715,58 +2872,66 @@
                21199
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2408
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "b364010000010000",
-            "srcPort" : 2408,
-            "timestamp" : "SET",
-            "totBytes" : 474,
-            "totDataBytes" : 350,
-            "totPackets" : 2
+            "totDataBytes" : 350
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:/xPcVFFOsrfzUnBW7pMSIw/VZL8=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 323,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "---"
+                  "---",
+                  "AS2500",
+                  "AS2500"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "ns2.v6.wide.ad.jp",
-                  "ns1.v6.wide.ad.jp"
+                  "ns1.v6.wide.ad.jp",
+                  "ns2.v6.wide.ad.jp"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
@@ -2776,9 +2941,9 @@
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -2797,25 +2962,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 323,
             "dstDataBytes" : 261,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "b365818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159939424,
             "ipProtocol" : 17,
             "lastPacket" : 921159939438,
             "length" : 13,
+            "network" : {
+               "bytes" : 474,
+               "community_id" : "1:/xPcVFFOsrfzUnBW7pMSIw/VZL8=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -2826,48 +2988,49 @@
                21877
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2409
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "b365010000010000",
-            "srcPort" : 2409,
-            "timestamp" : "SET",
-            "totBytes" : 474,
-            "totDataBytes" : 350,
-            "totPackets" : 2
+            "totDataBytes" : 350
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::2",
+               "mac" : [
+                  "33:33:00:00:00:02"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0002",
-            "dstMac" : [
-               "33:33:00:00:00:02"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159951927,
             "icmp" : {
@@ -2881,6 +3044,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159951927,
             "length" : 0,
+            "network" : {
+               "bytes" : 62,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                78
@@ -2893,42 +3060,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 62,
+            "source" : {
+               "bytes" : 62,
+               "ip" : "fe80::200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 8,
-            "srcIp" : "fe80:0000:0000:0000:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 62,
-            "totDataBytes" : 8,
-            "totPackets" : 1
+            "totDataBytes" : 8
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::1",
+               "mac" : [
+                  "33:33:00:00:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0001",
-            "dstMac" : [
-               "33:33:00:00:00:01"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159952222,
             "icmp" : {
@@ -2942,6 +3110,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159952222,
             "length" : 0,
+            "network" : {
+               "bytes" : 118,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                134
@@ -2954,46 +3126,54 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 118,
+            "source" : {
+               "bytes" : 118,
+               "ip" : "fe80::260:97ff:fe07:69ea",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 64,
-            "srcIp" : "fe80:0000:0000:0000:0260:97ff:fe07:69ea",
-            "srcMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "3Com"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 118,
-            "totDataBytes" : 64,
-            "totPackets" : 1
+            "totDataBytes" : 64
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:ROb1V7Hyin1yz+TVtdcyErmoHrA=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 252,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "GEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "RIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "host" : [
                   "sh1.iijlab.net"
@@ -3005,18 +3185,18 @@
                ],
                "ipCnt" : 2,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497",
+                  "AS2497"
                ],
                "nameserverGEO" : [
+                  "---",
                   "JP",
-                  "JP",
-                  "---"
+                  "JP"
                ],
                "nameserverHost" : [
-                  "sh1.iijlab.net",
-                  "dns0.iij.ad.jp"
+                  "dns0.iij.ad.jp",
+                  "sh1.iijlab.net"
                ],
                "nameserverHostCnt" : 2,
                "nameserverIp" : [
@@ -3026,9 +3206,9 @@
                ],
                "nameserverIpCnt" : 3,
                "nameserverRIR" : [
+                  "",
                   "APNIC",
-                  "APNIC",
-                  ""
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3047,25 +3227,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 252,
             "dstDataBytes" : 190,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c74858000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159956705,
             "ipProtocol" : 17,
             "lastPacket" : 921159961961,
             "length" : 5255,
+            "network" : {
+               "bytes" : 346,
+               "community_id" : "1:ROb1V7Hyin1yz+TVtdcyErmoHrA=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                110,
@@ -3076,52 +3253,53 @@
                24152
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 94,
+            "source" : {
+               "bytes" : 94,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2410
+            },
             "srcDataBytes" : 32,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c74010000010000",
-            "srcPort" : 2410,
-            "timestamp" : "SET",
-            "totBytes" : 346,
-            "totDataBytes" : 222,
-            "totPackets" : 2
+            "totDataBytes" : 222
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159961962,
             "icmp" : {
@@ -3135,6 +3313,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159961962,
             "length" : 0,
+            "network" : {
+               "bytes" : 300,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                316
@@ -3147,42 +3329,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 300,
+            "source" : {
+               "bytes" : 300,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 246,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 300,
-            "totDataBytes" : 246,
-            "totPackets" : 1
+            "totDataBytes" : 246
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::1:ff07:69ea",
+               "mac" : [
+                  "33:33:ff:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0001:ff07:69ea",
-            "dstMac" : [
-               "33:33:ff:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 921159962650,
             "icmp" : {
@@ -3196,6 +3379,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 921159962650,
             "length" : 0,
+            "network" : {
+               "bytes" : 86,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                102
@@ -3208,46 +3395,54 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 86,
+            "source" : {
+               "bytes" : 86,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 32,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 86,
-            "totDataBytes" : 32,
-            "totPackets" : 1
+            "totDataBytes" : 32
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:qZzFhHofOhwoToiR1LMEMG6Y/sA=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 268,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "nameserverGEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "nameserverHost" : [
                   "sh1.iijlab.net"
@@ -3259,8 +3454,8 @@
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3279,25 +3474,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 268,
             "dstDataBytes" : 206,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c75818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159962652,
             "ipProtocol" : 17,
             "lastPacket" : 921159962667,
             "length" : 15,
+            "network" : {
+               "bytes" : 419,
+               "community_id" : "1:qZzFhHofOhwoToiR1LMEMG6Y/sA=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -3308,52 +3500,60 @@
                25279
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2412
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c75010000010000",
-            "srcPort" : 2412,
-            "timestamp" : "SET",
-            "totBytes" : 419,
-            "totDataBytes" : 295,
-            "totPackets" : 2
+            "totDataBytes" : 295
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:MceIKUK+lZ3tlzhY93h8oQCkcxI=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 268,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "nameserverGEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "nameserverHost" : [
                   "sh1.iijlab.net"
@@ -3365,8 +3565,8 @@
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3385,25 +3585,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 268,
             "dstDataBytes" : 206,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c76818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159962782,
             "ipProtocol" : 17,
             "lastPacket" : 921159962796,
             "length" : 13,
+            "network" : {
+               "bytes" : 419,
+               "community_id" : "1:MceIKUK+lZ3tlzhY93h8oQCkcxI=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -3414,52 +3611,60 @@
                25902
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2413
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c76010000010000",
-            "srcPort" : 2413,
-            "timestamp" : "SET",
-            "totBytes" : 419,
-            "totDataBytes" : 295,
-            "totPackets" : 2
+            "totDataBytes" : 295
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:g33nkzkY8GSyKHxDGKBXBEpzqrY=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 268,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "nameserverGEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "nameserverHost" : [
                   "sh1.iijlab.net"
@@ -3471,8 +3676,8 @@
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3491,25 +3696,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 268,
             "dstDataBytes" : 206,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c77818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159963775,
             "ipProtocol" : 17,
             "lastPacket" : 921159963788,
             "length" : 12,
+            "network" : {
+               "bytes" : 419,
+               "community_id" : "1:g33nkzkY8GSyKHxDGKBXBEpzqrY=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -3520,52 +3722,60 @@
                26525
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2414
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c77010000010000",
-            "srcPort" : 2414,
-            "timestamp" : "SET",
-            "totBytes" : 419,
-            "totDataBytes" : 295,
-            "totPackets" : 2
+            "totDataBytes" : 295
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:DblIC7Bw7gfCmEuAOolUPPBOsO8=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 268,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "nameserverGEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "nameserverHost" : [
                   "sh1.iijlab.net"
@@ -3577,8 +3787,8 @@
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3597,25 +3807,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 268,
             "dstDataBytes" : 206,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c78818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159964777,
             "ipProtocol" : 17,
             "lastPacket" : 921159964794,
             "length" : 16,
+            "network" : {
+               "bytes" : 419,
+               "community_id" : "1:DblIC7Bw7gfCmEuAOolUPPBOsO8=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -3626,52 +3833,60 @@
                27148
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2415
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c78010000010000",
-            "srcPort" : 2415,
-            "timestamp" : "SET",
-            "totBytes" : 419,
-            "totDataBytes" : 295,
-            "totPackets" : 2
+            "totDataBytes" : 295
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:LNV1UXbmJ7TWlJ6joUSCakDis2M=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 268,
+               "ip" : "3ffe:501:4819::42",
+               "mac" : [
+                  "00:60:97:07:69:ea"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "---"
+                  "---",
+                  "AS2497"
                ],
                "nameserverGEO" : [
-                  "JP",
-                  "---"
+                  "---",
+                  "JP"
                ],
                "nameserverHost" : [
                   "sh1.iijlab.net"
@@ -3683,8 +3898,8 @@
                ],
                "nameserverIpCnt" : 2,
                "nameserverRIR" : [
-                  "APNIC",
-                  ""
+                  "",
+                  "APNIC"
                ],
                "opcode" : [
                   "QUERY"
@@ -3703,25 +3918,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 268,
             "dstDataBytes" : 206,
-            "dstIp" : "3ffe:0501:4819:0000:0000:0000:0000:0042",
-            "dstMac" : [
-               "00:60:97:07:69:ea"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5c79818000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 921159965780,
             "ipProtocol" : 17,
             "lastPacket" : 921159965808,
             "length" : 28,
+            "network" : {
+               "bytes" : 419,
+               "community_id" : "1:LNV1UXbmJ7TWlJ6joUSCakDis2M=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                167,
@@ -3732,34 +3944,32 @@
                27771
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 151,
+            "source" : {
+               "bytes" : 151,
+               "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
+               "mac" : [
+                  "00:00:86:05:80:da"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 2416
+            },
             "srcDataBytes" : 89,
-            "srcIp" : "3ffe:0507:0000:0001:0200:86ff:fe05:80da",
-            "srcMac" : [
-               "00:00:86:05:80:da"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Megahertz Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5c79010000010000",
-            "srcPort" : 2416,
-            "timestamp" : "SET",
-            "totBytes" : 419,
-            "totDataBytes" : 295,
-            "totPackets" : 2
+            "totDataBytes" : 295
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-990311",
-               "_type" : "session"
+               "_index" : "tests_sessions3-990311"
             }
          }
       }

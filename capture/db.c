@@ -42,6 +42,9 @@ extern uint32_t         pluginsCbs;
 extern uint64_t         writtenBytes;
 extern uint64_t         unwrittenBytes;
 
+extern int              mac1Field;
+extern int              mac2Field;
+
 LOCAL struct timeval    startTime;
 LOCAL char             *rirs[256];
 
@@ -439,6 +442,24 @@ if (HEAD.s_count > 0) { \
     BSB_EXPORT_sprintf(jbsb, "\"" CNT "\":%d,", certs->alt.s_count); \
 }
 
+#define SAVE_FIELD_STR_HASH(POS, FLAGS) \
+do { \
+    shash = session->fields[POS]->shash; \
+    if (FLAGS & MOLOCH_FIELD_FLAG_CNT) { \
+        BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
+    } \
+    if (FLAGS & MOLOCH_FIELD_FLAG_ECS_CNT) { \
+        BSB_EXPORT_sprintf(jbsb, "\"%s-cnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
+    } \
+    BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[POS]->dbField); \
+    HASH_FORALL(s_, *shash, hstring, \
+        moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || FLAGS & MOLOCH_FIELD_FLAG_FORCE_UTF8); \
+        BSB_EXPORT_u08(jbsb, ','); \
+    ); \
+    BSB_EXPORT_rewind(jbsb, 1); /* Remove last comma */ \
+    BSB_EXPORT_cstr(jbsb, "],"); \
+} while(0)
+
 int moloch_db_field_sort(const void *a, const void *b) {
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
 }
@@ -616,13 +637,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                       timediff,
                       session->ipProtocol);
 
-    // Currently don't do communityId for ICMP because it requires magic
-    if (session->ses != SESSION_ICMP && session->ses != SESSION_OTHER) {
-        char *communityId = moloch_db_community_id(session);
-        BSB_EXPORT_sprintf(jbsb, "\"communityId\": \"1:%s\",", communityId);
-        g_free(communityId);
-    }
-
     if (session->ipProtocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,
                            "\"tcpflags\":{"
@@ -679,21 +693,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
             inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
         }
-        BSB_EXPORT_sprintf(jbsb,
-                          "\"@timestamp\":%" PRIu64 ",",
-                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000);
-        BSB_EXPORT_sprintf(jbsb,
-                          "\"timestamp\":%" PRIu64 ","
-                          "\"srcIp\":\"%s\","
-                          "\"dstIp\":\"%s\","
-                          "\"srcPort\":%u,"
-                          "\"dstPort\":%u,",
-                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000,
-                          ipsrc,
-                          ipdst,
-                          session->port1,
-                          session->port2);
-
 
         char *g1, *g2, *asStr1, *asStr2, *rir1, *rir2;
         uint32_t asNum1, asNum2;
@@ -702,49 +701,89 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         moloch_db_geo_lookup6(session, session->addr1, &g1, &asNum1, &asStr1, &asLen1, &rir1);
         moloch_db_geo_lookup6(session, session->addr2, &g2, &asNum2, &asStr2, &asLen2, &rir2);
 
-        if (g1)
-            BSB_EXPORT_sprintf(jbsb, "\"srcGEO\":\"%2.2s\",", g1);
-        if (g2)
-            BSB_EXPORT_sprintf(jbsb, "\"dstGEO\":\"%2.2s\",", g2);
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"@timestamp\":%" PRIu64 ",",
+                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000);
 
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"source\":{\"ip\":\"%s\","
+                          "\"port\":%d,"
+                          "\"bytes\":%" PRIu64 ","
+                          "\"packets\":%u,",
+                          ipsrc,
+                          session->port1,
+                          session->bytes[0],
+                          session->packets[0]);
+
+        if (g1) {
+            BSB_EXPORT_sprintf(jbsb, "\"geo\":{\"country_iso_code\":\"%2.2s\"},", g1);
+        }
 
         if (asStr1) {
-            BSB_EXPORT_sprintf(jbsb, "\"srcASN\":\"AS%u ", asNum1);
+            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum1, asNum1);
             moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr1, asLen1, TRUE);
-            BSB_EXPORT_cstr(jbsb, "\",");
+            BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
+            moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr1, asLen1, TRUE);
+            BSB_EXPORT_cstr(jbsb, "\"}},");
+        }
+
+        if (session->fields[mac1Field]) {
+            SAVE_FIELD_STR_HASH(mac1Field, MOLOCH_FIELD_FLAG_ECS_CNT);
+        }
+
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_cstr(jbsb, "},"); // Close source
+
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"destination\":{\"ip\":\"%s\","
+                          "\"port\":%d,"
+                          "\"bytes\":%" PRIu64 ","
+                          "\"packets\":%u,",
+                          ipdst,
+                          session->port2,
+                          session->bytes[1],
+                          session->packets[1]);
+
+        if (g2) {
+            BSB_EXPORT_sprintf(jbsb, "\"geo\":{\"country_iso_code\":\"%2.2s\"},", g2);
         }
 
         if (asStr2) {
-            BSB_EXPORT_sprintf(jbsb, "\"dstASN\":\"AS%u ", asNum2);
+            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum2, asNum2);
             moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr2, asLen2, TRUE);
-            BSB_EXPORT_cstr(jbsb, "\",");
+            BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
+            moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr2, asLen2, TRUE);
+            BSB_EXPORT_cstr(jbsb, "\"}},");
         }
 
-        if (rir1)
-            BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
+        if (session->fields[mac2Field]) {
+            SAVE_FIELD_STR_HASH(mac2Field, MOLOCH_FIELD_FLAG_ECS_CNT);
+        }
 
-        if (rir2)
-            BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_cstr(jbsb, "},"); // Close destination
     }
 
     BSB_EXPORT_sprintf(jbsb,
-                      "\"totPackets\":%u,"
-                      "\"srcPackets\":%u,"
-                      "\"dstPackets\":%u,"
-                      "\"totBytes\":%" PRIu64 ","
-                      "\"srcBytes\":%" PRIu64 ","
-                      "\"dstBytes\":%" PRIu64 ","
+                      "\"network\":{\"packets\":%u,"
+                      "\"bytes\":%" PRIu64,
+                      session->packets[0] + session->packets[1],
+                      session->bytes[0] + session->bytes[1]);
+
+    // Currently don't do communityId for ICMP because it requires magic
+    if (session->ses != SESSION_ICMP && session->ses != SESSION_OTHER) {
+        char *communityId = moloch_db_community_id(session);
+        BSB_EXPORT_sprintf(jbsb, ",\"community_id\": \"1:%s\"", communityId);
+        g_free(communityId);
+    }
+    BSB_EXPORT_cstr(jbsb, "},");
+
+    BSB_EXPORT_sprintf(jbsb,
                       "\"totDataBytes\":%" PRIu64 ","
                       "\"srcDataBytes\":%" PRIu64 ","
                       "\"dstDataBytes\":%" PRIu64 ","
                       "\"segmentCnt\":%u,"
                       "\"node\":\"%s\",",
-                      session->packets[0] + session->packets[1],
-                      session->packets[0],
-                      session->packets[1],
-                      session->bytes[0] + session->bytes[1],
-                      session->bytes[0],
-                      session->bytes[1],
                       session->databytes[0] + session->databytes[1],
                       session->databytes[0],
                       session->databytes[1],
@@ -817,7 +856,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             continue;
 
         const int flags = config.fields[pos]->flags;
-        if (flags & MOLOCH_FIELD_FLAG_DISABLED)
+        if (flags & (MOLOCH_FIELD_FLAG_DISABLED | MOLOCH_FIELD_FLAG_NOSAVE))
             continue;
 
         const int freeField = final || ((flags & MOLOCH_FIELD_FLAG_LINKED_SESSIONS) == 0);
@@ -882,15 +921,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
             break;
         case MOLOCH_FIELD_TYPE_STR_HASH:
-            shash = session->fields[pos]->shash;
-            if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(s_, *shash));
-            }
-            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
-            HASH_FORALL(s_, *shash, hstring,
-                moloch_db_js0n_str(&jbsb, (unsigned char *)hstring->str, hstring->utf8 || flags & MOLOCH_FIELD_FLAG_FORCE_UTF8);
-                BSB_EXPORT_u08(jbsb, ',');
-            );
+            SAVE_FIELD_STR_HASH(pos, flags);
             if (freeField) {
                 HASH_FORALL_POP_HEAD(s_, *shash, hstring,
                     g_free(hstring->str);
@@ -898,8 +929,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 );
                 MOLOCH_TYPE_FREE(MolochStringHashStd_t, shash);
             }
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
             break;
         case MOLOCH_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[pos]->ghash;
@@ -970,9 +999,11 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
 
             if (asStr) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":\"AS%u ", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, asNum);
+                BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum, asNum);
                 moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
-                BSB_EXPORT_cstr(jbsb, "\",");
+                BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
+                moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\"}},");
             }
 
             if (rir) {

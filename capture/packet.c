@@ -42,8 +42,8 @@ extern uint32_t              pluginsCbs;
 uint64_t                     writtenBytes;
 uint64_t                     unwrittenBytes;
 
-LOCAL int                    mac1Field;
-LOCAL int                    mac2Field;
+int                          mac1Field;
+int                          mac2Field;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
 LOCAL int                    vlanField;
@@ -1479,16 +1479,16 @@ void moloch_packet_init()
     g_timeout_add_seconds(10, moloch_packet_save_drophash, 0);
 
     mac1Field = moloch_field_define("general", "lotermfield",
-        "mac.src", "Src MAC", "srcMac",
+        "mac.src", "Src MAC", "source.mac",
         "Source ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
         (char *)NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
-        "mac.dst", "Dst MAC", "dstMac",
+        "mac.dst", "Dst MAC", "destination.mac",
         "Destination ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
         (char *)NULL);
 
@@ -1514,9 +1514,9 @@ void moloch_packet_init()
 
 
     vlanField = moloch_field_define("general", "integer",
-        "vlan", "VLan", "vlan",
+        "vlan", "VLan", "vlan.id",
         "vlan value",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
     greIpField = moloch_field_define("general", "ip",

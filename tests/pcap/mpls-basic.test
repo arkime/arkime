@@ -1,22 +1,29 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:hvwrjviYDU44pSSuQ+1lYJGT72U=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "255.255.255.255",
+               "mac" : [
+                  "ff:ff:ff:ff:ff:ff"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 711
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "255.255.255.255",
-            "dstMac" : [
-               "ff:ff:ff:ff:ff:ff"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 711,
             "fileId" : [],
             "firstPacket" : 952109329022,
             "ipProtocol" : 17,
             "lastPacket" : 952109351633,
             "length" : 22610,
+            "network" : {
+               "bytes" : 372,
+               "community_id" : "1:hvwrjviYDU44pSSuQ+1lYJGT72U=",
+               "packets" : 6
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -39,49 +46,54 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 372,
+            "source" : {
+               "bytes" : 372,
+               "ip" : "10.1.2.1",
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 711
+            },
             "srcDataBytes" : 120,
-            "srcIp" : "10.1.2.1",
-            "srcMac" : [
-               "00:30:96:05:28:38"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "000100100a010001",
-            "srcPort" : 711,
-            "timestamp" : "SET",
-            "totBytes" : 372,
-            "totDataBytes" : 120,
-            "totPackets" : 6
+            "totDataBytes" : 120
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-000303",
-               "_type" : "session"
+               "_index" : "tests_sessions3-000303"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:59834EQhKAceIA+2EKLL/MofaIw=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "255.255.255.255",
+               "mac" : [
+                  "ff:ff:ff:ff:ff:ff"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 711
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "255.255.255.255",
-            "dstMac" : [
-               "ff:ff:ff:ff:ff:ff"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 711,
             "fileId" : [],
             "firstPacket" : 952109332196,
             "ipProtocol" : 17,
             "lastPacket" : 952109353515,
             "length" : 21318,
+            "network" : {
+               "bytes" : 372,
+               "community_id" : "1:59834EQhKAceIA+2EKLL/MofaIw=",
+               "packets" : 6
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -104,47 +116,48 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 372,
+            "source" : {
+               "bytes" : 372,
+               "ip" : "10.1.2.2",
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 711
+            },
             "srcDataBytes" : 120,
-            "srcIp" : "10.1.2.2",
-            "srcMac" : [
-               "00:30:96:e6:fc:39"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "000100100a200001",
-            "srcPort" : 711,
-            "timestamp" : "SET",
-            "totBytes" : 372,
-            "totDataBytes" : 120,
-            "totPackets" : 6
+            "totDataBytes" : 120
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-000303",
-               "_type" : "session"
+               "_index" : "tests_sessions3-000303"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 570,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 570,
+               "ip" : "10.34.0.1",
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
             "dstDataBytes" : 400,
-            "dstIp" : "10.34.0.1",
-            "dstMac" : [
-               "00:30:96:e6:fc:39"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 952109337199,
             "icmp" : {
@@ -152,13 +165,17 @@
                   0
                ],
                "type" : [
-                  8,
-                  0
+                  0,
+                  8
                ]
             },
             "ipProtocol" : 1,
             "lastPacket" : 952109337204,
             "length" : 4,
+            "network" : {
+               "bytes" : 1160,
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                134,
@@ -190,54 +207,59 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 590,
+            "source" : {
+               "bytes" : 590,
+               "ip" : "10.1.2.1",
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
             "srcDataBytes" : 400,
-            "srcIp" : "10.1.2.1",
-            "srcMac" : [
-               "00:30:96:05:28:38"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 1160,
-            "totDataBytes" : 800,
-            "totPackets" : 10
+            "totDataBytes" : 800
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-000303",
-               "_type" : "session"
+               "_index" : "tests_sessions3-000303"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:nYHpAhu7aMvwHizgOrGzDrDJsBI=",
-            "dstBytes" : 517,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 517,
+               "ip" : "10.34.0.1",
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 23
+            },
             "dstDataBytes" : 49,
-            "dstIp" : "10.34.0.1",
-            "dstMac" : [
-               "00:30:96:e6:fc:39"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 8,
             "dstPayload8" : "fffb01fffb03fffd",
-            "dstPort" : 23,
             "fileId" : [],
             "firstPacket" : 952109346874,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 952109348977,
             "length" : 2103,
+            "network" : {
+               "bytes" : 1195,
+               "community_id" : "1:nYHpAhu7aMvwHizgOrGzDrDJsBI=",
+               "packets" : 19
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -282,26 +304,28 @@
                5078
             ],
             "protocol" : [
-               "telnet",
+               "mpls",
                "tcp",
-               "mpls"
+               "telnet"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 678,
+            "source" : {
+               "bytes" : 678,
+               "ip" : "10.1.2.1",
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 11001
+            },
             "srcDataBytes" : 26,
-            "srcIp" : "10.1.2.1",
-            "srcMac" : [
-               "00:30:96:05:28:38"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 11,
             "srcPayload8" : "fffd03fffb1ffffb",
-            "srcPort" : 11001,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -313,15 +337,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1195,
-            "totDataBytes" : 75,
-            "totPackets" : 19
+            "totDataBytes" : 75
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-000303",
-               "_type" : "session"
+               "_index" : "tests_sessions3-000303"
             }
          }
       }

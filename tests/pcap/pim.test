@@ -1,21 +1,28 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "224.0.0.13",
+               "mac" : [
+                  "01:00:5e:00:00:0d"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "224.0.0.13",
-            "dstMac" : [
-               "01:00:5e:00:00:0d"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1571744396019,
             "ipProtocol" : 103,
             "lastPacket" : 1571744615737,
             "length" : 219717,
+            "network" : {
+               "bytes" : 29264,
+               "packets" : 428
+            },
             "node" : "test",
             "packetLen" : [
                84,
@@ -882,29 +889,27 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 29264,
+            "source" : {
+               "bytes" : 29264,
+               "ip" : "10.0.0.6",
+               "mac" : [
+                  "08:00:27:16:f6:f9",
+                  "08:00:27:1f:08:22"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 428,
+               "port" : 0
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "10.0.0.6",
-            "srcMac" : [
-               "08:00:27:16:f6:f9",
-               "08:00:27:1f:08:22"
-            ],
-            "srcMacCnt" : 2,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 428,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 29264,
-            "totDataBytes" : 0,
-            "totPackets" : 428
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-191022",
-               "_type" : "session"
+               "_index" : "tests_sessions3-191022"
             }
          }
       }

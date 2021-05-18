@@ -1,61 +1,71 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:+Di2h6HR9A0wbT0QT0jI85L7IKA=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 429,
+               "ip" : "10.3.4.5",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "уаноо.қаз"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS10880 Oath Holdings Inc.",
-                  "AS7280 Oath Holdings Inc.",
-                  "AS36646 Oath Holdings Inc.",
                   "---",
                   "---",
-                  "AS10880 Oath Holdings Inc.",
-                  "AS10229 Internet Content Provider",
-                  "AS7280 Oath Holdings Inc."
+                  "AS10229",
+                  "AS10880",
+                  "AS10880",
+                  "AS36646",
+                  "AS7280",
+                  "AS7280"
                ],
                "nameserverGEO" : [
-                  "US",
-                  "US",
-                  "US",
                   "HK",
                   "IN",
-                  "US",
                   "TW",
+                  "US",
+                  "US",
+                  "US",
+                  "US",
                   "US"
                ],
                "nameserverHost" : [
-                  "ns5.yahoo.com",
                   "ns1.yahoo.com",
                   "ns2.yahoo.com",
                   "ns3.yahoo.com",
-                  "ns4.yahoo.com"
+                  "ns4.yahoo.com",
+                  "ns5.yahoo.com"
                ],
                "nameserverHostCnt" : 5,
                "nameserverIp" : [
-                  "68.180.131.16",
-                  "68.142.255.16",
-                  "98.138.11.157",
+                  "119.160.253.83",
+                  "2001:4998:0130:0000:0000:0000:0000:1001",
+                  "2001:4998:0140:0000:0000:0000:0000:1002",
                   "203.84.221.53",
                   "2406:8600:00b8:fe03:0000:0000:0000:1003",
-                  "2001:4998:0130:0000:0000:0000:0000:1001",
-                  "119.160.253.83",
-                  "2001:4998:0140:0000:0000:0000:0000:1002"
+                  "68.142.255.16",
+                  "68.180.131.16",
+                  "98.138.11.157"
                ],
                "nameserverIpCnt" : 8,
                "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "APNIC",
+                  "",
                   "",
                   "",
                   "APNIC",
-                  ""
+                  "APNIC",
+                  "ARIN",
+                  "ARIN",
+                  "ARIN"
                ],
                "opcode" : [
                   "QUERY"
@@ -78,25 +88,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 429,
             "dstDataBytes" : 387,
-            "dstIp" : "10.3.4.5",
-            "dstMac" : [
-               "00:10:db:ff:10:01"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "8bf4840000010001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 1528986536421,
             "ipProtocol" : 17,
             "lastPacket" : 1528986536466,
             "length" : 44,
+            "network" : {
+               "bytes" : 524,
+               "community_id" : "1:+Di2h6HR9A0wbT0QT0jI85L7IKA=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                111,
@@ -107,34 +114,32 @@
                135
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 95,
+            "source" : {
+               "bytes" : 95,
+               "ip" : "10.5.4.3",
+               "mac" : [
+                  "52:54:00:67:a8:e6"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 48297
+            },
             "srcDataBytes" : 53,
-            "srcIp" : "10.5.4.3",
-            "srcMac" : [
-               "52:54:00:67:a8:e6"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Realtek (UpTech? also reported)"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "8bf4000000010000",
-            "srcPort" : 48297,
-            "timestamp" : "SET",
-            "totBytes" : 524,
-            "totDataBytes" : 440,
-            "totPackets" : 2
+            "totDataBytes" : 440
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180614",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180614"
             }
          }
       }

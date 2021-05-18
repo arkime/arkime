@@ -1,27 +1,33 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "192.168.56.12",
+               "mac" : [
+                  "08:00:27:ae:4d:62",
+                  "08:00:27:f2:1d:8c"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "192.168.56.12",
-            "dstMac" : [
-               "08:00:27:ae:4d:62",
-               "08:00:27:f2:1d:8c"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
             "lastPacket" : 1467818432675,
             "length" : 0,
+            "network" : {
+               "bytes" : 184,
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                108,
@@ -37,51 +43,58 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 184,
+            "source" : {
+               "bytes" : 184,
+               "ip" : "192.168.56.11",
+               "mac" : [
+                  "08:00:27:ae:4d:62",
+                  "08:00:27:f2:1d:8c"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 2,
+               "port" : 0
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.56.11",
-            "srcMac" : [
-               "08:00:27:ae:4d:62",
-               "08:00:27:f2:1d:8c"
-            ],
-            "srcMacCnt" : 2,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
-            "srcPort" : 0,
-            "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 184,
-            "totDataBytes" : 0,
-            "totPackets" : 2
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160706",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160706"
             }
          }
       },
       {
          "body" : {
-            "dstASN" : "AS1",
-            "dstBytes" : 592,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 592,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "08:00:27:f2:1d:8c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 0
+            },
             "dstDataBytes" : 256,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "08:00:27:f2:1d:8c"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 4,
-            "dstPort" : 0,
-            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -96,6 +109,10 @@
             "ipProtocol" : 1,
             "lastPacket" : 1467818435680,
             "length" : 3004,
+            "network" : {
+               "bytes" : 1184,
+               "packets" : 8
+            },
             "node" : "test",
             "packetLen" : [
                164,
@@ -123,21 +140,31 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 592,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 592,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "08:00:27:ae:4d:62"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 0
+            },
             "srcDataBytes" : 256,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "08:00:27:ae:4d:62"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 4,
-            "srcPort" : 0,
             "tags" : [
                "dstip",
                "srcip"
@@ -163,15 +190,11 @@
                   "16777226:0,33554442:0"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 1184,
-            "totDataBytes" : 512,
-            "totPackets" : 8
+            "totDataBytes" : 512
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160706",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160706"
             }
          }
       }

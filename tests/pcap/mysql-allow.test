@@ -1,23 +1,24 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:H3FwyxN6bfhdJ4ZzCXxsm2GMQl0=",
-            "dstBytes" : 523,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 523,
+               "ip" : "192.168.1.3",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 3306
+            },
             "dstDataBytes" : 185,
-            "dstIp" : "192.168.1.3",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "5b0000000a352e35",
-            "dstPort" : 3306,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1398217358961,
             "initRTT" : 0,
@@ -27,6 +28,11 @@
             "mysql" : {
                "user" : "user10",
                "version" : "5.5.35-0ubuntu0.12.04.2"
+            },
+            "network" : {
+               "bytes" : 1050,
+               "community_id" : "1:H3FwyxN6bfhdJ4ZzCXxsm2GMQl0=",
+               "packets" : 11
             },
             "node" : "test",
             "packetLen" : [
@@ -61,21 +67,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 527,
+            "source" : {
+               "bytes" : 527,
+               "ip" : "192.168.1.3",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 42803
+            },
             "srcDataBytes" : 123,
-            "srcIp" : "192.168.1.3",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "5200000105a60f00",
-            "srcPort" : 42803,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -87,15 +94,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1050,
-            "totDataBytes" : 308,
-            "totPackets" : 11
+            "totDataBytes" : 308
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140423",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140423"
             }
          }
       }

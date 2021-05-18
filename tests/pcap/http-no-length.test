@@ -1,25 +1,34 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:FjsyR6OWh6MqgDDUvtPR73EKFnQ=",
-            "dstASN" : "AS1",
-            "dstBytes" : 1026,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 1026,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:c0:ca:30:eb:0c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 80
+            },
             "dstDataBytes" : 744,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:c0:ca:30:eb:0c"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Alfa, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "485454502f312e30",
-            "dstPort" : 80,
-            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1273479692982,
             "http" : {
@@ -154,6 +163,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1273479693105,
             "length" : 124,
+            "network" : {
+               "bytes" : 1760,
+               "community_id" : "1:FjsyR6OWh6MqgDDUvtPR73EKFnQ=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -185,22 +199,32 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 734,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 734,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:16:44:a0:a0:7e"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 50384
+            },
             "srcDataBytes" : 452,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:16:44:a0:a0:7e"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "LITE-ON Technology Corp."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
             "srcPayload8" : "474554202f6a732f",
-            "srcPort" : 50384,
             "tags" : [
                "dstip",
                "srcip"
@@ -237,15 +261,11 @@
                   "16777226:50384,33554442:80"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 1760,
-            "totDataBytes" : 1196,
-            "totPackets" : 10
+            "totDataBytes" : 1196
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-100510",
-               "_type" : "session"
+               "_index" : "tests_sessions3-100510"
             }
          }
       }

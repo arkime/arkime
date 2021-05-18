@@ -1,16 +1,19 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::1:ff82:95b5",
+               "mac" : [
+                  "33:33:ff:82:95:b5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0001:ff82:95b5",
-            "dstMac" : [
-               "33:33:ff:82:95:b5"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1186341079159,
             "icmp" : {
@@ -24,6 +27,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 1186341381164,
             "length" : 302005,
+            "network" : {
+               "bytes" : 2838,
+               "packets" : 33
+            },
             "node" : "test",
             "packetLen" : [
                102,
@@ -100,42 +107,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 2838,
+            "source" : {
+               "bytes" : 2838,
+               "ip" : "fe80::211:25ff:fe82:95b5",
+               "mac" : [
+                  "00:11:25:82:95:b5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 33,
+               "port" : 0
+            },
             "srcDataBytes" : 1056,
-            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
-            "srcMac" : [
-               "00:11:25:82:95:b5"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "IBM Corp"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 33,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 2838,
-            "totDataBytes" : 1056,
-            "totPackets" : 33
+            "totDataBytes" : 1056
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::16",
+               "mac" : [
+                  "33:33:00:00:00:16"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0016",
-            "dstMac" : [
-               "33:33:00:00:00:16"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1186341098054,
             "icmp" : {
@@ -149,6 +157,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 1186341103914,
             "length" : 5859,
+            "network" : {
+               "bytes" : 180,
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                106,
@@ -163,42 +175,43 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 180,
+            "source" : {
+               "bytes" : 180,
+               "ip" : "fe80::2d0:9ff:fee3:e8de",
+               "mac" : [
+                  "00:d0:09:e3:e8:de"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 0
+            },
             "srcDataBytes" : 56,
-            "srcIp" : "fe80:0000:0000:0000:02d0:09ff:fee3:e8de",
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 180,
-            "totDataBytes" : 56,
-            "totPackets" : 2
+            "totDataBytes" : 56
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::1:ff98:6e1",
+               "mac" : [
+                  "33:33:ff:98:06:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0001:ff98:06e1",
-            "dstMac" : [
-               "33:33:ff:98:06:e1"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1186341098474,
             "icmp" : {
@@ -212,6 +225,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 1186341098474,
             "length" : 0,
+            "network" : {
+               "bytes" : 78,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                94
@@ -224,38 +241,46 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 78,
+            "source" : {
+               "bytes" : 78,
+               "ip" : "::",
+               "mac" : [
+                  "00:d0:09:e3:e8:de"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 24,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0000",
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 78,
-            "totDataBytes" : 24,
-            "totPackets" : 1
+            "totDataBytes" : 24
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::fb",
+               "mac" : [
+                  "33:33:00:00:00:fb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 5353
+            },
             "dns" : {
                "host" : [
-                  "linux.local",
-                  "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
+                  "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa",
+                  "linux.local"
                ],
                "hostCnt" : 2,
                "opcode" : [
@@ -271,20 +296,17 @@
                ],
                "qtCnt" : 1
             },
-            "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:00fb",
-            "dstMac" : [
-               "33:33:00:00:00:fb"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 5353,
             "fileId" : [],
             "firstPacket" : 1186341099605,
             "ipProtocol" : 17,
             "lastPacket" : 1186341103455,
             "length" : 3851,
+            "network" : {
+               "bytes" : 1782,
+               "community_id" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
+               "packets" : 8
+            },
             "node" : "test",
             "packetLen" : [
                227,
@@ -307,51 +329,60 @@
                2141
             ],
             "protocol" : [
-               "udp",
                "iprulztest",
-               "mdns"
+               "mdns",
+               "udp"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcASN" : "AS4589 EASYNET Easynet Global Services",
-            "srcBytes" : 1782,
+            "source" : {
+               "as" : {
+                  "full" : "AS4589 EASYNET Easynet Global Services",
+                  "number" : 4589,
+                  "organization" : {
+                     "name" : "EASYNET Easynet Global Services"
+                  }
+               },
+               "bytes" : 1782,
+               "geo" : {
+                  "country_iso_code" : "GB"
+               },
+               "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+               "mac" : [
+                  "00:d0:09:e3:e8:de"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 5353
+            },
             "srcDataBytes" : 1286,
-            "srcGEO" : "GB",
-            "srcIp" : "2001:06f8:102d:0000:1033:0c4c:7e57:b19e",
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "0000000000020000",
-            "srcPort" : 5353,
-            "timestamp" : "SET",
-            "totBytes" : 1782,
-            "totDataBytes" : 1286,
-            "totPackets" : 8
+            "totDataBytes" : 1286
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       },
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "ff02::1",
+               "mac" : [
+                  "33:33:00:00:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "ff02:0000:0000:0000:0000:0000:0000:0001",
-            "dstMac" : [
-               "33:33:00:00:00:01"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1186341269082,
             "icmp" : {
@@ -365,6 +396,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 1186341269082,
             "length" : 0,
+            "network" : {
+               "bytes" : 110,
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                126
@@ -377,50 +412,58 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 110,
+            "source" : {
+               "bytes" : 110,
+               "ip" : "fe80::211:25ff:fe82:95b5",
+               "mac" : [
+                  "00:11:25:82:95:b5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
             "srcDataBytes" : 56,
-            "srcIp" : "fe80:0000:0000:0000:0211:25ff:fe82:95b5",
-            "srcMac" : [
-               "00:11:25:82:95:b5"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "IBM Corp"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 110,
-            "totDataBytes" : 56,
-            "totPackets" : 1
+            "totDataBytes" : 56
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
-            "dstASN" : "AS4589 EASYNET Easynet Global Services",
-            "dstBytes" : 2563,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS4589 EASYNET Easynet Global Services",
+                  "number" : 4589,
+                  "organization" : {
+                     "name" : "EASYNET Easynet Global Services"
+                  }
+               },
+               "bytes" : 2563,
+               "geo" : {
+                  "country_iso_code" : "GB"
+               },
+               "ip" : "2001:6f8:900:7c0::2",
+               "mac" : [
+                  "00:11:25:82:95:b5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 80
+            },
             "dstDataBytes" : 2259,
-            "dstGEO" : "GB",
-            "dstIp" : "2001:06f8:0900:07c0:0000:0000:0000:0002",
-            "dstMac" : [
-               "00:11:25:82:95:b5"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "IBM Corp"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 4,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1186341404189,
             "http" : {
@@ -450,10 +493,10 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
                   "accept-encoding",
+                  "accept-language",
                   "host",
-                  "accept-language"
+                  "user-agent"
                ],
                "requestHeaderCnt" : 5,
                "requestHeaderField" : [
@@ -462,31 +505,31 @@
                   "accept-language"
                ],
                "requestHeaderValue" : [
-                  "text/html, text/plain, text/css, text/sgml, */*;q=0.01",
+                  "en",
                   "gzip, bzip2",
-                  "en"
+                  "text/html, text/plain, text/css, text/sgml, */*;q=0.01"
                ],
                "requestHeaderValueCnt" : 3,
                "responseHeader" : [
-                  "content-type",
-                  "content-length",
-                  "date",
                   "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
                   "server"
                ],
                "responseHeaderCnt" : 5,
                "responseHeaderField" : [
-                  "date",
-                  "server",
-                  "content-length",
                   "connection",
-                  "content-type"
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "server"
                ],
                "responseHeaderValue" : [
-                  "sun, 05 aug 2007 19:16:44 gmt",
-                  "apache",
                   "2121",
+                  "apache",
                   "close",
+                  "sun, 05 aug 2007 19:16:44 gmt",
                   "text/html"
                ],
                "responseHeaderValueCnt" : 5,
@@ -515,6 +558,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1186341404219,
             "length" : 29,
+            "network" : {
+               "bytes" : 3267,
+               "community_id" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                110,
@@ -546,22 +594,32 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS4589 EASYNET Easynet Global Services",
-            "srcBytes" : 704,
+            "source" : {
+               "as" : {
+                  "full" : "AS4589 EASYNET Easynet Global Services",
+                  "number" : 4589,
+                  "organization" : {
+                     "name" : "EASYNET Easynet Global Services"
+                  }
+               },
+               "bytes" : 704,
+               "geo" : {
+                  "country_iso_code" : "GB"
+               },
+               "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+               "mac" : [
+                  "00:d0:09:e3:e8:de"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 59201
+            },
             "srcDataBytes" : 240,
-            "srcGEO" : "GB",
-            "srcIp" : "2001:06f8:102d:0000:02d0:09ff:fee3:e8de",
-            "srcMac" : [
-               "00:d0:09:e3:e8:de"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 59201,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -573,15 +631,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3267,
-            "totDataBytes" : 2499,
-            "totPackets" : 10
+            "totDataBytes" : 2499
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-070805",
-               "_type" : "session"
+               "_index" : "tests_sessions3-070805"
             }
          }
       }

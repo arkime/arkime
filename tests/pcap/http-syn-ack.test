@@ -1,18 +1,20 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:+Q7ZZLs5Blo4/kXY55Yf6dTtt2Y=",
-            "dstBytes" : 12880,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 12880,
+               "ip" : "10.0.0.33",
+               "mac" : [
+                  "aa:aa:aa:aa:aa:aa"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 80
+            },
             "dstDataBytes" : 12252,
-            "dstIp" : "10.0.0.33",
-            "dstMac" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 11,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1467366160266,
             "http" : {
@@ -46,66 +48,66 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "host",
-                  "accept-language"
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
-                  "connection",
                   "accept",
                   "accept-encoding",
-                  "accept-language"
+                  "accept-language",
+                  "connection"
                ],
                "requestHeaderValue" : [
-                  "keep-alive",
                   "*/*",
                   "gzip, deflate, xxxx",
+                  "keep-alive",
                   "xx-xx,et;q=0.8,en-us;q=0.6,en;q=0.4"
                ],
                "requestHeaderValueCnt" : 4,
                "responseHeader" : [
-                  "pragma",
-                  "expires",
-                  "content-type",
-                  "transfer-encoding",
-                  "vary",
-                  "cache-control",
                   "access-control-allow-origin",
-                  "date",
-                  "content-encoding",
+                  "cache-control",
                   "connection",
-                  "server"
+                  "content-encoding",
+                  "content-type",
+                  "date",
+                  "expires",
+                  "pragma",
+                  "server",
+                  "transfer-encoding",
+                  "vary"
                ],
                "responseHeaderCnt" : 11,
                "responseHeaderField" : [
-                  "server",
-                  "date",
-                  "content-type",
-                  "transfer-encoding",
-                  "connection",
-                  "pragma",
-                  "expires",
-                  "cache-control",
                   "access-control-allow-origin",
+                  "cache-control",
+                  "connection",
                   "content-encoding",
+                  "content-type",
+                  "date",
+                  "expires",
+                  "pragma",
+                  "server",
+                  "transfer-encoding",
                   "vary"
                ],
                "responseHeaderValue" : [
-                  "nginx",
-                  "fri, 01 jul 2016 09:42:40 gmt",
+                  "*",
+                  "0",
+                  "accept-encoding",
                   "application/javascript",
                   "chunked",
-                  "keep-alive",
-                  "public",
-                  "0",
-                  "must-revalidate, post-check=0, pre-check=0",
-                  "*",
+                  "fri, 01 jul 2016 09:42:40 gmt",
                   "gzip",
-                  "accept-encoding"
+                  "keep-alive",
+                  "must-revalidate, post-check=0, pre-check=0",
+                  "nginx",
+                  "public"
                ],
                "responseHeaderValueCnt" : 11,
                "serverVersion" : [
@@ -132,6 +134,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1467366160339,
             "length" : 73,
+            "network" : {
+               "bytes" : 13424,
+               "community_id" : "1:+Q7ZZLs5Blo4/kXY55Yf6dTtt2Y=",
+               "packets" : 13
+            },
             "node" : "test",
             "packetLen" : [
                84,
@@ -169,16 +176,18 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 544,
+            "source" : {
+               "bytes" : 544,
+               "ip" : "10.0.0.32",
+               "mac" : [
+                  "aa:aa:aa:aa:aa:aa"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 10882
+            },
             "srcDataBytes" : 427,
-            "srcIp" : "10.0.0.32",
-            "srcMac" : [
-               "aa:aa:aa:aa:aa:aa"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 2,
             "srcPayload8" : "474554202f312048",
-            "srcPort" : 10882,
             "tcpflags" : {
                "ack" : 9,
                "dstZero" : 0,
@@ -190,15 +199,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 13424,
-            "totDataBytes" : 12679,
-            "totPackets" : 13
+            "totDataBytes" : 12679
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160701",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160701"
             }
          }
       }

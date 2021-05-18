@@ -1190,37 +1190,44 @@ sub addECSMap
 {
   my ($exp, $db, $ecsField) = @_;
 
-  $ECSMAP{$exp}->{ecsField} = $ecsField;
+  $ECSMAP{$exp}->{ecsField} = $ecsField if ($exp != null);
   $ECSPROP{$ecsField}->{path} = $db;
   $ECSPROP{$ecsField}->{type} = "alias";
 }
 
-addECSMap("communityId", "communityId", "network.community_id");
-
+addECSMap("country.dst", "dstGEO", "destination.geo.country_iso_code");
 addECSMap("asn.dst", "dstASN", "destination.as.full");
 addECSMap("bytes.dst", "dstBytes", "destination.bytes");
 addECSMap("databytes.dst", "dstDataBytes", "server.bytes");
 addECSMap("packets.dst", "dstPackets", "destination.packets");
 addECSMap("ip.dst", "dstIp", "destination.ip");
 addECSMap("port.dst", "dstPort", "destination.port");
+addECSMap("mac.dst", "dstMac", "destination.mac");
 
+addECSMap("country.dst", "srcGEO", "source.geo.country_iso_code");
 addECSMap("asn.src", "srcASN", "source.as.full");
 addECSMap("bytes.src", "srcBytes", "source.bytes");
 addECSMap("databytes.src", "srcDataBytes", "client.bytes");
 addECSMap("packets.src", "srcPackets", "source.packets");
 addECSMap("ip.src", "srcIp", "source.ip");
 addECSMap("port.src", "srcPort", "source.port");
+addECSMap("mac.src", "srcMac", "source.mac");
 
+
+addECSMap("communityId", "communityId", "network.community_id");
 addECSMap("bytes", "totBytes", "network.bytes");
 addECSMap("packets", "totPackets", "network.packets");
+addECSMap("vlan", "vlan", "vlan.id");
+
+addECSMap(null, "timestamp", "@timestamp");
 ################################################################################
 
 sub ecsFieldsUpdate
 {
-    foreach my $key (keys %ECSMAP) {
-        print "$key\n";
-        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{ecsField}"}}), 1);
-    }
+    #    foreach my $key (keys %ECSMAP) {
+    #        print "$key\n";
+    #        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{ecsField}"}}), 1);
+    #}
 
     print '{"properties":' . to_json(\%ECSPROP) . "}\n";
     my $foo = esPut("/${PREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);

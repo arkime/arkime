@@ -1,20 +1,23 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "10.64.11.49",
+               "mac" : [
+                  "00:00:5e:00:01:b1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "10.64.11.49",
-            "dstMac" : [
-               "00:00:5e:00:01:b1"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 0,
             "fileId" : [],
             "firstPacket" : 1335958313152,
             "icmp" : {
@@ -28,6 +31,10 @@
             "ipProtocol" : 1,
             "lastPacket" : 1335958317529,
             "length" : 4376,
+            "network" : {
+               "bytes" : 196,
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                114,
@@ -42,29 +49,26 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 196,
+            "source" : {
+               "bytes" : 196,
+               "ip" : "192.168.177.160",
+               "mac" : [
+                  "00:21:28:05:29:ba"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 0
+            },
             "srcDataBytes" : 128,
-            "srcIp" : "192.168.177.160",
-            "srcMac" : [
-               "00:21:28:05:29:ba"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Oracle Corporation"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
-            "srcPort" : 0,
-            "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 196,
-            "totDataBytes" : 128,
-            "totPackets" : 2
+            "totDataBytes" : 128
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-120502",
-               "_type" : "session"
+               "_index" : "tests_sessions3-120502"
             }
          }
       }

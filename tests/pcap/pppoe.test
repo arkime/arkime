@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "cc:04:2e:48:2f:29:6a:3a:dc:a4:8b:fb:79:a6:cd:5f:67:8a:c1:e2",
@@ -68,29 +69,36 @@
                }
             ],
             "certCnt" : 3,
-            "communityId" : "1:C1UCMVQ0stzcOTtArGfbNxbT8e8=",
-            "dstBytes" : 3596,
+            "destination" : {
+               "bytes" : 3596,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "64.12.189.217",
+               "mac" : [
+                  "00:90:1a:a0:3d:a4"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 443
+            },
             "dstDataBytes" : 3282,
-            "dstGEO" : "US",
-            "dstIp" : "64.12.189.217",
-            "dstMac" : [
-               "00:90:1a:a0:3d:a4"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Unisphere Solutions"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "160300004a020000",
-            "dstPort" : 443,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1193676055856,
             "initRTT" : 47,
             "ipProtocol" : 6,
             "lastPacket" : 1193676056235,
             "length" : 380,
+            "network" : {
+               "bytes" : 4196,
+               "community_id" : "1:C1UCMVQ0stzcOTtArGfbNxbT8e8=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                86,
@@ -123,22 +131,25 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 600,
+            "source" : {
+               "bytes" : 600,
+               "geo" : {
+                  "country_iso_code" : "GB"
+               },
+               "ip" : "172.202.246.57",
+               "mac" : [
+                  "00:11:f5:13:d7:a3"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 1063
+            },
             "srcDataBytes" : 282,
-            "srcGEO" : "GB",
-            "srcIp" : "172.202.246.57",
-            "srcMac" : [
-               "00:11:f5:13:d7:a3"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Askey Computer Corp"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
             "srcPayload8" : "804c010300003300",
-            "srcPort" : 1063,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -150,7 +161,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_MD5"
@@ -172,14 +182,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 4196,
-            "totDataBytes" : 3564,
-            "totPackets" : 10
+            "totDataBytes" : 3564
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-071029",
-               "_type" : "session"
+               "_index" : "tests_sessions3-071029"
             }
          }
       }

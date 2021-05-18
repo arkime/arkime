@@ -1,22 +1,24 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:vV0HiW5muS+JONlZ2LhxwcsDhJ8=",
-            "dstBytes" : 366,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 366,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 389
+            },
             "dstDataBytes" : 28,
-            "dstIp" : "127.0.0.1",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "300c02010161070a",
-            "dstPort" : 389,
             "fileId" : [],
             "firstPacket" : 1132019262677,
             "initRTT" : 0,
@@ -33,6 +35,11 @@
                "bindnameCnt" : 1
             },
             "length" : 0,
+            "network" : {
+               "bytes" : 976,
+               "community_id" : "1:vV0HiW5muS+JONlZ2LhxwcsDhJ8=",
+               "packets" : 13
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -70,20 +77,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 610,
+            "source" : {
+               "bytes" : 610,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 40848
+            },
             "srcDataBytes" : 74,
-            "srcIp" : "127.0.0.1",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "300c020101600702",
-            "srcPort" : 40848,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -95,15 +104,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 976,
-            "totDataBytes" : 102,
-            "totPackets" : 13
+            "totDataBytes" : 102
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-051115",
-               "_type" : "session"
+               "_index" : "tests_sessions3-051115"
             }
          }
       }

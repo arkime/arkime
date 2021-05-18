@@ -1,17 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:JzVmR9JF+CoetgG0sIF2LBr8i/U=",
-            "dstASN" : "AS16509 Amazon.com, Inc.",
-            "dstBytes" : 1800,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS16509 Amazon.com, Inc.",
+                  "number" : 16509,
+                  "organization" : {
+                     "name" : "Amazon.com, Inc."
+                  }
+               },
+               "bytes" : 1800,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "52.43.228.156",
+               "packets" : 4,
+               "port" : 80
+            },
             "dstDataBytes" : 1167,
-            "dstGEO" : "US",
-            "dstIp" : "52.43.228.156",
-            "dstPackets" : 4,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1489603870937,
             "http" : {
@@ -37,8 +46,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -52,23 +61,25 @@
                   "https://www.aol.com/"
                ],
                "responseHeader" : [
-                  "content-type",
-                  "x-aol-hn",
-                  "vary",
                   "cache-control",
-                  "x-xss-protection",
-                  "request-id",
-                  "content-length",
-                  "date",
                   "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "location",
+                  "request-id",
                   "server",
                   "set-cookie",
+                  "vary",
+                  "x-aol-hn",
                   "x-content-type-options",
-                  "location"
+                  "x-xss-protection"
                ],
                "responseHeaderCnt" : 13,
                "responseHeaderField" : [
                   "cache-control",
+                  "connection",
+                  "content-length",
                   "content-type",
                   "date",
                   "request-id",
@@ -81,27 +92,25 @@
                   "vary",
                   "x-aol-hn",
                   "x-content-type-options",
-                  "x-xss-protection",
-                  "content-length",
-                  "connection"
+                  "x-xss-protection"
                ],
                "responseHeaderValue" : [
-                  "no-cache, no-store, private, max-age=0",
-                  "text/html; charset=utf-8",
-                  "wed, 15 mar 2017 18:49:53 gmt",
-                  "2d571b22-09b0-11e7-b43e-02afcb36bd8b",
-                  "apache",
-                  "ampmv-99=1e393084c0261f6e5527c37544e7d220f1797c37; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
-                  "ampmv-84=162eb0f3e15d1c386c5eb016e6ac8862cf3d8ab4; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
-                  "ampmv-98=c7ea22328cd19e9e5a522ddbc431920e9d804c70; expires=wed, 31-may-2017 04:00:00 gmt; max-age=6599407; path=/",
-                  "ampmv-73=5a87a46cbf5cb42198eaf3d48a3a02ad0a68e846; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
-                  "ampmv-90=68d8ac2406a9ad2cf08c2f54b5da1e1b1c57123b; expires=mon, 20-mar-2017 04:00:00 gmt; max-age=378607; path=/",
-                  "accept-encoding",
-                  "i-00a709614b39984a1",
-                  "nosniff",
-                  "1; mode=block",
                   "104",
-                  "keep-alive"
+                  "1; mode=block",
+                  "2d571b22-09b0-11e7-b43e-02afcb36bd8b",
+                  "accept-encoding",
+                  "ampmv-73=5a87a46cbf5cb42198eaf3d48a3a02ad0a68e846; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
+                  "ampmv-84=162eb0f3e15d1c386c5eb016e6ac8862cf3d8ab4; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
+                  "ampmv-90=68d8ac2406a9ad2cf08c2f54b5da1e1b1c57123b; expires=mon, 20-mar-2017 04:00:00 gmt; max-age=378607; path=/",
+                  "ampmv-98=c7ea22328cd19e9e5a522ddbc431920e9d804c70; expires=wed, 31-may-2017 04:00:00 gmt; max-age=6599407; path=/",
+                  "ampmv-99=1e393084c0261f6e5527c37544e7d220f1797c37; expires=fri, 14-apr-2017 18:49:53 gmt; max-age=2592000; path=/",
+                  "apache",
+                  "i-00a709614b39984a1",
+                  "keep-alive",
+                  "no-cache, no-store, private, max-age=0",
+                  "nosniff",
+                  "text/html; charset=utf-8",
+                  "wed, 15 mar 2017 18:49:53 gmt"
                ],
                "responseHeaderValueCnt" : 16,
                "serverVersion" : [
@@ -129,6 +138,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1489603870937,
             "length" : 0,
+            "network" : {
+               "bytes" : 2564,
+               "community_id" : "1:JzVmR9JF+CoetgG0sIF2LBr8i/U=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                124,
@@ -160,12 +174,14 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 764,
+            "source" : {
+               "bytes" : 764,
+               "ip" : "10.10.10.10",
+               "packets" : 6,
+               "port" : 54064
+            },
             "srcDataBytes" : 172,
-            "srcIp" : "10.10.10.10",
-            "srcPackets" : 6,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 54064,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -177,15 +193,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2564,
-            "totDataBytes" : 1339,
-            "totPackets" : 10
+            "totDataBytes" : 1339
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170315",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170315"
             }
          }
       }

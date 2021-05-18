@@ -1,14 +1,16 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:tRZDmirHOZW5Jm8WfSL7myaFSh0=",
-            "dstBytes" : 1196,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 1196,
+               "ip" : "::1",
+               "packets" : 8,
+               "port" : 9200
+            },
             "dstDataBytes" : 576,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "dstPackets" : 8,
             "dstPayload8" : "485454502f312e30",
-            "dstPort" : 9200,
             "fileId" : [],
             "firstPacket" : 1541428878195,
             "http" : {
@@ -29,17 +31,17 @@
                ],
                "requestHeaderCnt" : 1,
                "responseHeader" : [
-                  "content-type",
-                  "content-length"
+                  "content-length",
+                  "content-type"
                ],
                "responseHeaderCnt" : 2,
                "responseHeaderField" : [
-                  "content-type",
-                  "content-length"
+                  "content-length",
+                  "content-type"
                ],
                "responseHeaderValue" : [
-                  "application/json; charset=utf-8",
-                  "489"
+                  "489",
+                  "application/json; charset=utf-8"
                ],
                "responseHeaderValueCnt" : 2,
                "serverVersion" : [
@@ -67,6 +69,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1541428878555,
             "length" : 359,
+            "network" : {
+               "bytes" : 1844,
+               "community_id" : "1:tRZDmirHOZW5Jm8WfSL7myaFSh0=",
+               "packets" : 16
+            },
             "node" : "test",
             "packetLen" : [
                104,
@@ -110,12 +117,14 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 648,
+            "source" : {
+               "bytes" : 648,
+               "ip" : "::1",
+               "packets" : 8,
+               "port" : 57722
+            },
             "srcDataBytes" : 28,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "srcPackets" : 8,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 57722,
             "tcpflags" : {
                "ack" : 8,
                "dstZero" : 0,
@@ -127,15 +136,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1844,
-            "totDataBytes" : 604,
-            "totPackets" : 16
+            "totDataBytes" : 604
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-181105",
-               "_type" : "session"
+               "_index" : "tests_sessions3-181105"
             }
          }
       }

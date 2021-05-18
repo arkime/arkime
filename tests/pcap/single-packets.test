@@ -1,24 +1,33 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:TZq1zqZGQ14FqFo8bDSSyTDUExo=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "74.125.24.149",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "74.125.24.149",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525510773,
             "http" : {
@@ -52,28 +61,28 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 8,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "cookie"
                ],
                "requestHeaderValue" : [
-                  "text/html, application/xhtml+xml, image/jxr, */*",
                   "en-us",
                   "gzip, deflate",
+                  "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b",
                   "keep-alive",
-                  "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b"
+                  "text/html, application/xhtml+xml, image/jxr, */*"
                ],
                "requestHeaderValueCnt" : 5,
                "uri" : [
@@ -88,6 +97,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1532525510773,
             "length" : 0,
+            "network" : {
+               "bytes" : 628,
+               "community_id" : "1:TZq1zqZGQ14FqFo8bDSSyTDUExo=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                644
@@ -101,20 +115,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 628,
+            "source" : {
+               "bytes" : 628,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49677
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49677,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -126,37 +141,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 628,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:Xr3moorFsxAHU3AgXgAwT7VAl5w=",
-            "dstASN" : "AS4657 StarHub Ltd",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS4657 StarHub Ltd",
+                  "number" : 4657,
+                  "organization" : {
+                     "name" : "StarHub Ltd"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "SG"
+               },
+               "ip" : "118.215.80.242",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "SG",
-            "dstIp" : "118.215.80.242",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1532525512112,
             "http" : {
@@ -165,35 +185,35 @@
                ],
                "clientVersionCnt" : 1,
                "cookieKey" : [
+                  "AMCVS_A70E15F354E99A260A4C98A4%40AdobeOrg",
+                  "AMCV_A70E15F354E99A260A4C98A4%40AdobeOrg",
+                  "_ga",
+                  "_gat",
+                  "_gid",
                   "aam_uuid",
+                  "app_promotion",
+                  "mbox",
                   "s_cc",
                   "s_dfa",
-                  "AMCV_A70E15F354E99A260A4C98A4%40AdobeOrg",
-                  "s_sq",
-                  "mbox",
-                  "s_ppvl",
-                  "_gid",
-                  "AMCVS_A70E15F354E99A260A4C98A4%40AdobeOrg",
-                  "app_promotion",
-                  "_gat",
-                  "_ga",
                   "s_ppv",
+                  "s_ppvl",
+                  "s_sq",
                   "segmentid"
                ],
                "cookieKeyCnt" : 14,
                "cookieValue" : [
-                  "GA1.2.349209205.1532525440",
-                  "session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|PC#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570",
-                  "-330454231%7CMCIDTS%7C17738%7CMCMID%7C00834244270283740751404491874386840551%7CMCAAMLH-1533130240%7C3%7CMCAAMB-1533130240%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1532532640s%7CNONE%7CMCSYNCSOP%7C411-17745%7CMCAID%7CNONE%7CvVersion%7C3.1.2",
                   "%5B%5BB%5D%5D",
+                  "-330454231%7CMCIDTS%7C17738%7CMCMID%7C00834244270283740751404491874386840551%7CMCAAMLH-1533130240%7C3%7CMCAAMB-1533130240%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1532532640s%7CNONE%7CMCSYNCSOP%7C411-17745%7CMCAID%7CNONE%7CvVersion%7C3.1.2",
                   "01107346641427687611431242460084872101",
-                  "true",
-                  "www.shangri-la.com%2C52%2C52%2C499%2C1350%2C498%2C1350%2C615%2C1%2CL",
-                  "segment%3DC%2Csegment%3Dtesting",
-                  "shgshg-web-global",
-                  "GA1.2.1042544967.1532525440",
                   "1",
-                  "www.shangri-la.com%2C48%2C48%2C498%2C1350%2C498%2C1350%2C615%2C1%2CL"
+                  "GA1.2.1042544967.1532525440",
+                  "GA1.2.349209205.1532525440",
+                  "segment%3DC%2Csegment%3Dtesting",
+                  "session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|PC#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570",
+                  "shgshg-web-global",
+                  "true",
+                  "www.shangri-la.com%2C48%2C48%2C498%2C1350%2C498%2C1350%2C615%2C1%2CL",
+                  "www.shangri-la.com%2C52%2C52%2C499%2C1350%2C498%2C1350%2C615%2C1%2CL"
                ],
                "cookieValueCnt" : 12,
                "host" : [
@@ -201,8 +221,8 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "hj",
-                  "dt"
+                  "dt",
+                  "hj"
                ],
                "keyCnt" : 2,
                "method" : [
@@ -218,32 +238,32 @@
                ],
                "request-refererCnt" : 1,
                "requestHeader" : [
-                  "x-requested-with",
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "referer",
+                  "user-agent",
+                  "x-requested-with"
                ],
                "requestHeaderCnt" : 9,
                "requestHeaderField" : [
                   "accept",
-                  "x-requested-with",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "cookie"
+                  "cookie",
+                  "x-requested-with"
                ],
                "requestHeaderValue" : [
+                  "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1",
                   "application/json, text/javascript, */*; q=0.01",
-                  "xmlhttprequest",
                   "en-us",
                   "gzip, deflate",
                   "keep-alive",
-                  "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1"
+                  "xmlhttprequest"
                ],
                "requestHeaderValueCnt" : 6,
                "uri" : [
@@ -255,14 +275,19 @@
                ],
                "useragentCnt" : 1,
                "value" : [
-                  "2018072521",
-                  "1"
+                  "1",
+                  "2018072521"
                ],
                "valueCnt" : 2
             },
             "ipProtocol" : 6,
             "lastPacket" : 1532525512112,
             "length" : 0,
+            "network" : {
+               "bytes" : 1378,
+               "community_id" : "1:Xr3moorFsxAHU3AgXgAwT7VAl5w=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                1394
@@ -276,20 +301,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1378,
+            "source" : {
+               "bytes" : 1378,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49654
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49654,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -301,37 +327,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1378,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:7VGk+e41s6jkYHIWgawTY/6jbmI=",
-            "dstASN" : "AS16509 Amazon.com, Inc.",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS16509 Amazon.com, Inc.",
+                  "number" : 16509,
+                  "organization" : {
+                     "name" : "Amazon.com, Inc."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "JP"
+               },
+               "ip" : "13.115.50.210",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "JP",
-            "dstIp" : "13.115.50.210",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525512547,
             "http" : {
@@ -344,8 +375,8 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "i",
-                  "b"
+                  "b",
+                  "i"
                ],
                "keyCnt" : 2,
                "method" : [
@@ -362,24 +393,24 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "host",
-                  "accept-language"
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection"
                ],
                "requestHeaderValue" : [
-                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
                   "en-us",
                   "gzip, deflate",
+                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
                   "keep-alive"
                ],
                "requestHeaderValueCnt" : 4,
@@ -392,14 +423,19 @@
                ],
                "useragentCnt" : 1,
                "value" : [
-                  "ada",
-                  "407182987561"
+                  "407182987561",
+                  "ada"
                ],
                "valueCnt" : 2
             },
             "ipProtocol" : 6,
             "lastPacket" : 1532525512547,
             "length" : 0,
+            "network" : {
+               "bytes" : 454,
+               "community_id" : "1:7VGk+e41s6jkYHIWgawTY/6jbmI=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                470
@@ -413,20 +449,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 454,
+            "source" : {
+               "bytes" : 454,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49683
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49683,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -438,37 +475,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 454,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:pDHc/Xd19q1ZGWr8XRR6xT/GAko=",
-            "dstASN" : "AS16625 Akamai Technologies, Inc.",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS16625 Akamai Technologies, Inc.",
+                  "number" : 16625,
+                  "organization" : {
+                     "name" : "Akamai Technologies, Inc."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "104.89.119.175",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "104.89.119.175",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525514170,
             "http" : {
@@ -482,8 +524,8 @@
                ],
                "cookieKeyCnt" : 2,
                "cookieValue" : [
-                  "R",
-                  "%1%enc%3Atg%2FlU7zufFPUle8wLxga3M9JuU9Wqi9L5JCsWOqGF5aUK4qCG413AHFq%2BvIG1jhcNox8JbUSTxk%3D"
+                  "%1%enc%3Atg%2FlU7zufFPUle8wLxga3M9JuU9Wqi9L5JCsWOqGF5aUK4qCG413AHFq%2BvIG1jhcNox8JbUSTxk%3D",
+                  "R"
                ],
                "cookieValueCnt" : 2,
                "host" : [
@@ -510,38 +552,38 @@
                   "id=455187796&event=PAGEVIEW&pixel_version=1"
                ],
                "requestHeader" : [
-                  "content-type",
                   "accept",
-                  "user-agent",
-                  "referer",
-                  "cache-control",
                   "accept-encoding",
-                  "content-length",
+                  "accept-language",
+                  "cache-control",
                   "connection",
-                  "host",
+                  "content-length",
+                  "content-type",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 11,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
-                  "content-type",
                   "accept-encoding",
-                  "content-length",
-                  "connection",
+                  "accept-language",
                   "cache-control",
+                  "connection",
+                  "content-length",
+                  "content-type",
                   "cookie"
                ],
                "requestHeaderValue" : [
-                  "text/html, application/xhtml+xml, image/jxr, */*",
-                  "en-us",
-                  "application/x-www-form-urlencoded",
-                  "gzip, deflate",
                   "43",
+                  "application/x-www-form-urlencoded",
+                  "en-us",
+                  "gzip, deflate",
                   "keep-alive",
                   "no-cache",
-                  "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r"
+                  "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r",
+                  "text/html, application/xhtml+xml, image/jxr, */*"
                ],
                "requestHeaderValueCnt" : 8,
                "sha256" : [
@@ -560,6 +602,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1532525514170,
             "length" : 0,
+            "network" : {
+               "bytes" : 670,
+               "community_id" : "1:pDHc/Xd19q1ZGWr8XRR6xT/GAko=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                686
@@ -573,20 +620,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 670,
+            "source" : {
+               "bytes" : 670,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49708
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49708,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -598,37 +646,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 670,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:XRzKP3QNF/rWqI/10PfCFrEzYS4=",
-            "dstASN" : "AS2830 Verizon Nederland B.V.",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS2830 Verizon Nederland B.V.",
+                  "number" : 2830,
+                  "organization" : {
+                     "name" : "Verizon Nederland B.V."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "FR"
+               },
+               "ip" : "193.242.192.43",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "FR",
-            "dstIp" : "193.242.192.43",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1532525525879,
             "http" : {
@@ -638,20 +691,20 @@
                "clientVersionCnt" : 1,
                "cookieKey" : [
                   "CFID",
-                  "_gid",
-                  "_gat",
-                  "_ga",
                   "CFTOKEN",
+                  "_ga",
+                  "_gat",
+                  "_gid",
                   "unescomap"
                ],
                "cookieKeyCnt" : 6,
                "cookieValue" : [
-                  "64733241d30c35e0-304F31D8-AA72-F50C-3869AA2C5D0DFF17",
-                  "open",
-                  "GA1.2.775336169.1532525413",
-                  "GA1.2.1751603294.1532525413",
                   "1",
-                  "77281563"
+                  "64733241d30c35e0-304F31D8-AA72-F50C-3869AA2C5D0DFF17",
+                  "77281563",
+                  "GA1.2.1751603294.1532525413",
+                  "GA1.2.775336169.1532525413",
+                  "open"
                ],
                "cookieValueCnt" : 6,
                "host" : [
@@ -659,10 +712,10 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "l",
+                  "_dc",
                   "cid",
-                  "mode",
-                  "_dc"
+                  "l",
+                  "mode"
                ],
                "keyCnt" : 4,
                "method" : [
@@ -678,32 +731,32 @@
                ],
                "request-refererCnt" : 1,
                "requestHeader" : [
-                  "x-requested-with",
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "referer",
+                  "user-agent",
+                  "x-requested-with"
                ],
                "requestHeaderCnt" : 9,
                "requestHeaderField" : [
                   "accept",
-                  "x-requested-with",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "cookie"
+                  "cookie",
+                  "x-requested-with"
                ],
                "requestHeaderValue" : [
                   "*/*",
-                  "xmlhttprequest",
+                  "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1",
                   "en-us",
                   "gzip, deflate",
                   "keep-alive",
-                  "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1"
+                  "xmlhttprequest"
                ],
                "requestHeaderValueCnt" : 6,
                "uri" : [
@@ -716,8 +769,8 @@
                "useragentCnt" : 1,
                "value" : [
                   "1532525525462",
-                  "en",
                   "31",
+                  "en",
                   "json"
                ],
                "valueCnt" : 4
@@ -725,6 +778,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1532525525879,
             "length" : 0,
+            "network" : {
+               "bytes" : 632,
+               "community_id" : "1:XRzKP3QNF/rWqI/10PfCFrEzYS4=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                648
@@ -738,20 +796,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 632,
+            "source" : {
+               "bytes" : 632,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49735
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49735,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -763,37 +822,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 632,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:TJNI9nAIXv4bSmp2zeP/lBtz9EI=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "74.125.24.100",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "74.125.24.100",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525528386,
             "http" : {
@@ -806,28 +870,28 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "vp",
-                  "sr",
-                  "v",
-                  "tid",
-                  "de",
-                  "gjid",
-                  "ul",
-                  "_r",
-                  "dt",
-                  "_s",
-                  "z",
-                  "cid",
-                  "a",
-                  "je",
-                  "fl",
-                  "_u",
                   "_gid",
+                  "_r",
+                  "_s",
+                  "_u",
                   "_v",
+                  "a",
+                  "cid",
+                  "de",
                   "dl",
+                  "dt",
+                  "fl",
+                  "gjid",
+                  "je",
                   "jid",
                   "sd",
-                  "t"
+                  "sr",
+                  "t",
+                  "tid",
+                  "ul",
+                  "v",
+                  "vp",
+                  "z"
                ],
                "keyCnt" : 22,
                "method" : [
@@ -844,24 +908,24 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "host",
-                  "accept-language"
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection"
                ],
                "requestHeaderValue" : [
-                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
                   "en-us",
                   "gzip, deflate",
+                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
                   "keep-alive"
                ],
                "requestHeaderValueCnt" : 4,
@@ -874,31 +938,36 @@
                ],
                "useragentCnt" : 1,
                "value" : [
-                  "18.0 r0",
-                  "1350x498",
-                  "775336169.1532525413",
-                  "UNESCO World Heritage Centre - Interactive Maps",
-                  "UA-6025718-3",
-                  "utf-8",
-                  "1247892784",
-                  "pageview",
-                  "975770366",
-                  "1350x615",
-                  "http://whc.unesco.org/en/interactive-map/",
-                  "24-bit",
-                  "163867201",
-                  "687894861",
                   "1",
-                  "en-us",
+                  "1247892784",
+                  "1350x498",
+                  "1350x615",
+                  "163867201",
                   "1751603294.1532525413",
+                  "18.0 r0",
+                  "24-bit",
+                  "687894861",
+                  "775336169.1532525413",
+                  "975770366",
                   "AACAAAQ~",
-                  "j68"
+                  "UA-6025718-3",
+                  "UNESCO World Heritage Centre - Interactive Maps",
+                  "en-us",
+                  "http://whc.unesco.org/en/interactive-map/",
+                  "j68",
+                  "pageview",
+                  "utf-8"
                ],
                "valueCnt" : 19
             },
             "ipProtocol" : 6,
             "lastPacket" : 1532525528386,
             "length" : 0,
+            "network" : {
+               "bytes" : 816,
+               "community_id" : "1:TJNI9nAIXv4bSmp2zeP/lBtz9EI=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                832
@@ -912,20 +981,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 816,
+            "source" : {
+               "bytes" : 816,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49733
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49733,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -937,37 +1007,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 816,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:wo4B1UeuDfXGS5DHxQtdYvNngS4=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "74.125.24.95",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "74.125.24.95",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525533174,
             "http" : {
@@ -980,11 +1055,11 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "7s164tbp",
                   "10e1",
-                  "token",
+                  "1shttp://whc.unesco.org/en/interactive-map/",
+                  "7s164tbp",
                   "callback",
-                  "1shttp://whc.unesco.org/en/interactive-map/"
+                  "token"
                ],
                "keyCnt" : 5,
                "method" : [
@@ -1001,18 +1076,18 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "host",
-                  "accept-language"
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection"
                ],
                "requestHeaderValue" : [
@@ -1031,14 +1106,19 @@
                ],
                "useragentCnt" : 1,
                "value" : [
-                  "_xdc_._iqnmv1",
-                  "71150"
+                  "71150",
+                  "_xdc_._iqnmv1"
                ],
                "valueCnt" : 2
             },
             "ipProtocol" : 6,
             "lastPacket" : 1532525533174,
             "length" : 0,
+            "network" : {
+               "bytes" : 558,
+               "community_id" : "1:wo4B1UeuDfXGS5DHxQtdYvNngS4=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                574
@@ -1052,20 +1132,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 558,
+            "source" : {
+               "bytes" : 558,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49743
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49743,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1077,37 +1158,42 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 558,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:cS4Fc1Zfq5CWmbCwTlemXCCc0eQ=",
-            "dstASN" : "AS14618 Amazon.com, Inc.",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS14618 Amazon.com, Inc.",
+                  "number" : 14618,
+                  "organization" : {
+                     "name" : "Amazon.com, Inc."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "35.174.150.168",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "35.174.150.168",
-            "dstMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525534767,
             "http" : {
@@ -1116,15 +1202,15 @@
                ],
                "clientVersionCnt" : 1,
                "cookieKey" : [
+                  "pardot",
                   "visitor_id413862",
-                  "visitor_id413862-hash",
-                  "pardot"
+                  "visitor_id413862-hash"
                ],
                "cookieKeyCnt" : 3,
                "cookieValue" : [
-                  "tee2foreb3fefpgvk8u1056vt3",
                   "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
-                  "286585660"
+                  "286585660",
+                  "tee2foreb3fefpgvk8u1056vt3"
                ],
                "cookieValueCnt" : 3,
                "host" : [
@@ -1132,15 +1218,15 @@
                ],
                "hostCnt" : 1,
                "key" : [
-                  "url",
+                  "account_id",
+                  "campaign_id",
                   "conly",
-                  "visitor_id_sign",
                   "pi_opt_in",
                   "referrer",
-                  "account_id",
+                  "title",
+                  "url",
                   "visitor_id",
-                  "campaign_id",
-                  "title"
+                  "visitor_id_sign"
                ],
                "keyCnt" : 9,
                "method" : [
@@ -1157,19 +1243,19 @@
                "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "referer",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
-                  "host",
                   "cookie",
-                  "accept-language"
+                  "host",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 8,
                "requestHeaderField" : [
                   "accept",
-                  "accept-language",
                   "accept-encoding",
+                  "accept-language",
                   "connection",
                   "cookie"
                ],
@@ -1190,19 +1276,24 @@
                ],
                "useragentCnt" : 1,
                "value" : [
-                  "414862",
+                  "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
                   "20694",
-                  "true",
+                  "286585660",
+                  "414862",
                   "SITES | Developing sustainable landscapes",
                   "http://www.sustainablesites.org/",
-                  "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
-                  "286585660"
+                  "true"
                ],
                "valueCnt" : 7
             },
             "ipProtocol" : 6,
             "lastPacket" : 1532525534767,
             "length" : 0,
+            "network" : {
+               "bytes" : 925,
+               "community_id" : "1:cS4Fc1Zfq5CWmbCwTlemXCCc0eQ=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                941
@@ -1216,20 +1307,21 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 925,
+            "source" : {
+               "bytes" : 925,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 49738
+            },
             "srcDataBytes" : 0,
-            "srcIp" : "192.168.25.150",
-            "srcMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 49738,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1241,35 +1333,32 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 925,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:Ez5LrIoKmVgFpI/rMliXltCSNSQ=",
-            "dstBytes" : 0,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "192.168.25.150",
+               "mac" : [
+                  "00:0c:29:6f:84:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 49749
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "192.168.25.150",
-            "dstMac" : [
-               "00:0c:29:6f:84:37"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 49749,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1532525539024,
             "http" : {
@@ -1285,9 +1374,9 @@
                   "<html><body><h1>403 Forbidden</h1>\nRequest forbidden by administrative rules.\n</body></html>\n\n"
                ],
                "requestHeader" : [
-                  "content-type",
                   "cache-control",
-                  "connection"
+                  "connection",
+                  "content-type"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -1296,8 +1385,8 @@
                   "content-type"
                ],
                "requestHeaderValue" : [
-                  "no-cache",
                   "close",
+                  "no-cache",
                   "text/html"
                ],
                "requestHeaderValueCnt" : 3,
@@ -1317,6 +1406,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1532525539024,
             "length" : 0,
+            "network" : {
+               "bytes" : 243,
+               "community_id" : "1:Ez5LrIoKmVgFpI/rMliXltCSNSQ=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                259
@@ -1330,22 +1424,31 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS26496 GoDaddy.com, LLC",
-            "srcBytes" : 243,
+            "source" : {
+               "as" : {
+                  "full" : "AS26496 GoDaddy.com, LLC",
+                  "number" : 26496,
+                  "organization" : {
+                     "name" : "GoDaddy.com, LLC"
+                  }
+               },
+               "bytes" : 243,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "68.178.213.61",
+               "mac" : [
+                  "00:50:56:f4:62:21"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 80
+            },
             "srcDataBytes" : 0,
-            "srcGEO" : "US",
-            "srcIp" : "68.178.213.61",
-            "srcMac" : [
-               "00:50:56:f4:62:21"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
-            "srcPort" : 80,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1357,15 +1460,11 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 243,
-            "totDataBytes" : 0,
-            "totPackets" : 1
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180725",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180725"
             }
          }
       }

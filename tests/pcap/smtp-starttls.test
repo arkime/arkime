@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
@@ -88,26 +89,34 @@
                }
             ],
             "certCnt" : 3,
-            "communityId" : "1:q9VhPPmhmImM1YZTfmQO4wbS4N4=",
-            "dstASN" : "AS15169",
-            "dstBytes" : 5889,
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 5889,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "173.194.68.26",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:d0:2b:d1:76:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 19,
+               "port" : 25
+            },
             "dstDataBytes" : 4627,
-            "dstGEO" : "US",
-            "dstIp" : "173.194.68.26",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 19,
             "dstPayload8" : "323230206d782e67",
-            "dstPort" : 25,
-            "dstRIR" : "ARIN",
             "email" : {
                "smtpHello" : [
                   "xxxxxxxxxxxxx.xxx.com"
@@ -120,6 +129,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1388017125239,
             "length" : 478,
+            "network" : {
+               "bytes" : 8403,
+               "community_id" : "1:q9VhPPmhmImM1YZTfmQO4wbS4N4=",
+               "packets" : 36
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -204,22 +218,32 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 2514,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 2514,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 17,
+               "port" : 57406
+            },
             "srcDataBytes" : 1384,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 17,
             "srcPayload8" : "45484c4f20787878",
-            "srcPort" : 57406,
             "tags" : [
                "smtp:starttls",
                "srcip"
@@ -256,7 +280,6 @@
                   "16777226:57406,440713901:25"
                ]
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_SHA"
@@ -275,14 +298,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 8403,
-            "totDataBytes" : 6011,
-            "totPackets" : 36
+            "totDataBytes" : 6011
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131226",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131226"
             }
          }
       }

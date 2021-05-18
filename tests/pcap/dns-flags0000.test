@@ -1,8 +1,28 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:QZSIg2XdG+L9Rsqn3tY6/MCUQBM=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 82,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:10:db:ff:26:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "flashservice.adobe.com"
@@ -25,27 +45,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS0",
-            "dstBytes" : 82,
             "dstDataBytes" : 40,
-            "dstGEO" : "RU",
-            "dstIp" : "10.0.0.1",
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "b2b5800500010000",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 1393422583830,
             "ipProtocol" : 17,
             "lastPacket" : 1393422583932,
             "length" : 102,
+            "network" : {
+               "bytes" : 164,
+               "community_id" : "1:QZSIg2XdG+L9Rsqn3tY6/MCUQBM=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -61,39 +76,44 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS1",
-            "srcBytes" : 82,
+            "source" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 82,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:00:5e:00:01:03",
+                  "88:e0:f3:f1:91:f2"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 61912
+            },
             "srcDataBytes" : 40,
-            "srcGEO" : "CA",
-            "srcIp" : "10.0.0.2",
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "88:e0:f3:f1:91:f2"
-            ],
-            "srcMacCnt" : 2,
             "srcOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 1,
             "srcPayload8" : "b2b5000000010000",
-            "srcPort" : 61912,
-            "srcRIR" : "TEST",
             "tags" : [
                "dstip",
                "srcip"
             ],
             "tagsCnt" : 2,
-            "timestamp" : "SET",
-            "totBytes" : 164,
-            "totDataBytes" : 80,
-            "totPackets" : 2
+            "totDataBytes" : 80
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140226",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140226"
             }
          }
       }

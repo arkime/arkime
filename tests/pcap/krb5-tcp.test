@@ -1,21 +1,23 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:9mWNeys3NX/s+FChaCt/5DxMJAY=",
-            "dstBytes" : 70,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 70,
+               "ip" : "10.11.11.11",
+               "mac" : [
+                  "00:22:83:3f:17:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 88
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "10.11.11.11",
-            "dstMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 88,
             "fileId" : [],
             "firstPacket" : 1466265698248,
             "initRTT" : 1,
@@ -36,6 +38,11 @@
             },
             "lastPacket" : 1466265698251,
             "length" : 2,
+            "network" : {
+               "bytes" : 531,
+               "community_id" : "1:9mWNeys3NX/s+FChaCt/5DxMJAY=",
+               "packets" : 4
+            },
             "node" : "test",
             "packetLen" : [
                86,
@@ -50,25 +57,27 @@
                272
             ],
             "protocol" : [
-               "tcp",
-               "krb5"
+               "krb5",
+               "tcp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 461,
+            "source" : {
+               "bytes" : 461,
+               "ip" : "10.10.10.10",
+               "mac" : [
+                  "00:22:83:3f:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 57167
+            },
             "srcDataBytes" : 273,
-            "srcIp" : "10.10.10.10",
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "0000010d6a820109",
-            "srcPort" : 57167,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -80,19 +89,16 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 531,
             "totDataBytes" : 273,
-            "totPackets" : 4,
-            "vlan" : [
-               50
-            ],
-            "vlanCnt" : 1
+            "vlan" : {
+               "id" : [
+                  50
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160618",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160618"
             }
          }
       }

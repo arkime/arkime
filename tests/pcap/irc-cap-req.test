@@ -1,22 +1,24 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:gfLzKjwgDwztvlQeeYEcQAIvF4w=",
-            "dstBytes" : 2067,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 2067,
+               "ip" : "10.11.11.11",
+               "mac" : [
+                  "00:1b:17:00:01:24"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 12,
+               "port" : 80
+            },
             "dstDataBytes" : 1219,
-            "dstIp" : "10.11.11.11",
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 12,
             "dstPayload8" : "3a746d692e747769",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1483561576585,
             "initRTT" : 58,
@@ -33,6 +35,11 @@
             },
             "lastPacket" : 1483561951602,
             "length" : 375017,
+            "network" : {
+               "bytes" : 3177,
+               "community_id" : "1:gfLzKjwgDwztvlQeeYEcQAIvF4w=",
+               "packets" : 26
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -96,20 +103,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1110,
+            "source" : {
+               "bytes" : 1110,
+               "ip" : "10.10.10.10",
+               "mac" : [
+                  "00:22:83:3f:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 59604
+            },
             "srcDataBytes" : 118,
-            "srcIp" : "10.10.10.10",
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 14,
             "srcPayload8" : "4341502052455120",
-            "srcPort" : 59604,
             "tcpflags" : {
                "ack" : 12,
                "dstZero" : 0,
@@ -121,19 +130,16 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3177,
             "totDataBytes" : 1337,
-            "totPackets" : 26,
-            "vlan" : [
-               100
-            ],
-            "vlanCnt" : 1
+            "vlan" : {
+               "id" : [
+                  100
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170104",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170104"
             }
          }
       }

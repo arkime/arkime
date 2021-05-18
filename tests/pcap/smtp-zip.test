@@ -1,25 +1,28 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:sG7KN/RLxdOwLNhkY/ydD5x4TaU=",
-            "dstBytes" : 1402,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 1402,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "64.236.64.225",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0e:d6:0b:98:80"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 14,
+               "port" : 25
+            },
             "dstDataBytes" : 470,
-            "dstGEO" : "US",
-            "dstIp" : "64.236.64.225",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 14,
             "dstPayload8" : "3232302078787878",
-            "dstPort" : 25,
-            "dstRIR" : "ARIN",
             "email" : {
                "ASN" : [
                   "---"
@@ -47,21 +50,21 @@
                ],
                "filenameCnt" : 1,
                "header" : [
+                  "content-disposition",
                   "content-type",
+                  "date",
+                  "from",
                   "message-id",
                   "mime-version",
-                  "from",
-                  "to",
-                  "user-agent",
                   "received",
-                  "content-disposition",
-                  "date",
-                  "subject"
+                  "subject",
+                  "to",
+                  "user-agent"
                ],
                "headerCnt" : 10,
                "headerField" : [
-                  "date",
-                  "content-disposition"
+                  "content-disposition",
+                  "date"
                ],
                "headerValue" : [
                   "Tue, 17 Dec 2013 09:50:16 -0500",
@@ -116,6 +119,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1387291817565,
             "length" : 377,
+            "network" : {
+               "bytes" : 3833,
+               "community_id" : "1:sG7KN/RLxdOwLNhkY/ydD5x4TaU=",
+               "packets" : 28
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -183,21 +191,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 2431,
+            "source" : {
+               "bytes" : 2431,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 46671
+            },
             "srcDataBytes" : 1499,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.249",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 14,
             "srcPayload8" : "45484c4f20787878",
-            "srcPort" : 46671,
             "tags" : [
                "smtp:statuscode:250"
             ],
@@ -213,15 +225,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3833,
-            "totDataBytes" : 1969,
-            "totPackets" : 28
+            "totDataBytes" : 1969
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131217",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131217"
             }
          }
       }

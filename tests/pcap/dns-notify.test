@@ -1,8 +1,28 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:KGHC61zwvrLTfiY6ROTE9nun7XA=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS46636 NatCoWeb Corp.",
+                  "number" : 46636,
+                  "organization" : {
+                     "name" : "NatCoWeb Corp."
+                  }
+               },
+               "bytes" : 73,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "204.62.14.153",
+               "mac" : [
+                  "52:54:00:d9:83:b3"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "bortzmeyer.42"
@@ -25,28 +45,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS46636 NatCoWeb Corp.",
-            "dstBytes" : 73,
             "dstDataBytes" : 31,
-            "dstGEO" : "US",
-            "dstIp" : "204.62.14.153",
-            "dstMac" : [
-               "52:54:00:d9:83:b3"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "9668a40000010000",
-            "dstPort" : 53,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1379970300840,
             "ipProtocol" : 17,
             "lastPacket" : 1379970300840,
             "length" : 0,
+            "network" : {
+               "bytes" : 238,
+               "community_id" : "1:KGHC61zwvrLTfiY6ROTE9nun7XA=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                181,
@@ -57,39 +71,44 @@
                205
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS203476 GANDI SAS",
-            "srcBytes" : 165,
+            "source" : {
+               "as" : {
+                  "full" : "AS203476 GANDI SAS",
+                  "number" : 203476,
+                  "organization" : {
+                     "name" : "GANDI SAS"
+                  }
+               },
+               "bytes" : 165,
+               "geo" : {
+                  "country_iso_code" : "FR"
+               },
+               "ip" : "217.70.190.232",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "00:23:33:69:4d:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 55612
+            },
             "srcDataBytes" : 123,
-            "srcGEO" : "FR",
-            "srcIp" : "217.70.190.232",
-            "srcMac" : [
-               "00:00:5e:00:01:01",
-               "00:23:33:69:4d:00"
-            ],
-            "srcMacCnt" : 2,
             "srcOui" : [
                "Cisco Systems, Inc",
                "ICANN, IANA Department"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 1,
             "srcPayload8" : "9668240000010001",
-            "srcPort" : 55612,
-            "srcRIR" : "RIPE",
-            "timestamp" : "SET",
-            "totBytes" : 238,
-            "totDataBytes" : 154,
-            "totPackets" : 2
+            "totDataBytes" : 154
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-130923",
-               "_type" : "session"
+               "_index" : "tests_sessions3-130923"
             }
          }
       }

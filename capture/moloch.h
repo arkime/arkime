@@ -190,14 +190,19 @@ typedef enum {
 #define MOLOCH_FIELD_FLAG_FORCE_UTF8         0x0004
 /* Don't create in fields db table */
 #define MOLOCH_FIELD_FLAG_NODB               0x0008
-/* Don't create in capture list */
+/* Not a real field in capture, just in viewer */
 #define MOLOCH_FIELD_FLAG_FAKE               0x0010
-/* Don't create in capture list */
+/* Don't save this fields data into memory or ES */
 #define MOLOCH_FIELD_FLAG_DISABLED           0x0020
+/* Save in memory but not in db.c loop, saved another way */
+#define MOLOCH_FIELD_FLAG_NOSAVE             0x0040
 /* Added Cnt */
 #define MOLOCH_FIELD_FLAG_CNT                0x1000
+/* Added -cnt */
+#define MOLOCH_FIELD_FLAG_ECS_CNT            0x2000
 /* prepend ip stuff - dont use*/
 #define MOLOCH_FIELD_FLAG_IPPRE              0x4000
+
 
 
 

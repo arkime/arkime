@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "curve" : "corrupt",
@@ -53,24 +54,32 @@
                }
             ],
             "certCnt" : 2,
-            "communityId" : "1:YzavRzM2u5v8TNEv4SuCDe3OgWg=",
-            "dstASN" : "AS14618",
-            "dstBytes" : 2134,
+            "destination" : {
+               "as" : {
+                  "full" : "AS14618 Amazon.com, Inc.",
+                  "number" : 14618,
+                  "organization" : {
+                     "name" : "Amazon.com, Inc."
+                  }
+               },
+               "bytes" : 2134,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "54.226.182.138",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 443
+            },
             "dstDataBytes" : 1796,
-            "dstGEO" : "US",
-            "dstIp" : "54.226.182.138",
-            "dstMac" : [
-               "00:10:db:ff:10:01"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "1603030050020000",
-            "dstPort" : 443,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1579293816559,
             "http" : {
@@ -83,6 +92,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1579293816817,
             "length" : 257,
+            "network" : {
+               "bytes" : 3132,
+               "community_id" : "1:YzavRzM2u5v8TNEv4SuCDe3OgWg=",
+               "packets" : 12
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -118,22 +132,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 998,
+            "source" : {
+               "bytes" : 998,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "172.130.128.76",
+               "mac" : [
+                  "8c:85:90:65:85:8f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 55318
+            },
             "srcDataBytes" : 524,
-            "srcGEO" : "US",
-            "srcIp" : "172.130.128.76",
-            "srcMac" : [
-               "8c:85:90:65:85:8f"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 7,
             "srcPayload8" : "1603010200010001",
-            "srcPort" : 55318,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -145,7 +162,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
@@ -175,14 +191,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 3132,
-            "totDataBytes" : 2320,
-            "totPackets" : 12
+            "totDataBytes" : 2320
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-200117",
-               "_type" : "session"
+               "_index" : "tests_sessions3-200117"
             }
          }
       }

@@ -1,31 +1,45 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:zVld1Ie77iuvz5cBRwEj51k0Yjo=",
-            "dstASN" : "AS1",
-            "dstBytes" : 322,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 322,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:22:83:3f:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 9000
+            },
             "dstDataBytes" : 104,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 3,
             "dstPayload8" : "800100030000001b",
-            "dstPort" : 9000,
-            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1463682642097,
             "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1463682642100,
             "length" : 2,
+            "network" : {
+               "bytes" : 584,
+               "community_id" : "1:zVld1Ie77iuvz5cBRwEj51k0Yjo=",
+               "packets" : 6
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -49,22 +63,32 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 262,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 262,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:22:83:3f:17:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 59602
+            },
             "srcDataBytes" : 40,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:22:83:3f:17:cc"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "800100010000001b",
-            "srcPort" : 59602,
             "tags" : [
                "dstip",
                "srcip"
@@ -101,44 +125,48 @@
                   "16777226:59602,33554442:9000"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 584,
             "totDataBytes" : 144,
-            "totPackets" : 6,
-            "vlan" : [
-               50
-            ],
-            "vlanCnt" : 1
+            "vlan" : {
+               "id" : [
+                  50
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160519",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160519"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:lC90PrhE/k5YdvmSIK2ItPfiU1Q=",
-            "dstBytes" : 78,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 78,
+               "ip" : "10.10.10.30",
+               "mac" : [
+                  "00:1b:17:00:01:24"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 30000
+            },
             "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.30",
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 30000,
             "fileId" : [],
             "firstPacket" : 1483833315772,
             "initRTT" : 2,
             "ipProtocol" : 6,
             "lastPacket" : 1483833315778,
             "length" : 5,
+            "network" : {
+               "bytes" : 557,
+               "community_id" : "1:lC90PrhE/k5YdvmSIK2ItPfiU1Q=",
+               "packets" : 4
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -158,20 +186,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 479,
+            "source" : {
+               "bytes" : 479,
+               "ip" : "10.10.10.20",
+               "mac" : [
+                  "00:22:83:3f:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 32769
+            },
             "srcDataBytes" : 261,
-            "srcIp" : "10.10.10.20",
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "0000010180010001",
-            "srcPort" : 32769,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -183,19 +213,16 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 557,
             "totDataBytes" : 261,
-            "totPackets" : 4,
-            "vlan" : [
-               100
-            ],
-            "vlanCnt" : 1
+            "vlan" : {
+               "id" : [
+                  100
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170107",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170107"
             }
          }
       }

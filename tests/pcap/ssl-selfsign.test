@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "d5:14:6c:45:45:60:f6:78:1e:67:bb:5a:67:b6:89:d4:98:a2:ec:2e",
@@ -20,20 +21,28 @@
                }
             ],
             "certCnt" : 1,
-            "communityId" : "1:B0KZ8/dCBnVra4vqcDaOEhO9D2Y=",
-            "dstBytes" : 6086,
+            "destination" : {
+               "bytes" : 6086,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.152.137",
+               "packets" : 10,
+               "port" : 4443
+            },
             "dstDataBytes" : 5526,
-            "dstGEO" : "US",
-            "dstIp" : "10.180.152.137",
-            "dstPackets" : 10,
             "dstPayload8" : "1603000051020000",
-            "dstPort" : 4443,
             "fileId" : [],
             "firstPacket" : 1519400125658,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1519400125663,
             "length" : 4,
+            "network" : {
+               "bytes" : 7847,
+               "community_id" : "1:B0KZ8/dCBnVra4vqcDaOEhO9D2Y=",
+               "packets" : 20
+            },
             "node" : "test",
             "packetLen" : [
                84,
@@ -85,13 +94,17 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1761,
+            "source" : {
+               "bytes" : 1761,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.152.137",
+               "packets" : 10,
+               "port" : 60101
+            },
             "srcDataBytes" : 1189,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.152.137",
-            "srcPackets" : 10,
             "srcPayload8" : "1603000059010000",
-            "srcPort" : 60101,
             "tags" : [
                "cert:self-signed"
             ],
@@ -107,7 +120,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_RSA_WITH_AES_256_CBC_SHA"
@@ -137,14 +149,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 7847,
-            "totDataBytes" : 6715,
-            "totPackets" : 20
+            "totDataBytes" : 6715
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-180223",
-               "_type" : "session"
+               "_index" : "tests_sessions3-180223"
             }
          }
       }

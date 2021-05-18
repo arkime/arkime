@@ -1,22 +1,24 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:iQy5a1sBLNecNa0u7pl8jWmqHSY=",
-            "dstBytes" : 872,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 872,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 9,
+               "port" : 25
+            },
             "dstDataBytes" : 270,
-            "dstIp" : "127.0.0.1",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 9,
             "dstPayload8" : "323230206c6f6361",
-            "dstPort" : 25,
             "email" : {
                "dst" : [
                   "reciever@example.com"
@@ -33,6 +35,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1453298304047,
             "length" : 6167,
+            "network" : {
+               "bytes" : 1622,
+               "community_id" : "1:iQy5a1sBLNecNa0u7pl8jWmqHSY=",
+               "packets" : 19
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -82,20 +89,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 750,
+            "source" : {
+               "bytes" : 750,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 42971
+            },
             "srcDataBytes" : 82,
-            "srcIp" : "127.0.0.1",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 10,
             "srcPayload8" : "48454c4f0d0a4d41",
-            "srcPort" : 42971,
             "tcpflags" : {
                "ack" : 9,
                "dstZero" : 0,
@@ -107,15 +116,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1622,
-            "totDataBytes" : 352,
-            "totPackets" : 19
+            "totDataBytes" : 352
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160120",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160120"
             }
          }
       }

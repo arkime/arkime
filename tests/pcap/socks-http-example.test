@@ -1,23 +1,27 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:jOv8gtYKkFiC4/5gDoVA6WtkDQA=",
-            "dstBytes" : 2003,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 2003,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 1080
+            },
             "dstDataBytes" : 1599,
-            "dstGEO" : "US",
-            "dstIp" : "10.180.156.249",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 6,
             "dstPayload8" : "005adfb20ab49cf9",
-            "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1386004309468,
             "http" : {
@@ -47,8 +51,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -59,22 +63,9 @@
                ],
                "requestHeaderValueCnt" : 1,
                "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "x-cache",
-                  "cache-control",
                   "accept-ranges",
+                  "cache-control",
                   "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
-                  "x-ec-custom-error",
-                  "server"
-               ],
-               "responseHeaderCnt" : 11,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "cache-control",
                   "content-type",
                   "date",
                   "etag",
@@ -82,21 +73,34 @@
                   "last-modified",
                   "server",
                   "x-cache",
-                  "x-ec-custom-error",
-                  "content-length"
+                  "x-ec-custom-error"
+               ],
+               "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "cache-control",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "last-modified",
+                  "server",
+                  "x-cache",
+                  "x-ec-custom-error"
                ],
                "responseHeaderValue" : [
-                  "bytes",
-                  "max-age=604800",
-                  "text/html",
-                  "mon, 02 dec 2013 17:11:46 gmt",
                   "\"359670651\"",
-                  "mon, 09 dec 2013 17:11:46 gmt",
-                  "fri, 09 aug 2013 23:54:35 gmt",
-                  "ecs (iad/1984)",
-                  "hit",
                   "1",
-                  "1270"
+                  "1270",
+                  "bytes",
+                  "ecs (iad/1984)",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "hit",
+                  "max-age=604800",
+                  "mon, 02 dec 2013 17:11:46 gmt",
+                  "mon, 09 dec 2013 17:11:46 gmt",
+                  "text/html"
                ],
                "responseHeaderValueCnt" : 11,
                "serverVersion" : [
@@ -124,6 +128,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386004309478,
             "length" : 10,
+            "network" : {
+               "bytes" : 2698,
+               "community_id" : "1:jOv8gtYKkFiC4/5gDoVA6WtkDQA=",
+               "packets" : 14
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -165,27 +174,37 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "socks" : {
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
                "GEO" : "US",
                "RIR" : "RIPE",
+               "as" : {
+                  "full" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+                  "number" : 15133,
+                  "organization" : {
+                     "name" : "MCI Communications Services, Inc. d/b/a Verizon Business"
+                  }
+               },
                "ip" : "93.184.216.119",
                "port" : 80
             },
-            "srcBytes" : 695,
+            "source" : {
+               "bytes" : 695,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.185",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 53533
+            },
             "srcDataBytes" : 155,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.185",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "040100505db8d877",
-            "srcPort" : 53533,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -197,36 +216,36 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2698,
-            "totDataBytes" : 1754,
-            "totPackets" : 14
+            "totDataBytes" : 1754
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131202"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:7mIgLO3MM/1td+keMk5CvXMEWiI=",
-            "dstBytes" : 2069,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 2069,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 1080
+            },
             "dstDataBytes" : 1599,
-            "dstGEO" : "US",
-            "dstIp" : "10.180.156.249",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 7,
             "dstPayload8" : "005adfb30ab49cf9",
-            "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1386004312331,
             "http" : {
@@ -256,8 +275,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -268,22 +287,9 @@
                ],
                "requestHeaderValueCnt" : 1,
                "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "x-cache",
-                  "cache-control",
                   "accept-ranges",
+                  "cache-control",
                   "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
-                  "x-ec-custom-error",
-                  "server"
-               ],
-               "responseHeaderCnt" : 11,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "cache-control",
                   "content-type",
                   "date",
                   "etag",
@@ -291,21 +297,34 @@
                   "last-modified",
                   "server",
                   "x-cache",
-                  "x-ec-custom-error",
-                  "content-length"
+                  "x-ec-custom-error"
+               ],
+               "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "cache-control",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "last-modified",
+                  "server",
+                  "x-cache",
+                  "x-ec-custom-error"
                ],
                "responseHeaderValue" : [
-                  "bytes",
-                  "max-age=604800",
-                  "text/html",
-                  "mon, 02 dec 2013 17:11:49 gmt",
                   "\"359670651\"",
-                  "mon, 09 dec 2013 17:11:49 gmt",
-                  "fri, 09 aug 2013 23:54:35 gmt",
-                  "ecs (iad/1984)",
-                  "hit",
                   "1",
-                  "1270"
+                  "1270",
+                  "bytes",
+                  "ecs (iad/1984)",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "hit",
+                  "max-age=604800",
+                  "mon, 02 dec 2013 17:11:49 gmt",
+                  "mon, 09 dec 2013 17:11:49 gmt",
+                  "text/html"
                ],
                "responseHeaderValueCnt" : 11,
                "serverVersion" : [
@@ -333,6 +352,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386004312384,
             "length" : 53,
+            "network" : {
+               "bytes" : 2780,
+               "community_id" : "1:7mIgLO3MM/1td+keMk5CvXMEWiI=",
+               "packets" : 15
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -379,21 +403,25 @@
                "host" : "www.example.com",
                "port" : 80
             },
-            "srcBytes" : 711,
+            "source" : {
+               "bytes" : 711,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.185",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 53534
+            },
             "srcDataBytes" : 171,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.185",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "0401005000000001",
-            "srcPort" : 53534,
             "tcpflags" : {
                "ack" : 7,
                "dstZero" : 0,
@@ -405,36 +433,36 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2780,
-            "totDataBytes" : 1770,
-            "totPackets" : 15
+            "totDataBytes" : 1770
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131202"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:Xad2GdfmsgABdCGXU/fkZWG9Kpg=",
-            "dstBytes" : 2073,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 2073,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 1080
+            },
             "dstDataBytes" : 1603,
-            "dstGEO" : "US",
-            "dstIp" : "10.180.156.249",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 7,
             "dstPayload8" : "0500050000010ab4",
-            "dstPort" : 1080,
             "fileId" : [],
             "firstPacket" : 1386004317979,
             "http" : {
@@ -464,8 +492,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -476,22 +504,9 @@
                ],
                "requestHeaderValueCnt" : 1,
                "responseHeader" : [
-                  "expires",
-                  "content-type",
-                  "x-cache",
-                  "cache-control",
                   "accept-ranges",
+                  "cache-control",
                   "content-length",
-                  "etag",
-                  "date",
-                  "last-modified",
-                  "x-ec-custom-error",
-                  "server"
-               ],
-               "responseHeaderCnt" : 11,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "cache-control",
                   "content-type",
                   "date",
                   "etag",
@@ -499,21 +514,34 @@
                   "last-modified",
                   "server",
                   "x-cache",
-                  "x-ec-custom-error",
-                  "content-length"
+                  "x-ec-custom-error"
+               ],
+               "responseHeaderCnt" : 11,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "cache-control",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "expires",
+                  "last-modified",
+                  "server",
+                  "x-cache",
+                  "x-ec-custom-error"
                ],
                "responseHeaderValue" : [
-                  "bytes",
-                  "max-age=604800",
-                  "text/html",
-                  "mon, 02 dec 2013 17:11:55 gmt",
                   "\"359670651\"",
-                  "mon, 09 dec 2013 17:11:55 gmt",
-                  "fri, 09 aug 2013 23:54:35 gmt",
-                  "ecs (iad/1984)",
-                  "hit",
                   "1",
-                  "1270"
+                  "1270",
+                  "bytes",
+                  "ecs (iad/1984)",
+                  "fri, 09 aug 2013 23:54:35 gmt",
+                  "hit",
+                  "max-age=604800",
+                  "mon, 02 dec 2013 17:11:55 gmt",
+                  "mon, 09 dec 2013 17:11:55 gmt",
+                  "text/html"
                ],
                "responseHeaderValueCnt" : 11,
                "serverVersion" : [
@@ -541,6 +569,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386004317989,
             "length" : 9,
+            "network" : {
+               "bytes" : 2905,
+               "community_id" : "1:Xad2GdfmsgABdCGXU/fkZWG9Kpg=",
+               "packets" : 17
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -588,27 +621,37 @@
             "protocolCnt" : 3,
             "segmentCnt" : 1,
             "socks" : {
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
                "GEO" : "US",
                "RIR" : "RIPE",
+               "as" : {
+                  "full" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+                  "number" : 15133,
+                  "organization" : {
+                     "name" : "MCI Communications Services, Inc. d/b/a Verizon Business"
+                  }
+               },
                "ip" : "93.184.216.119",
                "port" : 80
             },
-            "srcBytes" : 832,
+            "source" : {
+               "bytes" : 832,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.185",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 53535
+            },
             "srcDataBytes" : 160,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.185",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 10,
             "srcPayload8" : "0502000105010001",
-            "srcPort" : 53535,
             "tcpflags" : {
                "ack" : 7,
                "dstZero" : 0,
@@ -620,15 +663,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2905,
-            "totDataBytes" : 1763,
-            "totPackets" : 17
+            "totDataBytes" : 1763
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131202",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131202"
             }
          }
       }

@@ -1,8 +1,28 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:hqixyKnikIIf2iYrE//kB+ft+lc=",
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "8.8.8.8",
+               "mac" : [
+                  "00:19:e2:ba:2f:c1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "<root>"
@@ -21,27 +41,21 @@
                ],
                "qtCnt" : 1
             },
-            "dstASN" : "AS15169",
-            "dstBytes" : 0,
             "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "8.8.8.8",
-            "dstMac" : [
-               "00:19:e2:ba:2f:c1"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 53,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1393428477365,
             "ipProtocol" : 17,
             "lastPacket" : 1393428477365,
             "length" : 0,
+            "network" : {
+               "bytes" : 74,
+               "community_id" : "1:hqixyKnikIIf2iYrE//kB+ft+lc=",
+               "packets" : 1
+            },
             "node" : "test",
             "packetLen" : [
                90
@@ -55,22 +69,32 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 74,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 74,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:1a:e3:dc:2e:c0"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53869
+            },
             "srcDataBytes" : 28,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:1a:e3:dc:2e:c0"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "f376011000010000",
-            "srcPort" : 53869,
             "tags" : [
                "srcip"
             ],
@@ -95,19 +119,16 @@
                   "16777226:53869,134744072:53"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 74,
             "totDataBytes" : 28,
-            "totPackets" : 1,
-            "vlan" : [
-               500
-            ],
-            "vlanCnt" : 1
+            "vlan" : {
+               "id" : [
+                  500
+               ]
+            }
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140226",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140226"
             }
          }
       }

@@ -1,17 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:t8w2y51bTGSv9Z4iWI9ZJSV2gxg=",
-            "dstASN" : "AS63949",
-            "dstBytes" : 48832,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS63949 Linode, LLC",
+                  "number" : 63949,
+                  "organization" : {
+                     "name" : "Linode, LLC"
+                  }
+               },
+               "bytes" : 48832,
+               "geo" : {
+                  "country_iso_code" : "JP"
+               },
+               "ip" : "139.162.123.134",
+               "packets" : 48,
+               "port" : 80
+            },
             "dstDataBytes" : 46136,
-            "dstGEO" : "JP",
-            "dstIp" : "139.162.123.134",
-            "dstPackets" : 48,
             "dstPayload8" : "0000180400000000",
-            "dstPort" : 80,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1593995681271,
             "http" : {
@@ -166,6 +175,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1593995683015,
             "length" : 1745,
+            "network" : {
+               "bytes" : 70573,
+               "community_id" : "1:t8w2y51bTGSv9Z4iWI9ZJSV2gxg=",
+               "packets" : 101
+            },
             "node" : "test",
             "packetLen" : [
                84,
@@ -379,12 +393,14 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 21741,
+            "source" : {
+               "bytes" : 21741,
+               "ip" : "10.89.85.15",
+               "packets" : 53,
+               "port" : 49570
+            },
             "srcDataBytes" : 18761,
-            "srcIp" : "10.89.85.15",
-            "srcPackets" : 53,
             "srcPayload8" : "505249202a204854",
-            "srcPort" : 49570,
             "tcpflags" : {
                "ack" : 73,
                "dstZero" : 0,
@@ -396,15 +412,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 70573,
-            "totDataBytes" : 64897,
-            "totPackets" : 101
+            "totDataBytes" : 64897
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-200706",
-               "_type" : "session"
+               "_index" : "tests_sessions3-200706"
             }
          }
       }

@@ -1,21 +1,23 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 7038,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 7038,
+               "ip" : "192.168.40.178",
+               "mac" : [
+                  "00:0c:29:da:d1:de"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 51,
+               "port" : 0
+            },
             "dstDataBytes" : 3264,
-            "dstIp" : "192.168.40.178",
-            "dstMac" : [
-               "00:0c:29:da:d1:de"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 51,
-            "dstPort" : 0,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1260442415441,
             "icmp" : {
@@ -23,13 +25,17 @@
                   0
                ],
                "type" : [
-                  8,
-                  0
+                  0,
+                  8
                ]
             },
             "ipProtocol" : 1,
             "lastPacket" : 1260442465232,
             "length" : 49791,
+            "network" : {
+               "bytes" : 14076,
+               "packets" : 102
+            },
             "node" : "test",
             "packetLen" : [
                154,
@@ -245,30 +251,29 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 7038,
+            "source" : {
+               "bytes" : 7038,
+               "geo" : {
+                  "country_iso_code" : "JP"
+               },
+               "ip" : "202.11.40.158",
+               "mac" : [
+                  "00:0c:29:e3:c6:4d"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 51,
+               "port" : 0
+            },
             "srcDataBytes" : 3264,
-            "srcGEO" : "JP",
-            "srcIp" : "202.11.40.158",
-            "srcMac" : [
-               "00:0c:29:e3:c6:4d"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 51,
-            "srcPort" : 0,
-            "srcRIR" : "APNIC",
-            "timestamp" : "SET",
-            "totBytes" : 14076,
-            "totDataBytes" : 6528,
-            "totPackets" : 102
+            "totDataBytes" : 6528
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-091210",
-               "_type" : "session"
+               "_index" : "tests_sessions3-091210"
             }
          }
       }

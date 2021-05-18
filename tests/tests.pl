@@ -99,7 +99,7 @@ sub sortObj {
 sub sortJson {
     my ($json) = @_;
 
-    foreach my $session (@{$json->{sessions2}}) {
+    foreach my $session (@{$json->{sessions3}}) {
         sortObj("", $session->{body});
     }
     return $json;
@@ -169,11 +169,8 @@ sub doFix {
 sub fix {
 my ($json) = @_;
     my $json = sortJson($json);
-    foreach my $session (@{$json->{sessions2}}) {
+    foreach my $session (@{$json->{sessions3}}) {
         my $body = $session->{body};
-
-        # Keep as session for now
-        $session->{header}->{index}->{_type} = "session";
 
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {
@@ -181,6 +178,9 @@ my ($json) = @_;
         }
         if (exists $body->{timestamp}) {
             $body->{timestamp} = "SET";
+        }
+        if (exists $body->{"\@timestamp"}) {
+            $body->{"\@timestamp"} = "SET";
         }
 
         if ($body->{srcIp} =~ /:/) {
@@ -222,10 +222,10 @@ my ($json) = @_;
         }
     }
 
-    @{$json->{sessions2}} = sort {
+    @{$json->{sessions3}} = sort {
         return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
         return $a->{body}->{srcIp} <=> $b->{body}->{srcIp};
-    } @{$json->{sessions2}};
+    } @{$json->{sessions3}};
 }
 
 ################################################################################

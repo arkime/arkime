@@ -1,31 +1,45 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:Y6I3JhgebNYJ7cm/dvZaIvCLNoU=",
-            "dstASN" : "AS4385 Rochester Institute of Technology",
-            "dstBytes" : 428,
+            "@timestamp" : "SET",
+            "destination" : {
+               "as" : {
+                  "full" : "AS4385 Rochester Institute of Technology",
+                  "number" : 4385,
+                  "organization" : {
+                     "name" : "Rochester Institute of Technology"
+                  }
+               },
+               "bytes" : 428,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "129.21.171.72",
+               "mac" : [
+                  "58:f3:9c:f7:2f:9f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 21
+            },
             "dstDataBytes" : 90,
-            "dstGEO" : "US",
-            "dstIp" : "129.21.171.72",
-            "dstMac" : [
-               "58:f3:9c:f7:2f:9f"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "3232302057656c63",
-            "dstPort" : 21,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1454301530932,
             "initRTT" : 12,
             "ipProtocol" : 6,
             "lastPacket" : 1454301531009,
             "length" : 78,
+            "network" : {
+               "bytes" : 804,
+               "community_id" : "1:Y6I3JhgebNYJ7cm/dvZaIvCLNoU=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -57,20 +71,22 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 376,
+            "source" : {
+               "bytes" : 376,
+               "ip" : "10.10.30.26",
+               "mac" : [
+                  "00:08:e3:ff:fc:28"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 43958
+            },
             "srcDataBytes" : 38,
-            "srcIp" : "10.10.30.26",
-            "srcMac" : [
-               "00:08:e3:ff:fc:28"
-            ],
-            "srcMacCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
             "srcPayload8" : "5553455220616e6f",
-            "srcPort" : 43958,
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,
@@ -82,10 +98,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 804,
             "totDataBytes" : 128,
-            "totPackets" : 10,
             "user" : [
                "anonymous"
             ],
@@ -93,8 +106,7 @@
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160201",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160201"
             }
          }
       }

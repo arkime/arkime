@@ -1,31 +1,37 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "bgp" : {
                "type" : [
                   "KEEPALIVE",
                   "OPEN"
                ]
             },
-            "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
-            "dstBytes" : 643,
+            "destination" : {
+               "bytes" : 643,
+               "ip" : "192.168.100.2",
+               "mac" : [
+                  "c2:02:4f:3d:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 179
+            },
             "dstDataBytes" : 102,
-            "dstIp" : "192.168.100.2",
-            "dstMac" : [
-               "c2:02:4f:3d:00:00"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 7,
             "dstPayload8" : "ffffffffffffffff",
-            "dstPort" : 179,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1259261324431,
             "initRTT" : 3,
             "ipProtocol" : 6,
             "lastPacket" : 1259261384739,
             "length" : 60308,
+            "network" : {
+               "bytes" : 1267,
+               "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+               "packets" : 14
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -66,17 +72,18 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 1,
-            "srcBytes" : 624,
+            "source" : {
+               "bytes" : 624,
+               "ip" : "192.168.100.1",
+               "mac" : [
+                  "c2:01:4f:3d:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 25820
+            },
             "srcDataBytes" : 102,
-            "srcIp" : "192.168.100.1",
-            "srcMac" : [
-               "c2:01:4f:3d:00:00"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 7,
             "srcPayload8" : "ffffffffffffffff",
-            "srcPort" : 25820,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,
@@ -88,42 +95,44 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1267,
-            "totDataBytes" : 204,
-            "totPackets" : 14
+            "totDataBytes" : 204
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-091126",
-               "_type" : "session"
+               "_index" : "tests_sessions3-091126"
             }
          }
       },
       {
          "body" : {
+            "@timestamp" : "SET",
             "bgp" : {
                "type" : [
                   "KEEPALIVE"
                ]
             },
-            "communityId" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
-            "dstBytes" : 74,
+            "destination" : {
+               "bytes" : 74,
+               "ip" : "192.168.100.2",
+               "mac" : [
+                  "c2:02:4f:3d:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 179
+            },
             "dstDataBytes" : 19,
-            "dstIp" : "192.168.100.2",
-            "dstMac" : [
-               "c2:02:4f:3d:00:00"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "ffffffffffffffff",
-            "dstPort" : 179,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1259261324431,
             "ipProtocol" : 6,
             "lastPacket" : 1259261384967,
             "length" : 60536,
+            "network" : {
+               "bytes" : 167,
+               "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                109,
@@ -140,17 +149,18 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 2,
-            "srcBytes" : 93,
+            "source" : {
+               "bytes" : 93,
+               "ip" : "192.168.100.1",
+               "mac" : [
+                  "c2:01:4f:3d:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 25820
+            },
             "srcDataBytes" : 19,
-            "srcIp" : "192.168.100.1",
-            "srcMac" : [
-               "c2:01:4f:3d:00:00"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "ffffffffffffffff",
-            "srcPort" : 25820,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -162,15 +172,11 @@
                "syn-ack" : 0,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 167,
-            "totDataBytes" : 38,
-            "totPackets" : 2
+            "totDataBytes" : 38
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-091126",
-               "_type" : "session"
+               "_index" : "tests_sessions3-091126"
             }
          }
       }

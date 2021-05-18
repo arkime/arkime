@@ -1,24 +1,25 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:BM8tY6UHl8ahbGVWJK1yhn8kyQ4=",
-            "dstBytes" : 3834,
+            "@timestamp" : "SET",
+            "destination" : {
+               "bytes" : 3834,
+               "ip" : "192.168.57.14",
+               "mac" : [
+                  "00:1c:54:38:1a:4b",
+                  "1e:16:fb:2a:17:7d"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 14,
+               "port" : 8080
+            },
             "dstDataBytes" : 1509,
-            "dstIp" : "192.168.57.14",
-            "dstMac" : [
-               "00:1c:54:38:1a:4b",
-               "1e:16:fb:2a:17:7d"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Hillstone Networks Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 14,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 8080,
-            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1553758814359,
             "http" : {
@@ -185,6 +186,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1553758844367,
             "length" : 30007,
+            "network" : {
+               "bytes" : 9056,
+               "community_id" : "1:BM8tY6UHl8ahbGVWJK1yhn8kyQ4=",
+               "packets" : 34
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -264,22 +270,23 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 5222,
+            "source" : {
+               "bytes" : 5222,
+               "ip" : "192.168.8.97",
+               "mac" : [
+                  "00:1c:54:38:1a:4c",
+                  "ce:62:91:ee:0b:98"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 20,
+               "port" : 11371
+            },
             "srcDataBytes" : 2029,
-            "srcIp" : "192.168.8.97",
-            "srcMac" : [
-               "00:1c:54:38:1a:4c",
-               "ce:62:91:ee:0b:98"
-            ],
-            "srcMacCnt" : 2,
             "srcOui" : [
                "Hillstone Networks Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 20,
             "srcPayload8" : "474554202f66696c",
-            "srcPort" : 11371,
-            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 12,
                "dstZero" : 0,
@@ -291,15 +298,11 @@
                "syn-ack" : 2,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 9056,
-            "totDataBytes" : 3538,
-            "totPackets" : 34
+            "totDataBytes" : 3538
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190328",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190328"
             }
          }
       }
