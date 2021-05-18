@@ -224,7 +224,7 @@ my ($json) = @_;
 
     @{$json->{sessions3}} = sort {
         return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
-        return $a->{body}->{srcIp} <=> $b->{body}->{srcIp};
+        return $a->{body}->{source}->{ip} <=> $b->{body}->{source}->{ip};
     } @{$json->{sessions3}};
 }
 

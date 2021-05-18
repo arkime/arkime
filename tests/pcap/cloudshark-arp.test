@@ -2,6 +2,51 @@
    "sessions3" : [
       {
          "body" : {
+            "dstDataBytes" : 0,
+            "dstOui" : [
+               "Universal Global Scientific Industrial Co., Ltd."
+            ],
+            "dstOuiCnt" : 1,
+            "fileId" : [],
+            "firstPacket" : 1352595620652,
+            "ipProtocol" : 0,
+            "lastPacket" : 1352595620652,
+            "length" : 0,
+            "network" : {
+               "bytes" : 102,
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               76,
+               58
+            ],
+            "packetPos" : [
+               24,
+               100
+            ],
+            "protocol" : [
+               "arp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "source" : {},
+            "srcDataBytes" : 0,
+            "srcOui" : [
+               "Dell Inc.",
+               "Universal Global Scientific Industrial Co., Ltd."
+            ],
+            "srcOuiCnt" : 2,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-121111"
+            }
+         }
+      },
+      {
+         "body" : {
             "@timestamp" : "SET",
             "destination" : {
                "bytes" : 98,
@@ -66,50 +111,6 @@
             ],
             "srcOuiCnt" : 1,
             "totDataBytes" : 128
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-121111"
-            }
-         }
-      },
-      {
-         "body" : {
-            "dstDataBytes" : 0,
-            "dstOui" : [
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "dstOuiCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1352595620652,
-            "ipProtocol" : 0,
-            "lastPacket" : 1352595620652,
-            "length" : 0,
-            "network" : {
-               "bytes" : 102,
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               76,
-               58
-            ],
-            "packetPos" : [
-               24,
-               100
-            ],
-            "protocol" : [
-               "arp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "srcDataBytes" : 0,
-            "srcOui" : [
-               "Dell Inc.",
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "srcOuiCnt" : 2,
-            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
