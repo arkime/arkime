@@ -896,6 +896,18 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   };
 
   /**
+   * PUT - /api/hunt/:id/cancel
+   *
+   * Cancel a hunt. Pauses the hunt and puts it into the hunt history
+   * @name /hunt/:id/cancel
+   * @returns {boolean} success - Whether the cancel hunt operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  hModule.cancelHunt = (req, res) => {
+    updateHuntStatus(req, res, 'finished', 'Canceled hunt successfully', 'Error canceling hunt');
+  };
+
+  /**
    * PUT - /api/hunt/:id/pause
    *
    * Pause a hunt.

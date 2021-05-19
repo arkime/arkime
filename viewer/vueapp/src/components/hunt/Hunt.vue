@@ -414,6 +414,20 @@
                   </b-tooltip>
                 </span>
                 <button v-if="user.userId === runningJob.userId || user.createEnabled"
+                  @click="cancelJob(runningJob)"
+                  :disabled="runningJob.disabled"
+                  type="button"
+                  v-b-tooltip.hover
+                  title="Cancel this job. It can be viewed in the history after the cancelation is complete."
+                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  <span v-if="!runningJob.loading"
+                    class="fa fa-ban fa-fw">
+                  </span>
+                  <span v-else
+                    class="fa fa-spinner fa-spin fa-fw">
+                  </span>
+                </button>
+                <button v-if="user.userId === runningJob.userId || user.createEnabled"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
@@ -545,7 +559,7 @@
             <th>
               ID
             </th>
-            <th width="140px">&nbsp;</th>
+            <th width="260px">&nbsp;</th>
           </tr>
         </thead>
         <transition-group name="list"
@@ -555,8 +569,12 @@
             <hunt-row :key="`${job.id}-row`"
               :job="job"
               :user="user"
+              :canRerun="true"
+              :canRepeat="true"
+              :canCancel="true"
               @playJob="playJob"
               @pauseJob="pauseJob"
+              @cancelJob="cancelJob"
               @removeJob="removeJob"
               @toggle="toggleJobDetail"
               @openSessions="openSessions">
@@ -990,6 +1008,21 @@ export default {
         }, (error) => {
           this.$set(job, 'loading', false);
           this.setErrorForList(arrayName, error.text || error);
+        });
+    },
+    cancelJob: function (job) {
+      if (job.loading) { return; } // it's already trying to do something
+
+      this.setErrorForList('results', '');
+      this.$set(job, 'loading', true);
+
+      this.axios.put(`api/hunt/${job.id}/cancel`)
+        .then((response) => {
+          this.$set(job, 'loading', false);
+          this.loadData();
+        }, (error) => {
+          this.$set(job, 'loading', false);
+          this.setErrorForList('results', error.text || error);
         });
     },
     pauseJob: function (job) {

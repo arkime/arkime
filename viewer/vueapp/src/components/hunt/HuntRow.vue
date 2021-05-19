@@ -4,7 +4,7 @@
       <toggle-btn
         v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1"
         :opened="job.expanded"
-        @toggle="toggleJobDetail(job)">
+        @toggle="$emit('toggle', job)">
       </toggle-btn>
     </td>
     <td>
@@ -73,11 +73,11 @@
     </td>
     <td>
       <button v-if="user.userId === job.userId || user.createEnabled"
-        @click="removeJob(job, 'results')"
+        @click="$emit('removeJob', job, 'results')"
         :disabled="job.loading"
         type="button"
         v-b-tooltip.hover
-        title="Remove this job from history"
+        title="Remove this job"
         class="ml-1 pull-right btn btn-sm btn-danger">
         <span v-if="!job.loading"
           class="fa fa-trash-o fa-fw">
@@ -88,8 +88,8 @@
       </button>
       <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
         <button type="button"
-          @click="openSessions(job)"
-          v-if="job.matchedSessions"
+          @click="$emit('openSessions', job)"
+          :disabled="!job.matchedSessions"
           :id="`openresults${job.id}`"
           class="ml-1 pull-right btn btn-sm btn-theme-primary">
           <span class="fa fa-folder-open fa-fw">
@@ -103,9 +103,41 @@
           might take a minute to show up.
         </b-tooltip>
       </span>
+      <button v-if="canRerun && !job.unrunnable && (user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1)"
+        type="button"
+        @click="$emit('rerunJob', job)"
+        v-b-tooltip.hover
+        title="Rerun this hunt job using the current time frame and search criteria."
+        class="ml-1 pull-right btn btn-sm btn-theme-secondary">
+        <span class="fa fa-refresh fa-fw">
+        </span>
+      </button>
+      <button v-if="canRepeat && !job.unrunnable && (user.userId === job.userId || user.createEnabled)"
+        type="button"
+        @click="$emit('repeatJob', job)"
+        v-b-tooltip.hover
+        title="Repeat this hunt job using its time frame and search criteria."
+        class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
+        <span class="fa fa-repeat fa-fw">
+        </span>
+      </button>
+      <button v-if="canCancel && (user.userId === job.userId || user.createEnabled)"
+        @click="$emit('cancelJob', job)"
+        :disabled="job.loading"
+        type="button"
+        v-b-tooltip.hover
+        title="Cancel this job. It can be viewed in the history after the cancelation is complete."
+        class="ml-1 pull-right btn btn-sm btn-danger">
+        <span v-if="!job.loading"
+          class="fa fa-ban fa-fw">
+        </span>
+        <span v-else
+          class="fa fa-spinner fa-spin fa-fw">
+        </span>
+      </button>
       <button v-if="(job.status === 'running' || job.status === 'queued') && (user.userId === job.userId || user.createEnabled)"
         :disabled="job.loading"
-        @click="pauseJob(job)"
+        @click="$emit('pauseJob', job)"
         type="button"
         v-b-tooltip.hover
         title="Pause this job"
@@ -119,7 +151,7 @@
       </button>
       <button v-else-if="job.status === 'paused' && (user.userId === job.userId || user.createEnabled)"
         :disabled="job.loading"
-        @click="playJob(job)"
+        @click="$emit('playJob', job)"
         type="button"
         v-b-tooltip.hover
         title="Play this job"
@@ -129,24 +161,6 @@
         </span>
         <span v-else
           class="fa fa-spinner fa-spin fa-fw">
-        </span>
-      </button>
-      <button v-if="canRerun && !job.unrunnable && (user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1)"
-        type="button"
-        @click="rerunJob(job)"
-        v-b-tooltip.hover
-        title="Rerun this hunt job using the current time frame and search criteria."
-        class="ml-1 pull-right btn btn-sm btn-theme-secondary">
-        <span class="fa fa-refresh fa-fw">
-        </span>
-      </button>
-      <button v-if="canRepeat && !job.unrunnable && (user.userId === job.userId || user.createEnabled)"
-        type="button"
-        @click="repeatJob(job)"
-        v-b-tooltip.hover
-        title="Repeat this hunt job using its time frame and search criteria."
-        class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
-        <span class="fa fa-repeat fa-fw">
         </span>
       </button>
     </td>
@@ -163,34 +177,12 @@ export default {
     job: Object,
     user: Object,
     canRerun: Boolean,
-    canRepeat: Boolean
+    canRepeat: Boolean,
+    canCancel: Boolean
   },
   components: {
     ToggleBtn,
     HuntStatus
-  },
-  methods: {
-    removeJob: function (job, list) {
-      this.$emit('removeJob', job, list);
-    },
-    openSessions: function (job) {
-      this.$emit('openSessions', job);
-    },
-    pauseJob: function (job) {
-      this.$emit('pauseJob', job);
-    },
-    playJob: function (job) {
-      this.$emit('playJob', job);
-    },
-    rerunJob: function (job) {
-      this.$emit('rerunJob', job);
-    },
-    repeatJob: function (job) {
-      this.$emit('repeatJob', job);
-    },
-    toggleJobDetail: function (job) {
-      this.$emit('toggle', job);
-    }
   }
 };
 </script>

@@ -1907,6 +1907,12 @@ app.delete( // delete hunt endpoint
   huntAPIs.deleteHunt
 );
 
+app.put( // cancel hunt endpoint
+  ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.cancelHunt
+);
+
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause', '/hunt/:id/pause'],
   [noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
