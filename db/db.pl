@@ -61,6 +61,8 @@
 # 64 - lock shortcuts
 # 65 - hunt unrunnable and failedSessionIds
 # 66 - share hunts
+# 67 - remove hunt info from matched sessions
+
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -71,7 +73,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 66;
+my $VERSION = 67;
 my $verbose = 0;
 my $PREFIX = "";
 my $SECURE = 1;
@@ -2488,6 +2490,9 @@ sub huntsUpdate
       },
       "users": {
         "type": "keyword"
+      },
+      "removed": {
+        "type": "boolean"
       }
     }
   }
@@ -4356,7 +4361,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 66) {
+    } elsif ($main::versionNumber <= 67) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();

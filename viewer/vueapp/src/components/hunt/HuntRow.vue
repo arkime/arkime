@@ -13,13 +13,13 @@
         :hide-text="true">
       </hunt-status>
       &nbsp;
-      <span class="badge badge-secondary cursor-help"
+      <span class="badge badge-secondary cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
         :id="`jobmatches${job.id}`">
         {{ (((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100) | round(1) }}%
       </span>
       <span v-else
-        class="badge badge-secondary cursor-help"
+        class="badge badge-secondary cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
         {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
       </span>
@@ -48,6 +48,10 @@
     </td>
     <td>
       {{ job.matchedSessions | commaString }}
+      <span v-if="job.removed"
+        v-b-tooltip.hover="'This hunt\'s ID and name have been removed from these matched sessions.'"
+        class="fa fa-info-circle fa-fw cursor-help text-warning"
+      />
     </td>
     <td>
       {{ job.name }}
@@ -86,16 +90,36 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
+      <button v-if="(user.userId === job.userId || user.createEnabled) && canRemoveFromSessions"
+        @click="$emit('removeFromSessions', job)"
+        :disabled="job.loading || !job.matchedSessions || job.removed"
+        type="button"
+        :id="`remove${job.id}`"
+        class="ml-1 pull-right btn btn-sm btn-danger">
+        <span v-if="!job.loading"
+          class="fa fa-times fa-fw">
+        </span>
+        <span v-else
+          class="fa fa-spinner fa-spin fa-fw">
+        </span>
+      </button>
+      <b-tooltip v-if="job.matchedSessions && !job.removed"
+        :target="`remove${job.id}`">
+        Remove the hunt name and ID fields from the matched sessions.
+        <br>
+        <strong>Note:</strong> ES takes a while to update sessions, so scrubbing these fields
+        might take a minute.
+      </b-tooltip>
       <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
         <button type="button"
           @click="$emit('openSessions', job)"
-          :disabled="!job.matchedSessions"
+          :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
           class="ml-1 pull-right btn btn-sm btn-theme-primary">
           <span class="fa fa-folder-open fa-fw">
           </span>
         </button>
-        <b-tooltip v-if="job.matchedSessions"
+        <b-tooltip v-if="job.matchedSessions && !job.removed"
           :target="`openresults${job.id}`">
           Open results in a new Sessions tab.
           <br>
@@ -178,7 +202,8 @@ export default {
     user: Object,
     canRerun: Boolean,
     canRepeat: Boolean,
-    canCancel: Boolean
+    canCancel: Boolean,
+    canRemoveFromSessions: Boolean
   },
   components: {
     ToggleBtn,
@@ -186,3 +211,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.percent-done-badge {
+  width: 50px;
+}
+</style>

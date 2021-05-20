@@ -691,7 +691,7 @@
             <th>
               ID
             </th>
-            <th width="180px">&nbsp;</th>
+            <th width="260px">&nbsp;</th>
           </tr>
         </thead>
         <transition-group name="list"
@@ -703,13 +703,15 @@
               :user="user"
               :canRerun="true"
               :canRepeat="true"
+              :canRemoveFromSessions="true"
               @playJob="playJob"
               @pauseJob="pauseJob"
               @rerunJob="rerunJob"
               @repeatJob="repeatJob"
               @removeJob="removeJob"
               @toggle="toggleJobDetail"
-              @openSessions="openSessions">
+              @openSessions="openSessions"
+              @removeFromSessions="removeFromSessions">
             </hunt-row>
             <tr :key="`${job.id}-detail`"
               v-if="job.expanded">
@@ -751,20 +753,24 @@
 
     <!-- floating error -->
     <transition name="slide-fade">
-      <div v-if="floatingError"
+      <div v-if="floatingError || floatingSuccess"
         class="card floating-msg">
         <div class="card-body">
-          <a @click="floatingError = !floatingError"
+          <a @click="floatingError = !floatingError; floatingSuccess = !floatingSuccess"
             class="no-decoration cursor-pointer pull-right"
             v-b-tooltip.hover
             title="Dismiss">
             <span class="fa fa-close">
             </span>
           </a>
-          <span class="text-danger">
-            <span class="fa fa-exclamation-triangle">
-            </span>&nbsp;
-            {{ floatingError }}
+          <span :class="floatingError ? 'text-danger' : 'text-success'">
+            <span v-if="floatingError"
+              class="fa fa-exclamation-triangle mr-2">
+            </span>
+            <span v-else
+              class="fa fa-check mr-2">
+            </span>
+            {{ floatingError || floatingSuccess }}
           </span>
         </div>
       </div>
@@ -816,6 +822,7 @@ export default {
       historyListError: '',
       historyListLoadingError: '',
       floatingError: '',
+      floatingSuccess: '',
       loading: true,
       results: [], // running/queued/paused hunt jobs
       historyResults: { // finished hunt jobs
@@ -986,6 +993,25 @@ export default {
           this.createFormError = error.text || error;
         });
     },
+    removeFromSessions: function (job) {
+      if (job.loading) { return; } // it's already trying to do something
+
+      this.setErrorForList('historyResults', '');
+      this.$set(job, 'loading', true);
+
+      this.axios.put(`api/hunt/${job.id}/removefromsessions`)
+        .then((response) => {
+          this.$set(job, 'loading', false);
+          this.$set(job, 'removed', true);
+          this.$set(this, 'floatingSuccess', 'Successfully removed hunt ID and name from the matched sessions.');
+          setTimeout(() => {
+            this.$set(this, 'floatingSuccess', '');
+          }, 5000);
+        }, (error) => {
+          this.$set(job, 'loading', false);
+          this.setErrorForList('historyResults', error.text || error);
+        });
+    },
     removeJob: function (job, arrayName) {
       if (job.loading) { return; } // it's already trying to do something
 
@@ -994,6 +1020,7 @@ export default {
 
       this.axios.delete(`api/hunt/${job.id}`)
         .then((response) => {
+          this.$set(job, 'loading', false);
           let array = this.results;
           if (arrayName === 'historyResults') {
             array = this.historyResults.data;
