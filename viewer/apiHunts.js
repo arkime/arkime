@@ -172,10 +172,11 @@ ${Config.arkimeWebURL()}hunt
         hunt.lastUpdated = now;
         hunt.searchedSessions = searchedSessions || hunt.searchedSessions;
         hunt.lastPacketTime = lastPacketTime;
+        hunt.errors = huntHit._source.errors;
 
         Db.setHunt(huntId, hunt);
 
-        if (hunt.status === 'paused') {
+        if (hunt.status === 'paused' || hunt.status === 'finished') {
           return cb('paused');
         } else {
           return cb(null);
@@ -658,6 +659,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {boolean} unrunnable - Whether an error has rendered the hunt unrunnable.
    * @property {array} failedSessionIds - The list of sessions that have failed to be searched. Used to run the search against them again once the rest of the hunt is complete.
    * @property {array} users - The list of users to be added to the hunt so they can view the results.
+   * @property {boolean} removed - Whether the hunt name and ID fields have been removed from the matched sessions.
    */
 
   /**
@@ -679,7 +681,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @param {string} notifier - The otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @param {string} notifier - The optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
@@ -896,6 +898,41 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   };
 
   /**
+   * PUT - /api/hunt/:id/cancel
+   *
+   * Cancel a hunt. Finishes the hunt and puts it into the hunt history.
+   * @name /hunt/:id/cancel
+   * @returns {boolean} success - Whether the cancel hunt operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  hModule.cancelHunt = async (req, res) => {
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+
+      const error = { // save that the user canceled the hunt
+        time: Math.floor(Date.now() / 1000),
+        value: `${req.user.userId} canceled hunt.`
+      };
+
+      if (!hunt.errors) {
+        hunt.errors = [error];
+      } else {
+        hunt.errors.push(error);
+      }
+
+      hunt.status = 'finished';
+
+      await Db.setHunt(req.params.id, hunt);
+      internals.runningHuntJob = undefined;
+      hModule.processHuntJobs();
+      return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
+    } catch (err) {
+      console.log('ERROR', err);
+      return res.serverError(500, 'Error canceling hunt');
+    }
+  };
+
+  /**
    * PUT - /api/hunt/:id/pause
    *
    * Pause a hunt.
@@ -917,6 +954,70 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   hModule.playHunt = (req, res) => {
     updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
+  };
+
+  /**
+   * PUT - /api/hunt/:id/removefromsessions
+   *
+   * Remove the hunt ID and name from matched sessions.
+   * @name /hunt/:id/removefromsessions
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  hModule.removeFromSessions = async (req, res) => {
+    try {
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+
+      if (!hunt.matchedSessions) {
+        return res.serverError(202, 'Nothing to do: this hunt has not matched any sessions.');
+      }
+
+      const fakeReq = {
+        user: req.user,
+        query: {
+          from: 0,
+          size: hunt.matchedSessions, // only fetch number of sessions that matched the hunt
+          _source: ['_id', 'node', 'huntId', 'huntName']
+        }
+      };
+
+      fakeReq.query.expression = `huntId == ${req.params.id}`;
+
+      sessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+        if (err) {
+          return res.serverError(500, 'Unable to build sessions query to fetch sessions that matched this hunt.');
+        }
+
+        query.query.bool.filter[0] = {
+          range: {
+            lastPacket: {
+              gte: hunt.query.startTime * 1000,
+              lt: hunt.query.stopTime * 1000
+            }
+          }
+        };
+
+        Db.searchSessions(indices, query, {}, async (err, result) => {
+          if (err) {
+            return res.serverError(500, 'Unable to fetch sessions that matched this hunt.');
+          }
+
+          // iterate through sessions and remove hunt stuff from each one
+          for (const hit of result.hits.hits) {
+            const sessionId = Db.session2Sid(hit);
+            Db.removeHuntFromSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), req.params.id, hunt.name, () => {});
+          }
+
+          hunt.removed = true;
+          await Db.setHunt(req.params.id, hunt);
+
+          return res.send({ success: true, text: 'Succesfully removed the hunt name and ID from the matched sessions.' });
+        });
+      });
+    } catch (err) {
+      console.log(`ERROR - PUT /api/hunt/${req.params.id}/removefromsessions`, err);
+      return res.serverError(500, 'Unable to remove hunt name and ID from the matched sessions.');
+    }
   };
 
   /**
