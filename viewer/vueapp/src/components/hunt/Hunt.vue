@@ -572,6 +572,7 @@
               :canRerun="true"
               :canRepeat="true"
               :canCancel="true"
+              arrayName="results"
               @playJob="playJob"
               @pauseJob="pauseJob"
               @cancelJob="cancelJob"
@@ -703,6 +704,7 @@
               :user="user"
               :canRerun="true"
               :canRepeat="true"
+              arrayName="historyResults"
               :canRemoveFromSessions="true"
               @playJob="playJob"
               @pauseJob="pauseJob"
@@ -1003,7 +1005,7 @@ export default {
         .then((response) => {
           this.$set(job, 'loading', false);
           this.$set(job, 'removed', true);
-          this.$set(this, 'floatingSuccess', 'Successfully removed hunt ID and name from the matched sessions.');
+          this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
           setTimeout(() => {
             this.$set(this, 'floatingSuccess', '');
           }, 5000);

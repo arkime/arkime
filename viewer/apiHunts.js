@@ -659,6 +659,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {boolean} unrunnable - Whether an error has rendered the hunt unrunnable.
    * @property {array} failedSessionIds - The list of sessions that have failed to be searched. Used to run the search against them again once the rest of the hunt is complete.
    * @property {array} users - The list of users to be added to the hunt so they can view the results.
+   * @property {boolean} removed - Whether the hunt name and ID fields have been removed from the matched sessions.
    */
 
   /**
@@ -680,7 +681,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @param {string} notifier - The otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @param {string} notifier - The optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
@@ -899,7 +900,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   /**
    * PUT - /api/hunt/:id/cancel
    *
-   * Cancel a hunt. Pauses the hunt and puts it into the hunt history
+   * Cancel a hunt. Finishes the hunt and puts it into the hunt history.
    * @name /hunt/:id/cancel
    * @returns {boolean} success - Whether the cancel hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -966,6 +967,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   hModule.removeFromSessions = async (req, res) => {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+
+      if (!hunt.matchedSessions) {
+        return res.serverError(202, 'Nothing to do: this hunt has not matched any sessions.');
+      }
 
       const fakeReq = {
         user: req.user,

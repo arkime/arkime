@@ -1927,7 +1927,7 @@ app.put( // play hunt endpoint
 
 app.put( // remove from sessions hunt endpoint
   ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
-  [noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
   huntAPIs.removeFromSessions
 );
 

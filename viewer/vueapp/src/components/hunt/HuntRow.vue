@@ -77,7 +77,7 @@
     </td>
     <td>
       <button v-if="user.userId === job.userId || user.createEnabled"
-        @click="$emit('removeJob', job, 'results')"
+        @click="$emit('removeJob', job, arrayName)"
         :disabled="job.loading"
         type="button"
         v-b-tooltip.hover
@@ -90,12 +90,13 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <button v-if="(user.userId === job.userId || user.createEnabled) && canRemoveFromSessions"
-        @click="$emit('removeFromSessions', job)"
-        :disabled="job.loading || !job.matchedSessions || job.removed"
+      <button
         type="button"
         :id="`remove${job.id}`"
-        class="ml-1 pull-right btn btn-sm btn-danger">
+        @click="$emit('removeFromSessions', job)"
+        class="ml-1 pull-right btn btn-sm btn-danger"
+        v-if="(user.userId === job.userId || user.createEnabled) && canRemoveFromSessions"
+        :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span v-if="!job.loading"
           class="fa fa-times fa-fw">
         </span>
@@ -103,7 +104,7 @@
           class="fa fa-spinner fa-spin fa-fw">
         </span>
       </button>
-      <b-tooltip v-if="job.matchedSessions && !job.removed"
+      <b-tooltip v-if="job.matchedSessions && !job.removed && user.removeEnabled"
         :target="`remove${job.id}`">
         Remove the hunt name and ID fields from the matched sessions.
         <br>
@@ -200,6 +201,7 @@ export default {
   props: {
     job: Object,
     user: Object,
+    arrayName: String,
     canRerun: Boolean,
     canRepeat: Boolean,
     canCancel: Boolean,
