@@ -198,9 +198,9 @@ sub showHelp($)
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "\n";
     print "Backup and Restore Commands:\n";
-    print "  backup <basename> <opts>     - Backup everything but sessions; filenames created start with <basename>\n";
+    print "  backup <basename> <opts>     - Backup everything but sessions/history; filenames created start with <basename>\n";
     print "    --gz                       - GZip the files\n";
-    print "  restore <basename> [<opts>]  - Restore everything but sessions; filenames restored from start with <basename>\n";
+    print "  restore <basename> [<opts>]  - Restore everything but sessions/history; filenames restored from start with <basename>\n";
     print "    --skipupgradeall           - Do not upgrade Sessions\n";
     print "  export <index> <basename>    - Save a single index into a file, filename starts with <basename>\n";
     print "  import <filename>            - Import single index from <filename>\n";
@@ -328,9 +328,12 @@ sub esPut
     logmsg "PUT ${main::elasticsearch}$url\n" if ($verbose > 2);
     logmsg "PUT DATA:", Dumper($content), "\n" if ($verbose > 3);
     my $response = $main::userAgent->request(HTTP::Request::Common::PUT("${main::elasticsearch}$url", Content => $content, Content_Type => "application/json"));
-    if ($response->code == 500 || ($response->code != 200 && !$dontcheck)) {
+    if ($response->code != 200 && !$dontcheck) {
       logmsg Dumper($response);
       die "Couldn't PUT ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?\n" . $response->content;
+    } elsif ($response->code == 500 && $dontcheck) {
+      print "Ignoring following error\n";
+      logmsg Dumper($response);
     }
 
     my $json = from_json($response->content);
