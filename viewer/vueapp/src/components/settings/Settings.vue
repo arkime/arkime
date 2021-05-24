@@ -3856,6 +3856,12 @@ export default {
   border-color: #CCCCCC !important;
 }
 
+.settings-page .arkime-light-theme input.form-control,
+.settings-page .arkime-light-theme input.form-control:focus {
+  color: #000000;
+  background-color: #FFFFFF;
+}
+
 .settings-page .arkime-light-theme .display-sub-navbar {
   background-color: #A4C2D6;
 }
@@ -4033,6 +4039,12 @@ export default {
   border-color: #CCCCCC !important;
 }
 
+.settings-page .purp-theme input.form-control,
+.settings-page .purp-theme input.form-control:focus {
+  color: #000000;
+  background-color: #FFFFFF;
+}
+
 .settings-page .purp-theme .display-sub-navbar {
   background-color: #EDFCFF;
 }
@@ -4117,6 +4129,12 @@ export default {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
+}
+
+.settings-page .blue-theme input.form-control,
+.settings-page .blue-theme input.form-control:focus {
+  color: #000000;
+  background-color: #FFFFFF;
 }
 
 .settings-page .blue-theme .display-sub-navbar {
@@ -4205,6 +4223,12 @@ export default {
   border-color: #CCCCCC !important;
 }
 
+.settings-page .green-theme input.form-control,
+.settings-page .green-theme input.form-control:focus {
+  color: #000000;
+  background-color: #FFFFFF;
+}
+
 .settings-page .green-theme .display-sub-navbar {
   background-color: #DBECE7;
 }
@@ -4289,6 +4313,12 @@ export default {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
+}
+
+.settings-page .cotton-candy-theme input.form-control,
+.settings-page .cotton-candy-theme input.form-control:focus {
+  color: #000000;
+  background-color: #FFFFFF;
 }
 
 .settings-page .cotton-candy-theme .display-sub-navbar {

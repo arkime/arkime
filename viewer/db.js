@@ -895,6 +895,32 @@ exports.addHuntToSession = function (index, id, huntId, huntName, cb) {
   exports.updateSession(index, id, body, cb);
 };
 
+exports.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
+  const script = `
+    if (ctx._source.huntId != null) {
+      int index = ctx._source.huntId.indexOf(params.huntId);
+      if (index > -1) { ctx._source.huntId.remove(index); }
+    }
+    if (ctx._source.huntName != null) {
+      int index = ctx._source.huntName.indexOf(params.huntName);
+      if (index > -1) { ctx._source.huntName.remove(index); }
+    }
+  `;
+
+  const body = {
+    script: {
+      source: script,
+      lang: 'painless',
+      params: {
+        huntId: huntId,
+        huntName: huntName
+      }
+    }
+  };
+
+  exports.updateSession(index, id, body, cb);
+};
+
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / High level functions
 /// ///////////////////////////////////////////////////////////////////////////////

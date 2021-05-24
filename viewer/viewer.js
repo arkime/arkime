@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 66;
+const MIN_DB_VERSION = 67;
 
 // ============================================================================
 // MODULES
@@ -1907,6 +1907,12 @@ app.delete( // delete hunt endpoint
   huntAPIs.deleteHunt
 );
 
+app.put( // cancel hunt endpoint
+  ['/api/hunt/:id/cancel', '/hunt/:id/cancel'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
+  huntAPIs.cancelHunt
+);
+
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause', '/hunt/:id/pause'],
   [noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
@@ -1917,6 +1923,12 @@ app.put( // play hunt endpoint
   ['/api/hunt/:id/play', '/hunt/:id/play'],
   [noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, checkPermissions(['packetSearch']), checkHuntAccess],
   huntAPIs.playHunt
+);
+
+app.put( // remove from sessions hunt endpoint
+  ['/api/hunt/:id/removefromsessions', '/hunt/:id/removefromsessions'],
+  [noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
+  huntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint

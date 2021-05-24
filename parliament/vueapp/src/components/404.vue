@@ -1,6 +1,6 @@
 <template>
 
-<div class="parliament-info container">
+<div class="whole-page-info container">
 
   <div class="center-area">
 

@@ -20,7 +20,7 @@ install:
 	$(INSTALL) *.js package.json package-lock.json $(VIEWERDIR)
 	npm ci
 	npm run bundle:min
-	(cd public ; wget -N https://github.com/gchq/CyberChef/releases/download/v9.16.2/CyberChef_v9.16.2.zip)
+	(cd public ; wget -N https://github.com/gchq/CyberChef/releases/download/v9.28.0/CyberChef_v9.28.0.zip)
 	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
 	(cd $(VIEWERDIR) ; npm ci --production)

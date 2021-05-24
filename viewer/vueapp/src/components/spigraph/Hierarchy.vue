@@ -409,6 +409,7 @@ export default {
   },
   watch: {
     graphData: function (newVal, oldVal) {
+      this.baseFieldObj = this.getFieldObj(this.baseField);
       // if there is more data to fetch than the spigraph component can provide,
       // fetch it from the spigraphpie endpoint
       if (this.fieldTypeaheadList.length) {

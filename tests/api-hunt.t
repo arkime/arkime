@@ -1,4 +1,4 @@
-use Test::More tests => 267;
+use Test::More tests => 270;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -85,6 +85,11 @@ my $hToken = getTokenCookie('huntuser');
 # Add a valid hunt, and it should immediately run
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   is ($json->{success}, 1);
+  my $id1 = $json->{hunt}->{id};
+
+# cancel hunt
+  my $canceljson = viewerPutToken("/api/hunt/$id1/cancel?molochRegressionuser=anonymous", "{}", $token);
+  is ($canceljson->{success}, 1, "can cancel a hunt");
 
 # Make sure the hunt's name doesn't contain special chars
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
@@ -104,7 +109,6 @@ my $hToken = getTokenCookie('huntuser');
   ok(! exists $item->{query});
 
 # If the user is not an admin they can only delete their own hunts
-  my $id1 = $json->{hunt}->{id};
   $json = viewerDeleteToken("/api/hunt/$id1?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "You cannot change another user's hunt unless you have admin privileges");
 
@@ -119,6 +123,7 @@ my $hToken = getTokenCookie('huntuser');
   is (@{$hunts->{data}}, 2, "Add hunt 2");
 
   my $id2 = $json->{hunt}->{id};
+
   $json = viewerDeleteToken("/hunt/$id2?molochRegressionUser=user2", $otherToken);
   is ($json->{text}, "Deleted hunt successfully");
 
@@ -144,6 +149,7 @@ my $hToken = getTokenCookie('huntuser');
   my $id4 = $json->{hunt}->{id};
 
   sleep(2); # Wait for it to finish processing
+
   $json = viewerDeleteToken("/hunt/$id4?molochRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt successfully");
 
@@ -223,12 +229,22 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerDeleteToken("/api/hunt/$id7/user/unknownuser?molochRegressionUser=anonymous", $token);
   eq_or_diff($json, from_json('{"text": "That user does not have access to this hunt", "success": false}'), "can't delete a user from an hunt with no users");
 
+# remove hunt id and name from sessions
+  $json = viewerPutToken("/api/hunt/$id7/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
+  is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
+  $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  my $id8 = $json->{hunt}->{id};
+  viewerGet("/processHuntJobs");
+  $json = viewerPutToken("/api/hunt/$id8/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
+  is ($json->{success}, 1, "can remove hunt name and id from sessions");
 
 # cleanup
   viewerDeleteToken("/hunt/$id5?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id6?molochRegressionUser=anonymous", $token);
   viewerDeleteToken("/hunt/$id7?molochRegressionUser=anonymous", $token);
+  viewerDeleteToken("/hunt/$id8?molochRegressionUser=anonymous", $token);
   viewerPostToken("/user/views/delete?molochRegressionUser=user2", '{"expression":"protocols == tls","user":"user2","shared":true,"name":"tls"}', $otherToken);
+
 
 # multiget should return an error
   my $mjson = multiGet("/hunt/list");

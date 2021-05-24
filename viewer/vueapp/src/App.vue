@@ -230,25 +230,7 @@ html {
 body {
   color: var(--color-foreground);
   background-color: var(--color-background);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-
-  --px-none   : 0;          /* 0px */
-  --px-xs     : 0.125rem;   /* 2px */
-  --px-sm     : .25rem;     /* 4px */
-  --px-md     : .5rem;      /* 8px */
-  --px-lg     : .75rem;     /* 12px */
-  --px-xlg    : 1rem;       /* 16px */
-  --px-xxlg   : 1.5rem;     /* 24px */
-  --px-xxxlg  : 2rem;       /* 32px */
-  --px-xxxxlg : 3rem;       /* 48px */
-  --px-xxxxxlg: 3.5rem;     /* 56px */
 }
-
-/* cursors */
-.cursor-help, .help-cursor { cursor: help; }
-.cursor-text, .text-cursor { cursor: text; }
-.cursor-pointer, .pointer-cursor { cursor: pointer; }
-.cursor-crosshair, .crosshair-cursor { cursor: crosshair; }
 
 /* text */
 .text-theme-accent    { color: var(--color-foreground-accent); }
@@ -264,18 +246,7 @@ body {
   color: var(--color-gray);
 }
 
-/* font sizes */
-.medium { font-size: 95%; }
-.large  { font-size: 1.8rem; }
-.xlarge { font-size: 2rem; }
-
-.bold   { font-weight: bold; }
-
-/* wrapping */
-.no-wrap { white-space: nowrap; }
-
 /* displaying */
-.display-inline { display: inline; }
 .fixed-header {
   z-index: 5;
   position: fixed;
@@ -286,22 +257,6 @@ body {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
-}
-
-/* overflow */
-.no-overflow    { overflow: hidden; }
-.no-overflow-x  { overflow-x: hidden; }
-.no-overflow-y  { overflow-y: hidden; }
-
-/* anchor tag no decoration */
-a.no-decoration { text-decoration: none !important; }
-
-/* extra small buttons */
-.btn-xs, .btn-group-xs > .btn {
-  padding: 1px 5px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-radius: 3px;
 }
 
 /* themed buttons */
@@ -442,63 +397,9 @@ div.btn-checkbox > label:disabled {
   background-color: var(--color-quaternary);
 }
 
-/* small horizontal rule */
-.hr-small {
-  margin-top   : var(--px-sm);
-  margin-bottom:var(--px-xs);
-}
-
-/* flex block to display text centered
- * (horizontally and vertically) on the page
- * note: takes up half of the page
- */
-.vertical-horizontal-center {
-  min-height      : 40vh;
-  display         : flex;
-  align-items     : center;
-  justify-content : center;
-  text-align      : center;
-  flex-direction  : column;
-}
-
-.vertical-center {
-  min-height      : 40vh;
-  display         : flex;
-  align-items     : center;
-  justify-content : center;
-  flex-direction  : column;
-}
-
-.horizontal-center {
-  display         : flex;
-  align-items     : center;
-  justify-content : center;
-  text-align      : center;
-  flex-direction  : column;
-}
-
-/* displays large text for important information
- * note: must contain an inner div with the text
- * example:
- * <div class="info-area">
- *   <div>Some important text!</div>
- * </div>
- */
-.info-area {
-  font-size : var(--px-xxxlg);
-  color     : var(--color-gray-dark);
-}
-
-.info-area > div {
-  padding         : var(--px-xxxlg);
-  border-radius   : var(--px-sm);
-  background-color: var(--color-gray-light);
-}
-
-.info-area span.fa {
-  display         : flex;
-  justify-content : center;
-}
+/* see top level common.css info area for usage */
+.info-area { color: var(--color-gray-dark); }
+.info-area > div { background-color: var(--color-gray-light); }
 
 /* small alert areas */
 .alert.alert-sm {
