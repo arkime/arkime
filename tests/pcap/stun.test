@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 44
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -51,6 +53,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -71,7 +76,6 @@
                "packets" : 1,
                "port" : 16948
             },
-            "srcDataBytes" : 44,
             "srcOui" : [
                "Palo Alto Networks"
             ],
@@ -118,6 +122,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 133
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.0.0.4",
@@ -128,7 +135,6 @@
                "packets" : 0,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -156,6 +162,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS2 Hmm!@#$%^&*()",
@@ -173,7 +182,6 @@
                "packets" : 1,
                "port" : 48650
             },
-            "srcDataBytes" : 133,
             "srcOui" : [
                "Palo Alto Networks"
             ],
@@ -195,6 +203,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 86
+            },
             "destination" : {
                "bytes" : 70,
                "ip" : "10.0.0.5",
@@ -206,7 +217,6 @@
                "packets" : 1,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
@@ -239,6 +249,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 214,
                "ip" : "10.0.0.6",
@@ -250,7 +263,6 @@
                "packets" : 2,
                "port" : 64379
             },
-            "srcDataBytes" : 86,
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
@@ -285,6 +297,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.0.0.10",
@@ -295,7 +310,6 @@
                "packets" : 0,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -323,6 +337,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 70,
                "ip" : "10.0.0.7",
@@ -333,7 +350,6 @@
                "packets" : 1,
                "port" : 1144
             },
-            "srcDataBytes" : 28,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -350,6 +366,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.0.0.11",
@@ -360,7 +379,6 @@
                "packets" : 0,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -388,6 +406,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 70,
                "ip" : "10.0.0.8",
@@ -398,7 +419,6 @@
                "packets" : 1,
                "port" : 62919
             },
-            "srcDataBytes" : 28,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -415,6 +435,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 33
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.0.0.12",
@@ -425,7 +448,6 @@
                "packets" : 0,
                "port" : 3478
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -453,6 +475,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 75,
                "ip" : "10.0.0.9",
@@ -463,7 +488,6 @@
                "packets" : 1,
                "port" : 53633
             },
-            "srcDataBytes" : 33,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

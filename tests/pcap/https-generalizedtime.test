@@ -63,6 +63,9 @@
                }
             ],
             "certCnt" : 2,
+            "client" : {
+               "bytes" : 517
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -84,7 +87,6 @@
                "packets" : 3,
                "port" : 443
             },
-            "dstDataBytes" : 5036,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -132,6 +134,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 5036
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -152,7 +157,6 @@
                "packets" : 3,
                "port" : 3627
             },
-            "srcDataBytes" : 517,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

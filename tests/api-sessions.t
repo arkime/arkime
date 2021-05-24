@@ -71,6 +71,8 @@ my ($url) = @_;
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map short");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "sessionsHisto short");
     eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "srcPacketsHisto short");
+    diag Dumper($json->{graph});
+    exit 0;
     eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "dstPacketsHisto short");
     eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "srcDataBytesHisto short");
     eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "dstDataBytesHisto short");

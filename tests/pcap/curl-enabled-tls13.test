@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 70
+            },
             "destination" : {
                "bytes" : 242,
                "ip" : "192.168.65.1",
@@ -61,7 +64,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 158,
             "dstPayload8" : "ac66818000010002",
             "fileId" : [],
             "firstPacket" : 1565212114674,
@@ -92,6 +94,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 158
+            },
             "source" : {
                "bytes" : 154,
                "ip" : "192.168.65.3",
@@ -102,7 +107,6 @@
                "packets" : 2,
                "port" : 42060
             },
-            "srcDataBytes" : 70,
             "srcPayload8" : "ac66010000010000",
             "totDataBytes" : 228
          },
@@ -115,6 +119,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 845
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13335 Cloudflare, Inc.",
@@ -135,7 +142,6 @@
                "packets" : 15,
                "port" : 443
             },
-            "dstDataBytes" : 4238,
             "dstPayload8" : "160303007a020000",
             "fileId" : [],
             "firstPacket" : 1565212114677,
@@ -227,6 +233,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4238
+            },
             "source" : {
                "bytes" : 1729,
                "ip" : "192.168.65.3",
@@ -237,7 +246,6 @@
                "packets" : 16,
                "port" : 46638
             },
-            "srcDataBytes" : 845,
             "srcPayload8" : "1603010200010001",
             "tcpflags" : {
                "ack" : 13,

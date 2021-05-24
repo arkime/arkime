@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 53
+            },
             "destination" : {
                "bytes" : 429,
                "ip" : "10.3.4.5",
@@ -88,7 +91,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 387,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -119,6 +121,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 387
+            },
             "source" : {
                "bytes" : 95,
                "ip" : "10.5.4.3",
@@ -129,7 +134,6 @@
                "packets" : 1,
                "port" : 48297
             },
-            "srcDataBytes" : 53,
             "srcOui" : [
                "Realtek (UpTech? also reported)"
             ],

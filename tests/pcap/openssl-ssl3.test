@@ -118,6 +118,9 @@
                }
             ],
             "certCnt" : 3,
+            "client" : {
+               "bytes" : 313
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -139,7 +142,6 @@
                "packets" : 8,
                "port" : 443
             },
-            "dstDataBytes" : 4337,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -207,6 +209,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4337
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -227,7 +232,6 @@
                "packets" : 12,
                "port" : 45680
             },
-            "srcDataBytes" : 313,
             "srcOui" : [
                "Dell Inc."
             ],

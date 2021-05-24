@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 103
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "0.0.0.0",
@@ -13,7 +16,6 @@
                "packets" : 0,
                "port" : 3207
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -41,6 +43,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 145,
                "ip" : "255.255.255.255",
@@ -51,7 +56,6 @@
                "packets" : 1,
                "port" : 50759
             },
-            "srcDataBytes" : 103,
             "srcOui" : [
                "Juniper Networks"
             ],

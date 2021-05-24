@@ -21,6 +21,9 @@
                }
             ],
             "certCnt" : 1,
+            "client" : {
+               "bytes" : 1189
+            },
             "destination" : {
                "bytes" : 6086,
                "geo" : {
@@ -30,7 +33,6 @@
                "packets" : 10,
                "port" : 4443
             },
-            "dstDataBytes" : 5526,
             "dstPayload8" : "1603000051020000",
             "fileId" : [],
             "firstPacket" : 1519400125658,
@@ -94,6 +96,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 5526
+            },
             "source" : {
                "bytes" : 1761,
                "geo" : {
@@ -103,7 +108,6 @@
                "packets" : 10,
                "port" : 60101
             },
-            "srcDataBytes" : 1189,
             "srcPayload8" : "1603000059010000",
             "tags" : [
                "cert:self-signed"

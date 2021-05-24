@@ -298,8 +298,8 @@ module.exports = (Config, Db, molochparser, internals) => {
 
     // allowed tot* data map
     const filtersMap = {
-      totPackets: ['srcPackets', 'dstPackets'],
-      totBytes: ['srcBytes', 'dstBytes'],
+      totPackets: ['source.packets', 'destination.packets'],
+      totBytes: ['source.bytes', 'destination.bytes'],
       totDataBytes: ['srcDataBytes', 'dstDataBytes']
     };
 
@@ -345,7 +345,7 @@ module.exports = (Config, Db, molochparser, internals) => {
           // Add src/dst to tot* counters.
           if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
             graph.totPacketsTotal += item[prop].value;
-          } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
+          } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('network.bytes')) {
             graph.totBytesTotal += item[prop].value;
           } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
             graph.totDataBytesTotal += item[prop].value;
@@ -459,7 +459,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       let data = await Db.loadFields();
       data = data.hits.hits;
 
-      // Everything will use dbField2 as dbField
+      // Everything will use fieldECS or dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
         if (data[i]._source.fieldECS) {
           internals.oldDBFields[data[i]._source.dbField] = data[i]._source;

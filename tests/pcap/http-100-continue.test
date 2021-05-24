@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 151
+            },
             "destination" : {
                "bytes" : 1311,
                "ip" : "102:305:220:1:248:1893:25c8:1946",
@@ -13,7 +16,6 @@
                "packets" : 7,
                "port" : 80
             },
-            "dstDataBytes" : 689,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -165,6 +167,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 689
+            },
             "source" : {
                "bytes" : 949,
                "ip" : "102:304:ef6e:0:586c:40b9:519f:7bae",
@@ -175,7 +180,6 @@
                "packets" : 9,
                "port" : 61273
             },
-            "srcDataBytes" : 151,
             "srcOui" : [
                "Apple, Inc."
             ],

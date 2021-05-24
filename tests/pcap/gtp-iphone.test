@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 45
+            },
             "destination" : {
                "bytes" : 334,
                "ip" : "192.168.168.1",
@@ -76,7 +79,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 254,
             "dstPayload8" : "d333818000010001",
             "fileId" : [],
             "firstPacket" : 1415985409420,
@@ -104,13 +106,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 254
+            },
             "source" : {
                "bytes" : 125,
                "ip" : "192.168.3.129",
                "packets" : 1,
                "port" : 57801
             },
-            "srcDataBytes" : 45,
             "srcPayload8" : "d333010000010000",
             "totDataBytes" : 299
          },
@@ -123,13 +127,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 8
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::2",
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985409932,
             "icmp" : {
@@ -160,13 +166,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 100,
                "ip" : "fe80::fd00:183:1:1",
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 8,
             "totDataBytes" : 8
          },
          "header" : {
@@ -178,13 +186,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "fe80::fd00:183:1:1",
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985409932,
             "icmp" : {
@@ -215,13 +225,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 140,
                "ip" : "fe80::18f:54ea:5196:2546",
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 48,
             "totDataBytes" : 48
          },
          "header" : {
@@ -233,6 +245,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 45
+            },
             "destination" : {
                "bytes" : 334,
                "ip" : "192.168.168.1",
@@ -306,7 +321,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 254,
             "dstPayload8" : "7442818000010001",
             "fileId" : [],
             "firstPacket" : 1415985410140,
@@ -334,13 +348,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 254
+            },
             "source" : {
                "bytes" : 125,
                "ip" : "192.168.3.129",
                "packets" : 1,
                "port" : 58364
             },
-            "srcDataBytes" : 45,
             "srcPayload8" : "7442010000010000",
             "totDataBytes" : 299
          },
@@ -353,13 +369,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 36
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "192.168.168.1",
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985410172,
             "icmp" : {
@@ -390,13 +408,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 108,
                "ip" : "192.168.3.129",
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 36,
             "totDataBytes" : 36
          },
          "header" : {
@@ -408,13 +428,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 176
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::16",
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985411060,
             "icmp" : {
@@ -447,13 +469,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 376,
                "ip" : "fe80::45:f337:32b9:ac9b",
                "packets" : 2,
                "port" : 0
             },
-            "srcDataBytes" : 176,
             "totDataBytes" : 176
          },
          "header" : {
@@ -465,13 +489,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1697
+            },
             "destination" : {
                "bytes" : 1317,
                "ip" : "fd01::183",
                "packets" : 5,
                "port" : 5060
             },
-            "dstDataBytes" : 689,
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985412100,
@@ -522,13 +548,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 689
+            },
             "source" : {
                "bytes" : 2713,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 8,
                "port" : 5060
             },
-            "srcDataBytes" : 1697,
             "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,
@@ -552,13 +580,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1794
+            },
             "destination" : {
                "bytes" : 1359,
                "ip" : "fd01::183",
                "packets" : 5,
                "port" : 5060
             },
-            "dstDataBytes" : 731,
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985444984,
@@ -606,13 +636,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 731
+            },
             "source" : {
                "bytes" : 2674,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 7,
                "port" : 5060
             },
-            "srcDataBytes" : 1794,
             "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,
@@ -636,13 +668,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1429
+            },
             "destination" : {
                "bytes" : 1103,
                "ip" : "fd01::183",
                "packets" : 2,
                "port" : 5060
             },
-            "dstDataBytes" : 903,
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985445984,
@@ -674,13 +708,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 903
+            },
             "source" : {
                "bytes" : 1629,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 2,
                "port" : 5060
             },
-            "srcDataBytes" : 1429,
             "srcPayload8" : "5355425343524942",
             "totDataBytes" : 2332
          },
@@ -693,13 +729,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2934
+            },
             "destination" : {
                "bytes" : 3131,
                "ip" : "fd01::183",
                "packets" : 10,
                "port" : 5060
             },
-            "dstDataBytes" : 1883,
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985484900,
@@ -767,13 +805,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1883
+            },
             "source" : {
                "bytes" : 4434,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 12,
                "port" : 5060
             },
-            "srcDataBytes" : 2934,
             "srcPayload8" : "494e564954452074",
             "tcpflags" : {
                "ack" : 11,
@@ -797,13 +837,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 616
+            },
             "destination" : {
                "bytes" : 1822,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 13,
                "port" : 49120
             },
-            "dstDataBytes" : 522,
             "dstPayload8" : "80660000000000a0",
             "fileId" : [],
             "firstPacket" : 1415985490121,
@@ -880,13 +922,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 522
+            },
             "source" : {
                "bytes" : 2016,
                "ip" : "fd01::183",
                "packets" : 14,
                "port" : 19956
             },
-            "srcDataBytes" : 616,
             "srcPayload8" : "80e652d84bcad9ca",
             "totDataBytes" : 1138
          },
@@ -899,6 +943,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 45
+            },
             "destination" : {
                "bytes" : 334,
                "ip" : "192.168.168.1",
@@ -972,7 +1019,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 254,
             "dstPayload8" : "c2b1818000010001",
             "fileId" : [],
             "firstPacket" : 1415985490220,
@@ -1000,13 +1046,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 254
+            },
             "source" : {
                "bytes" : 125,
                "ip" : "192.168.3.129",
                "packets" : 1,
                "port" : 60716
             },
-            "srcDataBytes" : 45,
             "srcPayload8" : "c2b1010000010000",
             "totDataBytes" : 299
          },
@@ -1019,13 +1067,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 112
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 0,
                "port" : 49121
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985494581,
             "ipProtocol" : 17,
@@ -1053,13 +1103,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 412,
                "ip" : "fd01::183",
                "packets" : 3,
                "port" : 19957
             },
-            "srcDataBytes" : 112,
             "srcPayload8" : "81c8000c6399bbc1",
             "totDataBytes" : 112
          },
@@ -1072,13 +1124,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 250
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1415985500740,
             "icmp" : {
@@ -1113,13 +1167,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 526,
                "ip" : "fd01::183",
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 250,
             "totDataBytes" : 250
          },
          "header" : {
@@ -1131,13 +1187,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1753
+            },
             "destination" : {
                "bytes" : 1053,
                "ip" : "fd01::183",
                "packets" : 5,
                "port" : 5060
             },
-            "dstDataBytes" : 425,
             "dstPayload8" : "5349502f322e3020",
             "fileId" : [],
             "firstPacket" : 1415985559780,
@@ -1183,13 +1241,15 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 425
+            },
             "source" : {
                "bytes" : 2497,
                "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
                "packets" : 6,
                "port" : 5060
             },
-            "srcDataBytes" : 1753,
             "srcPayload8" : "5245474953544552",
             "tcpflags" : {
                "ack" : 6,

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 332
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "1111:2222:3333:4444:5555:8888:a8ac:7bc0",
@@ -106,7 +109,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -135,6 +137,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 454,
                "ip" : "1111:2222:3333:4444:5555:7777::",
@@ -145,7 +150,6 @@
                "packets" : 1,
                "port" : 53
             },
-            "srcDataBytes" : 332,
             "srcOui" : [
                "Alcatel-Lucent IPD"
             ],

@@ -9,6 +9,9 @@
                   "OPEN"
                ]
             },
+            "client" : {
+               "bytes" : 102
+            },
             "destination" : {
                "bytes" : 643,
                "ip" : "192.168.100.2",
@@ -19,7 +22,6 @@
                "packets" : 7,
                "port" : 179
             },
-            "dstDataBytes" : 102,
             "dstPayload8" : "ffffffffffffffff",
             "fileId" : [],
             "firstPacket" : 1259261324431,
@@ -72,6 +74,9 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 102
+            },
             "source" : {
                "bytes" : 624,
                "ip" : "192.168.100.1",
@@ -82,7 +87,6 @@
                "packets" : 7,
                "port" : 25820
             },
-            "srcDataBytes" : 102,
             "srcPayload8" : "ffffffffffffffff",
             "tcpflags" : {
                "ack" : 3,
@@ -111,6 +115,9 @@
                   "KEEPALIVE"
                ]
             },
+            "client" : {
+               "bytes" : 19
+            },
             "destination" : {
                "bytes" : 74,
                "ip" : "192.168.100.2",
@@ -121,7 +128,6 @@
                "packets" : 1,
                "port" : 179
             },
-            "dstDataBytes" : 19,
             "dstPayload8" : "ffffffffffffffff",
             "fileId" : [],
             "firstPacket" : 1259261324431,
@@ -149,6 +155,9 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 2,
+            "server" : {
+               "bytes" : 19
+            },
             "source" : {
                "bytes" : 93,
                "ip" : "192.168.100.1",
@@ -159,7 +168,6 @@
                "packets" : 1,
                "port" : 25820
             },
-            "srcDataBytes" : 19,
             "srcPayload8" : "ffffffffffffffff",
             "tcpflags" : {
                "ack" : 1,

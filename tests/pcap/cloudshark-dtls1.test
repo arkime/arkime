@@ -20,6 +20,9 @@
                }
             ],
             "certCnt" : 1,
+            "client" : {
+               "bytes" : 487
+            },
             "destination" : {
                "as" : {
                   "full" : "AS24940 Hetzner Online GmbH",
@@ -40,7 +43,6 @@
                "packets" : 2,
                "port" : 7000
             },
-            "dstDataBytes" : 934,
             "dstOui" : [
                "AVM GmbH"
             ],
@@ -77,6 +79,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 934
+            },
             "source" : {
                "bytes" : 613,
                "ip" : "192.168.178.20",
@@ -87,7 +92,6 @@
                "packets" : 3,
                "port" : 6000
             },
-            "srcDataBytes" : 487,
             "srcOui" : [
                "Giga-Byte Technology Co.,Ltd."
             ],
@@ -104,6 +108,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
             "destination" : {
                "as" : {
                   "full" : "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
@@ -267,7 +274,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 913,
             "dstOui" : [
                "AVM GmbH"
             ],
@@ -298,6 +304,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 913
+            },
             "source" : {
                "bytes" : 70,
                "ip" : "192.168.178.20",
@@ -308,7 +317,6 @@
                "packets" : 1,
                "port" : 60170
             },
-            "srcDataBytes" : 28,
             "srcOui" : [
                "Giga-Byte Technology Co.,Ltd."
             ],

@@ -113,6 +113,9 @@
                }
             ],
             "certCnt" : 2,
+            "client" : {
+               "bytes" : 596
+            },
             "destination" : {
                "bytes" : 4467,
                "geo" : {
@@ -127,7 +130,6 @@
                "packets" : 8,
                "port" : 443
             },
-            "dstDataBytes" : 4005,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -193,6 +195,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4005
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -213,7 +218,6 @@
                "packets" : 11,
                "port" : 40291
             },
-            "srcDataBytes" : 596,
             "srcOui" : [
                "Dell Inc."
             ],

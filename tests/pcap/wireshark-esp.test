@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -50,6 +52,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -70,7 +75,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -90,6 +94,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -110,7 +117,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -137,6 +143,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -157,7 +166,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -177,6 +185,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -197,7 +208,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -224,6 +234,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -244,7 +257,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -264,6 +276,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -284,7 +299,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -311,6 +325,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -331,7 +348,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -351,6 +367,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -371,7 +390,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -398,6 +416,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -418,7 +439,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -438,6 +458,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -458,7 +481,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -485,6 +507,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -505,7 +530,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -525,6 +549,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -545,7 +572,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -572,6 +598,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -592,7 +621,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -612,6 +640,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -632,7 +663,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -659,6 +689,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -679,7 +712,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -699,6 +731,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -719,7 +754,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -746,6 +780,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -766,7 +803,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -786,6 +822,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -806,7 +845,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -833,6 +871,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -853,7 +894,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -873,6 +913,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -893,7 +936,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -920,6 +962,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -940,7 +985,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -960,6 +1004,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -980,7 +1027,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1007,6 +1053,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
@@ -1027,7 +1076,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1047,6 +1095,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::2",
@@ -1057,7 +1108,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1084,6 +1134,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1700,
                "ip" : "3ffe::1",
@@ -1094,7 +1147,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1114,6 +1166,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::3",
@@ -1124,7 +1179,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1151,6 +1205,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1540,
                "ip" : "3ffe::1",
@@ -1161,7 +1218,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1181,6 +1237,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::4",
@@ -1191,7 +1250,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1218,6 +1276,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1540,
                "ip" : "3ffe::1",
@@ -1228,7 +1289,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1248,6 +1308,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::5",
@@ -1258,7 +1321,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1285,6 +1347,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1420,
                "ip" : "3ffe::1",
@@ -1295,7 +1360,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1315,6 +1379,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::12",
@@ -1325,7 +1392,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1352,6 +1418,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1700,
                "ip" : "3ffe::1",
@@ -1362,7 +1431,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1382,6 +1450,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::13",
@@ -1392,7 +1463,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1419,6 +1489,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1540,
                "ip" : "3ffe::1",
@@ -1429,7 +1502,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1449,6 +1521,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::14",
@@ -1459,7 +1534,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1486,6 +1560,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1540,
                "ip" : "3ffe::1",
@@ -1496,7 +1573,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1516,6 +1592,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::15",
@@ -1526,7 +1605,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1553,6 +1631,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1420,
                "ip" : "3ffe::1",
@@ -1563,7 +1644,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1583,6 +1663,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::22",
@@ -1593,7 +1676,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1620,6 +1702,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1580,
                "ip" : "3ffe::1",
@@ -1630,7 +1715,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1650,6 +1734,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::23",
@@ -1660,7 +1747,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1687,6 +1773,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1420,
                "ip" : "3ffe::1",
@@ -1697,7 +1786,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1717,6 +1805,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::24",
@@ -1727,7 +1818,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1754,6 +1844,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1420,
                "ip" : "3ffe::1",
@@ -1764,7 +1857,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -1784,6 +1876,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe::25",
@@ -1794,7 +1889,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -1821,6 +1915,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1300,
                "ip" : "3ffe::1",
@@ -1831,7 +1928,6 @@
                "packets" : 10,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],

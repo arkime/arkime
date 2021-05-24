@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 129
+            },
             "destination" : {
                "bytes" : 665,
                "ip" : "10.0.13.120",
@@ -13,7 +16,6 @@
                "packets" : 5,
                "port" : 5432
             },
-            "dstDataBytes" : 327,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -68,6 +70,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 327
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -89,7 +94,6 @@
                "packets" : 6,
                "port" : 36060
             },
-            "srcDataBytes" : 129,
             "srcOui" : [
                "ICANN, IANA Department",
                "Intel Corporate"

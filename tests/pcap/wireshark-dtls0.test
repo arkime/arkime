@@ -26,6 +26,9 @@
                }
             ],
             "certCnt" : 1,
+            "client" : {
+               "bytes" : 683
+            },
             "destination" : {
                "bytes" : 1224,
                "ip" : "127.0.0.1",
@@ -36,7 +39,6 @@
                "packets" : 3,
                "port" : 4433
             },
-            "dstDataBytes" : 1098,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -81,6 +83,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1098
+            },
             "source" : {
                "bytes" : 935,
                "ip" : "127.0.0.1",
@@ -91,7 +96,6 @@
                "packets" : 6,
                "port" : 33192
             },
-            "srcDataBytes" : 683,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],

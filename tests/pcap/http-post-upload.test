@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2029
+            },
             "destination" : {
                "bytes" : 3834,
                "ip" : "192.168.57.14",
@@ -14,7 +17,6 @@
                "packets" : 14,
                "port" : 8080
             },
-            "dstDataBytes" : 1509,
             "dstOui" : [
                "Hillstone Networks Inc"
             ],
@@ -270,6 +272,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1509
+            },
             "source" : {
                "bytes" : 5222,
                "ip" : "192.168.8.97",
@@ -281,7 +286,6 @@
                "packets" : 20,
                "port" : 11371
             },
-            "srcDataBytes" : 2029,
             "srcOui" : [
                "Hillstone Networks Inc"
             ],

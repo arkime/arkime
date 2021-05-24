@@ -112,11 +112,12 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         query.query.bool.filter.push({ exists: { field: req.query.srcField } });
         query.query.bool.filter.push({ exists: { field: req.query.dstField } });
 
-        query._source = fields;
+        query.fields = fields;
+        query._source = false;
         query.docvalue_fields = [fsrc, fdst];
 
         if (dstipport) {
-          query._source.push('dstPort');
+          query.fields.push('destination.port');
         }
 
         result.query = JSON.parse(JSON.stringify(query));
@@ -212,7 +213,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
-    let reqFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    let reqFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
     if (req.query.fields) { reqFields = req.query.fields.split(','); }
 
     let options = {};
@@ -317,7 +318,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
-            let f = hit._source;
+            let f = hit.fields;
             f = ViewerUtils.flattenFields(f);
 
             let asrc = hit.fields[fsrc];
@@ -506,7 +507,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       }
 
       // write out the fields requested
-      let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+      let fields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
       if (req.query.fields) { fields = req.query.fields.split(','); }
 
       res.write('Source, Destination, Sessions');

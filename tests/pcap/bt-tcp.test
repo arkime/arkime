@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 68
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 1,
                "port" : 26001
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -60,6 +62,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -80,7 +85,6 @@
                "packets" : 3,
                "port" : 1203
             },
-            "srcDataBytes" : 68,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -133,6 +137,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 68
+            },
             "destination" : {
                "bytes" : 82,
                "ip" : "10.11.11.11",
@@ -143,7 +150,6 @@
                "packets" : 1,
                "port" : 15365
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Palo Alto Networks"
             ],
@@ -178,6 +184,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 286,
                "ip" : "10.10.10.10",
@@ -188,7 +197,6 @@
                "packets" : 3,
                "port" : 43890
             },
-            "srcDataBytes" : 68,
             "srcOui" : [
                "Juniper Networks"
             ],

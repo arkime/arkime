@@ -21,6 +21,9 @@
                }
             ],
             "certCnt" : 1,
+            "client" : {
+               "bytes" : 192
+            },
             "destination" : {
                "bytes" : 1309,
                "ip" : "10.10.10.11",
@@ -32,7 +35,6 @@
                "packets" : 5,
                "port" : 3306
             },
-            "dstDataBytes" : 951,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -84,6 +86,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 951
+            },
             "source" : {
                "bytes" : 550,
                "ip" : "10.10.10.10",
@@ -95,7 +100,6 @@
                "packets" : 5,
                "port" : 41324
             },
-            "srcDataBytes" : 192,
             "srcOui" : [
                "Juniper Networks"
             ],

@@ -2,7 +2,9 @@
    "sessions3" : [
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "fileId" : [],
             "firstPacket" : 1121119005000,
             "ipProtocol" : 0,
@@ -28,7 +30,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcDataBytes" : 0,
+            "server" : {
+               "bytes" : 0
+            },
             "srcOui" : [
                "Extreme Networks, Inc.",
                "Hewlett Packard"

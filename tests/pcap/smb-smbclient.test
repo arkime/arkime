@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 868
+            },
             "destination" : {
                "bytes" : 1667,
                "ip" : "127.0.0.1",
@@ -13,7 +16,6 @@
                "packets" : 13,
                "port" : 445
             },
-            "dstDataBytes" : 801,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -109,6 +111,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 801
+            },
             "smb" : {
                "domain" : [
                   "WORKGROUP"
@@ -145,7 +150,6 @@
                "packets" : 21,
                "port" : 41823
             },
-            "srcDataBytes" : 868,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],

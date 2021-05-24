@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 517
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13335 Cloudflare, Inc.",
@@ -23,7 +26,6 @@
                "packets" : 3,
                "port" : 443
             },
-            "dstDataBytes" : 1220,
             "dstOui" : [
                "Hewlett Packard"
             ],
@@ -69,6 +71,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1220
+            },
             "source" : {
                "as" : {
                   "full" : "AS16150 Availo Networks AB",
@@ -89,7 +94,6 @@
                "packets" : 3,
                "port" : 62510
             },
-            "srcDataBytes" : 517,
             "srcOui" : [
                "Intel Corporate"
             ],

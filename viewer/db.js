@@ -205,8 +205,9 @@ const singletonFields = {
   'destination.bytes': true,
   dstPayload8: true,
   'server.bytes': true,
-  dstGEO: true,
-  dstASN: true,
+  'server.packets': true,
+  'destination.geo.country_iso_code': true,
+  'destination.as.full': true,
   dstRIR: true,
 
   'source.ip': true,
@@ -215,8 +216,9 @@ const singletonFields = {
   'source.bytes': true,
   srcPayload8: true,
   'client.bytes': true,
-  srcGEO: true,
-  srcASN: true,
+  'client.packets': true,
+  'source.geo.country_iso_code': true,
+  'source.as.full': true,
   srcRIR: true,
 
   firstPacket: true,
@@ -232,7 +234,10 @@ const singletonFields = {
   'tcpflags.fin': true,
   'tcpflags.ack': true,
   'tcpflags.urg': true,
-  'network.community_id': true
+  'network.community_id': true,
+  totDataBytes: true,
+  'network.bytes': true,
+  'network.packets': true
 };
 
 const dateFields = {
@@ -243,7 +248,7 @@ const dateFields = {
 // Change foo.bar to foo: {bar:}
 // Unarray singleton fields
 // Change string dates to MS
-function fixSessionFields (fields) {
+function fixSessionFields (fields, unflatten) {
   for (const f in fields) {
     const path = f.split('.');
     let key = fields;
@@ -266,6 +271,10 @@ function fixSessionFields (fields) {
     }
     if (dateFields[f]) {
       value = Date.parse(value);
+    }
+    if (!unflatten) {
+      fields[f] = value;
+      continue;
     }
     delete fields[f];
     for (let i = 0; i < path.length; i++) {
@@ -379,7 +388,7 @@ exports.getSession = async (id, options, cb) => {
     if (options && options._source && !options._source.includes('packetPos')) {
       return cb(null, session);
     }
-    fixSessionFields(session._source || session.fields);
+    fixSessionFields(session._source || session.fields, true);
     return fixPacketPos(session, session._source || session.fields);
   });
 };
@@ -420,7 +429,7 @@ exports.search = async (index, type, query, options, cb) => {
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
-    console.log('ALW ES ERROR', err.toString());
+    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err: ${err.toString()}`);
     if (cb) { return cb(err, null); }
     throw new Error(err);
   }
@@ -540,13 +549,15 @@ exports.searchSessions = function (index, query, options, cb) {
     });
   }
 
+  const unflatten = !!options.arkime_unflatten;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);
+  delete params.arkime_unflatten;
   exports.searchScroll(index, 'session', query, params, (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
     for (let i = 0; i < result.hits.hits.length; i++) {
-      fixSessionFields(result.hits.hits[i].fields);
+      fixSessionFields(result.hits.hits[i].fields, unflatten);
     }
     return cb(null, result);
   });

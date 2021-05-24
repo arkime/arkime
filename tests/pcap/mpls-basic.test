@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 120
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "255.255.255.255",
@@ -13,7 +16,6 @@
                "packets" : 0,
                "port" : 711
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 952109329022,
             "ipProtocol" : 17,
@@ -46,6 +48,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 372,
                "ip" : "10.1.2.1",
@@ -56,7 +61,6 @@
                "packets" : 6,
                "port" : 711
             },
-            "srcDataBytes" : 120,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -73,6 +77,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 120
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "255.255.255.255",
@@ -83,7 +90,6 @@
                "packets" : 0,
                "port" : 711
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 952109332196,
             "ipProtocol" : 17,
@@ -116,6 +122,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 372,
                "ip" : "10.1.2.2",
@@ -126,7 +135,6 @@
                "packets" : 6,
                "port" : 711
             },
-            "srcDataBytes" : 120,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -143,6 +151,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 400
+            },
             "destination" : {
                "bytes" : 570,
                "ip" : "10.34.0.1",
@@ -153,7 +164,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "dstDataBytes" : 400,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -207,6 +217,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 400
+            },
             "source" : {
                "bytes" : 590,
                "ip" : "10.1.2.1",
@@ -217,7 +230,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "srcDataBytes" : 400,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -233,6 +245,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 26
+            },
             "destination" : {
                "bytes" : 517,
                "ip" : "10.34.0.1",
@@ -243,7 +258,6 @@
                "packets" : 8,
                "port" : 23
             },
-            "dstDataBytes" : 49,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -310,6 +324,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 49
+            },
             "source" : {
                "bytes" : 678,
                "ip" : "10.1.2.1",
@@ -320,7 +337,6 @@
                "packets" : 11,
                "port" : 11001
             },
-            "srcDataBytes" : 26,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

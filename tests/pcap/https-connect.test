@@ -55,6 +55,9 @@
                }
             ],
             "certCnt" : 2,
+            "client" : {
+               "bytes" : 499
+            },
             "destination" : {
                "bytes" : 4459,
                "ip" : "10.9.8.7",
@@ -65,7 +68,6 @@
                "packets" : 10,
                "port" : 8080
             },
-            "dstDataBytes" : 3901,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -185,6 +187,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3901
+            },
             "source" : {
                "bytes" : 967,
                "ip" : "10.11.12.13",
@@ -195,7 +200,6 @@
                "packets" : 8,
                "port" : 54723
             },
-            "srcDataBytes" : 499,
             "srcOui" : [
                "Super Micro Computer, Inc."
             ],

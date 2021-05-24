@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 965
+            },
             "destination" : {
                "bytes" : 1359,
                "ip" : "10.10.0.2",
@@ -13,7 +16,6 @@
                "packets" : 8,
                "port" : 445
             },
-            "dstDataBytes" : 879,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -85,6 +87,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 879
+            },
             "smb" : {
                "domain" : [
                   "LAB"
@@ -126,7 +131,6 @@
                "packets" : 14,
                "port" : 2204
             },
-            "srcDataBytes" : 965,
             "srcOui" : [
                "VMware, Inc."
             ],

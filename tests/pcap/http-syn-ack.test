@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 427
+            },
             "destination" : {
                "bytes" : 12880,
                "ip" : "10.0.0.33",
@@ -13,7 +16,6 @@
                "packets" : 11,
                "port" : 80
             },
-            "dstDataBytes" : 12252,
             "dstPayload8" : "485454502f312e31",
             "fileId" : [],
             "firstPacket" : 1467366160266,
@@ -176,6 +178,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 12252
+            },
             "source" : {
                "bytes" : 544,
                "ip" : "10.0.0.32",
@@ -186,7 +191,6 @@
                "packets" : 2,
                "port" : 10882
             },
-            "srcDataBytes" : 427,
             "srcPayload8" : "474554202f312048",
             "tcpflags" : {
                "ack" : 9,

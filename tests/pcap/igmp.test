@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "224.0.0.22",
@@ -16,7 +19,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1571745677855,
             "ipProtocol" : 2,
@@ -94,6 +96,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS8075 Microsoft Corporation",
@@ -115,7 +120,6 @@
                "packets" : 29,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

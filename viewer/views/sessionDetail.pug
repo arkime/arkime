@@ -84,7 +84,7 @@ dl
 
   +arrayList(session, "asset", "Assets", "asset")
 
-  if (session.source.bytes || session.source.bytes)
+  if (session.source.bytes || session.destination.bytes)
     dt
       b-dropdown.clickable-label(text="Src", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('packets.src', 0)")

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1350
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 443
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -65,6 +67,9 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1396,
                "ip" : "10.0.0.4",
@@ -75,7 +80,6 @@
                "packets" : 1,
                "port" : 54800
             },
-            "srcDataBytes" : 1350,
             "srcOui" : [
                "Palo Alto Networks"
             ],

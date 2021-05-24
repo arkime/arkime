@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 124
+            },
             "destination" : {
                "as" : {
                   "full" : "AS8075 Microsoft Corporation",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 514
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -51,6 +53,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -71,7 +76,6 @@
                "packets" : 1,
                "port" : 46503
             },
-            "srcDataBytes" : 124,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -112,6 +116,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "224.0.0.13",
@@ -122,7 +129,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1571662508569,
             "ipProtocol" : 103,
@@ -548,6 +554,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -569,7 +578,6 @@
                "packets" : 203,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -589,6 +597,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "224.0.0.5",
@@ -599,7 +610,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1571662508795,
             "ipProtocol" : 89,
@@ -727,6 +737,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -748,7 +761,6 @@
                "packets" : 54,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -767,7 +779,9 @@
       },
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "fileId" : [],
             "firstPacket" : 1571662509461,
             "ipProtocol" : 0,
@@ -928,7 +942,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcDataBytes" : 0,
+            "server" : {
+               "bytes" : 0
+            },
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -943,7 +959,9 @@
       },
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "fileId" : [],
             "firstPacket" : 1571662511903,
             "ipProtocol" : 0,
@@ -977,7 +995,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcDataBytes" : 0,
+            "server" : {
+               "bytes" : 0
+            },
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -993,6 +1013,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -1013,7 +1036,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1040,6 +1062,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1053,7 +1078,6 @@
                "packets" : 1,
                "port" : 34808
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1080,6 +1104,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1704
+            },
             "destination" : {
                "bytes" : 0,
                "geo" : {
@@ -1093,7 +1120,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1163,6 +1189,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 2730,
                "geo" : {
@@ -1176,7 +1205,6 @@
                "packets" : 19,
                "port" : 0
             },
-            "srcDataBytes" : 1704,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1192,6 +1220,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "172.16.0.2",
@@ -1202,7 +1233,6 @@
                "packets" : 0,
                "port" : 35069
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1233,6 +1263,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 217,
                "ip" : "172.16.0.3",
@@ -1243,7 +1276,6 @@
                "packets" : 3,
                "port" : 179
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1270,6 +1302,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "172.16.0.4",
@@ -1280,7 +1315,6 @@
                "packets" : 0,
                "port" : 33771
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1311,6 +1345,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 217,
                "ip" : "172.16.0.1",
@@ -1321,7 +1358,6 @@
                "packets" : 3,
                "port" : 179
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1348,6 +1384,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 302,
                "ip" : "172.16.0.1",
@@ -1358,7 +1397,6 @@
                "packets" : 4,
                "port" : 179
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1399,6 +1437,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 302,
                "ip" : "172.16.0.2",
@@ -1409,7 +1450,6 @@
                "packets" : 4,
                "port" : 33359
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1436,6 +1476,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -1453,7 +1496,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1480,6 +1522,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1493,7 +1538,6 @@
                "packets" : 1,
                "port" : 51532
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1520,6 +1564,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -1537,7 +1584,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1564,6 +1610,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1577,7 +1626,6 @@
                "packets" : 1,
                "port" : 42834
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1604,6 +1652,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -1621,7 +1672,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1648,6 +1698,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1661,7 +1714,6 @@
                "packets" : 1,
                "port" : 54958
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1688,6 +1740,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -1705,7 +1760,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1732,6 +1786,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1745,7 +1802,6 @@
                "packets" : 1,
                "port" : 44110
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1772,6 +1828,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS26101 Oath Holdings Inc.",
@@ -1792,7 +1851,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1819,6 +1877,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1832,7 +1893,6 @@
                "packets" : 1,
                "port" : 52112
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1859,6 +1919,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36646 Oath Holdings Inc.",
@@ -1879,7 +1942,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1906,6 +1968,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -1919,7 +1984,6 @@
                "packets" : 1,
                "port" : 32802
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1946,6 +2010,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36646 Oath Holdings Inc.",
@@ -1966,7 +2033,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1993,6 +2059,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2006,7 +2075,6 @@
                "packets" : 1,
                "port" : 44002
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2033,6 +2101,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36647 Oath Holdings Inc.",
@@ -2053,7 +2124,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2080,6 +2150,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2093,7 +2166,6 @@
                "packets" : 1,
                "port" : 39392
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2120,6 +2192,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36647 Oath Holdings Inc.",
@@ -2140,7 +2215,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2167,6 +2241,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2180,7 +2257,6 @@
                "packets" : 1,
                "port" : 53518
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2207,6 +2283,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS26101 Oath Holdings Inc.",
@@ -2227,7 +2306,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2254,6 +2332,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2267,7 +2348,6 @@
                "packets" : 1,
                "port" : 44256
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2294,6 +2374,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "fe80::a00:27ff:fe76:e369",
@@ -2304,7 +2387,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "dstDataBytes" : 24,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2341,6 +2423,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 24
+            },
             "source" : {
                "bytes" : 86,
                "ip" : "fe80::a00:27ff:fe0d:5c3c",
@@ -2351,7 +2436,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2367,6 +2451,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "as" : {
                   "full" : "AS2914 NTT America, Inc.",
@@ -2387,7 +2474,6 @@
                "packets" : 0,
                "port" : 123
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2415,6 +2501,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 110,
                "geo" : {
@@ -2428,7 +2517,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2445,6 +2533,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -2465,7 +2556,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2492,6 +2582,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2505,7 +2598,6 @@
                "packets" : 1,
                "port" : 52338
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2532,6 +2624,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "as" : {
                   "full" : "AS41231 Canonical Group Limited",
@@ -2552,7 +2647,6 @@
                "packets" : 0,
                "port" : 123
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2580,6 +2674,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 110,
                "geo" : {
@@ -2593,7 +2690,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2610,6 +2706,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -2630,7 +2729,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2657,6 +2755,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2670,7 +2771,6 @@
                "packets" : 1,
                "port" : 52342
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2697,6 +2797,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -2714,7 +2817,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2741,6 +2843,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2754,7 +2859,6 @@
                "packets" : 1,
                "port" : 51566
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2781,6 +2885,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -2798,7 +2905,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2825,6 +2931,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2838,7 +2947,6 @@
                "packets" : 1,
                "port" : 42868
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2865,6 +2973,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -2882,7 +2993,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2909,6 +3019,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -2922,7 +3035,6 @@
                "packets" : 1,
                "port" : 44142
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2949,6 +3061,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS54113 Fastly",
@@ -2966,7 +3081,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2993,6 +3107,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 94,
                "geo" : {
@@ -3006,7 +3123,6 @@
                "packets" : 1,
                "port" : 54994
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -3033,6 +3149,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 576
+            },
             "destination" : {
                "as" : {
                   "full" : "AS8075 Microsoft Corporation",
@@ -3053,7 +3172,6 @@
                "packets" : 0,
                "port" : 514
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -3087,6 +3205,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -3107,7 +3228,6 @@
                "packets" : 4,
                "port" : 42521
             },
-            "srcDataBytes" : 576,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -3148,6 +3268,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 64
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1",
@@ -3158,7 +3281,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1571662591197,
             "icmp" : {
@@ -3188,6 +3310,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 118,
                "ip" : "fe80::a00:27ff:fe76:e369",
@@ -3198,7 +3323,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 64,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -3214,6 +3338,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "224.0.0.1",
@@ -3225,7 +3352,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1571662595101,
             "ipProtocol" : 2,
@@ -3251,6 +3377,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -3273,7 +3402,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 18761
+            },
             "destination" : {
                "as" : {
                   "full" : "AS63949 Linode, LLC",
@@ -19,7 +22,6 @@
                "packets" : 48,
                "port" : 80
             },
-            "dstDataBytes" : 46136,
             "dstPayload8" : "0000180400000000",
             "fileId" : [],
             "firstPacket" : 1593995681271,
@@ -393,13 +395,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 46136
+            },
             "source" : {
                "bytes" : 21741,
                "ip" : "10.89.85.15",
                "packets" : 53,
                "port" : 49570
             },
-            "srcDataBytes" : 18761,
             "srcPayload8" : "505249202a204854",
             "tcpflags" : {
                "ack" : 73,

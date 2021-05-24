@@ -653,9 +653,15 @@ function combineResults (obj, result) {
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
-    for (let i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i].cluster = result.cluster;
-      result.hits.hits[i]._source.cluster = result.cluster;
+    const hits = result.hits.hits;
+    for (let i = 0; i < hits.length; i++) {
+      hits[i].cluster = result.cluster;
+      if (hits[i]._source) {
+        hits[i]._source.cluster = result.cluster;
+      }
+      if (hits[i].fields) {
+        hits[i].fields.cluster = result.cluster;
+      }
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }

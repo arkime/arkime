@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1666
+            },
             "destination" : {
                "bytes" : 1169,
                "geo" : {
@@ -16,7 +19,6 @@
                "packets" : 12,
                "port" : 25
             },
-            "dstDataBytes" : 485,
             "dstOui" : [
                "Super Micro Computer, Inc."
             ],
@@ -188,6 +190,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 485
+            },
             "source" : {
                "bytes" : 2296,
                "geo" : {
@@ -202,7 +207,6 @@
                "packets" : 11,
                "port" : 11084
             },
-            "srcDataBytes" : 1666,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

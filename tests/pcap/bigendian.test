@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 128
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.64.11.49",
@@ -13,7 +16,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -49,6 +51,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 196,
                "ip" : "192.168.177.160",
@@ -59,7 +64,6 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcDataBytes" : 128,
             "srcOui" : [
                "Oracle Corporation"
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 30
+            },
             "destination" : {
                "bytes" : 614,
                "ip" : "10.2.95.39",
@@ -121,7 +124,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 342,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -169,6 +171,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 342
+            },
             "source" : {
                "bytes" : 438,
                "geo" : {
@@ -182,7 +187,6 @@
                "packets" : 6,
                "port" : 49342
             },
-            "srcDataBytes" : 30,
             "srcOui" : [
                "Apple, Inc."
             ],
@@ -210,6 +214,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 27
+            },
             "destination" : {
                "bytes" : 530,
                "ip" : "10.2.95.39",
@@ -304,7 +311,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 258,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -352,6 +358,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 258
+            },
             "source" : {
                "bytes" : 435,
                "geo" : {
@@ -365,7 +374,6 @@
                "packets" : 6,
                "port" : 49343
             },
-            "srcDataBytes" : 27,
             "srcOui" : [
                "Apple, Inc."
             ],

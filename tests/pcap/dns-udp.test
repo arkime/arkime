@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 254,
                "ip" : "10.2.95.39",
@@ -70,7 +73,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 212,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -102,6 +104,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 212
+            },
             "source" : {
                "bytes" : 74,
                "geo" : {
@@ -115,7 +120,6 @@
                "packets" : 1,
                "port" : 62563
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "Apple, Inc."
             ],
@@ -132,6 +136,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 254,
                "ip" : "10.178.8.71",
@@ -199,7 +206,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 212,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -230,6 +236,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 212
+            },
             "source" : {
                "bytes" : 74,
                "geo" : {
@@ -243,7 +252,6 @@
                "packets" : 1,
                "port" : 62416
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "Apple, Inc."
             ],
@@ -260,6 +268,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 54
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.10.10.11",
@@ -288,7 +299,6 @@
                ],
                "qtCnt" : 1
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -316,6 +326,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 96,
                "ip" : "10.10.10.10",
@@ -326,7 +339,6 @@
                "packets" : 1,
                "port" : 5353
             },
-            "srcDataBytes" : 54,
             "srcOui" : [
                "Juniper Networks"
             ],

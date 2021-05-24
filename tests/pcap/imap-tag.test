@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 2,
                "port" : 143
             },
-            "dstDataBytes" : 18,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -61,6 +63,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 18
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -81,7 +86,6 @@
                "packets" : 2,
                "port" : 4643
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

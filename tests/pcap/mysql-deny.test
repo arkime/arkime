@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 65
+            },
             "destination" : {
                "bytes" : 513,
                "ip" : "192.168.1.3",
@@ -13,7 +16,6 @@
                "packets" : 5,
                "port" : 3306
             },
-            "dstDataBytes" : 175,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -65,6 +67,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 175
+            },
             "source" : {
                "bytes" : 403,
                "ip" : "192.168.1.3",
@@ -75,7 +80,6 @@
                "packets" : 5,
                "port" : 42418
             },
-            "srcDataBytes" : 65,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],

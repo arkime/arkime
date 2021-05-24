@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 114
+            },
             "destination" : {
                "as" : {
                   "full" : "AS23028 Team Cymru Inc.",
@@ -24,7 +27,6 @@
                "packets" : 15,
                "port" : 8000
             },
-            "dstDataBytes" : 6901,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -121,6 +123,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 6901
+            },
             "source" : {
                "bytes" : 1046,
                "geo" : {
@@ -134,7 +139,6 @@
                "packets" : 14,
                "port" : 45921
             },
-            "srcDataBytes" : 114,
             "srcOui" : [
                "Dell Inc."
             ],

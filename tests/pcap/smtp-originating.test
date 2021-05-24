@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1655
+            },
             "destination" : {
                "bytes" : 1251,
                "ip" : "10.0.0.6",
@@ -13,7 +16,6 @@
                "packets" : 11,
                "port" : 25
             },
-            "dstDataBytes" : 517,
             "dstOui" : [
                "Super Micro Computer, Inc."
             ],
@@ -178,6 +180,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 517
+            },
             "source" : {
                "bytes" : 2515,
                "ip" : "10.0.0.5",
@@ -189,7 +194,6 @@
                "packets" : 13,
                "port" : 55713
             },
-            "srcDataBytes" : 1655,
             "srcOui" : [
                "ICANN, IANA Department"
             ],

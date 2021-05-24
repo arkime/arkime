@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 300
+            },
             "destination" : {
                "bytes" : 670,
                "ip" : "2001:db8:0:1::2",
@@ -13,7 +16,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "dstDataBytes" : 300,
             "fileId" : [],
             "firstPacket" : 1214308747487,
             "icmp" : {
@@ -62,6 +64,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 300
+            },
             "source" : {
                "bytes" : 670,
                "ip" : "2001:db8:0:1::1",
@@ -72,7 +77,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "srcDataBytes" : 300,
             "totDataBytes" : 600
          },
          "header" : {

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 113
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -23,7 +26,6 @@
                "packets" : 3,
                "port" : 80
             },
-            "dstDataBytes" : 4344,
             "dstOui" : [
                "Fortinet Inc."
             ],
@@ -184,6 +186,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4344
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -204,7 +209,6 @@
                "packets" : 3,
                "port" : 54422
             },
-            "srcDataBytes" : 113,
             "srcOui" : [
                "VMware, Inc."
             ],

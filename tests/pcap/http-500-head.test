@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 157
+            },
             "destination" : {
                "bytes" : 455,
                "ip" : "10.156.206.202",
@@ -13,7 +16,6 @@
                "packets" : 5,
                "port" : 80
             },
-            "dstDataBytes" : 155,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -131,6 +133,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 155
+            },
             "source" : {
                "bytes" : 457,
                "ip" : "10.172.10.16",
@@ -142,7 +147,6 @@
                "packets" : 5,
                "port" : 49323
             },
-            "srcDataBytes" : 157,
             "srcOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 4804
+            },
             "destination" : {
                "as" : {
                   "full" : "AS32934 Facebook, Inc.",
@@ -23,7 +26,6 @@
                "packets" : 19,
                "port" : 443
             },
-            "dstDataBytes" : 4416,
             "dstOui" : [
                "Lex Computech Co., Ltd"
             ],
@@ -146,6 +148,9 @@
                "hostCnt" : 1
             },
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4416
+            },
             "source" : {
                "bytes" : 6462,
                "ip" : "192.168.1.111",
@@ -156,7 +161,6 @@
                "packets" : 25,
                "port" : 39584
             },
-            "srcDataBytes" : 4804,
             "srcOui" : [
                "Huawei Technologies Co.,Ltd"
             ],

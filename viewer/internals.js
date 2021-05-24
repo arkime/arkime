@@ -79,7 +79,7 @@ module.exports = (app, Config) => {
       numPackets: 'last',
       theme: 'default-theme',
       manualQuery: false,
-      timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
+      timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'] // dbField2 values from fields
     },
     usersMissing: {
       userId: '',

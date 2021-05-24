@@ -2,7 +2,9 @@
    "sessions3" : [
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "fileId" : [],
             "firstPacket" : 1213758559132,
             "ipProtocol" : 0,
@@ -115,7 +117,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcDataBytes" : 0,
+            "server" : {
+               "bytes" : 0
+            },
             "totDataBytes" : 0
          },
          "header" : {

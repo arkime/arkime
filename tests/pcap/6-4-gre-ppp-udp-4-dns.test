@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 71
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -46,7 +49,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 146,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -96,6 +98,9 @@
             ],
             "protocolCnt" : 4,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 146
+            },
             "source" : {
                "bytes" : 197,
                "ip" : "172.16.44.3",
@@ -107,7 +112,6 @@
                "packets" : 1,
                "port" : 40768
             },
-            "srcDataBytes" : 71,
             "srcOui" : [
                "Juniper Networks"
             ],

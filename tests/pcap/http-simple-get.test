@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 152
+            },
             "destination" : {
                "bytes" : 5773,
                "geo" : {
@@ -16,7 +19,6 @@
                "packets" : 8,
                "port" : 80
             },
-            "dstDataBytes" : 5237,
             "dstOui" : [
                "Dell Inc."
             ],
@@ -161,6 +163,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 5237
+            },
             "source" : {
                "bytes" : 692,
                "geo" : {
@@ -174,7 +179,6 @@
                "packets" : 8,
                "port" : 61450
             },
-            "srcDataBytes" : 152,
             "srcOui" : [
                "Apple, Inc."
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
             "destination" : {
                "bytes" : 510,
                "ip" : "3ffe:501:4819::42",
@@ -100,7 +103,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 448,
             "dstOui" : [
                "3Com"
             ],
@@ -131,6 +133,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 448
+            },
             "source" : {
                "bytes" : 90,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -141,7 +146,6 @@
                "packets" : 1,
                "port" : 2396
             },
-            "srcDataBytes" : 28,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -158,6 +162,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 144
+            },
             "destination" : {
                "bytes" : 406,
                "ip" : "fe80::260:97ff:fe07:69ea",
@@ -168,7 +175,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "dstDataBytes" : 136,
             "dstOui" : [
                "3Com"
             ],
@@ -221,6 +227,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 136
+            },
             "source" : {
                "bytes" : 414,
                "ip" : "fe80::200:86ff:fe05:80da",
@@ -231,7 +240,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "srcDataBytes" : 144,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -247,6 +255,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 404
+            },
             "destination" : {
                "bytes" : 592,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -257,7 +268,6 @@
                "packets" : 8,
                "port" : 0
             },
-            "dstDataBytes" : 160,
             "dstOui" : [
                "Megahertz Corporation"
             ],
@@ -333,6 +343,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 160
+            },
             "source" : {
                "bytes" : 1052,
                "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
@@ -343,7 +356,6 @@
                "packets" : 12,
                "port" : 0
             },
-            "srcDataBytes" : 404,
             "srcOui" : [
                "3Com"
             ],
@@ -359,6 +371,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 31
+            },
             "destination" : {
                "bytes" : 358,
                "ip" : "3ffe:501:4819::42",
@@ -440,7 +455,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 296,
             "dstOui" : [
                "3Com"
             ],
@@ -471,6 +485,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 296
+            },
             "source" : {
                "bytes" : 93,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -481,7 +498,6 @@
                "packets" : 1,
                "port" : 2397
             },
-            "srcDataBytes" : 31,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -498,6 +514,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2288
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::9",
@@ -508,7 +527,6 @@
                "packets" : 0,
                "port" : 521
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 921159914439,
             "ipProtocol" : 17,
@@ -533,6 +551,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 2412,
                "ip" : "fe80::260:97ff:fe07:69ea",
@@ -543,7 +564,6 @@
                "packets" : 2,
                "port" : 521
             },
-            "srcDataBytes" : 2288,
             "srcOui" : [
                "3Com"
             ],
@@ -560,6 +580,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 33
+            },
             "destination" : {
                "bytes" : 282,
                "ip" : "3ffe:501:4819::42",
@@ -631,7 +654,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 220,
             "dstOui" : [
                "3Com"
             ],
@@ -662,6 +684,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 220
+            },
             "source" : {
                "bytes" : 95,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -672,7 +697,6 @@
                "packets" : 1,
                "port" : 2398
             },
-            "srcDataBytes" : 33,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -689,6 +713,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 879
+            },
             "destination" : {
                "bytes" : 6335,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -699,7 +726,6 @@
                "packets" : 30,
                "port" : 22
             },
-            "dstDataBytes" : 3747,
             "dstOui" : [
                "3Com"
             ],
@@ -851,6 +877,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3747
+            },
             "source" : {
                "bytes" : 3639,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -861,7 +890,6 @@
                "packets" : 32,
                "port" : 1022
             },
-            "srcDataBytes" : 879,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -895,6 +923,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 33
+            },
             "destination" : {
                "bytes" : 282,
                "ip" : "3ffe:501:4819::42",
@@ -966,7 +997,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 220,
             "dstOui" : [
                "3Com"
             ],
@@ -997,6 +1027,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 220
+            },
             "source" : {
                "bytes" : 95,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1007,7 +1040,6 @@
                "packets" : 1,
                "port" : 2399
             },
-            "srcDataBytes" : 33,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1024,6 +1056,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1034,7 +1069,6 @@
                "packets" : 0,
                "port" : 33435
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1061,6 +1095,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1071,7 +1108,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1088,6 +1124,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 240,
                "ip" : "3ffe:501:4819::42",
@@ -1137,7 +1176,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 178,
             "dstOui" : [
                "3Com"
             ],
@@ -1168,6 +1206,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 178
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1178,7 +1219,6 @@
                "packets" : 1,
                "port" : 2401
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1195,6 +1235,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1205,7 +1248,6 @@
                "packets" : 0,
                "port" : 33436
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1232,6 +1274,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1242,7 +1287,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1259,6 +1303,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1269,7 +1316,6 @@
                "packets" : 0,
                "port" : 33437
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1296,6 +1342,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1306,7 +1355,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1323,6 +1371,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1333,7 +1384,6 @@
                "packets" : 0,
                "port" : 33438
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1360,6 +1410,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1370,7 +1423,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1387,6 +1439,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 204
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1397,7 +1452,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Megahertz Corporation"
             ],
@@ -1435,6 +1489,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 366,
                "ip" : "3ffe:501:0:1802:260:97ff:feb6:7ff0",
@@ -1445,7 +1502,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 204,
             "srcOui" : [
                "3Com"
             ],
@@ -1461,6 +1517,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 330,
                "ip" : "3ffe:501:4819::42",
@@ -1519,7 +1578,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 268,
             "dstOui" : [
                "3Com"
             ],
@@ -1550,6 +1608,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 268
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1560,7 +1621,6 @@
                "packets" : 1,
                "port" : 2402
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1577,6 +1637,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1587,7 +1650,6 @@
                "packets" : 0,
                "port" : 33439
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1614,6 +1676,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1624,7 +1689,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1641,6 +1705,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1651,7 +1718,6 @@
                "packets" : 0,
                "port" : 33440
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1678,6 +1744,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1688,7 +1757,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1705,6 +1773,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1715,7 +1786,6 @@
                "packets" : 0,
                "port" : 33441
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1742,6 +1812,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1752,7 +1825,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1769,6 +1841,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 204
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1779,7 +1854,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Megahertz Corporation"
             ],
@@ -1817,6 +1891,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 366,
                "ip" : "3ffe:501:1800:2345::2",
@@ -1827,7 +1904,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 204,
             "srcOui" : [
                "3Com"
             ],
@@ -1843,6 +1919,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 325,
                "ip" : "3ffe:501:4819::42",
@@ -1901,7 +1980,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 263,
             "dstOui" : [
                "3Com"
             ],
@@ -1932,6 +2010,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 263
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -1942,7 +2023,6 @@
                "packets" : 1,
                "port" : 2403
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -1959,6 +2039,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -1969,7 +2052,6 @@
                "packets" : 0,
                "port" : 33442
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -1996,6 +2078,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2006,7 +2091,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2023,6 +2107,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -2033,7 +2120,6 @@
                "packets" : 0,
                "port" : 33443
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -2060,6 +2146,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2070,7 +2159,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2087,6 +2175,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -2097,7 +2188,6 @@
                "packets" : 0,
                "port" : 33444
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -2124,6 +2214,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2134,7 +2227,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2151,6 +2243,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 204
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2161,7 +2256,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Megahertz Corporation"
             ],
@@ -2199,6 +2293,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 366,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -2209,7 +2306,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 204,
             "srcOui" : [
                "3Com"
             ],
@@ -2225,6 +2321,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 246,
                "ip" : "3ffe:501:4819::42",
@@ -2274,7 +2373,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 184,
             "dstOui" : [
                "3Com"
             ],
@@ -2305,6 +2403,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 184
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2315,7 +2416,6 @@
                "packets" : 1,
                "port" : 2404
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2332,6 +2432,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -2342,7 +2445,6 @@
                "packets" : 0,
                "port" : 33445
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -2369,6 +2471,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2379,7 +2484,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2396,6 +2500,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 12
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
@@ -2406,7 +2513,6 @@
                "packets" : 0,
                "port" : 33446
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -2433,6 +2539,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 74,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2443,7 +2552,6 @@
                "packets" : 1,
                "port" : 41077
             },
-            "srcDataBytes" : 12,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2460,6 +2568,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 322,
                "ip" : "3ffe:501:4819::42",
@@ -2533,7 +2644,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 260,
             "dstOui" : [
                "3Com"
             ],
@@ -2564,6 +2674,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 260
+            },
             "source" : {
                "bytes" : 94,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2574,7 +2687,6 @@
                "packets" : 1,
                "port" : 2405
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2591,6 +2703,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "bytes" : 210,
                "ip" : "3ffe:501:0:1001::2",
@@ -2601,7 +2716,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "dstDataBytes" : 48,
             "dstOui" : [
                "3Com"
             ],
@@ -2646,6 +2760,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 48
+            },
             "source" : {
                "bytes" : 210,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2656,7 +2773,6 @@
                "packets" : 3,
                "port" : 0
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2672,6 +2788,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 323,
                "ip" : "3ffe:501:4819::42",
@@ -2730,7 +2849,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 261,
             "dstOui" : [
                "3Com"
             ],
@@ -2761,6 +2879,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 261
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2771,7 +2892,6 @@
                "packets" : 1,
                "port" : 2407
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2788,6 +2908,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 323,
                "ip" : "3ffe:501:4819::42",
@@ -2846,7 +2969,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 261,
             "dstOui" : [
                "3Com"
             ],
@@ -2877,6 +2999,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 261
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -2887,7 +3012,6 @@
                "packets" : 1,
                "port" : 2408
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -2904,6 +3028,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 323,
                "ip" : "3ffe:501:4819::42",
@@ -2962,7 +3089,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 261,
             "dstOui" : [
                "3Com"
             ],
@@ -2993,6 +3119,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 261
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3003,7 +3132,6 @@
                "packets" : 1,
                "port" : 2409
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3020,6 +3148,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 8
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::2",
@@ -3030,7 +3161,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 921159951927,
             "icmp" : {
@@ -3060,6 +3190,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 62,
                "ip" : "fe80::200:86ff:fe05:80da",
@@ -3070,7 +3203,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 8,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3086,6 +3218,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 64
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1",
@@ -3096,7 +3231,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 921159952222,
             "icmp" : {
@@ -3126,6 +3260,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 118,
                "ip" : "fe80::260:97ff:fe07:69ea",
@@ -3136,7 +3273,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 64,
             "srcOui" : [
                "3Com"
             ],
@@ -3152,6 +3288,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 252,
                "ip" : "3ffe:501:4819::42",
@@ -3227,7 +3366,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 190,
             "dstOui" : [
                "3Com"
             ],
@@ -3258,6 +3396,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 190
+            },
             "source" : {
                "bytes" : 94,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3268,7 +3409,6 @@
                "packets" : 1,
                "port" : 2410
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3285,6 +3425,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 246
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "3ffe:501:4819::42",
@@ -3295,7 +3438,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "3Com"
             ],
@@ -3329,6 +3471,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 300,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3339,7 +3484,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 246,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3355,6 +3499,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1:ff07:69ea",
@@ -3365,7 +3512,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 921159962650,
             "icmp" : {
@@ -3395,6 +3541,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 86,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3405,7 +3554,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 32,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3421,6 +3569,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 268,
                "ip" : "3ffe:501:4819::42",
@@ -3474,7 +3625,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 206,
             "dstOui" : [
                "3Com"
             ],
@@ -3505,6 +3655,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 206
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3515,7 +3668,6 @@
                "packets" : 1,
                "port" : 2412
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3532,6 +3684,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 268,
                "ip" : "3ffe:501:4819::42",
@@ -3585,7 +3740,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 206,
             "dstOui" : [
                "3Com"
             ],
@@ -3616,6 +3770,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 206
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3626,7 +3783,6 @@
                "packets" : 1,
                "port" : 2413
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3643,6 +3799,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 268,
                "ip" : "3ffe:501:4819::42",
@@ -3696,7 +3855,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 206,
             "dstOui" : [
                "3Com"
             ],
@@ -3727,6 +3885,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 206
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3737,7 +3898,6 @@
                "packets" : 1,
                "port" : 2414
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3754,6 +3914,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 268,
                "ip" : "3ffe:501:4819::42",
@@ -3807,7 +3970,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 206,
             "dstOui" : [
                "3Com"
             ],
@@ -3838,6 +4000,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 206
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3848,7 +4013,6 @@
                "packets" : 1,
                "port" : 2415
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],
@@ -3865,6 +4029,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 89
+            },
             "destination" : {
                "bytes" : 268,
                "ip" : "3ffe:501:4819::42",
@@ -3918,7 +4085,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 206,
             "dstOui" : [
                "3Com"
             ],
@@ -3949,6 +4115,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 206
+            },
             "source" : {
                "bytes" : 151,
                "ip" : "3ffe:507:0:1:200:86ff:fe05:80da",
@@ -3959,7 +4128,6 @@
                "packets" : 1,
                "port" : 2416
             },
-            "srcDataBytes" : 89,
             "srcOui" : [
                "Megahertz Corporation"
             ],

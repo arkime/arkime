@@ -2,7 +2,9 @@
    "sessions3" : [
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "dstOui" : [
                "Universal Global Scientific Industrial Co., Ltd."
             ],
@@ -30,8 +32,10 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {},
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc.",
                "Universal Global Scientific Industrial Co., Ltd."
@@ -48,6 +52,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 64
+            },
             "destination" : {
                "bytes" : 98,
                "ip" : "10.10.10.1",
@@ -58,7 +65,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "dstDataBytes" : 64,
             "dstOui" : [
                "Dell Inc."
             ],
@@ -95,6 +101,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 64
+            },
             "source" : {
                "bytes" : 98,
                "ip" : "10.10.10.2",
@@ -105,7 +114,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 64,
             "srcOui" : [
                "Universal Global Scientific Industrial Co., Ltd."
             ],
@@ -120,7 +128,9 @@
       },
       {
          "body" : {
-            "dstDataBytes" : 0,
+            "client" : {
+               "bytes" : 0
+            },
             "dstOui" : [
                "Dell Inc.",
                "Universal Global Scientific Industrial Co., Ltd."
@@ -149,7 +159,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcDataBytes" : 0,
+            "server" : {
+               "bytes" : 0
+            },
             "srcOui" : [
                "Dell Inc.",
                "Universal Global Scientific Industrial Co., Ltd."

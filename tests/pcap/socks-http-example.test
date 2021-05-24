@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 155
+            },
             "destination" : {
                "bytes" : 2003,
                "geo" : {
@@ -16,7 +19,6 @@
                "packets" : 6,
                "port" : 1080
             },
-            "dstDataBytes" : 1599,
             "dstOui" : [
                "Dell Inc."
             ],
@@ -173,6 +175,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1599
+            },
             "socks" : {
                "GEO" : "US",
                "RIR" : "RIPE",
@@ -199,7 +204,6 @@
                "packets" : 8,
                "port" : 53533
             },
-            "srcDataBytes" : 155,
             "srcOui" : [
                "Apple, Inc."
             ],
@@ -227,6 +231,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 171
+            },
             "destination" : {
                "bytes" : 2069,
                "geo" : {
@@ -240,7 +247,6 @@
                "packets" : 7,
                "port" : 1080
             },
-            "dstDataBytes" : 1599,
             "dstOui" : [
                "Dell Inc."
             ],
@@ -399,6 +405,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1599
+            },
             "socks" : {
                "host" : "www.example.com",
                "port" : 80
@@ -416,7 +425,6 @@
                "packets" : 8,
                "port" : 53534
             },
-            "srcDataBytes" : 171,
             "srcOui" : [
                "Apple, Inc."
             ],
@@ -444,6 +452,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 160
+            },
             "destination" : {
                "bytes" : 2073,
                "geo" : {
@@ -457,7 +468,6 @@
                "packets" : 7,
                "port" : 1080
             },
-            "dstDataBytes" : 1603,
             "dstOui" : [
                "Dell Inc."
             ],
@@ -620,6 +630,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1603
+            },
             "socks" : {
                "GEO" : "US",
                "RIR" : "RIPE",
@@ -646,7 +659,6 @@
                "packets" : 10,
                "port" : 53535
             },
-            "srcDataBytes" : 160,
             "srcOui" : [
                "Apple, Inc."
             ],

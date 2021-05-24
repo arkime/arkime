@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 902
+            },
             "destination" : {
                "bytes" : 1326,
                "ip" : "192.168.114.129",
@@ -13,7 +16,6 @@
                "packets" : 6,
                "port" : 445
             },
-            "dstDataBytes" : 922,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -69,6 +71,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 922
+            },
             "smb" : {
                "domain" : [
                   "VNET3"
@@ -97,7 +102,6 @@
                "packets" : 8,
                "port" : 52703
             },
-            "srcDataBytes" : 902,
             "srcOui" : [
                "VMware, Inc."
             ],

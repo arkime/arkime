@@ -69,6 +69,9 @@
                }
             ],
             "certCnt" : 3,
+            "client" : {
+               "bytes" : 282
+            },
             "destination" : {
                "bytes" : 3596,
                "geo" : {
@@ -82,7 +85,6 @@
                "packets" : 5,
                "port" : 443
             },
-            "dstDataBytes" : 3282,
             "dstOui" : [
                "Unisphere Solutions"
             ],
@@ -131,6 +133,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3282
+            },
             "source" : {
                "bytes" : 600,
                "geo" : {
@@ -144,7 +149,6 @@
                "packets" : 5,
                "port" : 1063
             },
-            "srcDataBytes" : 282,
             "srcOui" : [
                "Askey Computer Corp"
             ],

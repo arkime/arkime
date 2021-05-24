@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 172
+            },
             "destination" : {
                "as" : {
                   "full" : "AS16509 Amazon.com, Inc.",
@@ -19,7 +22,6 @@
                "packets" : 4,
                "port" : 80
             },
-            "dstDataBytes" : 1167,
             "dstPayload8" : "485454502f312e31",
             "fileId" : [],
             "firstPacket" : 1489603870937,
@@ -174,13 +176,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1167
+            },
             "source" : {
                "bytes" : 764,
                "ip" : "10.10.10.10",
                "packets" : 6,
                "port" : 54064
             },
-            "srcDataBytes" : 172,
             "srcPayload8" : "474554202f204854",
             "tcpflags" : {
                "ack" : 4,

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 118
+            },
             "destination" : {
                "bytes" : 2067,
                "ip" : "10.11.11.11",
@@ -13,7 +16,6 @@
                "packets" : 12,
                "port" : 80
             },
-            "dstDataBytes" : 1219,
             "dstOui" : [
                "Palo Alto Networks"
             ],
@@ -103,6 +105,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1219
+            },
             "source" : {
                "bytes" : 1110,
                "ip" : "10.10.10.10",
@@ -113,7 +118,6 @@
                "packets" : 14,
                "port" : 59604
             },
-            "srcDataBytes" : 118,
             "srcOui" : [
                "Juniper Networks"
             ],

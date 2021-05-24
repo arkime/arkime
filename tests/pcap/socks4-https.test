@@ -79,6 +79,9 @@
                }
             ],
             "certCnt" : 3,
+            "client" : {
+               "bytes" : 38
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -100,7 +103,6 @@
                "packets" : 10,
                "port" : 9901
             },
-            "dstDataBytes" : 6784,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -162,6 +164,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 6784
+            },
             "socks" : {
                "host" : "login.live.com",
                "port" : 443,
@@ -187,7 +192,6 @@
                "packets" : 6,
                "port" : 50606
             },
-            "srcDataBytes" : 38,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 5222
+            },
             "destination" : {
                "bytes" : 5240,
                "ip" : "172.17.96.77",
@@ -13,7 +16,6 @@
                "packets" : 44,
                "port" : 4000
             },
-            "dstDataBytes" : 576,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -410,6 +412,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 576
+            },
             "source" : {
                "bytes" : 25144,
                "ip" : "172.17.96.143",
@@ -420,7 +425,6 @@
                "packets" : 64,
                "port" : 59221
             },
-            "srcDataBytes" : 5222,
             "srcOui" : [
                "Advantech Technology (CHINA) Co., Ltd."
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 38
+            },
             "destination" : {
                "as" : {
                   "full" : "AS4385 Rochester Institute of Technology",
@@ -23,7 +26,6 @@
                "packets" : 5,
                "port" : 21
             },
-            "dstDataBytes" : 90,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -71,6 +73,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 90
+            },
             "source" : {
                "bytes" : 376,
                "ip" : "10.10.30.26",
@@ -81,7 +86,6 @@
                "packets" : 5,
                "port" : 43958
             },
-            "srcDataBytes" : 38,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

@@ -55,6 +55,9 @@
                }
             ],
             "certCnt" : 2,
+            "client" : {
+               "bytes" : 237
+            },
             "destination" : {
                "as" : {
                   "full" : "AS13335 Cloudflare, Inc.",
@@ -71,7 +74,6 @@
                "packets" : 5,
                "port" : 443
             },
-            "dstDataBytes" : 2810,
             "dstPayload8" : "1603030064020000",
             "fileId" : [],
             "firstPacket" : 1593980608621,
@@ -120,6 +122,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 2810
+            },
             "source" : {
                "as" : {
                   "full" : "AS10310 Oath Holdings Inc.",
@@ -136,7 +141,6 @@
                "packets" : 4,
                "port" : 64034
             },
-            "srcDataBytes" : 237,
             "srcPayload8" : "16030100e8010000",
             "tcpflags" : {
                "ack" : 5,

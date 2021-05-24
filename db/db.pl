@@ -711,6 +711,7 @@ sub fieldsCreate
     esPut("/${PREFIX}fields_v30?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "fields_v30", "fields");
     fieldsUpdate();
+    ecsFieldsUpdate();
 }
 ################################################################################
 sub fieldsUpdate
@@ -1190,7 +1191,7 @@ sub addECSMap
 {
   my ($exp, $db, $ecsField) = @_;
 
-  $ECSMAP{$exp}->{ecsField} = $ecsField if ($exp != null);
+  $ECSMAP{$exp}->{ecsField} = $ecsField if ($exp ne 'null');
   $ECSPROP{$ecsField}->{path} = $db;
   $ECSPROP{$ecsField}->{type} = "alias";
 }
@@ -1204,7 +1205,7 @@ addECSMap("ip.dst", "dstIp", "destination.ip");
 addECSMap("port.dst", "dstPort", "destination.port");
 addECSMap("mac.dst", "dstMac", "destination.mac");
 
-addECSMap("country.dst", "srcGEO", "source.geo.country_iso_code");
+addECSMap("country.src", "srcGEO", "source.geo.country_iso_code");
 addECSMap("asn.src", "srcASN", "source.as.full");
 addECSMap("bytes.src", "srcBytes", "source.bytes");
 addECSMap("databytes.src", "srcDataBytes", "client.bytes");
@@ -1219,19 +1220,17 @@ addECSMap("bytes", "totBytes", "network.bytes");
 addECSMap("packets", "totPackets", "network.packets");
 addECSMap("vlan", "vlan", "vlan.id");
 
-addECSMap(null, "timestamp", "@timestamp");
+addECSMap('null', "timestamp", "\@timestamp");
 ################################################################################
 
 sub ecsFieldsUpdate
 {
-    #    foreach my $key (keys %ECSMAP) {
-    #        print "$key\n";
-    #        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{ecsField}"}}), 1);
-    #}
+    foreach my $key (keys (%ECSMAP)) {
+        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{ecsField}"}}), 1);
+    }
 
     print '{"properties":' . to_json(\%ECSPROP) . "}\n";
-    my $foo = esPut("/${PREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);
-    print Dumper($foo);
+    esPut("/${PREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);
 }
 
 ################################################################################

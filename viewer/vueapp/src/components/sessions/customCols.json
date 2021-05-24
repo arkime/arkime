@@ -28,7 +28,7 @@
     "sortBy": "source.ip",
     "children": [
       "source.ip",
-      "srcGEO"
+      "source.geo.country_iso_code"
     ]
   },
   "dst": {
@@ -41,7 +41,7 @@
     "sortBy": "destination.ip",
     "children": [
       "destination.ip",
-      "dstGEO"
+      "destination.geo.country_iso_code"
     ]
   },
   "dbby": {
@@ -51,10 +51,10 @@
     "group": "general",
     "friendlyName": "Databytes / Bytes",
     "help": "Data Bytes & Bytes",
-    "sortBy": "totBytes",
+    "sortBy": "network.bytes",
     "children": [
       "totDataBytes",
-      "totBytes"
+      "network.bytes"
     ]
   },
   "pa1pa2": {
@@ -66,8 +66,8 @@
     "help": "Src Packets & Dst Packets",
     "sortBy": "totPackets",
     "children": [
-      "srcPackets",
-      "dstPackets"
+      "source.packets",
+      "destination.packets"
     ]
   },
   "db1db2": {
@@ -79,8 +79,8 @@
     "help": "Src Databytes & Dst Databytes",
     "sortBy": "totDataBytes",
     "children": [
-      "srcDataBytes",
-      "dstDataBytes"
+      "client.bytes",
+      "server.bytes"
     ]
   },
   "by1by2": {
@@ -90,10 +90,10 @@
     "group": "general",
     "friendlyName": "Src Bytes / Dst Bytes",
     "help": "Src Bytes & Dst Bytes",
-    "sortBy": "totBytes",
+    "sortBy": "network.bytes",
     "children": [
-      "srcBytes",
-      "dstBytes"
+      "source.bytes",
+      "destination.bytes"
     ]
   },
   "db1by1": {
@@ -103,10 +103,10 @@
     "group": "general",
     "friendlyName": "Src Databytes / Src Bytes",
     "help": "Src Databytes & Src Bytes",
-    "sortBy": "srcDataBytes",
+    "sortBy": "client.bytes",
     "children": [
-      "srcDataBytes",
-      "srcBytes"
+      "client.bytes",
+      "source.bytes"
     ]
   },
   "db2by2": {
@@ -116,10 +116,10 @@
     "group": "general",
     "friendlyName": "Dst Databytes / Dst Bytes",
     "help": "Dst Databytes & Dst Bytes",
-    "sortBy": "dstDataBytes",
+    "sortBy": "server.bytes",
     "children": [
-      "dstDataBytes",
-      "dstBytes"
+      "server.bytes",
+      "destination.bytes"
     ]
   }
 }

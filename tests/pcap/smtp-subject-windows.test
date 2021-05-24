@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 211
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 11,
                "port" : 25
             },
-            "dstDataBytes" : 749,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -123,6 +125,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 749
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -143,7 +148,6 @@
                "packets" : 12,
                "port" : 40531
             },
-            "srcDataBytes" : 211,
             "srcOui" : [
                "Dell Inc."
             ],

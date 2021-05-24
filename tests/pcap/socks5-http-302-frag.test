@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 419
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 6,
                "port" : 21477
             },
-            "dstDataBytes" : 942,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -203,6 +205,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 942
+            },
             "socks" : {
                "host" : "www.google.com",
                "port" : 80
@@ -227,7 +232,6 @@
                "packets" : 8,
                "port" : 1637
             },
-            "srcDataBytes" : 419,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

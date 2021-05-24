@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 103
+            },
             "destination" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 3207
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -51,6 +53,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -71,7 +76,6 @@
                "packets" : 1,
                "port" : 50759
             },
-            "srcDataBytes" : 103,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -93,6 +97,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 287
+            },
             "destination" : {
                "as" : {
                   "full" : "AS2 Hmm!@#$%^&*()",
@@ -110,7 +117,6 @@
                "packets" : 0,
                "port" : 12074
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -138,6 +144,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 329,
                "ip" : "10.0.0.4",
@@ -148,7 +157,6 @@
                "packets" : 1,
                "port" : 44102
             },
-            "srcDataBytes" : 287,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -165,6 +173,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 294
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.0.0.5",
@@ -175,7 +186,6 @@
                "packets" : 0,
                "port" : 20551
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -203,6 +213,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 336,
                "ip" : "10.0.0.6",
@@ -213,7 +226,6 @@
                "packets" : 1,
                "port" : 47061
             },
-            "srcDataBytes" : 294,
             "srcOui" : [
                "Juniper Networks"
             ],

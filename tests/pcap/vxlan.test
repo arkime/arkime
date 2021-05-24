@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "192.168.56.12",
@@ -14,7 +17,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -43,6 +45,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 184,
                "ip" : "192.168.56.11",
@@ -54,7 +59,6 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -70,6 +74,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 256
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -90,7 +97,6 @@
                "packets" : 4,
                "port" : 0
             },
-            "dstDataBytes" : 256,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -140,6 +146,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 256
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -160,7 +169,6 @@
                "packets" : 4,
                "port" : 0
             },
-            "srcDataBytes" : 256,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

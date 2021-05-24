@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 256
+            },
             "destination" : {
                "bytes" : 742,
                "ip" : "172.28.2.3",
@@ -13,7 +16,6 @@
                "packets" : 6,
                "port" : 0
             },
-            "dstDataBytes" : 394,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -86,6 +88,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 394
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -106,7 +111,6 @@
                "packets" : 4,
                "port" : 0
             },
-            "srcDataBytes" : 256,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -126,6 +130,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "as" : {
                   "full" : "AS3 Massachusetts Institute of Technology",
@@ -146,7 +153,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "dstDataBytes" : 48,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -195,6 +201,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 48
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -215,7 +224,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -236,6 +244,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 952
+            },
             "destination" : {
                "bytes" : 2579,
                "ip" : "172.28.2.3",
@@ -246,7 +257,6 @@
                "packets" : 10,
                "port" : 22
             },
-            "dstDataBytes" : 1671,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -336,6 +346,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1671
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -356,7 +369,6 @@
                "packets" : 12,
                "port" : 40264
             },
-            "srcDataBytes" : 952,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -407,6 +419,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 66
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "172.28.2.3",
@@ -435,7 +450,6 @@
                ],
                "qtCnt" : 1
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -483,6 +497,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -503,7 +520,6 @@
                "packets" : 2,
                "port" : 37675
             },
-            "srcDataBytes" : 66,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -524,6 +540,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -544,7 +563,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "dstDataBytes" : 48,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -593,6 +611,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 48
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -613,7 +634,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -634,6 +654,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
             "destination" : {
                "as" : {
                   "full" : "AS10755 Dartmouth College",
@@ -654,7 +677,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "dstDataBytes" : 48,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -703,6 +725,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 48
+            },
             "source" : {
                "as" : {
                   "full" : "AS11590 Cumberland Technologies International",
@@ -723,7 +748,6 @@
                "packets" : 1,
                "port" : 123
             },
-            "srcDataBytes" : 48,
             "srcOui" : [
                "Agere Systems"
             ],

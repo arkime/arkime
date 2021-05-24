@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 625
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 5,
                "port" : 3106
             },
-            "dstDataBytes" : 283,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -72,6 +74,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 283
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -93,7 +98,6 @@
                "packets" : 5,
                "port" : 3933
             },
-            "srcDataBytes" : 625,
             "srcOui" : [
                "Juniper Networks"
             ],

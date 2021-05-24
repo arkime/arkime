@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2700
+            },
             "destination" : {
                "as" : {
                   "full" : "AS43515 Google Ireland Limited",
@@ -23,7 +26,6 @@
                "packets" : 1,
                "port" : 443
             },
-            "dstDataBytes" : 77,
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],
@@ -66,6 +68,9 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 77
+            },
             "source" : {
                "bytes" : 2784,
                "ip" : "10.0.2.15",
@@ -76,7 +81,6 @@
                "packets" : 2,
                "port" : 40482
             },
-            "srcDataBytes" : 2700,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

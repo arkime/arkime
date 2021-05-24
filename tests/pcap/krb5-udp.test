@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 251
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "10.150.10.150",
@@ -13,7 +16,6 @@
                "packets" : 0,
                "port" : 88
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -55,6 +57,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 297,
                "ip" : "10.172.10.172",
@@ -65,7 +70,6 @@
                "packets" : 1,
                "port" : 58412
             },
-            "srcDataBytes" : 251,
             "srcOui" : [
                "Palo Alto Networks"
             ],

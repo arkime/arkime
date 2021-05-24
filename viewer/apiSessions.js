@@ -30,6 +30,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
       }
       const options = ViewerUtils.addCluster(req.query.cluster);
+      options.arkime_unflatten = false;
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result.error) {
           console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
@@ -217,7 +218,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     for (let j = 0; j < list.length; j++) {
-      const sessionData = ViewerUtils.flattenFields(list[j]._source || list[j].fields);
+      const sessionData = list[j]._source || list[j].fields;
       sessionData._id = list[j]._id;
 
       if (!fields) { continue; }
@@ -697,7 +698,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }, () => {
         // Get from remote DISK
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
-          let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
+          let buffer = Buffer.alloc(Math.min(16200000, fields.network.packets * 20 + fields.network.bytes));
           let bufpos = 0;
 
           const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
@@ -827,7 +828,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   function sessionsPcap (req, res, pcapWriter, extension) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    const fields = ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'];
+    const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
@@ -1078,7 +1079,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   sModule.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
-      options = { _source: false, fields: 'node,totPackets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
+      options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
     }
 
     Db.getSession(id, options, (err, session) => {
@@ -1156,7 +1157,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, client.bytes, server.bytes, firstPacket, lastPacket, source.ip, source.port, destination.ip, destination.port, totPackets, source.packets, destination.packets, totBytes, source.bytes, destination.bytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
+     Default is ipProtocol, rootId, totDataBytes, client.bytes, server.bytes, firstPacket, lastPacket, source.ip, source.port, destination.ip, destination.port, network.packets, source.packets, destination.packets, network.bytes, source.bytes, destination.bytes, node, http.uri, source.geo.country_iso_code, destination.geo.country_iso_code, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1273,8 +1274,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
-          mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1 } },
-          mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1 } },
+          mapG1: { terms: { field: 'source.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
+          mapG2: { terms: { field: 'destination.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
           mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1 } }
         };
       }
@@ -1286,15 +1287,15 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         const filter = filters[i];
 
         // Will also grap src/dst of these options instead to show on the timeline
-        if (filter === 'totPackets') {
-          query.aggregations.dbHisto.aggregations.srcPackets = { sum: { field: 'source.packets' } };
-          query.aggregations.dbHisto.aggregations.dstPackets = { sum: { field: 'destination.packets' } };
-        } else if (filter === 'totBytes') {
-          query.aggregations.dbHisto.aggregations.srcBytes = { sum: { field: 'source.bytes' } };
-          query.aggregations.dbHisto.aggregations.dstBytes = { sum: { field: 'destination.bytes' } };
+        if (filter === 'network.packets') {
+          query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
+          query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+        } else if (filter === 'network.bytes') {
+          query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
+          query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
         } else if (filter === 'totDataBytes') {
-          query.aggregations.dbHisto.aggregations.srcDataBytes = { sum: { field: 'client.bytes' } };
-          query.aggregations.dbHisto.aggregations.dstDataBytes = { sum: { field: 'server.bytes' } };
+          query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
+          query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
         } else {
           query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
         }
@@ -1359,10 +1360,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     const list = [];
-    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'srcGEO', 'destination.ip', 'destination.port', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
+    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code', 'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
 
     const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: fields.join(',') });
+    options.arkime_unflatten = false;
     async.eachLimit(ids, 10, (id, nextCb) => {
       Db.getSession(id, options, (err, session) => {
         if (err) {
@@ -1600,6 +1602,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
     options = ViewerUtils.addCluster(req.query.cluster, options);
+    options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
 
     const response = {
       data: [],
@@ -1630,9 +1633,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         query.fields = [
           'ipProtocol', 'rootId', 'totDataBytes', 'client.bytes',
           'server.bytes', 'firstPacket', 'lastPacket', 'source.ip', 'source.port',
-          'destination.ip', 'destination.port', 'totPackets', 'source.packets', 'destination.packets',
-          'totBytes', 'source.bytes', 'destination.bytes', 'node', 'http.uri', 'srcGEO',
-          'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
+          'destination.ip', 'destination.port', 'network.packets', 'source.packets', 'destination.packets',
+          'network.bytes', 'source.bytes', 'destination.bytes', 'node', 'http.uri', 'source.geo.country_iso_code',
+          'destination.geo.country_iso_code', 'email.subject', 'email.src', 'email.dst', 'email.filename',
           'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
         ];
       }
@@ -1660,16 +1663,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         const results = { total: sessions.hits.total, results: [] };
         async.each(sessions.hits.hits, (hit, hitCb) => {
-          let fields = hit._source || hit.fields;
+          const fields = hit._source || hit.fields;
           if (fields === undefined) {
             return hitCb(null);
           }
 
           fields.id = Db.session2Sid(hit);
-
-          if (parseInt(req.query.flatten) === 1) {
-            fields = ViewerUtils.flattenFields(fields);
-          }
 
           if (addMissing) {
             ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes'].forEach((item) => {
@@ -1721,8 +1720,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     // default fields to display in csv
     let fields = [
-      'ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'srcGEO',
-      'destination.ip', 'destination.port', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'
+      'ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code',
+      'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node'
     ];
 
     // save requested fields because sessionsListFromQuery returns fields with
@@ -1972,6 +1971,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         results.recordsTotal = total.count;
         results.recordsFiltered = result.hits.total;
 
+        console.log('ALW', JSON.stringify(result.aggregations, false, 2));
         results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
         results.map = ViewerUtils.mapMerge(result.aggregations);
 

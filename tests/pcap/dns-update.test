@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 124
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -50,7 +53,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 124,
             "dstOui" : [
                "Palo Alto Networks"
             ],
@@ -81,6 +83,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 124
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -102,7 +107,6 @@
                "packets" : 1,
                "port" : 51031
             },
-            "srcDataBytes" : 124,
             "srcOui" : [
                "Juniper Networks"
             ],

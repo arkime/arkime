@@ -315,10 +315,11 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
             int len = 0;
             BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
             fieldsMap[0][i] = moloch_field_define_text((char*)BSB_WORK_PTR(bsb), NULL);
-            if (fieldsMap[0][i] == -1)
+            if (fieldsMap[0][i] == -1) {
                 fieldsTS = 0;
-            if (config.debug)
-                LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
+                if (config.debug)
+                    LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
+            }
             BSB_IMPORT_skip(bsb, len);
         }
         MOLOCH_UNLOCK(item);

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 3264
+            },
             "destination" : {
                "bytes" : 7038,
                "ip" : "192.168.40.178",
@@ -13,7 +16,6 @@
                "packets" : 51,
                "port" : 0
             },
-            "dstDataBytes" : 3264,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -251,6 +253,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3264
+            },
             "source" : {
                "bytes" : 7038,
                "geo" : {
@@ -264,7 +269,6 @@
                "packets" : 51,
                "port" : 0
             },
-            "srcDataBytes" : 3264,
             "srcOui" : [
                "VMware, Inc."
             ],

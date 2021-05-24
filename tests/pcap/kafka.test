@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 79
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "10.176.192.13",
@@ -14,7 +17,6 @@
                "packets" : 1,
                "port" : 9092
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -52,6 +54,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 371,
                "ip" : "10.10.10.10",
@@ -62,7 +67,6 @@
                "packets" : 4,
                "port" : 65056
             },
-            "srcDataBytes" : 79,
             "srcOui" : [
                "Palo Alto Networks"
             ],

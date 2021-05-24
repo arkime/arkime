@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 86
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -23,7 +26,6 @@
                "packets" : 3,
                "port" : 3000
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -70,6 +72,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -90,7 +95,6 @@
                "packets" : 7,
                "port" : 53226
             },
-            "srcDataBytes" : 86,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -149,6 +153,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 22
+            },
             "destination" : {
                "as" : {
                   "full" : "AS2 Hmm!@#$%^&*()",
@@ -167,7 +174,6 @@
                "packets" : 5,
                "port" : 3000
             },
-            "dstDataBytes" : 86,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -217,6 +223,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 86
+            },
             "source" : {
                "bytes" : 450,
                "ip" : "10.0.0.4",
@@ -228,7 +237,6 @@
                "packets" : 6,
                "port" : 43178
             },
-            "srcDataBytes" : 22,
             "srcOui" : [
                "Juniper Networks"
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1325
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15733 Zumtobel Group AG",
@@ -23,7 +26,6 @@
                "packets" : 8,
                "port" : 49191
             },
-            "dstDataBytes" : 842,
             "dstOui" : [
                "Tridonic GmbH & Co KG"
             ],
@@ -84,6 +86,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 842
+            },
             "source" : {
                "as" : {
                   "full" : "AS15733 Zumtobel Group AG",
@@ -105,7 +110,6 @@
                "packets" : 9,
                "port" : 48809
             },
-            "srcDataBytes" : 1325,
             "srcOui" : [
                "LG Electronics (Mobile Communications)",
                "Tp-Link Technologies Co.,Ltd."

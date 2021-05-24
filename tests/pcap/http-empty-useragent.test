@@ -3,13 +3,15 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
             "destination" : {
                "bytes" : 1196,
                "ip" : "::1",
                "packets" : 8,
                "port" : 9200
             },
-            "dstDataBytes" : 576,
             "dstPayload8" : "485454502f312e30",
             "fileId" : [],
             "firstPacket" : 1541428878195,
@@ -117,13 +119,15 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 576
+            },
             "source" : {
                "bytes" : 648,
                "ip" : "::1",
                "packets" : 8,
                "port" : 57722
             },
-            "srcDataBytes" : 28,
             "srcPayload8" : "474554202f204854",
             "tcpflags" : {
                "ack" : 8,

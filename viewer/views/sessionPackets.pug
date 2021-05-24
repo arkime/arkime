@@ -3,7 +3,7 @@ if (session._err)
     span.fa.fa-exclamation-triangle
     strong &nbsp; #{session._err}
 else
-  if (session.totPackets[0] > reqPackets)
+  if (session.network.packets[0] > reqPackets)
     h5.text-theme-quaternary
       span.fa.fa-info-circle.fa-lg
       | &nbsp; Only showing first #{reqPackets} packets

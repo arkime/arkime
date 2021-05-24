@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 247
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "10.10.10.11",
@@ -14,7 +17,6 @@
                "packets" : 1,
                "port" : 27017
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -53,6 +55,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 621,
                "ip" : "10.10.10.10",
@@ -64,7 +69,6 @@
                "packets" : 5,
                "port" : 51822
             },
-            "srcDataBytes" : 247,
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
@@ -99,6 +103,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 59
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "10.10.10.13",
@@ -111,7 +118,6 @@
                "packets" : 1,
                "port" : 27017
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -151,6 +157,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 433,
                "ip" : "10.10.10.12",
@@ -162,7 +171,6 @@
                "packets" : 5,
                "port" : 55582
             },
-            "srcDataBytes" : 59,
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
@@ -197,6 +205,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 58
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "10.10.10.15",
@@ -207,7 +218,6 @@
                "packets" : 1,
                "port" : 27017
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Palo Alto Networks"
             ],
@@ -242,6 +252,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 280,
                "ip" : "10.10.10.14",
@@ -252,7 +265,6 @@
                "packets" : 3,
                "port" : 61503
             },
-            "srcDataBytes" : 58,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -285,6 +297,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 269
+            },
             "destination" : {
                "bytes" : 78,
                "ip" : "10.10.10.17",
@@ -295,7 +310,6 @@
                "packets" : 1,
                "port" : 27017
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Palo Alto Networks"
             ],
@@ -330,6 +344,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 491,
                "ip" : "10.10.10.16",
@@ -341,7 +358,6 @@
                "packets" : 3,
                "port" : 51358
             },
-            "srcDataBytes" : 269,
             "srcOui" : [
                "Juniper Networks"
             ],
@@ -374,6 +390,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 73
+            },
             "destination" : {
                "bytes" : 156,
                "ip" : "10.10.10.19",
@@ -384,7 +403,6 @@
                "packets" : 2,
                "port" : 30000
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -425,6 +443,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 447,
                "ip" : "10.10.10.18",
@@ -436,7 +457,6 @@
                "packets" : 5,
                "port" : 64566
             },
-            "srcDataBytes" : 73,
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"

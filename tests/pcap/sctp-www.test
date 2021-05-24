@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2130
+            },
             "destination" : {
                "as" : {
                   "full" : "AS9270 National Infomation Society Agency",
@@ -23,7 +26,6 @@
                "packets" : 22,
                "port" : 80
             },
-            "dstDataBytes" : 22296,
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
@@ -134,6 +136,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 22296
+            },
             "source" : {
                "as" : {
                   "full" : "AS10052 Kyungpook National University",
@@ -154,7 +159,6 @@
                "packets" : 21,
                "port" : 32836
             },
-            "srcDataBytes" : 2130,
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],
@@ -170,6 +174,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1614
+            },
             "destination" : {
                "as" : {
                   "full" : "AS9270 National Infomation Society Agency",
@@ -190,7 +197,6 @@
                "packets" : 19,
                "port" : 80
             },
-            "dstDataBytes" : 20618,
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
@@ -291,6 +297,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 20618
+            },
             "source" : {
                "as" : {
                   "full" : "AS10052 Kyungpook National University",
@@ -311,7 +320,6 @@
                "packets" : 19,
                "port" : 32837
             },
-            "srcDataBytes" : 1614,
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],
@@ -327,6 +335,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 294
+            },
             "destination" : {
                "as" : {
                   "full" : "AS4766 Korea Telecom",
@@ -347,7 +358,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
@@ -378,6 +388,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS10052 Kyungpook National University",
@@ -398,7 +411,6 @@
                "packets" : 3,
                "port" : 32838
             },
-            "srcDataBytes" : 294,
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 24
+            },
             "destination" : {
                "bytes" : 216,
                "ip" : "10.2.95.39",
@@ -63,7 +66,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 174,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -95,6 +97,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 174
+            },
             "source" : {
                "bytes" : 66,
                "geo" : {
@@ -108,7 +113,6 @@
                "packets" : 1,
                "port" : 51427
             },
-            "srcDataBytes" : 24,
             "srcOui" : [
                "Apple, Inc."
             ],

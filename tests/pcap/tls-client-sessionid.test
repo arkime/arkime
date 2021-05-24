@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 618
+            },
             "destination" : {
                "as" : {
                   "full" : "AS10913 Internap Corporation",
@@ -23,7 +26,6 @@
                "packets" : 9,
                "port" : 443
             },
-            "dstDataBytes" : 459,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -90,6 +92,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 459
+            },
             "source" : {
                "bytes" : 1022,
                "ip" : "10.23.46.37",
@@ -100,7 +105,6 @@
                "packets" : 7,
                "port" : 62938
             },
-            "srcDataBytes" : 618,
             "srcOui" : [
                "Dell Inc."
             ],

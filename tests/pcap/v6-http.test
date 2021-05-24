@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1056
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1:ff82:95b5",
@@ -13,7 +16,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1186341079159,
             "icmp" : {
@@ -107,6 +109,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 2838,
                "ip" : "fe80::211:25ff:fe82:95b5",
@@ -117,7 +122,6 @@
                "packets" : 33,
                "port" : 0
             },
-            "srcDataBytes" : 1056,
             "srcOui" : [
                "IBM Corp"
             ],
@@ -133,6 +137,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 56
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::16",
@@ -143,7 +150,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1186341098054,
             "icmp" : {
@@ -175,6 +181,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 180,
                "ip" : "fe80::2d0:9ff:fee3:e8de",
@@ -185,7 +194,6 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcDataBytes" : 56,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
@@ -201,6 +209,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 24
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1:ff98:6e1",
@@ -211,7 +222,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1186341098474,
             "icmp" : {
@@ -241,6 +251,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 78,
                "ip" : "::",
@@ -251,7 +264,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 24,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
@@ -267,6 +279,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1286
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::fb",
@@ -296,7 +311,6 @@
                ],
                "qtCnt" : 1
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1186341099605,
             "ipProtocol" : 17,
@@ -335,6 +349,9 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS4589 EASYNET Easynet Global Services",
@@ -355,7 +372,6 @@
                "packets" : 8,
                "port" : 5353
             },
-            "srcDataBytes" : 1286,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],
@@ -372,6 +388,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 56
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "ff02::1",
@@ -382,7 +401,6 @@
                "packets" : 0,
                "port" : 0
             },
-            "dstDataBytes" : 0,
             "fileId" : [],
             "firstPacket" : 1186341269082,
             "icmp" : {
@@ -412,6 +430,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 110,
                "ip" : "fe80::211:25ff:fe82:95b5",
@@ -422,7 +443,6 @@
                "packets" : 1,
                "port" : 0
             },
-            "srcDataBytes" : 56,
             "srcOui" : [
                "IBM Corp"
             ],
@@ -438,6 +458,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 240
+            },
             "destination" : {
                "as" : {
                   "full" : "AS4589 EASYNET Easynet Global Services",
@@ -458,7 +481,6 @@
                "packets" : 4,
                "port" : 80
             },
-            "dstDataBytes" : 2259,
             "dstOui" : [
                "IBM Corp"
             ],
@@ -594,6 +616,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 2259
+            },
             "source" : {
                "as" : {
                   "full" : "AS4589 EASYNET Easynet Global Services",
@@ -614,7 +639,6 @@
                "packets" : 6,
                "port" : 59201
             },
-            "srcDataBytes" : 240,
             "srcOui" : [
                "Hsing Tech. Enterprise Co. Ltd"
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -23,7 +26,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -115,6 +117,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 628,
                "ip" : "192.168.25.150",
@@ -125,7 +130,6 @@
                "packets" : 1,
                "port" : 49677
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -152,6 +156,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS4657 StarHub Ltd",
@@ -172,7 +179,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -301,6 +307,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 1378,
                "ip" : "192.168.25.150",
@@ -311,7 +320,6 @@
                "packets" : 1,
                "port" : 49654
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -338,6 +346,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS16509 Amazon.com, Inc.",
@@ -358,7 +369,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -449,6 +459,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 454,
                "ip" : "192.168.25.150",
@@ -459,7 +472,6 @@
                "packets" : 1,
                "port" : 49683
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -486,6 +498,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS16625 Akamai Technologies, Inc.",
@@ -506,7 +521,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -620,6 +634,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 670,
                "ip" : "192.168.25.150",
@@ -630,7 +647,6 @@
                "packets" : 1,
                "port" : 49708
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -657,6 +673,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS2830 Verizon Nederland B.V.",
@@ -677,7 +696,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -796,6 +814,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 632,
                "ip" : "192.168.25.150",
@@ -806,7 +827,6 @@
                "packets" : 1,
                "port" : 49735
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -833,6 +853,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -853,7 +876,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -981,6 +1003,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 816,
                "ip" : "192.168.25.150",
@@ -991,7 +1016,6 @@
                "packets" : 1,
                "port" : 49733
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -1018,6 +1042,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15169 Google LLC",
@@ -1038,7 +1065,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -1132,6 +1158,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 558,
                "ip" : "192.168.25.150",
@@ -1142,7 +1171,6 @@
                "packets" : 1,
                "port" : 49743
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -1169,6 +1197,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS14618 Amazon.com, Inc.",
@@ -1189,7 +1220,6 @@
                "packets" : 0,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -1307,6 +1337,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "bytes" : 925,
                "ip" : "192.168.25.150",
@@ -1317,7 +1350,6 @@
                "packets" : 1,
                "port" : 49738
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],
@@ -1344,6 +1376,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "bytes" : 0,
                "ip" : "192.168.25.150",
@@ -1354,7 +1389,6 @@
                "packets" : 0,
                "port" : 49749
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "VMware, Inc."
             ],
@@ -1424,6 +1458,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS26496 GoDaddy.com, LLC",
@@ -1444,7 +1481,6 @@
                "packets" : 1,
                "port" : 80
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "VMware, Inc."
             ],

@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 4083
+            },
             "destination" : {
                "as" : {
                   "full" : "AS4816 China Telecom (Group)",
@@ -19,7 +22,6 @@
                "packets" : 9,
                "port" : 80
             },
-            "dstDataBytes" : 3945,
             "dstPayload8" : "485454502f312e31",
             "fileId" : [],
             "firstPacket" : 1523241953739,
@@ -418,6 +420,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3945
+            },
             "source" : {
                "as" : {
                   "full" : "AS7018 AT&T Services, Inc.",
@@ -434,7 +439,6 @@
                "packets" : 17,
                "port" : 49417
             },
-            "srcDataBytes" : 4083,
             "srcPayload8" : "474554202f204854",
             "tags" : [
                "http:password"

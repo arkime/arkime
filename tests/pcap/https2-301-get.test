@@ -53,6 +53,9 @@
                }
             ],
             "certCnt" : 2,
+            "client" : {
+               "bytes" : 613
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36459 GitHub, Inc.",
@@ -74,7 +77,6 @@
                "packets" : 9,
                "port" : 443
             },
-            "dstDataBytes" : 4204,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -149,6 +151,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 4204
+            },
             "source" : {
                "bytes" : 1513,
                "geo" : {
@@ -162,7 +167,6 @@
                "packets" : 14,
                "port" : 50754
             },
-            "srcDataBytes" : 613,
             "srcOui" : [
                "Apple, Inc."
             ],

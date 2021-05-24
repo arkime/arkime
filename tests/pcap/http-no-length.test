@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 452
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -23,7 +26,6 @@
                "packets" : 5,
                "port" : 80
             },
-            "dstDataBytes" : 744,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -199,6 +201,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 744
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -219,7 +224,6 @@
                "packets" : 5,
                "port" : 50384
             },
-            "srcDataBytes" : 452,
             "srcOui" : [
                "LITE-ON Technology Corp."
             ],

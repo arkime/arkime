@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 123
+            },
             "destination" : {
                "as" : {
                   "full" : "AS46636 NatCoWeb Corp.",
@@ -45,7 +48,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 31,
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],
@@ -76,6 +78,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 31
+            },
             "source" : {
                "as" : {
                   "full" : "AS203476 GANDI SAS",
@@ -97,7 +102,6 @@
                "packets" : 1,
                "port" : 55612
             },
-            "srcDataBytes" : 123,
             "srcOui" : [
                "Cisco Systems, Inc",
                "ICANN, IANA Department"

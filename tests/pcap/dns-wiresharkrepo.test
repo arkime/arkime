@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 388
+            },
             "destination" : {
                "bytes" : 1328,
                "ip" : "192.168.170.20",
@@ -116,7 +119,6 @@
                ],
                "statusCnt" : 2
             },
-            "dstDataBytes" : 824,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -191,6 +193,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 824
+            },
             "source" : {
                "bytes" : 892,
                "ip" : "192.168.170.8",
@@ -201,7 +206,6 @@
                "packets" : 12,
                "port" : 32795
             },
-            "srcDataBytes" : 388,
             "srcOui" : [
                "Asustek"
             ],
@@ -218,6 +222,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 40
+            },
             "destination" : {
                "bytes" : 105,
                "ip" : "192.168.170.20",
@@ -250,7 +257,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 63,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -281,6 +287,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 63
+            },
             "source" : {
                "bytes" : 82,
                "ip" : "192.168.170.8",
@@ -291,7 +300,6 @@
                "packets" : 1,
                "port" : 32796
             },
-            "srcDataBytes" : 40,
             "srcOui" : [
                "Asustek"
             ],
@@ -308,6 +316,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 25
+            },
             "destination" : {
                "bytes" : 166,
                "ip" : "192.168.170.20",
@@ -347,7 +358,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 124,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -378,6 +388,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 124
+            },
             "source" : {
                "bytes" : 67,
                "ip" : "192.168.170.8",
@@ -388,7 +401,6 @@
                "packets" : 1,
                "port" : 32797
             },
-            "srcDataBytes" : 25,
             "srcOui" : [
                "Asustek"
             ],
@@ -405,6 +417,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 87
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15659 NextGenTel AS",
@@ -447,7 +462,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 87,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -478,6 +492,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 87
+            },
             "source" : {
                "bytes" : 129,
                "ip" : "192.168.170.56",
@@ -488,7 +505,6 @@
                "packets" : 1,
                "port" : 1707
             },
-            "srcDataBytes" : 87,
             "srcOui" : [
                "3Com"
             ],
@@ -505,6 +521,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 56
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15659 NextGenTel AS",
@@ -547,7 +566,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 56,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -578,6 +596,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 56
+            },
             "source" : {
                "bytes" : 98,
                "ip" : "192.168.170.56",
@@ -588,7 +609,6 @@
                "packets" : 1,
                "port" : 1708
             },
-            "srcDataBytes" : 56,
             "srcOui" : [
                "3Com"
             ],
@@ -605,6 +625,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 98
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15659 NextGenTel AS",
@@ -647,7 +670,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 98,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -678,6 +700,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 98
+            },
             "source" : {
                "bytes" : 140,
                "ip" : "192.168.170.56",
@@ -688,7 +713,6 @@
                "packets" : 1,
                "port" : 1709
             },
-            "srcDataBytes" : 98,
             "srcOui" : [
                "3Com"
             ],
@@ -705,6 +729,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 41
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15659 NextGenTel AS",
@@ -747,7 +774,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 41,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -778,6 +804,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 41
+            },
             "source" : {
                "bytes" : 83,
                "ip" : "192.168.170.56",
@@ -788,7 +817,6 @@
                "packets" : 1,
                "port" : 1710
             },
-            "srcDataBytes" : 41,
             "srcOui" : [
                "3Com"
             ],
@@ -805,6 +833,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 41
+            },
             "destination" : {
                "as" : {
                   "full" : "AS15659 NextGenTel AS",
@@ -847,7 +878,6 @@
                ],
                "statusCnt" : 1
             },
-            "dstDataBytes" : 41,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -878,6 +908,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 41
+            },
             "source" : {
                "bytes" : 83,
                "ip" : "192.168.170.56",
@@ -888,7 +921,6 @@
                "packets" : 1,
                "port" : 1711
             },
-            "srcDataBytes" : 41,
             "srcOui" : [
                "3Com"
             ],

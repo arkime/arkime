@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 160
+            },
             "destination" : {
                "as" : {
                   "full" : "AS20940 Akamai International B.V.",
@@ -24,7 +27,6 @@
                "packets" : 2,
                "port" : 0
             },
-            "dstDataBytes" : 160,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -83,6 +85,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 160
+            },
             "source" : {
                "as" : {
                   "full" : "AS20940 Akamai International B.V.",
@@ -104,7 +109,6 @@
                "packets" : 2,
                "port" : 0
             },
-            "srcDataBytes" : 160,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

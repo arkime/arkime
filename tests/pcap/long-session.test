@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 5
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 1,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -60,6 +62,9 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -80,7 +85,6 @@
                "packets" : 3,
                "port" : 54869
             },
-            "srcDataBytes" : 5,
             "srcOui" : [
                "Dell Inc."
             ],
@@ -133,6 +137,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -154,7 +161,6 @@
                "packets" : 1,
                "port" : 80
             },
-            "dstDataBytes" : 0,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -183,6 +189,9 @@
             "protocolCnt" : 2,
             "rootId" : "SET",
             "segmentCnt" : 2,
+            "server" : {
+               "bytes" : 0
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -203,7 +212,6 @@
                "packets" : 0,
                "port" : 54869
             },
-            "srcDataBytes" : 0,
             "srcOui" : [
                "Dell Inc."
             ],

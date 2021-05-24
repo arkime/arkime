@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1109
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -24,7 +27,6 @@
                "packets" : 11,
                "port" : 22
             },
-            "dstDataBytes" : 1407,
             "dstOui" : [
                "ICANN, IANA Department"
             ],
@@ -96,6 +98,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1407
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -116,7 +121,6 @@
                "packets" : 11,
                "port" : 61672
             },
-            "srcDataBytes" : 1109,
             "srcOui" : [
                "VMware, Inc."
             ],

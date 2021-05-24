@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 145
+            },
             "destination" : {
                "as" : {
                   "full" : "AS36459 GitHub, Inc.",
@@ -24,7 +27,6 @@
                "packets" : 3,
                "port" : 80
             },
-            "dstDataBytes" : 107,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -134,6 +136,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 107
+            },
             "source" : {
                "bytes" : 487,
                "geo" : {
@@ -147,7 +152,6 @@
                "packets" : 5,
                "port" : 62341
             },
-            "srcDataBytes" : 145,
             "srcOui" : [
                "Apple, Inc."
             ],

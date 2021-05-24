@@ -3,6 +3,9 @@
       {
          "body" : {
             "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 400
+            },
             "destination" : {
                "as" : {
                   "full" : "AS1 Cool Beans!",
@@ -19,7 +22,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "dstDataBytes" : 400,
             "fileId" : [],
             "firstPacket" : 1213470754490,
             "icmp" : {
@@ -68,6 +70,9 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 400
+            },
             "source" : {
                "as" : {
                   "full" : "AS0 This is neat",
@@ -84,7 +89,6 @@
                "packets" : 5,
                "port" : 0
             },
-            "srcDataBytes" : 400,
             "tags" : [
                "dstip",
                "srcip"

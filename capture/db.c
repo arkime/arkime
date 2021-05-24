@@ -778,15 +778,17 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "},");
 
+
+    BSB_EXPORT_sprintf(jbsb, "\"client\":{\"bytes\":%" PRIu64 "},",
+                      session->databytes[0]);
+    BSB_EXPORT_sprintf(jbsb, "\"server\":{\"bytes\":%" PRIu64 "},",
+                      session->databytes[1]);
+
     BSB_EXPORT_sprintf(jbsb,
                       "\"totDataBytes\":%" PRIu64 ","
-                      "\"srcDataBytes\":%" PRIu64 ","
-                      "\"dstDataBytes\":%" PRIu64 ","
                       "\"segmentCnt\":%u,"
                       "\"node\":\"%s\",",
                       session->databytes[0] + session->databytes[1],
-                      session->databytes[0],
-                      session->databytes[1],
                       session->segments,
                       config.nodeName);
 

@@ -154,7 +154,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {string} numPackets=last - The number of packets to show in the session packet area.
    * @param {string} theme=default-theme - The color theme to apply to the UI. Can be a name of a predefined field or a list of color codes if using a custom theme.
    * @param {boolean} manualQuery=false - Whether to load the sessions data by default or wait for a user to hit search manually.
-   * @param {array} timelineDataFilters=['totPackets','totBytes','totDataBytes'] - The filters to display on the sessions timeline graph to change the graphs data.
+   * @param {array} timelineDataFilters=['network.packets','network.bytes','totDataBytes'] - The filters to display on the sessions timeline graph to change the graphs data.
    * @param {string} logo - The optionally configurable logo to show in the top navbar.
    */
 
@@ -175,7 +175,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @typedef ArkimeColumnConfig
    * @type {object}
    * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
-   * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","source.port","dst","destination.port","totPackets","dbby","node"] - The list of Sessions table columns.
+   * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
    */
 
   /**
