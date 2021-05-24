@@ -62,6 +62,7 @@
 # 65 - hunt unrunnable and failedSessionIds
 # 66 - share hunts
 # 67 - remove hunt info from matched sessions
+# 68 - cron query enhancements
 
 
 use HTTP::Request::Common;
@@ -73,7 +74,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 67;
+my $VERSION = 68;
 my $verbose = 0;
 my $PREFIX = "";
 my $SECURE = 1;
@@ -1161,6 +1162,9 @@ sub queriesUpdate
       "count": {
         "type": "long"
       },
+      "lastCount": {
+        "type": "long"
+      },
       "query": {
         "type": "keyword"
       },
@@ -1181,6 +1185,18 @@ sub queriesUpdate
       },
       "lastNotifiedCount": {
         "type": "long"
+      },
+      "description": {
+        "type": "keyword"
+      },
+      "created": {
+        "type": "date"
+      },
+      "lastToggled": {
+        "type": "date"
+      },
+      "lastToggledBy": {
+        "type": "keyword"
       }
     }
   }
@@ -4364,13 +4380,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
         checkForOld5Indices();
         checkForOld6Indices();
-    } elsif ($main::versionNumber <= 67) {
+    } elsif ($main::versionNumber <= 68) {
         checkForOld5Indices();
         checkForOld6Indices();
         sessions2Update();
         historyUpdate();
         lookupsUpdate();
         huntsUpdate();
+        queriesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

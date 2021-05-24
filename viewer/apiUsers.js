@@ -931,7 +931,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    *
    * Retrieves cron queries for a user.
    * @name /user/crons
-   * @returns {object} queries - A list of cron query objects.
+   * @returns {object} queries - A list of cron query objects. TODO ECR
    */
   uModule.getUserCron = (req, res) => {
     if (!req.settingUser) {
@@ -989,9 +989,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         name: req.body.name,
         query: req.body.query,
         tags: req.body.tags,
-        action: req.body.action
+        action: req.body.action,
+        created: Math.floor(Date.now() / 1000)
       }
     };
+
+    if (req.body.description) {
+      doc.doc.description = req.body.description;
+    }
 
     if (req.body.notifier) {
       doc.doc.notifier = req.body.notifier;
@@ -1068,6 +1073,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/cron/:key
    * @returns {boolean} success - Whether the update cron operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {ArkimeQuery} query - The updated query object TODO ECR create arkimequery object if it doesn't exist
    */
   uModule.updateUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
@@ -1103,14 +1109,26 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     try {
-      await Db.get('queries', 'query', key);
+      const { body: { _source: cron } } = await Db.get('queries', 'query', key);
+
+      if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
+        doc.doc.lastToggledBy = req.settingUser.userId
+        doc.doc.lastToggled = Math.floor(Date.now() / 1000)
+      }
+
+      const query = { // last object property overwrites the previous one
+        ...cron,
+        ...doc.doc
+      };
+
       await Db.update('queries', 'query', key, doc, { refresh: true });
 
       if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Updated cron query successfully'
+        text: 'Updated cron query successfully',
+        query: query
       }));
     } catch (err) {
       console.log(`ERROR - POST /api/user/cron/${key}`, err);

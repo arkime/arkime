@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 67;
+const MIN_DB_VERSION = 68;
 
 // ============================================================================
 // MODULES
@@ -2394,9 +2394,11 @@ internals.processCronQueries = () => {
                 doc: {
                   lpValue: lpValue,
                   lastRun: Math.floor(Date.now() / 1000),
-                  count: (queries[qid].count || 0) + count
+                  count: (queries[qid].count || 0) + count,
+                  lastCount: count
                 }
               };
+
 
               async function continueProcess () {
                 await Db.update('queries', 'query', qid, doc, { refresh: true });
@@ -2420,7 +2422,7 @@ internals.processCronQueries = () => {
                 const message = `
 *${cq.name}* cron query match alert:
 *${newMatchCount} new* matches
-*${doc.doc.count} total* matches.
+*${doc.doc.count} total* matches
 ${Config.arkimeWebURL()}${urlPath}
                 `;
 

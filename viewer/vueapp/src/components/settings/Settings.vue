@@ -67,7 +67,7 @@
             :class="{'active':visibleTab === 'cron'}">
             <span class="fa fa-fw fa-search">
             </span>&nbsp;
-            Cron Queries
+            Periodic Queries
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('col')"
@@ -673,7 +673,7 @@
           class="form-horizontal"
           id="cron">
 
-          <h3>Cron Queries</h3>
+          <h3>Periodic Queries</h3>
 
           <p>
             Allow queries to be run periodically that can perform actions on
@@ -685,6 +685,7 @@
           <table class="table table-striped table-sm">
             <thead>
               <tr>
+                <th>&nbsp;</th>
                 <th>Enabled</th>
                 <th>Processed</th>
                 <th>Name</th>
@@ -699,103 +700,161 @@
             </thead>
             <tbody>
               <!-- cron queries -->
-              <tr v-for="(item, key) in cronQueries"
-                @keyup.enter="updateCronQuery(key)"
-                @keyup.esc="cancelCronQueryChange(key)"
-                :key="key">
-                <td>
-                  <input type="checkbox"
-                    v-model="item.enabled"
-                    @input="cronQueryChanged(key)"
-                  />
+              <template v-for="(item, key) in cronQueries">
+                <tr :key="key"
+                  @keyup.enter="updateCronQuery(key)"
+                  @keyup.esc="cancelCronQueryChange(key)">
+                  <td>
+                    <toggle-btn
+                      :opened="item.expanded"
+                      @toggle="toggleCronQueryDetail(item)">
+                    </toggle-btn>
+                  </td>
+                  <td>
+                    <input type="checkbox"
+                      v-model="item.enabled"
+                      @input="toggleCronQueryEnabled(key)"
+                    />
+                  </td>
+                  <td>{{ item.count }}</td>
+                  <td>
+                    <input type="text"
+                      maxlength="20"
+                      v-model="item.name"
+                      class="form-control form-control-sm"
+                      @input="cronQueryChanged(key)"
+                    />
+                  </td>
+                  <td>
+                    <input type="text"
+                      v-model="item.query"
+                      class="form-control form-control-sm"
+                      @input="cronQueryChanged(key)"
+                    />
+                  </td>
+                  <td>
+                    <select class="form-control form-control-sm"
+                      v-model="item.action"
+                      @change="cronQueryChanged(key)">
+                      <option value="tag">Tag</option>
+                      <option v-for="(item, key) in molochClusters"
+                        :value="`forward:${key}`"
+                        :key="key">
+                        Tag & Export to {{ item.name }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="text"
+                      v-model="item.tags"
+                      class="form-control form-control-sm"
+                      @input="cronQueryChanged(key)"
+                    />
+                  </td>
+                  <td>
+                    <select v-model="item.notifier"
+                      class="form-control form-control-sm"
+                      @input="cronQueryChanged(key)">
+                      <option value=undefined>none</option>
+                      <option v-for="notifier in notifiers"
+                        :key="notifier.name"
+                        :value="notifier.name">
+                        {{ notifier.name }} ({{ notifier.type }})
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <div v-if="item.changed"
+                      class="btn-group btn-group-sm pull-right">
+                      <button type="button"
+                        class="btn btn-theme-tertiary"
+                        v-b-tooltip.hover
+                        title="Save changes to this query"
+                        @click="updateCronQuery(key)">
+                        <span class="fa fa-save fa-fw">
+                        </span>
+                      </button>
+                      <button type="button"
+                        class="btn btn-warning"
+                        v-b-tooltip.hover
+                        title="Undo changes to this query"
+                        @click="cancelCronQueryChange(key)">
+                        <span class="fa fa-ban fa-fw">
+                        </span>
+                      </button>
+                    </div>
+                    <div v-else class="btn-group btn-group-sm pull-right">
+                      <button type="button"
+                        class="btn btn-info"
+                        v-if="!item.changed"
+                        @click="openCronSessions(item)"
+                        v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
+                        <span class="fa fa-folder-open fa-fw">
+                        </span>
+                      </button>
+                      <button type="button"
+                        class="btn btn-danger"
+                        v-if="!item.changed"
+                        @click="deleteCronQuery(key)">
+                        <span class="fa fa-trash-o fa-fw">
+                        </span>
+                      </button>
+                    </div>
+                  </td>
+                </tr> <!-- /cron queries -->
+                <transition name="grow"
+                  :key="key + 'detail'">
+                  <tr v-if="item.expanded"
+                    class="mt-3">
+                    <td colspan="9">
+                      <div class="row">
+                        <div class="col">
+                          <strong>Query Description</strong>:
+                          {{ item.description }}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <strong>Created by</strong>:
+                          {{ item.creator }}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <strong>Created at</strong>:
+                          {{ item.created * 1000 | timezoneDateString(settings.timezone, false) }}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <strong>Last run at</strong>:
+                          {{ item.lastRun * 1000 | timezoneDateString(settings.timezone, false) }}
+                          and matched {{ item.lastCount }} new sessions
+                        </div>
+                      </div>
+                      <div class="row"
+                        v-if="item.lastToggled">
+                        <div class="col">
+                          <strong>{{ item.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
+                          {{ item.lastToggled * 1000 | timezoneDateString(settings.timezone, false) }}
+                          by {{ item.lastToggledBy }}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </transition>
+              </template>
+              <tr v-if="!cronQueries || !Object.keys(cronQueries).length"
+                class="text-center">
+                <td colspan="9"
+                  class="pt-2">
+                  <h6>
+                    <span class="fa fa-folder-open mr-2" />
+                    No periodic queries have been created. Use the form below to create one!
+                  </h6>
                 </td>
-                <td>{{ item.count }}</td>
-                <td>
-                  <input type="text"
-                    maxlength="20"
-                    v-model="item.name"
-                    class="form-control form-control-sm"
-                    @input="cronQueryChanged(key)"
-                  />
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="item.query"
-                    class="form-control form-control-sm"
-                    @input="cronQueryChanged(key)"
-                  />
-                </td>
-                <td>
-                  <select class="form-control form-control-sm"
-                    v-model="item.action"
-                    @change="cronQueryChanged(key)">
-                    <option value="tag">Tag</option>
-                    <option v-for="(item, key) in molochClusters"
-                      :value="`forward:${key}`"
-                      :key="key">
-                      Tag & Export to {{ item.name }}
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="item.tags"
-                    class="form-control form-control-sm"
-                    @input="cronQueryChanged(key)"
-                  />
-                </td>
-                <td>
-                  <select v-model="item.notifier"
-                    class="form-control form-control-sm"
-                    @input="cronQueryChanged(key)">
-                    <option value=undefined>none</option>
-                    <option v-for="notifier in notifiers"
-                      :key="notifier.name"
-                      :value="notifier.name">
-                      {{ notifier.name }} ({{ notifier.type }})
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <div v-if="item.changed"
-                    class="btn-group btn-group-sm pull-right">
-                    <button type="button"
-                      class="btn btn-theme-tertiary"
-                      v-b-tooltip.hover
-                      title="Save changes to this cron query"
-                      @click="updateCronQuery(key)">
-                      <span class="fa fa-save fa-fw">
-                      </span>
-                    </button>
-                    <button type="button"
-                      class="btn btn-warning"
-                      v-b-tooltip.hover
-                      title="Undo changes to this cron query"
-                      @click="cancelCronQueryChange(key)">
-                      <span class="fa fa-ban fa-fw">
-                      </span>
-                    </button>
-                  </div>
-                  <div v-else class="btn-group btn-group-sm pull-right">
-                    <button type="button"
-                      class="btn btn-info"
-                      v-if="!item.changed"
-                      @click="openCronSessions(item)"
-                      v-b-tooltip.hover="'Open sessions that this cron query tagged in the last hour.'">
-                      <span class="fa fa-folder-open fa-fw">
-                      </span>
-                    </button>
-                    <button type="button"
-                      class="btn btn-danger"
-                      v-if="!item.changed"
-                      @click="deleteCronQuery(key)">
-                      <span class="fa fa-trash-o fa-fw">
-                      </span>
-                    </button>
-                  </div>
-                </td>
-              </tr> <!-- /cron queries -->
-              <!-- cron query form error -->
+              </tr>
+              <!-- cron query list error -->
               <tr v-if="cronQueryListError">
                 <td colspan="8">
                   <p class="text-danger mb-0">
@@ -804,103 +863,157 @@
                     {{ cronQueryListError }}
                   </p>
                 </td>
-              </tr> <!-- /cron query form error -->
-              <!-- new cron query form -->
-              <tr @keyup.enter="createCronQuery">
-                <td>&nbsp;</td>
-                <td>
-                  <select class="form-control form-control-sm"
-                    v-model="newCronQueryProcess"
-                    v-b-tooltip.hover
-                    title="Start processing cron query since">
-                    <option value="0">Now</option>
-                    <option value="1">1 hour ago</option>
-                    <option value="6">6 hours ago</option>
-                    <option value="24">24 hours ago</option>
-                    <option value="48">48 hours ago</option>
-                    <option value="72">72 hours ago</option>
-                    <option value="168">1 week ago</option>
-                    <option value="336">2 weeks ago</option>
-                    <option value="720">1 month ago</option>
-                    <option value="1440">2 months ago</option>
-                    <option value="4380">6 months ago</option>
-                    <option value="8760">1 year ago</option>
-                    <option value="-1">All (careful)</option>
-                  </select>
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="newCronQueryName"
-                    class="form-control form-control-sm"
-                    maxlength="20"
-                    v-b-tooltip.hover
-                    title="Enter a new cron query name (20 chars or less)"
-                    placeholder="Cron query name"
-                  />
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="newCronQueryExpression"
-                    class="form-control form-control-sm"
-                    v-b-tooltip.hover
-                    title="Enter a new cron query expression"
-                    placeholder="Cron query expression"
-                  />
-                </td>
-                <td>
-                  <select class="form-control form-control-sm"
-                    v-model="newCronQueryAction">
-                    <option value="tag">Tag</option>
-                    <option v-for="(item, key) in molochClusters"
-                      :key="key"
-                      :value="`forward:${key}`">
-                      Tag & Export to {{ item.name }}
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <input type="text"
-                    v-model="newCronQueryTags"
-                    class="form-control form-control-sm"
-                    v-b-tooltip.hover
-                    title="Enter a comma separated list of tags"
-                    placeholder="Comma separated list of tags"
-                  />
-                </td>
-                <td>
-                  <select v-model="newCronQueryNotifier"
-                    class="form-control form-control-sm">
-                    <option value=undefined>none</option>
-                    <option v-for="notifier in notifiers"
-                      :key="notifier.name"
-                      :value="notifier.name">
-                      {{ notifier.name }} ({{ notifier.type }})
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <button type="button"
-                    class="btn btn-theme-tertiary btn-sm pull-right"
-                    @click="createCronQuery">
-                    <span class="fa fa-plus-circle">
-                    </span>&nbsp;
-                    Create
-                  </button>
-                </td>
-              </tr> <!-- /new cron query form -->
-              <!-- cron query form error -->
-              <tr v-if="cronQueryFormError">
-                <td colspan="8">
-                  <p class="small text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
-                    {{ cronQueryFormError }}
-                  </p>
-                </td>
-              </tr> <!-- /cron query form error -->
+              </tr> <!-- /cron query list error -->
             </tbody>
           </table>
 
+          <!-- new cron query form -->
+          <div @keyup.enter="createCronQuery"
+            class="well well-lg">
+            <h3 class="mt-3">
+              New Periodic Query
+              <button type="button"
+                class="btn btn-theme-tertiary btn-sm pull-right"
+                @click="createCronQuery">
+                <span class="fa fa-plus-circle">
+                </span>&nbsp;
+                Create
+              </button>
+              <!-- cron query form error -->
+              <div v-if="cronQueryFormError"
+                class="xsmall text-danger pull-right mr-2 mt-2">
+                <span class="fa fa-exclamation-triangle">
+                </span>&nbsp;
+                {{ cronQueryFormError }}
+              </div> <!-- /cron query form error -->
+            </h3>
+            <hr>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="process">
+                  Process Query Since<sup>*</sup>
+                </label>
+                <b-form-select
+                  size="sm"
+                  id="process"
+                  v-b-tooltip.hover
+                  class="form-control"
+                  v-model="newCronQueryProcess"
+                  title="Start processing query since"
+                  :options="[
+                    { value: 0, text: 'Now' },
+                    { value: 1, text: '1 hour ago' },
+                    { value: 6, text: '6 hours ago' },
+                    { value: 24, text: '24 hours ago' },
+                    { value: 48, text: '48 hours ago' },
+                    { value: 72, text: '72 hours ago' },
+                    { value: 168, text: '1 week ago' },
+                    { value: 336, text: '2 weeks ago' },
+                    { value: 720, text: '1 month ago' },
+                    { value: 1440, text: '2 months ago' },
+                    { value: 4380, text: '6 months ago' },
+                    { value: 8760, text: '1 year ago' },
+                    { value: -1, text: 'All (careful)' }
+                  ]"
+                />
+              </div>
+              <div class="form-group col-md-6">
+                <label for="notify">
+                  Notify
+                </label>
+                <select id="notify"
+                  v-model="newCronQueryNotifier"
+                  class="form-control form-control-sm">
+                  <option value=undefined>none</option>
+                  <option v-for="notifier in notifiers"
+                    :key="notifier.name"
+                    :value="notifier.name">
+                    {{ notifier.name }} ({{ notifier.type }})
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-12">
+                <label for="name">
+                  Query Name<sup>*</sup>
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  maxlength="20"
+                  v-b-tooltip.hover
+                  v-model="newCronQueryName"
+                  placeholder="Periodic query name"
+                  class="form-control form-control-sm"
+                  title="Enter a query name (20 chars or less)"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-12">
+                <label for="name">
+                  Query Description
+                </label>
+                <input
+                  type="text"
+                  id="description"
+                  v-b-tooltip.hover
+                  v-model="newCronQueryDescription"
+                  class="form-control form-control-sm"
+                  title="Enter an optional description"
+                  placeholder="Periodic query description"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-12">
+                <label for="expression">
+                  Search Expression<sup>*</sup>
+                </label>
+                <input
+                  type="text"
+                  id="expression"
+                  v-b-tooltip.hover
+                  v-model="newCronQueryExpression"
+                  class="form-control form-control-sm"
+                  placeholder="Periodic query expression"
+                  title="Enter a new periodic query expression"
+                />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="action">
+                  Query Action<sup>*</sup>
+                </label>
+                <select id="action"
+                  v-model="newCronQueryAction"
+                  class="form-control form-control-sm">
+                  <option value="tag">Tag</option>
+                  <option v-for="(item, key) in molochClusters"
+                    :key="key"
+                    :value="`forward:${key}`">
+                    Tag & Export to {{ item.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="notify">
+                  Tags<sup>*</sup>
+                </label>
+                <input
+                  id="tags"
+                  type="text"
+                  v-b-tooltip.hover
+                  v-model="newCronQueryTags"
+                  class="form-control form-control-sm"
+                  placeholder="Comma separated list of tags"
+                  title="Enter a comma separated list of tags"
+                />
+              </div>
+            </div>
+          </div> <!-- /new cron query form -->
         </form> <!-- /cron query settings -->
 
         <!-- col configs settings -->
@@ -2334,6 +2447,7 @@ import MolochLoading from '../utils/Loading';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
 import MolochPaging from '../utils/Pagination';
+import ToggleBtn from '../utils/ToggleBtn';
 
 let clockInterval;
 
@@ -2353,7 +2467,8 @@ export default {
     MolochToast,
     MolochFieldTypeahead,
     ColorPicker,
-    MolochPaging
+    MolochPaging,
+    ToggleBtn
   },
   data: function () {
     return {
@@ -2392,6 +2507,7 @@ export default {
       cronQueryListError: '',
       cronQueryFormError: '',
       newCronQueryName: '',
+      newCronQueryDescription: '',
       newCronQueryExpression: '',
       newCronQueryTags: '',
       newCronQueryNotifier: undefined,
@@ -2843,19 +2959,20 @@ export default {
     },
     /* CRON QUERIES ------------------------------------ */
     /* creates a cron query given the name, expression, process, and tags */
+    // TODO ECR send new fields
     createCronQuery: function () {
       if (!this.newCronQueryName || this.newCronQueryName === '') {
-        this.cronQueryFormError = 'No cron query name specified.';
+        this.cronQueryFormError = 'No query name specified.';
         return;
       }
 
       if (!this.newCronQueryExpression || this.newCronQueryExpression === '') {
-        this.cronQueryFormError = 'No cron query expression specified.';
+        this.cronQueryFormError = 'No query expression specified.';
         return;
       }
 
       if (!this.newCronQueryTags || this.newCronQueryTags === '') {
-        this.cronQueryFormError = 'No cron query tags specified.';
+        this.cronQueryFormError = 'No query tags specified.';
         return;
       }
 
@@ -2865,7 +2982,8 @@ export default {
         query: this.newCronQueryExpression,
         action: this.newCronQueryAction,
         tags: this.newCronQueryTags,
-        since: this.newCronQueryProcess
+        since: this.newCronQueryProcess,
+        description: this.newCronQueryDescription
       };
 
       if (this.newCronQueryNotifier) {
@@ -2883,6 +3001,7 @@ export default {
           this.newCronQueryTags = '';
           this.newCronQueryExpression = '';
           this.newCronQueryNotifier = '';
+          this.newCronQueryDescription = '';
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
@@ -2892,6 +3011,9 @@ export default {
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    },
+    toggleCronQueryDetail: function (cron) {
+      this.$set(cron, 'expanded', !cron.expanded);
     },
     openCronSessions: function (cron) {
       if (cron.tags) {
@@ -2904,7 +3026,7 @@ export default {
         }
         window.open(url, '_blank'); // open in new tab
       } else {
-        this.msg = 'This cron query has not tagged any sessions';
+        this.msg = 'This query has not tagged any sessions';
         this.msgType = 'danger';
       }
     },
@@ -2927,6 +3049,12 @@ export default {
           this.msg = error.text;
           this.msgType = 'danger';
         });
+    },
+    // TODO ECR
+    toggleCronQueryEnabled: function (key) {
+      this.cronQueryChanged(key);
+      this.cronQueries[key].enabled = !this.cronQueries[key].enabled;
+      this.updateCronQuery(key);
     },
     /**
      * Sets a cron query as having been changed
@@ -2956,13 +3084,13 @@ export default {
       const data = this.cronQueries[key];
 
       if (!data) {
-        this.msg = 'Could not find corresponding cron query';
+        this.msg = 'Could not find corresponding query';
         this.msgType = 'danger';
         return;
       }
 
       if (!data.changed) {
-        this.msg = 'This cron query has not changed';
+        this.msg = 'This query has not changed';
         this.msgType = 'warning';
         return;
       }
@@ -2976,6 +3104,8 @@ export default {
           this.msgType = 'success';
           // set the cron query as unchanged
           data.changed = false;
+          response.query.expanded = this.cronQueries[key].expanded;
+          this.$set(this.cronQueries, key, response.query);
         })
         .catch((error) => {
           // display error message to user
