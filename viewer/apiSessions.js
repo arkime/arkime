@@ -25,7 +25,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (err) {
         return res.send('Could not build query.  Err: ' + err);
       }
-      query._source = fields;
+      query._source = false;
+      query.fields = fields;
       if (Config.debug) {
         console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
       }
@@ -208,7 +209,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (fields) {
       const columnHeaders = [];
       for (let i = 0; i < fields.length; ++i) {
-        console.log('ALW', fields[i]);
         if (fieldObjects[fields[i]] !== undefined) {
           columnHeaders.push(fieldObjects[fields[i]].friendlyName);
         }
@@ -1363,7 +1363,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code', 'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
 
-    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: fields.join(',') });
+    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: false, fields: fields });
     options.arkime_unflatten = false;
     async.eachLimit(ids, 10, (id, nextCb) => {
       Db.getSession(id, options, (err, session) => {
@@ -1373,8 +1373,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         for (let i = 0; i < fixFields.length; i++) {
           const field = fixFields[i];
-          if (session._source[field] && Array.isArray(session._source[field])) {
-            session._source[field] = session._source[field][0];
+          if (session.fields[field] && Array.isArray(session.fields[field])) {
+            session.fields[field] = session.fields[field][0];
           }
         }
 
@@ -1384,7 +1384,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }, (err) => {
       if (processSegments) {
         sModule.buildSessionQuery(req, (err, query, indices) => {
-          query._source = fields;
+          query.fields = fields;
+          query._source = false;
           sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
             cb(err, addSegmentsList);
           });
@@ -1574,7 +1575,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       if (req.query.fields) {
-        query._source = ViewerUtils.queryValueToArray(req.query.fields);
+        query._source = false;
+        query.fields = ViewerUtils.queryValueToArray(req.query.fields);
       }
 
       res.send({ esquery: query, indices: indices });
@@ -1671,11 +1673,22 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           fields.id = Db.session2Sid(hit);
 
           if (addMissing) {
-            ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes'].forEach((item) => {
-              if (fields[item] === undefined) {
-                fields[item] = -1;
-              }
-            });
+            if (options.arkime_unflatten) {
+              [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']].forEach((item) => {
+                if (fields[item[0]] === undefined) {
+                  fields[item[0]] = {};
+                }
+                if (fields[item[0]][item[1]] === undefined) {
+                  fields[item[0]][item[1]] = -1;
+                }
+              });
+            } else {
+              ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes'].forEach((item) => {
+                if (fields[item] === undefined) {
+                  fields[item] = -1;
+                }
+              });
+            }
             results.results.push(fields);
             return hitCb();
           } else {
@@ -1971,7 +1984,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         results.recordsTotal = total.count;
         results.recordsFiltered = result.hits.total;
 
-        console.log('ALW', JSON.stringify(result.aggregations, false, 2));
         results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
         results.map = ViewerUtils.mapMerge(result.aggregations);
 
@@ -2861,7 +2873,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       query.size = 1;
       query.sort = { lastPacket: { order: 'desc' } };
-      query._source = ['node'];
+      query._source = false;
+      query.fields = ['node'];
 
       if (Config.debug) {
         console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));

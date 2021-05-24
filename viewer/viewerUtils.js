@@ -298,9 +298,9 @@ module.exports = (Config, Db, molochparser, internals) => {
 
     // allowed tot* data map
     const filtersMap = {
-      totPackets: ['source.packets', 'destination.packets'],
-      totBytes: ['source.bytes', 'destination.bytes'],
-      totDataBytes: ['srcDataBytes', 'dstDataBytes']
+      'network.packets': ['source.packets', 'destination.packets'],
+      'network.bytes': ['source.bytes', 'destination.bytes'],
+      totDataBytes: ['client.bytes', 'server.bytes']
     };
 
     for (let i = 0; i < filters.length; i++) {
@@ -332,8 +332,8 @@ module.exports = (Config, Db, molochparser, internals) => {
         // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
         // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
         if (filters.includes(prop) ||
-          prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
-          prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
+          prop === 'source.packets' || prop === 'destination.packets' || prop === 'source.bytes' ||
+          prop === 'destination.bytes' || prop === 'client.bytes' || prop === 'server.bytes') {
           // Note: prop will never be one of the chosen tot* exceptions
           graph[prop + 'Histo'].push([key, item[prop].value]);
 
@@ -343,11 +343,11 @@ module.exports = (Config, Db, molochparser, internals) => {
           }
 
           // Add src/dst to tot* counters.
-          if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
+          if ((prop === 'source.packets' || prop === 'destination.packets') && filters.includes('totPackets')) {
             graph.totPacketsTotal += item[prop].value;
-          } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('network.bytes')) {
+          } else if ((prop === 'source.bytes' || prop === 'destination.bytes') && filters.includes('network.bytes')) {
             graph.totBytesTotal += item[prop].value;
-          } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
+          } else if ((prop === 'client.bytes' || prop === 'server.bytes') && filters.includes('totDataBytes')) {
             graph.totDataBytesTotal += item[prop].value;
           }
         }

@@ -377,10 +377,15 @@ exports.getSession = async (id, options, cb) => {
     options = { _source: false, fields: ['*'] };
   }
   const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
-  delete options._source;
-  delete options.fields;
 
-  exports.search(exports.sid2Index(id), '_doc', query, options, (err, results) => {
+  const unflatten = options.arkime_unflatten ?? true;
+  const params = { };
+  exports.merge(params, options);
+  delete params._source;
+  delete params.fields;
+  delete params.arkime_unflatten;
+
+  exports.search(exports.sid2Index(id), '_doc', query, params, (err, results) => {
     if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
     const session = results.hits.hits[0];
@@ -388,7 +393,7 @@ exports.getSession = async (id, options, cb) => {
     if (options && options._source && !options._source.includes('packetPos')) {
       return cb(null, session);
     }
-    fixSessionFields(session._source || session.fields, true);
+    fixSessionFields(session._source || session.fields, unflatten);
     return fixPacketPos(session, session._source || session.fields);
   });
 };
@@ -549,7 +554,7 @@ exports.searchSessions = function (index, query, options, cb) {
     });
   }
 
-  const unflatten = !!options.arkime_unflatten;
+  const unflatten = options.arkime_unflatten ?? true;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);
   delete params.arkime_unflatten;

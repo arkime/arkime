@@ -70,12 +70,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map short");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "sessionsHisto short");
-    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "srcPacketsHisto short");
-    diag Dumper($json->{graph});
-    exit 0;
-    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "dstPacketsHisto short");
-    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "srcDataBytesHisto short");
-    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "dstDataBytesHisto short");
+    eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[["1386004309000", 8], ["1386004312000", 8], [1386004317000, 10]]'), "source.packetsHisto short");
+    eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1386004309000", 6], ["1386004312000", 7], [1386004317000, 7]]'), "destination.packetsHisto short");
+    eq_or_diff($json->{graph}->{"client.bytesHisto"}, from_json('[["1386004309000", 155], ["1386004312000", 171], [1386004317000, 160]]'), "client.bytesHisto short");
+    eq_or_diff($json->{graph}->{"server.bytesHisto"}, from_json('[["1386004309000", 1599], ["1386004312000", 1599], [1386004317000, 1603]]'), "server.bytesHisto short");
     is ($json->{recordsFiltered}, 3, "records short");
     is ($json->{graph}->{interval}, 1, "correct interval short");
     is ($json->{graph}->{xmax}, 1386004400000, "correct xmax short");
@@ -86,10 +84,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map medium");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004260000", 3]]'), "sessionsHisto medium");
-    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1386004260000", 26]]'), "srcPacketsHisto medium");
-    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1386004260000", 20]]'), "dstPacketsHisto medium");
-    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1386004260000", 486]]'), "srcDataBytesHisto medium");
-    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1386004260000", 4801]]'), "dstDataBytesHisto medium");
+    eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[["1386004260000", 26]]'), "source.packetsHisto medium");
+    eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1386004260000", 20]]'), "destination.packetsHisto medium");
+    eq_or_diff($json->{graph}->{"client.bytesHisto"}, from_json('[["1386004260000", 486]]'), "client.bytesHisto medium");
+    eq_or_diff($json->{graph}->{"server.bytesHisto"}, from_json('[["1386004260000", 4801]]'), "server.bytesHisto medium");
     is ($json->{recordsFiltered}, 3, "records medium");
     is ($json->{graph}->{interval}, 60, "correct interval medium");
     is ($json->{graph}->{xmax}, 1386349908000, "correct xmax medium");
@@ -100,10 +98,10 @@ my ($url) = @_;
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "sessionsHisto ALL");
-    eq_or_diff($json->{graph}->{srcPacketsHisto}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "srcPacketsHisto ALL");
-    eq_or_diff($json->{graph}->{dstPacketsHisto}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "dstPacketsHisto ALL");
-    eq_or_diff($json->{graph}->{srcDataBytesHisto}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "srcDataBytesHisto ALL");
-    eq_or_diff($json->{graph}->{dstDataBytesHisto}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "dstDataBytesHisto ALL");
+    eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000,3]]'), "source.packetsHisto ALL");
+    eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000,1]]'), "destination.packetsHisto ALL");
+    eq_or_diff($json->{graph}->{"client.bytesHisto"}, from_json('[["1335956400000", 128], ["1386003600000", 486], [1387742400000, 68], [1482552000000,68]]'), "client.bytesHisto ALL");
+    eq_or_diff($json->{graph}->{"server.bytesHisto"}, from_json('[["1335956400000", 0], ["1386003600000", 4801], [1387742400000, 0], [1482552000000,0]]'), "server.bytesHisto ALL");
     is ($json->{recordsFiltered}, 6, "records ALL");
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
@@ -123,6 +121,7 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 ', "CSV Expression");
 
     my $idQuery = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    diag "http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id};
     $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id})->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv,
@@ -130,7 +129,7 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
-    my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,srcIp,srcGEO,dstIp,dstGEO,totPackets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Arkime Node, TCP Flag RST, TCP Flag PSH,  ASN
 1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
