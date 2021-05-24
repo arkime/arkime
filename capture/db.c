@@ -44,6 +44,7 @@ extern uint64_t         unwrittenBytes;
 
 extern int              mac1Field;
 extern int              mac2Field;
+extern int              vlanField;
 
 LOCAL struct timeval    startTime;
 LOCAL char             *rirs[256];
@@ -335,10 +336,14 @@ LOCAL void moloch_db_send_bulk_cb(int code, unsigned char *data, int data_len, g
 {
     if (code != 200)
         LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
+    else if (config.debug > 4)
+        LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
 }
 /******************************************************************************/
 LOCAL void moloch_db_send_bulk(char *json, int len)
 {
+    if (config.debug > 4)
+        LOG("Sending Bulk:>%.*s<", len, json);
     moloch_http_send(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, FALSE, moloch_db_send_bulk_cb, NULL);
 }
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
@@ -776,7 +781,21 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_sprintf(jbsb, ",\"community_id\": \"1:%s\"", communityId);
         g_free(communityId);
     }
-    BSB_EXPORT_cstr(jbsb, "},");
+
+    if (session->fields[vlanField]) {
+        BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
+        ghash = session->fields[vlanField]->ghash;
+        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\": %u,", g_hash_table_size(ghash));
+        BSB_EXPORT_sprintf(jbsb, "\"id\":[");
+        g_hash_table_iter_init (&iter, ghash);
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
+            BSB_EXPORT_u08(jbsb, ',');
+        }
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_cstr(jbsb, "]}");
+    }
+    BSB_EXPORT_cstr(jbsb, "},"); /* network */
 
 
     BSB_EXPORT_sprintf(jbsb, "\"client\":{\"bytes\":%" PRIu64 "},",

@@ -200,8 +200,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   function csvListWriter (req, res, list, fields, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
-    } else if (list.length > 0 && list[0]._source) {
-      list = list.sort((a, b) => { return a._source.lastPacket - b._source.lastPacket; });
+    } else if (list.length > 0 && list[0].fields) {
+      list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
     }
 
     const fieldObjects = Config.getDBFieldsMap();
@@ -218,7 +218,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     for (let j = 0; j < list.length; j++) {
-      const sessionData = list[j]._source || list[j].fields;
+      const sessionData = list[j].fields;
       sessionData._id = list[j]._id;
 
       if (!fields) { continue; }
@@ -267,7 +267,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     // Do a ro search on each item
     let writes = 0;
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       if (!fields.rootId || processedRo[fields.rootId]) {
         if (writes++ > 100) {
           writes = 0;
@@ -596,7 +596,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    const fields = session._source || session.fields;
+    const fields = session.fields;
 
     let fileNum;
     let itemPos = 0;
@@ -682,16 +682,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
       });
-    } else if (list.length > 0 && list[0]._source) {
+    } else if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
-        return a._source.lastPacket - b._source.lastPacket;
+        return a.fields.lastPacket - b.fields.lastPacket;
       });
     }
 
     const writerOptions = { writeHeader: true };
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       sModule.isLocalView(fields.node, () => {
         // Get from our DISK
         pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
@@ -794,7 +794,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       const sid = Db.session2Sid(item);
       sModule.isLocalView(fields.node, () => {
         const options = {
@@ -1048,7 +1048,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
 
       sModule.isLocalView(fields.node, () => {
         // Get from our DISK
@@ -1088,7 +1088,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         return endCb('Session not found', null);
       }
 
-      const fields = session._source || session.fields;
+      const fields = session.fields;
 
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
@@ -1469,7 +1469,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
-      if (!session._source && !session.fields) {
+      if (!session.fields) {
         console.log('No Fields', session);
         return nextCb(null);
       }
@@ -1489,7 +1489,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
-      if (!session._source && !session.fields) {
+      if (!session.fields) {
         console.log('No Fields', session);
         return nextCb(null);
       }
@@ -2880,7 +2880,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
       }
 
-      Db.searchSessions(indices, query, null, (err, sessions) => {
+      Db.searchSessions(indices, query, {}, (err, sessions) => {
         if (err) {
           console.log('Error -> Db Search ', err);
           res.status(400);
@@ -2895,7 +2895,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
 
           if (sessions.hits.hits.length > 0) {
-            nodeName = sessions.hits.hits[0]._source.node;
+            nodeName = sessions.hits.hits[0].fields.node;
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 

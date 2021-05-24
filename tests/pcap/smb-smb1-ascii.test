@@ -30,7 +30,13 @@
             "network" : {
                "bytes" : 3188,
                "community_id" : "1:fkJHVqMsfrrE5wz5ft7GLWZdX4A=",
-               "packets" : 22
+               "packets" : 22,
+               "vlan" : {
+                  "id" : [
+                     1113
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -147,12 +153,7 @@
                "syn-ack" : 2,
                "urg" : 0
             },
-            "totDataBytes" : 1844,
-            "vlan" : {
-               "id" : [
-                  1113
-               ]
-            }
+            "totDataBytes" : 1844
          },
          "header" : {
             "index" : {

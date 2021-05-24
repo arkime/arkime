@@ -40,7 +40,13 @@
             "network" : {
                "bytes" : 584,
                "community_id" : "1:zVld1Ie77iuvz5cBRwEj51k0Yjo=",
-               "packets" : 6
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     50
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -129,12 +135,7 @@
                   "16777226:59602,33554442:9000"
                ]
             },
-            "totDataBytes" : 144,
-            "vlan" : {
-               "id" : [
-                  50
-               ]
-            }
+            "totDataBytes" : 144
          },
          "header" : {
             "index" : {
@@ -171,7 +172,13 @@
             "network" : {
                "bytes" : 557,
                "community_id" : "1:lC90PrhE/k5YdvmSIK2ItPfiU1Q=",
-               "packets" : 4
+               "packets" : 4,
+               "vlan" : {
+                  "id" : [
+                     100
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -221,12 +228,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 261,
-            "vlan" : {
-               "id" : [
-                  100
-               ]
-            }
+            "totDataBytes" : 261
          },
          "header" : {
             "index" : {

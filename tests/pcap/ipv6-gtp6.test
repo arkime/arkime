@@ -121,7 +121,13 @@
             "network" : {
                "bytes" : 454,
                "community_id" : "1:mNf0yqDrqQxOfOhpjw7hkxjMLNA=",
-               "packets" : 1
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     2048
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -155,12 +161,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "9d46818000010011",
-            "totDataBytes" : 332,
-            "vlan" : {
-               "id" : [
-                  2048
-               ]
-            }
+            "totDataBytes" : 332
          },
          "header" : {
             "index" : {

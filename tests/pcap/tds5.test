@@ -41,7 +41,13 @@
             "network" : {
                "bytes" : 1514,
                "community_id" : "1:2nquoB8nEas/+ztivTmvEfr1VCg=",
-               "packets" : 10
+               "packets" : 10,
+               "vlan" : {
+                  "id" : [
+                     50
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -143,12 +149,7 @@
             "user" : [
                "user___user"
             ],
-            "userCnt" : 1,
-            "vlan" : {
-               "id" : [
-                  50
-               ]
-            }
+            "userCnt" : 1
          },
          "header" : {
             "index" : {

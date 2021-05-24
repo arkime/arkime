@@ -83,7 +83,13 @@
             "network" : {
                "bytes" : 226,
                "community_id" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
-               "packets" : 2
+               "packets" : 2,
+               "vlan" : {
+                  "id" : [
+                     500
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -133,12 +139,7 @@
                "srcip"
             ],
             "tagsCnt" : 1,
-            "totDataBytes" : 138,
-            "vlan" : {
-               "id" : [
-                  500
-               ]
-            }
+            "totDataBytes" : 138
          },
          "header" : {
             "index" : {

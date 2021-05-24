@@ -44,9 +44,9 @@ uint64_t                     unwrittenBytes;
 
 int                          mac1Field;
 int                          mac2Field;
+int                          vlanField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
-LOCAL int                    vlanField;
 LOCAL int                    greIpField;
 
 LOCAL uint64_t               droppedFrags;
@@ -1512,11 +1512,10 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
-
     vlanField = moloch_field_define("general", "integer",
-        "vlan", "VLan", "vlan.id",
+        "vlan", "VLan", "network.vlan.id",
         "vlan value",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         (char *)NULL);
 
     greIpField = moloch_field_define("general", "ip",

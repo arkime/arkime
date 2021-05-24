@@ -378,7 +378,7 @@ exports.getSession = async (id, options, cb) => {
   }
   const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
-  const unflatten = options.arkime_unflatten ?? true;
+  const unflatten = options?.arkime_unflatten ?? true;
   const params = { };
   exports.merge(params, options);
   delete params._source;
@@ -554,6 +554,7 @@ exports.searchSessions = function (index, query, options, cb) {
     });
   }
 
+  if (!options) { options = {}; }
   const unflatten = options.arkime_unflatten ?? true;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);

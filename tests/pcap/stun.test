@@ -38,7 +38,13 @@
             "network" : {
                "bytes" : 90,
                "community_id" : "1:bXEsFJztw3iv5wiB6jK1YLFWxt0=",
-               "packets" : 1
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     300
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -106,12 +112,7 @@
                   "16777226:16948,33554442:3478"
                ]
             },
-            "totDataBytes" : 44,
-            "vlan" : {
-               "id" : [
-                  300
-               ]
-            }
+            "totDataBytes" : 44
          },
          "header" : {
             "index" : {
@@ -147,7 +148,13 @@
             "network" : {
                "bytes" : 179,
                "community_id" : "1:24a90n2SPEqaP7H/HoUl4rC56tA=",
-               "packets" : 1
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     300
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -187,12 +194,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "000300712112a442",
-            "totDataBytes" : 133,
-            "vlan" : {
-               "id" : [
-                  300
-               ]
-            }
+            "totDataBytes" : 133
          },
          "header" : {
             "index" : {
@@ -230,7 +232,14 @@
             "network" : {
                "bytes" : 284,
                "community_id" : "1:ydsfSYKOf7xVsQvMBr27PNWiYRw=",
-               "packets" : 3
+               "packets" : 3,
+               "vlan" : {
+                  "id" : [
+                     100,
+                     300
+                  ],
+                  "id-cnt" : 2
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -280,13 +289,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 86,
-            "vlan" : {
-               "id" : [
-                  100,
-                  300
-               ]
-            }
+            "totDataBytes" : 86
          },
          "header" : {
             "index" : {

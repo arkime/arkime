@@ -52,7 +52,13 @@
             "network" : {
                "bytes" : 1174,
                "community_id" : "1:j4eVs7ZWhGeqgvl6jJda0FHPSqQ=",
-               "packets" : 12
+               "packets" : 12,
+               "vlan" : {
+                  "id" : [
+                     50
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -154,12 +160,7 @@
                   "16777226:25936,33554442:3268"
                ]
             },
-            "totDataBytes" : 446,
-            "vlan" : {
-               "id" : [
-                  50
-               ]
-            }
+            "totDataBytes" : 446
          },
          "header" : {
             "index" : {

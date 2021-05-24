@@ -161,7 +161,14 @@
             "network" : {
                "bytes" : 4917,
                "community_id" : "1:SPYgVgvcW0g9bsfBLLnTtlWJezA=",
-               "packets" : 6
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     200,
+                     201
+                  ],
+                  "id-cnt" : 2
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -250,13 +257,7 @@
                   "16777226:54422,33554442:80"
                ]
             },
-            "totDataBytes" : 4457,
-            "vlan" : {
-               "id" : [
-                  200,
-                  201
-               ]
-            }
+            "totDataBytes" : 4457
          },
          "header" : {
             "index" : {

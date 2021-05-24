@@ -1222,7 +1222,7 @@ addECSMap("mac.src", "srcMac", "source.mac");
 addECSMap("communityId", "communityId", "network.community_id");
 addECSMap("bytes", "totBytes", "network.bytes");
 addECSMap("packets", "totPackets", "network.packets");
-addECSMap("vlan", "vlan", "vlan.id");
+addECSMap("vlan", "vlan", "network.vlan.id");
 
 addECSMap('null', "timestamp", "\@timestamp");
 ################################################################################

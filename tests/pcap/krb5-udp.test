@@ -42,7 +42,13 @@
             "network" : {
                "bytes" : 297,
                "community_id" : "1:37biltTX+G3ht//omeHKaBaSt6A=",
-               "packets" : 1
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     300
+                  ],
+                  "id-cnt" : 1
+               }
             },
             "node" : "test",
             "packetLen" : [
@@ -75,12 +81,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "6a81f83081f5a103",
-            "totDataBytes" : 251,
-            "vlan" : {
-               "id" : [
-                  300
-               ]
-            }
+            "totDataBytes" : 251
          },
          "header" : {
             "index" : {

@@ -31,7 +31,14 @@
             "network" : {
                "bytes" : 676,
                "community_id" : "1:9ep7PomCE1d3mRnmbY3vxnbWq3A=",
-               "packets" : 6
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     300,
+                     50
+                  ],
+                  "id-cnt" : 2
+               }
             },
             "node" : "test",
             "oracle" : {
@@ -92,13 +99,7 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "totDataBytes" : 224,
-            "vlan" : {
-               "id" : [
-                  300,
-                  50
-               ]
-            }
+            "totDataBytes" : 224
          },
          "header" : {
             "index" : {
