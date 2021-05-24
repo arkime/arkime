@@ -2424,6 +2424,7 @@ internals.processCronQueries = () => {
 ${Config.arkimeWebURL()}${urlPath}
                 `;
 
+                Db.refresh('*'); // Before sending alert make sure everything has been refreshed
                 notifierAPIs.issueAlert(cq.notifier, message, continueProcess);
               } else {
                 return continueProcess();
