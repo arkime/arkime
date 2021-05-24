@@ -29,9 +29,9 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS41231",
-                  "AS41231",
-                  "AS41231"
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited"
                ],
                "GEO" : [
                   "GB",
@@ -135,6 +135,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "5aae819000010003",
+            "srcRIR" : "ARIN",
             "tags" : [
                "srcip"
             ],

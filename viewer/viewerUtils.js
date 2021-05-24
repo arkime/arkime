@@ -343,10 +343,10 @@ module.exports = (Config, Db, molochparser, internals) => {
           }
 
           // Add src/dst to tot* counters.
-          if ((prop === 'source.packets' || prop === 'destination.packets') && filters.includes('totPackets')) {
-            graph.totPacketsTotal += item[prop].value;
+          if ((prop === 'source.packets' || prop === 'destination.packets') && filters.includes('network.packets')) {
+            graph['network.packetsTotal'] += item[prop].value;
           } else if ((prop === 'source.bytes' || prop === 'destination.bytes') && filters.includes('network.bytes')) {
-            graph.totBytesTotal += item[prop].value;
+            graph['network.bytesTotal'] += item[prop].value;
           } else if ((prop === 'client.bytes' || prop === 'server.bytes') && filters.includes('totDataBytes')) {
             graph.totDataBytesTotal += item[prop].value;
           }
@@ -355,62 +355,6 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
 
     return graph;
-  };
-
-  /**
-   * Flattens fields that are objects (only goes 1 level deep)
-   *
-   * @example
-   * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
-   * @example
-   * { cert: [ { alt: ["test.com"] } ] } => { "cert.alt": ["test.com"] }
-   *
-   * @param {object} fields The object containing fields to be flattened
-   * @returns {object} fields The object with fields flattened
-   */
-  vModule.flattenFields = (fields) => {
-    const newFields = {};
-
-    for (const key in fields) {
-      if (fields[key]) {
-        const field = fields[key];
-        const baseKey = key + '.';
-        if (typeof field === 'object' && !field.length) {
-          // flatten out object
-          for (const nestedKey in field) {
-            const nestedField = field[nestedKey];
-            const newKey = baseKey + nestedKey;
-            newFields[newKey] = nestedField;
-          }
-          fields[key] = null;
-          delete fields[key];
-        } else if (Array.isArray(field)) {
-          // flatten out list
-          for (const nestedField of field) {
-            if (typeof nestedField === 'object') {
-              for (const nestedKey in nestedField) {
-                const newKey = baseKey + nestedKey;
-                if (newFields[newKey] === undefined) {
-                  newFields[newKey] = nestedField[nestedKey];
-                } else if (Array.isArray(newFields[newKey])) {
-                  newFields[newKey].push(nestedField[nestedKey]);
-                } else {
-                  newFields[newKey] = [newFields[newKey], nestedField[nestedKey]];
-                }
-              }
-              fields[key] = null;
-              delete fields[key];
-            }
-          }
-        }
-      }
-    }
-
-    for (const key in newFields) {
-      fields[key] = newFields[key];
-    }
-
-    return fields;
   };
 
   vModule.fixFields = (fields, fixCb) => {

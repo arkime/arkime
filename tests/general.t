@@ -424,8 +424,8 @@ if (0) {
 
 # query DB field names by using db: prefix (#1461)
     errTest("date=-1&expression=" . uri_escape("db:noSuchField=10.0.0.2"));
-    errTest("date=-1&expression=" . uri_escape("srcIp=10.0.0.2"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp=10.0.0.2"));
-    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp>=10.0.0.2"));
+    errTest("date=-1&expression=" . uri_escape("source.ip=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:source.ip=10.0.0.2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:source.ip>=10.0.0.2"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&db:dstOui=Juniper*"));
     countTest(24, "date=-1&expression=" . uri_escape("file=$pwd/wireshark-esp.pcap&&db:protocol=esp"));

@@ -21,6 +21,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "5b0000000a352e35",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1398195861493,
             "initRTT" : 0,
@@ -85,6 +86,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3d00000105a60f00",
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,

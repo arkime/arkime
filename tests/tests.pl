@@ -75,10 +75,6 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
-            if (substr($key, -3) eq "ASN") {
-                $obj->{$key} = [map {s/ .+$//g; $_} @{$obj->{$key}}];
-            }
-
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert)/);
             if ("$parentkey.$key" =~ /.vlan|http.statuscode|icmp.type|icmp.code/) {
@@ -87,10 +83,6 @@ sub sortObj {
             } else {
                 my @tmp = sort (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
-            }
-        } else {
-            if (substr($key, -3) eq "ASN") {
-                $obj->{$key} =~ s/ .+$//g;
             }
         }
     }

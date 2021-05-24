@@ -55,7 +55,7 @@ $txt = get("date=-1&field=node&expression=$files&counts=1");
 eq_or_diff($txt, "test, 19\n", "Nodes count", { context => 3 });
 
 #
-$txt = get("date=-1&field=srcIp&expression=$files&counts=1");
+$txt = get("date=-1&field=source.ip&expression=$files&counts=1");
 eq_or_diff($txt,
 "10.0.0.1, 2
 10.0.0.2, 1
@@ -69,7 +69,7 @@ fe80::2d0:9ff:fee3:e8de, 1
 ", "ip count", { context => 3 });
 
 #
-$txt = get("date=-1&field=srcIp&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"));
+$txt = get("date=-1&field=source.ip&autocomplete=1&expression=" . uri_escape("$filestr && ip.src=10.180"));
 eq_or_diff($txt, "[\"10.180.156.185\"]\n", "Autocomplete IPs", { context => 3 });
 
 #

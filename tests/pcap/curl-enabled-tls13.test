@@ -18,10 +18,10 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS13335",
-                  "AS13335",
-                  "AS13335",
-                  "AS13335"
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc.",
+                  "AS13335 Cloudflare, Inc."
                ],
                "GEO" : [
                   "US",
@@ -65,6 +65,7 @@
                "statusCnt" : 1
             },
             "dstPayload8" : "ac66818000010002",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1565212114674,
             "ipProtocol" : 17,
@@ -108,6 +109,7 @@
                "port" : 42060
             },
             "srcPayload8" : "ac66010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 228
          },
          "header" : {
@@ -143,6 +145,7 @@
                "port" : 443
             },
             "dstPayload8" : "160303007a020000",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1565212114677,
             "http" : {
@@ -247,6 +250,7 @@
                "port" : 46638
             },
             "srcPayload8" : "1603010200010001",
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 13,
                "dstZero" : 0,

@@ -30,6 +30,7 @@
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844756,
             "ipProtocol" : 132,
@@ -163,6 +164,7 @@
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 24426
          },
          "header" : {
@@ -201,6 +203,7 @@
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844891,
             "ipProtocol" : 132,
@@ -324,6 +327,7 @@
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 22232
          },
          "header" : {
@@ -362,6 +366,7 @@
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844900,
             "ipProtocol" : 132,
@@ -415,6 +420,7 @@
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 294
          },
          "header" : {

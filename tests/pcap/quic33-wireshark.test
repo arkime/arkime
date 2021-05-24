@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "0a79f24eb64a9c07",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1462966377795,
             "ipProtocol" : 17,

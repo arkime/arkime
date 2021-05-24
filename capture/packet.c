@@ -1588,6 +1588,7 @@ void moloch_packet_init()
         "communityId", "Community Id", "communityId",
         "Community id flow hash",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "network.community_id",
         (char *)NULL);
 
     int t;

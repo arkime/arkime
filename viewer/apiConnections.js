@@ -220,6 +220,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     if (req.query.cancelId) {
       options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
+    options.arkime_unflatten = false;
     options = ViewerUtils.addCluster(req.query.cluster, options);
 
     const dstIsIp = fdst.match(/(\.ip|Ip)$/);
@@ -319,7 +320,6 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
             let f = hit.fields;
-            f = ViewerUtils.flattenFields(f);
 
             let asrc = hit.fields[fsrc];
             let adst = hit.fields[fdst];
@@ -335,9 +335,9 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               for (let vdst of adst) {
                 if (dstIsIp && dstipport) {
                   if (vdst.includes(':')) {
-                    vdst += '.' + f.dstPort;
+                    vdst += '.' + f['destination.port'];
                   } else {
-                    vdst += ':' + f.dstPort;
+                    vdst += ':' + f['destination.port'];
                   }
                 }
                 doProcess(vsrc, vdst, f, reqFields, connResultSets[0].resultId);

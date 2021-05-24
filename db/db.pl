@@ -804,6 +804,7 @@ sub fieldsUpdate
       "dbField2": "srcIp",
       "portField": "p1",
       "portField2": "srcPort",
+      "portFieldECS": "source.port",
       "category": "ip"
     }');
     esPost("/${PREFIX}fields_v30/_doc/port.src?timeout=${ESTIMEOUT}s", '{
@@ -852,6 +853,7 @@ sub fieldsUpdate
       "dbField2": "dstIp",
       "portField": "p2",
       "portField2": "dstPort",
+      "portFieldECS": "destination.port",
       "category": "ip",
       "aliases": ["ip.dst:port"]
     }');

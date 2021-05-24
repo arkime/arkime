@@ -25,6 +25,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "485454502f312e31",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1559004678546,
             "http" : {

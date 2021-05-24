@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "0500050000010000",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1386644255859,
             "initRTT" : 123,
@@ -78,14 +79,8 @@
                "bytes" : 31
             },
             "socks" : {
+               "ASN" : "AS0 This is neat",
                "GEO" : "RU",
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
                "ip" : "10.0.0.1",
                "port" : 3389
             },

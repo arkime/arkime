@@ -18,10 +18,10 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS1280",
-                  "AS1280",
-                  "AS1280",
-                  "AS1280"
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc.",
+                  "AS1280 Internet Systems Consortium, Inc."
                ],
                "GEO" : [
                   "US",
@@ -54,12 +54,12 @@
                ],
                "ipCnt" : 4,
                "mailserverASN" : [
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169"
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "mailserverGEO" : [
                   "MX",
@@ -124,6 +124,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "1032818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1112172466496,
             "ipProtocol" : 17,
@@ -211,6 +212,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "1032010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 1212
          },
          "header" : {
@@ -262,6 +264,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "5a53858000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1112172737737,
             "ipProtocol" : 17,
@@ -305,6 +308,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "5a53010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 103
          },
          "header" : {
@@ -363,6 +367,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "208a818000010004",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1112172737740,
             "ipProtocol" : 17,
@@ -406,6 +411,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "208a010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 149
          },
          "header" : {
@@ -467,6 +473,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "326e858300010000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1112172737755,
             "ipProtocol" : 17,
@@ -510,6 +517,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "326e010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 174
          },
          "header" : {
@@ -571,6 +579,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "f161858300010000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1112172737776,
             "ipProtocol" : 17,
@@ -614,6 +623,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "f161010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 112
          },
          "header" : {
@@ -675,6 +685,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "8361858300010000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1112172737794,
             "ipProtocol" : 17,
@@ -718,6 +729,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "8361010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 196
          },
          "header" : {
@@ -779,6 +791,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "d060858300010000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1112172737915,
             "ipProtocol" : 17,
@@ -822,6 +835,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "d060010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 82
          },
          "header" : {
@@ -883,6 +897,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "7663858300010000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1112172745357,
             "ipProtocol" : 17,
@@ -926,6 +941,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "7663010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 82
          },
          "header" : {

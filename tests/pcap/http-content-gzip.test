@@ -33,6 +33,7 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "485454502f312e31",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1407242224712,
             "http" : {
@@ -250,7 +251,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

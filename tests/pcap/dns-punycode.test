@@ -24,12 +24,12 @@
                "nameserverASN" : [
                   "---",
                   "---",
-                  "AS10229",
-                  "AS10880",
-                  "AS10880",
-                  "AS36646",
-                  "AS7280",
-                  "AS7280"
+                  "AS10229 Internet Content Provider",
+                  "AS10880 Oath Holdings Inc.",
+                  "AS10880 Oath Holdings Inc.",
+                  "AS36646 Oath Holdings Inc.",
+                  "AS7280 Oath Holdings Inc.",
+                  "AS7280 Oath Holdings Inc."
                ],
                "nameserverGEO" : [
                   "HK",

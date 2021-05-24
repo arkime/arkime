@@ -68,6 +68,7 @@
                "Oracle Corporation"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 128
          },
          "header" : {

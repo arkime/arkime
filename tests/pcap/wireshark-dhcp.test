@@ -127,6 +127,7 @@
                "Grandstream Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1102274184317,
             "ipProtocol" : 17,
@@ -170,6 +171,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0201060000003d1d",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 600
          },
          "header" : {

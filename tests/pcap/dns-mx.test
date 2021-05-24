@@ -28,8 +28,8 @@
                ],
                "mailserverHostCnt" : 2,
                "nameserverASN" : [
-                  "AS15395",
-                  "AS27357"
+                  "AS15395 Rackspace Ltd.",
+                  "AS27357 Rackspace Hosting"
                ],
                "nameserverGEO" : [
                   "US",

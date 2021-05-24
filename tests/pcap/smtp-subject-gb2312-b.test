@@ -24,6 +24,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3232302078787878",
+            "dstRIR" : "ARIN",
             "email" : {
                "ASN" : [
                   "---",

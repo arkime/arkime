@@ -124,6 +124,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "totDataBytes" : 0
          },
          "header" : {

@@ -31,11 +31,12 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1402723255667,
             "greASN" : [
-               "AS13335",
-               "AS3215"
+               "AS13335 Cloudflare, Inc.",
+               "AS3215 Orange"
             ],
             "greGEO" : [
                "AU",
@@ -113,6 +114,7 @@
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "tags" : [
                "gretest-erspan"
             ],

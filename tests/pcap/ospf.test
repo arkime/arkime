@@ -30,6 +30,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1571662508236,
             "ipProtocol" : 17,
@@ -87,7 +88,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -582,6 +583,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "TEST",
             "tags" : [
                "dstip"
             ],
@@ -765,6 +767,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "TEST",
             "tags" : [
                "dstip"
             ],
@@ -1237,6 +1240,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1571662521545,
             "ipProtocol" : 6,
@@ -1280,6 +1284,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -1319,6 +1324,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1571662538526,
             "ipProtocol" : 6,
@@ -1362,6 +1368,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -1401,6 +1408,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1571662548073,
             "ipProtocol" : 6,
@@ -1454,6 +1462,7 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -3176,6 +3185,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1571662578777,
             "ipProtocol" : 17,
@@ -3239,7 +3249,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -3412,7 +3422,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

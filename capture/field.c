@@ -355,6 +355,16 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
             moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
             moloch_field_by_exp_add_special_type(expression2, minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
         }
+    } else if (flags & MOLOCH_FIELD_FLAG_ECS_CNT) {
+        snprintf(dbField2, sizeof(dbField2), "%s-cnt", dbField);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
+        if (!info) {
+            snprintf(expression2, sizeof(expression2), "%s.cnt", expression);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
+            snprintf(help2, sizeof(help2), "Unique number of %s", help);
+            moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+            moloch_field_by_exp_add_special_type(expression2, minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
+        }
     }
 
     if (flags & MOLOCH_FIELD_FLAG_FAKE) {

@@ -119,6 +119,7 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "323230206d782e67",
+            "dstRIR" : "ARIN",
             "email" : {
                "smtpHello" : [
                   "xxxxxxxxxxxxx.xxx.com"
@@ -266,7 +267,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

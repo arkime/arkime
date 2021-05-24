@@ -30,6 +30,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435037629,
             "ipProtocol" : 50,
@@ -79,6 +80,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -121,6 +123,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435056630,
             "ipProtocol" : 50,
@@ -170,6 +173,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -212,6 +216,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435075674,
             "ipProtocol" : 50,
@@ -261,6 +266,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -303,6 +309,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435094676,
             "ipProtocol" : 50,
@@ -352,6 +359,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -394,6 +402,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435199683,
             "ipProtocol" : 50,
@@ -443,6 +452,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -485,6 +495,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435218685,
             "ipProtocol" : 50,
@@ -534,6 +545,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -576,6 +588,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435237736,
             "ipProtocol" : 50,
@@ -625,6 +638,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -667,6 +681,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435256758,
             "ipProtocol" : 50,
@@ -716,6 +731,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -758,6 +774,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435361771,
             "ipProtocol" : 50,
@@ -807,6 +824,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -849,6 +867,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435380893,
             "ipProtocol" : 50,
@@ -898,6 +917,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -940,6 +960,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435399895,
             "ipProtocol" : 50,
@@ -989,6 +1010,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],
@@ -1031,6 +1053,7 @@
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "LACNIC",
             "fileId" : [],
             "firstPacket" : 1140435418897,
             "ipProtocol" : 50,
@@ -1080,6 +1103,7 @@
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "LACNIC",
             "tags" : [
                "truncated-pcap"
             ],

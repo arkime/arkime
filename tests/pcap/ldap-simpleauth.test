@@ -32,6 +32,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3084000000100201",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1463256456040,
             "initRTT" : 1,
@@ -142,7 +143,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

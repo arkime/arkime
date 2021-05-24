@@ -48,6 +48,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1393428477365,
             "ipProtocol" : 17,
@@ -111,7 +112,7 @@
             "tagsCnt" : 1,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

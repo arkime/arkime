@@ -19,17 +19,17 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169"
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "GEO" : [
                   "US",
@@ -76,10 +76,10 @@
                ],
                "ipCnt" : 11,
                "nameserverASN" : [
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169"
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "nameserverGEO" : [
                   "MX",

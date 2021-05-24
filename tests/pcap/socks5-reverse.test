@@ -33,6 +33,7 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "050100050100014a",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1386790367120,
             "http" : {
@@ -348,15 +349,9 @@
                "bytes" : 954
             },
             "socks" : {
+               "ASN" : "AS15169 Google LLC",
                "GEO" : "US",
                "RIR" : "ARIN",
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
                "ip" : "74.125.131.103",
                "port" : 80
             },
@@ -403,7 +398,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

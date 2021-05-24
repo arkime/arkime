@@ -255,7 +255,7 @@ function fixSessionFields (fields, unflatten) {
 
     // No dot in name, maybe no change
     if (path.length === 1) {
-      if (fields[f].length > 0 && singletonFields[f]) {
+      if (fields[f].length > 0 && (singletonFields[f] || f.endsWith('Cnt'))) {
         fields[f] = fields[f][0];
       }
       if (dateFields[f]) {
@@ -266,7 +266,7 @@ function fixSessionFields (fields, unflatten) {
 
     // Dot in name, will be moving
     let value = fields[f];
-    if (singletonFields[f]) {
+    if (singletonFields[f] || f.endsWith('Cnt')) {
       value = value[0];
     }
     if (dateFields[f]) {

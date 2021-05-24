@@ -767,7 +767,13 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
         BSB_EXPORT_cstr(jbsb, "},"); // Close destination
-    }
+
+        if (rir1)
+            BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
+
+        if (rir2)
+            BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
+    } /* ipProtocol */
 
     BSB_EXPORT_sprintf(jbsb,
                       "\"network\":{\"packets\":%u,"
@@ -1020,12 +1026,18 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             }
 
             if (asStr) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":\"AS%u ", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, asNum);
+                moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
+            }
+
+            /*if (asStr) {
                 BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum, asNum);
                 moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
                 BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
                 moloch_db_js0n_str_unquoted(&jbsb, (unsigned char*)asStr, asLen, TRUE);
                 BSB_EXPORT_cstr(jbsb, "\"}},");
-            }
+            }*/
 
             if (rir) {
                 BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":\"%s\",", config.fields[pos]->dbFieldLen-2, config.fields[pos]->dbField, rir);

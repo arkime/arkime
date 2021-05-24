@@ -28,7 +28,7 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -58,6 +58,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "6919a80400010000",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1467464484984,
             "ipProtocol" : 17,
@@ -125,7 +126,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

@@ -31,10 +31,10 @@
                ],
                "ipCnt" : 1,
                "nameserverASN" : [
-                  "AS7018",
-                  "AS7018",
-                  "AS7018",
-                  "AS7018"
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
                ],
                "nameserverGEO" : [
                   "US",
@@ -80,6 +80,7 @@
                "statusCnt" : 1
             },
             "dstPayload8" : "d333818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985409420,
             "ipProtocol" : 17,
@@ -116,6 +117,7 @@
                "port" : 57801
             },
             "srcPayload8" : "d333010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {
@@ -273,10 +275,10 @@
                ],
                "ipCnt" : 1,
                "nameserverASN" : [
-                  "AS7018",
-                  "AS7018",
-                  "AS7018",
-                  "AS7018"
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
                ],
                "nameserverGEO" : [
                   "US",
@@ -322,6 +324,7 @@
                "statusCnt" : 1
             },
             "dstPayload8" : "7442818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985410140,
             "ipProtocol" : 17,
@@ -358,6 +361,7 @@
                "port" : 58364
             },
             "srcPayload8" : "7442010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {
@@ -378,6 +382,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985410172,
             "icmp" : {
@@ -417,6 +422,7 @@
                "packets" : 1,
                "port" : 0
             },
+            "srcRIR" : "ARIN",
             "totDataBytes" : 36
          },
          "header" : {
@@ -971,10 +977,10 @@
                ],
                "ipCnt" : 1,
                "nameserverASN" : [
-                  "AS7018",
-                  "AS7018",
-                  "AS7018",
-                  "AS7018"
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc.",
+                  "AS7018 AT&T Services, Inc."
                ],
                "nameserverGEO" : [
                   "US",
@@ -1020,6 +1026,7 @@
                "statusCnt" : 1
             },
             "dstPayload8" : "c2b1818000010001",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1415985490220,
             "ipProtocol" : 17,
@@ -1056,6 +1063,7 @@
                "port" : 60716
             },
             "srcPayload8" : "c2b1010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 299
          },
          "header" : {

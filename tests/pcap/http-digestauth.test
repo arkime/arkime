@@ -32,6 +32,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1414887555048,
             "http" : {
@@ -166,7 +167,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

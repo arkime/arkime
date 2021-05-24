@@ -24,6 +24,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "32323020616f6c6d",
+            "dstRIR" : "ARIN",
             "email" : {
                "ASN" : [
                   "---",
@@ -197,7 +198,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

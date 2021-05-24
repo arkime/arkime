@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3151545630300000",
+            "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1479719879541,
             "initRTT" : 72,
@@ -166,6 +167,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3151545630c60000",
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 18,
                "dstZero" : 0,

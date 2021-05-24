@@ -33,6 +33,7 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "3232302d78787878",
+            "dstRIR" : "TEST",
             "email" : {
                "dst" : [
                   "user2@xxx.net"
@@ -192,7 +193,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

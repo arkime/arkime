@@ -419,15 +419,9 @@
                "bytes" : 1605
             },
             "socks" : {
+               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
                "GEO" : "US",
                "RIR" : "RIPE",
-               "as" : {
-                  "full" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-                  "number" : 15133,
-                  "organization" : {
-                     "name" : "MCI Communications Services, Inc. d/b/a Verizon Business"
-                  }
-               },
                "ip" : "93.184.216.119",
                "port" : 80,
                "user" : "testuser"

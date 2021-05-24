@@ -53,6 +53,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "9668a40000010000",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1379970300840,
             "ipProtocol" : 17,
@@ -108,6 +109,7 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "9668240000010001",
+            "srcRIR" : "RIPE",
             "totDataBytes" : 154
          },
          "header" : {

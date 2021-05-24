@@ -23,6 +23,7 @@
                "port" : 80
             },
             "dstPayload8" : "485454502f312e31",
+            "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1523241953739,
             "http" : {
@@ -440,6 +441,7 @@
                "port" : 49417
             },
             "srcPayload8" : "474554202f204854",
+            "srcRIR" : "ARIN",
             "tags" : [
                "http:password"
             ],

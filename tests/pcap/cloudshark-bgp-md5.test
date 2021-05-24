@@ -23,6 +23,7 @@
                "port" : 179
             },
             "dstPayload8" : "ffffffffffffffff",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1259261324431,
             "initRTT" : 3,
@@ -88,6 +89,7 @@
                "port" : 25820
             },
             "srcPayload8" : "ffffffffffffffff",
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,
@@ -129,6 +131,7 @@
                "port" : 179
             },
             "dstPayload8" : "ffffffffffffffff",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1259261324431,
             "ipProtocol" : 6,
@@ -169,6 +172,7 @@
                "port" : 25820
             },
             "srcPayload8" : "ffffffffffffffff",
+            "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,

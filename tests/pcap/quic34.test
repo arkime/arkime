@@ -30,6 +30,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1467241187446,
             "ipProtocol" : 17,

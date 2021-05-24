@@ -23,6 +23,7 @@
                "port" : 80
             },
             "dstPayload8" : "0000180400000000",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1593995681271,
             "http" : {

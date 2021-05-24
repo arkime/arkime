@@ -33,6 +33,7 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "3a636172642e6672",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1387554241634,
             "initRTT" : 15,

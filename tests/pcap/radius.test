@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "05e3001400000000",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1463339353458,
             "ipProtocol" : 17,
@@ -63,7 +64,7 @@
             "protocolCnt" : 2,
             "radius" : {
                "framedASN" : [
-                  "AS2"
+                  "AS2 Hmm!@#$%^&*()"
                ],
                "framedGEO" : [
                   "---"
@@ -119,7 +120,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

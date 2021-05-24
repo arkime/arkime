@@ -108,6 +108,7 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "b2b5000000010000",
+            "srcRIR" : "TEST",
             "tags" : [
                "dstip",
                "srcip"

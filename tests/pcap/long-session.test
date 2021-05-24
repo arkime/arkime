@@ -31,6 +31,7 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1401385380102,
             "initRTT" : 0,
@@ -108,7 +109,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -165,6 +166,7 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1401385380102,
             "ipProtocol" : 6,
@@ -235,7 +237,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

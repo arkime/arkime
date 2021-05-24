@@ -20,6 +20,7 @@
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1260442415441,
             "icmp" : {
@@ -273,6 +274,7 @@
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
+            "srcRIR" : "APNIC",
             "totDataBytes" : 6528
          },
          "header" : {

@@ -134,6 +134,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "050100050100030e",
+            "srcRIR" : "TEST",
             "tags" : [
                "dstip",
                "smtp:authlogin",

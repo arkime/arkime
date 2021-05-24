@@ -18,7 +18,7 @@
             },
             "dns" : {
                "ASN" : [
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation"
                ],
                "GEO" : [
                   "JP"
@@ -37,8 +37,8 @@
                "mailserverASN" : [
                   "---",
                   "---",
-                  "AS4713",
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation",
+                  "AS4713 NTT Communications Corporation"
                ],
                "mailserverGEO" : [
                   "---",
@@ -65,8 +65,8 @@
                   "APNIC"
                ],
                "nameserverASN" : [
-                  "AS4713",
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation",
+                  "AS4713 NTT Communications Corporation"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -390,7 +390,7 @@
                ],
                "hostCnt" : 1,
                "mailserverASN" : [
-                  "AS11590"
+                  "AS11590 Cumberland Technologies International"
                ],
                "mailserverGEO" : [
                   "US"
@@ -407,10 +407,10 @@
                   "ARIN"
                ],
                "nameserverASN" : [
-                  "AS3301",
-                  "AS3561",
-                  "AS3561",
-                  "AS3561"
+                  "AS3301 Telia Company AB",
+                  "AS3561 CenturyLink Communications, LLC",
+                  "AS3561 CenturyLink Communications, LLC",
+                  "AS3561 CenturyLink Communications, LLC"
                ],
                "nameserverGEO" : [
                   "SE",
@@ -616,8 +616,8 @@
                ],
                "ipCnt" : 2,
                "nameserverASN" : [
-                  "AS4713",
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation",
+                  "AS4713 NTT Communications Corporation"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -959,8 +959,8 @@
                ],
                "ipCnt" : 2,
                "nameserverASN" : [
-                  "AS4713",
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation",
+                  "AS4713 NTT Communications Corporation"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -1143,7 +1143,7 @@
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "JP"
@@ -1537,8 +1537,8 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -1939,8 +1939,8 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -2340,7 +2340,7 @@
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS4713"
+                  "AS4713 NTT Communications Corporation"
                ],
                "nameserverGEO" : [
                   "JP"
@@ -2601,9 +2601,9 @@
                ],
                "ipCnt" : 1,
                "nameserverASN" : [
-                  "AS2500",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "JP",
@@ -2808,8 +2808,8 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -2928,8 +2928,8 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -3048,8 +3048,8 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2500",
-                  "AS2500"
+                  "AS2500 WIDE Project",
+                  "AS2500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -3304,7 +3304,7 @@
             "dns" : {
                "ASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "GEO" : [
                   "---",
@@ -3325,8 +3325,8 @@
                "ipCnt" : 2,
                "nameserverASN" : [
                   "---",
-                  "AS2497",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc.",
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",
@@ -3589,7 +3589,7 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",
@@ -3704,7 +3704,7 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",
@@ -3819,7 +3819,7 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",
@@ -3934,7 +3934,7 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",
@@ -4049,7 +4049,7 @@
                "hostCnt" : 1,
                "nameserverASN" : [
                   "---",
-                  "AS2497"
+                  "AS2497 Internet Initiative Japan Inc."
                ],
                "nameserverGEO" : [
                   "---",

@@ -54,6 +54,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "a9ba858300010000",
+            "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1394587409097,
             "ipProtocol" : 17,
@@ -115,7 +116,7 @@
             "tagsCnt" : 3,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"

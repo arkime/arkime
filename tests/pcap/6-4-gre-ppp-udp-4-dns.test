@@ -54,11 +54,12 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "a62c818300010000",
+            "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1417577703821,
             "greASN" : [
                "---",
-               "AS8100"
+               "AS8100 QuadraNet Enterprises LLC"
             ],
             "greGEO" : [
                "US",
@@ -123,6 +124,7 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "a62c010000010000",
+            "srcRIR" : "ARIN",
             "totDataBytes" : 217
          },
          "header" : {
