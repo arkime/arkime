@@ -179,6 +179,30 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
 
   /**
+   * A query to be run periodically that can perform actions on sessions that match the queries. The query runs against sessions delayed by 90 seconds to make sure all updates have been completed for that session.
+   *
+   * @typedef ArkimeQuery
+   * @type {object}
+   * @param {string} name - The name of the query
+   * @param {boolean} enabled - Whether the query is enabled. If enabled, the query will run every 90 seconds.
+   * @param {number} lpValue - The last packet timestamp that was searched. Used to query for the next group of sessions to search. Format is seconds since Unix EPOC.
+   * @param {number} lastRun - The time that the query was last run. Format is seconds since Unix EPOC.
+   * @param {number} count - The count of total sessions that have matched this query.
+   * @param {number} lastCount - The count of sessions that have matched this query during its last run.
+   * @param {string} query - The search expression to apply when searching for sessions.
+   * @param {string} action=tag - The action to perform when sessions have matched. "tag" or "forward:clusterName".
+   * @param {string} creator - The id of the user that created this query.
+   * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
+   * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 mintues. Format is seconds since Unix EPOC.
+   * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
+   * @param {string} description - The description of this query.
+   * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
+   * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOC.
+   * @param {string} lastToggledBy - The user who last enabled or disabled this query.
+   */
+
+  /**
    * GET - /api/user
    *
    * Retrieves the currently logged in user.
@@ -929,9 +953,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * GET - /api/user/crons
    *
-   * Retrieves cron queries for a user.
+   * Retrieves periodic queries for a user.
    * @name /user/crons
-   * @returns {object} queries - A list of cron query objects. TODO ECR
+   * @returns {ArkimeQuery[]} queries - A list of query objects.
    */
   uModule.getUserCron = (req, res) => {
     if (!req.settingUser) {
@@ -963,24 +987,24 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   /**
    * POST - /api/user/cron
    *
-   * Create a new cron query for a user.
+   * Create a new periodic query for a user.
    * @name /user/cron
-   * @returns {boolean} success - Whether the create cron operation was successful.
+   * @returns {boolean} success - Whether the create operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} key - The cron query id
+   * @returns {string} key - The query id
    */
   uModule.createUserCron = async (req, res) => {
     if (!req.body.name) {
-      return res.serverError(403, 'Missing cron query name');
+      return res.serverError(403, 'Missing query name');
     }
     if (!req.body.query) {
-      return res.serverError(403, 'Missing cron query expression');
+      return res.serverError(403, 'Missing query expression');
     }
     if (!req.body.action) {
-      return res.serverError(403, 'Missing cron query action');
+      return res.serverError(403, 'Missing query action');
     }
     if (!req.body.tags) {
-      return res.serverError(403, 'Missing cron query tag(s)');
+      return res.serverError(403, 'Missing query tag(s)');
     }
 
     const doc = {
@@ -1032,65 +1056,65 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         key: info._id,
-        text: 'Created cron query successfully'
+        text: 'Created query successfully'
       }));
     } catch (err) {
       console.log('ERROR - POST /api/user/cron', err);
-      return res.serverError(500, 'Create cron query failed');
+      return res.serverError(500, 'Create query failed');
     }
   };
 
   /**
    * DELETE - /api/user/cron/:key
    *
-   * Delete a cron query for a user.
+   * Delete a periodic query for a user.
    * @name /user/cron/:key
-   * @returns {boolean} success - Whether the delete cron operation was successful.
+   * @returns {boolean} success - Whether the delete operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   uModule.deleteUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
-      return res.serverError(403, 'Missing cron query key');
+      return res.serverError(403, 'Missing query key');
     }
 
     try {
       await Db.deleteDocument('queries', 'query', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
-        text: 'Deleted cron query successfully'
+        text: 'Deleted query successfully'
       }));
     } catch (err) {
       console.log(`ERROR - DELETE /api/user/cron/${key}`, err);
-      return res.serverError(500, 'Delete cron query failed');
+      return res.serverError(500, 'Delete query failed');
     }
   };
 
   /**
    * POST - /api/user/cron/:key
    *
-   * Update a cron query for a user.
+   * Update a periodic query for a user.
    * @name /user/cron/:key
-   * @returns {boolean} success - Whether the update cron operation was successful.
+   * @returns {boolean} success - Whether the update operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {ArkimeQuery} query - The updated query object TODO ECR create arkimequery object if it doesn't exist
+   * @returns {ArkimeQuery} query - The updated query object
    */
   uModule.updateUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
-      return res.serverError(403, 'Missing cron query key');
+      return res.serverError(403, 'Missing query key');
     }
     if (!req.body.name) {
-      return res.serverError(403, 'Missing cron query name');
+      return res.serverError(403, 'Missing query name');
     }
     if (!req.body.query) {
-      return res.serverError(403, 'Missing cron query expression');
+      return res.serverError(403, 'Missing query expression');
     }
     if (!req.body.action) {
-      return res.serverError(403, 'Missing cron query action');
+      return res.serverError(403, 'Missing query action');
     }
     if (!req.body.tags) {
-      return res.serverError(403, 'Missing cron query tag(s)');
+      return res.serverError(403, 'Missing query tag(s)');
     }
 
     const doc = {
@@ -1112,8 +1136,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: { _source: cron } } = await Db.get('queries', 'query', key);
 
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
-        doc.doc.lastToggledBy = req.settingUser.userId
-        doc.doc.lastToggled = Math.floor(Date.now() / 1000)
+        doc.doc.lastToggledBy = req.settingUser.userId;
+        doc.doc.lastToggled = Math.floor(Date.now() / 1000);
       }
 
       const query = { // last object property overwrites the previous one
@@ -1127,12 +1151,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Updated cron query successfully',
+        text: 'Updated query successfully',
         query: query
       }));
     } catch (err) {
       console.log(`ERROR - POST /api/user/cron/${key}`, err);
-      return res.serverError(403, 'Cron update failed');
+      return res.serverError(403, 'Query update failed');
     }
   };
 

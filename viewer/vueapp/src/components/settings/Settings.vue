@@ -2959,7 +2959,6 @@ export default {
     },
     /* CRON QUERIES ------------------------------------ */
     /* creates a cron query given the name, expression, process, and tags */
-    // TODO ECR send new fields
     createCronQuery: function () {
       if (!this.newCronQueryName || this.newCronQueryName === '') {
         this.cronQueryFormError = 'No query name specified.';
@@ -3050,7 +3049,10 @@ export default {
           this.msgType = 'danger';
         });
     },
-    // TODO ECR
+    /**
+     * Enables/Disables a cron query given its key and updates the query
+     * @param {string} key The query's key
+     */
     toggleCronQueryEnabled: function (key) {
       this.cronQueryChanged(key);
       this.cronQueries[key].enabled = !this.cronQueries[key].enabled;

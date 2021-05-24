@@ -2399,7 +2399,6 @@ internals.processCronQueries = () => {
                 }
               };
 
-
               async function continueProcess () {
                 await Db.update('queries', 'query', qid, doc, { refresh: true });
                 if (lpValue !== endTime) { repeat = true; }
