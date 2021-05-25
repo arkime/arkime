@@ -1967,7 +1967,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
       if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'destination.ip', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+        query.aggregations.field = { terms: { field: 'destination.ip', size: size }, aggregations: { sub: { terms: { field: 'destination.port', size: size } } } };
       } else if (field === 'fileand') {
         query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
       } else {
@@ -2097,10 +2097,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         aggs.forEach((item) => {
           if (field === 'ip.dst:port') {
-            filter.term.destination.ip = item.key;
+            filter.term['destination.ip'] = item.key;
             const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
             item.sub.buckets.forEach((sitem) => {
-              sfilter.term.dstPort = sitem.key;
+              sfilter.term['destination.port'] = sitem.key;
               queriesInfo.push({ key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
             });
           } else if (field === 'fileand') {

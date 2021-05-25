@@ -1,4 +1,4 @@
-use Test::More tests => 71;
+use Test::More tests => 76;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -122,4 +122,9 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
 
 # file field works
     $json = post("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    cmp_ok ($json->{recordsFiltered}, '==', 6);
+
+# ip.dst:port works
+    $json = get("/spigraph.json?date=-1&field=ip.dst:port&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    cmp_ok ($json->{recordsTotal}, '>=', 318);
     cmp_ok ($json->{recordsFiltered}, '==', 6);
