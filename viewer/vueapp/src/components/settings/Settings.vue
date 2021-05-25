@@ -807,25 +807,29 @@
                   <tr v-if="item.expanded"
                     class="mt-3">
                     <td colspan="9">
-                      <div class="row">
+                      <div class="row"
+                        v-if="item.description">
                         <div class="col">
                           <strong>Query Description</strong>:
                           {{ item.description }}
                         </div>
                       </div>
-                      <div class="row">
+                      <div class="row"
+                        v-if="item.creator">
                         <div class="col">
                           <strong>Created by</strong>:
                           {{ item.creator }}
                         </div>
                       </div>
-                      <div class="row">
+                      <div class="row"
+                        v-if="item.created">
                         <div class="col">
                           <strong>Created at</strong>:
                           {{ item.created * 1000 | timezoneDateString(settings.timezone, false) }}
                         </div>
                       </div>
-                      <div class="row">
+                      <div class="row"
+                        v-if="item.lastRun">
                         <div class="col">
                           <strong>Last run at</strong>:
                           {{ item.lastRun * 1000 | timezoneDateString(settings.timezone, false) }}
@@ -2606,6 +2610,19 @@ export default {
         // multiviewer user can't change password
         this.openView('general');
       }
+    }
+
+    if (this.$route.query.expression) {
+      this.newCronQueryExpression = this.$route.query.expression;
+    }
+    if (this.$route.query.process) {
+      this.newCronQueryProcess = this.$route.query.process;
+      this.$router.replace({ // remove process query param as nothing else uses it
+        query: {
+          ...this.$route.query,
+          process: undefined
+        }
+      });
     }
 
     this.getThemeColors();
