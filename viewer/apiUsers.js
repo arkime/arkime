@@ -992,6 +992,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the create operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} key - The query id
+   * @returns {ArkimeQuery} query - The new query
    */
   uModule.createUserCron = async (req, res) => {
     if (!req.body.name) {
@@ -1056,6 +1057,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.send(JSON.stringify({
         success: true,
         key: info._id,
+        query: doc.doc,
         text: 'Created query successfully'
       }));
     } catch (err) {
@@ -1145,7 +1147,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         ...doc.doc
       };
 
-      await Db.update('queries', 'query', key, doc, { refresh: true });
+      try {
+        await Db.update('queries', 'query', key, doc, { refresh: true });
+      } catch (err) {
+        console.log(`ERROR - POST /api/user/cron/${key}`, err);
+      }
 
       if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
 

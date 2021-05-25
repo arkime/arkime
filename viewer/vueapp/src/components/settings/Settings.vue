@@ -687,7 +687,7 @@
               <tr>
                 <th>&nbsp;</th>
                 <th>Enabled</th>
-                <th>Processed</th>
+                <th>Matches</th>
                 <th>Name</th>
                 <th>Expression</th>
                 <th>Action</th>
@@ -869,7 +869,7 @@
 
           <!-- new cron query form -->
           <div @keyup.enter="createCronQuery"
-            class="well well-lg">
+            class="well well-lg mb-2">
             <h3 class="mt-3">
               New Periodic Query
               <button type="button"
@@ -2993,8 +2993,7 @@ export default {
         .then((response) => {
           // add the cron query to the view
           this.cronQueryFormError = false;
-          data.count = 0; // initialize count to 0
-          this.cronQueries[response.key] = data;
+          this.$set(this.cronQueries, response.key, response.query);
           // reset fields
           this.newCronQueryName = '';
           this.newCronQueryTags = '';
