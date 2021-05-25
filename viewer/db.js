@@ -636,7 +636,13 @@ exports.nodesInfo = async (options) => {
 };
 
 exports.update = async (index, type, id, doc, options) => {
-  const params = { index: fixIndex(index), body: doc, id: id, timeout: '10m' };
+  const params = {
+    id: id,
+    body: doc,
+    timeout: '10m',
+    retry_on_conflict: 3,
+    index: fixIndex(index)
+  };
   exports.merge(params, options);
   return internals.client7.update(params);
 };
