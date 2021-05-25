@@ -77,7 +77,7 @@ sub sortObj {
         } elsif ($r eq "ARRAY") {
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert)/);
-            if ("$parentkey.$key" =~ /.vlan|http.statuscode|icmp.type|icmp.code/) {
+            if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
             } else {
