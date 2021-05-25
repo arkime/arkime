@@ -10,7 +10,7 @@ yum -y install git sudo perl-Test-Base perl-Test-Differences perl-Test-Simple bz
 yum -y update; \
 yum -y install devtoolset-9-gcc-c++ pfring rh-python36; \
 git clone https://github.com/arkime/arkime; \
-(cd arkime; git checkout master; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
+(cd arkime; git checkout main; scl enable devtoolset-9 rh-python36 './easybutton-build.sh --daq --pfring'); \
 mv arkime/thirdparty /; \
 rm -rf /thirdparty/glib*/*/tests /thirdparty/glib*/*/*/tests && \
 rm -rf arkime; \
@@ -18,10 +18,10 @@ scl enable rh-ruby23 'gem install --no-ri --no-rdoc fpm'; \
 scl enable devtoolset-9 rh-python36 'pip3 install awscli'; \
 useradd -u 2000 elasticsearch; \
 (cd / ; \
- wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.9.3-linux-x86_64.tar.gz; \
- tar xf elasticsearch-7.9.3-linux-x86_64.tar.gz; \
- chown -R elasticsearch elasticsearch-7.9.3; \
- rm -f elasticsearch-7.9.3-linux-x86_64.tar.gz \
+ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.10.2-linux-x86_64.tar.gz; \
+ tar xf elasticsearch-7.10.2-linux-x86_64.tar.gz; \
+ chown -R elasticsearch elasticsearch-7.10.2; \
+ rm -f elasticsearch-7.10.2-linux-x86_64.tar.gz \
 ); \
 yum -y clean all; \
 rm -rf /var/cache/yum
