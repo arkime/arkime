@@ -319,7 +319,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
-            let f = hit.fields;
+            const f = hit.fields;
 
             let asrc = hit.fields[fsrc];
             let adst = hit.fields[fdst];
