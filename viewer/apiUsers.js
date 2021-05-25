@@ -965,18 +965,22 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const user = req.settingUser;
     if (user.settings === undefined) { user.settings = {}; }
 
-    const query = { size: 1000, query: { term: { creator: user.userId } } };
+    const query = {
+      size: 1000,
+      sort: { created: { order: 'asc' } },
+      query: { term: { creator: user.userId } }
+    };
 
     Db.search('queries', 'query', query, (err, data) => {
       if (err || data.error) {
         console.log('/api/user/crons error', err || data.error);
       }
 
-      const queries = {};
+      const queries = [];
 
       if (data && data.hits && data.hits.hits) {
         data.hits.hits.forEach((item) => {
-          queries[item._id] = item._source;
+          queries.push({ ...item._source, key: item._id });
         });
       }
 
@@ -991,7 +995,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/cron
    * @returns {boolean} success - Whether the create operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} key - The query id
    * @returns {ArkimeQuery} query - The new query
    */
   uModule.createUserCron = async (req, res) => {
@@ -1054,9 +1057,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         internals.processCronQueries();
       }
 
+      doc.doc.key = info._id;
+
       return res.send(JSON.stringify({
         success: true,
-        key: info._id,
         query: doc.doc,
         text: 'Created query successfully'
       }));
@@ -1126,7 +1130,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query: req.body.query,
         tags: req.body.tags,
         action: req.body.action,
-        notifier: '',
+        notifier: undefined,
         description: ''
       }
     };
@@ -1159,6 +1163,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
+
+      query.key = key;
 
       return res.send(JSON.stringify({
         success: true,

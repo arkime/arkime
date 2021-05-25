@@ -700,10 +700,10 @@
             </thead>
             <tbody>
               <!-- cron queries -->
-              <template v-for="(item, key) in cronQueries">
-                <tr :key="key"
-                  @keyup.enter="updateCronQuery(key)"
-                  @keyup.esc="cancelCronQueryChange(key)">
+              <template v-for="(item, index) in cronQueries">
+                <tr :key="item.key"
+                  @keyup.enter="updateCronQuery(item, index)"
+                  @keyup.esc="cancelCronQueryChange">
                   <td>
                     <toggle-btn
                       :opened="item.expanded"
@@ -713,7 +713,7 @@
                   <td>
                     <input type="checkbox"
                       v-model="item.enabled"
-                      @input="toggleCronQueryEnabled(key)"
+                      @input="toggleCronQueryEnabled(item, index)"
                     />
                   </td>
                   <td>{{ item.count }}</td>
@@ -722,20 +722,20 @@
                       maxlength="20"
                       v-model="item.name"
                       class="form-control form-control-sm"
-                      @input="cronQueryChanged(key)"
+                      @input="cronQueryChanged(item)"
                     />
                   </td>
                   <td>
                     <input type="text"
                       v-model="item.query"
                       class="form-control form-control-sm"
-                      @input="cronQueryChanged(key)"
+                      @input="cronQueryChanged(item)"
                     />
                   </td>
                   <td>
                     <select class="form-control form-control-sm"
                       v-model="item.action"
-                      @change="cronQueryChanged(key)">
+                      @change="cronQueryChanged(item)">
                       <option value="tag">Tag</option>
                       <option v-for="(item, key) in molochClusters"
                         :value="`forward:${key}`"
@@ -748,13 +748,13 @@
                     <input type="text"
                       v-model="item.tags"
                       class="form-control form-control-sm"
-                      @input="cronQueryChanged(key)"
+                      @input="cronQueryChanged(item)"
                     />
                   </td>
                   <td>
                     <select v-model="item.notifier"
                       class="form-control form-control-sm"
-                      @input="cronQueryChanged(key)">
+                      @change="cronQueryChanged(item)">
                       <option value=undefined>none</option>
                       <option v-for="notifier in notifiers"
                         :key="notifier.name"
@@ -770,7 +770,7 @@
                         class="btn btn-theme-tertiary"
                         v-b-tooltip.hover
                         title="Save changes to this query"
-                        @click="updateCronQuery(key)">
+                        @click="updateCronQuery(item, index)">
                         <span class="fa fa-save fa-fw">
                         </span>
                       </button>
@@ -778,7 +778,7 @@
                         class="btn btn-warning"
                         v-b-tooltip.hover
                         title="Undo changes to this query"
-                        @click="cancelCronQueryChange(key)">
+                        @click="cancelCronQueryChange">
                         <span class="fa fa-ban fa-fw">
                         </span>
                       </button>
@@ -795,7 +795,7 @@
                       <button type="button"
                         class="btn btn-danger"
                         v-if="!item.changed"
-                        @click="deleteCronQuery(key)">
+                        @click="deleteCronQuery(item, index)">
                         <span class="fa fa-trash-o fa-fw">
                         </span>
                       </button>
@@ -803,7 +803,7 @@
                   </td>
                 </tr> <!-- /cron queries -->
                 <transition name="grow"
-                  :key="key + 'detail'">
+                  :key="item.key + 'detail'">
                   <tr v-if="item.expanded"
                     class="mt-3">
                     <td colspan="9">
@@ -813,7 +813,7 @@
                           <input type="text"
                             v-model="item.description"
                             class="form-control form-control-sm"
-                            @input="cronQueryChanged(key)"
+                            @input="cronQueryChanged(item)"
                           />
                         </div>
                       </div>
@@ -3013,12 +3013,12 @@ export default {
         .then((response) => {
           // add the cron query to the view
           this.cronQueryFormError = false;
-          this.$set(this.cronQueries, response.key, response.query);
+          this.cronQueries.push(response.query);
           // reset fields
           this.newCronQueryName = '';
           this.newCronQueryTags = '';
           this.newCronQueryExpression = '';
-          this.newCronQueryNotifier = '';
+          this.newCronQueryNotifier = undefined;
           this.newCronQueryDescription = '';
           // display success message to user
           this.msg = response.text;
@@ -3030,12 +3030,20 @@ export default {
           this.msgType = 'danger';
         });
     },
-    toggleCronQueryDetail: function (cron) {
-      this.$set(cron, 'expanded', !cron.expanded);
+    /**
+     * Toggles a query's detail display
+     * @param {object} query The query object to toggle
+     */
+    toggleCronQueryDetail: function (query) {
+      this.$set(query, 'expanded', !query.expanded);
     },
-    openCronSessions: function (cron) {
-      if (cron.tags) {
-        const tags = cron.tags.split(',');
+    /**
+     * Opens the matching sessions in a new tab
+     * @param {object} query The query object to open sessions for
+     */
+    openCronSessions: function (query) {
+      if (query.tags) {
+        const tags = query.tags.split(',');
         let url = 'sessions?expression=';
         for (let t = 0, tlen = tags.length; t < tlen; t++) {
           const tag = tags[t];
@@ -3049,15 +3057,15 @@ export default {
       }
     },
     /**
-     * Deletes a cron query given its key
-     * @param {string} key The cron query's key
+     * Deletes a query
+     * @param {object} query The query object to delete
+     * @param {number} index The index of the query in the list
      */
-    deleteCronQuery: function (key) {
-      UserService.deleteCronQuery(key, this.userId)
+    deleteCronQuery: function (query, index) {
+      UserService.deleteCronQuery(query.key, this.userId)
         .then((response) => {
-          // remove the cron query from the view
-          this.cronQueries[key] = null;
-          delete this.cronQueries[key];
+          // remove the query from the list
+          this.cronQueries.splice(index, 1);
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
@@ -3069,29 +3077,33 @@ export default {
         });
     },
     /**
-     * Enables/Disables a cron query given its key and updates the query
-     * @param {string} key The query's key
+     * Enables/Disables a query given its key and updates the query
+     * @param {object} query The query object to toggle
+     * @param {number} index The index of the query in the list
      */
-    toggleCronQueryEnabled: function (key) {
-      this.cronQueryChanged(key);
-      this.cronQueries[key].enabled = !this.cronQueries[key].enabled;
-      this.updateCronQuery(key);
+    toggleCronQueryEnabled: function (query, index) {
+      this.cronQueryChanged(query);
+      this.$set(query, 'enabled', !query.enabled);
+      this.updateCronQuery(query, index);
+    },
+    cronQueryNotifierChanged: function (query) {
+      console.log('cron query notifier changed', query);
+      this.cronQueryChanged(query);
     },
     /**
      * Sets a cron query as having been changed
-     * @param {string} key The unique id of the cron query
+     * @param {object} query The query object that changed
      */
-    cronQueryChanged: function (key) {
-      this.cronQueries[key].changed = true;
+    cronQueryChanged: function (query) {
+      this.$set(query, 'changed', true);
     },
     /**
-     * Cancels a cron query change by retrieving the cron query
-     * @param {string} key The unique id of the cron query
+     * Cancels a query change by retrieving the list of queries
      */
-    cancelCronQueryChange: function (key) {
+    cancelCronQueryChange: function () {
       UserService.getCronQueries(this.userId)
         .then((response) => {
-          this.cronQueries[key] = response[key];
+          this.cronQueries = response;
         })
         .catch((error) => {
           this.cronQueryListError = error.text;
@@ -3099,34 +3111,25 @@ export default {
     },
     /**
      * Updates a cron query
-     * @param {string} key The unique id of the cron query to update
+     * @param {object} query The query to update
+     * @param {number} index The index of the query in the list
      */
-    updateCronQuery: function (key) {
-      const data = this.cronQueries[key];
-
-      if (!data) {
-        this.msg = 'Could not find corresponding query';
-        this.msgType = 'danger';
-        return;
-      }
-
-      if (!data.changed) {
+    updateCronQuery: function (query, index) {
+      if (!query.changed) {
         this.msg = 'This query has not changed';
         this.msgType = 'warning';
         return;
       }
 
-      data.key = key;
-
-      UserService.updateCronQuery(data, this.userId)
+      UserService.updateCronQuery(query, this.userId)
         .then((response) => {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
           // set the cron query as unchanged
-          data.changed = false;
-          response.query.expanded = this.cronQueries[key].expanded;
-          this.$set(this.cronQueries, key, response.query);
+          this.$set(query, 'changed', false);
+          response.query.expanded = query.expanded;
+          this.$set(this.cronQueries, index, response.query);
         })
         .catch((error) => {
           // display error message to user
