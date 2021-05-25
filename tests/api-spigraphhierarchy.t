@@ -11,6 +11,7 @@ use strict;
 sub get {
 my ($param) = @_;
 
+#    diag "/spigraphhierarchy?$param";
     my $json = viewerGet("/spigraphhierarchy?$param");
     my $mjson = multiGet("/spigraphhierarchy?$param");
 

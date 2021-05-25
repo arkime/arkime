@@ -224,6 +224,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} List of values to populate the cubism graph.
    */
   sModule.getDetailedStats = (req, res) => {
+    if (req.query.name === undefined) {
+      return res.send('{}');
+    }
+
     const nodeName = req.query.nodeName;
 
     const query = {

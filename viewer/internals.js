@@ -96,7 +96,7 @@ module.exports = (app, Config) => {
   };
 
   iModule.internals.scriptAggs['ip.dst:port'] = {
-    script: 'if (doc.destination.ip.value.indexOf(".") > 0) {return doc.destination.ip.value + ":" + doc.dstPort.value} else {return doc.destination.ip.value + "." + doc.dstPort.value}',
+    script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
     dbField: 'destination.ip'
   };
 

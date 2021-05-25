@@ -1785,7 +1785,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const response = { spi: {} };
 
     sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
-      console.log('ALW FIX INDICES', indices);
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -2008,7 +2007,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           const queries = queriesInfo.map((item) => { return item.query; });
 
           try {
-            const { body: searchResult } = await Db.msearch(indices, 'session', queries, options);
+            const { body: searchResult } = await Db.msearchSessions(indices, queries, options);
 
             searchResult.responses.forEach((item, i) => {
               const response = {
@@ -2049,14 +2048,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 }
               }
 
-              if (graph.totPacketsTotal !== undefined) {
-                response.totPacketsHisto = graph.totPacketsTotal;
+              if (graph['network.packetsTotal'] !== undefined) {
+                response['network.packetsHisto'] = graph['network.packetsTotal'];
               }
               if (graph.totDataBytesTotal !== undefined) {
                 response.totDataBytesHisto = graph.totDataBytesTotal;
               }
-              if (graph.totBytesTotal !== undefined) {
-                response.totBytesHisto = graph.totBytesTotal;
+              if (graph['network.bytesTotal'] !== undefined) {
+                response['network.bytesHisto'] = graph['network.bytesTotal'];
               }
 
               if (results.items.length === searchResult.responses.length) {
@@ -2074,6 +2073,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               }
             });
           } catch (err) {
+            console.log('Error', err.toString());
             return res.send(results);
           }
         }
@@ -2183,6 +2183,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
+
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
           console.log('spigraphpie ERROR', err);

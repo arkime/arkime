@@ -569,7 +569,7 @@ exports.searchSessions = function (index, query, options, cb) {
   });
 };
 
-exports.msearch = async (index, type, queries, options) => {
+exports.msearchSessions = async (index, queries, options) => {
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {

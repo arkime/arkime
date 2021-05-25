@@ -48,7 +48,7 @@ sub post {
 sub getBinary {
 my ($url) = @_;
 
-    diag "http://$MolochTest::host:8123$url";
+#    diag "http://$MolochTest::host:8123$url";
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url");
     my $mresponse = $MolochTest::userAgent->get("http://$MolochTest::host:8125$url");
 
@@ -121,7 +121,7 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 ', "CSV Expression");
 
     my $idQuery = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
-    diag "http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id};
+    #    diag "http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id};
     $csv = $MolochTest::userAgent->get("http://$MolochTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id})->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv,
