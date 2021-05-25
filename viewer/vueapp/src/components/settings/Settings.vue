@@ -807,11 +807,14 @@
                   <tr v-if="item.expanded"
                     class="mt-3">
                     <td colspan="9">
-                      <div class="row"
-                        v-if="item.description">
+                      <div class="row">
                         <div class="col">
                           <strong>Query Description</strong>:
-                          {{ item.description }}
+                          <input type="text"
+                            v-model="item.description"
+                            class="form-control form-control-sm"
+                            @input="cronQueryChanged(key)"
+                          />
                         </div>
                       </div>
                       <div class="row"
@@ -833,7 +836,7 @@
                         <div class="col">
                           <strong>Last run at</strong>:
                           {{ item.lastRun * 1000 | timezoneDateString(settings.timezone, false) }}
-                          and matched {{ item.lastCount }} new sessions
+                          and matched {{ item.lastCount || 0 }} new sessions
                         </div>
                       </div>
                       <div class="row"

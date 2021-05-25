@@ -1126,12 +1126,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query: req.body.query,
         tags: req.body.tags,
         action: req.body.action,
-        notifier: undefined
+        notifier: '',
+        description: ''
       }
     };
 
     if (req.body.notifier) {
       doc.doc.notifier = req.body.notifier;
+    }
+
+    if (req.body.description) {
+      doc.doc.description = req.body.description;
     }
 
     try {
