@@ -1088,11 +1088,15 @@
         </p>
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
-          Cron Queries
+          Periodic Queries
         </h6>
         <p>
-          Here, a user can manage their cron queries by updating or deleting them.
-          They can also create a new cron query.
+          Here, a user can manage their queries by updating or deleting them.
+          They can also create a new query.
+          <br>
+          Periodic Queries can perform actions on sessions that match. The
+          query runs against sessions delayed by 90 seconds to make sure all
+          updates have been completed for that session.
         </p>
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
@@ -1135,7 +1139,7 @@
         <p>
           Here, an <strong>admin</strong> user can create, update, and delete notifiers.
           The available notifiers are Slack, Email, and texts via Twilio.
-          Notifiers can be used to alert users that cron queries have found matching sessions.
+          Notifiers can be used to alert users that periodic queries have found matching sessions.
           Notifiers alert every <strong>10</strong> minutes if there are <strong>new</strong> matches.
         </p>
         <h6>

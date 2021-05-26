@@ -48,6 +48,10 @@
           </span>&nbsp;
           Export Intersection
         </b-dropdown-item>
+        <b-dropdown-item @click="periodicQuery">
+          <span class="fa fa-fw fa-search" />&nbsp;
+          Create Periodic Query
+        </b-dropdown-item>
       </b-dropdown> <!-- /actions dropdown menu -->
 
       <!-- views dropdown menu -->
@@ -519,6 +523,19 @@ export default {
     viewIntersection: function () {
       this.actionForm = 'view:intersection';
       this.showApplyButtons = false;
+    },
+    periodicQuery: function () {
+      const params = new URLSearchParams();
+
+      if (this.expression) {
+        params.append('expression', this.expression);
+      }
+
+      if (this.$store.state.timeRange && this.$store.state.timeRange !== '0') {
+        params.append('process', this.$store.state.timeRange);
+      }
+
+      window.open(`settings?${params.toString()}#cron`, '_blank');
     },
     actionFormDone: function (message, success) {
       // If a view was being edited, remove selection name

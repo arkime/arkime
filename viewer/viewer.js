@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 67;
+const MIN_DB_VERSION = 68;
 
 // ============================================================================
 // MODULES
@@ -610,9 +610,9 @@ async function checkCronAccess (req, res, next) {
       if (query._source.creator === req.user.userId) {
         return next();
       }
-      return res.serverError(403, 'You cannot change another user\'s cron query unless you have admin privileges');
+      return res.serverError(403, 'You cannot change another user\'s query unless you have admin privileges');
     } catch (err) {
-      return res.serverError(403, 'Unknown cron query');
+      return res.serverError(403, 'Unknown query');
     }
   }
 }
@@ -2213,7 +2213,11 @@ function processCronQuery (cq, options, query, endTime, cb) {
           return setImmediate(whilstCb, 'DONE');
         } else {
           const doc = { doc: { count: (query.count || 0) + count } };
-          Db.update('queries', 'query', options.qid, doc, { refresh: true });
+          try {
+            Db.update('queries', 'query', options.qid, doc, { refresh: true });
+          } catch (err) {
+            console.log('ERROR - updating query', err);
+          }
         }
 
         query = {
@@ -2345,7 +2349,7 @@ internals.processCronQueries = () => {
             shortcuts = await Db.getShortcutsCache(cq.creator);
           } catch (err) { // don't need to do anything, there will just be no
             // shortcuts sent to the parser. but still log the error.
-            console.log('ERROR - fetching shortcuts cache when processing cron query', err);
+            console.log('ERROR - fetching shortcuts cache when processing periodic query', err);
           }
 
           // always complete building the query regardless of shortcuts
@@ -2368,7 +2372,7 @@ internals.processCronQueries = () => {
           try {
             query.query.bool.filter.push(molochparser.parse(cq.query));
           } catch (e) {
-            console.log("Couldn't compile cron query expression", cq, e);
+            console.log("Couldn't compile periodic query expression", cq, e);
             return forQueriesCb();
           }
 
@@ -2394,20 +2398,26 @@ internals.processCronQueries = () => {
                 doc: {
                   lpValue: lpValue,
                   lastRun: Math.floor(Date.now() / 1000),
-                  count: (queries[qid].count || 0) + count
+                  count: (cq.count || 0) + count,
+                  lastCount: count
                 }
               };
 
               async function continueProcess () {
-                await Db.update('queries', 'query', qid, doc, { refresh: true });
+                try {
+                  await Db.update('queries', 'query', qid, doc, { refresh: true });
+                } catch (err) {
+                  console.log('ERROR - updating query', err);
+                }
                 if (lpValue !== endTime) { repeat = true; }
                 return forQueriesCb();
               }
 
               // issue alert via notifier if the count has changed and it has been at least 10 minutes
-              if (cq.notifier && count && queries[qid].count !== doc.doc.count &&
+              if (cq.notifier && count && cq.count !== doc.doc.count &&
                 (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                const newMatchCount = doc.doc.lastNotifiedCount ? (doc.doc.count - doc.doc.lastNotifiedCount) : doc.doc.count;
+                const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
+                doc.doc.lastNotifiedCount = doc.doc.count;
 
                 let urlPath = 'sessions?expression=';
                 const tags = cq.tags.split(',');
@@ -2418,9 +2428,9 @@ internals.processCronQueries = () => {
                 }
 
                 const message = `
-*${cq.name}* cron query match alert:
+*${cq.name}* periodic query match alert:
 *${newMatchCount} new* matches
-*${doc.doc.count} total* matches.
+*${doc.doc.count} total* matches
 ${Config.arkimeWebURL()}${urlPath}
                 `;
 
@@ -2495,7 +2505,7 @@ async function main () {
   setInterval(createRightClicks, 5 * 60 * 1000);
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
-    console.log('This node will process Cron Queries, delayed by', internals.cronTimeout, 'seconds');
+    console.log('This node will process Periodic Queries, delayed by', internals.cronTimeout, 'seconds');
     setInterval(internals.processCronQueries, 60 * 1000);
     setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);

@@ -62,6 +62,7 @@
 # 65 - hunt unrunnable and failedSessionIds
 # 66 - share hunts
 # 67 - remove hunt info from matched sessions
+# 68 - cron query enhancements
 # 70 - reindex everything, ecs, sessions3
 
 use HTTP::Request::Common;
@@ -1159,6 +1160,9 @@ sub queriesUpdate
       "count": {
         "type": "long"
       },
+      "lastCount": {
+        "type": "long"
+      },
       "query": {
         "type": "keyword"
       },
@@ -1179,6 +1183,18 @@ sub queriesUpdate
       },
       "lastNotifiedCount": {
         "type": "long"
+      },
+      "description": {
+        "type": "keyword"
+      },
+      "created": {
+        "type": "date"
+      },
+      "lastToggled": {
+        "type": "date"
+      },
+      "lastToggledBy": {
+        "type": "keyword"
       }
     }
   }
