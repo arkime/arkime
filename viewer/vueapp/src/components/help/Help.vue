@@ -695,12 +695,14 @@
         Once the hunt has been created, it will be added to the <strong>hunt job queue</strong>. Hunts run one at a time and
         can be paused so that another hunt can run. After a hunt has completed, it will be added to
         the <strong>hunt job history</strong>. Here, you can rerun a hunt on a different set of sessions, open the
-        sessions that matched the hunt, or delete the hunt job from the history.
+        sessions that matched the hunt, or delete the hunt job from the history. You can also cancel a hunt. This simply
+        stops the packet searching and moves the hunt to the hunt history.
       </p>
       <p>
         Hunts add <code>huntName</code> and <code>huntId</code> fields to the sessions as they match.
         You can search for these fields in the sessions search bar at any time. Deleting a hunt from the history
-        does not remove these fields from the sessions.
+        does not remove these fields from the sessions. If there are matches and you have remove privileges, you
+        can remove these fields by clicking the X button.
       </p>
       <p>
         <strong>Info:</strong> A normal user can only view/pause/delete their own hunts, but an admin can view/pause/delete all hunts.<br>
