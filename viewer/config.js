@@ -500,10 +500,65 @@ exports.configMap = function (section, dSection, d) {
   return map;
 };
 
-if (exports.isHTTPS()) {
-  exports.keyFileData = fs.readFileSync(exports.get('keyFile'));
-  exports.certFileData = fs.readFileSync(exports.get('certFile'));
+function loadCertData () {
+  exports.keyFileLocation = exports.get('keyFile');
+  exports.certFileLocation = exports.get('certFile');
+
+  // eslint-disable-next-line no-useless-catch
+  try {
+    exports.keyFileData = fs.readFileSync(exports.keyFileLocation);
+    exports.certFileData = fs.readFileSync(exports.certFileLocation);
+  } catch (err) {
+    throw err;
+  }
 }
+
+if (exports.isHTTPS()) {
+  try {
+    loadCertData();
+  } catch (err) {
+    console.log('ERROR loading cert data:', err.toString());
+  }
+}
+
+exports.setServerToReloadCerts = function (server, cryptoOption) {
+  if (!exports.isHTTPS()) { return; } // only used in https mode
+
+  try { // try to get the cert files
+    loadCertData();
+  } catch (err) { // if they don't exist don't try to monitor them
+    console.log('Missing cert or key files. Will not reload cert.');
+    return;
+  }
+
+  let fsWait = null;
+  function watchFile (e, filename) {
+    if (filename) { // 10s timeout for file changes (including file name changes)
+      if (fsWait) { clearTimeout(fsWait); };
+      fsWait = setTimeout(() => {
+        fsWait = null;
+        try { // try to get the new cert files
+          loadCertData();
+        } catch (err) { // don't continue if we can't read them
+          console.log('Missing cert or key files. Cannot reload cert.');
+          return;
+        }
+        console.log('Reloading cert...');
+        const options = { // set new server cert options
+          key: exports.keyFileData,
+          cert: exports.certFileData,
+          secureOptions: cryptoOption
+        };
+        server.setSecureContext(options);
+      }, 10000);
+    }
+  }
+
+  // watch the cert and key files
+  fs.watch(exports.certFileLocation, watchFile);
+  fs.watch(exports.keyFileLocation, watchFile);
+};
+
 dropPrivileges();
 
 /// ///////////////////////////////////////////////////////////////////////////////
