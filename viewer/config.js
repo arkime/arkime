@@ -503,38 +503,38 @@ exports.configMap = function (section, dSection, d) {
 function loadCertData () {
   exports.keyFileLocation = exports.get('keyFile');
   exports.certFileLocation = exports.get('certFile');
-
-  // eslint-disable-next-line no-useless-catch
-  try {
-    exports.keyFileData = fs.readFileSync(exports.keyFileLocation);
-    exports.certFileData = fs.readFileSync(exports.certFileLocation);
-  } catch (err) {
-    throw err;
-  }
+  exports.keyFileData = fs.readFileSync(exports.keyFileLocation);
+  exports.certFileData = fs.readFileSync(exports.certFileLocation);
 }
 
+let certDataLoaded = false;
 if (exports.isHTTPS()) {
   try {
     loadCertData();
+    certDataLoaded = true;
   } catch (err) {
-    console.log('ERROR loading cert data:', err.toString());
+    console.log('ERROR loading cert or key files:', err.toString());
   }
 }
 
 exports.setServerToReloadCerts = function (server, cryptoOption) {
   if (!exports.isHTTPS()) { return; } // only used in https mode
 
-  try { // try to get the cert files
-    loadCertData();
-  } catch (err) { // if they don't exist don't try to monitor them
+  if (!certDataLoaded) { // cert or key files weren't loaded in the isHTTPS if
+    // so don't try to watch the files. they are likely not accessible
     console.log('Missing cert or key files. Will not reload cert.');
     return;
+  }
+
+  if (exports.debug > 0) {
+    console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
   }
 
   let fsWait = null;
   function watchFile (e, filename) {
     if (filename) { // 10s timeout for file changes (including file name changes)
       if (fsWait) { clearTimeout(fsWait); };
+
       fsWait = setTimeout(() => {
         fsWait = null;
         try { // try to get the new cert files
@@ -543,13 +543,20 @@ exports.setServerToReloadCerts = function (server, cryptoOption) {
           console.log('Missing cert or key files. Cannot reload cert.');
           return;
         }
+
         console.log('Reloading cert...');
+
         const options = { // set new server cert options
           key: exports.keyFileData,
           cert: exports.certFileData,
           secureOptions: cryptoOption
         };
-        server.setSecureContext(options);
+
+        try {
+          server.setSecureContext(options);
+        } catch (err) {
+          console.log('ERROR cert not reloaded: ', err.toString());
+        }
       }, 10000);
     }
   }
