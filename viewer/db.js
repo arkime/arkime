@@ -692,7 +692,7 @@ exports.flush = async (index) => {
 };
 
 exports.refresh = async (index) => {
-  if (index === 'users') {
+  if (index === 'users' || index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
     return internals.client7.indices.refresh({ index: fixIndex(index) });
@@ -988,30 +988,30 @@ exports.getHunt = async (id) => {
 
 // Shortcut DB interactions
 exports.searchShortcuts = async (query) => {
-  return internals.client7.search({
-    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
+  return internals.usersClient7.search({
+    index: internals.usersPrefix + 'lookups', body: query, rest_total_hits_as_int: true
   });
 };
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
-  return internals.client7.index({
-    index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m'
+  return internals.usersClient7.index({
+    index: internals.usersPrefix + 'lookups', body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
 exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
-  return internals.client7.delete({
-    index: fixIndex('lookups'), id: id, refresh: true
+  return internals.usersClient7.delete({
+    index: internals.usersPrefix + 'lookups', id: id, refresh: true
   });
 };
 exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
-  return internals.client7.index({
-    index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m'
+  return internals.usersClient7.index({
+    index: internals.usersPrefix + 'lookups', body: doc, id: id, refresh: true, timeout: '10m'
   });
 };
 exports.getShortcut = async (id) => {
-  return internals.client7.get({ index: fixIndex('lookups'), id: id });
+  return internals.usersClient7.get({ index: internals.usersPrefix + 'lookups', id: id });
 };
 exports.getShortcutsCache = async (userId) => {
   if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {

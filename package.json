@@ -56,6 +56,7 @@
     "viewer:testuserdebug": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testuser --debug) & webpack --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:multies": "cd viewer && node multies.js -c ../tests/config.test.ini -n testmulties",
     "viewer:testmultiviewer": "(cd viewer && nodemon viewer.js -c ../tests/config.test.ini -n testmulties) & webpack --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
+    "viewer:all": "cd viewer && (nodemon multies.js -c ../tests/config.test.ini -n all & nodemon viewer.js -c ../tests/config.test.ini -n test & nodemon viewer.js -c ../tests/config.test.ini -n test2) & webpack --watch --progress --config viewer/vueapp/build/webpack.dev.conf.js",
     "viewer:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files viewer/*.js > ../arkimeweb/_wiki/api_docs.md",
     "viewer:lint": "eslint --ext .js,.vue viewer capture/plugins",
     "viewer:lint-fix": "eslint --fix --ext .js,.vue viewer capture/plugins",
