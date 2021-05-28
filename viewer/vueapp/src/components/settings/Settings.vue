@@ -106,7 +106,7 @@
             </span>&nbsp;
             Notifiers
           </a>
-          <a v-if="!multiviewer"
+          <a v-if="!multiviewer || (multiviewer && hasUsersES)"
             class="nav-link cursor-pointer"
             @click="openView('shortcuts')"
             :class="{'active':visibleTab === 'shortcuts'}">
@@ -2108,9 +2108,19 @@
             Create a list of values that can be used in queries as shortcuts.
             For example, create a list of IPs and use them in a query
             expression <code>ip.src == $MY_IPS</code>.
-            <br>
+          </p>
+          <p>
             <strong>Tip:</strong>
             Use <code>$</code> to autocomplete shortcuts in search expressions.
+          </p>
+          <p>
+            <strong>Note:</strong>
+            <template v-if="hasUsersES">
+              These shortcuts will be synced across clusters.
+            </template>
+            <template v-else>
+              These shortcuts are local to this cluster only.
+            </template>
           </p>
 
           <div class="row">
@@ -2558,6 +2568,7 @@ export default {
       confirmNewPassword: '',
       changePasswordError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
       // notifiers settings vars
       notifiers: undefined,
       notifierTypes: [],
