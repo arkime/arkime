@@ -314,11 +314,13 @@ const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMse
 
 console.log('Listen on ', Config.get('esProxyPort', '7200'));
 if (Config.isHTTPS()) {
-  https.createServer({
+  const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
+  const server = https.createServer({
     key: Config.keyFileData,
     cert: Config.certFileData,
-    secureOptions: require('crypto').constants.SSL_OP_NO_TLSv1
+    secureOptions: cryptoOption
   }, app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
+  Config.setServerToReloadCerts(server, cryptoOption);
 } else {
   http.createServer(app).listen(Config.get('esProxyPort', '7200'), Config.get('esProxyHost', undefined));
 }

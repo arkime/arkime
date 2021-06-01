@@ -828,14 +828,14 @@
                         v-if="item.created">
                         <div class="col">
                           <strong>Created at</strong>:
-                          {{ item.created * 1000 | timezoneDateString(settings.timezone, false) }}
+                          {{ item.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
                         </div>
                       </div>
                       <div class="row"
                         v-if="item.lastRun">
                         <div class="col">
                           <strong>Last run at</strong>:
-                          {{ item.lastRun * 1000 | timezoneDateString(settings.timezone, false) }}
+                          {{ item.lastRun * 1000 | timezoneDateString(user.settings.timezone, false) }}
                           and matched {{ item.lastCount || 0 }} new sessions
                         </div>
                       </div>
@@ -843,7 +843,7 @@
                         v-if="item.lastToggled">
                         <div class="col">
                           <strong>{{ item.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
-                          {{ item.lastToggled * 1000 | timezoneDateString(settings.timezone, false) }}
+                          {{ item.lastToggled * 1000 | timezoneDateString(user.settings.timezone, false) }}
                           by {{ item.lastToggledBy }}
                         </div>
                       </div>
@@ -2051,11 +2051,11 @@
                     <div class="col-12 small">
                       <span v-if="notifier.created || notifier.user">
                         Created by {{ notifier.user }} at
-                        {{ notifier.created * 1000 | timezoneDateString(settings.timezone, false) }}
+                        {{ notifier.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </span>
                       <span v-if="notifier.updated"
                         class="pull-right">
-                        Last updated at {{ notifier.updated * 1000 | timezoneDateString(settings.timezone, false) }}
+                        Last updated at {{ notifier.updated * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </span>
                     </div>
                   </div> <!-- /notifier info -->

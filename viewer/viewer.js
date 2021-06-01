@@ -2513,11 +2513,13 @@ async function main () {
 
   let server;
   if (Config.isHTTPS()) {
+    const cryptoOption = require('crypto').constants.SSL_OP_NO_TLSv1;
     server = https.createServer({
       key: Config.keyFileData,
       cert: Config.certFileData,
-      secureOptions: require('crypto').constants.SSL_OP_NO_TLSv1
+      secureOptions: cryptoOption
     }, app);
+    Config.setServerToReloadCerts(server, cryptoOption);
   } else {
     server = http.createServer(app);
   }
