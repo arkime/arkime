@@ -1,19 +1,12 @@
 shared:
-    settings:
-        slack:
-            channels:
-                - moloch
-            statuses:
-                - FAILURE
-                - ABORTED
     annotations:
         beta.screwdriver.cd/cpu: HIGH
         beta.screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/main"
-        MOLOCH_FILE_NAME: "master"
-        ARKIME_FILE_NAME: "main"
+        MOLOCH_COPY_BRANCH: "origin/ecs3"
+        MOLOCH_FILE_NAME: "ecs"
+        ARKIME_FILE_NAME: "ecs"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
         RELEASE_ITERATION: 1
