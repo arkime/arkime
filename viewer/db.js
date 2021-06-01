@@ -37,7 +37,9 @@ const internals = {
   masterCache: {},
   qInProgress: 0,
   apiVersion: '7.7',
-  q: []
+  q: [],
+  centralShortcutsIndex: undefined,
+  localShortcutsVersion: 0 // always start with 0 so there's an initial sync of shortcuts from user's es db
 };
 
 exports.initialize = async (info, cb) => {
@@ -102,8 +104,10 @@ exports.initialize = async (info, cb) => {
       };
     }
     internals.usersClient7 = new Client(esClientOptions);
+    internals.centralShortcutsIndex = `${internals.usersPrefix}lookups`;
   } else {
     internals.usersClient7 = internals.client7;
+    internals.centralShortcutsIndex = fixIndex('lookups');
   }
 
   // Replace tag implementation
@@ -116,6 +120,13 @@ exports.initialize = async (info, cb) => {
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*');
     setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+  }
+
+  // if there's a user's db, sync shortcuts from user's to local db so they can be
+  // used for sessions search (can't use remote db for searching via shortcuts)
+  if (internals.info.usersHost) {
+    updateLocalShortcuts(); // immediately udpate shortcuts
+    setInterval(() => { updateLocalShortcuts(); }, 60000); // and every minute
   }
 
   try {
@@ -987,31 +998,76 @@ exports.getHunt = async (id) => {
 };
 
 // Shortcut DB interactions
+async function updateLocalShortcuts () {
+  const msg = `updating local shortcuts index (${fixIndex('lookups')}) from remote index (${internals.centralShortcutsIndex})`;
+  try {
+    const { body: doc } = await internals.usersClient7.indices.getMapping({
+      index: internals.centralShortcutsIndex
+    });
+
+    let version;
+    for (const index in doc) {
+      version = doc[index]?.mappings?._meta?.version;
+      break;
+    }
+
+    if (version !== internals.localShortcutsVersion) {
+      console.log(msg);
+      internals.localShortcutsVersion = version;
+      const { body: results } = await exports.searchShortcuts({});
+      for (const shortcut of results.hits.hits) {
+        internals.client7.index({
+          id: shortcut._id,
+          index: fixIndex('lookups'),
+          body: shortcut._source
+        });
+      }
+    }
+  } catch (err) {
+    console.log(`ERROR - ${msg}:`, err);
+  }
+}
+function updateShortcutsVersion () {
+  internals.usersClient7.indices.putMapping({
+    index: internals.centralShortcutsIndex,
+    body: {
+      _meta: { version: internals.localShortcutsVersion + 1 }
+    }
+  });
+}
 exports.searchShortcuts = async (query) => {
   return internals.usersClient7.search({
-    index: internals.usersPrefix + 'lookups', body: query, rest_total_hits_as_int: true
+    index: internals.centralShortcutsIndex, body: query, rest_total_hits_as_int: true
+  });
+};
+exports.searchShortcutsLocal = async (query) => {
+  return internals.client7.search({
+    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
   });
 };
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
+  updateShortcutsVersion();
   return internals.usersClient7.index({
-    index: internals.usersPrefix + 'lookups', body: doc, refresh: 'wait_for', timeout: '10m'
+    index: internals.centralShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
 };
 exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
+  updateShortcutsVersion();
   return internals.usersClient7.delete({
-    index: internals.usersPrefix + 'lookups', id: id, refresh: true
+    index: internals.centralShortcutsIndex, id: id, refresh: true
   });
 };
 exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
+  updateShortcutsVersion();
   return internals.usersClient7.index({
-    index: internals.usersPrefix + 'lookups', body: doc, id: id, refresh: true, timeout: '10m'
+    index: internals.centralShortcutsIndex, body: doc, id: id, refresh: true, timeout: '10m'
   });
 };
 exports.getShortcut = async (id) => {
-  return internals.usersClient7.get({ index: internals.usersPrefix + 'lookups', id: id });
+  return internals.usersClient7.get({ index: internals.centralShortcutsIndex, id: id });
 };
 exports.getShortcutsCache = async (userId) => {
   if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
@@ -1031,7 +1087,7 @@ exports.getShortcutsCache = async (userId) => {
   };
 
   try {
-    const { body: { hits: shortcuts } } = await exports.searchShortcuts(query);
+    const { body: { hits: shortcuts } } = await exports.searchShortcutsLocal(query);
 
     const shortcutsMap = {};
     for (const shortcut of shortcuts.hits) {

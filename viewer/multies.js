@@ -590,7 +590,9 @@ function fixQuery (node, body, doneCb) {
   function doProcess (qParent, obj, item) {
     let query;
 
-    if (item === 'fileand' && typeof obj[item] === 'string') {
+    if (item === 'index' && obj[item] === 'lookups') {
+      obj[item] = `${node2Prefix(node)}lookups`;
+    } else if (item === 'fileand' && typeof obj[item] === 'string') {
       const qName = obj.fileand;
       delete obj.fileand;
       outstanding++;
