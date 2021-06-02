@@ -122,8 +122,8 @@ module.exports = (Db, internals, ViewerUtils) => {
 
     Promise.all([
       Db.searchShortcuts(query),
-      Db.numberOfDocuments('lookups')
-    ]).then(([{ body: { hits: shortcuts } }, total]) => {
+      Db.numberOfShortcuts()
+    ]).then(([{ body: { hits: shortcuts } }, { body: { count: total } }]) => {
       const results = { list: [], map: {} };
       for (const hit of shortcuts.hits) {
         const shortcut = hit._source;

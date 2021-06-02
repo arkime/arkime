@@ -3473,8 +3473,7 @@ export default {
 
       this.$http.post('api/shortcut', data)
         .then((response) => {
-          // add it to the list
-          this.shortcuts.data.push(response.data.shortcut);
+          this.getShortcuts();
           // clear the inputs and any error
           this.shortcutFormError = false;
           this.newShortcutName = '';
@@ -3522,6 +3521,8 @@ export default {
         .then((response) => {
           // remove it from the array
           this.shortcuts.data.splice(index, 1);
+          this.shortcuts.recordsTotal--;
+          this.shortcuts.recordsFiltered--;
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';

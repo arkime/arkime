@@ -998,53 +998,111 @@ exports.getHunt = async (id) => {
 };
 
 // Shortcut DB interactions
+async function getRemoteShortcutsDBVersion () {
+  const { body: doc } = await internals.usersClient7.indices.getMapping({
+    index: internals.centralShortcutsIndex
+  });
+
+  let version;
+  for (const index in doc) {
+    version = doc[index]?.mappings?._meta?.version;
+    break;
+  }
+
+  return version;
+}
 async function updateLocalShortcuts () {
+  if (internals.multiES) { return; } // don't sync it for multies
   const msg = `updating local shortcuts index (${fixIndex('lookups')}) from remote index (${internals.centralShortcutsIndex})`;
   try {
-    const { body: doc } = await internals.usersClient7.indices.getMapping({
-      index: internals.centralShortcutsIndex
-    });
-
-    let version;
-    for (const index in doc) {
-      version = doc[index]?.mappings?._meta?.version;
-      break;
-    }
+    const version = await getRemoteShortcutsDBVersion();
 
     if (version !== internals.localShortcutsVersion) {
       console.log(msg);
-      internals.localShortcutsVersion = version;
-      const { body: results } = await exports.searchShortcuts({});
-      for (const shortcut of results.hits.hits) {
-        internals.client7.index({
-          id: shortcut._id,
-          index: fixIndex('lookups'),
-          body: shortcut._source
-        });
+
+      const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
+        exports.searchShortcuts({}), exports.searchShortcutsLocal({})
+      ]);
+
+      // need to compare the local shortcuts to the remote shortcuts to determine
+      // if any shortcuts have been deleted from the remote db
+      for (const localShortcut of localResults.hits.hits) { // update all shortcuts
+        let missing = true;
+        for (const remoteShortcut of remoteResults.hits.hits) {
+          if (remoteShortcut._id === localShortcut._id) {
+            missing = false;
+            break;
+          }
+        }
+        if (missing) { // it's missing from the remote db
+          internals.client7.delete({ // remove the shortcut from the local db
+            index: fixIndex('lookups'),
+            id: localShortcut._id,
+            refresh: true
+          });
+        }
       }
+
+      // compare remote shortcuts to local shortcuts to determine if any
+      // shortcuts have been added or updated from the remote db
+      for (const remoteShortcut of remoteResults.hits.hits) { // update all shortcuts
+        let missing = true;
+        for (const localShortcut of localResults.hits.hits) {
+          if (remoteShortcut._id === localShortcut._id) {
+            missing = false; // found it, check if we need to update it
+            if (remoteShortcut._version !== localShortcut._version) {
+              internals.client7.index({ // update the shortcut in the local db
+                id: remoteShortcut._id,
+                index: fixIndex('lookups'),
+                body: remoteShortcut._source,
+                version_type: 'external',
+                version: remoteShortcut._version
+              });
+            }
+          }
+        }
+        if (missing) { // it's missing from the local db
+          internals.client7.index({ // add the shortcut in the local db
+            id: remoteShortcut._id,
+            index: fixIndex('lookups'),
+            body: remoteShortcut._source,
+            version_type: 'external',
+            version: remoteShortcut._version
+          });
+        }
+      }
+
+      internals.localShortcutsVersion = version;
     }
   } catch (err) {
     console.log(`ERROR - ${msg}:`, err);
   }
 }
-function updateShortcutsVersion () {
+async function updateShortcutsVersion () {
+  const version = await getRemoteShortcutsDBVersion();
+
   internals.usersClient7.indices.putMapping({
     index: internals.centralShortcutsIndex,
     body: {
-      _meta: { version: internals.localShortcutsVersion + 1 }
+      _meta: { version: version + 1 }
     }
   });
 }
 exports.searchShortcuts = async (query) => {
   return internals.usersClient7.search({
-    index: internals.centralShortcutsIndex, body: query, rest_total_hits_as_int: true
+    index: internals.centralShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
   });
 };
 exports.searchShortcutsLocal = async (query) => {
   return internals.client7.search({
-    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
+    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true, version: true
   });
 };
+exports.numberOfShortcuts = async () => {
+  return internals.usersClient7.count({
+    index: internals.centralShortcutsIndex
+  });
+}
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
   updateShortcutsVersion();
