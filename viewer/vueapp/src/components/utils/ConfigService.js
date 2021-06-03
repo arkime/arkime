@@ -53,6 +53,10 @@ export default {
               /* eslint-disable no-new-func */
               item.func = new Function('key', 'value', item.func);
             }
+
+            if (item.category !== undefined && !Array.isArray(item.category)) {
+              item.category = item.category.split(',');
+            }
           }
 
           _molochClickablesCache = response.data;
