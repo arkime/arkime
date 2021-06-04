@@ -127,7 +127,7 @@ exports.initialize = async (info, cb) => {
   internals.localShortcutsIndex = fixIndex('lookups');
   if (internals.info.usersHost && internals.info.cronQueries) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
-    initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
+    await initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
     updateLocalShortcuts(); // immediately udpate shortcuts
     setInterval(() => { updateLocalShortcuts(); }, 60000); // and every minute
   } else { // there is no remote shorcuts index, just set it to local
@@ -1042,9 +1042,10 @@ async function initialShortcutsSyncToRemote () {
   };
 
   try {
+    const dbOperations = [];
     // fetch shortcuts from remote and local indexes
     const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
-      exports.searchShortcuts({}), exports.searchShortcutsLocal({})
+      exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
     ]);
 
     if (!localResults.hits.hits.length) { return; } // nothing to sync to remote db
@@ -1085,13 +1086,15 @@ async function initialShortcutsSyncToRemote () {
             newSource = remoteShortcut._source;
           }
 
-          internals.usersClient7.index({ // add/update the shortcut to the remote db
-            id: newId,
-            index: internals.remoteShortcutsIndex,
-            body: newSource,
-            version_type: 'external',
-            version: newVersion
-          });
+          dbOperations.push(
+            internals.usersClient7.index({ // add/update the shortcut to the remote db
+              id: newId,
+              index: internals.remoteShortcutsIndex,
+              body: newSource,
+              version_type: 'external',
+              version: newVersion
+            })
+          );
 
           alreadyIndexed = true;
           break;
@@ -1101,22 +1104,30 @@ async function initialShortcutsSyncToRemote () {
       // don't need to add the shortcut since it was added above (name collision)
       if (alreadyIndexed) { continue; }
 
-      internals.usersClient7.index({ // add the shortcut to the remote db
-        id: localShortcut._id,
-        index: internals.remoteShortcutsIndex,
-        body: localShortcut._source,
-        version_type: 'external',
-        version: localShortcut._version + 1
-      });
+      dbOperations.push(
+        internals.usersClient7.index({ // add the shortcut to the remote db
+          id: localShortcut._id,
+          index: internals.remoteShortcutsIndex,
+          body: localShortcut._source,
+          version_type: 'external',
+          version: localShortcut._version + 1
+        })
+      );
     }
 
-    // update initSync flag to show that we've already done initial sync of local db to remote db
-    internals.usersClient7.indices.putMapping({
-      index: internals.remoteShortcutsIndex,
-      body: { _meta: { initSync: true } }
-    });
+    dbOperations.push(
+      // update initSync flag to show that we've already done initial sync of local db to remote db
+      internals.usersClient7.indices.putMapping({
+        index: internals.remoteShortcutsIndex,
+        body: { _meta: { initSync: true } }
+      })
+    );
+
+    await Promise.allSettled(dbOperations);
+    return;
   } catch (err) {
     console.log(`ERROR - ${msg} failed`, err.toString());
+    return;
   }
 }
 // fetches the version of the remote shortcuts index (remote db = user's es)
@@ -1163,7 +1174,7 @@ async function updateLocalShortcuts () {
 
     // fetch shortcuts from remote and local indexes
     const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
-      exports.searchShortcuts({}), exports.searchShortcutsLocal({})
+      exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
     ]);
 
     // compare the local shortcuts to the remote shortcuts to determine
@@ -1199,7 +1210,7 @@ async function updateLocalShortcuts () {
               index: internals.localShortcutsIndex,
               body: remoteShortcut._source,
               version_type: 'external',
-              version: remoteShortcut._version
+              version: Math.max(remoteShortcut._version, localShortcut._version) + 1
             });
           }
         }
@@ -1274,7 +1285,8 @@ exports.getShortcutsCache = async (userId) => {
           { term: { userId: userId } }
         ]
       }
-    }
+    },
+    size: 10000
   };
 
   try {
