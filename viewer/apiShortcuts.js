@@ -162,7 +162,7 @@ module.exports = (Db, internals, ViewerUtils) => {
         ? results.map
         : {
           data: results.list,
-          recordsTotal: total.count,
+          recordsTotal: total,
           recordsFiltered: shortcuts.total
         };
 
