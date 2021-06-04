@@ -29,7 +29,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - BREAKING - wise - for json data keyColumn has been renamed keyPath
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
   - BREAKING - capture - override-ips will no longer have leading 0s for ASN
-  - release - curl 7.76.1, node 14.16.1, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
+  - release - curl 7.76.1, node 14.17.0, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - capture - fixed possible ABR with time parsing
   - capture - fixed memory leak with dns bad hostname parsing

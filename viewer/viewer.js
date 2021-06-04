@@ -2502,7 +2502,7 @@ async function main () {
   }
 
   createRightClicks();
-  setInterval(createRightClicks, 5 * 60 * 1000);
+  setInterval(createRightClicks, 150 * 1000); // Check every 2.5 minutes
 
   if (Config.get('cronQueries', false)) { // this viewer will process the cron queries
     console.log('This node will process Periodic Queries, delayed by', internals.cronTimeout, 'seconds');
