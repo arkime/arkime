@@ -70,6 +70,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - viewer - add button to open sessions cron query tagged
   - viewer - notifier links to results
   - viewer - cancel hunts & remove hunt name and id from sessions
+  - viewer - shortcuts sync across all clusters if usersElasticsearch and cronQueries is set
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse

@@ -1158,6 +1158,14 @@
           <br>
           <strong>Tip:</strong> Use <code>$</code> to autocomplete shortcuts
           in search expressions.
+          <br>
+          <strong>Note:</strong> If your clusters are configured with usersElasticsearch
+          and cronQueries, shortcuts will sync across clusters and be available
+          to use on all clusters that have access to the usersElasticsearch.
+          <a href="https://arkime.com/settings#userselasticsearch"
+            class="no-decoration">
+            See settings for more information.
+          </a>
         </p>
       </div>
 
