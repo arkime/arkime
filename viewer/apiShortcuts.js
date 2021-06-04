@@ -395,5 +395,20 @@ module.exports = (Db, internals, ViewerUtils) => {
     }
   };
 
+  /**
+   * GET - /api/syncshortcuts
+   *
+   * @name /syncshortcuts
+   * Updates the shortcuts in the local db if they are out of sync with the
+   * remote db (remote db = user's es)
+   * This happens periodically (every minute) but can be triggered with this endpoint
+   * @ignore
+   * @returns {boolean} success - Always true.
+   */
+  sModule.syncShortcuts = (req, res) => {
+    Db.updateLocalShortcuts();
+    return res.send(JSON.stringify({ success: true }));
+  };
+
   return sModule;
 };

@@ -1974,6 +1974,12 @@ app.delete( // delete shortcut endpoint
   shortcutAPIs.deleteShortcut
 );
 
+app.get( // sync shortcuts endpoint
+  ['/api/syncshortcuts'],
+  [noCacheJson],
+  shortcutAPIs.syncShortcuts
+);
+
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
   ['/api/fields', '/fields'],

@@ -1,4 +1,4 @@
-use Test::More tests => 49;
+use Test::More tests => 50;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -9,6 +9,9 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
+
+esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+esPost("/tests2_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");
@@ -42,7 +45,7 @@ $json = viewerPostToken("/lookups", '{"name":"test_shortcut","type":"string","va
 ok(!$json->{success}, "unique shortcut names");
 
 # update shortcut requires token
-$json = viewerPutToken("/lookups/$shortcut1Id", "notatoken");
+$json = viewerPut("/lookups/$shortcut1Id", "{}");
 is($json->{text}, "Missing token", "update shortcut requires token");
 
 # update shortcut required fields
@@ -117,6 +120,21 @@ $shortcuts = viewerGet("/api/shortcuts?fieldFormat=true&map=true");
 ok(exists $shortcuts->{$shortcut1Id}->{exp}, "Shortcut has exp");
 ok(exists $shortcuts->{$shortcut1Id}->{help}, "Shortcut has help");
 ok(exists $shortcuts->{$shortcut1Id}->{dbField}, "Shortcut has dbField");
+
+# the local (test2) cluster should sync with the remote (test) cluster
+viewerGet2("/api/syncshortcuts");
+esGet("/_refresh");
+sleep(2);
+
+my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+
+for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+  delete $testsCluster->[$i]->{_index};
+  delete $tests2Cluster->[$i]->{_index};
+}
+
+eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # delete shortcute requires token
 $json = viewerDelete("/lookups/$shortcut1Id");
