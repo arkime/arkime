@@ -159,6 +159,9 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
 
     for (const key in internals.rightClicks) {
       const rc = internals.rightClicks[key];
+      if (rc.notUsers && rc.notUsers[req.user.userId]) {
+        continue;
+      }
       if (!rc.users || rc.users[req.user.userId]) {
         actions[key] = rc;
       }
