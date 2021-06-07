@@ -78,6 +78,7 @@ NOTICE: Restart wiseService before capture when upgrading
   - wise - support memcached for cache
   - wise - new urlinfile://filepath where config is the first line of filepath file
   - wise - help page
+  - wise - valueactions can be stored in flat file, redis or elasticsearch
   - all - renamed rightclicks to valueactions
   - all - many typos fixed
   - all - support Elasticsearch API Keys (elasticsearchAPIKey setting)
