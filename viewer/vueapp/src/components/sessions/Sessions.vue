@@ -1179,7 +1179,7 @@ export default {
 
         if (!field) { return -1; }
 
-        if (field.dbField === id || field.exp === id) {
+        if (field.dbField === id || field.dbField2 === id || field.exp === id) {
           return index;
         }
 
@@ -1617,7 +1617,7 @@ export default {
     getField: function (fieldId) {
       for (const key in this.fields) {
         const field = this.fields[key];
-        if (field.dbField === fieldId || field.exp === fieldId) {
+        if (field.dbField === fieldId || field.dbField2 === fieldId || field.exp === fieldId) {
           return field;
         }
         if (field.aliases) {
