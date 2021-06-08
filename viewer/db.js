@@ -1016,8 +1016,8 @@ exports.getHunt = async (id) => {
 async function initialShortcutsSyncToRemote () {
   if (internals.multiES) { return; } // don't sync shortcuts for multies
 
-  const { body: doc } = await internals.usersClient7.indices.getMapping({
-    index: internals.remoteShortcutsIndex
+  const { body: doc } = await internals.client7.indices.getMapping({
+    index: internals.localShortcutsIndex
   });
   // get initSync flag of the first index (always want the first and only index returned)
   const initSync = doc[Object.keys(doc)[0]]?.mappings?._meta?.initSync;
@@ -1042,6 +1042,20 @@ async function initialShortcutsSyncToRemote () {
     return true;
   };
 
+  async function finish (operations) {
+    operations.push(
+      // update initSync flag on local db to show that we've already done
+      // initial sync to remote db from this db
+      internals.client7.indices.putMapping({
+        index: internals.localShortcutsIndex,
+        body: { _meta: { initSync: true } }
+      })
+    );
+
+    await Promise.allSettled(operations);
+    return;
+  }
+
   try {
     const dbOperations = [];
     // fetch shortcuts from remote and local indexes
@@ -1049,7 +1063,10 @@ async function initialShortcutsSyncToRemote () {
       exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
     ]);
 
-    if (!localResults.hits.hits.length) { return; } // nothing to sync to remote db
+    if (!localResults.hits.hits.length) {
+      await finish([]); // nothing to sync to remote db
+      return;
+    }
 
     // add each of the local shortcuts to the remote shortcuts db (remote db = user's es)
     // but first, compare the local shortcuts to the remote shortcuts to determine
@@ -1118,15 +1135,7 @@ async function initialShortcutsSyncToRemote () {
       );
     }
 
-    dbOperations.push(
-      // update initSync flag to show that we've already done initial sync of local db to remote db
-      internals.usersClient7.indices.putMapping({
-        index: internals.remoteShortcutsIndex,
-        body: { _meta: { initSync: true } }
-      })
-    );
-
-    await Promise.allSettled(dbOperations);
+    await finish(dbOperations);
     return;
   } catch (err) {
     console.log(`ERROR - ${msg} failed`, err.toString());
@@ -1149,7 +1158,7 @@ async function setShortcutsVersion () {
   const version = await getShortcutsVersion();
   return internals.usersClient7.indices.putMapping({
     index: internals.remoteShortcutsIndex,
-    body: { _meta: { version: version + 1 } }
+    body: { _meta: { version: version + 1, initSync: true } }
   });
 }
 // updates the shortcuts in the local db if they are out of sync with the remote db (remote db = user's es)
