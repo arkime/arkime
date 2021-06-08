@@ -133,7 +133,7 @@ exports.initialize = async (info, cb) => {
       // only need to sync and update if the es' are different
       internals.doShortcutsUpdates = true; // for updating if editing shortcuts locally
       await initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
-      exports.updateLocalShortcuts(); // immediately udpate shortcuts
+      exports.updateLocalShortcuts(); // immediately update shortcuts
       setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
     }
   } else { // there is no remote shorcuts index, just set it to local
@@ -1086,6 +1086,9 @@ async function initialShortcutsSyncToRemote () {
             !compareArrays(localShortcut._source.string, remoteShortcut._source.string) ||
             !compareArrays(localShortcut._source.number, remoteShortcut._source.number);
 
+          if (internals.debug > 1) {
+            console.log(`SHORTCUT- initial deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
+          }
           dbOperations.push(
             internals.client7.delete({ // if they have the same name always delete the local
               index: internals.localShortcutsIndex, id: localShortcut._id, refresh: true
@@ -1103,6 +1106,9 @@ async function initialShortcutsSyncToRemote () {
             newSource = remoteShortcut._source;
           }
 
+          if (internals.debug > 1) {
+            console.log(`SHORTCUT - initial copying and renaming ${newId} ${newSource.name} to remote`);
+          }
           dbOperations.push(
             internals.usersClient7.index({ // add/update the shortcut to the remote db
               id: newId,
@@ -1123,6 +1129,9 @@ async function initialShortcutsSyncToRemote () {
       // don't need to add the shortcut since it was added above (name collision)
       if (alreadyIndexed) { continue; }
 
+      if (internals.debug > 1) {
+        console.log(`SHORTCUT - initial copying ${localShortcut._id} ${localShortcut._source.name} to remote`);
+      }
       dbOperations.push( // add the shortcut to the remote db. it is a shortcut
         internals.usersClient7.index({ // that only exists in the local db
           id: localShortcut._id,
@@ -1195,6 +1204,9 @@ exports.updateLocalShortcuts = async () => {
       }
       // if we get here without the missing flag set to false
       if (missing) { // it's missing from the remote db
+        if (internals.debug > 1) {
+          console.log(`SHORTCUT - deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
+        }
         internals.client7.delete({ // remove the shortcut from the local db
           index: internals.localShortcutsIndex,
           id: localShortcut._id,
@@ -1211,6 +1223,9 @@ exports.updateLocalShortcuts = async () => {
         if (remoteShortcut._id === localShortcut._id) {
           missing = false; // found it, check if we need to update it
           if (remoteShortcut._version !== localShortcut._version) {
+            if (internals.debug > 1) {
+              console.log(`SHORTCUT - update from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+            }
             // the versions don't match, this shortcut has been updated in the remote db
             internals.client7.index({ // update the shortcut in the local db
               id: remoteShortcut._id,
@@ -1225,6 +1240,9 @@ exports.updateLocalShortcuts = async () => {
       }
       // if we get here without the missing flag set to false
       if (missing) { // it's missing from the local db
+        if (internals.debug > 1) {
+          console.log(`SHORTCUT - add from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+        }
         internals.client7.index({ // add the shortcut in the local db
           id: remoteShortcut._id,
           index: internals.localShortcutsIndex,
