@@ -2212,7 +2212,9 @@
                           title="Delete this shortcut"
                           class="btn btn-sm btn-danger"
                           @click="deleteShortcut(item, index)">
-                          <span class="fa fa-trash-o fa-fw">
+                          <span class="fa fa-trash-o fa-fw" v-if="!item.loading">
+                          </span>
+                          <span class="fa fa-spinner fa-spin fa-fw" v-else>
                           </span>
                         </button>
                         <span v-if="!item.editing">
@@ -2233,7 +2235,9 @@
                             @click="toggleEditShortcut(item)"
                             title="Make changes to this shortcut's value"
                             class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-pencil fa-fw">
+                            <span class="fa fa-pencil fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                         </span>
@@ -2243,7 +2247,9 @@
                             title="Cancel changes to this shortcut's value"
                             class="btn btn-sm btn-warning"
                             @click="toggleEditShortcut(item)">
-                            <span class="fa fa-ban fa-fw">
+                            <span class="fa fa-ban fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                           <button type="button"
@@ -2251,7 +2257,9 @@
                             @click="updateShortcut(item, index)"
                             title="Save changes to this shortcut's value"
                             class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-save fa-fw">
+                            <span class="fa fa-save fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                         </span>
@@ -2423,9 +2431,16 @@
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
                     @click="createShortcut">
-                    <span class="fa fa-plus-circle">
-                    </span>&nbsp;
-                    Create
+                    <template v-if="!createShortcutLoading">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create
+                    </template>
+                    <template v-else>
+                      <span class="fa fa-spinner fa-spin">
+                      </span>&nbsp;
+                      Creating
+                    </template>
                   </button>
                 </div>
               </div>
@@ -2590,7 +2605,8 @@ export default {
         desc: false,
         sortField: 'name',
         search: ''
-      }
+      },
+      createShortcutLoading: false
     };
   },
   computed: {
@@ -3463,6 +3479,8 @@ export default {
         return;
       }
 
+      this.createShortcutLoading = true;
+
       const data = {
         name: this.newShortcutName,
         type: this.newShortcutType,
@@ -3483,14 +3501,18 @@ export default {
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.createShortcutLoading = false;
         })
         .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
+          this.createShortcutLoading = false;
         });
     },
     /* updates a specified shortcut (only shared and value are editable) */
     updateShortcut: function (shortcut, index) {
+      this.$set(shortcut, 'loading', true);
+
       const data = {
         shared: shortcut.shared,
         userId: shortcut.userId,
@@ -3509,14 +3531,18 @@ export default {
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.$set(shortcut, 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
+          this.$set(shortcut, 'loading', false);
         });
     },
     /* deletes a shortcut and removes it from the shortcuts array */
     deleteShortcut: function (shortcut, index) {
+      this.$set(shortcut, 'loading', true);
+
       this.$http.delete(`api/shortcut/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
@@ -3526,11 +3552,13 @@ export default {
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.$set(shortcut, 'loading', false);
         })
         .catch((error) => {
           // display error message to user
           this.msg = error.text;
           this.msgType = 'danger';
+          this.$set(shortcut, 'loading', false);
         });
     },
 
@@ -3892,7 +3920,7 @@ export default {
   margin-top: 0.75rem;
 }
 
-/* shorcuts table */
+/* shortcuts table */
 .settings-page .shortcut-value {
   max-width: 400px;
   overflow: hidden;

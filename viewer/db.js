@@ -38,6 +38,7 @@ const internals = {
   qInProgress: 0,
   apiVersion: '7.7',
   q: [],
+  doShortcutsUpdates: false,
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: 0 // always start with 0 so there's an initial sync of shortcuts from user's es db
@@ -127,9 +128,14 @@ exports.initialize = async (info, cb) => {
   internals.localShortcutsIndex = fixIndex('lookups');
   if (internals.info.usersHost && internals.info.cronQueries) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
-    await initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
-    exports.updateLocalShortcuts(); // immediately udpate shortcuts
-    setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
+    // make sure the remote es is not the same as local es
+    if (info.host !== info.usersHost && info.prefix !== info.usersPrefix) {
+      // only need to sync and update if the es' are different
+      internals.doShortcutsUpdates = true; // for updating if editing shortcuts locally
+      await initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
+      exports.updateLocalShortcuts(); // immediately udpate shortcuts
+      setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
+    }
   } else { // there is no remote shorcuts index, just set it to local
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
   }
@@ -1063,9 +1069,11 @@ async function initialShortcutsSyncToRemote () {
             !compareArrays(localShortcut._source.string, remoteShortcut._source.string) ||
             !compareArrays(localShortcut._source.number, remoteShortcut._source.number);
 
-          internals.client7.delete({ // if they have the same name always delete the local
-            index: internals.localShortcutsIndex, id: localShortcut._id, refresh: true
-          }); // it'll get added to the remote (below), then updateLocalShortcuts will sync to local
+          dbOperations.push(
+            internals.client7.delete({ // if they have the same name always delete the local
+              index: internals.localShortcutsIndex, id: localShortcut._id, refresh: true
+            }) // it'll get added to the remote (below), then updateLocalShortcuts will sync to local
+          );
 
           let newId;
           let newVersion;
@@ -1132,14 +1140,14 @@ async function getShortcutsVersion () {
   });
 
   // get version of the first index (always want the first and only index returned)
-  return doc[Object.keys(doc)[0]]?.mappings?._meta?.version;
+  return doc[Object.keys(doc)[0]]?.mappings?._meta?.version || 0;
 }
 // updates the shortcuts index version in the remote db so that the local
 // db knows to sync the shortcuts (remote db = user's es)
 async function setShortcutsVersion () {
   // fetch the remote shortcuts index version so it can be incremented
   const version = await getShortcutsVersion();
-  internals.usersClient7.indices.putMapping({
+  return internals.usersClient7.indices.putMapping({
     index: internals.remoteShortcutsIndex,
     body: { _meta: { version: version + 1 } }
   });
@@ -1211,7 +1219,7 @@ exports.updateLocalShortcuts = async () => {
           index: internals.localShortcutsIndex,
           body: remoteShortcut._source,
           version_type: 'external',
-          version: remoteShortcut._version
+          version: remoteShortcut._version + 1
         });
       }
     }
@@ -1238,24 +1246,30 @@ exports.numberOfShortcuts = async () => {
 };
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
-  setShortcutsVersion();
-  return internals.usersClient7.index({
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
-  setShortcutsVersion();
-  return internals.usersClient7.delete({
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id: id, refresh: true
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
-  setShortcutsVersion();
-  return internals.usersClient7.index({
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id: id, refresh: true, timeout: '10m'
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.getShortcut = async (id) => {
   return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id: id });
