@@ -80,9 +80,11 @@
 
 <script>
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochRemoveData',
+  components: { SegmentSelect },
   props: {
     start: Number,
     done: Function,

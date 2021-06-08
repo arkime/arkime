@@ -6,7 +6,7 @@
     <div class="row">
 
       <!-- segments select input -->
-      <SegmentSelect :segments.sync="segments"/> <!-- /segments select input -->
+      <SegmentSelect :segments.sync="segments" /> <!-- /segments select input -->
 
       <div class="col-md-4">
 
@@ -96,10 +96,12 @@
 <script>
 import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochExportCsv',
   directives: { FocusInput },
+  components: { SegmentSelect },
   props: {
     start: Number,
     done: Function,
