@@ -410,6 +410,9 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
             } else {
 
                 if (server->printErrors && responseCode/100 != 2) {
+                    if (moloch_memstr((char *)request->dataIn, MIN(request->used, 1000), "version conflict, current version", 33)) {
+                        LOG("See the FAQ - https://arkime.com/faq#version-conflict");
+                    }
                     LOG("Response length=%u :>\n%.*s", request->used, MIN(request->used, 4000), request->dataIn);
                 }
 
