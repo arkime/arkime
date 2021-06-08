@@ -1076,16 +1076,13 @@ async function initialShortcutsSyncToRemote () {
           );
 
           let newId;
-          let newVersion;
           let newSource;
           if (diff) { // same name but different values, need to make the name unique
             newId = localShortcut._id; // use local id
-            newVersion = localShortcut._version + 1; // increment version since we're renaming it
             newSource = localShortcut._source;
             newSource.name = `${localShortcut._source.name}_${localShortcut._index.split('_')[0]}`;
           } else { // the shortcuts are the same locally and remote, use the remote's shortcut data
             newId = remoteShortcut._id;
-            newVersion = remoteShortcut._version + 1;
             newSource = remoteShortcut._source;
           }
 
@@ -1095,7 +1092,9 @@ async function initialShortcutsSyncToRemote () {
               index: internals.remoteShortcutsIndex,
               body: newSource,
               version_type: 'external',
-              version: newVersion
+              // have to increment version when indexing in remote db
+              // because it already exists in the remote db
+              version: remoteShortcut._version + 1
             })
           );
 
@@ -1107,13 +1106,14 @@ async function initialShortcutsSyncToRemote () {
       // don't need to add the shortcut since it was added above (name collision)
       if (alreadyIndexed) { continue; }
 
-      dbOperations.push(
-        internals.usersClient7.index({ // add the shortcut to the remote db
+      dbOperations.push( // add the shortcut to the remote db. it is a shortcut
+        internals.usersClient7.index({ // that only exists in the local db
           id: localShortcut._id,
           index: internals.remoteShortcutsIndex,
           body: localShortcut._source,
           version_type: 'external',
-          version: localShortcut._version + 1
+          // don't increment version since the remote db did not have this shortcut
+          version: localShortcut._version // there will not be a version conflict
         })
       );
     }
@@ -1202,12 +1202,14 @@ exports.updateLocalShortcuts = async () => {
         if (remoteShortcut._id === localShortcut._id) {
           missing = false; // found it, check if we need to update it
           if (remoteShortcut._version !== localShortcut._version) {
+            // the versions don't match, this shortcut has been updated in the remote db
             internals.client7.index({ // update the shortcut in the local db
               id: remoteShortcut._id,
               index: internals.localShortcutsIndex,
               body: remoteShortcut._source,
               version_type: 'external',
-              version: Math.max(remoteShortcut._version, localShortcut._version) + 1
+              // use remote shortcut version since that is where it was edited
+              version: remoteShortcut._version // (should have highest version)
             });
           }
         }
@@ -1219,7 +1221,8 @@ exports.updateLocalShortcuts = async () => {
           index: internals.localShortcutsIndex,
           body: remoteShortcut._source,
           version_type: 'external',
-          version: remoteShortcut._version + 1
+          // don't need to increment version because this is the first time the
+          version: remoteShortcut._version // local db has seen this shortcut
         });
       }
     }
