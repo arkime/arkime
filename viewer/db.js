@@ -37,7 +37,11 @@ const internals = {
   masterCache: {},
   qInProgress: 0,
   apiVersion: '7.7',
-  q: []
+  q: [],
+  doShortcutsUpdates: false,
+  remoteShortcutsIndex: undefined,
+  localShortcutsIndex: undefined,
+  localShortcutsVersion: 0 // always start with 0 so there's an initial sync of shortcuts from user's es db
 };
 
 exports.initialize = async (info, cb) => {
@@ -116,6 +120,24 @@ exports.initialize = async (info, cb) => {
   if (internals.nodeName !== undefined) {
     exports.getAliasesCache('sessions2-*');
     setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+  }
+
+  // if there's a user's db and cronQueries is set, sync shortcuts from user's
+  // to local db so they can be used for sessions search
+  // (can't use remote db for searching via shortcuts)
+  internals.localShortcutsIndex = fixIndex('lookups');
+  if (internals.info.usersHost && internals.info.cronQueries) {
+    internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
+    // make sure the remote es is not the same as local es
+    if (info.host !== info.usersHost && info.prefix !== info.usersPrefix) {
+      // only need to sync and update if the es' are different
+      internals.doShortcutsUpdates = true; // for updating if editing shortcuts locally
+      await initialShortcutsSyncToRemote(); // determine if shorcuts have been synced
+      exports.updateLocalShortcuts(); // immediately update shortcuts
+      setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
+    }
+  } else { // there is no remote shorcuts index, just set it to local
+    internals.remoteShortcutsIndex = internals.localShortcutsIndex;
   }
 
   try {
@@ -692,7 +714,7 @@ exports.flush = async (index) => {
 };
 
 exports.refresh = async (index) => {
-  if (index === 'users') {
+  if (index === 'users' || index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
     return internals.client7.indices.refresh({ index: fixIndex(index) });
@@ -987,31 +1009,300 @@ exports.getHunt = async (id) => {
 };
 
 // Shortcut DB interactions
+// since 3.0 shortcuts are synced across clusters if user's elasticsearch is configured
+// determine if shorcuts have been synced from the local db to the remote db (remote db = user's db)
+// if there are shortcuts to sync, adds them to the remote db and deduplicates
+// shortcut names by appending the cluster or index name to the shortcut name
+async function initialShortcutsSyncToRemote () {
+  if (internals.multiES) { return; } // don't sync shortcuts for multies
+
+  const { body: doc } = await internals.client7.indices.getMapping({
+    index: internals.localShortcutsIndex
+  });
+  // get initSync flag of the first index (always want the first and only index returned)
+  const initSync = doc[Object.keys(doc)[0]]?.mappings?._meta?.initSync;
+
+  if (initSync) { return; } // already been synced, don't need to do anything
+
+  const msg = `initial sync from local shortcuts index (${internals.localShortcutsIndex}) to remote index (${internals.remoteShortcutsIndex})`;
+
+  console.log(msg);
+
+  const compareArrays = (a, b) => {
+    if (!a && b) return false;
+    if (!b && a) return false;
+    if (!a && !b) return true;
+    if (a.length !== b.length) return false;
+    const uniqueValues = new Set([...a, ...b]);
+    for (const v of uniqueValues) {
+      const aCount = a.filter(e => e === v).length;
+      const bCount = b.filter(e => e === v).length;
+      if (aCount !== bCount) return false;
+    }
+    return true;
+  };
+
+  async function finish (operations) {
+    operations.push(
+      // update initSync flag on local db to show that we've already done
+      // initial sync to remote db from this db
+      internals.client7.indices.putMapping({
+        index: internals.localShortcutsIndex,
+        body: { _meta: { initSync: true } }
+      })
+    );
+
+    await Promise.allSettled(operations);
+    return;
+  }
+
+  try {
+    const dbOperations = [];
+    // fetch shortcuts from remote and local indexes
+    const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
+      exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
+    ]);
+
+    if (!localResults.hits.hits.length) {
+      await finish([]); // nothing to sync to remote db
+      return;
+    }
+
+    // add each of the local shortcuts to the remote shortcuts db (remote db = user's es)
+    // but first, compare the local shortcuts to the remote shortcuts to determine
+    // if any shortcuts have the same name in the remote db (we can assume that
+    // none of the local shortcuts will be the same as the remote db shortcuts
+    // since they have not been synced before)
+    for (const localShortcut of localResults.hits.hits) {
+      let alreadyIndexed = false;
+      for (const remoteShortcut of remoteResults.hits.hits) {
+        if (remoteShortcut._source.name === localShortcut._source.name) {
+          // found a local shortcut with the same name as the remote
+          // compare the shortcuts values
+          const diff = localShortcut._source.shared !== remoteShortcut._source.shared ||
+            localShortcut._source.userId !== remoteShortcut._source.userId ||
+            localShortcut._source.description !== remoteShortcut._source.description ||
+            !compareArrays(localShortcut._source.ip, remoteShortcut._source.ip) ||
+            !compareArrays(localShortcut._source.string, remoteShortcut._source.string) ||
+            !compareArrays(localShortcut._source.number, remoteShortcut._source.number);
+
+          if (internals.debug > 1) {
+            console.log(`SHORTCUT- initial deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
+          }
+          dbOperations.push(
+            internals.client7.delete({ // if they have the same name always delete the local
+              index: internals.localShortcutsIndex, id: localShortcut._id, refresh: true
+            }) // it'll get added to the remote (below), then updateLocalShortcuts will sync to local
+          );
+
+          let newId;
+          let newSource;
+          if (diff) { // same name but different values, need to make the name unique
+            newId = localShortcut._id; // use local id
+            newSource = localShortcut._source;
+            newSource.name = `${localShortcut._source.name}_${localShortcut._index.split('_')[0]}`;
+          } else { // the shortcuts are the same locally and remote, use the remote's shortcut data
+            newId = remoteShortcut._id;
+            newSource = remoteShortcut._source;
+          }
+
+          if (internals.debug > 1) {
+            console.log(`SHORTCUT - initial copying and renaming ${newId} ${newSource.name} to remote`);
+          }
+          dbOperations.push(
+            internals.usersClient7.index({ // add/update the shortcut to the remote db
+              id: newId,
+              index: internals.remoteShortcutsIndex,
+              body: newSource,
+              version_type: 'external',
+              // have to increment version when indexing in remote db
+              // because it already exists in the remote db
+              version: remoteShortcut._version + 1
+            })
+          );
+
+          alreadyIndexed = true;
+          break;
+        }
+      }
+
+      // don't need to add the shortcut since it was added above (name collision)
+      if (alreadyIndexed) { continue; }
+
+      if (internals.debug > 1) {
+        console.log(`SHORTCUT - initial copying ${localShortcut._id} ${localShortcut._source.name} to remote`);
+      }
+      dbOperations.push( // add the shortcut to the remote db. it is a shortcut
+        internals.usersClient7.index({ // that only exists in the local db
+          id: localShortcut._id,
+          index: internals.remoteShortcutsIndex,
+          body: localShortcut._source,
+          version_type: 'external',
+          // don't increment version since the remote db did not have this shortcut
+          version: localShortcut._version // there will not be a version conflict
+        })
+      );
+    }
+
+    await finish(dbOperations);
+    return;
+  } catch (err) {
+    console.log(`ERROR - ${msg} failed`, err.toString());
+    return;
+  }
+}
+// fetches the version of the remote shortcuts index (remote db = user's es)
+async function getShortcutsVersion () {
+  const { body: doc } = await internals.usersClient7.indices.getMapping({
+    index: internals.remoteShortcutsIndex
+  });
+
+  // get version of the first index (always want the first and only index returned)
+  return doc[Object.keys(doc)[0]]?.mappings?._meta?.version || 0;
+}
+// updates the shortcuts index version in the remote db so that the local
+// db knows to sync the shortcuts (remote db = user's es)
+async function setShortcutsVersion () {
+  // fetch the remote shortcuts index version so it can be incremented
+  const version = await getShortcutsVersion();
+  return internals.usersClient7.indices.putMapping({
+    index: internals.remoteShortcutsIndex,
+    body: { _meta: { version: version + 1, initSync: true } }
+  });
+}
+// updates the shortcuts in the local db if they are out of sync with the remote db (remote db = user's es)
+// if there's a users es set, then the shortcuts are saved in the remote db
+// so they need to be periodically updated in the local db for searching by shortcuts to work
+exports.updateLocalShortcuts = async () => {
+  if (internals.multiES) { return; } // don't sync shortcuts for multies
+
+  const msg = `updating local shortcuts index (${internals.localShortcutsIndex}) from remote index (${internals.remoteShortcutsIndex})`;
+
+  try {
+    // fetch the version of the remote shortcuts index to check if the local shortcuts index
+    // is up to date. if not, something has changed in the remote index and we need to sync
+    const version = await getShortcutsVersion();
+
+    if (version === internals.localShortcutsVersion) { return; } // version's match, stop!
+
+    console.log(msg);
+
+    // fetch shortcuts from remote and local indexes
+    const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
+      exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
+    ]);
+
+    // compare the local shortcuts to the remote shortcuts to determine
+    // if any shortcuts have been deleted from the remote db
+    for (const localShortcut of localResults.hits.hits) {
+      let missing = true;
+      for (const remoteShortcut of remoteResults.hits.hits) {
+        if (remoteShortcut._id === localShortcut._id) {
+          missing = false; // we found it, it's not missing
+          break;
+        }
+      }
+      // if we get here without the missing flag set to false
+      if (missing) { // it's missing from the remote db
+        if (internals.debug > 1) {
+          console.log(`SHORTCUT - deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
+        }
+        internals.client7.delete({ // remove the shortcut from the local db
+          index: internals.localShortcutsIndex,
+          id: localShortcut._id,
+          refresh: true
+        });
+      }
+    }
+
+    // compare remote shortcuts to local shortcuts to determine if any
+    // shortcuts have been added or updated from the remote db
+    for (const remoteShortcut of remoteResults.hits.hits) {
+      let missing = true;
+      for (const localShortcut of localResults.hits.hits) {
+        if (remoteShortcut._id === localShortcut._id) {
+          missing = false; // found it, check if we need to update it
+          if (remoteShortcut._version !== localShortcut._version) {
+            if (internals.debug > 1) {
+              console.log(`SHORTCUT - update from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+            }
+            // the versions don't match, this shortcut has been updated in the remote db
+            internals.client7.index({ // update the shortcut in the local db
+              id: remoteShortcut._id,
+              index: internals.localShortcutsIndex,
+              body: remoteShortcut._source,
+              version_type: 'external',
+              // use remote shortcut version since that is where it was edited
+              version: remoteShortcut._version // (should have highest version)
+            });
+          }
+        }
+      }
+      // if we get here without the missing flag set to false
+      if (missing) { // it's missing from the local db
+        if (internals.debug > 1) {
+          console.log(`SHORTCUT - add from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+        }
+        internals.client7.index({ // add the shortcut in the local db
+          id: remoteShortcut._id,
+          index: internals.localShortcutsIndex,
+          body: remoteShortcut._source,
+          version_type: 'external',
+          // don't need to increment version because this is the first time the
+          version: remoteShortcut._version // local db has seen this shortcut
+        });
+      }
+    }
+
+    internals.localShortcutsVersion = version;
+  } catch (err) {
+    console.log(`ERROR - ${msg}:`, err);
+  }
+};
 exports.searchShortcuts = async (query) => {
+  return internals.usersClient7.search({
+    index: internals.remoteShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
+  });
+};
+exports.searchShortcutsLocal = async (query) => {
   return internals.client7.search({
-    index: fixIndex('lookups'), body: query, rest_total_hits_as_int: true
+    index: internals.localShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
+  });
+};
+exports.numberOfShortcuts = async () => {
+  return internals.usersClient7.count({
+    index: internals.remoteShortcutsIndex
   });
 };
 exports.createShortcut = async (doc) => {
   internals.shortcutsCache = {};
-  return internals.client7.index({
-    index: fixIndex('lookups'), body: doc, refresh: 'wait_for', timeout: '10m'
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.index({
+    index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.deleteShortcut = async (id) => {
   internals.shortcutsCache = {};
-  return internals.client7.delete({
-    index: fixIndex('lookups'), id: id, refresh: true
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.delete({
+    index: internals.remoteShortcutsIndex, id: id, refresh: true
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.setShortcut = async (id, doc) => {
   internals.shortcutsCache = {};
-  return internals.client7.index({
-    index: fixIndex('lookups'), body: doc, id: id, refresh: true, timeout: '10m'
+  await setShortcutsVersion();
+  const response = await internals.usersClient7.index({
+    index: internals.remoteShortcutsIndex, body: doc, id: id, refresh: true, timeout: '10m'
   });
+  if (internals.doShortcutsUpdates) { exports.updateLocalShortcuts(); }
+  return response;
 };
 exports.getShortcut = async (id) => {
-  return internals.client7.get({ index: fixIndex('lookups'), id: id });
+  return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id: id });
 };
 exports.getShortcutsCache = async (userId) => {
   if (internals.shortcutsCache[userId] && internals.shortcutsCache._timeStamp > Date.now() - 30000) {
@@ -1027,11 +1318,12 @@ exports.getShortcutsCache = async (userId) => {
           { term: { userId: userId } }
         ]
       }
-    }
+    },
+    size: 10000
   };
 
   try {
-    const { body: { hits: shortcuts } } = await exports.searchShortcuts(query);
+    const { body: { hits: shortcuts } } = await exports.searchShortcutsLocal(query);
 
     const shortcutsMap = {};
     for (const shortcut of shortcuts.hits) {
