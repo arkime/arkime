@@ -113,8 +113,8 @@
                 v-model="weight"
                 @change="changeWeight">
                 <option value="sessions">Sessions</option>
-                <option value="totPackets">Packets</option>
-                <option value="totBytes">Total Raw Bytes</option>
+                <option value="network.packets">Packets</option>
+                <option value="network.bytes">Total Raw Bytes</option>
                 <option value="totDataBytes">Total Data Bytes</option>
                 <option value="">None</option>
               </select>
@@ -531,8 +531,8 @@ function closePopupsOnEsc (keyCode) {
 
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
-const defaultLinkFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-const defaultNodeFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+const defaultLinkFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
+const defaultNodeFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
 
 // vue definition ---------------------------------------------------------- */
 export default {
