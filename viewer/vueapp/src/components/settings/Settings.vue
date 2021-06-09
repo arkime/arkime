@@ -2482,16 +2482,13 @@ import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
 import MolochPaging from '../utils/Pagination';
 import ToggleBtn from '../utils/ToggleBtn';
+import Utils from '../utils/utils';
 
 let clockInterval;
 
 let shortcutsInputTimeout;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
-const defaultColConfig = {
-  order: [['firstPacket', 'desc']],
-  columns: ['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']
-};
 
 export default {
   name: 'Settings',
@@ -2551,7 +2548,7 @@ export default {
       // column config settings vars
       colConfigs: undefined,
       colConfigError: '',
-      defaultColConfig: defaultColConfig,
+      defaultColConfig: Utils.getDefaultTableState(),
       // spiview field config settings vars
       spiviewConfigs: undefined,
       spiviewConfigError: '',
@@ -3708,15 +3705,16 @@ export default {
           // get the visible headers for the sessions table configuration
           UserService.getState('sessionsNew')
             .then((sessionsTableRes) => {
-              this.setupColumns(sessionsTableRes.data.visibleHeaders);
+              const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.columns;
+              this.setupColumns(headers);
               // if the sort column setting does not match any of the visible
               // headers, set the sort column setting to last
-              if (sessionsTableRes.data.visibleHeaders.indexOf(this.settings.sortColumn) === -1) {
+              if (headers.indexOf(this.settings.sortColumn) === -1) {
                 this.settings.sortColumn = 'last';
               }
             })
             .catch(() => {
-              this.setupColumns(['firstPacket', 'lastPacket', 'src', 'srcPort', 'dst', 'dstPort', 'totPackets', 'dbby', 'node', 'info']);
+              this.setupColumns(this.defaultColConfig.columns);
             });
         });
     },

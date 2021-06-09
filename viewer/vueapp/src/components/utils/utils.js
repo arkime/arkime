@@ -18,10 +18,10 @@ export default {
         'firstPacket',
         'lastPacket',
         'src',
-        'srcPort',
+        'source.port',
         'dst',
-        'dstPort',
-        'totPackets',
+        'destination.port',
+        'network.packets',
         'dbby',
         'node',
         'info'
