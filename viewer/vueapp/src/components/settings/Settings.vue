@@ -2117,6 +2117,8 @@
             <strong>Note:</strong>
             <template v-if="hasUsersES">
               These shortcuts will be synced across clusters.
+              It can take up to one minute to sync to all clusters.
+              But you can use the shortcut on this cluster immediately.
             </template>
             <template v-else>
               These shortcuts are local to this cluster only.

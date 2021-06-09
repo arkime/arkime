@@ -1166,6 +1166,7 @@
             class="no-decoration">
             See settings for more information.
           </a>
+          The shortcuts can take up to one minute to sync to all clusters.
         </p>
       </div>
 
