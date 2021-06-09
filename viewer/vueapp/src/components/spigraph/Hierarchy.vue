@@ -124,6 +124,9 @@
               <template v-if="item.parents && item.parents.length">
                 <template v-for="(parent, index) in item.parents">
                   <td :key="`${index}-${parent.name}-0`">
+                    <span class="color-swatch"
+                      style="background-color:transparent;">
+                    </span>
                     <moloch-session-field
                       :field="fieldList[index]"
                       :value="parent.name"

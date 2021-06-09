@@ -294,7 +294,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField === i));
+      return filters.map(i => this.fields.find(f => f.dbField === i || f.dbField2 === i));
     },
     graphType: function () {
       return this.$store.state.graphType;
@@ -307,7 +307,7 @@ export default {
       return {
         sort: sort,
         date: this.$store.state.timeRange,
-        exp: this.$route.query.exp || this.user.settings.spiGraph || 'node',
+        exp: this.$route.query.exp || this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
@@ -321,6 +321,7 @@ export default {
     fieldObj: function () {
       for (const field of this.fields) {
         if (field.dbField === this.query.exp ||
+          field.dbField2 === this.query.exp ||
           field.exp === this.query.exp) {
           oldFieldObj = field;
           return field;
@@ -369,6 +370,7 @@ export default {
         for (const field of this.fields) {
           if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
           if (field.dbField === this.query.exp ||
+            field.dbField2 === this.query.exp ||
             field.exp === this.query.exp) {
             this.fieldTypeahead = field.friendlyName;
             this.baseField = field.exp;
