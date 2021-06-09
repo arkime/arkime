@@ -106,7 +106,7 @@
             </span>&nbsp;
             Notifiers
           </a>
-          <a v-if="!multiviewer"
+          <a v-if="!multiviewer || (multiviewer && hasUsersES)"
             class="nav-link cursor-pointer"
             @click="openView('shortcuts')"
             :class="{'active':visibleTab === 'shortcuts'}">
@@ -2108,9 +2108,21 @@
             Create a list of values that can be used in queries as shortcuts.
             For example, create a list of IPs and use them in a query
             expression <code>ip.src == $MY_IPS</code>.
-            <br>
+          </p>
+          <p>
             <strong>Tip:</strong>
             Use <code>$</code> to autocomplete shortcuts in search expressions.
+          </p>
+          <p>
+            <strong>Note:</strong>
+            <template v-if="hasUsersES">
+              These shortcuts will be synced across clusters.
+              It can take up to one minute to sync to all clusters.
+              But you can use the shortcut on this cluster immediately.
+            </template>
+            <template v-else>
+              These shortcuts are local to this cluster only.
+            </template>
           </p>
 
           <div class="row">
@@ -2202,7 +2214,9 @@
                           title="Delete this shortcut"
                           class="btn btn-sm btn-danger"
                           @click="deleteShortcut(item, index)">
-                          <span class="fa fa-trash-o fa-fw">
+                          <span class="fa fa-trash-o fa-fw" v-if="!item.loading">
+                          </span>
+                          <span class="fa fa-spinner fa-spin fa-fw" v-else>
                           </span>
                         </button>
                         <span v-if="!item.editing">
@@ -2223,7 +2237,9 @@
                             @click="toggleEditShortcut(item)"
                             title="Make changes to this shortcut's value"
                             class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-pencil fa-fw">
+                            <span class="fa fa-pencil fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                         </span>
@@ -2233,7 +2249,9 @@
                             title="Cancel changes to this shortcut's value"
                             class="btn btn-sm btn-warning"
                             @click="toggleEditShortcut(item)">
-                            <span class="fa fa-ban fa-fw">
+                            <span class="fa fa-ban fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                           <button type="button"
@@ -2241,7 +2259,9 @@
                             @click="updateShortcut(item, index)"
                             title="Save changes to this shortcut's value"
                             class="btn btn-sm btn-theme-tertiary">
-                            <span class="fa fa-save fa-fw">
+                            <span class="fa fa-save fa-fw" v-if="!item.loading">
+                            </span>
+                            <span class="fa fa-spinner fa-spin fa-fw" v-else>
                             </span>
                           </button>
                         </span>
@@ -2413,9 +2433,16 @@
                   <button class="btn btn-theme-tertiary btn-sm pull-right"
                     type="button"
                     @click="createShortcut">
-                    <span class="fa fa-plus-circle">
-                    </span>&nbsp;
-                    Create
+                    <template v-if="!createShortcutLoading">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create
+                    </template>
+                    <template v-else>
+                      <span class="fa fa-spinner fa-spin">
+                      </span>&nbsp;
+                      Creating
+                    </template>
                   </button>
                 </div>
               </div>
@@ -2558,6 +2585,7 @@ export default {
       confirmNewPassword: '',
       changePasswordError: '',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      hasUsersES: this.$constants.MOLOCH_HASUSERSES,
       // notifiers settings vars
       notifiers: undefined,
       notifierTypes: [],
@@ -2579,7 +2607,8 @@ export default {
         desc: false,
         sortField: 'name',
         search: ''
-      }
+      },
+      createShortcutLoading: false
     };
   },
   computed: {
@@ -3452,6 +3481,8 @@ export default {
         return;
       }
 
+      this.createShortcutLoading = true;
+
       const data = {
         name: this.newShortcutName,
         type: this.newShortcutType,
@@ -3462,8 +3493,7 @@ export default {
 
       this.$http.post('api/shortcut', data)
         .then((response) => {
-          // add it to the list
-          this.shortcuts.data.push(response.data.shortcut);
+          this.getShortcuts();
           // clear the inputs and any error
           this.shortcutFormError = false;
           this.newShortcutName = '';
@@ -3473,14 +3503,18 @@ export default {
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.createShortcutLoading = false;
         })
         .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
+          this.createShortcutLoading = false;
         });
     },
     /* updates a specified shortcut (only shared and value are editable) */
     updateShortcut: function (shortcut, index) {
+      this.$set(shortcut, 'loading', true);
+
       const data = {
         shared: shortcut.shared,
         userId: shortcut.userId,
@@ -3499,26 +3533,34 @@ export default {
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.$set(shortcut, 'loading', false);
         })
         .catch((error) => {
           this.msg = error.text;
           this.msgType = 'danger';
+          this.$set(shortcut, 'loading', false);
         });
     },
     /* deletes a shortcut and removes it from the shortcuts array */
     deleteShortcut: function (shortcut, index) {
+      this.$set(shortcut, 'loading', true);
+
       this.$http.delete(`api/shortcut/${shortcut.id}`)
         .then((response) => {
           // remove it from the array
           this.shortcuts.data.splice(index, 1);
+          this.shortcuts.recordsTotal--;
+          this.shortcuts.recordsFiltered--;
           // display success message to user
           this.msg = response.data.text;
           this.msgType = 'success';
+          this.$set(shortcut, 'loading', false);
         })
         .catch((error) => {
           // display error message to user
           this.msg = error.text;
           this.msgType = 'danger';
+          this.$set(shortcut, 'loading', false);
         });
     },
 
@@ -3880,7 +3922,7 @@ export default {
   margin-top: 0.75rem;
 }
 
-/* shorcuts table */
+/* shortcuts table */
 .settings-page .shortcut-value {
   max-width: 400px;
   overflow: hidden;

@@ -1974,6 +1974,12 @@ app.delete( // delete shortcut endpoint
   shortcutAPIs.deleteShortcut
 );
 
+app.get( // sync shortcuts endpoint
+  ['/api/syncshortcuts'],
+  [noCacheJson],
+  shortcutAPIs.syncShortcuts
+);
+
 // file apis ------------------------------------------------------------------
 app.get( // fields endpoint
   ['/api/fields', '/fields'],
@@ -2151,6 +2157,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     devMode: Config.get('devMode', false),
     demoMode: Config.get('demoMode', false),
     multiViewer: Config.get('multiES', false),
+    hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
@@ -2589,5 +2596,6 @@ Db.initialize({
   esProfile: Config.esProfile,
   debug: Config.debug,
   esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null)
+  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+  cronQueries: Config.get('cronQueries', false)
 }, main);

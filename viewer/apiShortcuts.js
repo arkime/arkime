@@ -122,8 +122,8 @@ module.exports = (Db, internals, ViewerUtils) => {
 
     Promise.all([
       Db.searchShortcuts(query),
-      Db.numberOfDocuments('lookups')
-    ]).then(([{ body: { hits: shortcuts } }, total]) => {
+      Db.numberOfShortcuts()
+    ]).then(([{ body: { hits: shortcuts } }, { body: { count: total } }]) => {
       const results = { list: [], map: {} };
       for (const hit of shortcuts.hits) {
         const shortcut = hit._source;
@@ -162,7 +162,7 @@ module.exports = (Db, internals, ViewerUtils) => {
         ? results.map
         : {
           data: results.list,
-          recordsTotal: total.count,
+          recordsTotal: total,
           recordsFiltered: shortcuts.total
         };
 
@@ -375,7 +375,8 @@ module.exports = (Db, internals, ViewerUtils) => {
       const { data: shortcut } = await Db.getShortcut(req.params.id);
 
       // only allow admins or shortcut creator to delete shortcut item
-      if (!req.user.createEnabled && req.settingUser.userId !== shortcut._source.userId) {
+
+      if (!req.user.createEnabled && req.settingUser.userId !== shortcut?._source.userId) {
         return res.serverError(403, 'Permission denied');
       }
 
@@ -393,6 +394,21 @@ module.exports = (Db, internals, ViewerUtils) => {
       console.log(`ERROR - DELETE /api/shortcut/${req.params.id}`, err);
       return res.serverError(500, 'Fetching shortcut to delete failed');
     }
+  };
+
+  /**
+   * GET - /api/syncshortcuts
+   *
+   * @name /syncshortcuts
+   * Updates the shortcuts in the local db if they are out of sync with the
+   * remote db (remote db = user's es)
+   * This happens periodically (every minute) but can be triggered with this endpoint
+   * @ignore
+   * @returns {boolean} success - Always true.
+   */
+  sModule.syncShortcuts = (req, res) => {
+    Db.updateLocalShortcuts();
+    return res.send(JSON.stringify({ success: true }));
   };
 
   return sModule;
