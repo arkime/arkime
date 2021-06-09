@@ -20,6 +20,7 @@ Node Versions:
   * Moloch >= 0.18.1 requires NodeJS 4.x
 
 NOTICE: Restart wiseService before capture when upgrading
+NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 3.0.0 2021/05/xx
   - BREAKING - elasticsearch - ES 7.7.1 or later required
