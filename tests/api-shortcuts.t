@@ -1,4 +1,4 @@
-use Test::More tests => 50;
+use Test::More tests => 53;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -143,10 +143,12 @@ is($json->{text}, "Missing token", "delete shortcut requires token");
 # can't delete another user's shortcuts
 $json = viewerDeleteToken("/lookups/$shortcut1Id?molochRegressionUser=user2", $otherToken);
 ok(!$json->{success}, "can't delete another user's shortcut");
+is($json->{text}, "Permission denied");
 
 # can't delete shortcut that doesn't exist
 $json = viewerDeleteToken("/api/shortcut/fakeshortcutid", $token);
 ok(!$json->{success}, "can't delete a nonexisting shortcut");
+is($json->{text}, "Fetching shortcut to delete failed");
 
 # delete shortcut (plus bonus cleanup)
 $json = viewerDeleteToken("/api/shortcut/$shortcut1Id", $token);
@@ -161,6 +163,21 @@ $shortcuts = viewerGet("/lookups");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts after cleanup");
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for user2 after cleanup");
+
+# the local (test2) cluster should sync with the remote (test) cluster
+viewerGet2("/api/syncshortcuts");
+esGet("/_refresh");
+sleep(2);
+
+$testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+$tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+
+for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+  delete $testsCluster->[$i]->{_index};
+  delete $tests2Cluster->[$i]->{_index};
+}
+
+eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # remove shared user that gets added when creating shared shortcuts
 viewerPostToken("/user/delete", "userId=_moloch_shared", $token);

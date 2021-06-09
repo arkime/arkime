@@ -375,7 +375,8 @@ module.exports = (Db, internals, ViewerUtils) => {
       const { data: shortcut } = await Db.getShortcut(req.params.id);
 
       // only allow admins or shortcut creator to delete shortcut item
-      if (!req.user.createEnabled && req.settingUser.userId !== shortcut._source.userId) {
+
+      if (!req.user.createEnabled && req.settingUser.userId !== shortcut?._source.userId) {
         return res.serverError(403, 'Permission denied');
       }
 
