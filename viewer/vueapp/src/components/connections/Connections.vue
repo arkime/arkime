@@ -143,6 +143,12 @@
               </b-dropdown-header>
               <b-dropdown-divider>
               </b-dropdown-divider>
+              <b-dropdown-item
+                @click.stop.prevent="resetNodeFieldsDefault">
+                Reset to default
+              </b-dropdown-item>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
               <template v-for="(group, key) in filteredFields">
                 <b-dropdown-header
                   :key="key"
@@ -191,6 +197,12 @@
                   placeholder="Search for fields..."
                 />
               </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                @click.stop.prevent="resetLinkFieldsDefault">
+                Reset to default
+              </b-dropdown-item>
               <b-dropdown-divider>
               </b-dropdown-divider>
               <template v-for="(group, key) in filteredFields">
@@ -612,11 +624,25 @@ export default {
 
       return filteredGroupedFields;
     },
-    nodeFields: function () {
-      return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+    nodeFields: {
+      get: function () {
+        return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+      },
+      set: function (newValue) {
+        const settings = this.$store.state.user.settings;
+        settings.connNodeFields = newValue;
+        this.$store.commit('setUserSettings', settings);
+      }
     },
-    linkFields: function () {
-      return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+    linkFields: {
+      get: function () {
+        return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+      },
+      set: function (newValue) {
+        const settings = this.$store.state.user.settings;
+        settings.connLinkFields = newValue;
+        this.$store.commit('setUserSettings', settings);
+      }
     }
   },
   watch: {
@@ -805,6 +831,18 @@ export default {
     isFieldVisible: function (id, list) {
       return list.indexOf(id);
     },
+    resetNodeFieldsDefault: function () {
+      this.nodeFields = defaultNodeFields;
+      this.closePopups();
+      this.cancelAndLoad(true);
+      this.saveVisibleFields();
+    },
+    resetLinkFieldsDefault: function () {
+      this.linkFields = defaultLinkFields;
+      this.closePopups();
+      this.cancelAndLoad(true);
+      this.saveVisibleFields();
+    },
     toggleFieldVisibility: function (id, list) {
       const index = this.isFieldVisible(id, list);
 
@@ -814,6 +852,7 @@ export default {
       } else { // it's hidden
         // add it to the visible headers list
         list.push(id);
+        this.closePopups();
         this.cancelAndLoad(true);
       }
 
@@ -1345,30 +1384,32 @@ export default {
 
                 <span v-for="field in nodeFields"
                   :key="field">
-                  <dt>
-                    {{ fields[field].friendlyName }}
-                  </dt>
-                  <dd>
-                    <span v-if="!Array.isArray(dataNode[field])">
-                      <moloch-session-field
-                        :value="dataNode[field]"
-                        :session="dataNode"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>
-                    <span v-else
-                      v-for="value in dataNode[field]">
-                      <moloch-session-field
-                        :value="value"
-                        :session="dataNode"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>&nbsp;
-                  </dd>
+                  <template v-if="fields[field]">
+                    <dt>
+                      {{ fields[field].friendlyName }}
+                    </dt>
+                    <dd>
+                      <span v-if="!Array.isArray(dataNode[field])">
+                        <moloch-session-field
+                          :value="dataNode[field]"
+                          :session="dataNode"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>
+                      <span v-else
+                        v-for="value in dataNode[field]">
+                        <moloch-session-field
+                          :value="value"
+                          :session="dataNode"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>&nbsp;
+                    </dd>
+                    </template>
                 </span>
 
                 <div v-if="baselineDate !== '0'">
@@ -1463,30 +1504,32 @@ export default {
 
                 <span v-for="field in linkFields"
                   :key="field">
-                  <dt>
-                    {{ fields[field].friendlyName }}
-                  </dt>
-                  <dd>
-                    <span v-if="!Array.isArray(linkData[field])">
-                      <moloch-session-field
-                        :value="linkData[field]"
-                        :session="linkData"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>
-                    <span v-else
-                      v-for="value in linkData[field]">
-                      <moloch-session-field
-                        :value="value"
-                        :session="linkData"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>&nbsp;
-                  </dd>
+                  <template v-if="fields[field]">
+                    <dt>
+                      {{ fields[field].friendlyName }}
+                    </dt>
+                    <dd>
+                      <span v-if="!Array.isArray(linkData[field])">
+                        <moloch-session-field
+                          :value="linkData[field]"
+                          :session="linkData"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>
+                      <span v-else
+                        v-for="value in linkData[field]">
+                        <moloch-session-field
+                          :value="value"
+                          :session="linkData"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>&nbsp;
+                    </dd>
+                  </template>
                 </span>
               </dl>
 
