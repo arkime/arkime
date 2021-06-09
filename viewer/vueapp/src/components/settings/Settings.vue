@@ -2687,16 +2687,8 @@ export default {
 
         // always get the user's settings because current user is cached
         // so response.settings might be stale
-        this.getSettings();
-
-        // get all the other things!
-        this.getViews();
-        this.getCronQueries();
-        this.getColConfigs();
-        this.getSpiviewConfigs();
-        this.getNotifierTypes();
-        this.getNotifiers();
-        this.getShortcuts();
+        // NOTE: this kicks of fetching all the other data
+        this.getSettings(true);
       })
       .catch((error) => {
         this.error = error.text;
@@ -2761,7 +2753,7 @@ export default {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
-          this.getSettings();
+          this.getSettings(false);
         })
         .catch((error) => {
           // display error message to user
@@ -3594,7 +3586,7 @@ export default {
       this.themeString = `${this.background},${this.foreground},${this.foregroundAccent},${this.primary},${this.primaryLightest},${this.secondary},${this.secondaryLightest},${this.tertiary},${this.tertiaryLightest},${this.quaternary},${this.quaternaryLightest},${this.water},${this.land},${this.src},${this.dst}`;
     },
     /* retrieves the specified user's settings */
-    getSettings: function () {
+    getSettings: function (initLoad) {
       UserService.getSettings(this.userId)
         .then((response) => {
           // set the user settings individually
@@ -3623,6 +3615,17 @@ export default {
           this.getFields();
 
           this.loading = false;
+
+          if (initLoad) {
+            // get all the other things!
+            this.getViews();
+            this.getCronQueries();
+            this.getColConfigs();
+            this.getSpiviewConfigs();
+            this.getNotifierTypes();
+            this.getNotifiers();
+            this.getShortcuts();
+          }
 
           this.setTheme();
           this.startClock();
@@ -3770,7 +3773,7 @@ export default {
               let field;
 
               for (const key in this.fields) {
-                if (this.fields[key].dbField === fieldID) {
+                if (this.fields[key].dbField === fieldID || this.fields[key].dbField2 === fieldID) {
                   field = this.fields[key];
                   break;
                 }
