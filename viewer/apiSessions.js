@@ -2308,7 +2308,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         item.field2.buckets.forEach((item2) => {
@@ -2322,9 +2322,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       delete query.sort;
       delete query.aggregations;
 
-      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|source.ip:source.port)/)) {
+      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|source.ip:source.port|ip.src:source.port)/)) {
         query.aggregations = { field: { terms: { field: 'source.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'source.port', size: 100 } } } } };
-      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|destination.ip:destination.port)/)) {
+      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|destination.ip:destination.port|ip.dst:destination.port)/)) {
         query.aggregations = { field: { terms: { field: 'dstIp', size: aggSize }, aggregations: { field2: { terms: { field: 'destination.port', size: 100 } } } } };
       } else if (req.query.field === 'fileand') {
         query.aggregations = { field: { terms: { field: 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
