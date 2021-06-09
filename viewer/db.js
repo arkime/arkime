@@ -1024,7 +1024,7 @@ async function initialShortcutsSyncToRemote () {
 
   if (initSync) { return; } // already been synced, don't need to do anything
 
-  const msg = `initial sync from local shortcuts index (${internals.localShortcutsIndex}) to remote index (${internals.remoteShortcutsIndex})`;
+  const msg = `initial shortcuts sync from local db (${internals.info.host}/${internals.localShortcutsIndex}) to remote (${internals.info.usersHost}/${internals.remoteShortcutsIndex})`;
 
   console.log(msg);
 
@@ -1176,7 +1176,7 @@ async function setShortcutsVersion () {
 exports.updateLocalShortcuts = async () => {
   if (internals.multiES) { return; } // don't sync shortcuts for multies
 
-  const msg = `updating local shortcuts index (${internals.localShortcutsIndex}) from remote index (${internals.remoteShortcutsIndex})`;
+  const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from remote (${internals.info.usersHost}/${internals.remoteShortcutsIndex})`;
 
   try {
     // fetch the version of the remote shortcuts index to check if the local shortcuts index
