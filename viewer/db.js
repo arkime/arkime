@@ -41,7 +41,7 @@ const internals = {
   doShortcutsUpdates: false,
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
-  localShortcutsVersion: 0 // always start with 0 so there's an initial sync of shortcuts from user's es db
+  localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
 };
 
 exports.initialize = async (info, cb) => {
@@ -1052,6 +1052,7 @@ async function initialShortcutsSyncToRemote () {
       })
     );
 
+    await setShortcutsVersion();
     await Promise.allSettled(operations);
     return;
   }

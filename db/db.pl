@@ -3198,9 +3198,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
-    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats");
-    push(@indexes, "hunts") if ($main::versionNumber > 51);
-    push(@indexes, "lookups") if ($main::versionNumber > 60);
+    my @indexes = ("users", "sequence", "stats", "queries", "files", "fields", "dstats", "hunts", "lookups");
     logmsg "Exporting documents...\n";
     foreach my $index (@indexes) {
         my $data = esScroll($index, "", '{"version": true}');
