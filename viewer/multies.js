@@ -283,6 +283,11 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
+app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
+  req.url = '/sessions*/_refresh';
+  return simpleGatherFirst(req, res);
+});
+
 app.get('/_cluster/:type/details', function (req, res) {
   const result = { available: [], active: [], inactive: [] };
   const activeNodes = getActiveNodes();
