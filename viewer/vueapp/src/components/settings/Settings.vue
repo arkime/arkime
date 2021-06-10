@@ -698,7 +698,7 @@
                 <th>&nbsp;</th>
               </tr>
             </thead>
-            <tbody>
+            <transition-group tag="tbody" name="list">
               <!-- cron queries -->
               <template v-for="(item, index) in cronQueries">
                 <tr :key="item.key"
@@ -802,54 +802,52 @@
                     </div>
                   </td>
                 </tr> <!-- /cron queries -->
-                <transition name="grow"
-                  :key="item.key + 'detail'">
-                  <tr v-if="item.expanded"
-                    class="mt-3">
-                    <td colspan="9">
-                      <div class="row">
-                        <div class="col">
-                          <strong>Query Description</strong>:
-                          <input type="text"
-                            v-model="item.description"
-                            class="form-control form-control-sm"
-                            @input="cronQueryChanged(item)"
-                          />
-                        </div>
+                <tr v-if="item.expanded"
+                  :key="item.key + 'detail'"
+                  class="mt-3">
+                  <td colspan="9">
+                    <div class="row"
+                      v-if="item.creator">
+                      <div class="col">
+                        <strong>Created by</strong>:
+                        {{ item.creator }}
                       </div>
-                      <div class="row"
-                        v-if="item.creator">
-                        <div class="col">
-                          <strong>Created by</strong>:
-                          {{ item.creator }}
-                        </div>
+                    </div>
+                    <div class="row"
+                      v-if="item.created">
+                      <div class="col">
+                        <strong>Created at</strong>:
+                        {{ item.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
                       </div>
-                      <div class="row"
-                        v-if="item.created">
-                        <div class="col">
-                          <strong>Created at</strong>:
-                          {{ item.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                        </div>
+                    </div>
+                    <div class="row"
+                      v-if="item.lastRun">
+                      <div class="col">
+                        <strong>Last run at</strong>:
+                        {{ item.lastRun * 1000 | timezoneDateString(user.settings.timezone, false) }}
+                        and matched {{ item.lastCount || 0 }} new sessions
                       </div>
-                      <div class="row"
-                        v-if="item.lastRun">
-                        <div class="col">
-                          <strong>Last run at</strong>:
-                          {{ item.lastRun * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                          and matched {{ item.lastCount || 0 }} new sessions
-                        </div>
+                    </div>
+                    <div class="row"
+                      v-if="item.lastToggled">
+                      <div class="col">
+                        <strong>{{ item.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
+                        {{ item.lastToggled * 1000 | timezoneDateString(user.settings.timezone, false) }}
+                        by {{ item.lastToggledBy }}
                       </div>
-                      <div class="row"
-                        v-if="item.lastToggled">
-                        <div class="col">
-                          <strong>{{ item.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
-                          {{ item.lastToggled * 1000 | timezoneDateString(user.settings.timezone, false) }}
-                          by {{ item.lastToggledBy }}
-                        </div>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        <strong>Query Description</strong>:
+                        <textarea
+                          v-model="item.description"
+                          class="form-control form-control-sm"
+                          @input="cronQueryChanged(item)"
+                        />
                       </div>
-                    </td>
-                  </tr>
-                </transition>
+                    </div>
+                  </td>
+                </tr>
               </template>
               <tr v-if="!cronQueries || !Object.keys(cronQueries).length"
                 class="text-center">
@@ -871,7 +869,7 @@
                   </p>
                 </td>
               </tr> <!-- /cron query list error -->
-            </tbody>
+            </transition-group>
           </table>
 
           <!-- new cron query form -->
@@ -880,11 +878,20 @@
             <h3 class="mt-3">
               New Periodic Query
               <button type="button"
+                :disabled="cronLoading"
+                :class="{'disabled':cronLoading}"
                 class="btn btn-theme-tertiary btn-sm pull-right"
                 @click="createCronQuery">
-                <span class="fa fa-plus-circle">
-                </span>&nbsp;
-                Create
+                <template v-if="!cronLoading">
+                  <span class="fa fa-plus-circle">
+                  </span>&nbsp;
+                  Create
+                </template>
+                <template v-else>
+                  <span class="fa fa-spinner fa-spin">
+                  </span>&nbsp;
+                  Creating
+                </template>
               </button>
               <!-- cron query form error -->
               <div v-if="cronQueryFormError"
@@ -962,8 +969,7 @@
                 <label for="name">
                   Query Description
                 </label>
-                <input
-                  type="text"
+                <textarea
                   id="description"
                   v-b-tooltip.hover
                   v-model="newCronQueryDescription"
@@ -2537,6 +2543,7 @@ export default {
       newViewExpression: '',
       newViewShared: false,
       // cron settings vars
+      cronLoading: false,
       cronQueries: undefined,
       cronQueryListError: '',
       cronQueryFormError: '',
@@ -3024,6 +3031,8 @@ export default {
         return;
       }
 
+      this.cronLoading = true;
+
       const data = {
         enabled: true,
         name: this.newCronQueryName,
@@ -3052,11 +3061,13 @@ export default {
           // display success message to user
           this.msg = response.text;
           this.msgType = 'success';
+          this.cronLoading = false;
         })
         .catch((error) => {
           // display error message to user
           this.msg = error.text;
           this.msgType = 'danger';
+          this.cronLoading = false;
         });
     },
     /**
@@ -3864,7 +3875,6 @@ export default {
 </script>
 
 <style>
-
 .settings-content {
   margin-top: 90px;
   margin-left: 0;
