@@ -1190,6 +1190,7 @@ exports.updateLocalShortcuts = async () => {
 
     console.log(msg);
 
+    internals.shortcutsCache = {}; // Clear cache when updating
     // fetch shortcuts from remote and local indexes
     const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
       exports.searchShortcuts({ size: 10000 }), exports.searchShortcutsLocal({ size: 10000 })
