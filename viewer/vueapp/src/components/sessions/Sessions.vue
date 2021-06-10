@@ -775,7 +775,7 @@ export default {
       this.viewChanged = true;
     },
     loadColumns: function (colConfig) {
-      this.tableState = colConfig;
+      this.tableState = JSON.parse(JSON.stringify(colConfig));
       this.loadData(true);
     },
     /* show the overflow when a dropdown in a column header is shown. otherwise,
