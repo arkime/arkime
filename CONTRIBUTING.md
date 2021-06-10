@@ -13,16 +13,17 @@
 
 ### Where do I start? :traffic_light:
 
-First, checkout the main [Arkime README](README.md) for information on how to build and run Arkime.
+First, checkout the main [Arkime README](README.md) for information on how to build and run Arkime. We do all development on MacBook Pros.
 
 **Then, get some test data!**
 
 * Make sure `node` is in your path
-* Install and Start Elasticsearch
-* Use `easybutton-build.sh` or `configure` and `make` to build everything
+* [Install Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (make sure you're installing a compatible ES version with the main branch of Arkime using the top entry of "ES Versions" in the [CHANGELOG](CHANGELOG))
+* Start Elasticsearch (see the bottom of the page you downloaded ES from)
+* Run `./easybutton-build.sh`
 * Run `make check` from the top level directory, this will
-  * run `npm ci` everywhere
-  * run `tests.pl` and `tests.pl --viewer` in the tests directory (this loads PCAPs)
+  * run `npm ci` everywhere (to install all the necessary dependencies)
+  * run `tests.pl` and `tests.pl --viewer` in the tests directory (to load PCAPs)
 
 > **Note:** this will only work if viewer is not already running.
 
@@ -30,14 +31,13 @@ You should now have test data loaded, so let's **start the web app**:
 
 * Move to the Arkime viewer directory
 * Run `npm ci`
-* Move back up to the top level Moloch directory
+* Move back up to the top level Arkime directory
 * Run `npm run viewer:test`
 * Now browse to the app at `http://localhost:8123`
 
-If you want to run Moloch in non-anonymous mode:
-* Move to the top level Moloch directory
-* run `npm run viewer:addtestuser`
-* run `npm run viewer:dev`
+If you want to run Arkime in non-anonymous mode:
+* Move to the top level Arkime directory
+* run `npm run viewer:dev` this will automatically add an admin user (username: admin, password: admin)
 
 > :clock1: _On first load, you will likely see this message: "No results or none that match your search within your time range." This is because the data that was loaded is from all time ranges, so make sure you search for ALL times ranges._
 
