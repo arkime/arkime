@@ -2276,6 +2276,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
       }
     });
   }, () => {
+    Db.refresh('sessions*');
     if (Config.debug > 1) {
       console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
     }

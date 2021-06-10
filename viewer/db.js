@@ -1123,6 +1123,7 @@ exports.deleteHunt = async (id) => {
   });
 };
 exports.setHunt = async (id, doc) => {
+  Db.refresh('sessions*');
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m'
   });

@@ -1500,7 +1500,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (err) { console.log('removeTagsList error', session, err, data); }
         nextCb(null);
       });
-    }, (err) => {
+    }, async (err) => {
+      await Db.refresh('sessions*');
       return res.send(JSON.stringify({
         success: true,
         text: 'Tags removed successfully'
@@ -2582,7 +2583,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, () => {
+        sModule.addTagsList(tags, list, async () => {
+          await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
             text: 'Tags added successfully'
@@ -2594,7 +2596,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, () => {
+        sModule.addTagsList(tags, list, async () => {
+          await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
             text: 'Tags added successfully'
