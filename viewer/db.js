@@ -143,6 +143,8 @@ exports.initialize = async (info, cb) => {
       exports.updateLocalShortcuts(); // immediately update shortcuts
       setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
     }
+  } else if (internals.info.usersHost && internals.multiES) {
+    internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
   } else { // there is no remote shorcuts index, just set it to local
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
   }

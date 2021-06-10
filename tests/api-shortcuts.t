@@ -1,4 +1,4 @@
-use Test::More tests => 53;
+use Test::More tests => 62;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -76,6 +76,12 @@ countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst
 countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 
+# same tests with multi
+countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
+countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+
 # create shortcut by another user
 $json = viewerPostToken("/api/shortcut?molochRegressionUser=user2", '{"name":"other_test_shortcut","type":"string","value":"udp"}', $otherToken);
 ok($json->{success}, "create shortcut success");
@@ -83,6 +89,10 @@ my $shortcut2Id = $json->{shortcut}->{id}; # save id for cleanup later
 
 # get shortcuts should have 1
 $shortcuts = viewerGet("/api/shortcuts?molochRegressionUser=user2");
+is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
+
+# multi get shortcuts all should have 1
+$shortcuts = multiGet("/api/shortcuts?molochRegressionUser=user2");
 is(@{$shortcuts->{data}}, 1, "1 shortcut for this user");
 
 # create shared shortcut by another user
