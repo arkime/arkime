@@ -1051,7 +1051,7 @@
                   Arkime Default
                 </td>
                 <td>
-                  <template v-for="col in defaultColConfig.columns">
+                  <template v-for="col in defaultColConfig.visibleHeaders">
                     <label class="badge badge-secondary mr-1 help-cursor"
                       v-b-tooltip.hover
                       :title="fieldsMap[col].help"
@@ -3612,23 +3612,23 @@ export default {
             this.$set(this.settings, 'manualQuery', false);
           }
 
-          this.getFields();
+          this.getFields().then(() => {
+            this.loading = false;
 
-          this.loading = false;
+            if (initLoad) {
+              // get all the other things!
+              this.getViews();
+              this.getCronQueries();
+              this.getColConfigs();
+              this.getSpiviewConfigs();
+              this.getNotifierTypes();
+              this.getNotifiers();
+              this.getShortcuts();
+            }
 
-          if (initLoad) {
-            // get all the other things!
-            this.getViews();
-            this.getCronQueries();
-            this.getColConfigs();
-            this.getSpiviewConfigs();
-            this.getNotifierTypes();
-            this.getNotifiers();
-            this.getShortcuts();
-          }
-
-          this.setTheme();
-          this.startClock();
+            this.setTheme();
+            this.startClock();
+          });
         })
         .catch((error) => {
           this.loading = false;
@@ -3649,77 +3649,81 @@ export default {
      * creates fields map for quick lookups
      */
     getFields: function () {
-      // get fields from field service then get sessionsNew state
-      FieldService.get(true)
-        .then((response) => {
-          this.fields = JSON.parse(JSON.stringify(response));
-          this.fieldsPlus = JSON.parse(JSON.stringify(response));
-          this.fieldsPlus.push({
-            dbField: 'ip.dst:port',
-            exp: 'ip.dst:port',
-            help: 'Destination IP:Destination Port',
-            group: 'general',
-            friendlyName: 'Dst IP:Dst Port'
-          });
-
-          this.integerFields = this.fields.filter(i => i.type === 'integer');
-
-          // attach the full field object to the component's timelineDataFilters from array of dbField
-          this.timelineDataFilters = [];
-          for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
-            const filter = this.settings.timelineDataFilters[i];
-            const fieldOBJ = this.integerFields.find(j => j.dbField === filter);
-            if (fieldOBJ) {
-              this.timelineDataFilters.push(fieldOBJ);
-            }
-          }
-
-          // add custom columns to the fields array
-          for (const key in customCols) {
-            this.fields.push(customCols[key]);
-          }
-
-          // update the user settings for spigraph field & connections src/dst fields
-          // NOTE: dbField is saved in settings, but show the field's friendlyName
-          for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
-            const field = this.fieldsPlus[i];
-            if (this.settings.spiGraph === field.dbField) {
-              this.$set(this, 'spiGraphField', field);
-              this.$set(this, 'spiGraphTypeahead', field.friendlyName);
-            }
-            if (this.settings.connSrcField === field.dbField) {
-              this.$set(this, 'connSrcField', field);
-              this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
-            }
-            if (this.settings.connDstField === field.dbField) {
-              this.$set(this, 'connDstField', field);
-              this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
-            }
-          }
-          this.$set(this, 'filtersTypeahead', '');
-
-          // build fields map for quick lookup by dbField
-          this.fieldsMap = {};
-          for (let i = 0, len = this.fields.length; i < len; ++i) {
-            const field = this.fields[i];
-            this.fieldsMap[field.dbField] = field;
-          }
-
-          // get the visible headers for the sessions table configuration
-          UserService.getState('sessionsNew')
-            .then((sessionsTableRes) => {
-              const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.columns;
-              this.setupColumns(headers);
-              // if the sort column setting does not match any of the visible
-              // headers, set the sort column setting to last
-              if (headers.indexOf(this.settings.sortColumn) === -1) {
-                this.settings.sortColumn = 'last';
-              }
-            })
-            .catch(() => {
-              this.setupColumns(this.defaultColConfig.columns);
+      return new Promise((resolve, reject) => {
+        // get fields from field service then get sessionsNew state
+        FieldService.get(true)
+          .then((response) => {
+            this.fields = JSON.parse(JSON.stringify(response));
+            this.fieldsPlus = JSON.parse(JSON.stringify(response));
+            this.fieldsPlus.push({
+              dbField: 'ip.dst:port',
+              exp: 'ip.dst:port',
+              help: 'Destination IP:Destination Port',
+              group: 'general',
+              friendlyName: 'Dst IP:Dst Port'
             });
-        });
+
+            this.integerFields = this.fields.filter(i => i.type === 'integer');
+
+            // attach the full field object to the component's timelineDataFilters from array of dbField
+            this.timelineDataFilters = [];
+            for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
+              const filter = this.settings.timelineDataFilters[i];
+              const fieldOBJ = this.integerFields.find(j => j.dbField === filter);
+              if (fieldOBJ) {
+                this.timelineDataFilters.push(fieldOBJ);
+              }
+            }
+
+            // add custom columns to the fields array
+            for (const key in customCols) {
+              this.fields.push(customCols[key]);
+            }
+
+            // update the user settings for spigraph field & connections src/dst fields
+            // NOTE: dbField is saved in settings, but show the field's friendlyName
+            for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
+              const field = this.fieldsPlus[i];
+              if (this.settings.spiGraph === field.dbField) {
+                this.$set(this, 'spiGraphField', field);
+                this.$set(this, 'spiGraphTypeahead', field.friendlyName);
+              }
+              if (this.settings.connSrcField === field.dbField) {
+                this.$set(this, 'connSrcField', field);
+                this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
+              }
+              if (this.settings.connDstField === field.dbField) {
+                this.$set(this, 'connDstField', field);
+                this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
+              }
+            }
+            this.$set(this, 'filtersTypeahead', '');
+
+            // build fields map for quick lookup by dbField
+            this.fieldsMap = {};
+            for (let i = 0, len = this.fields.length; i < len; ++i) {
+              const field = this.fields[i];
+              this.fieldsMap[field.dbField] = field;
+            }
+
+            // get the visible headers for the sessions table configuration
+            UserService.getState('sessionsNew')
+              .then((sessionsTableRes) => {
+                const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.visibleHeaders;
+                this.setupColumns(headers);
+                // if the sort column setting does not match any of the visible
+                // headers, set the sort column setting to last
+                if (headers.indexOf(this.settings.sortColumn) === -1) {
+                  this.settings.sortColumn = 'last';
+                }
+                resolve();
+              })
+              .catch((err) => {
+                this.setupColumns(this.defaultColConfig.visibleHeaders);
+                resolve();
+              });
+          });
+      });
     },
     /* retrieves the specified user's views */
     getViews: function () {

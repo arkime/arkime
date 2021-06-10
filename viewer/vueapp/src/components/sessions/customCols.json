@@ -5,7 +5,7 @@
     "exp": "info",
     "group": "general",
     "friendlyName": "Info",
-    "help": "Information",
+    "help": "Information column that can be configured to include many fields",
     "unsortable": true,
     "children": [
       "http.uri",
@@ -24,7 +24,7 @@
     "exp": "src",
     "group": "general",
     "friendlyName": "Src IP / Country",
-    "help": "Src IP & Country",
+    "help": "Source IP & Source Country",
     "sortBy": "source.ip",
     "children": [
       "source.ip",
@@ -37,7 +37,7 @@
     "exp": "dst",
     "group": "general",
     "friendlyName": "Dst IP / Country",
-    "help": "Dst IP & Country",
+    "help": "Destination IP & Destination Country",
     "sortBy": "destination.ip",
     "children": [
       "destination.ip",
@@ -50,7 +50,7 @@
     "exp": "dbby",
     "group": "general",
     "friendlyName": "Databytes / Bytes",
-    "help": "Data Bytes & Bytes",
+    "help": "Data Bytes (total number of data bytes sent AND received in a session) & Bytes (total number of raw bytes sent AND received in a session)",
     "sortBy": "network.bytes",
     "children": [
       "totDataBytes",
@@ -63,7 +63,7 @@
     "exp": "pa1pa2",
     "group": "general",
     "friendlyName": "Src Packets / Dst Packets",
-    "help": "Src Packets & Dst Packets",
+    "help": "Source Packets (total number of packets sent by source in a session) & Destination Packets (total number of packets sent by destination in a session)",
     "sortBy": "totPackets",
     "children": [
       "source.packets",
@@ -76,7 +76,7 @@
     "exp": "db1db2",
     "group": "general",
     "friendlyName": "Src Databytes / Dst Databytes",
-    "help": "Src Databytes & Dst Databytes",
+    "help": "Source Data Bytes (total number of data bytes sent by source in a session) & Destination Data Bytes (total number of data bytes sent by destination in a session)",
     "sortBy": "totDataBytes",
     "children": [
       "client.bytes",
@@ -89,7 +89,7 @@
     "exp": "by1by2",
     "group": "general",
     "friendlyName": "Src Bytes / Dst Bytes",
-    "help": "Src Bytes & Dst Bytes",
+    "help": "Source Bytes (total number of raw bytes sent by source in a session) & Destination Bytes (total number of raw bytes sent by destination in a session)",
     "sortBy": "network.bytes",
     "children": [
       "source.bytes",
@@ -102,7 +102,7 @@
     "exp": "db1by1",
     "group": "general",
     "friendlyName": "Src Databytes / Src Bytes",
-    "help": "Src Databytes & Src Bytes",
+    "help": "Source Data Bytes (total number of data bytes sent by source in a session) & Source Bytes (total number of raw bytes sent by source in a session)",
     "sortBy": "client.bytes",
     "children": [
       "client.bytes",
@@ -115,7 +115,7 @@
     "exp": "db2by2",
     "group": "general",
     "friendlyName": "Dst Databytes / Dst Bytes",
-    "help": "Dst Databytes & Dst Bytes",
+    "help": "Destination Data Bytes (total number of data bytes sent by destination in a session) & Destination Bytes (total number of raw bytes sent by destination in a session)",
     "sortBy": "server.bytes",
     "children": [
       "server.bytes",
