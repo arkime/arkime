@@ -1915,7 +1915,7 @@ form.sessions-paging {
   padding-top: 30px;
   margin-top: -10px;
   overflow-x: auto;
-  min-height: 300px;
+  min-height: 500px;
 }
 
 /* sessions table styles --------------------- */

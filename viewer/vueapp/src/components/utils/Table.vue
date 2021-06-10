@@ -825,18 +825,6 @@ table tr.border-top-bold > td {
   border-top: 2px solid #dee2e6;
 }
 
-/* table animation --------------------------- */
-table .list-enter-active, .list-leave-active {
-  transition: all .5s;
-}
-table .list-enter, .list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-table .list-move {
-  transition: transform .5s;
-}
-
 /* slider grips indicator -------------------- */
 table thead tr th {
   border-right: 1px dotted var(--color-gray);

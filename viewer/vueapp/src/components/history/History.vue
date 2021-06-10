@@ -90,7 +90,7 @@
     <table class="table table-sm table-striped small">
       <thead>
         <tr>
-          <th width="90px;">
+          <th width="100px;">
             <button type="button"
               class="btn btn-xs btn-primary margined-bottom-sm"
               v-b-tooltip.hover
@@ -293,12 +293,12 @@
                 </div> <!-- /query params -->
               </dl>
               <!-- no info -->
-              <div v-if="!item.query && !item.body && item.recordsReturned === undefined"
-                class="mb-w">
+              <h6 v-if="!item.query && !item.body && item.recordsReturned === undefined"
+                class="mb-3">
                 <span class="fa fa-frown-o fa-lg">
                 </span>&nbsp;
                 <em>Sorry! There is no more information to show.</em>
-              </div> <!-- no info -->
+              </h6> <!-- no info -->
             </td>
           </tr> <!-- /history item info -->
         </template>

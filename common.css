@@ -381,6 +381,18 @@ body.dark .pagination > .page-item.active > span:focus {
   background-color: #111;
 }
 
+/* ANIMATIONS -------------------------------- */
+.list-enter-active, .list-leave-active {
+  transition: all .5s;
+}
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-move {
+  transition: transform .5s;
+}
+
 /* MEDIA QUERIES ----------------------------- */
 @media (min-width: 1600px) {
   .col-xxl-2 {

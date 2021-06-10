@@ -4,7 +4,7 @@
       <!-- # packets -->
       <b-form-select
         size="sm"
-        class="mr-1"
+        class="mr-1 form-control"
         :value="params.packets"
         :options="[
           { value: 50, text: '50 packets' },
@@ -18,7 +18,7 @@
       <!-- packet display type -->
       <b-form-select
         size="sm"
-        class="mr-1"
+        class="mr-1 form-control"
         :value="params.base"
         :options="[
           { value: 'natural', text: 'natural' },
