@@ -981,7 +981,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, async (err, session) => {
+    Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
       const fields = session._source || session.fields;
