@@ -1,6 +1,9 @@
 //- Display a clickable value
 mixin clickableValue(expr, value, parse, session)
-  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
+  if (value)
+    moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
+  else
+    | &nbsp;
 
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
