@@ -510,9 +510,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       session.id = req.params.id;
       sortFields(session);
 
-      const sep = session.source.ip.includes(':') ? '.' : ':';
-      session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
-      session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
+      if (session.source?.ip) {
+        const sep = session.source.ip.includes(':') ? '.' : ':';
+        session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
+        session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
+      } else {
+        session.sourceKey = 'Fix 1';
+        session.destinationKey = 'Fix 2';
+      }
 
       if (req.query.showFrames && packets.length !== 0) {
         Pcap.packetFlow(session, packets, +req.query.packets || 200, (err, results, sourceKey, destinationKey) => {
@@ -2489,7 +2494,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    */
   sModule.getDetail = (req, res) => {
     const options = ViewerUtils.addCluster(req.query.cluster);
-    options._source = false;
+    options._source = 'cert';
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {

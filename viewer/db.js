@@ -157,7 +157,7 @@ exports.initialize = async (info, cb) => {
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting ES client info, is ES running?', err.toString());
+    console.log('ERROR - getting ES client info, is ES running?', err);
   }
 };
 
@@ -398,7 +398,7 @@ exports.getSession = async (id, options, cb) => {
   }
 
   if (!options) {
-    options = { _source: false, fields: ['*'] };
+    options = { _source: 'cert', fields: ['*'] };
   }
   const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -414,11 +414,15 @@ exports.getSession = async (id, options, cb) => {
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
     const session = results.hits.hits[0];
     session.found = true;
+    if (session.fields && session._source && session._source.cert) {
+      session.fields.cert = session._source.cert;
+      delete session._source;
+    }
+    fixSessionFields(session.fields || session._source, unflatten);
     if (options && options._source && !options._source.includes('packetPos')) {
       return cb(null, session);
     }
-    fixSessionFields(session._source || session.fields, unflatten);
-    return fixPacketPos(session, session._source || session.fields);
+    return fixPacketPos(session, session.fields || session._source);
   });
 };
 
@@ -458,7 +462,7 @@ exports.search = async (index, type, query, options, cb) => {
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
-    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err: ${err.toString()}`);
+    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
     if (cb) { return cb(err, null); }
     throw new Error(err);
   }
@@ -1625,16 +1629,16 @@ exports.fileIdToFile = async (node, num, cb) => {
     });
   }
 
+  let file = null;
   try {
     const { body: fresult } = await exports.get('files', 'file', node + '-' + num);
-    const file = fresult._source;
+    file = fresult._source;
     internals.fileId2File[key] = file;
     internals.fileName2File[file.name] = file;
-    return cb(file);
   } catch (err) { // Cache file is unknown
     internals.fileId2File[key] = null;
-    return cb(null);
   }
+  return cb(file);
 };
 
 exports.fileNameToFiles = function (fileName, cb) {
