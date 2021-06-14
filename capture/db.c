@@ -688,6 +688,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         BSB_EXPORT_cstr(jbsb, "\",");
     }
 
+    BSB_EXPORT_sprintf(jbsb,
+                      "\"@timestamp\":%" PRIu64 ",",
+                      ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000);
+
     if (session->ipProtocol) {
         if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
             uint32_t ip = MOLOCH_V6_TO_V4(session->addr1);
@@ -705,10 +709,6 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         moloch_db_geo_lookup6(session, session->addr1, &g1, &asNum1, &asStr1, &asLen1, &rir1);
         moloch_db_geo_lookup6(session, session->addr2, &g2, &asNum2, &asStr2, &asLen2, &rir2);
-
-        BSB_EXPORT_sprintf(jbsb,
-                          "\"@timestamp\":%" PRIu64 ",",
-                          ((uint64_t)currentTime.tv_sec)*1000 + ((uint64_t)currentTime.tv_usec)/1000);
 
         BSB_EXPORT_sprintf(jbsb,
                           "\"source\":{\"ip\":\"%s\","
@@ -773,7 +773,35 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
         if (rir2)
             BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
-    } /* ipProtocol */
+    } else {/* ipProtocol */
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"source\":{"
+                          "\"bytes\":%" PRIu64 ","
+                          "\"packets\":%u,",
+                          session->bytes[0],
+                          session->packets[0]);
+
+        if (session->fields[mac1Field]) {
+            SAVE_FIELD_STR_HASH(mac1Field, MOLOCH_FIELD_FLAG_ECS_CNT);
+        }
+
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_cstr(jbsb, "},"); // Close source
+
+        BSB_EXPORT_sprintf(jbsb,
+                          "\"destination\":{"
+                          "\"bytes\":%" PRIu64 ","
+                          "\"packets\":%u,",
+                          session->bytes[1],
+                          session->packets[1]);
+
+        if (session->fields[mac2Field]) {
+            SAVE_FIELD_STR_HASH(mac2Field, MOLOCH_FIELD_FLAG_ECS_CNT);
+        }
+
+        BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+        BSB_EXPORT_cstr(jbsb, "},"); // Close destination
+    }
 
     BSB_EXPORT_sprintf(jbsb,
                       "\"network\":{\"packets\":%u,"

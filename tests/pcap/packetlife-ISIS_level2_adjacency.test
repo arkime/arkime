@@ -2,8 +2,17 @@
    "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "client" : {
                "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "01:80:c2:00:00:15"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
             },
             "fileId" : [],
             "firstPacket" : 1213758559132,
@@ -119,6 +128,15 @@
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 52379,
+               "mac" : [
+                  "c2:02:29:98:00:00",
+                  "c2:03:29:a9:00:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 43
             },
             "totDataBytes" : 0
          },

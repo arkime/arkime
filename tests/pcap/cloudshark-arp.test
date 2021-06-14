@@ -2,8 +2,18 @@
    "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "client" : {
                "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "00:1a:6b:6c:0c:cc",
+                  "ff:ff:ff:ff:ff:ff"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 0
             },
             "dstOui" : [
                "Universal Global Scientific Industrial Co., Ltd."
@@ -35,7 +45,15 @@
             "server" : {
                "bytes" : 0
             },
-            "source" : {},
+            "source" : {
+               "bytes" : 102,
+               "mac" : [
+                  "00:1a:6b:6c:0c:cc",
+                  "00:1d:09:f0:92:ab"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 2
+            },
             "srcOui" : [
                "Dell Inc.",
                "Universal Global Scientific Industrial Co., Ltd."
@@ -128,8 +146,18 @@
       },
       {
          "body" : {
+            "@timestamp" : "SET",
             "client" : {
                "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "00:1a:6b:6c:0c:cc",
+                  "00:1d:09:f0:92:ab"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 0
             },
             "dstOui" : [
                "Dell Inc.",
@@ -161,6 +189,15 @@
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 102,
+               "mac" : [
+                  "00:1a:6b:6c:0c:cc",
+                  "00:1d:09:f0:92:ab"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 2
             },
             "srcOui" : [
                "Dell Inc.",

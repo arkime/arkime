@@ -782,8 +782,17 @@
       },
       {
          "body" : {
+            "@timestamp" : "SET",
             "client" : {
                "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "01:80:c2:00:00:15"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
             },
             "fileId" : [],
             "firstPacket" : 1571662509461,
@@ -948,6 +957,15 @@
             "server" : {
                "bytes" : 0
             },
+            "source" : {
+               "bytes" : 81451,
+               "mac" : [
+                  "08:00:27:1f:08:22",
+                  "08:00:27:76:e3:69"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 67
+            },
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -962,8 +980,17 @@
       },
       {
          "body" : {
+            "@timestamp" : "SET",
             "client" : {
                "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "01:80:c2:00:00:0e"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
             },
             "fileId" : [],
             "firstPacket" : 1571662511903,
@@ -1000,6 +1027,15 @@
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 993,
+               "mac" : [
+                  "08:00:27:12:62:b0",
+                  "08:00:27:d8:5d:87"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 7
             },
             "srcOui" : [
                "PCS Computer Systems GmbH"

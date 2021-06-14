@@ -157,7 +157,7 @@ dl
       strong.medium.ml-4 Databytes
       +clickableValue('databytes.dst', session.server.bytes)
 
-  if (session["srcMac"])
+  if (session.source.mac)
     dt
       b-dropdown.clickable-label(text="Ethernet", size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('mac.src', 0)")
@@ -206,14 +206,14 @@ dl
           | Add VLAN EXISTS! to query
     dd
       strong.medium.ml-1 Src Mac
-      +arrayPrint(session, "srcMac", "mac.src", true)
+      +arrayPrint(session.source, "mac", "mac.src", true)
 
       if (session.srcOui)
         strong.medium OUI
         +arrayPrint(session, "srcOui", "oui.src", true)
 
       strong.medium.ml-4 Dst Mac
-      +arrayPrint(session, "dstMac", "mac.dst", true)
+      +arrayPrint(session.destination, "mac", "mac.dst", true)
 
       if (session.dstOui)
         strong.medium OUI

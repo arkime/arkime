@@ -273,13 +273,18 @@ const dateFields = {
 // Unarray singleton fields
 // Change string dates to MS
 function fixSessionFields (fields, unflatten) {
+  if (!fields) { return; }
+  if (unflatten) {
+    fields.source = {};
+    fields.destination = {};
+  }
   for (const f in fields) {
     const path = f.split('.');
     let key = fields;
 
     // No dot in name, maybe no change
     if (path.length === 1) {
-      if (fields[f].length > 0 && (singletonFields[f] || f.endsWith('Cnt'))) {
+      if (fields[f].length > 0 && (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt'))) {
         fields[f] = fields[f][0];
       }
       if (dateFields[f]) {
@@ -290,7 +295,7 @@ function fixSessionFields (fields, unflatten) {
 
     // Dot in name, will be moving
     let value = fields[f];
-    if (singletonFields[f] || f.endsWith('Cnt')) {
+    if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
     }
     if (dateFields[f]) {

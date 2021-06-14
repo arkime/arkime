@@ -2517,7 +2517,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           compileDebug: !internals.isProduction,
           user: req.user,
           session: session,
-          sep: session.source.ip.includes(':') ? '.' : ':',
+          sep: session.source.ip?.includes(':') ? '.' : ':',
           Db: Db,
           query: req.query,
           basedir: '/',

@@ -251,7 +251,6 @@ sub esCopy
             $url = "/_search/scroll?scroll=10m&scroll_id=$id";
         }
 
-
         my $incoming = esGet($url);
         my $out = "";
         last if (@{$incoming->{hits}->{hits}} == 0);
