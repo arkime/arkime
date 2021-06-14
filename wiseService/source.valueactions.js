@@ -258,6 +258,7 @@ exports.initSource = function (api) {
     cacheable: false,
     editable: true,
     types: [], // This is a fake source, no types
+    format: 'valueactions',
     fields: [
       { name: 'url', required: true, help: 'The file to load, can be a file path, redis url (Format is redis://[:password@]host:port/db-number/key, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number/key, or redis-cluster://[:password@]host:port/db-number/key), or elasticsearch url (elasticsearch://host:9200/INDEX/_doc/DOCNAME)' }
     ]

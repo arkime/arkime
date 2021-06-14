@@ -400,6 +400,27 @@ body.dark .pagination .page-item.active > button:focus {
   transition: transform .5s;
 }
 
+.move-up-enter-active, .move-up-leave-active {
+  transition: all 1s;
+}
+.move-up-enter, .move-up-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+.move-up-leave-active {
+  position: absolute;
+}
+.move-up-move {
+  transition: transform .5s;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
 /* MEDIA QUERIES ----------------------------- */
 @media (min-width: 1600px) {
   .col-xxl-2 {
