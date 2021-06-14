@@ -738,13 +738,26 @@ export default {
     userHasChanged: function (userId) {
       const newUser = JSON.parse(JSON.stringify(this.users.data.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.data.find(u => u.userId === userId)));
+
+      // make sure these fields exist or the objects will be different
+      // (undefined is the same as false for these fields)
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
-      oldUser.lastUsed = undefined;
+      newUser.timeLimit = newUser.timeLimit ? newUser.timeLimit : undefined;
+      oldUser.hidePcap = oldUser.hidePcap ? oldUser.hidePcap : undefined;
+      newUser.hidePcap = newUser.hidePcap ? newUser.hidePcap : undefined;
+      oldUser.hideFiles = oldUser.hideFiles ? oldUser.hideFiles : undefined;
+      newUser.hideFiles = newUser.hideFiles ? newUser.hideFiles : undefined;
+      oldUser.hideStats = oldUser.hideStats ? oldUser.hideStats : undefined;
+      newUser.hideStats = newUser.hideStats ? newUser.hideStats : undefined;
+      oldUser.disablePcapDownload = oldUser.disablePcapDownload ? oldUser.disablePcapDownload : undefined;
+      newUser.disablePcapDownload = newUser.disablePcapDownload ? newUser.disablePcapDownload : undefined;
+
+      oldUser.expanded = undefined; // don't care about expanded field (just for UI)
+      newUser.expanded = undefined;
+      oldUser.lastUsed = undefined; // don't compare lastused, it might be different if the user is using the UI
       newUser.lastUsed = undefined;
 
-      // Iterate over user keys that come from store.
-      // The newUser is populated with other values like "expanded" that we don't need to check for
-      return !Object.keys(oldUser).every(key => oldUser[key] === newUser[key]);
+      return JSON.stringify(newUser) !== JSON.stringify(oldUser);
     },
     updateUser: function (user) {
       this.$set(user, 'expanded', undefined);
