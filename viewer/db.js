@@ -416,13 +416,13 @@ exports.getSession = async (id, options, cb) => {
     session.found = true;
     if (session.fields && session._source && session._source.cert) {
       session.fields.cert = session._source.cert;
-      delete session._source;
     }
-    fixSessionFields(session.fields || session._source, unflatten);
-    if (options && options._source && !options._source.includes('packetPos')) {
+    delete session._source;
+    fixSessionFields(session.fields, unflatten);
+    if (options.fields && !options.fields.includes('packetPos')) {
       return cb(null, session);
     }
-    return fixPacketPos(session, session.fields || session._source);
+    return fixPacketPos(session, session.fields);
   });
 };
 

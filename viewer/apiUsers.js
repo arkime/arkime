@@ -299,7 +299,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       Db.setUser(req.body.userId, nuser, (err, info) => {
-        console.log('ALWUSER', nuser, err, info);
         if (!err) {
           return res.send(JSON.stringify({
             success: true,

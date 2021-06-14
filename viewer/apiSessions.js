@@ -989,7 +989,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
-      const fields = session._source || session.fields;
+      const fields = session.fields;
 
       if (whatToRemove === 'spi') { // just removing es data for session
         try {
@@ -1671,7 +1671,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         const results = { total: sessions.hits.total, results: [] };
         async.each(sessions.hits.hits, (hit, hitCb) => {
-          const fields = hit._source || hit.fields;
+          const fields = hit.fields;
           if (fields === undefined) {
             return hitCb(null);
           }
@@ -2079,7 +2079,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               }
             });
           } catch (err) {
-            console.log('Error', err.toString());
+            console.log('Error', err);
             return res.send(results);
           }
         }
@@ -2498,12 +2498,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        console.log("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        console.log("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
         // ALW FIX - ELYSE, the UI can't display this error below, maybe should be a BSQ?
         return res.end("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
       }
 
-      session = session._source || session.fields;
+      session = session.fields;
 
       session.id = req.params.id;
 
