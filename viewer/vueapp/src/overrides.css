@@ -123,37 +123,43 @@ textarea.form-control:focus {
 
 
 /* give pagination theme color --------------------------------------------- */
-.pagination > .page-item > .page-link {
+.pagination .page-item > .page-link {
   cursor: pointer !important;
   color: var(--color-foreground);
   background-color: var(--color-background);
   border: 1px solid var(--color-gray-light);
 }
-.pagination > .page-item.disabled {
+.pagination .page-item.disabled {
   cursor: not-allowed !important;
 }
-.pagination > .page-item.disabled > span,
-.pagination > .page-item.disabled > span:hover,
-.pagination > .page-item.disabled > span:focus,
-.pagination > .page-item.disabled > a,
-.pagination > .page-item.disabled > a:hover,
-.pagination > .page-item.disabled > a:focus {
+.pagination .page-item.disabled > span,
+.pagination .page-item.disabled > span:hover,
+.pagination .page-item.disabled > span:focus,
+.pagination .page-item.disabled > a,
+.pagination .page-item.disabled > a:hover,
+.pagination .page-item.disabled > a:focus
+.pagination .page-item.disabled > button,
+.pagination .page-item.disabled > button:hover,
+.pagination .page-item.disabled > button:focus {
   color: var(--color-gray-light);
   border-color: var(--color-gray-light);
   background-color: var(--color-background);
 }
 
-.pagination > .page-item.active > a,
-.pagination > .page-item.active > span,
-.pagination > .page-item.active > a:hover,
-.pagination > .page-item.active > span:hover,
-.pagination > .page-item.active > a:focus,
-.pagination > .page-item.active > span:focus {
+.pagination .page-item.active > a,
+.pagination .page-item.active > span,
+.pagination .page-item.active > button,
+.pagination .page-item.active > a:hover,
+.pagination .page-item.active > span:hover,
+.pagination .page-item.active > button:hover,
+.pagination .page-item.active > a:focus,
+.pagination .page-item.active > span:focus,
+.pagination .page-item.active > button:focus {
   z-index: 3;
   cursor: default;
-  color: var(--color-foreground);
+  color: var(--color-background);
   border-color: var(--color-gray-light);
-  background-color: var(--color-primary-lightest);
+  background-color: var(--color-primary-lighter);
 }
 
 

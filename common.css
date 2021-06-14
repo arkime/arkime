@@ -348,38 +348,45 @@ body.dark .pagination-info {
   border-radius: 0 var(--px-sm) var(--px-sm) 0;
   background-color: #333;
 }
-body.dark .pagination > .page-item > .page-link {
+body.dark .pagination .page-item > .page-link {
   cursor: pointer !important;
   color: #FFF;
   background-color: #333;
   border: 1px solid #F6F6F6;
 }
-body.dark .pagination > .page-item.disabled {
+body.dark .pagination .page-item.disabled {
   cursor: not-allowed !important;
 }
-body.dark .pagination > .page-item.disabled > span,
-body.dark .pagination > .page-item.disabled > span:hover,
-body.dark .pagination > .page-item.disabled > span:focus,
-body.dark .pagination > .page-item.disabled > a,
-body.dark .pagination > .page-item.disabled > a:hover,
-body.dark .pagination > .page-item.disabled > a:focus {
+body.dark .pagination .page-item.disabled > span,
+body.dark .pagination .page-item.disabled > span:hover,
+body.dark .pagination .page-item.disabled > span:focus,
+body.dark .pagination .page-item.disabled > a,
+body.dark .pagination .page-item.disabled > a:hover,
+body.dark .pagination .page-item.disabled > button:focus,
+body.dark .pagination .page-item.disabled > button,
+body.dark .pagination .page-item.disabled > button:hover,
+body.dark .pagination .page-item.disabled > button:focus {
   color: #777;
   border-color: #F6F6F6;
   background-color: #333;
 }
 
-body.dark .pagination > .page-item.active > a,
-body.dark .pagination > .page-item.active > span,
-body.dark .pagination > .page-item.active > a:hover,
-body.dark .pagination > .page-item.active > span:hover,
-body.dark .pagination > .page-item.active > a:focus,
-body.dark .pagination > .page-item.active > span:focus {
+body.dark .pagination .page-item.active > a,
+body.dark .pagination .page-item.active > span,
+body.dark .pagination .page-item.active > button,
+body.dark .pagination .page-item.active > a:hover,
+body.dark .pagination .page-item.active > span:hover,
+body.dark .pagination .page-item.active > button:hover,
+body.dark .pagination .page-item.active > a:focus,
+body.dark .pagination .page-item.active > span:focus,
+body.dark .pagination .page-item.active > button:focus {
   z-index: 3;
   cursor: default;
   color: #FFF;
   border-color: #F6F6F6;
   background-color: #111;
 }
+
 
 /* ANIMATIONS -------------------------------- */
 .list-enter-active, .list-leave-active {

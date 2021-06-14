@@ -99,7 +99,8 @@
                 </template>
                 <b-dropdown-header>
                   <input type="text"
-                    v-model="colQuery"
+                    v-model.lazy="colQuery"
+                    @input="debounceColQuery"
                     class="form-control form-control-sm dropdown-typeahead"
                     placeholder="Search for columns..."
                   />
@@ -107,6 +108,9 @@
                 <b-dropdown-divider>
                 </b-dropdown-divider>
                 <template v-if="colVisMenuOpen">
+                  <b-dropdown-item v-if="!filteredFieldsCount">
+                    No fields match your search
+                  </b-dropdown-item>
                   <template v-for="(group, key) in filteredFields">
                     <b-dropdown-header
                       :key="key"
@@ -246,7 +250,8 @@
                     </template>
                     <b-dropdown-header>
                       <input type="text"
-                        v-model="colQuery"
+                        v-model.lazy="colQuery"
+                        @input="debounceInfoColQuery"
                         class="form-control form-control-sm dropdown-typeahead"
                         placeholder="Search for fields..."
                       />
@@ -268,6 +273,9 @@
                     <b-dropdown-divider>
                     </b-dropdown-divider>
                     <template v-if="infoFieldVisMenuOpen">
+                      <b-dropdown-item v-if="!filteredInfoFieldsCount">
+                        No fields match your search
+                      </b-dropdown-item>
                       <template v-for="(group, key) in filteredInfoFields">
                         <b-dropdown-header
                           :key="key"
@@ -540,6 +548,7 @@ const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 let componentInitialized = false;
 let holdingClick = false;
 let timeout;
+let filterFieldsTimeout;
 
 let colDragDropInitialized;
 
@@ -695,7 +704,11 @@ export default {
       tableHeaderOverflow: undefined,
       showFitButton: false,
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
-      tableWidth: window.innerWidth - 20 // account for margins
+      tableWidth: window.innerWidth - 20, // account for margins
+      filteredFields: [],
+      filteredFieldsCount: 0,
+      filteredInfoFields: [],
+      filteredInfoFieldsCount: 0
     };
   },
   created: function () {
@@ -747,12 +760,6 @@ export default {
     },
     timelineDataFilters: function () {
       return this.$store.state.user.settings.timelineDataFilters.map(i => this.getField(i));
-    },
-    filteredFields: function () {
-      return this.filterFields(false, true, false);
-    },
-    filteredInfoFields: function () {
-      return this.filterFields(false, true, true);
     },
     views: function () {
       return this.$store.state.views;
@@ -1032,6 +1039,20 @@ export default {
 
     /* TABLE COLUMNS */
     /**
+     * Debounces the column search input so that it works faster
+     * Uses lazy on the input value so typing is also faster
+     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     */
+    debounceColQuery: function (e) {
+      if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
+      filterFieldsTimeout = setTimeout(() => {
+        this.colQuery = e.target.value;
+        const filtered = this.filterFields(false, true, false);
+        this.filteredFields = filtered.fields;
+        this.filteredFieldsCount = filtered.count;
+      }, 600);
+    },
+    /**
      * Determines a column's visibility given its id
      * @param {string} id       The id of the column
      * @return {number} number  The index of the visible header
@@ -1197,6 +1218,20 @@ export default {
       return -1;
     },
     /**
+     * Debounces the column search input so that it works faster
+     * Uses lazy on the input value so typing is also faster
+     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     */
+    debounceInfoColQuery: function (e) {
+      if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
+      filterFieldsTimeout = setTimeout(() => {
+        this.colQuery = e.target.value;
+        const filtered = this.filterFields(false, true, false);
+        this.filteredInfoFields = filtered.fields;
+        this.filteredInfoFieldsCount = filtered.count;
+      }, 600);
+    },
+    /**
      * Determines a field's visibility in the info column given its id
      * @param {string} id       The id of the column
      * @return {number} number  The index of the visible header
@@ -1338,17 +1373,20 @@ export default {
     filterFields: function (excludeTokens, excludeFilename, excludeInfo) {
       const filteredGroupedFields = {};
 
+      let count = 0;
       for (const group in this.groupedFields) {
-        filteredGroupedFields[group] = this.$options.filters.searchFields(
+        const filteredFields = this.$options.filters.searchFields(
           this.colQuery,
           this.groupedFields[group],
           excludeTokens,
           excludeFilename,
           excludeInfo
         );
+        count += filteredFields.length;
+        filteredGroupedFields[group] = filteredFields;
       }
 
-      return filteredGroupedFields;
+      return { count: count, fields: filteredGroupedFields };
     },
 
     /* helper functions ---------------------------------------------------- */
@@ -1608,6 +1646,13 @@ export default {
           this.groupedFields[field.group].push(field);
         }
       }
+
+      // set the filtered fields in the col config menu
+      const filtered = this.filterFields(false, true, false);
+      this.filteredFields = filtered.fields;
+      this.filteredFieldsCount = filtered.count;
+      this.filteredInfoFields = filtered.fields;
+      this.filteredInfoFieldsCount = filtered.count;
     },
     /**
      * Finds a field object given its id
