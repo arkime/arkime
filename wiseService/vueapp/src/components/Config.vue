@@ -144,7 +144,15 @@
                 class="ml-2"
                 variant="outline-info"
                 @click="toggleCSVEditor">
-                Use {{ rawCSV ? 'CSV Editor' : 'CSV Text Area' }}
+                Use {{ rawCSV ? 'CSV Editor' : 'Raw CSV' }}
+              </b-button>
+            </template>
+            <template v-if="configViewSelected === 'edit' && currValueActionsFile">
+              <b-button
+                class="ml-2"
+                variant="outline-info"
+                @click="toggleValueActionsEditor">
+                Use {{ rawValueActions ? 'Value Actions Editor' : 'Raw Value Actions' }}
               </b-button>
             </template>
           </div>
@@ -152,8 +160,8 @@
 
         <div v-if="configViewSelected === 'edit'">
           <p class="wrapit">
-            This config uses {{ currConfig[selectedSourceKey].format ? currConfig[selectedSourceKey].format : (currCSV ? 'CSV' : 'an unknown') }} format
-            <template v-if="currConfig[selectedSourceKey].format === 'tagger'">
+            This config uses {{ currFormat || 'an unknown' }} format
+            <template v-if="currFormat === 'tagger'">
               -
               <a target="_blank"
                 class="no-decoration"
@@ -162,15 +170,74 @@
               </a>
             </template>
           </p>
-          <p v-if="!currConfig[selectedSourceKey].format && currCSV"
+          <p v-if="!currFormat && currCSV"
            class="wrapit">
             Rows are delimited by newlines (<code>\n</code>).
             Cells are delimited by commas (<code>,</code>).
             Comments are delimited by <code>#</code> and should be at the start of the row.
           </p>
+          <h6 v-if="currFormat === 'valueactions'"
+            class="mb-3">
+            Note: It can take up to 2.5 minutes for your changes to be pushed to Arkime
+          </h6>
+          <div v-if="currFormat === 'valueactions' && !rawValueActions"
+            class="mb-3">
+            <transition-group
+              tag="ul"
+              name="shrink"
+              class="shrink-list">
+              <li class="shrink-item"
+                :key="line.id || lineIndex"
+                v-for="(line, lineIndex) in currValueActionsFile">
+                <div class="row">
+                  <div :class="field.class ? field.class : 'col-md-12'"
+                    v-for="field in valueActionsFields"
+                    :key="line.id + field.name">
+                    <transition name="item-shrink">
+                      <b-input-group
+                        v-if="!field.advanced || displayAdvancedFields[line.key]"
+                        :prepend="field.name"
+                        class="mb-1"
+                        size="sm">
+                        <b-form-input
+                          type="text"
+                          class="form-control"
+                          v-model="line[field.name]"
+                          v-b-tooltip.hover="field.help"
+                          @input="debounceValueActionsChange"
+                          :required="field.required"
+                          :state="valueActionsInputState(line, line[field.name], field.required, field.depends)"
+                        />
+                      </b-input-group>
+                    </transition>
+                  </div>
+                  <div class="col-12 mt-2">
+                    <b-button variant="danger"
+                      @click="removeValueAction(lineIndex)">
+                      <span class="fa fa-minus" />&nbsp;
+                      Remove Value Action
+                    </b-button>
+                    <b-button variant="info"
+                      @click="toggleAdvancedFields(line.key)">
+                      <span class="fa fa-eye"
+                        :class="displayAdvancedFields[line.key] ? 'fa-eye-slash' : 'fa-eye'"
+                      />&nbsp;
+                      Toggle Advanced Options
+                    </b-button>
+                  </div>
+                </div>
+                <hr>
+              </li>
+            </transition-group>
+            <b-button variant="success"
+              @click="addValueAction">
+              <span class="fa fa-plus" />&nbsp;
+              Create New Value Action
+            </b-button>
+          </div>
           <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
           <template
-            v-if="(!currJSONFile && currConfig[selectedSourceKey].format === 'tagger') || rawCSV">
+            v-else-if="!currJSONFile && (currFormat === 'tagger' || rawCSV || rawValueActions)">
             <b-form-textarea
               v-model="currFile"
               rows="18"
@@ -507,6 +574,7 @@ import Alert from './Alert';
 
 let jsonTimeout;
 let csvTimeout;
+let vaTimeout;
 
 export default {
   name: 'Config',
@@ -544,7 +612,22 @@ export default {
       importConfigText: '',
       importConfigError: '',
       rawConfig: false,
-      rawCSV: true
+      rawCSV: true,
+      displayAdvancedFields: {},
+      rawValueActions: false,
+      currValueActionsFile: [],
+      valueActionsFields: [
+        { name: 'key', required: true, class: 'col-md-6', help: 'The unique ID of the value action' },
+        { name: 'name', required: true, depends: 'key', class: 'col-md-6', help: 'The name of the value action to show the user' },
+        { name: 'category', required: true, depends: 'fields', class: 'col-md-6', help: 'Which category of fields should the value action be shown for, must set fields or category' },
+        { name: 'fields', required: true, depends: 'category', class: 'col-md-6', help: 'Which fields to show the value action for, must set fields or category' },
+        { name: 'url', required: true, depends: 'func', help: 'The url to send the user, supports special subsitutions, must set url or func' },
+        { name: 'func', required: true, advanced: true, depends: 'url', help: 'A javascript function body to call, will be passed the name and value and must return the value, must set url or func' },
+        { name: 'regex', required: false, advanced: true, help: 'When set, replaces %REGEX% in the url with the match' },
+        { name: 'actionType', required: false, advanced: true, help: 'Needs a url. Supported actionTypes: "fetch" (information will be fetched and displayed in the value actions menu for 5 seconds after click), "" (empty, nothing is done on value action click)' },
+        { name: 'users', required: false, advanced: true, help: 'A comma separated list of user names that can see the right click item. If not set then all users can see the right click item.' },
+        { name: 'notUsers', required: false, advanced: true, help: 'A comma separated list of user names that can NOT see the right click item. This setting is applied before the users setting above.' }
+      ]
     };
   },
   computed: {
@@ -591,6 +674,14 @@ export default {
       }
 
       return views;
+    },
+    currFormat: function () {
+      if (this.configDefs[this.selectedSourceSplit].format) {
+        return this.configDefs[this.selectedSourceSplit].format;
+      }
+      return this.currConfig[this.selectedSourceKey].format
+        ? this.currConfig[this.selectedSourceKey].format
+        : (this.currCSV ? 'CSV' : undefined);
     }
   },
   watch: {
@@ -823,6 +914,7 @@ export default {
     },
     loadSourceFile: function () {
       this.currJSONFile = null;
+      this.currValueActionsFile = null;
 
       WiseService.getSourceFile(this.selectedSourceKey)
         .then((data) => {
@@ -833,11 +925,15 @@ export default {
           this.currFile = data.raw;
           this.currFileBefore = data.raw;
 
+          if (this.currFormat === 'valueactions') {
+            this.parseValueActions();
+            return;
+          }
+
           try { // if it's json, allow it to be
             this.currJSONFile = JSON.parse(data.raw);
           } catch (err) {
-            this.currJSONFile = null;
-            if (this.currConfig[this.selectedSourceKey].format !== 'tagger') {
+            if (this.currFormat !== 'tagger') {
               // it might be a csv file
               this.parseCSV();
             }
@@ -850,6 +946,133 @@ export default {
           };
         });
     },
+    saveSourceFile: function () {
+      if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
+        this.alertState = {
+          text: 'Wise config does not exist. Make sure to save config before the file!',
+          variant: 'alert-danger'
+        };
+        return;
+      }
+
+      WiseService.saveSourceFile(this.selectedSourceKey, this.currFile, this.configCode)
+        .then((data) => {
+          if (!data.success) {
+            throw data;
+          } else {
+            this.alertState = {
+              text: `${this.selectedSourceKey} file saved`,
+              variant: 'alert-success'
+            };
+            // Resync file that tests for changes
+            this.currFileBefore = this.currFile;
+            this.configCode = '';
+          }
+        })
+        .catch((err) => {
+          this.alertState = {
+            text: err.text || `Error saving wise source file for ${this.selectedSourceKey}.`,
+            variant: 'alert-danger'
+          };
+        });
+    },
+    loadSourceDisplay: function () {
+      WiseService.getSourceDisplay(this.selectedSourceKey)
+        .then((data) => {
+          this.displayData = data;
+          try {
+            this.displayJSON = JSON.parse(this.displayData);
+          } catch (err) {
+            this.displayJSON = null;
+          }
+        })
+        .catch((err) => {
+          this.alertState = {
+            text: err.text || 'Error fetching source display from wise.',
+            variant: 'alert-danger'
+          };
+        });
+    },
+    /* VALUE ACTIONS EDITOR ------------------------------------------------ */
+    /* Toggles the display of the text area or the value actions editor */
+    toggleValueActionsEditor () {
+      this.rawValueActions = !this.rawValueActions;
+      this.rawValueActions ? this.debounceValueActionsChange() : this.parseValueActions();
+    },
+    valueActionsInputState (line, value, isReq, depends) {
+      if (isReq && value) {
+        return true; // required and has a value
+      } else if (isReq && depends && line[depends]) {
+        return null; // required and depends on a value that's filled out
+      } else if (isReq && depends && !line[depends]) {
+        return false; // required and depends on a value that's empty
+      } else if (isReq) {
+        return false; // required and doesn't have a value
+      } else {
+        return null; // not required
+      }
+    },
+    /* Adds a new empty object to the value actions config for the user to input field values */
+    addValueAction () {
+      this.currValueActionsFile.push({});
+    },
+    /**
+     * Removes a value actions object and updates the currFile for saving/canceling
+     * @param {number} index - The index of the object to remove
+     */
+    removeValueAction (index) {
+      this.currValueActionsFile.splice(index, 1);
+      this.debounceValueActionsChange();
+    },
+    /**
+     * Toggles the display of the advanced fields for a value actions object.
+     * @param {string} lineKey - The unique key of the value action
+     */
+    toggleAdvancedFields (lineKey) {
+      this.$set(this.displayAdvancedFields, lineKey, !this.displayAdvancedFields[lineKey]);
+    },
+    /* Debounces any changes to the value actions config. After 1 second the array
+     * of value actions is parsed back into the currFile to be saved/canceled */
+    debounceValueActionsChange () {
+      if (vaTimeout) { clearTimeout(vaTimeout); }
+      vaTimeout = setTimeout(() => {
+        vaTimeout = null;
+        let fileStr = '';
+        for (const line of this.currValueActionsFile) {
+          fileStr += `${line.key}=`;
+          for (const key in line) {
+            if (key !== 'key') {
+              fileStr += `${key}:${line[key]};`;
+            }
+          }
+          fileStr = fileStr.slice(0, -1); // remove last ; (don't need it at end of each line)
+          fileStr += '\n';
+        }
+        this.currFile = fileStr;
+      }, 1000);
+    },
+    /* Parses the value actions from the currFile string to an array of
+     * value action objects to be edited using the valueActionsFields */
+    parseValueActions () {
+      const result = [];
+      const lines = this.currFile.split('\n');
+      for (const line of lines) {
+        if (!line) { continue; }
+        const keyValArr = line.split(/=(.+)/); // splits on first '='
+        const key = keyValArr[0];
+        const val = keyValArr[1];
+        const values = val.split(';');
+        const valuesObj = { key: key };
+        valuesObj.id = Math.floor(Math.random() * 99999); // need id for v-for key
+        for (const value of values) {
+          const keyVal = value.split(/:(.+)/); // splits on first ':'
+          valuesObj[keyVal[0]] = keyVal[1];
+        }
+        result.push(valuesObj);
+      }
+      this.currValueActionsFile = result;
+    },
+    /* CSV EDITOR ---------------------------------------------------------- */
     parseCSV () {
       this.currCSV = {
         rows: [],
@@ -929,53 +1152,6 @@ export default {
     },
     removeCSVRow (rowIndex) {
       this.currCSV.rows.splice(rowIndex, 1);
-    },
-    saveSourceFile: function () {
-      if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
-        this.alertState = {
-          text: 'Wise config does not exist. Make sure to save config before the file!',
-          variant: 'alert-danger'
-        };
-        return;
-      }
-
-      WiseService.saveSourceFile(this.selectedSourceKey, this.currFile, this.configCode)
-        .then((data) => {
-          if (!data.success) {
-            throw data;
-          } else {
-            this.alertState = {
-              text: `${this.selectedSourceKey} file saved`,
-              variant: 'alert-success'
-            };
-            // Resync file that tests for changes
-            this.currFileBefore = this.currFile;
-            this.configCode = '';
-          }
-        })
-        .catch((err) => {
-          this.alertState = {
-            text: err.text || `Error saving wise source file for ${this.selectedSourceKey}.`,
-            variant: 'alert-danger'
-          };
-        });
-    },
-    loadSourceDisplay: function () {
-      WiseService.getSourceDisplay(this.selectedSourceKey)
-        .then((data) => {
-          this.displayData = data;
-          try {
-            this.displayJSON = JSON.parse(this.displayData);
-          } catch (err) {
-            this.displayJSON = null;
-          }
-        })
-        .catch((err) => {
-          this.alertState = {
-            text: err.text || 'Error fetching source display from wise.',
-            variant: 'alert-danger'
-          };
-        });
     }
   }
 };
