@@ -176,17 +176,20 @@
             Cells are delimited by commas (<code>,</code>).
             Comments are delimited by <code>#</code> and should be at the start of the row.
           </p>
-          <div v-if="currFormat === 'valueactions' && !rawValueActions">
-            <transition-group tag="ul" name="move-up">
-              <li v-for="(line, lineIndex) in currValueActionsFile"
-                :key="lineIndex + line.key || 'undefined'"
-                style="display: block; margin-left: -30px;">
-                <div :key="lineIndex + 'line'"
-                  class="row">
+          <div v-if="currFormat === 'valueactions' && !rawValueActions"
+            class="mb-3">
+            <transition-group
+              tag="ul"
+              name="shrink"
+              class="shrink-list">
+              <li class="shrink-item"
+                :key="line.key || lineIndex"
+                v-for="(line, lineIndex) in currValueActionsFile">
+                <div class="row">
                   <div :class="field.class ? field.class : 'col-md-12'"
                     v-for="field in valueActionsFields"
                     :key="lineIndex + field.name">
-                    <transition name="fade">
+                    <transition name="item-shrink">
                       <b-input-group
                         v-if="!field.advanced || displayAdvancedFields[line.key]"
                         :prepend="field.name"
@@ -219,7 +222,7 @@
                     </b-button>
                   </div>
                 </div>
-                <hr :key="lineIndex + 'hr'">
+                <hr>
               </li>
             </transition-group>
             <b-button variant="success"
@@ -1051,13 +1054,13 @@ export default {
       const lines = this.currFile.split('\n');
       for (const line of lines) {
         if (!line) { continue; }
-        const keyValArr = line.split('=', 2);
+        const keyValArr = line.split(/=(.+)/); // splits on first '='
         const key = keyValArr[0];
         const val = keyValArr[1];
         const values = val.split(';');
         const valuesObj = { key: key };
         for (const value of values) {
-          const keyVal = value.split(/:(.+)/);
+          const keyVal = value.split(/:(.+)/); // splits on first ':'
           valuesObj[keyVal[0]] = keyVal[1];
         }
         result.push(valuesObj);
