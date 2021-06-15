@@ -25,12 +25,37 @@ export default {
       compatibleBrowser: true
     };
   },
+  computed: {
+    wiseTheme: {
+      get () {
+        return this.$store.state.wiseTheme;
+      },
+      set (wiseTheme) {
+        this.$store.commit('SET_THEME', wiseTheme);
+      }
+    }
+  },
   mounted: function () {
     this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
       !!String.prototype.includes;
 
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
+    }
+
+    if (window.matchMedia) {
+      const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      let hasTheme = false; // determine if there is a theme set
+      if (localStorage && localStorage.vuex) {
+        hasTheme = JSON.parse(localStorage.vuex).wiseTheme;
+      }
+
+      if (hasTheme) { return; } // don't do anything if theme is already set
+
+      // if there's no theme, default to the same theme as the OS
+      this.wiseTheme = darkMode ? 'dark' : 'light';
+      document.body.classList = darkMode ? ['dark'] : [];
     }
   }
 };
