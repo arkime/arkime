@@ -176,6 +176,10 @@
             Cells are delimited by commas (<code>,</code>).
             Comments are delimited by <code>#</code> and should be at the start of the row.
           </p>
+          <h6 v-if="currFormat === 'valueactions'"
+            class="mb-3">
+            Note: It can take up to 2.5 minutes for your changes to be pushed to Arkime
+          </h6>
           <div v-if="currFormat === 'valueactions' && !rawValueActions"
             class="mb-3">
             <transition-group
@@ -183,12 +187,12 @@
               name="shrink"
               class="shrink-list">
               <li class="shrink-item"
-                :key="line.key || lineIndex"
+                :key="line.id || lineIndex"
                 v-for="(line, lineIndex) in currValueActionsFile">
                 <div class="row">
                   <div :class="field.class ? field.class : 'col-md-12'"
                     v-for="field in valueActionsFields"
-                    :key="lineIndex + field.name">
+                    :key="line.id + field.name">
                     <transition name="item-shrink">
                       <b-input-group
                         v-if="!field.advanced || displayAdvancedFields[line.key]"
@@ -614,7 +618,7 @@ export default {
       currValueActionsFile: [],
       valueActionsFields: [
         { name: 'key', required: true, class: 'col-md-6', help: 'The unique ID of the value action' },
-        { name: 'name', required: true, class: 'col-md-6', help: 'The name of the value action to show the user' },
+        { name: 'name', required: true, depends: 'key', class: 'col-md-6', help: 'The name of the value action to show the user' },
         { name: 'category', required: true, depends: 'fields', class: 'col-md-6', help: 'Which category of fields should the value action be shown for, must set fields or category' },
         { name: 'fields', required: true, depends: 'category', class: 'col-md-6', help: 'Which fields to show the value action for, must set fields or category' },
         { name: 'url', required: true, depends: 'func', help: 'The url to send the user, supports special subsitutions, must set url or func' },
@@ -622,7 +626,7 @@ export default {
         { name: 'regex', required: false, advanced: true, help: 'When set, replaces %REGEX% in the url with the match' },
         { name: 'actionType', required: false, advanced: true, help: 'Needs a url. Supported actionTypes: "fetch" (information will be fetched and displayed in the value actions menu for 5 seconds after click), "" (empty, nothing is done on value action click)' },
         { name: 'users', required: false, advanced: true, help: 'A comma separated list of user names that can see the right click item. If not set then all users can see the right click item.' },
-        { name: 'notusers', required: false, advanced: true, help: 'A comma separated list of user names that can NOT see the right click item. This setting is applied before the users setting above.' }
+        { name: 'notUsers', required: false, advanced: true, help: 'A comma separated list of user names that can NOT see the right click item. This setting is applied before the users setting above.' }
       ]
     };
   },
@@ -1059,6 +1063,7 @@ export default {
         const val = keyValArr[1];
         const values = val.split(';');
         const valuesObj = { key: key };
+        valuesObj.id = Math.floor(Math.random() * 99999); // need id for v-for key
         for (const value of values) {
           const keyVal = value.split(/:(.+)/); // splits on first ':'
           valuesObj[keyVal[0]] = keyVal[1];
