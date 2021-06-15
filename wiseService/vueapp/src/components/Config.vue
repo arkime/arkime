@@ -17,7 +17,7 @@
           :key="sourceKey + '-tab'">
           <button
             type="button"
-            @click="selectedSourceKey = sourceKey"
+            @click="selectSource(sourceKey)"
             :active="selectedSourceKey === sourceKey"
             class="btn btn-light source-btn btn-outline-dark">
             {{ sourceKey }}
@@ -31,7 +31,7 @@
           :key="sourceKey + '-tab'">
           <button
             type="button"
-            @click="selectedSourceKey = sourceKey"
+            @click="selectSource(sourceKey)"
             :active="selectedSourceKey === sourceKey"
             class="btn btn-light source-btn btn-outline-dark">
             {{ sourceKey }}
@@ -118,6 +118,7 @@
           <div v-if="configDefs[selectedSourceSplit].editable || configDefs[selectedSourceSplit].displayable">
             <b-form-radio-group
               v-model="configViewSelected"
+              @input="configViewChanged"
               :options="configViews"
               buttons
               button-variant="outline-secondary"
@@ -586,12 +587,13 @@ export default {
   mounted: function () {
     this.loadConfigDefs();
     this.loadCurrConfig();
+    this.loadSourceData();
   },
   data: function () {
     return {
       alertState: { text: '', variant: '' },
       showSourceModal: false,
-      selectedSourceKey: 'wiseService',
+      selectedSourceKey: this.$route.query.source ? decodeURI(this.$route.query.source) : 'wiseService',
       configDefs: {},
       loaded: false,
       currConfig: {},
@@ -606,7 +608,7 @@ export default {
       filePath: '',
       newSource: '',
       newSourceName: '',
-      configViewSelected: 'config',
+      configViewSelected: this.$route.query.view || 'config',
       configCode: '',
       showImportConfigModal: false,
       importConfigText: '',
@@ -694,15 +696,32 @@ export default {
       this.currCSV = null;
     },
     configViewSelected: function () {
+      this.loadSourceData();
+    }
+  },
+  methods: {
+    selectSource: function (sourceKey) {
+      this.selectedSourceKey = sourceKey;
+      this.$router.push({
+        query: { source: sourceKey }
+      });
+    },
+    configViewChanged: function () {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          view: this.configViewSelected
+        }
+      });
+    },
+    loadSourceData: function () {
       if (this.configViewSelected === 'edit') {
         this.loadSourceFile();
       }
       if (this.configViewSelected === 'display') {
         this.loadSourceDisplay();
       }
-    }
-  },
-  methods: {
+    },
     createNewSource: function () {
       const key = (this.configDefs && this.configDefs[this.newSource] && !this.configDefs[this.newSource].singleton)
         ? this.newSource + ':' + this.newSourceName
