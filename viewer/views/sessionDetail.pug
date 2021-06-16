@@ -347,12 +347,11 @@ dl
     dd
       if (session.srcPayload8)
       - function isprint(char) { return !( /[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(char)); }
-      - function isprintstr(str) { for (const char of str) { if (!isprint(char)) { return false }; } return true; }
+      - function printstr(str) { for (let char of str) { if (!isprint(char)) { char = '�'; } } return str; }
         strong.medium.ml-1 Src
         - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
         +clickableValue('payload8.src.hex', session.srcPayload8)
-        if (isprintstr(srcPayload8a))
-          | ( #{srcPayload8a} )
+        | ( #{printstr(srcPayload8a)} )
       if (session.dstPayload8)
         if (session.srcPayload8)
           strong.medium.ml-4 Dst
@@ -360,8 +359,7 @@ dl
           strong.medium Dst
         - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
         +clickableValue('payload8.dst.hex', session.dstPayload8)
-        if (isprintstr(dstPayload8a))
-          | ( #{dstPayload8a} )
+        | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
     +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" v-b-tooltip title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ml-1"><span class="fa fa-plus-circle"></span></div>')
