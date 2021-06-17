@@ -1226,6 +1226,7 @@ addECSMap("packets.dst", "dstPackets", "destination.packets");
 addECSMap("ip.dst", "dstIp", "destination.ip");
 addECSMap("port.dst", "dstPort", "destination.port");
 addECSMap("mac.dst", "dstMac", "destination.mac");
+addECSMap("null", "dstMacCnt", "destination.mac-cnt");
 
 addECSMap("country.src", "srcGEO", "source.geo.country_iso_code");
 addECSMap("asn.src", "srcASN", "source.as.full");
@@ -1235,12 +1236,14 @@ addECSMap("packets.src", "srcPackets", "source.packets");
 addECSMap("ip.src", "srcIp", "source.ip");
 addECSMap("port.src", "srcPort", "source.port");
 addECSMap("mac.src", "srcMac", "source.mac");
+addECSMap("null", "srcMacCnt", "source.mac-cnt");
 
 
 addECSMap("communityId", "communityId", "network.community_id");
 addECSMap("bytes", "totBytes", "network.bytes");
 addECSMap("packets", "totPackets", "network.packets");
 addECSMap("vlan", "vlan", "network.vlan.id");
+addECSMap('null', "vlanCnt", "network.vlan.id-cnt");
 
 addECSMap('null', "timestamp", "\@timestamp");
 ################################################################################
@@ -5064,9 +5067,6 @@ sub sessions3Update
       "certCnt" : {
         "type" : "long"
       },
-      "communityId" : {
-        "type" : "keyword"
-      },
       "dhcp" : {
         "properties" : {
           "host" : {
@@ -5172,41 +5172,14 @@ sub sessions3Update
           }
         }
       },
-      "dstASN" : {
-        "type" : "keyword"
-      },
-      "dstBytes" : {
-        "type" : "long"
-      },
-      "dstDataBytes" : {
-        "type" : "long"
-      },
-      "dstGEO" : {
-        "type" : "keyword"
-      },
-      "dstIp" : {
-        "type" : "ip"
-      },
-      "dstMac" : {
-        "type" : "keyword"
-      },
-      "dstMacCnt" : {
-        "type" : "long"
-      },
       "dstOui" : {
         "type" : "keyword"
       },
       "dstOuiCnt" : {
         "type" : "long"
       },
-      "dstPackets" : {
-        "type" : "long"
-      },
       "dstPayload8" : {
         "type" : "keyword"
-      },
-      "dstPort" : {
-        "type" : "long"
       },
       "dstRIR" : {
         "type" : "keyword"
@@ -5789,41 +5762,14 @@ sub sessions3Update
           }
         }
       },
-      "srcASN" : {
-        "type" : "keyword"
-      },
-      "srcBytes" : {
-        "type" : "long"
-      },
-      "srcDataBytes" : {
-        "type" : "long"
-      },
-      "srcGEO" : {
-        "type" : "keyword"
-      },
-      "srcIp" : {
-        "type" : "ip"
-      },
-      "srcMac" : {
-        "type" : "keyword"
-      },
-      "srcMacCnt" : {
-        "type" : "long"
-      },
       "srcOui" : {
         "type" : "keyword"
       },
       "srcOuiCnt" : {
         "type" : "long"
       },
-      "srcPackets" : {
-        "type" : "long"
-      },
       "srcPayload8" : {
         "type" : "keyword"
-      },
-      "srcPort" : {
-        "type" : "long"
       },
       "srcRIR" : {
         "type" : "keyword"
@@ -5939,9 +5885,6 @@ sub sessions3Update
           }
         }
       },
-      "timestamp" : {
-        "type" : "date"
-      },
       "tls" : {
         "properties" : {
           "cipher" : {
@@ -5976,25 +5919,13 @@ sub sessions3Update
           }
         }
       },
-      "totBytes" : {
-        "type" : "long"
-      },
       "totDataBytes" : {
-        "type" : "long"
-      },
-      "totPackets" : {
         "type" : "long"
       },
       "user" : {
         "type" : "keyword"
       },
       "userCnt" : {
-        "type" : "long"
-      },
-      "vlan" : {
-        "type" : "long"
-      },
-      "vlanCnt" : {
         "type" : "long"
       }
     }

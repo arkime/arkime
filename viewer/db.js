@@ -169,10 +169,10 @@ function fixIndex (index) {
 
   if (Array.isArray(index)) {
     return index.map((val) => {
-      if (val.lastIndexOf(internals.prefix, 0) === 0) {
+      if (val.startsWith(internals.prefix)) {
         return val;
       } else {
-        return internals.prefix + val;
+        return fixIndex(val);
       }
     }).join(',');
   }
@@ -414,7 +414,7 @@ exports.getSession = async (id, options, cb) => {
   delete params.fields;
   delete params.arkime_unflatten;
 
-  exports.search(exports.sid2Index(id), '_doc', query, params, (err, results) => {
+  exports.search(exports.sid2Index(id, { multiple: true }), '_doc', query, params, (err, results) => {
     if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
     const session = results.hits.hits[0];
@@ -1799,11 +1799,12 @@ exports.deleteFile = function (node, id, path, cb) {
 };
 
 exports.session2Sid = function (item) {
+  let ver = item._index.includes('sessions2') ? '2@' : '3@';
   if (item._id.length < 31) {
-    return item._index.substring(internals.prefix.length + 10) + ':' + item._id;
+    return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
   }
 
-  return item._id;
+  return ver + item._id;
 };
 
 exports.sid2Id = function (id) {
@@ -1815,21 +1816,41 @@ exports.sid2Id = function (id) {
   return id;
 };
 
-exports.sid2Index = function (id) {
+exports.sid2Index = function (id, options) {
   const colon = id.indexOf(':');
-  const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+
+  if (id[1] === '@') {
+    if (colon > 0) {
+      return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
+    }
+    return 'sessions' + id[0] + '-' + id.substr(2, id.indexOf('-') - 2);
+  }
+
   const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
-  const fs2 = fixIndex(s2);
+  const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
 
   if (!internals.aliasesCache) {
     return s3;
   }
 
+  const fs2 = fixIndex(s2);
+
+  const results = [];
+
   if (internals.aliasesCache[fs2] || internals.aliasesCache[fs2 + '-reindex'] || internals.aliasesCache[fs2 + '-shrink']) {
-    return s2;
+    results.push(fs2);
   }
 
-  return s3;
+  const fs3 = fixIndex(s3);
+  if (internals.aliasesCache[fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
+    results.push(fs3);
+  }
+
+  if (results.length > 1 && options?.multiple) {
+    return results;
+  }
+
+  return results[0];
 };
 
 exports.loadFields = async () => {

@@ -1004,8 +1004,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           // iterate through sessions and remove hunt stuff from each one
           for (const hit of result.hits.hits) {
-            const sessionId = Db.session2Sid(hit);
-            Db.removeHuntFromSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), req.params.id, hunt.name, () => {});
+            Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name, () => {});
           }
 
           hunt.removed = true;
