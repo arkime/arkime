@@ -389,6 +389,8 @@ body.dark .pagination .page-item.active > button:focus {
 
 
 /* ANIMATIONS -------------------------------- */
+/* for transition groups (any block element)
+   enters/exits items by moving them to the right */
 .list-enter-active, .list-leave-active {
   transition: all .5s;
 }
@@ -398,6 +400,51 @@ body.dark .pagination .page-item.active > button:focus {
 }
 .list-move {
   transition: transform .5s;
+}
+
+/* for transition groups (must use lists - styles added to remove list stying)
+   expands/shrinks each item in the group in/out
+   NOTE: make sure 300px is tall enough */
+.shrink-list {
+  margin-block-end: 0;
+  margin-block-start: 0;
+  padding-inline-start: 0;
+}
+.shrink-item {
+  display: block;
+  transition: all 1s;
+}
+.shrink-enter, .shrink-leave-to {
+  max-height: 0px;
+  overflow: hidden;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.shrink-enter-to, .shrink-leave {
+  max-height: 300px;
+}
+
+/* for any single element
+   expands/shrinks the item in/out
+   NOTE: make sure 300px is tall enough */
+.item-shrink-enter-active, .item-shrink-leave-active {
+  transition: all .5s;
+}
+.item-shrink-enter, .item-shrink-leave-to {
+  max-height: 0px;
+  overflow: hidden;
+}
+.item-shrink-enter-to, .item-shrink-leave {
+  max-height: 300px;
+}
+
+/* for any single element
+   fades the item in/out */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 
 /* MEDIA QUERIES ----------------------------- */

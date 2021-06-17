@@ -672,13 +672,16 @@ class WISESourceAPI {
   /**
    * Define all configuration for a field for a source
    * @typedef {Object} WISESourceAPI~ValueAction
-   * @property {string} actionName - The name of the value action to show the user
+   * @property {string} key - The key must be unique and is also used as the right click menu name if the name field is missing
+   * @property {string} name - The name of the value action to show the user
    * @property {string} [url] - The url to send the user, supports special subsitutions, must set url or func
    * @property {string} [func] - A javascript function body to call, will be passed the name and value and must return the value, must set url or func
    * @property {string} [actionType] - If set to 'fetch' this will replace the menu option with the results of url or func
-   * @property {string} [category] - Which category of fields should the value action be shown for, must set fields or category
+   * @property {string} [category] - Which category of fields should the value action be shown for, must set fields or category. <a href="settings#right-click">View available categories</a>
    * @property {string} [fields] - Which fields to show the value action for, must set fields or category
    * @property {string} [regex] - When set replaces %REGEX% in the url with the match
+   * @property {string} [users] - A comma separated list of user names that can see the right click item. If not set then all users can see the right click item.
+   * @property {string} [notUsers] - (Since 3.0) A comma separated list of user names that can NOT see the right click item. This setting is applied before the users setting above.
    */
 
   /**

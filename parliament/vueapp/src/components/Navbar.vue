@@ -188,6 +188,15 @@ export default {
       if (this.theme === 'dark') {
         document.body.classList = [this.theme];
       }
+    } else { // there's no theme set use the OS default
+      if (window.matchMedia) {
+        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.theme = darkMode ? 'dark' : 'light';
+        document.body.classList = darkMode ? ['dark'] : [];
+      } else {
+        this.theme = 'light';
+        document.body.classList = [];
+      }
     }
   },
   methods: {
