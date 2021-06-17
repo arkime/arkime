@@ -1799,7 +1799,7 @@ exports.deleteFile = function (node, id, path, cb) {
 };
 
 exports.session2Sid = function (item) {
-  let ver = item._index.includes('sessions2') ? '2@' : '3@';
+  const ver = item._index.includes('sessions2') ? '2@' : '3@';
   if (item._id.length < 31) {
     return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
   }
