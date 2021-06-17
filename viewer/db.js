@@ -36,7 +36,6 @@ const internals = {
   nodesInfoCache: {},
   masterCache: {},
   qInProgress: 0,
-  apiVersion: '7.7',
   q: [],
   doShortcutsUpdates: false,
   remoteShortcutsIndex: undefined,
@@ -151,8 +150,8 @@ exports.initialize = async (info, cb) => {
 
   try {
     const { body: data } = await internals.client7.info();
-    if (data.version.number.match(/^(7\.7\.0|7\.[0-6]\.|[0-6]|8)/)) {
-      console.log(`ERROR - ES ${data.version.number} not supported, ES 7.7.1 or later required.`);
+    if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {
+      console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
       process.exit();
     }
     return cb();

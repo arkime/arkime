@@ -6,7 +6,7 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^7.9.1",
+    "@elastic/elasticsearch": "7.10.0",
     "async": "^2.6.3",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",

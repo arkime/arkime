@@ -6589,6 +6589,10 @@ sub dbCheck {
         exit (1)
     }
 
+    if ($main::esVersion < 71002) {
+        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.10.2 or newer is recommended\n");
+    }
+
     my $error = 0;
     my $nodes = esGet("/_nodes?flat_settings");
     my $nodeStats = esGet("/_nodes/stats");
