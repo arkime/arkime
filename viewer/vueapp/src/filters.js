@@ -2,6 +2,28 @@ import Vue from 'vue';
 import moment from 'moment-timezone';
 
 /**
+ * Rounds a number using Math.round
+ *
+ * @example
+ * '{{ 1234.56 | round(0) }}'
+ * this.$options.filters.round(1234.56, 0);
+ *
+ * @param {number} value  The number to round
+ * @param {int} decimals  The number of decimals to preserve, default = 0
+ * @returns {decimal}     The number rounded to the requested number of decimal places
+ */
+export const round = function (value, decimals) {
+  if (isNaN(value)) { return 0; }
+
+  if (!value) { value = 0; }
+
+  if (!decimals) { decimals = 0; }
+
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+};
+Vue.filter('round', round);
+
+/**
  * Adds commas to a number so it's easier to read
  *
  * @example
@@ -11,10 +33,14 @@ import moment from 'moment-timezone';
  * @param {int} input The number to add commas to
  * @returns {string}  The number string with commas
  */
-Vue.filter('commaString', (input) => {
+export const commaString = function (input) {
   if (isNaN(input)) { return 0; }
-  return input.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-});
+
+  const parts = input.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+Vue.filter('commaString', commaString);
 
 /**
  * Rounds a number then adds commas so it's easier to read
@@ -27,13 +53,14 @@ Vue.filter('commaString', (input) => {
  * @param {int} decimals  The number of decimals to preserve, default = 0
  * @returns {string}      The number string with commas
  */
-Vue.filter('roundCommaString', (input, decimals) => {
+export const roundCommaString = function (input, decimals) {
   if (isNaN(input)) { return 0; }
 
   if (!decimals) { decimals = 0; }
 
-  return Vue.options.filters.commaString(Vue.options.filters.round(input, decimals));
-});
+  return commaString(round(input, decimals));
+};
+Vue.filter('roundCommaString', roundCommaString);
 
 /**
  * Parses ipv6
@@ -45,7 +72,7 @@ Vue.filter('roundCommaString', (input, decimals) => {
  * @param {int} ipv6  The ipv6 value
  * @returns {string}  The human understandable ipv6 string
  */
-Vue.filter('extractIPv6String', (ipv6) => {
+export const extractIPv6String = function (ipv6) {
   if (!ipv6) { return ''; }
 
   ipv6 = ipv6.toString();
@@ -67,7 +94,8 @@ Vue.filter('extractIPv6String', (ipv6) => {
     });
 
   return ip;
-});
+};
+Vue.filter('extractIPv6String', extractIPv6String);
 
 /**
  * Displays the protocol string instead of number code
@@ -79,13 +107,12 @@ Vue.filter('extractIPv6String', (ipv6) => {
  * @param {int} protocolCode  The protocol code
  * @returns {string}          The human understandable protocol string
  */
-Vue.filter('protocol', (protocolCode) => {
+export const protocol = function (protocolCode) {
   const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
-  let result = lookup[protocolCode];
-  if (!result) { result = protocolCode; }
-  return result;
-});
+  return lookup[protocolCode] || protocolCode;
+};
+Vue.filter('protocol', protocol);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bits
@@ -98,8 +125,11 @@ Vue.filter('protocol', (protocolCode) => {
  * @param {int} fileSizeInBits The number to make human readable
  * @returns {string}           The <=4 char human readable number
  */
-Vue.filter('humanReadableBits', (fileSizeInBits) => {
+export const humanReadableBits = function (fileSizeInBits) {
   fileSizeInBits = parseInt(fileSizeInBits);
+
+  if (isNaN(fileSizeInBits)) { return '0'; }
+
   let i = 0;
   const bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (fileSizeInBits >= 1024) {
@@ -112,7 +142,8 @@ Vue.filter('humanReadableBits', (fileSizeInBits) => {
   } else {
     return fileSizeInBits.toFixed(1) + bitUnits[i];
   }
-});
+};
+Vue.filter('humanReadableBits', humanReadableBits);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bytes
@@ -125,8 +156,11 @@ Vue.filter('humanReadableBits', (fileSizeInBits) => {
  * @param {int} fileSizeInBytes The number to make human readable
  * @returns {string}            The <=4 char human readable number
  */
-Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
+export const humanReadableBytes = function (fileSizeInBytes) {
   fileSizeInBytes = parseInt(fileSizeInBytes);
+
+  if (isNaN(fileSizeInBytes)) { return '0'; }
+
   let i = 0;
   const byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
   while (fileSizeInBytes >= 1000) {
@@ -139,7 +173,8 @@ Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
   } else {
     return fileSizeInBytes.toFixed(1) + byteUnits[i];
   }
-});
+};
+Vue.filter('humanReadableBytes', humanReadableBytes);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bytes
@@ -190,25 +225,6 @@ Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
   }
 
   return moment(ms).format(format);
-});
-
-/**
- * Rounds a number using Math.round
- *
- * @example
- * '{{ 1234.56 | round(0) }}'
- * this.$options.filters.round(1234.56, 0);
- *
- * @param {number} value  The number to round
- * @param {int} decimals  The number of decimals to preserve, default = 0
- * @returns {decimal}     The number rounded to the requested number of decimal places
- */
-Vue.filter('round', function (value, decimals) {
-  if (!value) { value = 0; }
-
-  if (!decimals) { decimals = 0; }
-
-  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
 });
 
 /**
