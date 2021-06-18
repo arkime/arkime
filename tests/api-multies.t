@@ -25,7 +25,7 @@ my $json;
     cmp_ok($json->{indices}->{MULTIPREFIX_files_v30}->{total}->{docs}->{count}, '>=', 60, "files count is at least 60");
 
     $json = mesGet("/MULTIPREFIX_sequence/_stats");
-    cmp_ok($json->{indices}->{MULTIPREFIX_sequence_v3}->{total}->{docs}->{count}, '>=', 1, "sequence count is at least 1");
+    cmp_ok($json->{indices}->{MULTIPREFIX_sequence_v30}->{total}->{docs}->{count}, '>=', 1, "sequence count is at least 1");
 
     $json = mesGet("/MULTIPREFIX_dstats/_stats");
     cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v30}->{total}->{docs}->{count}, '>=', 1, "dstats count is at least 1");

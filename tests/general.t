@@ -1,4 +1,4 @@
-use Test::More tests => 659;
+use Test::More tests => 663;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -347,6 +347,8 @@ if (0) {
 # vlan tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan.cnt=1"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan<501"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan>501"));
 
 # mac.src tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac.src=00:1a:e3:dc:2e:c0"));

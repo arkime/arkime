@@ -469,9 +469,9 @@ sub sequenceCreate
   }
 }';
 
-    logmsg "Creating sequence_v3 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v3?master_timeout=${ESTIMEOUT}s", $settings, 1);
-    esAlias("add", "sequence_v3", "sequence");
+    logmsg "Creating sequence_v30 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}sequence_v30?master_timeout=${ESTIMEOUT}s", $settings, 1);
+    esAlias("add", "sequence_v30", "sequence");
     sequenceUpdate();
 }
 
@@ -480,39 +480,37 @@ sub sequenceUpdate
 {
     my $mapping = '
 {
-  "sequence": {
-    "_source" : { "enabled": "false" },
-    "enabled" : "false"
-  }
+  "_source" : { "enabled": "false" },
+  "enabled" : "false"
 }';
 
-    logmsg "Setting sequence_v3 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}sequence_v3/sequence/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    logmsg "Setting sequence_v30 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}sequence_v30/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 }
 ################################################################################
 sub sequenceUpgrade
 {
 
-    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v3") && esIndexExists("${PREFIX}sequence_v3")) {
-        logmsg ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v3\n");
+    if (esCheckAlias("${PREFIX}sequence", "${PREFIX}sequence_v30") && esIndexExists("${PREFIX}sequence_v30")) {
+        logmsg ("SKIPPING - ${PREFIX}sequence already points to ${PREFIX}sequence_v30\n");
         return;
     }
 
     $main::userAgent->timeout(7200);
     sequenceCreate();
-    esAlias("remove", "sequence_v2", "sequence");
-    my $results = esGet("/${PREFIX}sequence_v2/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
+    esAlias("remove", "sequence_v3", "sequence");
+    my $results = esGet("/${PREFIX}sequence_v3/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
 
-    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v2 to ${PREFIX}sequence_v3\n";
+    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v3 to ${PREFIX}sequence_v30\n";
 
     return if ($results->{hits}->{total} == 0);
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
         if ($hit->{_id} =~ /^fn-/) {
-            esPost("/${PREFIX}sequence_v3/sequence/$hit->{_id}?timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
+            esPost("/${PREFIX}sequence_v30/_doc/$hit->{_id}?timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
         }
     }
-    esDelete("/${PREFIX}sequence_v2");
+    esDelete("/${PREFIX}sequence_v3");
     $main::userAgent->timeout($ESTIMEOUT + 5);
 }
 ################################################################################
@@ -7266,9 +7264,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v3,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v3,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";
