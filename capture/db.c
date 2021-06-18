@@ -32,7 +32,7 @@
 LOCAL MMDB_s           *geoCountry;
 LOCAL MMDB_s           *geoASN;
 
-#define MOLOCH_MIN_DB_VERSION 66
+#define MOLOCH_MIN_DB_VERSION 70
 
 extern uint64_t         totalPackets;
 LOCAL  uint64_t         totalSessions = 0;
