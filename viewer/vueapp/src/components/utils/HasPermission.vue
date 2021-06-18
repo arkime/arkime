@@ -6,10 +6,10 @@ export default {
   bind: function (el, binding, vnode) {
     if (!binding.value) { return; }
 
-    $(el).hide();
+    el.style.display = 'none';
 
     if (UserService.hasPermission(binding.value)) {
-      $(el).show();
+      el.style.display = 'block';
     }
   }
 };
