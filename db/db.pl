@@ -3508,6 +3508,17 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
       esPost("/${PREFIX}lookups/lookup", to_json($newShortcut));
     }
 
+    # increment the _meta version by 1
+    my $mapping = esGet("/${PREFIX}lookups/_mapping");
+    my @indexes = keys %{$mapping};
+    my $index = @indexes[0];
+    my $meta = $mapping->{$index}->{mappings}->{_meta};
+
+    my $version = $meta->{version};
+    $version++;
+
+    esPut("/${PREFIX}lookups/_mapping", "{\"_meta\":{\"version\": $version, \"initSync\":" . ($meta->{initSync} ? "true" : "false") . "}}");
+
     print "${verb} shortcut ${shortcutName}\n";
 
     exit 0;
