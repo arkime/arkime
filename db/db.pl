@@ -538,47 +538,45 @@ sub filesUpdate
 {
     my $mapping = '
 {
-  "file": {
-    "_source": {"enabled": "true"},
-    "dynamic": "true",
-    "dynamic_templates": [
-      {
-        "any": {
-          "match": "*",
-          "mapping": {
-            "index": false
-          }
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "any": {
+        "match": "*",
+        "mapping": {
+          "index": false
         }
       }
-    ],
-    "properties": {
-      "num": {
-        "type": "long"
-      },
-      "node": {
-        "type": "keyword"
-      },
-      "first": {
-        "type": "long"
-      },
-      "name": {
-        "type": "keyword"
-      },
-      "filesize": {
-        "type": "long"
-      },
-      "locked": {
-        "type": "short"
-      },
-      "last": {
-        "type": "long"
-      }
+    }
+  ],
+  "properties": {
+    "num": {
+      "type": "long"
+    },
+    "node": {
+      "type": "keyword"
+    },
+    "first": {
+      "type": "long"
+    },
+    "name": {
+      "type": "keyword"
+    },
+    "filesize": {
+      "type": "long"
+    },
+    "locked": {
+      "type": "short"
+    },
+    "last": {
+      "type": "long"
     }
   }
 }';
 
     logmsg "Setting files_v30 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}files_v30/file/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    esPut("/${PREFIX}files_v30/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 }
 ################################################################################
 sub statsCreate
@@ -604,36 +602,34 @@ sub statsUpdate
 {
 my $mapping = '
 {
-  "stat": {
-    "_source": {"enabled": "true"},
-    "dynamic": "true",
-    "dynamic_templates": [
-      {
-        "numeric": {
-          "match_mapping_type": "long",
-          "mapping": {
-            "type": "long"
-          }
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "numeric": {
+        "match_mapping_type": "long",
+        "mapping": {
+          "type": "long"
         }
       }
-    ],
-    "properties": {
-      "hostname": {
-        "type": "keyword"
-      },
-      "nodeName": {
-        "type": "keyword"
-      },
-      "currentTime": {
-        "type": "date",
-        "format": "epoch_second"
-      }
+    }
+  ],
+  "properties": {
+    "hostname": {
+      "type": "keyword"
+    },
+    "nodeName": {
+      "type": "keyword"
+    },
+    "currentTime": {
+      "type": "date",
+      "format": "epoch_second"
     }
   }
 }';
 
     logmsg "Setting stats mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}stats_v30/stat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
+    esPut("/${PREFIX}stats_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
 }
 ################################################################################
 sub dstatsCreate
@@ -659,45 +655,43 @@ sub dstatsUpdate
 {
 my $mapping = '
 {
-  "dstat": {
-    "_source": {"enabled": "true"},
-    "dynamic": "true",
-    "dynamic_templates": [
-      {
-        "numeric": {
-          "match_mapping_type": "long",
-          "mapping": {
-            "type": "long",
-            "index": false
-          }
-        }
-      },
-      {
-        "noindex": {
-          "match": "*",
-          "mapping": {
-            "index": false
-          }
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "numeric": {
+        "match_mapping_type": "long",
+        "mapping": {
+          "type": "long",
+          "index": false
         }
       }
-    ],
-    "properties": {
-      "nodeName": {
-        "type": "keyword"
-      },
-      "interval": {
-        "type": "short"
-      },
-      "currentTime": {
-        "type": "date",
-        "format": "epoch_second"
+    },
+    {
+      "noindex": {
+        "match": "*",
+        "mapping": {
+          "index": false
+        }
       }
+    }
+  ],
+  "properties": {
+    "nodeName": {
+      "type": "keyword"
+    },
+    "interval": {
+      "type": "short"
+    },
+    "currentTime": {
+      "type": "date",
+      "format": "epoch_second"
     }
   }
 }';
 
     logmsg "Setting dstats_v30 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}dstats_v30/dstat/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping, 1);
+    esPut("/${PREFIX}dstats_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping, 1);
 }
 ################################################################################
 sub fieldsCreate
@@ -723,23 +717,21 @@ sub fieldsUpdate
 {
     my $mapping = '
 {
-  "field": {
-    "_source": {"enabled": "true"},
-    "dynamic_templates": [
-      {
-        "string_template": {
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "keyword"
-          }
+  "_source": {"enabled": "true"},
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
         }
       }
-    ]
-  }
+    }
+  ]
 }';
 
     logmsg "Setting fields_v30 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}fields_v30/field/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping);
+    esPut("/${PREFIX}fields_v30/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 
     esPost("/${PREFIX}fields_v30/_doc/ip?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All IP fields",
@@ -1141,67 +1133,65 @@ sub queriesUpdate
 {
     my $mapping = '
 {
-  "query": {
-    "_source": {"enabled": "true"},
-    "dynamic": "strict",
-    "properties": {
-      "name": {
-        "type": "keyword"
-      },
-      "enabled": {
-        "type": "boolean"
-      },
-      "lpValue": {
-        "type": "long"
-      },
-      "lastRun": {
-        "type": "date"
-      },
-      "count": {
-        "type": "long"
-      },
-      "lastCount": {
-        "type": "long"
-      },
-      "query": {
-        "type": "keyword"
-      },
-      "action": {
-        "type": "keyword"
-      },
-      "creator": {
-        "type": "keyword"
-      },
-      "tags": {
-        "type": "keyword"
-      },
-      "notifier": {
-        "type": "keyword"
-      },
-      "lastNotified": {
-        "type": "date"
-      },
-      "lastNotifiedCount": {
-        "type": "long"
-      },
-      "description": {
-        "type": "keyword"
-      },
-      "created": {
-        "type": "date"
-      },
-      "lastToggled": {
-        "type": "date"
-      },
-      "lastToggledBy": {
-        "type": "keyword"
-      }
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "lpValue": {
+      "type": "long"
+    },
+    "lastRun": {
+      "type": "date"
+    },
+    "count": {
+      "type": "long"
+    },
+    "lastCount": {
+      "type": "long"
+    },
+    "query": {
+      "type": "keyword"
+    },
+    "action": {
+      "type": "keyword"
+    },
+    "creator": {
+      "type": "keyword"
+    },
+    "tags": {
+      "type": "keyword"
+    },
+    "notifier": {
+      "type": "keyword"
+    },
+    "lastNotified": {
+      "type": "date"
+    },
+    "lastNotifiedCount": {
+      "type": "long"
+    },
+    "description": {
+      "type": "keyword"
+    },
+    "created": {
+      "type": "date"
+    },
+    "lastToggled": {
+      "type": "date"
+    },
+    "lastToggledBy": {
+      "type": "keyword"
     }
   }
 }';
 
     logmsg "Setting queries mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}queries_v30/query/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+    esPut("/${PREFIX}queries_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
     esAlias("add", "queries_v30", "queries");
 }
 
@@ -5173,7 +5163,7 @@ if ($DOILM) {
         logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
         foreach my $i (keys %{$indices}) {
             progress("$i ");
-            esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+            esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
         }
         logmsg "\n";
     }
@@ -5301,96 +5291,94 @@ sub huntsUpdate
 {
     my $mapping = '
 {
-  "hunt": {
-    "_source": {"enabled": "true"},
-    "dynamic": "strict",
-    "properties": {
-      "userId": {
-        "type": "keyword"
-      },
-      "status": {
-        "type": "keyword"
-      },
-      "name": {
-        "type": "keyword"
-      },
-      "size": {
-        "type": "integer"
-      },
-      "search": {
-        "type": "keyword"
-      },
-      "searchType": {
-        "type": "keyword"
-      },
-      "src": {
-        "type": "boolean"
-      },
-      "dst": {
-        "type": "boolean"
-      },
-      "type": {
-        "type": "keyword"
-      },
-      "matchedSessions": {
-        "type": "integer"
-      },
-      "searchedSessions": {
-        "type": "integer"
-      },
-      "totalSessions": {
-        "type": "integer"
-      },
-      "lastPacketTime": {
-        "type": "date"
-      },
-      "created": {
-        "type": "date"
-      },
-      "lastUpdated": {
-        "type": "date"
-      },
-      "started": {
-        "type": "date"
-      },
-      "query": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "errors": {
-        "properties": {
-          "value": {
-            "type": "keyword"
-          },
-          "time": {
-            "type": "date"
-          },
-          "node": {
-            "type": "keyword"
-          }
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "userId": {
+      "type": "keyword"
+    },
+    "status": {
+      "type": "keyword"
+    },
+    "name": {
+      "type": "keyword"
+    },
+    "size": {
+      "type": "integer"
+    },
+    "search": {
+      "type": "keyword"
+    },
+    "searchType": {
+      "type": "keyword"
+    },
+    "src": {
+      "type": "boolean"
+    },
+    "dst": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "matchedSessions": {
+      "type": "integer"
+    },
+    "searchedSessions": {
+      "type": "integer"
+    },
+    "totalSessions": {
+      "type": "integer"
+    },
+    "lastPacketTime": {
+      "type": "date"
+    },
+    "created": {
+      "type": "date"
+    },
+    "lastUpdated": {
+      "type": "date"
+    },
+    "started": {
+      "type": "date"
+    },
+    "query": {
+      "type": "object",
+      "dynamic": "true"
+    },
+    "errors": {
+      "properties": {
+        "value": {
+          "type": "keyword"
+        },
+        "time": {
+          "type": "date"
+        },
+        "node": {
+          "type": "keyword"
         }
-      },
-      "notifier": {
-        "type": "keyword"
-      },
-      "unrunnable": {
-        "type": "boolean"
-      },
-      "failedSessionIds": {
-        "type": "keyword"
-      },
-      "users": {
-        "type": "keyword"
-      },
-      "removed": {
-        "type": "boolean"
       }
+    },
+    "notifier": {
+      "type": "keyword"
+    },
+    "unrunnable": {
+      "type": "boolean"
+    },
+    "failedSessionIds": {
+      "type": "keyword"
+    },
+    "users": {
+      "type": "keyword"
+    },
+    "removed": {
+      "type": "boolean"
     }
   }
 }';
 
 logmsg "Setting hunts_v30 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}hunts_v30/hunt/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+esPut("/${PREFIX}hunts_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 
@@ -5417,40 +5405,38 @@ sub lookupsUpdate
 {
     my $mapping = '
 {
-  "lookup": {
-    "_source": {"enabled": "true"},
-    "dynamic": "strict",
-    "properties": {
-      "userId": {
-        "type": "keyword"
-      },
-      "name": {
-        "type": "keyword"
-      },
-      "shared": {
-        "type": "boolean"
-      },
-      "description": {
-        "type": "keyword"
-      },
-      "number": {
-        "type": "integer"
-      },
-      "ip": {
-        "type": "keyword"
-      },
-      "string": {
-        "type": "keyword"
-      },
-      "locked": {
-        "type": "boolean"
-      }
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "userId": {
+      "type": "keyword"
+    },
+    "name": {
+      "type": "keyword"
+    },
+    "shared": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "keyword"
+    },
+    "number": {
+      "type": "integer"
+    },
+    "ip": {
+      "type": "keyword"
+    },
+    "string": {
+      "type": "keyword"
+    },
+    "locked": {
+      "type": "boolean"
     }
   }
 }';
 
 logmsg "Setting lookups_v30 mapping\n" if ($verbose > 0);
-esPut("/${PREFIX}lookups_v30/lookup/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+esPut("/${PREFIX}lookups_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 
@@ -5477,99 +5463,97 @@ sub usersUpdate
 {
     my $mapping = '
 {
-  "user": {
-    "_source": {"enabled": "true"},
-    "dynamic": "strict",
-    "properties": {
-      "userId": {
-        "type": "keyword"
-      },
-      "userName": {
-        "type": "keyword"
-      },
-      "enabled": {
-        "type": "boolean"
-      },
-      "createEnabled": {
-        "type": "boolean"
-      },
-      "webEnabled": {
-        "type": "boolean"
-      },
-      "headerAuthEnabled": {
-        "type": "boolean"
-      },
-      "emailSearch": {
-        "type": "boolean"
-      },
-      "removeEnabled": {
-        "type": "boolean"
-      },
-      "packetSearch": {
-        "type": "boolean"
-      },
-      "hideStats": {
-        "type": "boolean"
-      },
-      "hideFiles": {
-        "type": "boolean"
-      },
-      "hidePcap": {
-        "type": "boolean"
-      },
-      "disablePcapDownload": {
-        "type": "boolean"
-      },
-      "passStore": {
-        "type": "keyword"
-      },
-      "expression": {
-        "type": "keyword"
-      },
-      "settings": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "views": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "notifiers": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "columnConfigs": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "spiviewFieldConfigs": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "tableStates": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "welcomeMsgNum": {
-        "type": "integer"
-      },
-      "lastUsed": {
-        "type": "date"
-      },
-      "timeLimit": {
-        "type": "integer"
-      }
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "userId": {
+      "type": "keyword"
+    },
+    "userName": {
+      "type": "keyword"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "createEnabled": {
+      "type": "boolean"
+    },
+    "webEnabled": {
+      "type": "boolean"
+    },
+    "headerAuthEnabled": {
+      "type": "boolean"
+    },
+    "emailSearch": {
+      "type": "boolean"
+    },
+    "removeEnabled": {
+      "type": "boolean"
+    },
+    "packetSearch": {
+      "type": "boolean"
+    },
+    "hideStats": {
+      "type": "boolean"
+    },
+    "hideFiles": {
+      "type": "boolean"
+    },
+    "hidePcap": {
+      "type": "boolean"
+    },
+    "disablePcapDownload": {
+      "type": "boolean"
+    },
+    "passStore": {
+      "type": "keyword"
+    },
+    "expression": {
+      "type": "keyword"
+    },
+    "settings": {
+      "type": "object",
+      "dynamic": "true"
+    },
+    "views": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "notifiers": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "columnConfigs": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "spiviewFieldConfigs": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "tableStates": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "welcomeMsgNum": {
+      "type": "integer"
+    },
+    "lastUsed": {
+      "type": "date"
+    },
+    "timeLimit": {
+      "type": "integer"
     }
   }
 }';
 
     logmsg "Setting users_v30 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}users_v30/user/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $mapping);
+    esPut("/${PREFIX}users_v30/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
 sub setPriority
@@ -6659,7 +6643,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
 
     # See what files are in db
-    my $remotefiles = esScroll("files", "file", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
+    my $remotefiles = esScroll("files", "", to_json({'query' => {'terms' => {'node' => \@nodes}}}));
     logmsg("\n") if ($verbose > 0);
     my %remotefileshash;
     foreach my $hit (@{$remotefiles}) {
@@ -7171,7 +7155,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             my @index = keys %{$data};
             my $mappings = $data->{$index[0]}->{mappings};
             my @type = keys %{$mappings};
-            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", to_json($mappings));
+            esPut("/$index[0]/$type[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
             close($fh);
         }
     }
@@ -7219,7 +7203,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
                 logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
                 foreach my $i (keys %{$indices}) {
                     progress("$i ");
-                    esPut("/$i/session/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", to_json($mapping), 1);
+                    esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
                 }
                 logmsg "\n";
             } elsif (($template cmp "history") == 0) {
