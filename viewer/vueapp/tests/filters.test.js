@@ -1,4 +1,5 @@
 const filters = require('../src/filters');
+const { fields } = require('./consts');
 
 test('round', () => {
   expect(filters.round('asdf')).toBe(0); // default
@@ -68,4 +69,80 @@ test('humanReadableBytes', () => {
   expect(filters.humanReadableBytes('1099500000')).toBe('1.0Gi');
   expect(filters.humanReadableBytes('1125899900000')).toBe('1.0Ti');
   expect(filters.humanReadableBytes('1152921500000000')).toBe('1.0Pi');
+});
+
+test('humanReadableNumber', () => {
+  expect(filters.humanReadableNumber('a')).toBe('0 ');
+  expect(filters.humanReadableNumber(1)).toBe('1 ');
+  expect(filters.humanReadableNumber(1000)).toBe('1.0k');
+  expect(filters.humanReadableNumber(10000)).toBe('10k');
+  expect(filters.humanReadableNumber(1000000)).toBe('1.0M');
+  expect(filters.humanReadableNumber(20000000)).toBe('20M');
+  expect(filters.humanReadableNumber(1000000000)).toBe('1.0G');
+  expect(filters.humanReadableNumber(321000000000)).toBe('321G');
+  expect(filters.humanReadableNumber(4000000000000)).toBe('4.0T');
+  expect(filters.humanReadableNumber(80000000000000)).toBe('80T');
+  expect(filters.humanReadableNumber(9000000000000000)).toBe('9.0P');
+  expect(filters.humanReadableNumber(987600000000000000)).toBe('988P');
+});
+
+test('timezoneDateString', () => {
+  expect(filters.timezoneDateString('a')).toBe('Invalid date');
+  expect(filters.timezoneDateString(0, 'local')).toBe('1969/12/31 19:00:00');
+  expect(filters.timezoneDateString(0, 'gmt')).toBe('1970/01/01 00:00:00 UTC');
+  expect(filters.timezoneDateString(0, 'local', true)).toBe('1969/12/31 19:00:00.000');
+  expect(filters.timezoneDateString(1624024589000, 'local')).toBe('2021/06/18 09:56:29');
+  expect(filters.timezoneDateString(1624024589000, 'gmt')).toBe('2021/06/18 13:56:29 UTC');
+  expect(filters.timezoneDateString(1234567898765, 'gmt', true)).toBe('2009/02/13 23:31:38.765 UTC');
+});
+
+test('readableTime', () => {
+  expect(filters.readableTime('a')).toBe('?');
+  expect(filters.readableTime(0)).toBe('0');
+  expect(filters.readableTime(100)).toBe('0');
+  expect(filters.readableTime(60000)).toBe('00:01:00');
+  expect(filters.readableTime(240000)).toBe('00:04:00');
+  expect(filters.readableTime(3600000)).toBe('01:00:00');
+  expect(filters.readableTime(18000000)).toBe('05:00:00');
+  expect(filters.readableTime(86400000)).toBe('1 day ');
+  expect(filters.readableTime(432000000)).toBe('5 days ');
+  expect(filters.readableTime(450067000)).toBe('5 days 05:01:07');
+});
+
+test('readableTime', () => {
+  expect(filters.readableTimeCompact('a')).toBe('?');
+  expect(filters.readableTimeCompact(0)).toBe('0h');
+  expect(filters.readableTimeCompact(100)).toBe('0h');
+  expect(filters.readableTimeCompact(60000)).toBe('0h');
+  expect(filters.readableTimeCompact(240000)).toBe('0h');
+  expect(filters.readableTimeCompact(3600000)).toBe('1h');
+  expect(filters.readableTimeCompact(18000000)).toBe('5h');
+  expect(filters.readableTimeCompact(86400000)).toBe('1d 0h');
+  expect(filters.readableTimeCompact(432000000)).toBe('5d 0h');
+  expect(filters.readableTimeCompact(450067000)).toBe('5d 5h');
+});
+
+test('searchFields', () => {
+  expect(filters.searchFields(null, fields).length).toBe(fields.length - 4);
+  expect(filters.searchFields('', fields).length).toBe(fields.length - 4);
+  expect(filters.searchFields('src bytes', fields)[0].exp).toBe('bytes.src');
+  expect(filters.searchFields('ip.dst:port', fields)[0].exp).toBe('ip.dst');
+  expect(filters.searchFields('Dst IP', fields)[0].exp).toBe('ip.dst');
+  expect(filters.searchFields('host', fields)[0].exp).toBe('host.http.tokens');
+  expect(filters.searchFields('Hostname Tokens', fields, true).length).toBe(0);
+  expect(filters.searchFields('filename', fields, false, true).length).toBe(0);
+  expect(filters.searchFields('info', fields, false, false, true).length).toBe(0);
+});
+
+test('buildExpression', () => {
+  expect(filters.buildExpression('ip.dst', '10.0.0.1', '==')).toBe('ip.dst == 10.0.0.1');
+  expect(filters.buildExpression('exp', 'EXISTS!', '==')).toBe('exp == EXISTS!');
+  expect(filters.buildExpression('http.hasheader.dst.value', 'h3-28=":4433"; ma=3600', '!=')).toBe('http.hasheader.dst.value != "h3-28=\\\":4433\\\"; ma=3600"');
+  expect(filters.buildExpression('http.hasheader.src.value', 'gzip, deflate', '==')).toBe('http.hasheader.src.value == "gzip, deflate"');
+  expect(filters.buildExpression('asn.dst', 'long string with spaces in it', '==')).toBe('asn.dst == "long string with spaces in it"');
+});
+
+test('searchCluster', () => {
+  expect(filters.searchCluster('ES1', ['ES1', 'ES2', 'ES3'])[0]).toContain('ES1');
+  expect(filters.searchCluster('ES', ['ES1', 'ES2', 'ES3'])).toEqual(['ES1', 'ES2', 'ES3']);
 });

@@ -187,7 +187,9 @@ Vue.filter('humanReadableBytes', humanReadableBytes);
  * @param {int} num   The number to make human readable
  * @returns {string}  The <=4 char human readable number
  */
-Vue.filter('humanReadableNumber', (num) => {
+export const humanReadableNumber = function (num) {
+  if (isNaN(num)) { return '0 '; }
+
   let i = 0;
   const units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (num >= 1000) {
@@ -200,7 +202,8 @@ Vue.filter('humanReadableNumber', (num) => {
   } else {
     return num.toFixed(1) + units[i];
   }
-});
+};
+Vue.filter('humanReadableNumber', humanReadableNumber);
 
 /**
  * Parses date to string and applies the selected timezone
@@ -213,10 +216,10 @@ Vue.filter('humanReadableNumber', (num) => {
  * @param {string} timezone  The timezone to use ('gmt', 'local', or 'localtz'), default = 'local'
  * @returns {string}         The date formatted and converted to the requested timezone
  */
-Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
-  let format = 'YYYY/MM/DD HH:mm:ss z';
+export const timezoneDateString = function (ms, timezone, showMs) {
+  if (isNaN(ms)) { return 'Invalid date'; }
 
-  if (showMs) { format = 'YYYY/MM/DD HH:mm:ss.SSS z'; }
+  let format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : 'YYYY/MM/DD HH:mm:ss z';
 
   if (timezone === 'gmt') {
     return moment.tz(ms, 'utc').format(format);
@@ -224,8 +227,10 @@ Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
     return moment.tz(ms, Intl.DateTimeFormat().resolvedOptions().timeZone).format(format);
   }
 
+  format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS' : 'YYYY/MM/DD HH:mm:ss';
   return moment(ms).format(format);
-});
+};
+Vue.filter('timezoneDateString', timezoneDateString);
 
 /**
  * Turns milliseconds into a human readable time range
@@ -238,7 +243,7 @@ Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
  * @returns {string}  The human readable time range
  *                    Output example: 1 day 10:42:01
  */
-Vue.filter('readableTime', function (ms) {
+export const readableTime = function (ms) {
   if (isNaN(ms)) { return '?'; }
 
   const seconds = parseInt((ms / 1000) % 60);
@@ -266,7 +271,8 @@ Vue.filter('readableTime', function (ms) {
   }
 
   return result || '0';
-});
+};
+Vue.filter('readableTime', readableTime);
 
 /**
  * Turns milliseconds into a human readable time range
@@ -279,7 +285,7 @@ Vue.filter('readableTime', function (ms) {
  * @returns {string}  The human readable time range
  *                    Output example: 1 day 10:42:01
  */
-Vue.filter('readableTimeCompact', function (ms) {
+export const readableTimeCompact = function (ms) {
   if (isNaN(ms)) { return '?'; }
 
   const hours = parseInt((ms / (1000 * 60 * 60)) % 24);
@@ -292,7 +298,8 @@ Vue.filter('readableTimeCompact', function (ms) {
   }
   result += hours + 'h';
   return result;
-});
+};
+Vue.filter('readableTimeCompact', readableTimeCompact);
 
 /**
  * Searches fields for a term
@@ -309,7 +316,7 @@ Vue.filter('readableTimeCompact', function (ms) {
  * @param {boolean} excludeInfo     Whether to exclude the special info "field"
  * @returns {array}                 An array of fields that match the search term
  */
-Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeFilename, excludeInfo) {
+export const searchFields = function (searchTerm, fields, excludeTokens, excludeFilename, excludeInfo) {
   if (!searchTerm) { searchTerm = ''; }
   return fields.filter((field) => {
     if (field.regex !== undefined || field.noFacet === 'true') {
@@ -335,7 +342,8 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
         return item.toLowerCase().includes(searchTerm);
       }));
   });
-});
+};
+Vue.filter('searchFields', searchFields);
 
 /**
  * Builds an expression for search.
@@ -350,7 +358,7 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
  * @param {string} op     The relational operator
  * @returns {string}      The fully built expression
  */
-Vue.filter('buildExpression', function (field, value, op) {
+export const buildExpression = function (field, value, op) {
   // for values required to be strings in the search expression
   /* eslint-disable no-useless-escape */
   const needQuotes = (value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
@@ -362,7 +370,8 @@ Vue.filter('buildExpression', function (field, value, op) {
   if (needQuotes) { value = `"${value}"`; }
 
   return `${field} ${op} ${value}`;
-});
+};
+Vue.filter('buildExpression', buildExpression);
 
 /**
  * Searches cluster for a term
@@ -372,14 +381,15 @@ Vue.filter('buildExpression', function (field, value, op) {
  * '{{ searchTerm | searchCluster(cluster) }}'
  * this.$options.filters.searchCluster('ES1', ['ES1', 'ES2', 'ES3']);
  *
- * @param {string} searchTerm       The string to search for within the fields
- * @param {array} clusters          The list of cluster to search
- * @returns {array}                 An array of cluster that match the search term
+ * @param {string} searchTerm The string to search for within the fields
+ * @param {array} clusters    The list of cluster to search
+ * @returns {array}           An array of cluster that match the search term
  */
-Vue.filter('searchCluster', function (searchTerm, clusters) {
+export const searchCluster = function (searchTerm, clusters) {
   if (!searchTerm) { searchTerm = ''; }
   return clusters.filter((cluster) => {
     searchTerm = searchTerm.toLowerCase();
     return cluster.toLowerCase().includes(searchTerm);
   });
-});
+};
+Vue.filter('searchCluster', searchCluster);
