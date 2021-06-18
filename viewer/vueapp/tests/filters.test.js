@@ -22,7 +22,7 @@ test('roundCommaString', () => {
   expect(filters.roundCommaString(123456.654321)).toBe('123,457');
   expect(filters.roundCommaString(123456.654321, 2)).toBe('123,456.65');
   expect(filters.roundCommaString(123456.654321, 3)).toBe('123,456.654');
-  expect(filters.roundCommaString(123456789.987654321, 4)).toBe('123,456,789.9877');
+  expect(filters.roundCommaString(123456789.98765, 4)).toBe('123,456,789.9877');
 });
 
 test('extractIPv6String', () => {
@@ -137,6 +137,7 @@ test('searchFields', () => {
 test('buildExpression', () => {
   expect(filters.buildExpression('ip.dst', '10.0.0.1', '==')).toBe('ip.dst == 10.0.0.1');
   expect(filters.buildExpression('exp', 'EXISTS!', '==')).toBe('exp == EXISTS!');
+  // eslint-disable-next-line no-useless-escape
   expect(filters.buildExpression('http.hasheader.dst.value', 'h3-28=":4433"; ma=3600', '!=')).toBe('http.hasheader.dst.value != "h3-28=\\\":4433\\\"; ma=3600"');
   expect(filters.buildExpression('http.hasheader.src.value', 'gzip, deflate', '==')).toBe('http.hasheader.src.value == "gzip, deflate"');
   expect(filters.buildExpression('asn.dst', 'long string with spaces in it', '==')).toBe('asn.dst == "long string with spaces in it"');

@@ -8,7 +8,7 @@ export const fields = [{
   group: 'general',
   help: 'Arkime ID for the session',
   noFacet: 'true',
-  type: 'termfield',
+  type: 'termfield'
 }, {
   aliases: ['http.host.tokens'],
   dbField: 'http.hostTokens',
@@ -18,7 +18,7 @@ export const fields = [{
   group: 'http',
   help: 'HTTP host Tokens header field',
   transform: 'removeProtocolAndURI',
-  type: 'lotextfield',
+  type: 'lotextfield'
 }, {
   dbField: 'fileand',
   dbField2: 'fileand',
@@ -26,13 +26,13 @@ export const fields = [{
   friendlyName: 'Filename',
   group: 'general',
   help: 'Arkime offline pcap filename',
-  type: 'fileand',
+  type: 'fileand'
 }, {
   dbField: 'info',
   exp: 'info',
   group: 'general',
   friendlyName: 'Info',
-  help: 'Information',
+  help: 'Information'
 }, {
   dbField: 'totBytes',
   dbField2: 'totBytes',
@@ -40,7 +40,7 @@ export const fields = [{
   friendlyName: 'Bytes',
   group: 'general',
   help: 'Total number of raw bytes sent AND received in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'dstBytes',
   dbField2: 'dstBytes',
@@ -48,7 +48,7 @@ export const fields = [{
   friendlyName: 'Dst Bytes',
   group: 'general',
   help: 'Total number of raw bytes sent by destination in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'srcBytes',
   dbField2: 'srcBytes',
@@ -56,7 +56,7 @@ export const fields = [{
   friendlyName: 'Src Bytes',
   group: 'general',
   help: 'Total number of raw bytes sent by source in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'geoall',
   dbField2: 'geoall',
@@ -65,7 +65,7 @@ export const fields = [{
   group: 'general',
   help: 'Search all country fields',
   regex: '(^country\\.(?:(?!\\.cnt$).)*$|\\.country$)',
-  type: 'uptermfield',
+  type: 'uptermfield'
 }, {
   dbField: 'totDataBytes',
   dbField2: 'totDataBytes',
@@ -73,7 +73,7 @@ export const fields = [{
   friendlyName: 'Data bytes',
   group: 'general',
   help: 'Total number of data bytes sent AND received in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   aliases: ['dns.ip'],
   category: 'ip',
@@ -83,7 +83,7 @@ export const fields = [{
   friendlyName: 'IP',
   group: 'dns',
   help: 'IP from DNS result',
-  type: 'ip',
+  type: 'ip'
 }, {
   dbField: 'http.bodyMagic',
   dbField2: 'http.bodyMagic',
@@ -91,7 +91,7 @@ export const fields = [{
   friendlyName: 'Body Magic',
   group: 'http',
   help: 'The content type of body determined by libfile/magic',
-  type: 'termfield',
+  type: 'termfield'
 }, {
   category: ['url', 'host'],
   dbField: 'http.uri',
@@ -101,7 +101,7 @@ export const fields = [{
   group: 'http',
   help: 'URIs for request',
   transform: 'removeProtocol',
-  type: 'termfield',
+  type: 'termfield'
 }, {
   category: 'user',
   dbField: 'http.user',
@@ -110,7 +110,7 @@ export const fields = [{
   friendlyName: 'User',
   group: 'http',
   help: 'HTTP Auth User',
-  type: 'termfield',
+  type: 'termfield'
 }, {
   dbField: 'ipall',
   dbField2: 'ipall',
@@ -119,7 +119,7 @@ export const fields = [{
   group: 'general',
   help: 'Search all ip fields',
   noFacet: 'true',
-  type: 'ip',
+  type: 'ip'
 }, {
   aliases: ['ip.dst:port'],
   category: 'ip',
@@ -131,7 +131,7 @@ export const fields = [{
   help: 'Destination IP',
   portField: 'dstPort',
   portField2: 'dstPort',
-  type: 'ip',
+  type: 'ip'
 }, {
   category: 'ip',
   dbField: 'srcIp',
@@ -142,7 +142,7 @@ export const fields = [{
   help: 'Source IP',
   portField: 'srcPort',
   portField2: 'srcPort',
-  type: 'ip',
+  type: 'ip'
 }, {
   dbField: 'totPackets',
   dbField2: 'totPackets',
@@ -150,7 +150,7 @@ export const fields = [{
   friendlyName: 'Packets',
   group: 'general',
   help: 'Total number of packets sent AND received in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'dstPackets',
   dbField2: 'dstPackets',
@@ -158,7 +158,7 @@ export const fields = [{
   friendlyName: 'Dst Packets',
   group: 'general',
   help: 'Total number of packets sent by destination in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'srcPackets',
   dbField2: 'srcPackets',
@@ -166,7 +166,7 @@ export const fields = [{
   friendlyName: 'Src Packets',
   group: 'general',
   help: 'Total number of packets sent by source in a session',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'portall',
   dbField2: 'portall',
@@ -175,7 +175,7 @@ export const fields = [{
   group: 'general',
   help: 'Search all port fields',
   regex: '(^port\\.(?:(?!\\.cnt$).)*$|\\.port$)',
-  type: 'integer',
+  type: 'integer'
 }, {
   category: 'port',
   dbField: 'dstPort',
@@ -184,7 +184,7 @@ export const fields = [{
   friendlyName: 'Dst Port',
   group: 'general',
   help: 'Source Port',
-  type: 'integer',
+  type: 'integer'
 }, {
   category: 'port',
   dbField: 'srcPort',
@@ -193,7 +193,7 @@ export const fields = [{
   friendlyName: 'Src Port',
   group: 'general',
   help: 'Source Port',
-  type: 'integer',
+  type: 'integer'
 }, {
   dbField: 'tags',
   dbField2: 'tags',
@@ -201,7 +201,7 @@ export const fields = [{
   friendlyName: 'Tags',
   group: 'general',
   help: 'Tags set for session',
-  type: 'termfield',
+  type: 'termfield'
 }, {
   dbField: 'tagsCnt',
   dbField2: 'tagsCnt',
@@ -209,5 +209,5 @@ export const fields = [{
   friendlyName: 'Tags Cnt',
   group: 'general',
   help: 'Unique number of Tags set for session',
-  type: 'integer',
+  type: 'integer'
 }];
