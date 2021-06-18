@@ -1259,8 +1259,7 @@
             </th>
             <th v-if="showDBFields"
               class="cursor-pointer"
-              @click="sortFields('dbField')"
-              data-testid="database-field-col">
+              @click="sortFields('dbField')">
               Database Field
               <span v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
               <span v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc" class="fa fa-sort-desc"></span>
