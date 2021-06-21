@@ -60,7 +60,7 @@
     "viewer:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files viewer/*.js > ../arkimeweb/_wiki/api_docs.md",
     "viewer:lint": "eslint --ext .js,.vue viewer capture/plugins",
     "viewer:lint-fix": "eslint --fix --ext .js,.vue viewer capture/plugins",
-    "viewer:unittest": "cd viewer && jest",
+    "viewer:testui": "cd viewer && jest",
     "parliament:build": "cd parliament && node vueapp/build/build.js",
     "parliament:bundle": "webpack --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "parliament:start": "cd parliament && node parliament.js",
