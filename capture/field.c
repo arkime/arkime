@@ -81,6 +81,10 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen  = out[i+3];
+        } else if (strncmp("fieldECS", (char*)data + out[i], 7) == 0) {
+            g_free(info->dbFieldFull);
+            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->dbFieldLen  = out[i+3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
             g_free(info->kind);
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);

@@ -711,6 +711,12 @@ sub fieldsCreate
     ecsFieldsUpdate();
 }
 ################################################################################
+sub newField
+{
+    my ($field, $json) = @_;
+    esPost("/${PREFIX}fields_v30/_doc/$field?timeout=${ESTIMEOUT}s", $json);
+}
+################################################################################
 sub fieldsUpdate
 {
     my $mapping = '
@@ -736,7 +742,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all ip fields",
       "type": "ip",
-      "dbField": "ipall",
       "dbField2": "ipall",
       "portField": "portall",
       "noFacet": "true"
@@ -746,7 +751,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all port fields",
       "type": "integer",
-      "dbField": "portall",
       "dbField2": "portall",
       "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
     }');
@@ -755,7 +759,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all rir fields",
       "type": "uptermfield",
-      "dbField": "rirall",
       "dbField2": "rirall",
       "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
     }');
@@ -764,7 +767,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all country fields",
       "type": "uptermfield",
-      "dbField": "geoall",
       "dbField2": "geoall",
       "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
     }');
@@ -773,7 +775,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all ASN fields",
       "type": "termfield",
-      "dbField": "asnall",
       "dbField2": "asnall",
       "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
     }');
@@ -782,7 +783,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Search all Host fields",
       "type": "lotermfield",
-      "dbField": "hostall",
       "dbField2": "hostall",
       "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
     }');
@@ -791,7 +791,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Source IP",
       "type": "ip",
-      "dbField": "a1",
       "dbField2": "srcIp",
       "portField": "p1",
       "portField2": "srcPort",
@@ -803,7 +802,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Source Port",
       "type": "integer",
-      "dbField": "p1",
       "dbField2": "srcPort",
       "category": "port"
     }');
@@ -812,17 +810,36 @@ sub fieldsUpdate
       "group": "general",
       "help": "GeoIP ASN string calculated from the source IP",
       "type": "termfield",
-      "dbField": "as1",
       "dbField2": "srcASN",
-      "rawField": "rawas1",
       "category": "asn"
+    }');
+    esPost("/${PREFIX}fields_v30/_doc/asn.src?timeout=${ESTIMEOUT}s", '{
+      "friendlyName": "Src ASN",
+      "group": "general",
+      "help": "GeoIP ASN string calculated from the source IP",
+      "type": "termfield",
+      "dbField2": "srcASN",
+      "category": "asn"
+    }');
+    newField("source.as.number", '{
+      "friendlyName": "Src ASN Number",
+      "group": "general",
+      "help": "GeoIP ASN Number calculated from the source IP",
+      "type": "integer",
+      "fieldECS": "source.as.number"
+    }');
+    newField("source.as.organization.name", '{
+      "friendlyName": "Src ASN Name",
+      "group": "general",
+      "help": "GeoIP ASN Name calculated from the source IP",
+      "type": "termfield",
+      "fieldECS": "source.as.organization.name"
     }');
     esPost("/${PREFIX}fields_v30/_doc/country.src?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Src Country",
       "group": "general",
       "help": "Source Country",
       "type": "uptermfield",
-      "dbField": "g1",
       "dbField2": "srcGEO",
       "category": "country"
     }');
@@ -831,7 +848,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Source RIR",
       "type": "uptermfield",
-      "dbField": "rir1",
       "dbField2": "srcRIR",
       "category": "rir"
     }');
@@ -840,9 +856,7 @@ sub fieldsUpdate
       "group": "general",
       "help": "Destination IP",
       "type": "ip",
-      "dbField": "a2",
       "dbField2": "dstIp",
-      "portField": "p2",
       "portField2": "dstPort",
       "portFieldECS": "destination.port",
       "category": "ip",
@@ -853,7 +867,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Source Port",
       "type": "integer",
-      "dbField": "p2",
       "dbField2": "dstPort",
       "category": "port"
     }');
@@ -862,17 +875,28 @@ sub fieldsUpdate
       "group": "general",
       "help": "GeoIP ASN string calculated from the destination IP",
       "type": "termfield",
-      "dbField": "as2",
       "dbField2": "dstASN",
-      "rawField": "rawas2",
       "category": "asn"
+    }');
+    newField("destination.as.number", '{
+      "friendlyName": "Dst ASN Number",
+      "group": "general",
+      "help": "GeoIP ASN Number calculated from the destination IP",
+      "type": "integer",
+      "fieldECS": "destination.as.number"
+    }');
+    newField("destination.as.organization.name", '{
+      "friendlyName": "Dst ASN Name",
+      "group": "general",
+      "help": "GeoIP ASN Name calculated from the destination IP",
+      "type": "termfield",
+      "fieldECS": "destination.as.organization.name"
     }');
     esPost("/${PREFIX}fields_v30/_doc/country.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Country",
       "group": "general",
       "help": "Destination Country",
       "type": "uptermfield",
-      "dbField": "g2",
       "dbField2": "dstGEO",
       "category": "country"
     }');
@@ -881,7 +905,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Destination RIR",
       "type": "uptermfield",
-      "dbField": "rir2",
       "dbField2": "dstRIR",
       "category": "rir"
     }');
@@ -890,7 +913,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of raw bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "by",
       "dbField2": "totBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/bytes.src?timeout=${ESTIMEOUT}s", '{
@@ -898,7 +920,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of raw bytes sent by source in a session",
       "type": "integer",
-      "dbField": "by1",
       "dbField2": "srcBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/bytes.dst?timeout=${ESTIMEOUT}s", '{
@@ -906,7 +927,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of raw bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "by2",
       "dbField2": "dstBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/databytes?timeout=${ESTIMEOUT}s", '{
@@ -914,7 +934,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of data bytes sent AND received in a session",
       "type": "integer",
-      "dbField": "db",
       "dbField2": "totDataBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/databytes.src?timeout=${ESTIMEOUT}s", '{
@@ -922,7 +941,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of data bytes sent by source in a session",
       "type": "integer",
-      "dbField": "db1",
       "dbField2": "srcDataBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/databytes.dst?timeout=${ESTIMEOUT}s", '{
@@ -930,7 +948,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of data bytes sent by destination in a session",
       "type": "integer",
-      "dbField": "db2",
       "dbField2": "dstDataBytes"
     }');
     esPost("/${PREFIX}fields_v30/_doc/packets?timeout=${ESTIMEOUT}s", '{
@@ -938,7 +955,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of packets sent AND received in a session",
       "type": "integer",
-      "dbField": "pa",
       "dbField2": "totPackets"
     }');
     esPost("/${PREFIX}fields_v30/_doc/packets.src?timeout=${ESTIMEOUT}s", '{
@@ -946,7 +962,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of packets sent by source in a session",
       "type": "integer",
-      "dbField": "pa1",
       "dbField2": "srcPackets"
     }');
     esPost("/${PREFIX}fields_v30/_doc/packets.dst?timeout=${ESTIMEOUT}s", '{
@@ -954,7 +969,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Total number of packets sent by destination in a session",
       "type": "integer",
-      "dbField": "pa2",
       "dbField2": "dstPackets"
     }');
     esPost("/${PREFIX}fields_v30/_doc/ip.protocol?timeout=${ESTIMEOUT}s", '{
@@ -962,7 +976,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "IP protocol number or friendly name",
       "type": "lotermfield",
-      "dbField": "pr",
       "dbField2": "ipProtocol",
       "transform": "ipProtocolLookup"
     }');
@@ -971,7 +984,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Arkime ID for the session",
       "type": "termfield",
-      "dbField": "_id",
       "dbField2": "_id",
       "noFacet": "true"
 
@@ -981,7 +993,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Arkime ID of the first session in a multi session stream",
       "type": "termfield",
-      "dbField": "ro",
       "dbField2": "rootId"
     }');
     esPost("/${PREFIX}fields_v30/_doc/node?timeout=${ESTIMEOUT}s", '{
@@ -989,7 +1000,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Arkime node name the session was recorded on",
       "type": "termfield",
-      "dbField": "no",
       "dbField2": "node"
     }');
     esPost("/${PREFIX}fields_v30/_doc/file?timeout=${ESTIMEOUT}s", '{
@@ -997,7 +1007,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Arkime offline pcap filename",
       "type": "fileand",
-      "dbField": "fileand",
       "dbField2": "fileand"
     }');
     esPost("/${PREFIX}fields_v30/_doc/payload8.src.hex?timeout=${ESTIMEOUT}s", '{
@@ -1005,7 +1014,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of source payload in hex",
       "type": "lotermfield",
-      "dbField": "fb1",
       "dbField2": "srcPayload8",
       "aliases": ["payload.src"]
     }');
@@ -1014,7 +1022,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of source payload in utf8",
       "type": "termfield",
-      "dbField": "fb1",
       "dbField2": "srcPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
@@ -1024,7 +1031,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of destination payload in hex",
       "type": "lotermfield",
-      "dbField": "fb2",
       "dbField2": "dstPayload8",
       "aliases": ["payload.dst"]
     }');
@@ -1033,7 +1039,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of destination payload in utf8",
       "type": "termfield",
-      "dbField": "fb2",
       "dbField2": "dstPayload8",
       "transform": "utf8ToHex",
       "noFacet": "true"
@@ -1043,7 +1048,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
-      "dbField": "fballhex",
       "dbField2": "fballhex",
       "regex": "^payload8.(src|dst).hex$"
     }');
@@ -1052,7 +1056,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
-      "dbField": "fballutf8",
       "dbField2": "fballutf8",
       "regex": "^payload8.(src|dst).utf8$"
     }');
@@ -1061,7 +1064,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "SPI data was scrubbed by",
       "type": "lotermfield",
-      "dbField": "scrubby",
       "dbField2": "scrubby"
     }');
     esPost("/${PREFIX}fields_v30/_doc/view?timeout=${ESTIMEOUT}s", '{
@@ -1069,7 +1071,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "Arkime view name",
       "type": "viewand",
-      "dbField": "viewand",
       "dbField2": "viewand",
       "noFacet": "true"
     }');
@@ -1079,7 +1080,6 @@ sub fieldsUpdate
       "help": "Session Start Time",
       "type": "seconds",
       "type2": "date",
-      "dbField": "fp",
       "dbField2": "firstPacket"
     }');
     esPost("/${PREFIX}fields_v30/_doc/stoptime?timeout=${ESTIMEOUT}s", '{
@@ -1088,7 +1088,6 @@ sub fieldsUpdate
       "help": "Session Stop Time",
       "type": "seconds",
       "type2": "date",
-      "dbField": "lp",
       "dbField2": "lastPacket"
     }');
     esPost("/${PREFIX}fields_v30/_doc/huntId?timeout=${ESTIMEOUT}s", '{
@@ -1096,7 +1095,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "The ID of the packet search job that matched this session",
       "type": "termfield",
-      "dbField": "huntId",
       "dbField2": "huntId"
     }');
     esPost("/${PREFIX}fields_v30/_doc/huntName?timeout=${ESTIMEOUT}s", '{
@@ -1104,7 +1102,6 @@ sub fieldsUpdate
       "group": "general",
       "help": "The name of the packet search job that matched this session",
       "type": "termfield",
-      "dbField": "huntName",
       "dbField2": "huntName"
     }');
 }
@@ -1199,11 +1196,11 @@ my %ECSPROP;
 
 sub addECSMap
 {
-  my ($exp, $db, $ecsField) = @_;
+  my ($exp, $db, $fieldECS) = @_;
 
-  $ECSMAP{$exp}->{ecsField} = $ecsField if ($exp ne 'null');
-  $ECSPROP{$ecsField}->{path} = $db;
-  $ECSPROP{$ecsField}->{type} = "alias";
+  $ECSMAP{$exp}->{fieldECS} = $fieldECS if ($exp ne 'null');
+  $ECSPROP{$fieldECS}->{path} = $db;
+  $ECSPROP{$fieldECS}->{type} = "alias";
 }
 
 addECSMap("country.dst", "dstGEO", "destination.geo.country_iso_code");
@@ -1239,10 +1236,10 @@ addECSMap('null', "timestamp", "\@timestamp");
 sub ecsFieldsUpdate
 {
     foreach my $key (keys (%ECSMAP)) {
-        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{ecsField}"}}), 1);
+        esPost("/${PREFIX}fields/_update/$key", qq({"doc":{"fieldECS": "$ECSMAP{$key}->{fieldECS}"}}), 1);
     }
 
-    print '{"properties":' . to_json(\%ECSPROP) . "}\n";
+    #print '{"properties":' . to_json(\%ECSPROP) . "}\n";
     esPut("/${PREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);
 }
 

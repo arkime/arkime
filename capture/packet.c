@@ -1483,6 +1483,7 @@ void moloch_packet_init()
         "Source ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
+        "fieldECS", "source.mac",
         (char *)NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
@@ -1490,6 +1491,7 @@ void moloch_packet_init()
         "Destination ethernet mac addresses set for session",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
+        "fieldECS", "destination.mac",
         (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
@@ -1570,12 +1572,14 @@ void moloch_packet_init()
         "packets.src", "Src Packets", "srcPackets",
         "Total number of packets sent by source in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "source.packets",
         (char *)NULL);
 
     moloch_field_define("general", "integer",
         "packets.dst", "Dst Packets", "dstPackets",
         "Total number of packets sent by destination in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "destination.packets",
         (char *)NULL);
 
     moloch_field_define("general", "integer",
