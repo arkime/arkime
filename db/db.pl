@@ -3514,10 +3514,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $index = @indexes[0];
     my $meta = $mapping->{$index}->{mappings}->{_meta};
 
-    my $version = $meta->{version};
-    $version++;
 
-    esPut("/${PREFIX}lookups/_mapping", "{\"_meta\":{\"version\": $version, \"initSync\":" . ($meta->{initSync} ? "true" : "false") . "}}");
+    $meta->{version}++;
+    esPut("/${PREFIX}lookups/_mapping", to_json({"_meta" => $meta}));
 
     print "${verb} shortcut ${shortcutName}\n";
 
