@@ -1,9 +1,13 @@
 import Vue from 'vue';
+// eslint-disable-next-line no-shadow
+import $ from 'jquery';
 import { render, fireEvent } from '@testing-library/vue';
-import HasPermission from '../src/components/utils/HasPermission.vue';
 import Help from '../src/components/help/Help.vue';
 import FieldService from '../src/components/search/FieldService';
+import HasPermission from '../src/components/utils/HasPermission.vue';
 const { fields } = require('./consts');
+
+global.$ = global.jQuery = $;
 
 Vue.directive('has-permission', HasPermission);
 
