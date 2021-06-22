@@ -370,14 +370,14 @@ sub esCopy
     $main::userAgent->timeout(7200);
 
     my $status = esGet("/_stats/docs", 1);
-    logmsg "Copying " . $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} . " elements from ${PREFIX}$srci to ${PREFIX}$dsti\n";
+    logmsg "Copying " . $status->{indices}->{$srci}->{primaries}->{docs}->{count} . " elements from $srci to $dsti\n";
 
-    esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $PREFIX.$srci}, "dest" => {"index" => $PREFIX.$dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
+    esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $srci}, "dest" => {"index" => $dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
-    my $status = esGet("/${PREFIX}${dsti}/_refresh", 1);
+    my $status = esGet("/${dsti}/_refresh", 1);
     my $status = esGet("/_stats/docs", 1);
-    if ($status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count} > $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}) {
-        logmsg $status->{indices}->{$PREFIX . $srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$PREFIX . $dsti}->{primaries}->{docs}->{count}, "\n";
+    if ($status->{indices}->{$srci}->{primaries}->{docs}->{count} > $status->{indices}->{$dsti}->{primaries}->{docs}->{count}) {
+        logmsg $status->{indices}->{$srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$dsti}->{primaries}->{docs}->{count}, "\n";
         die "\nERROR - Copy failed from $srci to $dsti, you will probably need to delete $dsti and run upgrade again.  Make sure to not change the index while upgrading.\n\n";
     }
 
@@ -499,9 +499,9 @@ sub sequenceUpgrade
     $main::userAgent->timeout(7200);
     sequenceCreate();
     esAlias("remove", "sequence_v3", "sequence");
-    my $results = esGet("/${PREFIX}sequence_v3/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
+    my $results = esGet("/${OLDPREFIX}sequence_v3/_search?version=true&size=10000&rest_total_hits_as_int=true", 0);
 
-    logmsg "Copying " . $results->{hits}->{total} . " elements from ${PREFIX}sequence_v3 to ${PREFIX}sequence_v30\n";
+    logmsg "Copying " . $results->{hits}->{total} . " elements from ${OLDPREFIX}sequence_v3 to ${PREFIX}sequence_v30\n";
 
     return if ($results->{hits}->{total} == 0);
 
@@ -510,7 +510,7 @@ sub sequenceUpgrade
             esPost("/${PREFIX}sequence_v30/_doc/$hit->{_id}?timeout=${ESTIMEOUT}s&version_type=external&version=$hit->{_version}", "{}", 1);
         }
     }
-    esDelete("/${PREFIX}sequence_v3");
+    esDelete("/${OLDPREFIX}sequence_v3");
     $main::userAgent->timeout($ESTIMEOUT + 5);
 }
 ################################################################################
@@ -5567,19 +5567,19 @@ sub createNewAliasesFromOld
 {
     my ($alias, $newName, $oldName, $createFunction) = @_;
 
-    if (esCheckAlias("${PREFIX}$alias", "${PREFIX}$newName") && esIndexExists("${PREFIX}$newName")) {
-        logmsg ("SKIPPING - ${PREFIX}$alias already points to ${PREFIX}$newName\n");
+    if (esCheckAlias($alias, $newName) && esIndexExists($newName)) {
+        logmsg ("SKIPPING - $alias already points to $newName\n");
         return;
     }
 
-    if (!esIndexExists("${PREFIX}$oldName")) {
-        die "ERROR - ${PREFIX}$oldName doesn't exist!";
+    if (!esIndexExists($oldName)) {
+        die "ERROR - $oldName doesn't exist!";
     }
 
     $createFunction->();
-    esAlias("remove", $oldName, $alias);
+    esAlias("remove", $oldName, $alias, 1);
     esCopy($oldName, $newName);
-    esDelete("/${PREFIX}${oldName}", 1);
+    esDelete("/${oldName}", 1);
 }
 ################################################################################
 sub kind2time
@@ -5701,11 +5701,11 @@ my ($loud) = @_;
     } 
 
     if (defined $version &&
-        exists $version->{"${PREFIX}sessions2_template"} &&
-        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta} &&
-        exists $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion}
+        exists $version->{"${OLDPREFIX}sessions2_template"} &&
+        exists $version->{"${OLDPREFIX}sessions2_template"}->{mappings}->{_meta} &&
+        exists $version->{"${OLDPREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion}
     ) {
-        $main::versionNumber = $version->{"${PREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion};
+        $main::versionNumber = $version->{"${OLDPREFIX}sessions2_template"}->{mappings}->{_meta}->{molochDbVersion};
         return;
     }
 
@@ -5717,10 +5717,12 @@ my ($loud) = @_;
 }
 ################################################################################
 sub dbCheckForActivity {
+my ($prefix) = @_;
+
     logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
+    my $json1 = esGet("/${prefix}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     sleep(6);
-    my $json2 = esGet("/${PREFIX}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
+    my $json2 = esGet("/${prefix}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
@@ -5834,7 +5836,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v3,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -6462,7 +6464,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     sub printIndex {
         my ($status, $name) = @_;
-        my $index = $status->{indices}->{$PREFIX.$name};
+        my $index = $status->{indices}->{$PREFIX.$name} || $status->{indices}->{$OLDPREFIX.$name};
         return if (!$index);
         printf "%-20s %17s (%s bytes)\n", $name . ":", commify($index->{primaries}->{docs}->{count}), commify($index->{primaries}->{store}->{size_in_bytes});
     }
@@ -6518,6 +6520,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "dstats_v4");
     printIndex($status, "dstats_v3");
 
+    printIndex($status, "sequence_v30");
     printIndex($status, "sequence_v3");
     printIndex($status, "sequence_v2");
     exit 0;
@@ -7002,16 +7005,16 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
     esDelete("/tagger", 1);
 
-    esDelete("/${PREFIX}sequence_v3", 1); # should be 30
+    esDelete("/${PREFIX}sequence_v30", 1);
     esDelete("/${PREFIX}fields_v30", 1);
     esDelete("/${PREFIX}files_v30", 1);
     esDelete("/${PREFIX}dstats_v30", 1);
     esDelete("/${PREFIX}stats_v30", 1);
     esDelete("/${PREFIX}hunts_v30", 1);
     esDelete("/${PREFIX}lookups_v30", 1);
-    esDelete("/_template/${PREFIX}sessions2_template", 1); # should be 30
+    esDelete("/_template/${PREFIX}sessions3_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1); # should be 30
-    esDelete("/${PREFIX}sessions3-*", 1); # Should be 3
+    esDelete("/${PREFIX}sessions3-*", 1);
 
     sleep(1);
 
@@ -7035,7 +7038,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "It is STRONGLY recommended that you stop ALL Arkime captures and viewers before proceeding.\n";
 
-    dbCheckForActivity();
+    dbCheckForActivity($PREFIX);
 
     my @indexes = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups");
     my @filelist = ();
@@ -7246,17 +7249,17 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     if ($main::versionNumber < 70) {
         checkForOld6Indices();
-        dbCheckForActivity();
+        dbCheckForActivity($OLDPREFIX);
         esPost("/_flush/synced", "", 1);
         sequenceUpgrade();
-        createNewAliasesFromOld("fields", "fields_v30", "fields_v3", \&fieldsCreate);
-        createNewAliasesFromOld("queries", "queries_v30", "queries_v3", \&queriesCreate);
-        createNewAliasesFromOld("files", "files_v30", "files_v6", \&filesCreate);
-        createNewAliasesFromOld("users", "users_v30", "users_v7", \&usersCreate);
-        createNewAliasesFromOld("dstats", "dstats_v30", "dstats_v4", \&dstatsCreate);
-        createNewAliasesFromOld("stats", "stats_v30", "stats_v4", \&statsCreate);
-        createNewAliasesFromOld("hunts", "hunts_v30", "hunts_v2", \&huntsCreate);
-        createNewAliasesFromOld("lookups", "lookups_v30", "lookups_v1", \&lookupsCreate);
+        createNewAliasesFromOld("${OLDPREFIX}fields", "${PREFIX}fields_v30", "${OLDPREFIX}fields_v3", \&fieldsCreate);
+        createNewAliasesFromOld("${OLDPREFIX}queries", "${PREFIX}queries_v30", "${OLDPREFIX}queries_v3", \&queriesCreate);
+        createNewAliasesFromOld("${OLDPREFIX}files", "${PREFIX}files_v30", "${OLDPREFIX}files_v6", \&filesCreate);
+        createNewAliasesFromOld("${OLDPREFIX}users", "${PREFIX}users_v30", "${OLDPREFIX}users_v7", \&usersCreate);
+        createNewAliasesFromOld("${OLDPREFIX}dstats", "${PREFIX}dstats_v30", "${OLDPREFIX}dstats_v4", \&dstatsCreate);
+        createNewAliasesFromOld("${OLDPREFIX}stats", "${PREFIX}stats_v30", "${OLDPREFIX}stats_v4", \&statsCreate);
+        createNewAliasesFromOld("${OLDPREFIX}hunts", "${PREFIX}hunts_v30", "${OLDPREFIX}hunts_v2", \&huntsCreate);
+        createNewAliasesFromOld("${OLDPREFIX}lookups", "${PREFIX}lookups_v30", "${OLDPREFIX}lookups_v1", \&lookupsCreate);
         sessions3Update();
         historyUpdate();
         ecsFieldsUpdate();
