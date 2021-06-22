@@ -176,19 +176,19 @@ function fixIndex (index) {
     }).join(',');
   }
 
-  // If prefix isn't there, add it
-  if (index.lastIndexOf(internals.prefix, 0) !== 0) {
+  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
+  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
     index = internals.prefix + index;
   }
 
-  // If the index doesn't exist but the shrink version does exist, add -shrink
-  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
-    index += '-shrink';
-  }
-
-  // If the index doesn't exist but the reindex version does exist, add -reindex
-  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
-    index += '-reindex';
+  if (internals.aliasesCache && !internals.aliasesCache[index]) {
+    if (internals.aliasesCache[index + '-shrink']) {
+      // If the index doesn't exist but the shrink version does exist, add -shrink
+      index += '-shrink';
+    } else if (internals.aliasesCache[index + '-reindex']) {
+      // If the index doesn't exist but the reindex version does exist, add -reindex
+      index += '-reindex';
+    }
   }
 
   return index;
