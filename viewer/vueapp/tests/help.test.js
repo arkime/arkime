@@ -9,7 +9,7 @@ Vue.directive('has-permission', HasPermission);
 
 jest.mock('../src/components/search/FieldService');
 
-test('toggle db fields', async () => {
+test('help page field list', async () => {
   FieldService.get = jest.fn().mockResolvedValue(fields);
 
   const $route = { path: 'http://localhost:8123/arkime/help#fields' };

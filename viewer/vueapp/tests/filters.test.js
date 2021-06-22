@@ -88,10 +88,7 @@ test('humanReadableNumber', () => {
 
 test('timezoneDateString', () => {
   expect(filters.timezoneDateString('a')).toBe('Invalid date');
-  expect(filters.timezoneDateString(0, 'local')).toBe('1969/12/31 19:00:00');
   expect(filters.timezoneDateString(0, 'gmt')).toBe('1970/01/01 00:00:00 UTC');
-  expect(filters.timezoneDateString(0, 'local', true)).toBe('1969/12/31 19:00:00.000');
-  expect(filters.timezoneDateString(1624024589000, 'local')).toBe('2021/06/18 09:56:29');
   expect(filters.timezoneDateString(1624024589000, 'gmt')).toBe('2021/06/18 13:56:29 UTC');
   expect(filters.timezoneDateString(1234567898765, 'gmt', true)).toBe('2009/02/13 23:31:38.765 UTC');
 });
