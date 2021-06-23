@@ -274,8 +274,8 @@ const dateFields = {
 function fixSessionFields (fields, unflatten) {
   if (!fields) { return; }
   if (unflatten) {
-    fields.source = {};
-    fields.destination = {};
+    fields.source = {as: {}, geo: {}};
+    fields.destination = {as: {}, geo: {}};
   }
   for (const f in fields) {
     const path = f.split('.');

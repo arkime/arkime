@@ -271,7 +271,7 @@ dl
         | Add Src RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.source.ip, session.source.port, session.srcGEO, session.srcASN, session.srcRIR, "src")
+    +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src")
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -321,7 +321,7 @@ dl
         | Add Dst RIR EXISTS! to query
 
   dd
-    +ipPrint(session, session.destination.ip, session.destination.port, session.dstGEO, session.dstASN, session.dstRIR, "dst")
+    +ipPrint(session, session.destination.ip, session.destination.port, session.destination.geo.country_iso_code, session.destination.as.full, session.dstRIR, "dst")
 
   if (session.srcPayload8 || session.dstPayload8)
     dt
