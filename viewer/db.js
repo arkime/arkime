@@ -148,6 +148,10 @@ exports.initialize = async (info, cb) => {
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
   }
 
+  if (internals.debug > 1) {
+    console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
+  }
+
   try {
     const { body: data } = await internals.client7.info();
     if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {

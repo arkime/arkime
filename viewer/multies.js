@@ -610,7 +610,7 @@ function fixQuery (node, body, doneCb) {
   function doProcess (qParent, obj, item) {
     let query;
 
-    if (item === 'index' && obj[item] === 'lookups') {
+    if (item === 'index' && obj[item] === 'arkime_lookups') {
       obj[item] = `${node2Prefix(node)}lookups`;
     } else if (item === 'fileand' && typeof obj[item] === 'string') {
       const qName = obj.fileand;
