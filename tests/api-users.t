@@ -139,11 +139,11 @@ my $pwd = "*/pcap";
     my $info = viewerGet("/user/columns?molochRegressionUser=test1");
     eq_or_diff($info, from_json("[]"), "column: empty");
 
-    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["a1","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/user/columns/create?molochRegressionUser=test1", '{"name": "column1", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
-    $info = viewerPostToken("/api/user/column?molochRegressionUser=test1", '{"name": "column2", "columns": ["a1","dstIp"], "order": [["lp", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/api/user/column?molochRegressionUser=test1", '{"name": "column2", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column2", "column: create name");
 

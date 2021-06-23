@@ -249,7 +249,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     slack:
-        requires: [centos-7, centos-8, ubuntu-18, ubuntu-20]
+        requires: [centos-7, centos-7-sanitize, centos-8, ubuntu-18, ubuntu-20]
         image: andywick/arkime-build-7:3.0.0-6
         annotations:
             beta.screwdriver.cd/cpu: LOW
