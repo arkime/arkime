@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-shadow
 import $ from 'jquery';
 import { render } from '@testing-library/vue';
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasPermissionComponent from './components/haspermission.test.vue';
 import UserService from '../src/components/users/UserService';
