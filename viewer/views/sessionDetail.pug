@@ -252,13 +252,13 @@ dl
       b-dropdown-item(@click="fieldExists('country.src', '==')")
         | Add Src Country EXISTS! to query
       b-dropdown-divider
-      b-dropdown-item(@click="exportUnique('rawas1', 0)")
+      b-dropdown-item(@click="exportUnique('source.as.full', 0)")
         | Export Unique Src ASN
-      b-dropdown-item(@click="exportUnique('rawas1', 1)")
+      b-dropdown-item(@click="exportUnique('source.as.full', 1)")
         | Export Unique Src ASN with counts
-      b-dropdown-item(@click="openSpiGraph('rawas1')")
+      b-dropdown-item(@click="openSpiGraph('source.as.full')")
         | Open Src ASN SPI Graph
-      b-dropdown-item(@click="fieldExists('rawas1', '==')")
+      b-dropdown-item(@click="fieldExists('source.as.full', '==')")
         | Add Src ASN EXISTS! to query
       b-dropdown-divider
       b-dropdown-item(@click="exportUnique('rir.src', 0)")
@@ -302,13 +302,13 @@ dl
       b-dropdown-item(@click="fieldExists('country.dst', '==')")
         | Add Dst Country EXISTS! to query
       b-dropdown-divider
-      b-dropdown-item(@click="exportUnique('rawas2', 0)")
+      b-dropdown-item(@click="exportUnique('destination.as.full', 0)")
         | Export Unique Dst ASN
-      b-dropdown-item(@click="exportUnique('rawas2', 1)")
+      b-dropdown-item(@click="exportUnique('destination.as.full', 1)")
         | Export Unique Dst ASN with counts
-      b-dropdown-item(@click="openSpiGraph('rawas2')")
+      b-dropdown-item(@click="openSpiGraph('destination.as.full')")
         | Open Dst ASN SPI Graph
-      b-dropdown-item(@click="fieldExists('rawas2', '==')")
+      b-dropdown-item(@click="fieldExists('destination.as.full', '==')")
         | Add Dst ASN EXISTS! to query
       b-dropdown-divider
       b-dropdown-item(@click="exportUnique('rir.dst', 0)")
