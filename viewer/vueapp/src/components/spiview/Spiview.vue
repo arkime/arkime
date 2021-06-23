@@ -940,7 +940,7 @@ export default {
         let field;
 
         for (const key in this.fields) {
-          if (this.fields[key].dbField === fieldID) {
+          if (this.fields[key].dbField === fieldID || this.fields[key].dbField2 === fieldID) {
             field = this.fields[key];
             break;
           }
