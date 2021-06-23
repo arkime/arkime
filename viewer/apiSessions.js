@@ -2499,8 +2499,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
         console.log("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
-        // ALW FIX - ELYSE, the UI can't display this error below, maybe should be a BSQ?
-        return res.end("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        return res.serverError(500, "Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
       }
 
       session = session.fields;

@@ -843,6 +843,9 @@ export default {
 
         Vue.axios(options)
           .then((response) => {
+            if (response.data.bsqErr) {
+              response.data.error = response.data.bsqErr;
+            }
             resolve(response.data);
           })
           .catch((error) => {
