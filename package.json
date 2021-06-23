@@ -85,6 +85,7 @@
     "@babel/eslint-parser": "^7.13.4",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-env": "^7.12.17",
+    "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/vue": "^5.6.2",
     "@vue/babel-preset-jsx": "^1.2.4",
     "autoprefixer": "^10.2.5",
