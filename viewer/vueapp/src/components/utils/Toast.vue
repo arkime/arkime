@@ -7,19 +7,24 @@
 
     <!-- icon -->
     <span class="fa fa-check"
+      title="success"
       v-if="type === 'success'">
     </span>
     <span class="fa fa-info-circle"
+      title="info"
       v-if="type === 'info'">
     </span>
     <span class="fa fa-exclamation-triangle"
+      title="warning"
       v-if="type === 'warning' || type === 'danger'">
     </span> <!-- /icon -->
     <!-- message -->
     &nbsp;{{ message || 'undefined message' }}
     <!-- /message -->
     <!-- dismiss alert button -->
-    <button type="button"
+    <button
+      role="button"
+      type="button"
       class="close"
       @click="done(null)">
       <span>
