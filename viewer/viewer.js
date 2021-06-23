@@ -2582,7 +2582,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 Db.initialize({
   host: internals.elasticBase,
-  prefix: Config.get('prefix', 'arkime_'),
+  prefix: internals.prefix,
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
   // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
   usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),

@@ -44,7 +44,7 @@ module.exports = (app, Config) => {
     runningHuntJob: undefined,
     proccessHuntJobsInitialized: false,
     notifiers: undefined,
-    prefix: Config.get('prefix', ''),
+    prefix: Config.get('prefix', 'arkime_'),
     shortcutTypeMap: {
       ip: 'ip',
       integer: 'number',
@@ -109,7 +109,7 @@ module.exports = (app, Config) => {
     iModule.internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
   }
 
-  if (iModule.internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
+  if (!iModule.internals.elasticBase[0].startsWith('http')) {
     iModule.internals.elasticBase[0] = 'http://' + iModule.internals.elasticBase[0];
   }
 
