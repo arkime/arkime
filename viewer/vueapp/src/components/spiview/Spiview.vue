@@ -447,7 +447,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField === i));
+      return filters.map(i => this.fields.find(f => f.dbField === i || f.dbField2 === i));
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
