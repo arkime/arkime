@@ -2498,9 +2498,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        console.log("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
+        console.log("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
         // ALW FIX - ELYSE, the UI can't display this error below, maybe should be a BSQ?
-        return res.end("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        return res.end("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
       }
 
       session = session.fields;

@@ -1240,7 +1240,7 @@ sub ecsFieldsUpdate
     }
 
     #print '{"properties":' . to_json(\%ECSPROP) . "}\n";
-    esPut("/${PREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);
+    esPut("/${OLDPREFIX}sessions2-*/_mapping", '{"properties":' . to_json(\%ECSPROP) . "}", 1);
 }
 
 ################################################################################

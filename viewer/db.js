@@ -1807,6 +1807,10 @@ exports.session2Sid = function (item) {
 };
 
 exports.sid2Id = function (id) {
+  if (id[1] === '@') {
+    id = id.substr(2);
+  }
+
   const colon = id.indexOf(':');
   if (colon > 0) {
     return id.substr(colon + 1);
