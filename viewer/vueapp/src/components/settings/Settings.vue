@@ -3715,6 +3715,9 @@ export default {
             for (let i = 0, len = this.fields.length; i < len; ++i) {
               const field = this.fields[i];
               this.fieldsMap[field.dbField] = field;
+              if (field.dbField2 && field.dbField2 !== field.dbField) {
+                this.fieldsMap[field.dbField2] = field;
+              }
             }
 
             // get the visible headers for the sessions table configuration
