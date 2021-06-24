@@ -3680,7 +3680,7 @@ export default {
             this.timelineDataFilters = [];
             for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
               const filter = this.settings.timelineDataFilters[i];
-              const fieldOBJ = this.integerFields.find(j => j.dbField === filter);
+              const fieldOBJ = this.integerFields.find(j => j.dbField === filter || j.dbField2 === filter);
               if (fieldOBJ) {
                 this.timelineDataFilters.push(fieldOBJ);
               }
@@ -3695,15 +3695,15 @@ export default {
             // NOTE: dbField is saved in settings, but show the field's friendlyName
             for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
               const field = this.fieldsPlus[i];
-              if (this.settings.spiGraph === field.dbField) {
+              if (this.settings.spiGraph === field.dbField || this.settings.spiGraph === field.dbField2) {
                 this.$set(this, 'spiGraphField', field);
                 this.$set(this, 'spiGraphTypeahead', field.friendlyName);
               }
-              if (this.settings.connSrcField === field.dbField) {
+              if (this.settings.connSrcField === field.dbField || this.settings.connSrcField === field.dbField2) {
                 this.$set(this, 'connSrcField', field);
                 this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
               }
-              if (this.settings.connDstField === field.dbField) {
+              if (this.settings.connDstField === field.dbField || this.settings.connDstField === field.dbField2) {
                 this.$set(this, 'connDstField', field);
                 this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
               }
