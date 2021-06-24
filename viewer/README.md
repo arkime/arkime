@@ -35,9 +35,22 @@ You should find that you have a new folder:
 
 **To run the web application, you must have an elasticsearch cluster running and already built and configured Arkime. Read the main [Arkime README](../README.md) for more information.**
 
-
 #### The simplest way to start the web app is:
 
+```
+npm run start:dev
+```
+
+For this command to work, your `tests/config.test.ini` must be valid.
+
+This command adds an admin user (if it doesn't already exists) and starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
+
+Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
+
+Now browse to the app at `http://localhost:8123` and login using username "admin" and password "admin".
+
+
+#### You can run the app as an anonymous user:
 
 ```
 npm run start:test
@@ -52,22 +65,6 @@ Webpack watches for changes to relevant Vue files, and re-bundles the Vue app af
 Now browse to the app at `http://localhost:8123`.
 
 
-#### To start the web app with a test admin user, run:
-
-```
-npm run addtestuser
-npm run start:testuser
-```
-
-For this to work, your `tests/config.test.ini` must be valid.
-
-The first command adds an "admin" user. The second command starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
-
-Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
-
-Now browse to the app at `http://localhost:8123` and login using username "admin" and password "admin".
-
-
 #### You can also start the app with an existing config file:
 
 ```
@@ -79,6 +76,16 @@ For this command to work, your `config.ini` must be valid.
 This command starts the node server and bundles and minifies all Vue app files into `viewer/vueapp/dist`.
 
 Now browse to the app at `http://localhost:8123`.
+
+---
+
+### Running the UI Tests:
+
+```
+npm test
+```
+
+The UI tests use [Jest](https://jestjs.io) and [Vue Testing Library](https://testing-library.com/docs/vue-testing-library/intro). 
 
 ---
 

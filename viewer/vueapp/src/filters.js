@@ -2,6 +2,28 @@ import Vue from 'vue';
 import moment from 'moment-timezone';
 
 /**
+ * Rounds a number using Math.round
+ *
+ * @example
+ * '{{ 1234.56 | round(0) }}'
+ * this.$options.filters.round(1234.56, 0);
+ *
+ * @param {number} value  The number to round
+ * @param {int} decimals  The number of decimals to preserve, default = 0
+ * @returns {decimal}     The number rounded to the requested number of decimal places
+ */
+export const round = function (value, decimals) {
+  if (isNaN(value)) { return 0; }
+
+  if (!value) { value = 0; }
+
+  if (!decimals) { decimals = 0; }
+
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+};
+Vue.filter('round', round);
+
+/**
  * Adds commas to a number so it's easier to read
  *
  * @example
@@ -11,10 +33,14 @@ import moment from 'moment-timezone';
  * @param {int} input The number to add commas to
  * @returns {string}  The number string with commas
  */
-Vue.filter('commaString', (input) => {
+export const commaString = function (input) {
   if (isNaN(input)) { return 0; }
-  return input.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-});
+
+  const parts = input.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+Vue.filter('commaString', commaString);
 
 /**
  * Rounds a number then adds commas so it's easier to read
@@ -27,13 +53,14 @@ Vue.filter('commaString', (input) => {
  * @param {int} decimals  The number of decimals to preserve, default = 0
  * @returns {string}      The number string with commas
  */
-Vue.filter('roundCommaString', (input, decimals) => {
+export const roundCommaString = function (input, decimals) {
   if (isNaN(input)) { return 0; }
 
   if (!decimals) { decimals = 0; }
 
-  return Vue.options.filters.commaString(Vue.options.filters.round(input, decimals));
-});
+  return commaString(round(input, decimals));
+};
+Vue.filter('roundCommaString', roundCommaString);
 
 /**
  * Parses ipv6
@@ -45,7 +72,7 @@ Vue.filter('roundCommaString', (input, decimals) => {
  * @param {int} ipv6  The ipv6 value
  * @returns {string}  The human understandable ipv6 string
  */
-Vue.filter('extractIPv6String', (ipv6) => {
+export const extractIPv6String = function (ipv6) {
   if (!ipv6) { return ''; }
 
   ipv6 = ipv6.toString();
@@ -67,7 +94,8 @@ Vue.filter('extractIPv6String', (ipv6) => {
     });
 
   return ip;
-});
+};
+Vue.filter('extractIPv6String', extractIPv6String);
 
 /**
  * Displays the protocol string instead of number code
@@ -79,13 +107,12 @@ Vue.filter('extractIPv6String', (ipv6) => {
  * @param {int} protocolCode  The protocol code
  * @returns {string}          The human understandable protocol string
  */
-Vue.filter('protocol', (protocolCode) => {
+export const protocol = function (protocolCode) {
   const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
-  let result = lookup[protocolCode];
-  if (!result) { result = protocolCode; }
-  return result;
-});
+  return lookup[protocolCode] || protocolCode;
+};
+Vue.filter('protocol', protocol);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bits
@@ -98,8 +125,11 @@ Vue.filter('protocol', (protocolCode) => {
  * @param {int} fileSizeInBits The number to make human readable
  * @returns {string}           The <=4 char human readable number
  */
-Vue.filter('humanReadableBits', (fileSizeInBits) => {
+export const humanReadableBits = function (fileSizeInBits) {
   fileSizeInBits = parseInt(fileSizeInBits);
+
+  if (isNaN(fileSizeInBits)) { return '0'; }
+
   let i = 0;
   const bitUnits = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (fileSizeInBits >= 1024) {
@@ -112,7 +142,8 @@ Vue.filter('humanReadableBits', (fileSizeInBits) => {
   } else {
     return fileSizeInBits.toFixed(1) + bitUnits[i];
   }
-});
+};
+Vue.filter('humanReadableBits', humanReadableBits);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bytes
@@ -125,8 +156,11 @@ Vue.filter('humanReadableBits', (fileSizeInBits) => {
  * @param {int} fileSizeInBytes The number to make human readable
  * @returns {string}            The <=4 char human readable number
  */
-Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
+export const humanReadableBytes = function (fileSizeInBytes) {
   fileSizeInBytes = parseInt(fileSizeInBytes);
+
+  if (isNaN(fileSizeInBytes)) { return '0'; }
+
   let i = 0;
   const byteUnits = ['Bi', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
   while (fileSizeInBytes >= 1000) {
@@ -139,7 +173,8 @@ Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
   } else {
     return fileSizeInBytes.toFixed(1) + byteUnits[i];
   }
-});
+};
+Vue.filter('humanReadableBytes', humanReadableBytes);
 
 /**
  * Modifies a number to display the <=4 char human readable version of bytes
@@ -152,7 +187,9 @@ Vue.filter('humanReadableBytes', (fileSizeInBytes) => {
  * @param {int} num   The number to make human readable
  * @returns {string}  The <=4 char human readable number
  */
-Vue.filter('humanReadableNumber', (num) => {
+export const humanReadableNumber = function (num) {
+  if (isNaN(num)) { return '0 '; }
+
   let i = 0;
   const units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
   while (num >= 1000) {
@@ -165,7 +202,8 @@ Vue.filter('humanReadableNumber', (num) => {
   } else {
     return num.toFixed(1) + units[i];
   }
-});
+};
+Vue.filter('humanReadableNumber', humanReadableNumber);
 
 /**
  * Parses date to string and applies the selected timezone
@@ -178,10 +216,10 @@ Vue.filter('humanReadableNumber', (num) => {
  * @param {string} timezone  The timezone to use ('gmt', 'local', or 'localtz'), default = 'local'
  * @returns {string}         The date formatted and converted to the requested timezone
  */
-Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
-  let format = 'YYYY/MM/DD HH:mm:ss z';
+export const timezoneDateString = function (ms, timezone, showMs) {
+  if (isNaN(ms)) { return 'Invalid date'; }
 
-  if (showMs) { format = 'YYYY/MM/DD HH:mm:ss.SSS z'; }
+  let format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : 'YYYY/MM/DD HH:mm:ss z';
 
   if (timezone === 'gmt') {
     return moment.tz(ms, 'utc').format(format);
@@ -189,27 +227,10 @@ Vue.filter('timezoneDateString', (ms, timezone, showMs) => {
     return moment.tz(ms, Intl.DateTimeFormat().resolvedOptions().timeZone).format(format);
   }
 
+  format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS' : 'YYYY/MM/DD HH:mm:ss';
   return moment(ms).format(format);
-});
-
-/**
- * Rounds a number using Math.round
- *
- * @example
- * '{{ 1234.56 | round(0) }}'
- * this.$options.filters.round(1234.56, 0);
- *
- * @param {number} value  The number to round
- * @param {int} decimals  The number of decimals to preserve, default = 0
- * @returns {decimal}     The number rounded to the requested number of decimal places
- */
-Vue.filter('round', function (value, decimals) {
-  if (!value) { value = 0; }
-
-  if (!decimals) { decimals = 0; }
-
-  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-});
+};
+Vue.filter('timezoneDateString', timezoneDateString);
 
 /**
  * Turns milliseconds into a human readable time range
@@ -222,7 +243,7 @@ Vue.filter('round', function (value, decimals) {
  * @returns {string}  The human readable time range
  *                    Output example: 1 day 10:42:01
  */
-Vue.filter('readableTime', function (ms) {
+export const readableTime = function (ms) {
   if (isNaN(ms)) { return '?'; }
 
   const seconds = parseInt((ms / 1000) % 60);
@@ -250,7 +271,8 @@ Vue.filter('readableTime', function (ms) {
   }
 
   return result || '0';
-});
+};
+Vue.filter('readableTime', readableTime);
 
 /**
  * Turns milliseconds into a human readable time range
@@ -263,7 +285,7 @@ Vue.filter('readableTime', function (ms) {
  * @returns {string}  The human readable time range
  *                    Output example: 1 day 10:42:01
  */
-Vue.filter('readableTimeCompact', function (ms) {
+export const readableTimeCompact = function (ms) {
   if (isNaN(ms)) { return '?'; }
 
   const hours = parseInt((ms / (1000 * 60 * 60)) % 24);
@@ -276,7 +298,8 @@ Vue.filter('readableTimeCompact', function (ms) {
   }
   result += hours + 'h';
   return result;
-});
+};
+Vue.filter('readableTimeCompact', readableTimeCompact);
 
 /**
  * Searches fields for a term
@@ -293,7 +316,7 @@ Vue.filter('readableTimeCompact', function (ms) {
  * @param {boolean} excludeInfo     Whether to exclude the special info "field"
  * @returns {array}                 An array of fields that match the search term
  */
-Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeFilename, excludeInfo) {
+export const searchFields = function (searchTerm, fields, excludeTokens, excludeFilename, excludeInfo) {
   if (!searchTerm) { searchTerm = ''; }
   return fields.filter((field) => {
     if (field.regex !== undefined || field.noFacet === 'true') {
@@ -319,7 +342,8 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
         return item.toLowerCase().includes(searchTerm);
       }));
   });
-});
+};
+Vue.filter('searchFields', searchFields);
 
 /**
  * Builds an expression for search.
@@ -334,7 +358,7 @@ Vue.filter('searchFields', function (searchTerm, fields, excludeTokens, excludeF
  * @param {string} op     The relational operator
  * @returns {string}      The fully built expression
  */
-Vue.filter('buildExpression', function (field, value, op) {
+export const buildExpression = function (field, value, op) {
   // for values required to be strings in the search expression
   /* eslint-disable no-useless-escape */
   const needQuotes = (value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
@@ -346,7 +370,8 @@ Vue.filter('buildExpression', function (field, value, op) {
   if (needQuotes) { value = `"${value}"`; }
 
   return `${field} ${op} ${value}`;
-});
+};
+Vue.filter('buildExpression', buildExpression);
 
 /**
  * Searches cluster for a term
@@ -356,14 +381,15 @@ Vue.filter('buildExpression', function (field, value, op) {
  * '{{ searchTerm | searchCluster(cluster) }}'
  * this.$options.filters.searchCluster('ES1', ['ES1', 'ES2', 'ES3']);
  *
- * @param {string} searchTerm       The string to search for within the fields
- * @param {array} clusters          The list of cluster to search
- * @returns {array}                 An array of cluster that match the search term
+ * @param {string} searchTerm The string to search for within the fields
+ * @param {array} clusters    The list of cluster to search
+ * @returns {array}           An array of cluster that match the search term
  */
-Vue.filter('searchCluster', function (searchTerm, clusters) {
+export const searchCluster = function (searchTerm, clusters) {
   if (!searchTerm) { searchTerm = ''; }
   return clusters.filter((cluster) => {
     searchTerm = searchTerm.toLowerCase();
     return cluster.toLowerCase().includes(searchTerm);
   });
-});
+};
+Vue.filter('searchCluster', searchCluster);

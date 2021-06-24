@@ -19,22 +19,22 @@
         or click the owl on the top left.
         <br>
         <a href="#"
+          role="button"
           @click="dismissMsg"
           class="no-decoration pull-left"
-          v-b-tooltip.hover
-          title="But see this message again next time">
-          <span class="fa fa-close">
-          </span>
+          title="But see this message again next time"
+          v-b-tooltip.hover="'But see this message again next time'">
+          <span class="fa fa-close" />
           Dismiss
         </a>
         <a href="#"
+          role="button"
           @click="acknowledgeMsg"
           class="no-decoration pull-right"
-          v-b-tooltip.hover
-          title="Don't show me this message again">
+          title="Don't show me this message again"
+          v-b-tooltip.hover="'Don\'t show me this message again'">
           Got it!
-          <span class="fa fa-thumbs-up">
-          </span>
+          <span class="fa fa-thumbs-up" />
         </a>
       </div>
     </div>
