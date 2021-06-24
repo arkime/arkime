@@ -32,7 +32,8 @@
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "dev": "cd ../ && npm run viewer:dev",
     "doc": "cd ../ && npm run viewer:doc",
-    "lint": "cd ../ && npm run viewer:lint"
+    "lint": "cd ../ && npm run viewer:lint",
+    "test": "cd ../ && npm run viewer:testui"
   },
   "engines": {
     "node": ">= 6.0.0",
