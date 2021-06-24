@@ -1274,7 +1274,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
     }
 
-    if (parseInt(reqQuery.facets) === 1) {
+    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
       query.aggregations = {};
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
@@ -1291,17 +1291,23 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       for (let i = 0; i < filters.length; i++) {
         const filter = filters[i];
 
-        // Will also grap src/dst of these options instead to show on the timeline
-        if (filter === 'network.packets') {
+        // Will also grab src/dst of these options instead to show on the timeline
+        switch (filter) {
+        case 'network.packets':
+        case 'totPackets':
           query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
           query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
-        } else if (filter === 'network.bytes') {
+          break;
+        case 'network.bytes':
+        case 'totBytes':
           query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
           query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
-        } else if (filter === 'totDataBytes') {
+          break;
+        case 'totDataBytes':
           query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
           query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
-        } else {
+          break;
+        default:
           query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
         }
       }

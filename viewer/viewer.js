@@ -762,6 +762,9 @@ function fillQueryFromBody (req, res, next) {
     };
     req.query = query;
   }
+  if (Config.debug > 1) {
+    console.log(`${req.url} query`, req.query);
+  }
   next();
 }
 
