@@ -298,9 +298,9 @@ module.exports = (Config, Db, molochparser, internals) => {
 
     // allowed tot* data map
     const filtersMap = {
-      'totPackets': ['source.packets', 'destination.packets'],
+      totPackets: ['source.packets', 'destination.packets'],
       'network.packets': ['source.packets', 'destination.packets'],
-      'totBytes': ['source.bytes', 'destination.bytes'],
+      totBytes: ['source.bytes', 'destination.bytes'],
       'network.bytes': ['source.bytes', 'destination.bytes'],
       totDataBytes: ['client.bytes', 'server.bytes']
     };
