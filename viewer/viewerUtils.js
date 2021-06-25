@@ -286,7 +286,14 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   vModule.graphMerge = (req, query, aggregations) => {
-    const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+    let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+
+    // Convert old names to names locally
+    filters = filters.map(x => {
+      if (x === 'totPackets') return 'network.packets';
+      if (x === 'totBytes') return 'network.bytes';
+      return x;
+    });
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,
