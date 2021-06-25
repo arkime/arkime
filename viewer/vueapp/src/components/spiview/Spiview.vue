@@ -604,11 +604,11 @@ export default {
     showValues: function (value, more) {
       let count;
       const field = value.field;
-      if (this.spiQuery.includes(field.dbField)) {
+      if (this.spiQuery.includes(field.dbField) || this.spiQuery.includes(field.dbField2)) {
         // make sure field is in the spi query parameter
         const spiParamsArray = this.spiQuery.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-          if (spiParamsArray[i].includes(field.dbField)) {
+          if (spiParamsArray[i].includes(field.dbField) || spiParamsArray[i].includes(field.dbField2)) {
             const spiParam = spiParamsArray[i].split(':');
             if (more) {
               count = spiParam[1] = parseInt(spiParam[1]) + 100;
