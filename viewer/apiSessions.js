@@ -2060,14 +2060,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 }
               }
 
-              if (graph['network.packetsTotal'] !== undefined || graph.totPacketsTotal !== undefined) {
-                response['network.packetsHisto'] = graph['network.packetsTotal'] || graph.totPacketsTotal;
+              if (graph['network.packetsTotal'] !== undefined) {
+                response['network.packetsHisto'] = graph['network.packetsTotal'];
               }
               if (graph.totDataBytesTotal !== undefined) {
                 response.totDataBytesHisto = graph.totDataBytesTotal;
               }
-              if (graph['network.bytesTotal'] !== undefined || graph.totBytesTotal !== undefined) {
-                response['network.bytesHisto'] = graph['network.bytesTotal'] || graph.totBytesTotal;
+              if (graph['network.bytesTotal'] !== undefined) {
+                response['network.bytesHisto'] = graph['network.bytesTotal'];
               }
 
               if (results.items.length === searchResult.responses.length) {
