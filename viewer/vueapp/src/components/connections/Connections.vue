@@ -953,10 +953,10 @@ export default {
           this.setupFields();
 
           for (const field of this.fields) {
-            if (field.dbField === this.query.srcField) {
+            if (field.dbField === this.query.srcField || field.dbField2 === this.query.srcField) {
               this.srcFieldTypeahead = field.friendlyName;
             }
-            if (field.dbField === this.query.dstField) {
+            if (field.dbField === this.query.dstField || field.dbField2 === this.query.dstField) {
               this.dstFieldTypeahead = field.friendlyName;
             }
           }
