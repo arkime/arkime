@@ -26,6 +26,7 @@
               size="sm"
               no-flip
               no-caret
+              role="dropdown"
               class="col-vis-menu pull-left"
               variant="theme-primary">
               <template slot="button-content">
