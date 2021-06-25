@@ -405,8 +405,9 @@ exports.getSession = async (id, options, cb) => {
     });
   }
 
+  const optionsReplaced = options === undefined;
   if (!options) {
-    options = { _source: 'cert', fields: ['*'], REPLACED: true };
+    options = { _source: 'cert', fields: ['*'] };
   }
   const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -427,7 +428,7 @@ exports.getSession = async (id, options, cb) => {
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
-    if (options.REPLACED !== true && options.fields && !options.fields.includes('packetPos')) {
+    if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
       return cb(null, session);
     }
     return fixPacketPos(session, session.fields);
