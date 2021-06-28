@@ -1,10 +1,11 @@
 <template>
 
-  <a @click="toggle"
+  <a
+    role="button"
+    @click="toggle"
     :class="btnClass"
     class="btn btn-sm btn-toggle cursor-pointer">
-    <span class="fa fa-close">
-    </span>
+    <span class="fa fa-close" />
   </a>
 
 </template>

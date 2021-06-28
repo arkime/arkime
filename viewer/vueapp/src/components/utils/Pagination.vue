@@ -3,35 +3,36 @@
   <div>
     <div v-if="!infoOnly">
       <!-- page size -->
-      <select class="form-control page-select"
-        v-model="length">
-        <option v-for="option of lengthOptions"
-          :key="option.value"
-          :value="option.value">
-          {{ option.label }}
-        </option>
-      </select> <!-- /page size -->
+      <b-select
+        role="listbox"
+        v-model="length"
+        :options="lengthOptions"
+        class="form-control page-select"
+      /> <!-- /page size -->
       <!-- paging -->
-      <b-pagination size="sm"
-        v-model="currentPage"
+      <b-pagination
+        size="sm"
         :limit="5"
         hide-ellipsis
         :per-page="length"
+        v-model="currentPage"
         :total-rows="recordsFiltered"
         @input="notifyParent(true)">
       </b-pagination> <!-- paging -->
       <!-- page info -->
-      <div class="pagination-info cursor-help"
+      <div
+        :title="pagingInfoTitle"
+        class="pagination-info cursor-help"
         v-b-tooltip.hover.right="pagingInfoTitle">
         Showing
         <span v-if="recordsFiltered">
-          {{ start + 1 }}
+          {{ start + 1 | commaString }}
         </span>
         <span v-else>
-          {{ start }}
+          {{ start | commaString }}
         </span>
         <span v-if="recordsFiltered">
-          - {{ Math.min((start + length), recordsFiltered) }}
+          - {{ Math.min((start + length), recordsFiltered) | commaString }}
         </span>
         of {{ recordsFiltered | commaString }} entries
       </div> <!-- /page info -->
@@ -39,7 +40,7 @@
     <div v-else
       class="pagination-info info-only">
       Showing {{ recordsFiltered | commaString }} entries,
-      filtered from {{ recordsTotal }} total entries
+      filtered from {{ recordsTotal | commaString }} total entries
     </div>
   </div>
 
@@ -88,12 +89,12 @@ export default {
     },
     lengthOptions: function () {
       const options = [
-        { value: 10, label: '10 per page' },
-        { value: 50, label: '50 per page' },
-        { value: 100, label: '100 per page' },
-        { value: 200, label: '200 per page' },
-        { value: 500, label: '500 per page' },
-        { value: 1000, label: '1000 per page' }
+        { value: 10, text: '10 per page' },
+        { value: 50, text: '50 per page' },
+        { value: 100, text: '100 per page' },
+        { value: 200, text: '200 per page' },
+        { value: 500, text: '500 per page' },
+        { value: 1000, text: '1000 per page' }
       ];
 
       let exists = false;

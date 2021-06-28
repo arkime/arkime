@@ -17,7 +17,9 @@
       placeholder="Begin typing to search for fields"
     />
     <div class="dropdown-menu field-typeahead"
-      :class="{'show':showDropdown}">
+      :class="{'show':showDropdown}"
+      v-show="showDropdown"
+      role="dropdown">
       <a v-for="(field, index) in filteredFieldHistory"
         :key="field.exp+'-history'"
         :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
@@ -27,6 +29,7 @@
         {{ field.friendlyName }}
         <small>({{ field.exp }})</small>
         <span class="fa fa-close pull-right mt-1"
+          title="Remove from history"
           @click.stop.prevent="removeFromFieldHistory(field)">
         </span>
       </a>
@@ -95,7 +98,7 @@ export default {
   computed: {
     // compute the route param because watcher only accepts dot-delimited paths
     routeParams: function () {
-      return this.$route.query[this.queryParam];
+      return this.$route.query[this.queryParam || 'exp'];
     }
   },
   created: function () {

@@ -13,8 +13,8 @@
       {{ field.friendlyName }}
       <button
         class="close ml-2"
-        @click.stop.prevent="removeField(index)">
-        <span>&times;</span>
+        @click.stop.prevent="$emit('remove', index)">
+        x
       </button>
     </label>
     <div
@@ -47,7 +47,7 @@ export default {
     dragOver (e, index) {
       this.draggedOver = index; // index of the field that is being dragged over
     },
-    drop (e, index) {
+    drop (e) {
       const listClone = [...this.list];
       // remove the dragged field from the list
       const draggedField = listClone.splice(this.dragging, 1)[0];
@@ -55,9 +55,6 @@ export default {
       listClone.splice(this.draggedOver, 0, draggedField);
       this.$emit('reorder', listClone);
       this.dragging = undefined;
-    },
-    removeField (index) {
-      this.$emit('remove', index);
     }
   }
 };
