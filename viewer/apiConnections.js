@@ -241,7 +241,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         if (data[dbField]) {
           // sum integers
           if (field.type === 'integer' && field.category !== 'port') {
-            property[dbField] = (property[dbField] || 0) + data[dbField];
+            property[dbField] = (property[dbField] ?? 0) + data[dbField];
           } else { // make a list of values
             if (!property[dbField]) { property[dbField] = []; }
             // make all values an array (because sometimes they are by default)
@@ -256,6 +256,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               property[dbField] = [...new Set(property[dbField])]; // unique only
             }
           }
+        } else if (property[dbField] === undefined && field.type === 'integer' && field.category !== 'port') {
+          property[dbField] = 0;
         }
       }
     } // updateValues
