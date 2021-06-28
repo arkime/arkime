@@ -849,7 +849,8 @@
                   </td>
                 </tr>
               </template>
-              <tr v-if="!cronQueries || !Object.keys(cronQueries).length"
+              <tr v-if="!cronQueries || !cronQueries.length"
+                key="no-results"
                 class="text-center">
                 <td colspan="9"
                   class="pt-2">
@@ -860,7 +861,8 @@
                 </td>
               </tr>
               <!-- cron query list error -->
-              <tr v-if="cronQueryListError">
+              <tr v-if="cronQueryListError"
+                key="list-error">
                 <td colspan="8">
                   <p class="text-danger mb-0">
                     <span class="fa fa-exclamation-triangle">
@@ -2192,13 +2194,16 @@
                       @input="toggleShortcutShared(item, index)"
                     />
                   </td>
-                  <td>
+                  <td class="shortcut-value narrow cursor-help"
+                    v-b-tooltip.hover="item.name">
                     {{ item.name }}
                   </td>
-                  <td>
+                  <td class="shortcut-value cursor-help"
+                    v-b-tooltip.hover="item.description">
                     {{ item.description }}
                   </td>
-                  <td class="shortcut-value">
+                  <td class="shortcut-value cursor-help"
+                    v-b-tooltip.hover="item.value">
                     {{ item.value }}
                   </td>
                   <td>
@@ -3934,13 +3939,17 @@ export default {
 
 /* shortcuts table */
 .settings-page .shortcut-value {
-  max-width: 400px;
+  max-width: 360px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.settings-page .shortcut-value.narrow {
+  max-width: 160px;
+}
 .settings-page .shortcut-btns {
-  min-width: 80px;
+  min-width: 140px;
+  white-space: nowrap;
 }
 
 /* theme displays ----------------- */

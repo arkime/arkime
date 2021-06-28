@@ -1249,6 +1249,11 @@ input.csv-cell {
   height: 20px;
   margin-right: -20px;
 }
+
+/* line up add value actions button with the reset/save file buttons */
+.value-actions-editor {
+  margin-bottom: -47px !important;
+}
 </style>
 
 <style>
@@ -1266,10 +1271,5 @@ input.csv-cell {
 /* move up the dropdown toggle caret in the csv-editor */
 .col-control .dropdown-toggle:after {
   vertical-align: 0.55em !important;
-}
-
-/* line up add value actions button with the reset/save file buttons */
-.value-actions-editor {
-  margin-bottom: -47px !important;
 }
 </style>
