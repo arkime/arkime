@@ -182,7 +182,7 @@
             Note: It can take up to 2.5 minutes for your changes to be pushed to Arkime
           </h6>
           <div v-if="currFormat === 'valueactions' && !rawValueActions"
-            class="mb-3">
+            class="value-actions-editor">
             <transition-group
               tag="ul"
               name="shrink"
@@ -361,6 +361,22 @@
               WISE Documentation</a>
             for more information on WISE Source Configuration.
           </p>
+          <form v-if="configViewSelected === 'edit'"
+            class="form-inline pull-right ml-5 mt-2 mb-3">
+            <b-button
+              class="mr-2"
+              variant="warning"
+              :disabled="fileResetDisabled"
+              @click="loadSourceFile">
+              Reset File
+            </b-button>
+            <b-button
+              variant="primary"
+              :disabled="fileSaveDisabled"
+              @click="saveSourceFile">
+              Save File
+            </b-button>
+          </form>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -1250,5 +1266,10 @@ input.csv-cell {
 /* move up the dropdown toggle caret in the csv-editor */
 .col-control .dropdown-toggle:after {
   vertical-align: 0.55em !important;
+}
+
+/* line up add value actions button with the reset/save file buttons */
+.value-actions-editor {
+  margin-bottom: -47px !important;
 }
 </style>

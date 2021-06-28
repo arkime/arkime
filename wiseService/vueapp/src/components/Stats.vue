@@ -35,7 +35,7 @@
         </div>
         <div v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
-          <div>
+          <div class="text-center">
             <h1><b-icon-folder2-open /></h1>
             No sources match your search.
           </div>
@@ -51,7 +51,7 @@
         </div>
         <div v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
-          <div>
+          <div class="text-center">
             <h1><b-icon-folder2-open /></h1>
             No types match your search.
           </div>

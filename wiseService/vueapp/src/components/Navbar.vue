@@ -28,8 +28,7 @@
         <li class="nav-item mr-2">
           <router-link to="config"
             active-class="active"
-            class="nav-link"
-            exact>
+            class="nav-link">
             Config
           </router-link>
         </li>
