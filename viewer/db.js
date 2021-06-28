@@ -170,6 +170,14 @@ exports.initialize = async (info, cb) => {
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
+  if (index === 'sessions*') {
+    // Didn't used to have a prefix, don't use one for sessions2
+    if (internals.prefix === 'arkime_') {
+      return `sessions2*,${internals.prefix}sessions3*`;
+    }
+    return `${internals.prefix}sessions2*,${internals.prefix}sessions3*`;
+  }
+
   if (Array.isArray(index)) {
     return index.map((val) => {
       if (val.startsWith(internals.prefix)) {
@@ -851,9 +859,9 @@ exports.flush = async (index) => {
 exports.refresh = async (index) => {
   if (index === 'users' || index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
-  } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
+
+  return internals.client7.indices.refresh({ index: fixIndex(index) });
 };
 
 exports.addTagsToSession = function (index, id, tags, cluster, cb) {

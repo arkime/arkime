@@ -380,7 +380,10 @@ export default {
               },
               openPermalink: function () {
                 const id = this.session.id.split(':');
-                const prefixlessId = id.length > 1 ? id[1] : id[0];
+                let prefixlessId = id.length > 1 ? id[1] : id[0];
+                if (prefixlessId[1] === '@') {
+                  prefixlessId = prefixlessId.substr(2);
+                }
 
                 const params = {
                   expression: `id == ${prefixlessId}`,
