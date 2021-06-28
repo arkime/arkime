@@ -34,24 +34,27 @@ export const fields = [{
   friendlyName: 'Info',
   help: 'Information'
 }, {
-  dbField: 'totBytes',
+  dbField: 'network.bytes',
   dbField2: 'totBytes',
+  fieldECS: 'network.bytes',
   exp: 'bytes',
   friendlyName: 'Bytes',
   group: 'general',
   help: 'Total number of raw bytes sent AND received in a session',
   type: 'integer'
 }, {
-  dbField: 'dstBytes',
+  dbField: 'destination.bytes',
   dbField2: 'dstBytes',
+  fieldECS: 'destination.bytes',
   exp: 'bytes.dst',
   friendlyName: 'Dst Bytes',
   group: 'general',
   help: 'Total number of raw bytes sent by destination in a session',
   type: 'integer'
 }, {
-  dbField: 'srcBytes',
+  dbField: 'source.bytes',
   dbField2: 'srcBytes',
+  fieldECS: 'source.bytes',
   exp: 'bytes.src',
   friendlyName: 'Src Bytes',
   group: 'general',
@@ -123,45 +126,52 @@ export const fields = [{
 }, {
   aliases: ['ip.dst:port'],
   category: 'ip',
-  dbField: 'dstIp',
+  dbField: 'destination.ip',
   dbField2: 'dstIp',
+  fieldECS: 'destination.ip',
   exp: 'ip.dst',
   friendlyName: 'Dst IP',
   group: 'general',
   help: 'Destination IP',
-  portField: 'dstPort',
+  portField: 'destination.port',
   portField2: 'dstPort',
+  portFieldECS: 'destination.port',
   type: 'ip'
 }, {
   category: 'ip',
-  dbField: 'srcIp',
+  dbField: 'source.ip',
   dbField2: 'srcIp',
+  fieldECS: 'source.ip',
   exp: 'ip.src',
   friendlyName: 'Src IP',
   group: 'general',
   help: 'Source IP',
-  portField: 'srcPort',
+  portField: 'source.port',
   portField2: 'srcPort',
+  portFieldECS: 'source.port',
   type: 'ip'
 }, {
-  dbField: 'totPackets',
+  dbField: 'network.packets',
   dbField2: 'totPackets',
+  fieldECS: 'network.packets',
   exp: 'packets',
   friendlyName: 'Packets',
   group: 'general',
   help: 'Total number of packets sent AND received in a session',
   type: 'integer'
 }, {
-  dbField: 'dstPackets',
+  dbField: 'destination.packets',
   dbField2: 'dstPackets',
+  fieldECS: 'destination.packets',
   exp: 'packets.dst',
   friendlyName: 'Dst Packets',
   group: 'general',
   help: 'Total number of packets sent by destination in a session',
   type: 'integer'
 }, {
-  dbField: 'srcPackets',
+  dbField: 'source.packets',
   dbField2: 'srcPackets',
+  fieldECS: 'source.packets',
   exp: 'packets.src',
   friendlyName: 'Src Packets',
   group: 'general',
@@ -178,8 +188,9 @@ export const fields = [{
   type: 'integer'
 }, {
   category: 'port',
-  dbField: 'dstPort',
+  dbField: 'destination.port',
   dbField2: 'dstPort',
+  fieldECS: 'destination.port',
   exp: 'port.dst',
   friendlyName: 'Dst Port',
   group: 'general',
@@ -187,8 +198,9 @@ export const fields = [{
   type: 'integer'
 }, {
   category: 'port',
-  dbField: 'srcPort',
+  dbField: 'source.port',
   dbField2: 'srcPort',
+  fieldECS: 'source.port',
   exp: 'port.src',
   friendlyName: 'Src Port',
   group: 'general',
