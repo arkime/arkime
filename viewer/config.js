@@ -555,6 +555,13 @@ function loadCertData () {
   exports.certFileData = fs.readFileSync(exports.certFileLocation);
 }
 
+if (exports.debug == 0) {
+  exports.debug = parseInt(exports.get('debug', 0));
+  if (exports.debug) {
+    console.log('Debug Level', exports.debug);
+  }
+}
+
 if (exports.isHTTPS()) {
   try {
     loadCertData();

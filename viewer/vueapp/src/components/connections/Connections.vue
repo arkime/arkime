@@ -1327,6 +1327,8 @@ export default {
     dbField2Type: function (dbField) {
       for (const k in this.fields) {
         if (dbField === this.fields[k].dbField ||
+            dbField === this.fields[k].dbField2 ||
+            dbField === this.fields[k].fieldECS ||
             dbField === this.fields[k].rawField) {
           return this.fields[k].type;
         }
@@ -1337,6 +1339,8 @@ export default {
     dbField2Exp: function (dbField) {
       for (const k in this.fields) {
         if (dbField === this.fields[k].dbField ||
+            dbField === this.fields[k].dbField2 ||
+            dbField === this.fields[k].fieldECS ||
             dbField === this.fields[k].rawField) {
           return this.fields[k].exp;
         }
@@ -1344,12 +1348,24 @@ export default {
 
       return undefined;
     },
+    dbField2dbField: function (dbField) {
+      for (const k in this.fields) {
+        if (dbField === this.fields[k].dbField ||
+            dbField === this.fields[k].dbField2 ||
+            dbField === this.fields[k].fieldECS ||
+            dbField === this.fields[k].rawField) {
+          return this.fields[k].dbField;
+        }
+      }
+
+      return undefined;
+    },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
-        dataNode.dbField = this.query.dstField;
+        dataNode.dbField = this.dbField2dbField(this.query.dstField);
         dataNode.exp = this.dbField2Exp(this.query.dstField);
       } else {
-        dataNode.dbField = this.query.srcField;
+        dataNode.dbField = this.dbField2dbField(this.query.srcField);
         dataNode.exp = this.dbField2Exp(this.query.srcField);
       }
 
@@ -1462,8 +1478,8 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = this.query.dstField;
-      linkData.srcDbField = this.query.srcField;
+      linkData.dstDbField = this.dbField2dbField(this.query.dstField);
+      linkData.srcDbField = this.dbField2dbField(this.query.srcField);
       linkData.dstExp = this.dbField2Exp(this.query.dstField);
       linkData.srcExp = this.dbField2Exp(this.query.srcField);
 
