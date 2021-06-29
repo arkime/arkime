@@ -85,7 +85,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
       res.logCounts(r.data.length, r.recordsFiltered, r.total);
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - /api/files', util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/files`, util.inspect(err, false, 50));
       return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
