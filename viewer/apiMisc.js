@@ -251,7 +251,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
         clusters.inactive = results.inactive;
         return res.send(clusters);
       } catch (err) {
-        console.log('ERROR - GET /api/clusters', util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/clusters`, util.inspect(err, false, 50));
         return res.send(clusters);
       }
     } else {
