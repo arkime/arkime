@@ -3,6 +3,7 @@
 const dns = require('dns');
 const fs = require('fs');
 const unzipper = require('unzipper');
+const util = require('util');
 
 module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
   const mModule = {};
@@ -84,7 +85,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
       res.logCounts(r.data.length, r.recordsFiltered, r.total);
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - /file/list', err);
+      console.log(`ERROR - ${req.method} /api/files`, util.inspect(err, false, 50));
       return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
@@ -218,7 +219,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
     console.log('upload command: ', cmd);
     exec(cmd, (error, stdout, stderr) => {
       if (error !== null) {
-        console.log('<b>exec error: ' + error);
+        console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50));
         res.status(500);
         res.write('<b>Upload command failed:</b><br>');
       }
@@ -250,7 +251,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
         clusters.inactive = results.inactive;
         return res.send(clusters);
       } catch (err) {
-        console.log('ERROR - GET /api/clusters', err);
+        console.log(`ERROR - ${req.method} /api/clusters`, util.inspect(err, false, 50));
         return res.send(clusters);
       }
     } else {
@@ -269,7 +270,7 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
   mModule.cyberChef = (req, res) => {
     sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
-        console.log(`ERROR - /${req.params.nodeName}/session/${req.params.id}/cyberchef`, err);
+        console.log(`ERROR - ${req.method} /${req.params.nodeName}/session/${req.params.id}/cyberchef`, util.inspect(err, false, 50));
         return res.end('Error - ' + err);
       }
 
