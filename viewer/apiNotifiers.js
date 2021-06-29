@@ -2,6 +2,7 @@
 
 const glob = require('glob');
 const path = require('path');
+const util = require('util');
 
 module.exports = (Config, Db, internals) => {
   const nModule = {};
@@ -273,7 +274,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          console.log('/api/notifiers failed', err, info);
+          console.log(`ERROR - ${req.method} /api/notifier`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Creating notifier failed');
         }
         return res.send(JSON.stringify({
@@ -369,7 +370,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          console.log('/api/notifier update failed', err, info);
+          console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Updating notifier failed');
         }
         return res.send(JSON.stringify({
@@ -408,7 +409,7 @@ module.exports = (Config, Db, internals) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          console.log('/api/notifier delete failed', err, info);
+          console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Deleting notifier failed');
         }
         return res.send(JSON.stringify({

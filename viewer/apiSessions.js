@@ -3128,7 +3128,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
       } catch (err) {
-        console.log(`ERROR - POST /api/sessions/receive ${saveId}`, util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/sessions/receive ${saveId}`, util.inspect(err, false, 50));
       }
     }
 

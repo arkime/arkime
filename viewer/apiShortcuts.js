@@ -1,5 +1,7 @@
 'use strict';
 
+const util = require('util');
+
 module.exports = (Db, internals, ViewerUtils) => {
   const sModule = {};
 
@@ -168,7 +170,7 @@ module.exports = (Db, internals, ViewerUtils) => {
 
       res.send(sendResults);
     }).catch((err) => {
-      console.log('ERROR - GET /api/shortcuts', err);
+      console.log(`ERROR - ${req.method} /api/shortcuts`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving shortcuts - ' + err);
     });
   };
@@ -252,12 +254,12 @@ module.exports = (Db, internals, ViewerUtils) => {
           }));
         } catch (err) {
           shortcutMutex.unlock();
-          console.log('ERROR - POST /api/shortcut', err);
+          console.log(`ERROR - ${req.method} /api/shortcut (createShortcut)`, util.inspect(err, false, 50));
           return res.serverError(500, 'Error creating shortcut');
         }
       } catch (err) {
         shortcutMutex.unlock();
-        console.log('ERROR - POST /api/shortcut', err);
+        console.log(`ERROR - ${req.method} /api/shortcut (searchShortcuts)`, util.inspect(err, false, 50));
         return res.serverError(500, 'Error creating shortcut');
       }
     });
@@ -347,17 +349,17 @@ module.exports = (Db, internals, ViewerUtils) => {
             }));
           } catch (err) {
             shortcutMutex.unlock();
-            console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+            console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (setShortcut)`, util.inspect(err, false, 50));
             return res.serverError(500, 'Error updating shortcut');
           }
         } catch (err) {
           shortcutMutex.unlock();
-          console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+          console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (searchShortcuts)`, util.inspect(err, false, 50));
           return res.serverError(500, 'Error updating shortcut');
         }
       });
     } catch (err) {
-      console.log(`ERROR - PUT /api/shortcut/${req.params.id}`, err);
+      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to update failed');
     }
   };
@@ -387,11 +389,11 @@ module.exports = (Db, internals, ViewerUtils) => {
           text: 'Deleted shortcut successfully'
         }));
       } catch (err) {
-        console.log(`ERROR - DELETE /api/shortcut/${req.params.id}`, err);
+        console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (deleteShortcut)`, util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting shortcut');
       }
     } catch (err) {
-      console.log(`ERROR - DELETE /api/shortcut/${req.params.id}`, err);
+      console.log(`ERROR - ${req.method} /api/shortcut/${req.params.id} (getShortcut)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to delete failed');
     }
   };
