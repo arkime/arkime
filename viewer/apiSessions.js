@@ -32,8 +32,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result.error) {
-          console.log('ERROR - Could not fetch list of sessions.  Err: ', err, ' Result: ', result, 'query:', query);
-          return res.send('Could not fetch list of sessions.  Err: ' + err + ' Result: ' + result);
+          console.log('ERROR - Could not fetch list of sessions:', util.inspect(err, false, 50), ' Result: ', result, 'query:', query);
+          return res.send('Could not fetch list of sessions:' + err + ' Result: ' + result);
         }
         const list = result.hits.hits;
         if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
@@ -165,7 +165,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         viewExpression = molochparser.parse(req.user.views[reqQuery.view].expression);
         query.query.bool.filter.push(viewExpression);
       } catch (e) {
-        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, e);
+        console.log(`ERROR - User expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
         err = e;
       }
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
@@ -185,7 +185,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               viewExpression = molochparser.parse(sharedUser.views[reqQuery.view].expression);
               query.query.bool.filter.push(viewExpression);
             } catch (e) {
-              console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, e);
+              console.log(`ERROR - Shared user expression (${reqQuery.view}) doesn't compile -`, util.inspect(e, false, 50));
               err = e;
             }
           }
@@ -281,7 +281,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       query.query.bool.filter.push({ term: { rootId: fields.rootId } });
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
-          console.log('ERROR fetching matching sessions', err, result);
+          console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50), result);
           return nextCb(null);
         }
         result.hits.hits.forEach((subItem) => {
@@ -387,7 +387,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         showFrames: req.query.showFrames
       }, (err, data) => {
         if (err) {
-          console.trace('ERROR - localSession - ', err);
+          console.trace('ERROR - rendering localSession detail - ', util.inspect(err, false, 50));
           return req.next(err);
         }
         res.send(data);
@@ -625,7 +625,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           try {
             ipcap.open(file.name, file);
           } catch (err) {
-            console.log("ERROR - Couldn't open file ", err);
+            console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
             if (err.code === 'EACCES') {
               // Find all the directories to check
               const checks = [];
@@ -730,7 +730,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             });
           });
           preq.on('error', (e) => {
-            console.log("ERROR - Couldn't proxy pcap request=", url, '\nerror=', e);
+            console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
             nextCb(null);
           });
           preq.end();
@@ -919,7 +919,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cb(null);
     }, (err, session) => {
       if (err) {
-        console.log('writePcapNg', err);
+        console.log('ERROR - writePcapNg', util.inspect(err, false, 50));
         return;
       }
       res.write(b.slice(0, boffset));
@@ -968,11 +968,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[1], whatToRemove === 'all');
               pcap.scrubPacket(obj, pos, pcapScrub.scrubbingBuffers[2], whatToRemove === 'all');
             } catch (e) {
-              console.log(`Couldn't scrub packet at ${pos} -`, e);
+              console.log(`ERROR - Couldn't scrub packet at ${pos} -`, util.inspect(e, false, 50));
             }
             return nextCb(null);
           } else {
-            console.log(`Couldn't scrub packet at ${pos}`);
+            console.log(`ERROR - Couldn't scrub packet at ${pos}. Packet length <= 16.`);
             return nextCb(null);
           }
         }
@@ -1010,9 +1010,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               try {
                 ipcap.openReadWrite(file.name, file);
               } catch (err) {
-                const errorMsg = `Couldn't open file for writing: ${err}`;
-                console.log(`Error - ${errorMsg}`);
-                return nextCb(errorMsg);
+                console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
+                return nextCb(`Couldn't open file for scrubbing pcap: ${err}`);
               }
               processFile(ipcap, pos, itemPos++, nextCb);
             });
@@ -1082,7 +1081,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     Db.getSession(id, options, (err, session) => {
       if (err || !session.found) {
-        console.log('session get error', err, session);
+        console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50), session);
         return endCb('Session not found', null);
       }
 
@@ -1319,7 +1318,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       shortcuts = await Db.getShortcutsCache(req.user.userId);
     } catch (err) { // don't need to do anything, there will just be no
       // shortcuts sent to the parser. but still log the error.
-      console.log('ERROR - fetching shortcuts cache when building sessions query', err);
+      console.log('ERROR - fetching shortcuts cache when building sessions query', util.inspect(err, false, 50));
     }
 
     // always complete building the query regardless of shortcuts
@@ -1419,7 +1418,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (errCb) {
           return errCb(err);
         }
-        console.log('ERROR - getViewUrl - node:', req.params.nodeName, 'err:', err);
+        console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
         return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
 
@@ -1451,7 +1450,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (errCb) {
           return errCb(e);
         }
-        console.log("ERROR - Couldn't proxy request=", url, '\nerror=', e, 'You might want to run viewer with two --debug for more info');
+        console.log("ERROR - Couldn't proxy request=", url, '\nerror=', util.inspect(e, false, 50), '\nYou might want to run viewer with two --debug for more info');
         res.send(`Error talking to node '${ViewerUtils.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
       });
       preq.end();
@@ -1466,14 +1465,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
       if (!session._source && !session.fields) {
-        console.log('No Fields', session);
+        console.log('No Fields in addTagsList', session);
         return nextCb(null);
       }
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
       Db.addTagsToSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) { console.log('addTagsList error', session, err, data); }
+        if (err) {
+          console.log('ERROR - addTagsList', session, util.inspect(err, false, 50), data);
+        }
         nextCb(null);
       });
     }, doneCb);
@@ -1486,14 +1487,16 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
       if (!session._source && !session.fields) {
-        console.log('No Fields', session);
+        console.log('No Fields in removeTagsList', session);
         return nextCb(null);
       }
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
       Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) { console.log('removeTagsList error', session, err, data); }
+        if (err) {
+          console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50), data);
+        }
         nextCb(null);
       });
     }, (err) => {
@@ -1517,7 +1520,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cb(null);
     }, (err, session) => {
       if (err) {
-        console.log('ERROR - processSessionIdAndDecode', err);
+        console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
         return doneCb(err);
       }
       packets = packets.filter(Boolean);
@@ -1639,7 +1642,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       if (Config.debug) {
-        console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
+        console.log(`/api/sessions ${indices} query`, JSON.stringify(query, null, 1));
       }
 
       Promise.all([
@@ -1647,7 +1650,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
-          console.log('sessions.json result', util.inspect(sessions, false, 50));
+          console.log('/api/sessions result', util.inspect(sessions, false, 50));
         }
 
         if (sessions.error) { throw sessions.err; }
@@ -1692,13 +1695,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
             return res.send(response);
           } catch (e) {
-            console.trace('fetch sessions error', e.stack);
+            console.trace(`ERROR - ${req.method} /api/sessions`, e.stack);
             response.error = e.toString();
             return res.send(response);
           }
         });
       }).catch((err) => {
-        console.log('ERROR - sessions error', err);
+        console.log(`ERROR - ${req.method} /api/sessions`, util.inspect(err, false, 50));
         response.error = err.toString();
         return res.send(response);
       });
@@ -1803,7 +1806,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       query.size = 0;
 
       if (Config.debug) {
-        console.log('spiview.json query', JSON.stringify(query), 'indices', indices);
+        console.log('/api/spiview query', JSON.stringify(query), 'indices', indices);
       }
 
       let map;
@@ -1824,12 +1827,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
-          console.log('spiview.json result', util.inspect(sessions, false, 50));
+          console.log('/api/spiview result', util.inspect(sessions, false, 50));
         }
 
         if (sessions.error) {
           bsqErr = ViewerUtils.errorString(null, sessions);
-          console.log('spiview.json ERROR', (sessions ? sessions.error : null));
+          console.log(`ERROR - ${req.method} /api/spiview`, util.inspect(sessions ? sessions.error : null, false, 50));
           sendResult();
           return;
         }
@@ -2103,7 +2106,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         return endCb();
       }).catch((err) => {
-        console.log('spigraph.json error', err);
+        console.log(`ERROR - ${req.method} /api/spigraph`, util.inspect(err, false, 50));
         return res.serverError(403, ViewerUtils.errorString(err));
       });
     });
@@ -2163,19 +2166,19 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       if (Config.debug > 2) {
-        console.log('spigraph pie aggregations', indices, JSON.stringify(query, false, 2));
+        console.log('/api/spigraphhierarchy aggregations', indices, JSON.stringify(query, false, 2));
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          console.log('spigraphpie ERROR', err);
+          console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
           res.status(400);
           return res.end(err);
         }
 
         if (Config.debug > 2) {
-          console.log('result', JSON.stringify(result, false, 2));
+          console.log('/api/spigraphhierarchy result', JSON.stringify(result, false, 2));
         }
 
         // format the data for the pie graph
@@ -2316,7 +2319,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       query.size = 0;
-      console.log('unique aggregations', indices, JSON.stringify(query));
+      console.log('/api/unique aggregations', indices, JSON.stringify(query));
 
       function findFileNames (result) {
         const intermediateResults = [];
@@ -2345,11 +2348,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          console.log('Error', query, err);
+          console.log(`ERROR - ${req.method} /api/unique`, query, util.inspect(err, false, 50));
           return doneCb ? doneCb() : res.end();
         }
         if (Config.debug) {
-          console.log('unique result', util.inspect(result, false, 50));
+          console.log('/api/unique result', util.inspect(result, false, 50));
         }
         if (!result.aggregations || !result.aggregations.field) {
           return doneCb ? doneCb() : res.end();
@@ -2428,19 +2431,19 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       if (Config.debug > 2) {
-        console.log('multiunique aggregations', indices, JSON.stringify(query, false, 2));
+        console.log('/api/multiunique aggregations', indices, JSON.stringify(query, false, 2));
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          console.log('multiunique ERROR', err);
+          console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
           res.status(400);
           return res.end(err);
         }
 
         if (Config.debug > 2) {
-          console.log('result', JSON.stringify(result, false, 2));
+          console.log('/api/multiunique result', JSON.stringify(result, false, 2));
         }
         printUnique(result.aggregations.field.buckets, '');
 
@@ -2500,11 +2503,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           emailFields: Config.headers('headers-email')
         }, (err, data) => {
           if (err) {
-            console.trace('ERROR - fixFields - ', err);
+            console.trace(`ERROR - ${req.method} /api/session/${req.params.nodeName}/${req.params.id}/detail`, util.inspect(err, false, 50));
             return req.next(err);
           }
           if (Config.debug > 1) {
-            console.log('Detail Rendering', data.replace(/>/g, '>\n'));
+            console.log(`/api/session/${req.params.nodeName}/${req.params.id}/detail rendering`, data.replace(/>/g, '>\n'));
           }
           res.send(data);
         });
@@ -2746,7 +2749,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     };
 
     if (Config.debug) {
-      console.log('entirePcap query', JSON.stringify(query));
+      console.log(`/api/session/entire/${req.params.nodeName}/${req.params.id}/pcap query`, JSON.stringify(query, false, 2));
     }
 
     Db.searchSessions('sessions2-*', query, null, (err, data) => {
@@ -2856,21 +2859,21 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       query._source = ['node'];
 
       if (Config.debug) {
-        console.log(`sessions.json ${indices} query`, JSON.stringify(query, null, 1));
+        console.log(`/api/sessions/bodyhash/${req.params.hash} ${indices} query`, JSON.stringify(query, null, 2));
       }
 
       Db.searchSessions(indices, query, null, (err, sessions) => {
         if (err) {
-          console.log('Error -> Db Search ', err);
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(err, false, 50));
           res.status(400);
           res.end(err);
         } else if (sessions.error) {
-          console.log('Error -> Db Search ', sessions.error);
+          console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(sessions.error, false, 50));
           res.status(400);
           res.end(sessions.error);
         } else {
           if (Config.debug) {
-            console.log('bodyHash result', util.inspect(sessions, false, 50));
+            console.log(`/api/sessions/bodyhash/${req.params.hash} result`, util.inspect(sessions, false, 50));
           }
 
           if (sessions.hits.hits.length > 0) {
@@ -3125,7 +3128,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
       } catch (err) {
-        console.log(`ERROR - POST /api/sessions/receive ${saveId}`, err);
+        console.log(`ERROR - POST /api/sessions/receive ${saveId}`, util.inspect(err, false, 50));
       }
     }
 
