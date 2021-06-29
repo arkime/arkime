@@ -90,6 +90,42 @@ export default {
         reject(new Error('Error retrieving country codes'));
       }
     });
+  },
+
+  /**
+   * Retrieves a field object
+   * Matches dbField, dbField2, fieldECS, or rawField
+   * @param {object} fields - A fields map
+   * @param {string} search - The value to search for
+   * @returns {object} The field or undefined
+   */
+  getField (fields, search) {
+    for (const k in fields) {
+      if (search === fields[k].dbField ||
+          search === fields[k].dbField2 ||
+          search === fields[k].fieldECS ||
+          search === fields[k].rawField) {
+        return fields[k];
+      }
+    }
+
+    return undefined;
+  },
+
+  /**
+   * Retrieves a field's property
+   * Matches dbField, dbField2, fieldECS, or rawField
+   * @param {object} fields - A map of fields
+   * @param {string} search - The value to search for
+   * @param {string} prop - The field property value to return
+   * @returns {string} The field property value or undefined
+   */
+  getFieldProperty (fields, search, prop) {
+    const field = this.getField(fields, search);
+
+    if (field && field[prop]) { return field[prop]; }
+
+    return undefined;
   }
 
 };

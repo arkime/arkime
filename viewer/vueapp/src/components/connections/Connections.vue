@@ -1021,8 +1021,8 @@ export default {
       if (!data.nodes.length) { return; }
 
       // convert time in ms to timezone date string
-      const srcFieldIsTime = this.dbField2Type(this.query.srcField) === 'seconds';
-      const dstFieldIsTime = this.dbField2Type(this.query.dstField) === 'seconds';
+      const srcFieldIsTime = FieldService.getFieldProperty(this.fields, this.query.srcField, 'type') === 'seconds';
+      const dstFieldIsTime = FieldService.getFieldProperty(this.fields, this.query.dstField, 'type') === 'seconds';
 
       if (srcFieldIsTime || dstFieldIsTime) {
         for (const dataNode of data.nodes) {
@@ -1324,49 +1324,13 @@ export default {
       const val = this.calculateNodeWeight(n);
       return 2 * val;
     },
-    dbField2Type: function (dbField) {
-      for (const k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].dbField2 ||
-            dbField === this.fields[k].fieldECS ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k].type;
-        }
-      }
-
-      return undefined;
-    },
-    dbField2Exp: function (dbField) {
-      for (const k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].dbField2 ||
-            dbField === this.fields[k].fieldECS ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k].exp;
-        }
-      }
-
-      return undefined;
-    },
-    dbField2dbField: function (dbField) {
-      for (const k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].dbField2 ||
-            dbField === this.fields[k].fieldECS ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k].dbField;
-        }
-      }
-
-      return undefined;
-    },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
-        dataNode.dbField = this.dbField2dbField(this.query.dstField);
-        dataNode.exp = this.dbField2Exp(this.query.dstField);
+        dataNode.dbField = FieldService.getFieldProperty(this.fields, this.query.dstField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.fields, this.query.dstField, 'exp');
       } else {
-        dataNode.dbField = this.dbField2dbField(this.query.srcField);
-        dataNode.exp = this.dbField2Exp(this.query.srcField);
+        dataNode.dbField = FieldService.getFieldProperty(this.fields, this.query.srcField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.fields, this.query.srcField, 'exp');
       }
 
       closePopups();
@@ -1478,10 +1442,10 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = this.dbField2dbField(this.query.dstField);
-      linkData.srcDbField = this.dbField2dbField(this.query.srcField);
-      linkData.dstExp = this.dbField2Exp(this.query.dstField);
-      linkData.srcExp = this.dbField2Exp(this.query.srcField);
+      linkData.dstDbField = FieldService.getFieldProperty(this.fields, this.query.dstField, 'dbField');
+      linkData.srcDbField = FieldService.getFieldProperty(this.fields, this.query.srcField, 'dbField');
+      linkData.dstExp = FieldService.getFieldProperty(this.fields, this.query.dstField, 'exp');
+      linkData.srcExp = FieldService.getFieldProperty(this.fields, this.query.srcField, 'exp');
 
       closePopups();
       if (!popupVue) {
