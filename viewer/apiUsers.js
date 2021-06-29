@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const util = require('util');
 const stylus = require('stylus');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
@@ -40,7 +41,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
-          console.log(endpoint, 'failed', err, info);
+          console.log('ERROR - saveSharedView -', endpoint, util.inspect(err, false, 50), info);
           return res.serverError(500, errorMessage);
         }
 
@@ -63,7 +64,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log(endpoint, 'failed', err, info);
+        console.log('ERROR - shareView -', endpoint, util.inspect(err, false, 50), info);
         return res.serverError(500, errorMessage);
       }
 
@@ -76,7 +77,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   function unshareView (req, res, user, sharedUser, endpoint, successMessage, errorMessage) {
     Db.setUser('_moloch_shared', sharedUser, (err, info) => {
       if (err) {
-        console.log(endpoint, 'failed', err, info);
+        console.log('ERROR - unshareView - setUser (_moloch_shared) -', endpoint, util.inspect(err, false, 50), info);
         return res.serverError(500, errorMessage);
       }
 
@@ -93,7 +94,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, subInfo) => {
         if (err) {
-          console.log(endpoint, 'failed', err, subInfo);
+          console.log(`ERROR - saveSharedView - setUser (${user.userId}) -`, endpoint, util.inspect(err, false, 50), subInfo);
           return res.serverError(500, errorMessage);
         }
 
@@ -270,7 +271,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.getUser(req.body.userId, (err, user) => {
       if (!user || user.found) {
-        console.log('Trying to add duplicate user', err, user);
+        console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
         return res.serverError(403, 'User already exists');
       }
 
@@ -305,7 +306,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             text: 'User created succesfully'
           }));
         } else {
-          console.log('ERROR - POST /api/user', err, info);
+          console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
           return res.serverError(403, err);
         }
       });
@@ -332,7 +333,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         success: true, text: 'User deleted successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - DELETE /api/user/${userId}`, err);
+      console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
       res.send(JSON.stringify({
         success: false, text: 'User not deleted'
       }));
@@ -360,7 +361,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.getUser(userId, (err, user) => {
       if (err || !user.found) {
-        console.log('update user failed', err, user);
+        console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -378,7 +379,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       if (req.body.userName !== undefined) {
         if (req.body.userName.match(/^\s*$/)) {
-          console.log('ERROR - empty username', req.body);
+          console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
           return res.serverError(403, 'Username can not be empty');
         } else {
           user.userName = req.body.userName;
@@ -404,6 +405,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.setUser(userId, user, (err, info) => {
         if (Config.debug) {
           console.log('setUser', user, err, info);
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
+          return res.serverError(500, 'Error updating user:' + err);
         }
 
         return res.send(JSON.stringify({
@@ -438,7 +444,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/password update error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Password update failed');
       }
 
@@ -459,7 +465,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   uModule.getUserCSS = (req, res) => {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
-        console.log('ERROR - GET /api/user/css', msg);
+        console.log(`ERROR - ${req.method} /api/user/css`, msg);
         return res.status(404).end();
       }
 
@@ -579,7 +585,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         data: results.results
       });
     }).catch((err) => {
-      console.log('ERROR - POST /api/users', err);
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send({
         recordsTotal: 0, recordsFiltered: 0, data: []
       });
@@ -630,7 +636,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {
-        console.log('/api/user/settings update error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/settings update error`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'User settings update failed');
       }
 
@@ -718,7 +724,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/api/user/view create error', err, info);
+          console.log(`ERROR - ${req.method} /api/user/view`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Create view failed');
         }
 
@@ -766,7 +772,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
-            console.log('/api/user/view delete failed', err, info);
+            console.log(`ERROR - ${req.method} /api/user/view (setUser _moloch_shared)`, util.inspect(err, false, 50), info);
             return res.serverError(500, 'Delete shared view failed');
           }
 
@@ -784,7 +790,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/api/user/view delete failed', err, info);
+          console.log(`ERROR - ${req.method} /api/user/view (setUser ${user.userId})`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Delete view failed');
         }
 
@@ -907,7 +913,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
         Db.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
-            console.log('/api/user/view update failed', err, info);
+            console.log(`ERROR - ${req.method} /api/user/view/${key} (setUser _moloch_shared)`, util.inspect(err, false, 50), info);
             return res.serverError(500, 'Update shared view failed');
           }
 
@@ -938,7 +944,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('/api/user/view update failed', err, info);
+          console.log(`ERROR - ${req.method} /api/user/view/${key} (setUser ${user.userId})`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Updating view failed');
         }
 
@@ -973,7 +979,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.search('queries', 'query', query, (err, data) => {
       if (err || data.error) {
-        console.log('/api/user/crons error', err || data.error);
+        console.log(`ERROR - ${req.method} /api/user/crons`, util.inspect(err || data.error, false, 50));
       }
 
       const queries = [];
@@ -1065,7 +1071,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Created query successfully'
       }));
     } catch (err) {
-      console.log('ERROR - POST /api/user/cron', err);
+      console.log(`ERROR - ${req.method} /api/user/cron`, util.inspect(err, false, 50));
       return res.serverError(500, 'Create query failed');
     }
   };
@@ -1091,7 +1097,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Deleted query successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - DELETE /api/user/cron/${key}`, err);
+      console.log(`ERROR - ${req.method} /api/user/cron/${key}`, util.inspect(err, false, 50));
       return res.serverError(500, 'Delete query failed');
     }
   };
@@ -1159,7 +1165,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       try {
         await Db.update('queries', 'query', key, doc, { refresh: true });
       } catch (err) {
-        console.log(`ERROR - POST /api/user/cron/${key}`, err);
+        console.log(`ERROR - ${req.method} /api/user/cron/${key}`, util.inspect(err, false, 50));
       }
 
       if (Config.get('cronQueries', false)) { internals.processCronQueries(); }
@@ -1172,7 +1178,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         query: query
       }));
     } catch (err) {
-      console.log(`ERROR - POST /api/user/cron/${key}`, err);
+      console.log(`ERROR - ${req.method} /api/user/cron/${key}`, util.inspect(err, false, 50));
       return res.serverError(403, 'Query update failed');
     }
   };
@@ -1244,7 +1250,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/column error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/column`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Create custom column configuration failed');
       }
 
@@ -1296,7 +1302,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/column udpate error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update custom column configuration failed');
       }
 
@@ -1340,7 +1346,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/column delete error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom column configuration failed');
       }
 
@@ -1404,7 +1410,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/spiview create error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/spiview`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Create custom SPI View fields configuration failed');
       }
 
@@ -1453,7 +1459,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/spiview udpate error', err, info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update SPI View fields configuration failed');
       }
 
@@ -1497,7 +1503,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
-        console.log('/api/user/spiview delete failed', err, info);
+        console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom SPI View fields configuration failed');
       }
 
@@ -1527,7 +1533,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.getUser(req.params.userId, (err, user) => {
       if (err || !user.found) {
-        console.log('update user failed', err, user);
+        console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
 
@@ -1537,7 +1543,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
-          console.log('setUser', user, err, info);
+          console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (setUser)`, util.inspect(err, false, 50), user, info);
         }
 
         return res.send(JSON.stringify({
@@ -1585,7 +1591,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   uModule.updateUserState = (req, res) => {
     Db.getUser(req.user.userId, (err, user) => {
       if (err || !user.found) {
-        console.log('save state failed', err, user);
+        console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user');
       }
 
@@ -1599,7 +1605,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       Db.setUser(user.userId, user, (err, info) => {
         if (err) {
-          console.log('state error', err, info);
+          console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (setUser)`, util.inspect(err, false, 50), info);
           return res.serverError(403, 'state update failed');
         }
 

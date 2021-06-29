@@ -1,6 +1,7 @@
 'use strict';
 
 const async = require('async');
+const util = require('util');
 
 let fieldsMap;
 
@@ -85,7 +86,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       // replace current time frame start/stop values with baseline time frame start/stop values
       const currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
       if (Config.debug) {
-        console.log('buildConnections baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
+        console.log('buildConnectionQuery baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
       }
       if ((currentQueryTimes[0] !== undefined) && (currentQueryTimes[1] !== undefined)) {
         // baseline stop time ends 1 second prior to "current" start time
@@ -98,14 +99,14 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           tmpReqQuery.startTime = tmpReqQuery.stopTime - ((currentQueryTimes[1] - currentQueryTimes[0]) * (baselineDateIsMultiplier ? baselineDate : 1));
         }
         if (Config.debug) {
-          console.log('buildConnections baseline.1', 'startTime', tmpReqQuery.startTime, 'stopTime', tmpReqQuery.stopTime, 'diff', (tmpReqQuery.stopTime - tmpReqQuery.startTime));
+          console.log('buildConnectionQuery baseline.1', 'startTime', tmpReqQuery.startTime, 'stopTime', tmpReqQuery.stopTime, 'diff', (tmpReqQuery.stopTime - tmpReqQuery.startTime));
         }
       }
     } // resultId > 1 (calculating baseline query time frame)
 
     sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
-        console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, bsqErr);
+        console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
         result.err = bsqErr;
         return cb([result]);
       } else {
@@ -159,12 +160,12 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
       if (((connQueries[0]) && (connQueries[0].err)) || (!connQueries[0])) {
         // propogate query errors up into the result set without doing a search
-        console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, resultSet.err);
+        console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, util.inspect(resultSet.err, false, 50));
         return cb([resultSet]);
       } else {
         Db.searchSessions(connQueries[0].indices, connQueries[0].query, connQueries[0].options, (err, graph) => {
           if (err || graph.error) {
-            console.log('ERROR - dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, err, graph.error);
+            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50), util.inspect(graph.error, false, 50));
             resultSet.err = err || graph.error;
           }
           resultSet.graph = graph;
@@ -317,7 +318,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
         if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
           // propogate errors up (and stop processing)
-          console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, resultSetStatus.err);
+          console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, util.inspect(resultSetStatus.err, false, 50));
           return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
@@ -434,7 +435,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         }); // dbConnectionQuerySearch.callback
       } else {
         const err = 'no connection queries generated';
-        console.log('ERROR - buildConnections', err);
+        console.log('ERROR - buildConnectionQuery', util.inspect(err, false, 50));
         return cb(err, null, null, null);
       } // connQueries.length check
     }); // buildConnectionQuery.callback

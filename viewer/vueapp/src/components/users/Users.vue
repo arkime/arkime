@@ -26,9 +26,12 @@
                 placeholder="Begin typing to search for users by name"
               />
               <span class="input-group-append">
-                <button type="button"
+                <button
+                  type="button"
+                  role="button"
                   @click="clear"
                   :disabled="!query.filter"
+                  title="clear search input"
                   class="btn btn-outline-secondary btn-clear-input">
                   <span class="fa fa-close">
                   </span>
@@ -49,8 +52,8 @@
           </div>
           <moloch-paging v-if="users"
             class="mt-1 ml-1"
-            :records-total="users.recordsTotal"
-            :records-filtered="users.recordsFiltered"
+            :records-total="recordsTotal"
+            :records-filtered="recordsFiltered"
             v-on:changePaging="changePaging">
           </moloch-paging>
         </div>
@@ -93,7 +96,7 @@
           <transition-group name="list"
             tag="tbody">
             <!-- no results -->
-            <tr v-if="!users.data.length"
+            <tr v-if="!users.length"
               key="noUsers"
               class="text-danger text-center">
               <td colspan="12"
@@ -102,7 +105,7 @@
               </td>
             </tr> <!-- /no results -->
             <!-- user -->
-            <template v-for="(listUser, index) of users.data">
+            <template v-for="(listUser, index) of users">
               <!-- user settings -->
               <tr :key="listUser.id + 'user'">
                 <!-- /toggle settings button -->
@@ -132,37 +135,51 @@
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.enabled"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.createEnabled"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.webEnabled"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.headerAuthEnabled"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.emailSearch"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.removeEnabled"
                   />
                 </td>
                 <td class="no-wrap">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
+                    role="checkbox"
                     v-model="listUser.packetSearch"
                   />
                 </td>
@@ -180,6 +197,7 @@
                   <span class="pull-right">
                     <button v-if="userHasChanged(listUser.userId)"
                       type="button"
+                      role="button"
                       class="btn btn-sm btn-success"
                       @click="updateUser(listUser)"
                       v-b-tooltip.hover
@@ -189,6 +207,7 @@
                     </button>
                     <button v-if="userHasChanged(listUser.userId)"
                       type="button"
+                      role="button"
                       class="btn btn-sm btn-warning"
                       @click="cancelEdits(listUser.userId)"
                       v-b-tooltip.hover
@@ -196,7 +215,9 @@
                       <span class="fa fa-ban">
                       </span>
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
+                      role="button"
                       class="btn btn-sm btn-theme-primary"
                       @click="openSettings(listUser.userId)"
                       v-b-tooltip.hover
@@ -204,7 +225,9 @@
                       <span class="fa fa-gear">
                       </span>
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
+                      role="button"
                       class="btn btn-sm btn-theme-secondary"
                       @click="openHistory(listUser.userId)"
                       v-b-tooltip.hover
@@ -212,7 +235,9 @@
                       <span class="fa fa-history">
                       </span>
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
+                      role="button"
                       class="btn btn-sm btn-danger"
                       @click="deleteUser(listUser, index)"
                       v-b-tooltip.hover
@@ -243,6 +268,7 @@
                           :title="columns[12].help">
                           <input class="form-check-input"
                             type="checkbox"
+                            role="checkbox"
                             :id="listUser.id + 'stats'"
                             v-model="listUser[columns[12].sort]"
                           />
@@ -255,6 +281,7 @@
                           :title="columns[13].help">
                           <input class="form-check-input ml-3"
                             type="checkbox"
+                            role="checkbox"
                             :id="listUser.id + 'files'"
                             v-model="listUser[columns[13].sort]"
                           />
@@ -267,6 +294,7 @@
                           :title="columns[14].help">
                           <input class="form-check-input ml-3"
                             type="checkbox"
+                            role="checkbox"
                             :id="listUser.id + 'pcap'"
                             v-model="listUser[columns[14].sort]"
                           />
@@ -279,6 +307,7 @@
                           :title="columns[15].help">
                           <input class="form-check-input ml-3"
                             type="checkbox"
+                            role="checkbox"
                             :id="listUser.id + 'pcapDownload'"
                             v-model="listUser[columns[15].sort]"
                           />
@@ -441,7 +470,10 @@
                 </div>
               </div>
               <div>
-                <button type="button"
+                <button
+                  type="button"
+                  role="button"
+                  title="Create new user"
                   class="btn btn-sm btn-theme-tertiary pull-right mb-4"
                   @click="createUser">
                   <span class="fa fa-plus-circle">
@@ -461,8 +493,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[2].help">
-                    <input type="checkbox"
+                    :title="columns[2].help"
+                    :for="columns[2].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[2].sort"
                       v-model="newuser[columns[2].sort]"
                     />
                     Enabled
@@ -472,8 +508,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[3].help">
-                    <input type="checkbox"
+                    :title="columns[3].help"
+                    :for="columns[3].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[3].sort"
                       v-model="newuser[columns[3].sort]"
                     />
                     Admin
@@ -483,8 +523,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[4].help">
-                    <input type="checkbox"
+                    :title="columns[4].help"
+                    :for="columns[4].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[4].sort"
                       v-model="newuser[columns[4].sort]"
                     />
                     Web Interface
@@ -494,8 +538,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[5].help">
-                    <input type="checkbox"
+                    :title="columns[5].help"
+                    :for="columns[5].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[5].sort"
                       v-model="newuser[columns[5].sort]"
                     />
                     Web Auth Header
@@ -505,8 +553,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[6].help">
-                    <input type="checkbox"
+                    :title="columns[6].help"
+                    :for="columns[6].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[6].sort"
                       v-model="newuser[columns[6].sort]"
                     />
                     Email Search
@@ -516,8 +568,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[7].help">
-                    <input type="checkbox"
+                    :title="columns[7].help"
+                    :for="columns[7].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[2].sort"
                       v-model="newuser[columns[7].sort]"
                     />
                     Can Remove Data
@@ -527,8 +583,12 @@
               <div class="form-group form-group-sm offset-sm-1 col-sm-11">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[8].help">
-                    <input type="checkbox"
+                    :title="columns[8].help"
+                    :for="columns[8].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[8].sort"
                       v-model="newuser[columns[8].sort]"
                     />
                     Can Create Hunts
@@ -547,8 +607,12 @@
               <div class="form-group form-group-sm">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[12].help">
-                    <input type="checkbox"
+                    :title="columns[12].help"
+                    :for="columns[12].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[12].sort"
                       v-model="newuser[columns[12].sort]"
                     />
                     {{ columns[12].name }}
@@ -558,8 +622,12 @@
               <div class="form-group form-group-sm">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[13].help">
-                    <input type="checkbox"
+                    :title="columns[13].help"
+                    :for="columns[13].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[13].sort"
                       v-model="newuser[columns[13].sort]"
                     />
                     {{ columns[13].name }}
@@ -569,8 +637,12 @@
               <div class="form-group form-group-sm">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[14].help">
-                    <input type="checkbox"
+                    :title="columns[14].help"
+                    :for="columns[14].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[14].sort"
                       v-model="newuser[columns[14].sort]"
                     />
                     {{ columns[14].name }}
@@ -580,8 +652,12 @@
               <div class="form-group form-group-sm">
                 <div class="checkbox">
                   <label v-b-tooltip.hover
-                    :title="columns[15].help">
-                    <input type="checkbox"
+                    :title="columns[15].help"
+                    :for="columns[15].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[15].sort"
                       v-model="newuser[columns[15].sort]"
                     />
                     {{ columns[15].name }}
@@ -627,6 +703,8 @@ export default {
       error: '',
       loading: true,
       users: null,
+      recordsTotal: 0,
+      recordsFiltered: 0,
       dbUserList: null,
       createError: '',
       newuser: {
@@ -731,13 +809,13 @@ export default {
       }
     },
     cancelEdits: function (userId) {
-      const canceledUser = this.users.data.find(u => u.userId === userId);
-      const oldUser = this.dbUserList.data.find(u => u.userId === userId);
+      const canceledUser = this.users.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.find(u => u.userId === userId);
       Object.assign(canceledUser, oldUser);
     },
     userHasChanged: function (userId) {
-      const newUser = JSON.parse(JSON.stringify(this.users.data.find(u => u.userId === userId)));
-      const oldUser = JSON.parse(JSON.stringify(this.dbUserList.data.find(u => u.userId === userId)));
+      const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
+      const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
 
       // make sure these fields exist or the objects will be different
       // (undefined is the same as false for these fields)
@@ -785,7 +863,7 @@ export default {
     deleteUser: function (user, index) {
       UserService.deleteUser(user)
         .then((response) => {
-          this.users.data.splice(index, 1);
+          this.users.splice(index, 1);
           this.msg = response.data.text;
           this.msgType = 'success';
         })
@@ -859,9 +937,11 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.users = JSON.parse(JSON.stringify(response.data));
+          this.users = JSON.parse(JSON.stringify(response.data.data));
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
           // Dont modify original list. Used for comparing
-          this.dbUserList = response.data;
+          this.dbUserList = response.data.data;
         })
         .catch((error) => {
           this.loading = false;
@@ -873,14 +953,16 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          const userData = JSON.parse(JSON.stringify(response.data));
+          const userData = JSON.parse(JSON.stringify(response.data.data));
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
           // Dont modify original list. Used for comparing
-          this.dbUserList = response.data;
+          this.dbUserList = response.data.data;
 
           // Dont update users that have edits. Update dbUserList first to compare against
           // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
-          this.users.data = userData.data.map(u => {
-            const matchedUser = this.users.data.find(item => item.userId === u.userId);
+          this.users = userData.map(u => {
+            const matchedUser = this.users.find(item => item.userId === u.userId);
             // If user already exists and is still being edited, keep user obj
             return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
           });

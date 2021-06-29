@@ -1,5 +1,35 @@
 'use strict';
 
+export const users = [{
+  createEnabled: true,
+  emailSearch: false,
+  enabled: true,
+  expression: '',
+  headerAuthEnabled: false,
+  id: 'testuserid',
+  lastUsed: 1624904128143,
+  packetSearch: true,
+  removeEnabled: false,
+  userId: 'testuserid',
+  userName: 'testuser',
+  webEnabled: true,
+  welcomeMsgNum: 1
+}, {
+  createEnabled: true,
+  emailSearch: false,
+  enabled: true,
+  expression: '',
+  headerAuthEnabled: false,
+  id: 'testuserid2',
+  lastUsed: 1624904128143,
+  packetSearch: true,
+  removeEnabled: false,
+  userId: 'testuserid2',
+  userName: 'testuser2',
+  webEnabled: true,
+  welcomeMsgNum: 1
+}];
+
 export const fields = [{
   dbField: '_id',
   dbField2: '_id',

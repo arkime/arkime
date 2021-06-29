@@ -203,7 +203,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       res.send(r);
     }).catch((err) => {
-      console.log('ERROR - GET /api/stats', query, err);
+      console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
@@ -280,7 +280,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     Db.searchScroll('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
       if (err || result.error) {
-        console.log('ERROR - GET /api/dstats', query, err || result.error);
+        console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err || result.error, false, 50));
       }
 
       let i, ilen;
@@ -293,7 +293,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
 
       if (Config.debug > 2) {
-        console.log('dstats.json result', util.inspect(result, false, 50));
+        console.log('/api/dstats result', util.inspect(result, false, 50));
       }
 
       if (result && result.hits && result.hits.hits) {
@@ -484,7 +484,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsTotal: (nodeKeys.includes('timestamp')) ? nodeKeys.length - 1 : nodeKeys.length
       });
     }).catch((err) => {
-      console.log('ERROR - GET /api/esstats', err);
+      console.log(`ERROR - ${req.method} /api/esstats`, util.inspect(err, false, 50));
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -512,7 +512,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       indicesSettings: Db.indicesSettingsCache
     }, (err, results) => {
       if (err) {
-        console.log('ERROR - GET /api/esindices', err);
+        console.log(`ERROR - ${req.method} /api/esindices`, util.inspect(err, false, 50));
         return res.send({
           recordsTotal: 0,
           recordsFiltered: 0,
@@ -595,7 +595,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.deleteIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - DELETE /api/esindices/${req.params.index}`, err);
+      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}`, util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error deleting index' }));
     }
@@ -612,7 +612,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.optimizeIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - POST /api/esindices/${req.params.index}/optimize`, err);
+      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/optimize`, util.inspect(err, false, 50));
     }
 
     // always return successfully right away, optimizeIndex might block
@@ -632,7 +632,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       await Db.closeIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
     } catch (err) {
-      console.log(`ERROR - POST /api/esindices/${req.params.index}/close`, err);
+      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/close`, util.inspect(err, false, 50));
       res.status(404);
       return res.send(JSON.stringify({ success: false, text: 'Error closing index' }));
     }
@@ -649,7 +649,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     try {
       Db.openIndex([req.params.index], {});
     } catch (err) {
-      console.log(`ERROR - POST /api/esindices/${req.params.index}/open`, err);
+      console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/open`, util.inspect(err, false, 50));
     }
 
     // always return successfully right away, openIndex might block
@@ -706,7 +706,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
                 await Db.deleteIndex([req.params.index], {});
               }
             } catch (err) {
-              console.log(`ERROR - POST /api/esindices/${req.params.index}/shrink`, err);
+              console.log(`ERROR - ${req.method} /api/esindices/${req.params.index}/shrink`, util.inspect(err, false, 50));
             }
           }
         });
@@ -804,7 +804,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         data: rtasks
       });
     } catch (err) {
-      console.log('ERROR - GET /api/estask', err);
+      console.log(`ERROR - ${req.method} /api/estask`, util.inspect(err, false, 50));
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -835,7 +835,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.taskCancel(taskId);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - POST /api/estasks/${taskId}/cancel`, err);
+      console.log(`ERROR - ${req.method} /api/estasks/${taskId}/cancel`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -863,7 +863,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`);
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log(`ERROR - POST /api/estasks/${cancelId}/cancelwith`, err);
+      console.log(`ERROR - ${req.method} /api/estasks/${cancelId}/cancelwith`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -881,7 +881,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const { body: result } = await Db.taskCancel();
       return res.send(JSON.stringify({ success: true, text: result }));
     } catch (err) {
-      console.log('ERROR - POST /api/estasks/cancelall', err);
+      console.log(`ERROR - ${req.method} /api/estasks/cancelall`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -1055,7 +1055,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           text: 'Successfully set ES settings'
         }));
       } catch (err) {
-        console.log('ERROR - POST /api/esadmin/set', util.inspect(err, false, 50));
+        console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
         return res.serverError(500, 'Set failed');
       }
     }
@@ -1133,7 +1133,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully set ES settings'
       }));
     } catch (err) {
-      console.log('ERROR - POST /api/esadmin/set', util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
       return res.serverError(500, 'Set failed');
     }
   };
@@ -1200,7 +1200,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`
       }));
     } catch (err) {
-      console.log('ERROR - POST /api/esadmin/clearcache', err);
+      console.log(`ERROR - ${req.method} /api/esadmin/clearcache`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
   };
@@ -1343,7 +1343,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully excluded node'
       }));
     } catch (err) {
-      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/exclude`, err);
+      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/exclude`, util.inspect(err, false, 50));
       return res.serverError(500, 'Node exclusion failed');
     }
   };
@@ -1392,7 +1392,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         text: 'Successfully included node'
       }));
     } catch (err) {
-      console.log(`ERROR - POST /api/esshards/${req.params.type}/${req.params.value}/include`, err);
+      console.log(`ERROR - ${req.method} /api/esshards/${req.params.type}/${req.params.value}/include`, util.inspect(err, false, 50));
       return res.serverError(500, 'Node inclusion failed');
     }
   };
@@ -1454,7 +1454,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsTotal: recoveries.length
       });
     } catch (err) {
-      console.log('ERROR - GET /api/esrecovery', err);
+      console.log(`ERROR - ${req.method} /api/esrecovery`, util.inspect(err, false, 50));
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -1527,7 +1527,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         recordsFiltered: results.total
       });
     }).catch((err) => {
-      console.log('ERROR - GET /api/parliament', err);
+      console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };

@@ -1,5 +1,7 @@
 'use strict';
 
+const util = require('util');
+
 module.exports = (Db) => {
   const hModule = {};
 
@@ -151,7 +153,7 @@ module.exports = (Db) => {
         recordsFiltered: results.total
       });
     }).catch((err) => {
-      console.log('ERROR - GET /api/history', err);
+      console.log(`ERROR - ${req.method} /api/history`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving history - ' + err);
     });
   };
@@ -177,7 +179,7 @@ module.exports = (Db) => {
         text: 'Deleted history item successfully'
       }));
     } catch (err) {
-      console.log(`ERROR - /api/history/${req.params.id}`, err);
+      console.log(`ERROR - ${req.method} /api/history/${req.params.id}`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting history item');
     }
   };

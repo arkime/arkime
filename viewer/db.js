@@ -481,7 +481,7 @@ exports.search = async (index, type, query, options, cb) => {
   } catch (err) {
     console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
     if (cb) { return cb(err, null); }
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -707,14 +707,10 @@ exports.getAliasesCache = async (index) => {
 };
 
 exports.health = async () => {
-  try {
-    const { body: data } = await internals.client7.info();
-    const { body: result } = await internals.client7.cluster.health({});
-    result.version = data.version.number;
-    return result;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { body: data } = await internals.client7.info();
+  const { body: result } = await internals.client7.cluster.health();
+  result.version = data.version.number;
+  return result;
 };
 
 exports.indices = async (index) => {
@@ -741,7 +737,7 @@ exports.setIndexSettings = async (index, options) => {
     return response;
   } catch (err) {
     internals.healthCache = {};
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -994,16 +990,12 @@ exports.flushCache = function () {
 
 // search against user index, promise only
 exports.searchUsers = async (query) => {
-  try {
-    const { body: users } = await internals.usersClient7.search({
-      index: internals.usersPrefix + 'users',
-      body: query,
-      rest_total_hits_as_int: true
-    });
-    return users;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { body: users } = await internals.usersClient7.search({
+    index: internals.usersPrefix + 'users',
+    body: query,
+    rest_total_hits_as_int: true
+  });
+  return users;
 };
 
 // Return a user from DB, callback only
@@ -1032,35 +1024,27 @@ exports.getUserCache = (userId, cb) => {
 };
 
 exports.numberOfUsers = async () => {
-  try {
-    const { body: count } = await internals.usersClient7.count({
-      index: internals.usersPrefix + 'users',
-      ignoreUnavailable: true,
-      body: {
-        query: { // exclude the shared user from results
-          bool: { must_not: { term: { userId: '_moloch_shared' } } }
-        }
+  const { body: count } = await internals.usersClient7.count({
+    index: internals.usersPrefix + 'users',
+    ignoreUnavailable: true,
+    body: {
+      query: { // exclude the shared user from results
+        bool: { must_not: { term: { userId: '_moloch_shared' } } }
       }
-    });
-    return count.count;
-  } catch (err) {
-    throw new Error(err);
-  }
+    }
+  });
+  return count.count;
 };
 
 // Delete user, promise only
 exports.deleteUser = async (userId) => {
   delete internals.usersCache[userId];
-  try {
-    await internals.usersClient7.delete({
-      index: internals.usersPrefix + 'users',
-      id: userId,
-      refresh: true
-    });
-    delete internals.usersCache[userId]; // Delete again after db says its done refreshing
-  } catch (err) {
-    throw new Error(err);
-  }
+  await internals.usersClient7.delete({
+    index: internals.usersPrefix + 'users',
+    id: userId,
+    refresh: true
+  });
+  delete internals.usersCache[userId]; // Delete again after db says its done refreshing
 };
 
 // Set user, callback only
@@ -1233,7 +1217,7 @@ async function initialShortcutsSyncToRemote () {
             !compareArrays(localShortcut._source.number, remoteShortcut._source.number);
 
           if (internals.debug > 1) {
-            console.log(`SHORTCUT- initial deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
+            console.log(`SHORTCUT - initial deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
           }
           dbOperations.push(
             internals.client7.delete({ // if they have the same name always delete the local
@@ -1469,22 +1453,18 @@ exports.getShortcutsCache = async (userId) => {
     size: 10000
   };
 
-  try {
-    const { body: { hits: shortcuts } } = await exports.searchShortcutsLocal(query);
+  const { body: { hits: shortcuts } } = await exports.searchShortcutsLocal(query);
 
-    const shortcutsMap = {};
-    for (const shortcut of shortcuts.hits) {
-      // need the whole object to test for type mismatch
-      shortcutsMap[shortcut._source.name] = shortcut;
-    }
-
-    internals.shortcutsCache[userId] = shortcutsMap;
-    internals.shortcutsCache._timeStamp = Date.now();
-
-    return shortcutsMap;
-  } catch (err) {
-    throw new Error(err);
+  const shortcutsMap = {};
+  for (const shortcut of shortcuts.hits) {
+    // need the whole object to test for type mismatch
+    shortcutsMap[shortcut._source.name] = shortcut;
   }
+
+  internals.shortcutsCache[userId] = shortcutsMap;
+  internals.shortcutsCache._timeStamp = Date.now();
+
+  return shortcutsMap;
 };
 
 exports.molochNodeStats = async (nodeName, cb) => {
@@ -1534,7 +1514,7 @@ exports.healthCache = async () => {
     if (internals.healthCache._timeStamp !== undefined) {
       return internals.healthCache;
     }
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -1543,14 +1523,10 @@ exports.nodesInfoCache = async () => {
     return internals.nodesInfoCache;
   }
 
-  try {
-    const { body: data } = await exports.nodesInfo();
-    internals.nodesInfoCache = data;
-    internals.nodesInfoCache._timeStamp = Date.now();
-    return data;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { body: data } = await exports.nodesInfo();
+  internals.nodesInfoCache = data;
+  internals.nodesInfoCache._timeStamp = Date.now();
+  return data;
 };
 
 exports.masterCache = async () => {
@@ -1558,14 +1534,10 @@ exports.masterCache = async () => {
     return internals.masterCache;
   }
 
-  try {
-    const { body: data } = await exports.master();
-    internals.masterCache = data;
-    internals.masterCache._timeStamp = Date.now();
-    return data;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { body: data } = await exports.master();
+  internals.masterCache = data;
+  internals.masterCache._timeStamp = Date.now();
+  return data;
 };
 
 exports.nodesStatsCache = async () => {
@@ -1573,16 +1545,12 @@ exports.nodesStatsCache = async () => {
     return internals.nodesStatsCache;
   }
 
-  try {
-    const { body: data } = await exports.nodesStats({
-      metric: 'jvm,process,fs,os,indices,thread_pool'
-    });
-    internals.nodesStatsCache = data;
-    internals.nodesStatsCache._timeStamp = Date.now();
-    return data;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { body: data } = await exports.nodesStats({
+    metric: 'jvm,process,fs,os,indices,thread_pool'
+  });
+  internals.nodesStatsCache = data;
+  internals.nodesStatsCache._timeStamp = Date.now();
+  return data;
 };
 
 exports.indicesCache = async () => {
@@ -1601,7 +1569,7 @@ exports.indicesCache = async () => {
     if (internals.indicesCache._timeStamp !== undefined) {
       return internals.indicesCache;
     }
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -1620,7 +1588,7 @@ exports.indicesSettingsCache = async () => {
     if (internals.indicesSettingsCache._timeStamp !== undefined) {
       return internals.indicesSettingsCache;
     }
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -1691,12 +1659,8 @@ exports.fileNameToFiles = function (fileName, cb) {
 };
 
 exports.getSequenceNumber = async (sName) => {
-  try {
-    const { data: sinfo } = await exports.index('sequence', 'sequence', sName, {});
-    return sinfo._version;
-  } catch (err) {
-    throw new Error(err);
-  }
+  const { data: sinfo } = await exports.index('sequence', 'sequence', sName, {});
+  return sinfo._version;
 };
 
 exports.numberOfDocuments = async (index, options) => {
@@ -1705,30 +1669,22 @@ exports.numberOfDocuments = async (index, options) => {
     console.log('ALWFIX - MAYBE?');
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
-    try {
-      const { body: total } = await internals.client7.count(params);
-      return { count: total.count };
-    } catch (err) {
-      throw new Error(err);
-    }
+    const { body: total } = await internals.client7.count(params);
+    return { count: total.count };
   }
 
   let count = 0;
   const str = `${internals.prefix}sessions2-`;
 
-  try {
-    const indices = await exports.indicesCache();
+  const indices = await exports.indicesCache();
 
-    for (let i = 0; i < indices.length; i++) {
-      if (indices[i].index.includes(str)) {
-        count += parseInt(indices[i]['docs.count']);
-      }
+  for (let i = 0; i < indices.length; i++) {
+    if (indices[i].index.includes(str)) {
+      count += parseInt(indices[i]['docs.count']);
     }
-
-    return { count: count };
-  } catch (err) {
-    throw new Error(err);
   }
+
+  return { count: count };
 };
 
 exports.checkVersion = async function (minVersion, checkUsers) {
@@ -1989,7 +1945,7 @@ exports.setILMPolicy = async (ilmName, policy) => {
     return data.body;
   } catch (err) {
     console.log('ERROR - setting ILM Policy', err);
-    throw new Error(err);
+    throw err;
   }
 };
 
