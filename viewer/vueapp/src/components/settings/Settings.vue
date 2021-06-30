@@ -3685,7 +3685,7 @@ export default {
             this.timelineDataFilters = [];
             for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
               const filter = this.settings.timelineDataFilters[i];
-              const fieldOBJ = this.integerFields.find(j => j.dbField === filter || j.dbField2 === filter);
+              const fieldOBJ = FieldService.getField(filter, this.integerFields);
               if (fieldOBJ) {
                 this.timelineDataFilters.push(fieldOBJ);
               }
@@ -3698,21 +3698,22 @@ export default {
 
             // update the user settings for spigraph field & connections src/dst fields
             // NOTE: dbField is saved in settings, but show the field's friendlyName
-            for (let i = 0, len = this.fieldsPlus.length; i < len; i++) {
-              const field = this.fieldsPlus[i];
-              if (this.settings.spiGraph === field.dbField || this.settings.spiGraph === field.dbField2) {
-                this.$set(this, 'spiGraphField', field);
-                this.$set(this, 'spiGraphTypeahead', field.friendlyName);
-              }
-              if (this.settings.connSrcField === field.dbField || this.settings.connSrcField === field.dbField2) {
-                this.$set(this, 'connSrcField', field);
-                this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
-              }
-              if (this.settings.connDstField === field.dbField || this.settings.connDstField === field.dbField2) {
-                this.$set(this, 'connDstField', field);
-                this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
-              }
+            const spigraphField = FieldService.getField(this.settings.spiGraph, this.fieldsPlus);
+            if (spigraphField) {
+              this.$set(this, 'spiGraphField', spigraphField);
+              this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
             }
+            const connSrcField = FieldService.getField(this.settings.connSrcField, this.fieldsPlus);
+            if (connSrcField) {
+              this.$set(this, 'connSrcField', connSrcField);
+              this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
+            }
+            const connDstField = FieldService.getField(this.settings.connDstField, this.fieldsPlus);
+            if (connDstField) {
+              this.$set(this, 'connDstField', connDstField);
+              this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
+            }
+
             this.$set(this, 'filtersTypeahead', '');
 
             // build fields map for quick lookup by dbField
@@ -3793,14 +3794,7 @@ export default {
               const fieldID = split[0];
               const count = split[1];
 
-              let field;
-
-              for (const key in this.fields) {
-                if (this.fields[key].dbField === fieldID || this.fields[key].dbField2 === fieldID) {
-                  field = this.fields[key];
-                  break;
-                }
-              }
+              const field = FieldService.getField(fieldID, this.fields);
 
               if (field) {
                 if (!config.fieldObjs) { config.fieldObjs = []; }

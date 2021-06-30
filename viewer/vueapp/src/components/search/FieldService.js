@@ -94,14 +94,15 @@ export default {
 
   /**
    * Retrieves a field object
-   * Matches dbField, dbField2, fieldECS, or rawField
+   * Matches dbField, dbField2, fieldECS, rawField, or exp
    * @param {string} search - The value to search for
    * @param {object} fields - An optional fields map
    * @returns {object} The field or undefined
    */
   getField (search, fields = _fieldsMapCache) {
     for (const k in fields) {
-      if (search === fields[k].dbField ||
+      if (search === fields[k].exp ||
+          search === fields[k].dbField ||
           search === fields[k].dbField2 ||
           search === fields[k].fieldECS ||
           search === fields[k].rawField) {
