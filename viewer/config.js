@@ -591,6 +591,12 @@ exports.getDBFieldsMap = function () {
   return internals.dbFieldsMap;
 };
 
+exports.getDBField = function (field, property) {
+  if (internals.dbFieldsMap[field] === undefined) { return undefined; }
+  if (property === undefined) { return internals.dbFieldsMap[field]; }
+  return internals.dbFieldsMap[field][property];
+};
+
 exports.getCategories = function () {
   return internals.categories;
 };

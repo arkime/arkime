@@ -207,8 +207,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       req.query.dstField = 'destination.ip';
     }
 
-    req.query.srcField = req.query.srcField || 'source.ip';
-    req.query.dstField = req.query.dstField || 'destination.ip';
+    req.query.srcField = Config.getDBField(req.query.srcField ?? 'source.ip', 'dbField');
+    req.query.dstField = Config.getDBField(req.query.dstField ?? 'destination.ip', 'dbField');
     const fsrc = req.query.srcField;
     const fdst = req.query.dstField;
     const minConn = req.query.minConn || 1;
@@ -234,11 +234,10 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     // ------------------------------------------------------------------------
     // updateValues and process are for aggregating query results into their final form
-    const dbFieldsMap = Config.getDBFieldsMap();
     function updateValues (data, property, fields) {
       for (const i in fields) {
         const dbField = fields[i];
-        const field = dbFieldsMap[dbField];
+        const field = Config.getDBField(dbField);
         if (data[dbField]) {
           // sum integers
           if (field.type === 'integer' && field.category !== 'port') {
@@ -503,7 +502,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   cModule.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
-    const seperator = req.query.seperator || ',';
+    const seperator = req.query.seperator ?? ',';
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
         return res.send(err);
