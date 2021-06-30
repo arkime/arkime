@@ -95,11 +95,11 @@ export default {
   /**
    * Retrieves a field object
    * Matches dbField, dbField2, fieldECS, or rawField
-   * @param {object} fields - A fields map
    * @param {string} search - The value to search for
+   * @param {object} fields - An optional fields map
    * @returns {object} The field or undefined
    */
-  getField (fields, search) {
+  getField (search, fields = _fieldsMapCache) {
     for (const k in fields) {
       if (search === fields[k].dbField ||
           search === fields[k].dbField2 ||
@@ -115,13 +115,13 @@ export default {
   /**
    * Retrieves a field's property
    * Matches dbField, dbField2, fieldECS, or rawField
-   * @param {object} fields - A map of fields
    * @param {string} search - The value to search for
    * @param {string} prop - The field property value to return
+   * @param {object} fields - An optional map of fields
    * @returns {string} The field property value or undefined
    */
-  getFieldProperty (fields, search, prop) {
-    const field = this.getField(fields, search);
+  getFieldProperty (search, prop, fields = _fieldsMapCache) {
+    const field = this.getField(search, fields);
 
     if (field && field[prop]) { return field[prop]; }
 

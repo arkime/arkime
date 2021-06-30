@@ -1021,8 +1021,8 @@ export default {
       if (!data.nodes.length) { return; }
 
       // convert time in ms to timezone date string
-      const srcFieldIsTime = FieldService.getFieldProperty(this.fields, this.query.srcField, 'type') === 'seconds';
-      const dstFieldIsTime = FieldService.getFieldProperty(this.fields, this.query.dstField, 'type') === 'seconds';
+      const srcFieldIsTime = FieldService.getFieldProperty(this.query.srcField, 'type') === 'seconds';
+      const dstFieldIsTime = FieldService.getFieldProperty(this.query.dstField, 'type') === 'seconds';
 
       if (srcFieldIsTime || dstFieldIsTime) {
         for (const dataNode of data.nodes) {
@@ -1326,11 +1326,11 @@ export default {
     },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
-        dataNode.dbField = FieldService.getFieldProperty(this.fields, this.query.dstField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.fields, this.query.dstField, 'exp');
+        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
       } else {
-        dataNode.dbField = FieldService.getFieldProperty(this.fields, this.query.srcField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.fields, this.query.srcField, 'exp');
+        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
       }
 
       closePopups();
@@ -1442,10 +1442,10 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = FieldService.getFieldProperty(this.fields, this.query.dstField, 'dbField');
-      linkData.srcDbField = FieldService.getFieldProperty(this.fields, this.query.srcField, 'dbField');
-      linkData.dstExp = FieldService.getFieldProperty(this.fields, this.query.dstField, 'exp');
-      linkData.srcExp = FieldService.getFieldProperty(this.fields, this.query.srcField, 'exp');
+      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
 
       closePopups();
       if (!popupVue) {
