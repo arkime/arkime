@@ -1281,12 +1281,12 @@ export default {
     },
     /* Saves the info fields on the user settings */
     saveInfoFields: function () {
-      const infoFields = [];
+      const infoDBFields = [];
       for (const field of this.infoFields) {
-        infoFields.push(field.dbField);
+        infoDBFields.push(field.dbField);
       }
-      this.user.settings.infoFields = infoFields;
-      customCols.info.children = this.infoFields;
+      this.user.settings.infoFields = infoDBFields;
+      customCols.info.children = infoDBFields;
       UserService.saveSettings(this.user.settings);
     },
     /* Fits the table to the width of the current window size */
