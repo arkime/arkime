@@ -1666,7 +1666,6 @@ exports.getSequenceNumber = async (sName) => {
 exports.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    console.log('ALWFIX - MAYBE?');
     const params = { index: fixIndex(index), ignoreUnavailable: true };
     exports.merge(params, options);
     const { body: total } = await internals.client7.count(params);
@@ -1854,7 +1853,11 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
       if (index.endsWith('-reindex')) {
         index = index.substring(0, index.length - 8);
       }
-      index = index.substring(internals.prefix.length + 10);
+      if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
+        index = index.substring(10);
+      } else {
+        index = index.substring(internals.prefix.length + 10);
+      }
       let year; let month; let day = 0; let hour = 0; let len;
 
       if (+index[0] >= 6) {
