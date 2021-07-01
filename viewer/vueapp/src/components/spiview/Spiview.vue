@@ -447,7 +447,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField === i || f.dbField2 === i));
+      return filters.map(i => FieldService.getField(i, this.fields));
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -936,15 +936,7 @@ export default {
         const split = param.split(':');
         const fieldID = split[0];
         const count = split[1];
-
-        let field;
-
-        for (const key in this.fields) {
-          if (this.fields[key].dbField === fieldID || this.fields[key].dbField2 === fieldID) {
-            field = this.fields[key];
-            break;
-          }
-        }
+        const field = FieldService.getField(fieldID, this.fields);
 
         if (field) {
           category = this.setupCategory(this.categoryObjects, field);

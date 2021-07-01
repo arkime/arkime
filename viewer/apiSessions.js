@@ -2088,7 +2088,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               }
             });
           } catch (err) {
-            console.log('Error', err);
+            console.log(`ERROR - ${req.method} /api/spigraph`, util.inspect(err, false, 50));
             return res.send(results);
           }
         }
