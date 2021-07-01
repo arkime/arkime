@@ -143,9 +143,16 @@ exports.initialize = async (info, cb) => {
 
   try {
     const { body: data } = await internals.client7.info();
-    if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {
-      console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
-      process.exit();
+    if (data.version.distribution === "opensearch") {
+      if (data.version.number.match(/^[0]/)) {
+        console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
+        process.exit();
+      }
+    } else {
+      if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {
+        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+        process.exit();
+      }
     }
     return cb();
   } catch (err) {
