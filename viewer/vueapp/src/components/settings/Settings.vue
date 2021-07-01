@@ -431,7 +431,7 @@
           </div> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div v-if="fieldsPlus && settings.connDstField"
+          <div v-if="fields && settings.connDstField"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-right font-weight-bold">
               Connections Dst
@@ -439,7 +439,7 @@
             <div class="col-sm-6">
               <moloch-field-typeahead
                 :dropup="true"
-                :fields="fieldsPlus"
+                :fields="fields"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
                 @fieldSelected="connDstFieldSelected">
@@ -2525,7 +2525,7 @@ export default {
       settings: {},
       fields: undefined,
       fieldsMap: undefined,
-      fieldsPlus: undefined,
+      fieldsPlusCustom: undefined,
       integerFields: undefined,
       columns: [],
       // general settings vars
@@ -3667,17 +3667,9 @@ export default {
     getFields: function () {
       return new Promise((resolve, reject) => {
         // get fields from field service then get sessionsNew state
-        FieldService.get(true)
+        FieldService.get(true, true)
           .then((response) => {
-            this.fields = JSON.parse(JSON.stringify(response));
-            this.fieldsPlus = JSON.parse(JSON.stringify(response));
-            this.fieldsPlus.push({
-              dbField: 'ip.dst:port',
-              exp: 'ip.dst:port',
-              help: 'Destination IP:Destination Port',
-              group: 'general',
-              friendlyName: 'Dst IP:Dst Port'
-            });
+            this.fields = response;
 
             this.integerFields = this.fields.filter(i => i.type === 'integer');
 
@@ -3692,23 +3684,24 @@ export default {
             }
 
             // add custom columns to the fields array
+            this.fieldsPlusCustom = JSON.parse(JSON.stringify(response));
             for (const key in customCols) {
-              this.fields.push(customCols[key]);
+              this.fieldsPlusCustom.push(customCols[key]);
             }
 
             // update the user settings for spigraph field & connections src/dst fields
             // NOTE: dbField is saved in settings, but show the field's friendlyName
-            const spigraphField = FieldService.getField(this.settings.spiGraph, this.fieldsPlus);
+            const spigraphField = FieldService.getField(this.settings.spiGraph, this.fields);
             if (spigraphField) {
               this.$set(this, 'spiGraphField', spigraphField);
               this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
             }
-            const connSrcField = FieldService.getField(this.settings.connSrcField, this.fieldsPlus);
+            const connSrcField = FieldService.getField(this.settings.connSrcField, this.fields);
             if (connSrcField) {
               this.$set(this, 'connSrcField', connSrcField);
               this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
             }
-            const connDstField = FieldService.getField(this.settings.connDstField, this.fieldsPlus);
+            const connDstField = FieldService.getField(this.settings.connDstField, this.fields);
             if (connDstField) {
               this.$set(this, 'connDstField', connDstField);
               this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
@@ -3718,8 +3711,8 @@ export default {
 
             // build fields map for quick lookup by dbField
             this.fieldsMap = {};
-            for (let i = 0, len = this.fields.length; i < len; ++i) {
-              const field = this.fields[i];
+            for (let i = 0, len = this.fieldsPlusCustom.length; i < len; ++i) {
+              const field = this.fieldsPlusCustom[i];
               this.fieldsMap[field.dbField] = field;
               if (field.dbField2 && field.dbField2 !== field.dbField) {
                 this.fieldsMap[field.dbField2] = field;

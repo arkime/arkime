@@ -165,7 +165,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       } else {
         Db.searchSessions(connQueries[0].indices, connQueries[0].query, connQueries[0].options, (err, graph) => {
           if (err || graph.error) {
-            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50), util.inspect(graph.error, false, 50));
+            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50));
             resultSet.err = err || graph.error;
           }
           resultSet.graph = graph;
@@ -202,7 +202,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // --------------------------------------------------------------------------
   function buildConnections (req, res, cb) {
     let dstipport;
-    if (req.query.dstField === 'ip.dst:port') {
+    if (req.query.dstField === 'ip.dst:port' || req.query.dstField === 'destination.ip:port') {
       dstipport = true;
       req.query.dstField = 'destination.ip';
     }

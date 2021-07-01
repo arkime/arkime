@@ -250,7 +250,6 @@ import MolochPie from './Hierarchy';
 // import utils
 import Utils from '../utils/utils';
 
-let oldFieldObj;
 let refreshInterval;
 let respondedAt; // the time that the last data load successfully responded
 let pendingPromise; // save a pending promise to be able to cancel it
@@ -294,7 +293,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField === i || f.dbField2 === i));
+      return filters.map(i => FieldService.getField(i, this.fields));
     },
     graphType: function () {
       return this.$store.state.graphType;
@@ -319,15 +318,7 @@ export default {
       };
     },
     fieldObj: function () {
-      for (const field of this.fields) {
-        if (field.dbField === this.query.exp ||
-          field.dbField2 === this.query.exp ||
-          field.exp === this.query.exp) {
-          oldFieldObj = field;
-          return field;
-        }
-      }
-      return oldFieldObj;
+      return FieldService.getField(this.query.exp, this.fields);
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -355,39 +346,19 @@ export default {
     }
   },
   created: function () {
-    setTimeout(() => {
-      // wait for query to be computed
-      this.cancelAndLoad(true);
-      this.changeRefreshInterval();
-    });
-
     this.getCaptureStats();
 
-    FieldService.get(true)
+    FieldService.get(true, true)
       .then((result) => {
         this.fields = result;
-        let ipDstPortFieldExists = false;
-        for (const field of this.fields) {
-          if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
-          if (field.dbField === this.query.exp ||
-            field.dbField2 === this.query.exp ||
-            field.exp === this.query.exp) {
-            this.fieldTypeahead = field.friendlyName;
-            this.baseField = field.exp;
-          }
-        }
-        if (!ipDstPortFieldExists) {
-          this.fields.push({
-            dbField: 'ip.dst:port',
-            exp: 'ip.dst:port',
-            help: 'Destination IP:Destination Port',
-            group: 'general',
-            friendlyName: 'Dst IP:Dst Port'
-          });
-          if (this.query.exp === 'ip.dst:port') {
-            this.fieldTypeahead = 'Dst IP:Dst Port';
-            this.baseField = 'ip.dst:port';
-          }
+        const field = FieldService.getField(this.query.exp, this.fields);
+        if (field) {
+          this.fieldTypeahead = field.friendlyName;
+          this.baseField = field.exp;
+          this.query.exp = field.exp;
+
+          this.cancelAndLoad(true);
+          this.changeRefreshInterval();
         }
       }).catch((error) => {
         this.loading = false;

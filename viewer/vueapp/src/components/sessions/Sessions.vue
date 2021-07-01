@@ -759,7 +759,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      return this.$store.state.user.settings.timelineDataFilters.map(i => this.getField(i));
+      return this.$store.state.user.settings.timelineDataFilters.map(i => FieldService.getField(i, this.fields));
     },
     views: function () {
       return this.$store.state.views;
@@ -1132,7 +1132,7 @@ export default {
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
         for (const headerId of this.tableState.visibleHeaders) {
-          const field = this.getField(headerId);
+          const field = FieldService.getField(headerId, this.fields);
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
       } else {
@@ -1195,22 +1195,14 @@ export default {
 
       for (let field of array) {
         if (typeof field !== 'object') {
-          field = this.getField(field);
+          field = FieldService.getField(field, this.fields);
         }
 
         if (!field) { return -1; }
 
-        if (field.dbField === id || field.dbField2 === id || field.exp === id) {
-          return index;
-        }
+        const fieldMatchesId = FieldService.getField(id, [field]);
 
-        if (field.aliases) { // check aliases too
-          for (const alias of field.aliases) {
-            if (id === alias) {
-              return index;
-            }
-          }
-        }
+        if (fieldMatchesId) { return index; }
 
         index++;
       }
@@ -1254,7 +1246,7 @@ export default {
       } else { // it's hidden
         reloadData = true; // requires a data reload
         // add it to the info fields list
-        const field = this.getField(id);
+        const field = FieldService.getField(id, this.fields);
         if (field) { this.infoFields.push(field); }
       }
 
@@ -1627,7 +1619,7 @@ export default {
         for (const c in children) {
           // (replace fieldId with field object)
           if (typeof children[c] !== 'object') {
-            children[c] = this.getField(children[c]);
+            children[c] = FieldService.getField(children[c], this.fields);
           }
         }
       }
@@ -1654,28 +1646,6 @@ export default {
       this.filteredInfoFields = filtered.fields;
       this.filteredInfoFieldsCount = filtered.count;
     },
-    /**
-     * Finds a field object given its id
-     * @param {string} fieldId  The unique id of the field
-     * @return {Object} field   The field object
-     */
-    getField: function (fieldId) {
-      for (const key in this.fields) {
-        const field = this.fields[key];
-        if (field.dbField === fieldId || field.dbField2 === fieldId || field.exp === fieldId) {
-          return field;
-        }
-        if (field.aliases) {
-          for (const alias of field.aliases) {
-            if (alias === fieldId) {
-              return field;
-            }
-          }
-        }
-      }
-
-      return undefined;
-    },
     /* Maps visible column headers to their corresponding fields */
     mapHeadersToFields: function () {
       this.headers = [];
@@ -1683,7 +1653,7 @@ export default {
       if (!this.colWidths) { this.colWidths = {}; }
 
       for (const headerId of this.tableState.visibleHeaders) {
-        const field = this.getField(headerId);
+        const field = FieldService.getField(headerId, this.fields);
 
         if (field) {
           field.width = this.colWidths[headerId] || field.width || 100;
