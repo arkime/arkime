@@ -154,7 +154,7 @@ exports.initialize = async (info, cb) => {
 
   try {
     const { body: data } = await internals.client7.info();
-    if (data.version.distribution === "opensearch") {
+    if (data.version.distribution === 'opensearch') {
       if (data.version.number.match(/^[0]/)) {
         console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
         process.exit();
