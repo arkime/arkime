@@ -752,6 +752,11 @@ export default {
         return this.$store.state.sorts || 'firstPacket:desc';
       },
       set: function (newValue) {
+        for (const sortArr of newValue) {
+          // if sorting by a custom col, need to use sortBy property
+          const sortField = FieldService.getFieldProperty(sortArr[0], 'sortBy', this.fields);
+          if (sortField) { sortArr[0] = sortField; }
+        }
         this.$store.commit('setSorts', newValue);
       }
     },
