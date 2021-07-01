@@ -510,7 +510,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1200 + session->filePosArray->len*17 + 10*session->fileNumArray->len;
+    jsonSize = 1300 + session->filePosArray->len*17 + 10*session->fileNumArray->len;
     if (config.enablePacketLen) {
         jsonSize += 10*session->fileLenArray->len;
     }
