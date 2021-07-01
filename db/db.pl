@@ -5750,21 +5750,30 @@ sub dbCheckHealth {
 ################################################################################
 sub dbCheck {
     my $esversion = dbESVersion();
-    my @parts = split(/\./, $esversion->{version}->{number});
+    my @parts = split(/[-.]/, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
-    if ($main::esVersion < 71000) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
-              "* < 7.10.0 is not supported\n",
-              "\n",
-              "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
-              "Make sure to restart any viewer or capture after upgrading!\n"
-             );
-        exit (1)
-    }
+    if ($esversion->{version}->{distribution} eq "opensearch") {
+        if ($main::esVersion < 1000) {
+            logmsg("Currently using Opensearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+                  "* < 1.0.0 is not supported\n"
+                  );
+            exit (1)
+        }
+    } else {
+        if ($main::esVersion < 71000) {
+            logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " which isn't supported\n",
+                  "* < 7.10.0 is not supported\n",
+                  "\n",
+                  "Instructions: https://molo.ch/faq#how-do-i-upgrade-elasticsearch\n",
+                  "Make sure to restart any viewer or capture after upgrading!\n"
+                 );
+            exit (1)
+        }
 
-    if ($main::esVersion < 71002) {
-        logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.10.2 or newer is recommended\n");
+        if ($main::esVersion < 71002) {
+            logmsg("Currently using Elasticsearch version ", $esversion->{version}->{number}, " 7.10.2 or newer is recommended\n");
+        }
     }
 
     my $error = 0;

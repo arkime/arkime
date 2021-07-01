@@ -20,6 +20,7 @@ my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
+my $INSECURE = "";
 
 ################################################################################
 sub doGeo {
@@ -271,19 +272,19 @@ my ($cmd) = @_;
         print ("Starting viewer\n");
         if ($main::debug) {
             system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
-            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
             system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
         waitFor($MolochTest::host, 8081, 1);
@@ -291,11 +292,11 @@ my ($cmd) = @_;
     } else {
         print ("Initializing ES\n");
         if ($main::debug) {
-            system("../db/db.pl --prefix tests $ELASTICSEARCH initnoprompt");
-            system("../db/db.pl --prefix tests2 $ELASTICSEARCH initnoprompt");
+            system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt");
         } else {
-            system("../db/db.pl --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
-            system("../db/db.pl --prefix tests2 $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
         }
 
         print ("Loading tagger\n");
@@ -322,7 +323,7 @@ my ($cmd) = @_;
 
         print ("Loading PCAP\n");
 
-        my $mcmd = "../capture/capture $main::copy -c config.test.ini -n test -R pcap --flush";
+        my $mcmd = "../capture/capture $INSECURE $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
@@ -345,16 +346,16 @@ my ($cmd) = @_;
         if ($main::debug) {
             system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug > /tmp/moloch.test &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug > /tmp/moloch.all &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
     }
@@ -396,6 +397,9 @@ $main::cmd = "--capture";
 while (scalar (@ARGV) > 0) {
     if ($ARGV[0] eq "--debug") {
         $main::debug = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--insecure") {
+        $INSECURE = "--insecure";
         shift @ARGV;
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;

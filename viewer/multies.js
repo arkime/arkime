@@ -957,9 +957,17 @@ nodes.forEach((node) => {
 nodes.forEach(async (node) => {
   try {
     const { body: data } = await clients[node].info();
-    if (data.version.number.match(/^([012345])/)) {
-      console.log('ES', data.version.number, 'is not supported, upgrade to >= 6.8.x:', node);
-      process.exit();
+
+    if (data.version.distribution === "opensearch") {
+      if (data.version.number.match(/^[0]/)) {
+        console.log(`ERROR - Opensearch ${data.version.number} not supported, Opensearch 1.0.0 or later required.`);
+        process.exit();
+      }
+    } else {
+      if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {
+        console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
+        process.exit();
+      }
     }
   } catch (err) {
     console.log(err);
