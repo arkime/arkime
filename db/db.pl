@@ -7022,7 +7022,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}hunts_v30", 1);
     esDelete("/${PREFIX}lookups_v30", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
-    esDelete("/_template/${PREFIX}history_v1_template", 1); # should be 30
+    esDelete("/_template/${PREFIX}history_v1_template", 1);
     esDelete("/${PREFIX}sessions3-*", 1);
 
     sleep(1);
@@ -7273,6 +7273,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         ecsFieldsUpdate();
         esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
+        esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
     } elsif ($main::versionNumber <= 70) {
         sessions3Update();
         historyUpdate();

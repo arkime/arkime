@@ -1101,12 +1101,15 @@ exports.historyIt = async function (doc) {
 };
 exports.searchHistory = async (query) => {
   return internals.client7.search({
-    index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true
+    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
+    body: query,
+    rest_total_hits_as_int: true
   });
 };
 exports.countHistory = async () => {
   return internals.client7.count({
-    index: fixIndex('history_v1-*'), ignoreUnavailable: true
+    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
+    ignoreUnavailable: true
   });
 };
 exports.deleteHistory = async (id, index) => {
