@@ -71,8 +71,8 @@
           <div class="form-inline">
             <moloch-paging v-if="history"
               class="mt-1 ml-1"
-              :records-total="history.recordsTotal"
-              :records-filtered="history.recordsFiltered"
+              :records-total="recordsTotal"
+              :records-filtered="recordsFiltered"
               @changePaging="changePaging"
               length-default=100>
             </moloch-paging>
@@ -145,9 +145,9 @@
           </th>
         </tr>
       </thead>
-      <tbody v-if="history.data">
+      <tbody v-if="history">
         <!-- no results -->
-        <tr v-if="!history.data.length">
+        <tr v-if="!history.length">
           <td :colspan="colSpan"
             class="text-danger text-center">
             <span class="fa fa-warning">
@@ -157,7 +157,7 @@
             </strong>
           </td>
         </tr> <!-- /no results -->
-        <template v-for="(item, index) of history.data">
+        <template v-for="(item, index) of history">
           <!-- history item -->
           <tr :key="item.id">
             <td class="no-wrap">
@@ -165,7 +165,10 @@
                 :opened="item.expanded"
                 @toggle="toggleLogDetail(item)">
               </toggle-btn>
-              <button type="button"
+              <button
+                type="button"
+                role="button"
+                title="Delete history"
                 class="btn btn-xs btn-warning"
                 v-has-permission="'createEnabled,removeEnabled'"
                 @click="deleteLog(item, index)">
@@ -337,6 +340,7 @@ import MolochTime from '../search/Time';
 import FocusInput from '../utils/FocusInput';
 import MolochToast from '../utils/Toast';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
+import HistoryService from './HistoryService';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -357,6 +361,8 @@ export default {
       error: '',
       loading: true,
       history: {},
+      recordsTotal: 0,
+      recordsFiltered: 0,
       expandedLogs: { change: false },
       showColFilters: false,
       colSpan: 8,
@@ -463,11 +469,11 @@ export default {
       }
     },
     deleteLog: function (log, index) {
-      this.$http.delete(`api/history/${log.id}`, { params: { index: log.index } })
+      HistoryService.delete(log.id, log.index)
         .then((response) => {
+          this.history.splice(index, 1);
           this.msg = response.data.text || 'Successfully deleted history item';
           this.msgType = 'success';
-          this.history.data.splice(index, 1);
         })
         .catch((error) => {
           this.msg = error.text || 'Error deleting history item';
@@ -504,12 +510,15 @@ export default {
       this.query.sortField = this.sortField;
       this.query.searchTerm = this.searchTerm;
 
-      this.$http.get('api/histories', { params: this.query })
+      HistoryService.get(this.query)
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.history = response.data;
-        }, (error) => {
+          this.history = response.data.data;
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
+        })
+        .catch((error) => {
           this.loading = false;
           this.error = error.text || error;
         });
