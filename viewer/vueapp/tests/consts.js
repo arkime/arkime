@@ -30,6 +30,19 @@ export const users = [{
   welcomeMsgNum: 1
 }];
 
+export const histories = [{
+  api: '/api/users',
+  body: { length: 50, sortField: 'userId' },
+  id: 'ZhC4Z3oBWTXqilPxr-_r',
+  index: 'tests_history_v1-0w0',
+  method: 'POST',
+  query: 'id=admin',
+  queryTime: 5,
+  timestamp: 1625237794,
+  uiPage: 'users',
+  userId: 'admin'
+}];
+
 export const fields = [{
   dbField: '_id',
   dbField2: '_id',

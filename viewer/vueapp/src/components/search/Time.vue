@@ -240,7 +240,6 @@
 import FocusInput from '../utils/FocusInput';
 
 import datePicker from 'vue-bootstrap-datetimepicker';
-import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
