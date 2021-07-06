@@ -1,3 +1,5 @@
+'use strict';
+
 import Utils from '../src/components/utils/utils';
 
 test('findFactors', () => {

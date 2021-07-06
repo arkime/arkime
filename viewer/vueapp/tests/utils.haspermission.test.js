@@ -1,3 +1,5 @@
+'use strict';
+
 // eslint-disable-next-line no-shadow
 import $ from 'jquery';
 import { render } from '@testing-library/vue';

@@ -1,3 +1,5 @@
+'use strict';
+
 // eslint-disable-next-line no-shadow
 import $ from 'jquery';
 import Vue from 'vue';
@@ -5,6 +7,7 @@ import BootstrapVue from 'bootstrap-vue';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import Table from '../src/components/utils/Table.vue';
 import UserService from '../src/components/users/UserService';
+const { userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -27,7 +30,7 @@ UserService.getState = jest.fn().mockResolvedValue({
 
 const store = {
   state: {
-    user: { settings: { timezone: 'gmt' } }
+    user: userWithSettings
   }
 };
 

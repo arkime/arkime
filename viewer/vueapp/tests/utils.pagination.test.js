@@ -1,3 +1,5 @@
+'use strict';
+
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import '@testing-library/jest-dom';

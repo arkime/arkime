@@ -1,3 +1,5 @@
+'use strict';
+
 import { render } from '@testing-library/vue';
 import NoResults from '../src/components/utils/NoResults.vue';
 

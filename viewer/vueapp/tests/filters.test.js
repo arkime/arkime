@@ -1,3 +1,5 @@
+'use strict';
+
 const filters = require('../src/filters');
 const { fields } = require('./consts');
 

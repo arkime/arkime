@@ -675,35 +675,34 @@ export default {
       table = undefined;
     },
     getTableState: function () {
-      UserService.getState(this.tableStateName)
-        .then((response) => {
-          if (response.data && response.data.order && response.data.visibleHeaders) {
-            // there is a saved table state for this table
-            // so apply it to sortField, desc, and column order
-            this.tableSortField = response.data.order[0][0];
-            this.tableDesc = response.data.order[0][1] === 'desc';
-            for (const c of response.data.visibleHeaders) {
-              for (const column of this.columns) {
-                if (column.id === c) {
-                  const newCol = this.cloneColumn(column);
-                  this.computedColumns.push(newCol);
-                }
+      UserService.getState(this.tableStateName).then((response) => {
+        if (response.data && response.data.order && response.data.visibleHeaders) {
+          // there is a saved table state for this table
+          // so apply it to sortField, desc, and column order
+          this.tableSortField = response.data.order[0][0];
+          this.tableDesc = response.data.order[0][1] === 'desc';
+          for (const c of response.data.visibleHeaders) {
+            for (const column of this.columns) {
+              if (column.id === c) {
+                const newCol = this.cloneColumn(column);
+                this.computedColumns.push(newCol);
               }
             }
-          } else {
-            // this table has not been saved, so use the defaults
-            this.displayDefaultColumns();
           }
-
-          this.loadData(this.tableSortField, this.tableDesc);
-          this.initializeColDragDrop();
-        })
-        .catch(() => {
-          // if there's an error getting the table state,
-          // just use the default columns
+        } else {
+          // this table has not been saved, so use the defaults
           this.displayDefaultColumns();
-          this.initializeColDragDrop();
-        });
+        }
+
+        this.loadData(this.tableSortField, this.tableDesc);
+        this.initializeColDragDrop();
+      }).catch(() => {
+        // if there's an error getting the table state,
+        // just use the default columns and fetch the data
+        this.displayDefaultColumns();
+        this.initializeColDragDrop();
+        this.loadData(this.tableSortField, this.tableDesc);
+      });
     },
     saveTableState: function () {
       const tableState = {

@@ -1,3 +1,5 @@
+'use strict';
+
 import { render } from '@testing-library/vue';
 import ErrorComponent from '../src/components/utils/Error.vue';
 

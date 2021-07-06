@@ -1,3 +1,5 @@
+'use strict';
+
 import { render, fireEvent } from '@testing-library/vue';
 import Toast from '../src/components/utils/Toast.vue';
 
