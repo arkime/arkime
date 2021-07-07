@@ -2826,10 +2826,17 @@ export default {
       this.update();
     },
     timelineFilterSelected: function (field) {
-      const index = this.settings.timelineDataFilters.indexOf(field.dbField);
-      this.$set(this, 'filtersTypeahead', field.friendlyName);
+      let index;
+      for (index = 0; index < this.settings.timelineDataFilters.length; index++) {
+        const filter = this.settings.timelineDataFilters[index];
+        const filterDbField = FieldService.getFieldProperty(filter, 'dbField', this.fields);
+        if (filterDbField && filterDbField === field.dbField) {
+          break;
+        }
+      }
+      if (index === this.settings.timelineDataFilters.length) { index = -1; }
 
-      if (index >= 0) {
+      if (index > -1) {
         this.timelineDataFilters.splice(index, 1);
         this.settings.timelineDataFilters.splice(index, 1);
         this.update();
