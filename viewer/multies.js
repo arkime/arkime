@@ -173,7 +173,7 @@ function simpleGather (req, res, bodies, doneCb) {
     let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
 
-    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix);
+    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
     const options = { method: req.method };
     let client;
@@ -818,7 +818,7 @@ function msearch (req, res) {
     }, (err) => {
       bodies[node] = nlines.join('\n') + '\n';
       const prefix = node2Prefix(node);
-      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
+      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
       nodeCb();
     });
   }, (err) => {
@@ -854,7 +854,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     delete body.cluster;
 
     const prefix = node2Prefix(node);
-    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
     const id = req.params.id;
     const params = {
       retry_on_conflict: 3,
