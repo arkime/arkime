@@ -1,3 +1,5 @@
+'use strict';
+
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import '@testing-library/jest-dom';
@@ -6,7 +8,7 @@ import Users from '../src/components/users/Users.vue';
 import UserService from '../src/components/users/UserService';
 import FocusInput from '../src/components/utils/FocusInput.vue';
 import '../src/filters.js';
-const { users } = require('./consts');
+const { users, userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -18,7 +20,10 @@ jest.mock('../src/components/users/UserService');
 
 const store = {
   state: {
-    user: { settings: { timezone: 'gmt', ms: false, userId: 'admin' } }
+    user: userWithSettings
+  },
+  mutations: {
+    setUser (state, value) {}
   }
 };
 

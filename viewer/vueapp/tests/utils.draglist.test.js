@@ -1,3 +1,5 @@
+'use strict';
+
 import { render, fireEvent } from '@testing-library/vue';
 import DragList from '../src/components/utils/DragList.vue';
 import dragListComponent from './components/draglist.test.vue';

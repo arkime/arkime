@@ -1,3 +1,5 @@
+'use strict';
+
 import { render, fireEvent } from '@testing-library/vue';
 import caretPos from '../src/components/utils/CaretPos.vue';
 import caretPosComponent from './components/caretpos.test.vue';

@@ -1,8 +1,11 @@
+'use strict';
+
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import { render, fireEvent } from '@testing-library/vue';
 import WelcomeMessage from '../src/components/utils/WelcomeMessage.vue';
 import UserService from '../src/components/users/UserService';
+const { users } = require('./consts');
 
 console.warn = jest.fn(); // ignore tooltip warnings
 
@@ -14,7 +17,7 @@ UserService.acknowledgeMsg = jest.fn().mockResolvedValue();
 
 const store = {
   state: {
-    user: { msgNum: 0, userName: 'testuser', userId: 'testuser' }
+    user: users[0]
   },
   mutations: {
     setUser (state, value) {

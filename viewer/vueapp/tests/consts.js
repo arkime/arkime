@@ -30,6 +30,13 @@ export const users = [{
   welcomeMsgNum: 1
 }];
 
+export const userSettings = {
+  timezone: 'gmt',
+  ms: false
+};
+
+export const userWithSettings = { ...users[0], settings: { ...userSettings } };
+
 export const histories = [{
   api: '/api/users',
   body: { length: 50, sortField: 'userId' },
@@ -41,6 +48,22 @@ export const histories = [{
   timestamp: 1625237794,
   uiPage: 'users',
   userId: 'admin'
+}];
+
+export const files = [{
+  filesize: 1836,
+  first: 1385474626,
+  locked: 1,
+  name: '/path/to/thefile.pcap',
+  node: 'test',
+  num: 1
+}, {
+  filesize: 8397,
+  first: 1385478764,
+  locked: 1,
+  name: '/path/to/anotherfile.pcap',
+  node: 'test',
+  num: 2
 }];
 
 export const fields = [{

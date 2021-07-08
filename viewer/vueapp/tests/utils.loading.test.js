@@ -1,3 +1,5 @@
+'use strict';
+
 import { render } from '@testing-library/vue';
 import LoadingComponent from '../src/components/utils/Loading.vue';
 

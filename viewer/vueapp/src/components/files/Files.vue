@@ -86,6 +86,7 @@ import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
 import MolochCollapsible from '../utils/CollapsibleWrapper';
 import FocusInput from '../utils/FocusInput';
+import FileService from './FileService';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -171,17 +172,16 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/files', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          this.files = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          this.loading = false;
-          this.error = error.text || error;
-        });
+      FileService.get(this.query).then((response) => {
+        this.error = '';
+        this.loading = false;
+        this.files = response.data.data;
+        this.recordsTotal = response.data.recordsTotal;
+        this.recordsFiltered = response.data.recordsFiltered;
+      }).catch((error) => {
+        this.loading = false;
+        this.error = error.text || error;
+      });
     },
     onError: function (message) {
       this.childError = message;

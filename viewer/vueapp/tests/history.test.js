@@ -1,3 +1,5 @@
+'use strict';
+
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 // eslint-disable-next-line no-shadow
@@ -9,7 +11,7 @@ import HistoryService from '../src/components/history/HistoryService';
 import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import '../src/filters.js';
-const { histories } = require('./consts');
+const { histories, userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // ignore tooltip warnings
 
@@ -25,11 +27,7 @@ UserService.hasPermission = jest.fn(() => true);
 
 const store = {
   state: {
-    user: {
-      userId: 'admin',
-      createEnabled: true,
-      settings: { timezone: 'gmt', ms: false }
-    },
+    user: userWithSettings,
     time: {
       startTime: 0,
       stopTime: 0

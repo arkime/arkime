@@ -1,3 +1,5 @@
+'use strict';
+
 import { render, fireEvent } from '@testing-library/vue';
 import ToggleBtn from '../src/components/utils/ToggleBtn.vue';
 

@@ -1,3 +1,5 @@
+'use strict';
+
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import FieldTypeahead from '../src/components/utils/FieldTypeahead.vue';
 import UserService from '../src/components/users/UserService';
