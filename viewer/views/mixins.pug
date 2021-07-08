@@ -53,23 +53,6 @@ mixin arrayList(container, field, title, expr, extra, max, session)
         |!{extra}
       div(style="display:inline-block;") &nbsp;
 
-//- Standard method to print an array of values with commas
-mixin stringList(container, field, title, expr, extra)
-  if ((container && container[field]) || extra)
-    dt
-      +clickableLabel(expr, title)
-    dd
-      if (container && container[field])
-        - value = container[field]
-        if (value.length == 0)
-          span &lt;empty&gt;
-        else
-          +clickableValue(expr, value)
-      if (extra)
-        if (container && container[field] && container[field].length > 0)
-          |,
-        |!{extra}
-
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
   span

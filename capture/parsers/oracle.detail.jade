@@ -1,6 +1,6 @@
 if (session.oracle)
   div.sessionDetailMeta.bold oracle
   dl.sessionDetailMeta
-    +stringList(session.oracle, "user", "Users", "oracle.user")
-    +stringList(session.oracle, "host", "Hosts", "oracle.host")
-    +stringList(session.oracle, "service", "Services", "oracle.service")
+    +arrayList(session.oracle, "user", "Users", "oracle.user")
+    +arrayList(session.oracle, "host", "Hosts", "oracle.host")
+    +arrayList(session.oracle, "service", "Services", "oracle.service")
