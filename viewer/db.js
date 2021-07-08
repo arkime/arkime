@@ -1625,6 +1625,7 @@ exports.isLocalView = function (node, yesCB, noCB) {
 exports.deleteFile = function (node, id, path, cb) {
   fs.unlink(path, () => {
     exports.deleteDocument('files', 'file', id);
+    cb();
   });
 };
 
