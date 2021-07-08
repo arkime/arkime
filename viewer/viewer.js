@@ -649,13 +649,17 @@ function logAction (uiPage) {
       query: ''
     };
 
+    const avoidProps = {
+      password: true, newPassword: true, currentPassword: true, cancelId: true
+    };
+
     // parse query from req.query because query params might only be in body
     // and put into req.query by fillQueryFromBody, so you might not find them
-    // in req._parsedUrl.query
+    // in req._parsedUrl.query. need query for opening history item
     for (const item in req.query) {
-      // don't save cancel id, it doesn't apply to other requests
-      if (item === 'cancelId') { continue; }
-      log.query += `${item}=${req.query[item]}&`;
+      if (!avoidProps[item]) {
+        log.query += `${item}=${req.query[item]}&`;
+      }
     }
     log.query = log.query.slice(0, -1);
 
@@ -682,9 +686,6 @@ function logAction (uiPage) {
     }
 
     // save the request body
-    const avoidProps = {
-      password: true, newPassword: true, currentPassword: true
-    };
     const bodyClone = {};
 
     for (const key in req.body) {

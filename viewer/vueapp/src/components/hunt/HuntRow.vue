@@ -7,7 +7,7 @@
         @toggle="$emit('toggle', job)">
       </toggle-btn>
     </td>
-    <td>
+    <td class="no-wrap">
       <hunt-status :status="job.status"
         :queue-count="job.queueCount"
         :hide-text="true">
