@@ -279,7 +279,8 @@ const singletonFields = {
   'network.community_id': true,
   totDataBytes: true,
   'network.bytes': true,
-  'network.packets': true
+  'network.packets': true,
+  rootId: true
 };
 
 const dateFields = {
