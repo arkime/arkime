@@ -1780,7 +1780,12 @@ exports.deleteFile = function (node, id, path, cb) {
 exports.session2Sid = function (item) {
   const ver = item._index.includes('sessions2') ? '2@' : '3@';
   if (item._id.length < 31) {
-    return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
+    // sessions2 didn't have new arkime_ prefix
+    if (ver === '2@' && internals.prefix === 'arkime_') {
+      return ver + item._index.substring(10) + ':' + item._id;
+    } else {
+      return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
+    }
   }
 
   return ver + item._id;
