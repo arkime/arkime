@@ -129,8 +129,10 @@
               :key="user"
               class="badge badge-secondary ml-1">
               {{ user }}
-              <button type="button"
+              <button
+                type="button"
                 class="close"
+                title="Remove this user's access from this hunt"
                 @click="removeUser(user, job)">
                 &times;
               </button>
@@ -168,7 +170,9 @@
                   @click="toggleAddUsers">
                   Cancel
                 </button>
-                <button class="btn btn-theme-tertiary"
+                <button
+                  class="btn btn-theme-tertiary"
+                  title="Give these users access to this hunt"
                   @click="addUsers(newUsers, job)">
                   Add User(s)
                 </button>

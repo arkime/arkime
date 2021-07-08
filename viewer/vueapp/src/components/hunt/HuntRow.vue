@@ -81,7 +81,7 @@
         :disabled="job.loading"
         type="button"
         v-b-tooltip.hover
-        title="Remove this job"
+        title="Remove this hunt"
         class="ml-1 pull-right btn btn-sm btn-danger">
         <span v-if="!job.loading"
           class="fa fa-trash-o fa-fw">
@@ -95,6 +95,7 @@
         :id="`remove${job.id}`"
         @click="$emit('removeFromSessions', job)"
         class="ml-1 pull-right btn btn-sm btn-danger"
+        title="Remove the hunt name and ID fields from the matched sessions."
         v-if="(user.userId === job.userId || user.createEnabled) && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span v-if="!job.loading"
@@ -132,7 +133,7 @@
         type="button"
         @click="$emit('rerunJob', job)"
         v-b-tooltip.hover
-        title="Rerun this hunt job using the current time frame and search criteria."
+        title="Rerun this hunt using the current time frame and search criteria."
         class="ml-1 pull-right btn btn-sm btn-theme-secondary">
         <span class="fa fa-refresh fa-fw">
         </span>
@@ -141,7 +142,7 @@
         type="button"
         @click="$emit('repeatJob', job)"
         v-b-tooltip.hover
-        title="Repeat this hunt job using its time frame and search criteria."
+        title="Repeat this hunt using its time frame and search criteria."
         class="ml-1 pull-right btn btn-sm btn-theme-tertiary">
         <span class="fa fa-repeat fa-fw">
         </span>
@@ -151,7 +152,7 @@
         :disabled="job.loading"
         type="button"
         v-b-tooltip.hover
-        title="Cancel this job. It can be viewed in the history after the cancelation is complete."
+        title="Cancel this hunt. It can be viewed in the history after the cancelation is complete."
         class="ml-1 pull-right btn btn-sm btn-danger">
         <span v-if="!job.loading"
           class="fa fa-ban fa-fw">
@@ -165,7 +166,7 @@
         @click="$emit('pauseJob', job)"
         type="button"
         v-b-tooltip.hover
-        title="Pause this job"
+        title="Pause this hunt"
         class="ml-1 pull-right btn btn-sm btn-warning">
         <span v-if="!job.loading"
           class="fa fa-pause fa-fw">
@@ -179,7 +180,7 @@
         @click="$emit('playJob', job)"
         type="button"
         v-b-tooltip.hover
-        title="Play this job"
+        title="Play this hunt"
         class="ml-1 pull-right btn btn-sm btn-theme-secondary">
         <span v-if="!job.loading"
           class="fa fa-play fa-fw">
@@ -187,6 +188,7 @@
         <span v-else
           class="fa fa-spinner fa-spin fa-fw">
         </span>
+        {{ job.id }}
       </button>
     </td>
   </tr>
