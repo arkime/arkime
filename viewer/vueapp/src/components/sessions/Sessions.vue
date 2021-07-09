@@ -1988,7 +1988,7 @@ table.sessions-table tbody tr td.ignore-element {
 /* sticky table header ----------------------- */
 table.sessions-table.sticky-header > thead {
   left: 0;
-  z-index: 3;
+  z-index: 2;
   /* need to unset right because sometimes the header overflows the window */
   right: auto;
   position: fixed;

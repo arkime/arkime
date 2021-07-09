@@ -16,9 +16,11 @@
         <!-- hunt create navbar -->
         <form class="hunt-create-navbar">
           <div class="p-2 form-inline justify-content-between flex-row-reverse">
-            <button type="button"
+            <button
+              type="button"
               v-if="!createFormOpened"
               @click="createFormOpened = true"
+              title="Open a form to create a new hunt"
               class="btn btn-theme-tertiary btn-sm pull-right">
               Create a packet search job
             </button>
@@ -111,7 +113,8 @@
                         Name
                       </span>
                     </span>
-                    <input type="text"
+                    <input
+                      type="text"
                       v-model="jobName"
                       v-focus-input="true"
                       placeholder="Name your packet search job"
@@ -128,8 +131,10 @@
                         Max number of packets to examine per session
                       </span>
                     </span>
-                    <b-select class="form-control"
+                    <b-select
+                      role="listbox"
                       v-model="jobSize"
+                      class="form-control"
                       style="-webkit-appearance: none;"
                       :options="[50, 500, 5000, 10000]">
                     </b-select>
@@ -263,12 +268,14 @@
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
-                    <input class="form-check-input"
-                      :checked="jobSrc"
-                      @click="jobSrc = !jobSrc"
-                      type="checkbox"
+                    <input
                       id="src"
                       value="src"
+                      type="checkbox"
+                      role="checkbox"
+                      :checked="jobSrc"
+                      @click="jobSrc = !jobSrc"
+                      class="form-check-input"
                     />
                     <label class="form-check-label"
                       for="src">
@@ -276,12 +283,14 @@
                     </label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input"
-                      :checked="jobDst"
-                      @click="jobDst = !jobDst"
-                      type="checkbox"
+                    <input
                       id="dst"
                       value="dst"
+                      type="checkbox"
+                      role="checkbox"
+                      :checked="jobDst"
+                      class="form-check-input"
+                      @click="jobDst = !jobDst"
                     />
                     <label class="form-check-label"
                       for="dst">
@@ -349,17 +358,21 @@
                     {{ createFormError }}
                   </div>
                   <!-- create search job button -->
-                  <button type="button"
+                  <button
+                    type="button"
                     @click="createJob"
                     :disabled="loadingSessions"
+                    title="Create this hunt"
                     class="pull-right btn btn-theme-tertiary pull-right ml-1">
                     <span class="fa fa-plus fa-fw">
                     </span>&nbsp;
                     Create
                   </button> <!-- /create search job button -->
                   <!-- cancel create search job button -->
-                  <button type="button"
+                  <button
+                    type="button"
                     @click="cancelCreateForm"
+                    title="Cancel creating this hunt"
                     class="pull-right btn btn-warning pull-right">
                     <span class="fa fa-ban fa-fw">
                     </span>&nbsp;
@@ -574,6 +587,8 @@
               :canCancel="true"
               arrayName="results"
               @playJob="playJob"
+              @rerunJob="rerunJob"
+              @repeatJob="repeatJob"
               @pauseJob="pauseJob"
               @cancelJob="cancelJob"
               @removeJob="removeJob"
@@ -758,7 +773,7 @@
       <div v-if="floatingError || floatingSuccess"
         class="card floating-msg">
         <div class="card-body">
-          <a @click="floatingError = !floatingError; floatingSuccess = !floatingSuccess"
+          <a @click="floatingError = false; floatingSuccess = false"
             class="no-decoration cursor-pointer pull-right"
             v-b-tooltip.hover
             title="Dismiss">
@@ -786,8 +801,10 @@
 // import external
 import Vue from 'vue';
 // import services
+import SettingsService from '../settings/SettingsService';
 import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
+import HuntService from './HuntService';
 // import components
 import ToggleBtn from '../utils/ToggleBtn';
 import MolochSearch from '../search/Search';
@@ -886,7 +903,7 @@ export default {
     }
   },
   mounted: function () {
-    setTimeout(() => {
+    this.$nextTick(() => {
       // wait for computed queries
       this.loadData();
       this.cancelAndLoad(true);
@@ -956,15 +973,15 @@ export default {
         return;
       }
       if (!this.jobName) {
-        this.createFormError = 'Job name required';
+        this.createFormError = 'Hunt name required';
         return;
       }
       if (!this.jobSearch) {
-        this.createFormError = 'Job search text required';
+        this.createFormError = 'Hunt search text required';
         return;
       }
       if (!this.jobSrc && !this.jobDst) {
-        this.createFormError = 'The packet search job must search source or destination packets (or both)';
+        this.createFormError = 'The hunt must search source or destination packets (or both)';
         return;
       }
 
@@ -982,18 +999,17 @@ export default {
         users: this.jobUsers
       };
 
-      this.axios.post('api/hunt', newJob)
-        .then((response) => {
-          this.createFormOpened = false;
-          this.jobName = '';
-          this.jobUsers = '';
-          this.jobSearch = '';
-          this.createFormError = '';
-          this.jobNotifier = undefined;
-          this.loadData();
-        }, (error) => {
-          this.createFormError = error.text || error;
-        });
+      HuntService.create(newJob).then((response) => {
+        this.createFormOpened = false;
+        this.jobName = '';
+        this.jobUsers = '';
+        this.jobSearch = '';
+        this.createFormError = '';
+        this.jobNotifier = undefined;
+        this.loadData();
+      }).catch((error) => {
+        this.createFormError = error.text || error;
+      });
     },
     removeFromSessions: function (job) {
       if (job.loading) { return; } // it's already trying to do something
@@ -1001,18 +1017,17 @@ export default {
       this.setErrorForList('historyResults', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`api/hunt/${job.id}/removefromsessions`)
-        .then((response) => {
-          this.$set(job, 'loading', false);
-          this.$set(job, 'removed', true);
-          this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
-          setTimeout(() => {
-            this.$set(this, 'floatingSuccess', '');
-          }, 5000);
-        }, (error) => {
-          this.$set(job, 'loading', false);
-          this.setErrorForList('historyResults', error.text || error);
-        });
+      HuntService.cleanup(job.id).then((response) => {
+        this.$set(job, 'loading', false);
+        this.$set(job, 'removed', true);
+        this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
+        setTimeout(() => {
+          this.$set(this, 'floatingSuccess', '');
+        }, 5000);
+      }).catch((error) => {
+        this.$set(job, 'loading', false);
+        this.setErrorForList('historyResults', error.text || error);
+      });
     },
     removeJob: function (job, arrayName) {
       if (job.loading) { return; } // it's already trying to do something
@@ -1020,24 +1035,23 @@ export default {
       this.setErrorForList(arrayName, '');
       this.$set(job, 'loading', true);
 
-      this.axios.delete(`api/hunt/${job.id}`)
-        .then((response) => {
-          this.$set(job, 'loading', false);
-          let array = this.results;
-          if (arrayName === 'historyResults') {
-            array = this.historyResults.data;
+      HuntService.delete(job.id).then((response) => {
+        this.$set(job, 'loading', false);
+        let array = this.results;
+        if (arrayName === 'historyResults') {
+          array = this.historyResults.data;
+        }
+        for (let i = 0, len = array.length; i < len; ++i) {
+          if (array[i].id === job.id) {
+            array.splice(i, 1);
+            return;
           }
-          for (let i = 0, len = array.length; i < len; ++i) {
-            if (array[i].id === job.id) {
-              array.splice(i, 1);
-              return;
-            }
-          }
-          if (job.status === 'queued') { this.calculateQueue(); }
-        }, (error) => {
-          this.$set(job, 'loading', false);
-          this.setErrorForList(arrayName, error.text || error);
-        });
+        }
+        if (job.status === 'queued') { this.calculateQueue(); }
+      }).catch((error) => {
+        this.$set(job, 'loading', false);
+        this.setErrorForList(arrayName, error.text || error);
+      });
     },
     cancelJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
@@ -1045,14 +1059,13 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`api/hunt/${job.id}/cancel`)
-        .then((response) => {
-          this.$set(job, 'loading', false);
-          this.loadData();
-        }, (error) => {
-          this.$set(job, 'loading', false);
-          this.setErrorForList('results', error.text || error);
-        });
+      HuntService.cancel(job.id).then((response) => {
+        this.$set(job, 'loading', false);
+        this.loadData();
+      }).catch((error) => {
+        this.$set(job, 'loading', false);
+        this.setErrorForList('results', error.text || error);
+      });
     },
     pauseJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
@@ -1060,19 +1073,18 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`api/hunt/${job.id}/pause`)
-        .then((response) => {
-          if (job.status === 'running') {
-            this.loadData();
-            return;
-          }
-          this.$set(job, 'status', 'paused');
-          this.$set(job, 'loading', false);
-          this.calculateQueue();
-        }, (error) => {
-          this.$set(job, 'loading', false);
-          this.setErrorForList('results', error.text || error);
-        });
+      HuntService.pause(job.id).then((response) => {
+        if (job.status === 'running') {
+          this.loadData();
+          return;
+        }
+        this.$set(job, 'status', 'paused');
+        this.$set(job, 'loading', false);
+        this.calculateQueue();
+      }).catch((error) => {
+        this.$set(job, 'loading', false);
+        this.setErrorForList('results', error.text || error);
+      });
     },
     playJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
@@ -1080,15 +1092,14 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      this.axios.put(`api/hunt/${job.id}/play`)
-        .then((response) => {
-          this.$set(job, 'status', 'queued');
-          this.$set(job, 'loading', false);
-          this.calculateQueue();
-        }, (error) => {
-          this.$set(job, 'loading', false);
-          this.setErrorForList('results', error.text || error);
-        });
+      HuntService.play(job.id).then((response) => {
+        this.$set(job, 'status', 'queued');
+        this.$set(job, 'loading', false);
+        this.calculateQueue();
+      }).catch((error) => {
+        this.$set(job, 'loading', false);
+        this.setErrorForList('results', error.text || error);
+      });
     },
     openSessions: function (job) {
       const url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
@@ -1153,22 +1164,20 @@ export default {
     removeUser: function (user, job) {
       this.$set(this, 'floatingError', '');
 
-      this.axios.delete(`api/hunt/${job.id}/user/${user}`)
-        .then((response) => {
-          this.$set(job, 'users', response.data.users);
-        }, (error) => {
-          this.$set(this, 'floatingError', error.text || error);
-        });
+      HuntService.removeUser(job.id, user).then((response) => {
+        this.$set(job, 'users', response.data.users);
+      }).catch((error) => {
+        this.$set(this, 'floatingError', error.text || error);
+      });
     },
     addUsers: function (users, job) {
       this.$set(this, 'floatingError', '');
 
-      this.axios.post(`api/hunt/${job.id}/users`, { users: users })
-        .then((response) => {
-          this.$set(job, 'users', response.data.users);
-        }, (error) => {
-          this.$set(this, 'floatingError', error.text || error);
-        });
+      HuntService.addUsers(job.id, users).then((response) => {
+        this.$set(job, 'users', response.data.users);
+      }).catch((error) => {
+        this.$set(this, 'floatingError', error.text || error);
+      });
     },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
@@ -1218,7 +1227,7 @@ export default {
       }
 
       // get the hunt history
-      const historyReq = this.axios.get('api/hunts', { params: { ...this.query, history: true } });
+      const historyReq = HuntService.get(this.query, true);
       historyReq.then((response) => {
         this.historyListLoadingError = '';
 
@@ -1240,7 +1249,7 @@ export default {
         }
 
         this.$set(this, 'historyResults', response.data);
-      }, (error) => {
+      }).catch((error) => {
         this.historyListLoadingError = error.text || error;
       });
 
@@ -1249,7 +1258,7 @@ export default {
       queuedQuery.desc = false;
       queuedQuery.length = undefined;
       queuedQuery.start = 0;
-      const queueReq = this.axios.get('api/hunts', { params: queuedQuery });
+      const queueReq = HuntService.get(queuedQuery);
       queueReq.then((response) => {
         this.queuedListLoadingError = '';
 
@@ -1286,20 +1295,18 @@ export default {
           );
         }
         this.calculateQueue();
-      }, (error) => {
+      }).catch((error) => {
         this.queuedListLoadingError = error.text || error;
       });
 
       // stop loading when both requests are done
-      Promise.all([historyReq, queueReq])
-        .then((values) => {
-          respondedAt = Date.now();
-          this.loading = false;
-        })
-        .catch(() => {
-          this.loading = false;
-          respondedAt = undefined;
-        });
+      Promise.all([historyReq, queueReq]).then((values) => {
+        respondedAt = Date.now();
+        this.loading = false;
+      }).catch(() => {
+        this.loading = false;
+        respondedAt = undefined;
+      });
     },
     loadSessions: function () {
       this.loadingSessions = true;
@@ -1328,10 +1335,9 @@ export default {
     },
     /* retrieves the notifiers that have been configured */
     loadNotifiers: function () {
-      this.$http.get('notifiers')
-        .then((response) => {
-          this.notifiers = response.data;
-        });
+      SettingsService.getNotifiers().then((response) => {
+        this.notifiers = response.data;
+      });
     }
   },
   beforeDestroy: function () {

@@ -1,6 +1,5 @@
 <template>
 
-  <!-- TODO transitions for btn drawer, field toggles, field values, field config items -->
   <div class="spiview-page">
 
     <MolochCollapsible>
@@ -32,7 +31,8 @@
                   <input type="text"
                     maxlength="30"
                     class="form-control"
-                    v-model="newFieldConfigName"
+                    @input="debounceNewFieldConfigName"
+                    v-model.lazy="newFieldConfigName"
                     placeholder="Enter new field configuration name"
                     @keydown.enter.stop.prevent="saveFieldConfiguration"
                   />
@@ -51,42 +51,51 @@
               </b-dropdown-header>
               <b-dropdown-divider>
               </b-dropdown-divider>
-              <b-dropdown-item
-                v-if="fieldConfigError"
-                class="text-danger">
-                {{ fieldConfigError }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-if="fieldConfigSuccess"
-                class="text-success">
-                {{ fieldConfigSuccess }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-b-tooltip.hover
-                @click.stop.prevent="loadFieldConfiguration(-1)"
-                title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
-                Arkime Default
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-for="(config, key) in fieldConfigs"
-                :key="key"
-                @click.self.stop.prevent="loadFieldConfiguration(key)">
-                <button class="btn btn-xs btn-danger pull-right ml-1"
-                  type="button"
-                  @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                  <span class="fa fa-trash-o">
-                  </span>
-                </button>
-                <button class="btn btn-xs btn-warning pull-right"
-                  type="button"
+              <transition-group name="list">
+                <b-dropdown-item
+                  key="config-default"
                   v-b-tooltip.hover
-                  title="Update this field configuration with the currently visible fields"
-                  @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                  <span class="fa fa-save">
+                  @click.stop.prevent="loadFieldConfiguration(-1)"
+                  title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+                  Arkime Default
+                </b-dropdown-item>
+                <b-dropdown-item
+                  v-for="(config, key) in fieldConfigs"
+                  :key="config.name"
+                  @click.self.stop.prevent="loadFieldConfiguration(key)">
+                  <button class="btn btn-xs btn-danger pull-right ml-1"
+                    type="button"
+                    @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                    <span class="fa fa-trash-o">
+                    </span>
+                  </button>
+                  <button class="btn btn-xs btn-warning pull-right"
+                    type="button"
+                    v-b-tooltip.hover
+                    title="Update this field configuration with the currently visible fields"
+                    @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                    <span class="fa fa-save">
+                    </span>
+                  </button>
+                  {{ config.name }}
+                </b-dropdown-item>
+                <b-dropdown-item
+                  v-if="fieldConfigError"
+                  key="config-error">
+                  <span class="text-danger">
+                    <span class="fa fa-exclamation-triangle" />
+                    {{ fieldConfigError }}
                   </span>
-                </button>
-                {{ config.name }}
-              </b-dropdown-item>
+                </b-dropdown-item>
+                <b-dropdown-item
+                  v-if="fieldConfigSuccess"
+                  key="config-success">
+                  <span class="text-success">
+                    <span class="fa fa-check" />
+                    {{ fieldConfigSuccess }}
+                  </span>
+                </b-dropdown-item>
+              </transition-group>
             </b-dropdown> <!-- /field config save button -->
             <small>
               <strong class="ml-2 text-theme-accent"
@@ -214,51 +223,56 @@
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
                   <form class="form-inline">
-                    <input type="text"
-                      class="form-control form-control-sm mr-1 mb-1"
-                      placeholder="Search for fields to display in this category"
-                      @input="updateFilteredFields(category, $event.target.value)"
-                    />
-                    <span class="small"
-                      v-if="!categoryObjects[category].fields.length">
-                      <span class="fa fa-fw fa-exclamation-circle">
-                      </span>&nbsp;
-                      No results match your query
-                    </span>
-                    <template v-if="categoryObjects[category].spi">
+                    <transition-group name="fade-list">
+                      <input type="text"
+                        class="form-control form-control-sm mr-1 mb-1 no-transition"
+                        placeholder="Search for fields to display in this category"
+                        @input="updateFilteredFields(category, $event.target.value)"
+                        key="input"
+                      />
                       <span class="small"
-                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
+                        key="no-results"
+                        v-if="!categoryObjects[category].fields.length">
                         <span class="fa fa-fw fa-exclamation-circle">
                         </span>&nbsp;
-                        No fields match your query
+                        No results match your query
                       </span>
-                      <span v-for="field in categoryObjects[category].filteredFields"
-                        :key="field.dbField">
-                        <b-dropdown split
-                          size="sm"
-                          variant="default"
-                          class="mr-1 mb-1 field-dropdown"
-                          :text="field.friendlyName"
-                          v-b-tooltip.hover
-                          :title="field.help"
-                          boundary="viewport"
-                          @click="toggleSpiData(field, true, true)"
-                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
-                          <b-dropdown-item
-                            @click="exportUnique(field.dbField, 0)">
-                            Export Unique {{ field.friendlyName }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="exportUnique(field.dbField, 1)">
-                            Export Unique {{ field.friendlyName }} with counts
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="openSpiGraph(field.dbField)">
-                            Open {{ field.friendlyName }} SPI Graph
-                          </b-dropdown-item>
-                        </b-dropdown>
-                      </span>
-                    </template>
+                      <template v-if="categoryObjects[category].spi">
+                        <span class="small"
+                          key="no-fields"
+                          v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
+                          <span class="fa fa-fw fa-exclamation-circle">
+                          </span>&nbsp;
+                          No fields match your query
+                        </span>
+                        <span v-for="field in categoryObjects[category].filteredFields"
+                          :key="field.dbField">
+                          <b-dropdown split
+                            size="sm"
+                            variant="default"
+                            class="mr-1 mb-1 field-dropdown"
+                            :text="field.friendlyName"
+                            v-b-tooltip.hover
+                            :title="field.help"
+                            boundary="viewport"
+                            @click="toggleSpiData(field, true, true)"
+                            :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                            <b-dropdown-item
+                              @click="exportUnique(field.dbField, 0)">
+                              Export Unique {{ field.friendlyName }}
+                            </b-dropdown-item>
+                            <b-dropdown-item
+                              @click="exportUnique(field.dbField, 1)">
+                              Export Unique {{ field.friendlyName }} with counts
+                            </b-dropdown-item>
+                            <b-dropdown-item
+                              @click="openSpiGraph(field.dbField)">
+                              Open {{ field.friendlyName }} SPI Graph
+                            </b-dropdown-item>
+                          </b-dropdown>
+                        </span>
+                      </template>
+                    </transition-group>
                   </form>
                 </div>
                 <div class="text-center btn-drawer-toggle cursor-pointer"
@@ -272,90 +286,92 @@
               <div v-if="categoryObjects[category].spi"
                 class="mt-3">
                 <!-- spiview field -->
-                <template v-for="(value, key) in categoryObjects[category].spi">
-                  <div :key="key"
-                    v-if="value.active"
-                    class="spi-buckets pr-1 pl-1 pb-1">
-                    <!-- spiview field label button -->
-                    <b-dropdown
-                      size="sm"
-                      variant="default"
-                      class="field-dropdown"
-                      :text="value.field.friendlyName">
-                      <b-dropdown-item
-                        @click="toggleSpiData(value.field, true, true)">
-                        Hide {{ value.field.friendlyName }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(value.field.dbField, 0)">
-                        Export Unique {{ value.field.friendlyName }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(value.field.dbField, 1)">
-                        Export Unique {{ value.field.friendlyName }} with counts
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="openSpiGraph(value.field.dbField)">
-                        Open {{ value.field.friendlyName }} SPI Graph
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="pivot(value)">
-                        Pivot on {{ value.field.friendlyName }}
-                      </b-dropdown-item>
-                    </b-dropdown> <!-- spiview field label button -->
-                    <!-- spiview field data -->
-                    <span v-if="value && value.value && value.value.buckets">
-                      <span v-for="bucket in value.value.buckets"
-                        :key="bucket.key">
-                        <span v-if="bucket.key || bucket.key === 0"
-                          class="small spi-bucket mr-1 no-wrap">
-                          <moloch-session-field
-                            :field="value.field"
-                            :value="bucket.key"
-                            :expr="value.field.exp"
-                            :parse="true"
-                            :pull-left="true"
-                            :session-btn="true">
-                          </moloch-session-field>
-                          <sup>({{ bucket.doc_count | commaString }})</sup>
+                <transition-group :name="spiviewFieldTransition">
+                  <template v-for="(value, key) in categoryObjects[category].spi">
+                    <div :key="key"
+                      v-if="value.active"
+                      class="spi-buckets pr-1 pl-1 pb-1">
+                      <!-- spiview field label button -->
+                      <b-dropdown
+                        size="sm"
+                        variant="default"
+                        class="field-dropdown"
+                        :text="value.field.friendlyName">
+                        <b-dropdown-item
+                          @click="toggleSpiData(value.field, true, true)">
+                          Hide {{ value.field.friendlyName }}
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="exportUnique(value.field.dbField, 0)">
+                          Export Unique {{ value.field.friendlyName }}
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="exportUnique(value.field.dbField, 1)">
+                          Export Unique {{ value.field.friendlyName }} with counts
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="openSpiGraph(value.field.dbField)">
+                          Open {{ value.field.friendlyName }} SPI Graph
+                        </b-dropdown-item>
+                        <b-dropdown-item
+                          @click="pivot(value)">
+                          Pivot on {{ value.field.friendlyName }}
+                        </b-dropdown-item>
+                      </b-dropdown> <!-- spiview field label button -->
+                      <!-- spiview field data -->
+                      <span v-if="value && value.value && value.value.buckets">
+                        <span v-for="bucket in value.value.buckets"
+                          :key="bucket.key">
+                          <span v-if="bucket.key || bucket.key === 0"
+                            class="small spi-bucket mr-1 no-wrap">
+                            <moloch-session-field
+                              :field="value.field"
+                              :value="bucket.key"
+                              :expr="value.field.exp"
+                              :parse="true"
+                              :pull-left="true"
+                              :session-btn="true">
+                            </moloch-session-field>
+                            <sup>({{ bucket.doc_count | commaString }})</sup>
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    <!-- /spiview field data -->
-                    <!-- spiview no data -->
-                    <em class="small"
-                      v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)">
-                      No data for this field
-                      <span v-if="canceled && !value.value">
-                        (request was canceled)
-                      </span>
-                    </em> <!-- /spiview no data -->
-                    <!-- spiview field more/less values -->
-                    <a v-if="value.count && value.count > 100"
-                       @click="showValues(value, false)"
-                       class="btn btn-link btn-xs"
-                       style="text-decoration:none;">
-                      ...less
-                    </a>
-                    <a v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
-                      @click="showValues(value, true)"
-                      class="btn btn-link btn-xs"
-                      style="text-decoration:none;">
-                      more...
-                    </a> <!-- /spiview field more/less values -->
-                    <!-- spiview field loading -->
-                    <span v-if="value.loading"
-                      class="fa fa-spinner fa-spin">
-                    </span> <!-- /spiview field loading -->
-                    <!-- spiview field error -->
-                    <span v-if="value.error"
-                      class="text-danger ml-2">
-                      <span class="fa fa-exclamation-triangle">
-                      </span>&nbsp;
-                      {{ value.error }}
-                    </span> <!-- /spiview field error -->
-                  </div>
-                </template> <!-- /spiview field -->
+                      <!-- /spiview field data -->
+                      <!-- spiview no data -->
+                      <em class="small"
+                        v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)">
+                        No data for this field
+                        <span v-if="canceled && !value.value">
+                          (request was canceled)
+                        </span>
+                      </em> <!-- /spiview no data -->
+                      <!-- spiview field more/less values -->
+                      <a v-if="value.count && value.count > 100 && value.value && value.value.buckets && value.value.buckets.length && value.value.buckets.length >= 100"
+                         @click="showValues(value, false, value.value.buckets.length)"
+                         class="btn btn-link btn-xs"
+                         style="text-decoration:none;">
+                        ...less
+                      </a>
+                      <a v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
+                        @click="showValues(value, true, value.value.buckets.length)"
+                        class="btn btn-link btn-xs"
+                        style="text-decoration:none;">
+                        more...
+                      </a> <!-- /spiview field more/less values -->
+                      <!-- spiview field loading -->
+                      <span v-if="value.loading"
+                        class="fa fa-spinner fa-spin">
+                      </span> <!-- /spiview field loading -->
+                      <!-- spiview field error -->
+                      <span v-if="value.error"
+                        class="text-danger ml-2">
+                        <span class="fa fa-exclamation-triangle">
+                        </span>&nbsp;
+                        {{ value.error }}
+                      </span> <!-- /spiview field error -->
+                    </div>
+                  </template> <!-- /spiview field -->
+                </transition-group>
               </div>
             </b-card-body>
           </b-collapse>
@@ -396,6 +412,7 @@ let pendingPromise;
 
 let timeout;
 let inputTimeout;
+let newConfigTimeout;
 
 export default {
   name: 'Spiview',
@@ -425,7 +442,8 @@ export default {
       newFieldConfigName: '',
       fieldConfigError: '',
       fieldConfigSuccess: '',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      spiviewFieldTransition: ''
     };
   },
   computed: {
@@ -598,10 +616,11 @@ export default {
     },
     /**
      * Shows more values for a specific field
-     * @param {object} field  The field to get more spi data for
-     * @param {bool} more     Whether to display more or less values
+     * @param {object} value - The value to get more spi data for
+     * @param {bool} more - Whether to display more or less values
+     * @param {number} currLen - The current length of the field values
      */
-    showValues: function (value, more) {
+    showValues: function (value, more, currLen) {
       let count;
       const field = value.field;
       if (this.spiQuery.includes(field.dbField) || this.spiQuery.includes(field.dbField2)) {
@@ -611,10 +630,16 @@ export default {
           if (spiParamsArray[i].includes(field.dbField) || spiParamsArray[i].includes(field.dbField2)) {
             const spiParam = spiParamsArray[i].split(':');
             if (more) {
-              count = spiParam[1] = parseInt(spiParam[1]) + 100;
+              // get the max of the requested length and the actual results length
+              // since the results could have been filtered and there are many more results
+              spiParam[1] = Math.max(parseInt(spiParam[1]), Math.round(currLen / 100) * 100);
+              count = spiParam[1] = spiParam[1] + 100;
             } else {
-              count = spiParam[1] = parseInt(spiParam[1]) - 100;
-              count = Math.max(count, 0);
+              // get the min of the requested length and the actual results length
+              // since the results could have been filtered and there are many fewer resutls
+              spiParam[1] = Math.min(parseInt(spiParam[1]), Math.round(currLen / 100) * 100);
+              count = spiParam[1] = spiParam[1] - 100;
+              count = Math.max(count, 100); // min is 100
             }
             spiParamsArray[i] = spiParam.join(':');
             break;
@@ -700,6 +725,13 @@ export default {
       });
 
       window.open(routeData.href, '_blank');
+    },
+    /* debounces input to new field config to speed it up */
+    debounceNewFieldConfigName: function (e) {
+      if (newConfigTimeout) { clearTimeout(newConfigTimeout); }
+      newConfigTimeout = setTimeout(() => {
+        this.newFieldConfigName = e.target.value;
+      }, 400);
     },
     /* Saves a custom spiview fields configuration */
     saveFieldConfiguration: function () {
@@ -935,7 +967,7 @@ export default {
         const param = spiParamsArray[i];
         const split = param.split(':');
         const fieldID = split[0];
-        const count = split[1];
+        const count = Math.max(split[1], 100); // min is 100
         const field = FieldService.getField(fieldID, this.fields);
 
         if (field) {
@@ -975,11 +1007,13 @@ export default {
             }
             this.dataLoading = false;
             pendingPromise = null;
+            this.spiviewFieldTransition = 'list';
           })
           .catch((error) => {
             this.error = error.text || error;
             this.dataLoading = false;
             pendingPromise = null;
+            this.spiviewFieldTransition = 'list';
           });
       } else if (this.fields) {
         // if we couldn't figure out the fields to request,
@@ -1337,12 +1371,18 @@ export default {
 .spiview-page .btn-drawer .btn-container {
   max-height: 22px;
   overflow: hidden;
+  transition: all .8s;
 }
 
 .spiview-page .btn-drawer.expanded .btn-container {
   max-height: 999px;
   overflow: visible;
+  animation: 7s delay-overflow;
 }
+@keyframes delay-overflow {
+  from { overflow: hidden; }
+}
+
 /* expand drawer button icon */
 .spiview-page .btn-drawer.expanded .fa-angle-double-up {
   display: block;

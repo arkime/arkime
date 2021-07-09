@@ -447,6 +447,20 @@ body.dark .pagination .page-item.active > button:focus {
   opacity: 0;
 }
 
+/* for transition groups (any block element)
+   enters/exits items by fading them */
+.fade-list-enter-active:not(.no-transition),
+.fade-list-leave-active:not(.no-transition) {
+  transition: opacity .3s;
+}
+.fade-list-enter:not(.no-transition),
+.fade-list-leave-to:not(.no-transition) {
+  opacity: 0;
+}
+.fade-list-move:not(.no-transition) {
+  transition: transform .3s;
+}
+
 /* MEDIA QUERIES ----------------------------- */
 @media (min-width: 1600px) {
   .col-xxl-2 {

@@ -377,7 +377,7 @@ export default {
         { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
         { name: 'User ID', sort: 'userId', nowrap: true, width: 8, filter: true, permission: 'createEnabled', help: 'The id of the user that initiated the request' },
         { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
-        { name: 'Method', sort: 'method', nowrap: true, width: 5, filter: true, help: 'The HTTP request method' },
+        { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
         { name: 'Expression', sort: 'expression', nowrap: true, width: 27, exists: false, help: 'The query expression issued with the request' },
         { name: 'View', sort: 'view.name', nowrap: true, width: 20, exists: false, help: 'The view expression applied to the request' }

@@ -1,23 +1,23 @@
 <template>
   <div :class="{'sticky-viz':stickyViz && primary}">
 
-    <!-- sticky viz button -->
-    <div class="sticky-viz-btn"
-      v-if="primary"
-      @click="toggleStickyViz"
-      v-b-tooltip.hover.left
-      title="Toggle sticky visualizations">
-      <span v-if="stickyViz"
-        class="fa fa-fw fa-thumb-tack">
-      </span>
-      <span v-else
-        class="fa fa-fw fa-thumb-tack fa-rotate-90">
-      </span>
-    </div> <!-- /sticky viz button -->
-
     <div class="pt-2 pl-2 pr-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
+
+      <!-- sticky viz button -->
+      <div class="sticky-viz-btn"
+        v-if="primary"
+        @click="toggleStickyViz"
+        v-b-tooltip.hover.left
+        title="Toggle sticky visualizations">
+        <span v-if="stickyViz"
+          class="fa fa-fw fa-thumb-tack">
+        </span>
+        <span v-else
+          class="fa fa-fw fa-thumb-tack fa-rotate-90">
+        </span>
+      </div> <!-- /sticky viz button -->
 
       <!-- map content -->
       <div :class="{'expanded':mapExpanded}">
@@ -34,10 +34,10 @@
 
         <div class="inline-map">
           <div v-if="mapData">
-            <div class="moloch-map-container">
+            <div class="map-container">
 
               <!-- map -->
-              <div class="moloch-map"
+              <div class="map"
                 :id="'molochMap' + id">
               </div> <!-- /map -->
 
@@ -1006,7 +1006,7 @@ export default {
 
 <style>
 /* map styles ---------------------- */
-.inline-map .moloch-map-container > .moloch-map {
+.inline-map .map-container > .map {
   z-index: 3;
   height: 170px;
   width: 100%;
@@ -1061,20 +1061,20 @@ export default {
 }
 
 /* legend (top 10) */
-.moloch-map-container .map-legend {
+.map-container .map-legend {
   max-width: 94%;
   margin-left: 4px;
   font-size: .8rem;
   position: fixed;
   bottom: 22px;
   right: 16px;
-  z-index: 5;
+  z-index: 6;
   padding: 0 0 2px 4px;
   border-radius: 4px;
   background-color: #fff;
 }
 
-.moloch-map-container .map-legend .legend-item {
+.map-container .map-legend .legend-item {
   display: inline-block;
   margin-right: 4px;
   margin-top: 2px;
@@ -1088,7 +1088,7 @@ export default {
     1px 1px 3px rgba(0,0,0,0.65);
 }
 
-.moloch-map-container .map-legend strong {
+.map-container .map-legend strong {
   color: #000;
 }
 
@@ -1208,12 +1208,19 @@ export default {
   padding: 0;
 }
 
+.expanded .map-container {
+  position: fixed;
+  z-index: 5;
+  right: 9px;
+  top: 160px;
+}
+
 /* show the buttons on top of the map */
 .expanded .src-dst-btns,
 .expanded .xff-btn,
 .expanded .btn-close-map,
 .expanded .btn-expand-map {
-  z-index : 6;
+  z-index: 6;
 }
 
 /* graph styles -------------------- */
