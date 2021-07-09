@@ -505,7 +505,6 @@ export default {
             continue;
           }
 
-          console.log('ALW', info.info, info.field);
           let result = this.molochClickables[key].url
             .replace('%EXPRESSION%', encodeURIComponent(urlParams.expression))
             .replace('%DATE%', dateparams)

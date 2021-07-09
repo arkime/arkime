@@ -2340,7 +2340,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|source.ip:source.port|ip.src:source.port)/)) {
         query.aggregations = { field: { terms: { field: 'source.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'source.port', size: 100 } } } } };
       } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|destination.ip:destination.port|ip.dst:destination.port)/)) {
-        query.aggregations = { field: { terms: { field: 'dstIp', size: aggSize }, aggregations: { field2: { terms: { field: 'destination.port', size: 100 } } } } };
+        query.aggregations = { field: { terms: { field: 'destination.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'destination.port', size: 100 } } } } };
       } else if (req.query.field === 'fileand') {
         query.aggregations = { field: { terms: { field: 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
       } else {
