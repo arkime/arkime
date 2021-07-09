@@ -41,7 +41,7 @@
                       class="btn btn-theme-secondary"
                       :disabled="!newFieldConfigName"
                       @click="saveFieldConfiguration"
-                      v-b-tooltip.hover
+                      v-b-tooltip.hover.right
                       title="Save this custom spiview field configuration">
                       <span class="fa fa-save">
                       </span>
@@ -54,7 +54,7 @@
               <transition-group name="list">
                 <b-dropdown-item
                   key="config-default"
-                  v-b-tooltip.hover
+                  v-b-tooltip.hover.right
                   @click.stop.prevent="loadFieldConfiguration(-1)"
                   title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
                   Arkime Default
@@ -71,7 +71,7 @@
                   </button>
                   <button class="btn btn-xs btn-warning pull-right"
                     type="button"
-                    v-b-tooltip.hover
+                    v-b-tooltip.hover.right
                     title="Update this field configuration with the currently visible fields"
                     @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                     <span class="fa fa-save">
