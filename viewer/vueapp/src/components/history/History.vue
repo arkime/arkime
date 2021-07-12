@@ -227,7 +227,7 @@
                   class="mt-1">
                   <span>
                     <dt>Forced Expression</dt>
-                    <dd>{{ item.forcedExpression }}</dd>
+                    <dd class="break-word">{{ item.forcedExpression }}</dd>
                   </span>
                 </div> <!-- /forced expression -->
                 <!-- count info -->
@@ -260,7 +260,7 @@
                   <span v-for="(value, key) in item.body"
                     :key="key">
                     <dt>{{ key }}</dt>
-                    <dd>{{ value }}&nbsp;</dd>
+                    <dd class="break-word">{{ value }}&nbsp;</dd>
                   </span>
                 </div> <!-- /req body -->
                 <!-- query params -->
@@ -277,7 +277,7 @@
                   <span v-for="(value, key) in item.queryObj"
                     :key="key">
                     <dt>{{ key }}</dt>
-                    <dd>
+                    <dd class="break-word">
                       {{ value }}&nbsp;
                       <span v-if="key === 'view' && item.view && item.view.expression">
                         ({{ item.view.expression }})
@@ -458,10 +458,10 @@ export default {
 
       if (log.query && log.expanded && !log.queryObj) {
         log.queryObj = {};
-
-        const a = (log.query[0] === '?' ? log.query.substr(1) : log.query).split('&');
+        // match only single & (&& can be in the search expression)
+        const a = (log.query[0] === '?' ? log.query.substr(1) : log.query).split(/&(?![&& ])/g);
         for (let i = 0, len = a.length; i < len; i++) {
-          const b = a[i].split('=');
+          const b = a[i].split(/=(.+)/); // splits on first '=';
           let value = b[1] || '';
           if (b[0] === 'expression') { value = value.replace(/\+/g, ' '); }
           log.queryObj[decodeURIComponent(b[0])] = decodeURIComponent(value);
