@@ -684,6 +684,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       list = list.sort((a, b) => {
         return a._source.lastPacket - b._source.lastPacket;
       });
+    } else if (list.length === 0) {
+      res.status(404);
+      return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
     }
 
     const writerOptions = { writeHeader: true };
@@ -830,7 +833,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-
       sModule.sessionsListFromIds(req, ids, fields, (err, list) => {
         sessionsPcapList(req, res, list, pcapWriter, extension);
       });
@@ -873,6 +875,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cb(null);
     }, (err, session) => {
       if (err) {
+        res.status(500);
         console.trace('writePcap', err);
         return doneCb(err);
       }
