@@ -50,6 +50,8 @@ body {
 .no-overflow    { overflow: hidden; }
 .no-overflow-x  { overflow-x: hidden; }
 .no-overflow-y  { overflow-y: hidden; }
+.break-word     { word-break: break-word; }
+.word-break     { word-break: break-word; }
 
 /* display */
 .display-inline { display: inline; }

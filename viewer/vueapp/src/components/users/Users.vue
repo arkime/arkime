@@ -411,6 +411,7 @@
                     type="text"
                     class="form-control form-control-sm"
                     v-model="newuser[columns[1].sort]"
+                    autocomplete="username"
                   />
                 </div>
               </div>
@@ -466,6 +467,7 @@
                     type="password"
                     class="form-control form-control-sm"
                     v-model="newuser.password"
+                    autocomplete="new-password"
                   />
                 </div>
               </div>
@@ -573,7 +575,7 @@
                     <input
                       type="checkbox"
                       role="checkbox"
-                      :id="columns[2].sort"
+                      :id="columns[7].sort"
                       v-model="newuser[columns[7].sort]"
                     />
                     Can Remove Data

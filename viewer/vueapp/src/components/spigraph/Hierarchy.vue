@@ -2,7 +2,8 @@
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline pl-1 position-absolute">
+    <div class="form-inline pl-1"
+      :class="{'position-absolute': !!tableData.length}">
       <div class="form-group"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm mr-2">
@@ -715,9 +716,11 @@ export default {
      * Applies the graph data to the pie chart by adding slices and text labels
      * It also adds the colors and transitions to the pie graph
      * (works for new a new pie as well as updating the pie)
-     * @param {Object} data The data to add to the graph
+     * @param {Object} hierarchyData The data to add to the graph
      */
-    applyPieGraphData: function (data) {
+    applyPieGraphData: function (hierarchyData) {
+      const data = JSON.parse(JSON.stringify(hierarchyData)); // clone the data so we don't mutate it
+
       const vueSelf = this;
       colors = this.generateColors(data.children.length);
 
@@ -790,9 +793,11 @@ export default {
      * Applies the graph data to the treemap by adding boxes and text labels
      * It also adds the colors to the treemap
      * (works for new a new treemap as well as updating the treemap)
-     * @param {Object} data The data to add to the graph
+     * @param {Object} hierarchyData The data to add to the graph
      */
-    applyTreemapGraphData: function (data) {
+    applyTreemapGraphData: function (hierarchyData) {
+      const data = JSON.parse(JSON.stringify(hierarchyData)); // clone the data so we don't mutate it
+
       const vueSelf = this;
       colors = this.generateColors(data.children.length);
 

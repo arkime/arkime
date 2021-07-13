@@ -282,7 +282,7 @@
           <!-- show packet timestamp -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Show Packet Timestamps
+              Show Packet Info
             </label>
             <div class="col-sm-9">
               <b-form-group>
@@ -2686,7 +2686,8 @@ export default {
             this.userId = this.$route.query.userId;
             this.displayName = this.$route.query.userId;
           }
-        } else { // normal user has no permission, so remove the routeParam
+        } else if (this.$route.query.userId) {
+          // normal user has no permission, so remove the routeParam
           // (even if it's their own userId because it's unnecessary)
           this.$router.push({
             hash: this.$route.hash,
@@ -3871,6 +3872,7 @@ export default {
 
     // remove userId route query parameter so that when a user
     // comes back to this page, they are on their own settings
+    if (!this.$route.query.userId) { return; }
     this.$router.replace({
       query: {
         ...this.$route.query,

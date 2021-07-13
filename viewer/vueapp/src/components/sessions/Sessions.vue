@@ -173,48 +173,51 @@
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <b-dropdown-item
-                  v-if="colConfigError"
-                  class="text-danger">
-                  {{ colConfigError }}
-                </b-dropdown-item>
-                <b-dropdown-item
-                  v-if="colConfigSuccess"
-                  class="text-success">
-                  {{ colConfigSuccess }}
-                </b-dropdown-item>
-                <template>
+                <transition-group name="list">
                   <b-dropdown-item
-                    id="coldefault"
+                    v-b-tooltip.hover.right
+                    title="Reset table to default columns"
+                    key="col-config-default"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
                     Arkime Default
                   </b-dropdown-item>
-                  <b-tooltip target="coldefault"
-                    placement="right"
-                    boundary="window">
-                    Reset table to default columns
-                  </b-tooltip>
-                </template>
-                <b-dropdown-item
-                  v-for="(config, key) in colConfigs"
-                  :key="key"
-                  @click.self.stop.prevent="loadColumnConfiguration(key)">
-                  <button class="btn btn-xs btn-danger pull-right ml-1"
-                    type="button"
-                    @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                    <span class="fa fa-trash-o">
+                  <b-dropdown-item
+                    v-for="(config, key) in colConfigs"
+                    :key="config.name"
+                    @click.self.stop.prevent="loadColumnConfiguration(key)">
+                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                      type="button"
+                      @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </button>
+                    <button class="btn btn-xs btn-warning pull-right"
+                      type="button"
+                      v-b-tooltip.hover.right
+                      title="Update this column configuration with the currently visible columns"
+                      @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                    {{ config.name }}
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    key="col-config-error"
+                    v-if="colConfigError">
+                    <span class="text-danger">
+                      <span class="fa fa-exclamation-triangle" />
+                      {{ colConfigError }}
                     </span>
-                  </button>
-                  <button class="btn btn-xs btn-warning pull-right"
-                    type="button"
-                    v-b-tooltip.hover
-                    title="Update this column configuration with the currently visible columns"
-                    @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                    <span class="fa fa-save">
+                  </b-dropdown-item>
+                  <b-dropdown-item
+                    key="col-config-success"
+                    v-if="colConfigSuccess">
+                    <span class="text-success">
+                      <span class="fa fa-check" />
+                      {{ colConfigSuccess }}
                     </span>
-                  </button>
-                  {{ config.name }}
-                </b-dropdown-item>
+                  </b-dropdown-item>
+                </transition-group>
               </b-dropdown> <!-- /column save button -->
             </th> <!-- /table options -->
             <!-- table headers -->
