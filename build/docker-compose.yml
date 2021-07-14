@@ -1,7 +1,7 @@
 version: "3"
 services:
-  moloch:
-    image: docker.sqooba.io/metis/moloch:v2.4.2
+  arkime:
+    image: metis-external/arkime:v3
     build:
-      context: ..
       dockerfile: build/Dockerfile
+      context: ..
