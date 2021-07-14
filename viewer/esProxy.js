@@ -47,7 +47,7 @@ if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
   prefix += '_';
 }
 
-let oldprefix = prefix === 'arkime_' ? '' : prefix;
+const oldprefix = prefix === 'arkime_' ? '' : prefix;
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
