@@ -73,6 +73,7 @@ getExact[`/_template/${prefix}sessions3_template`] = 1;
 getExact[`/_template/${oldprefix}sessions2_template`] = 1;
 getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
 getExact[`/${prefix}sessions3-*/_alias`] = 1;
+getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
 getExact[`/${prefix}stats/_stats`] = 1;
 getExact[`/${prefix}users/_stats`] = 1;
 getExact[`/${prefix}users/_count`] = 1;
@@ -259,6 +260,15 @@ function validateFilesSearch (req) {
   }
 }
 
+function validateSearchIds (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return json.query.ids.values.length === 1;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Post requests
 app.post('*', saveBody, (req, res) => {
   const path = req.params['0'];
@@ -273,9 +283,11 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
+  } else if (path.startsWith(`/${prefix}sessions3-`) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
+    // console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);
