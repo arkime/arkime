@@ -35,14 +35,16 @@ COPY --from=build /opt/arkime /opt/arkime
 RUN \
   yum install -y cyrus-sasl libyaml perl-HTTP-Message perl-LWP-Protocol-https perl-JSON \
   yum remove -y wget && \
-  yum clean all && rm -rf /var/cache/yum
+  yum clean all && rm -rf /var/cache/yum && \
+  curl --silent -L https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`uname -s`-`uname -m` -o /usr/local/bin/envsubst && chmod +x /usr/local/bin/envsubst 
 
 # "install" librdkafka
 COPY --from=build /usr/local/lib/librdkafka* /usr/local/lib/
 COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
 
-COPY build/ulimit-entrypoint.sh /ulimit-entrypoint.sh
+COPY build/entrypoint.sh /entrypoint.sh
+COPY build/config.ini.envsubst /opt/arkime/etc/config.ini.envsubst
 
-ENTRYPOINT ["/ulimit-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 
 # metis-external/arkime:v3
