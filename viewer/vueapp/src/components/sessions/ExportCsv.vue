@@ -47,7 +47,7 @@
             type="button">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;
-            Export Csv
+            Export CSV
           </button>
           <button class="btn btn-sm btn-warning"
             v-b-tooltip.hover
@@ -96,10 +96,12 @@
 <script>
 import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochExportCsv',
   directives: { FocusInput },
+  components: { SegmentSelect },
   props: {
     start: Number,
     done: Function,

@@ -86,10 +86,12 @@
 <script>
 import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochTagSessions',
   directives: { FocusInput },
+  components: { SegmentSelect },
   props: {
     add: Boolean,
     start: Number,

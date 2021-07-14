@@ -59,7 +59,7 @@
           <span v-else>
             <span class="fa fa-spinner fa-spin">
             </span>&nbsp;
-            Remove Data
+            Removing Data
           </span>
         </button> <!-- /delete button -->
         <!-- cancel button -->
@@ -80,9 +80,11 @@
 
 <script>
 import SessionsService from './SessionsService';
+import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochRemoveData',
+  components: { SegmentSelect },
   props: {
     start: Number,
     done: Function,
