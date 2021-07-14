@@ -1,4 +1,4 @@
-use Test::More tests => 60;
+use Test::More tests => 70;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -61,7 +61,8 @@ my ($url) = @_;
     my $json = get("/sessions.json?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
 
-    my $response = getBinary("/test/raw/" . $json->{data}->[0]->{id} . "?type=src");
+    my $id = $json->{data}->[0]->{id};
+    my $response = getBinary("/test/raw/" . $id . "?type=src");
     is (unpack("H*", $response->content), "08000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363708004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "Correct bigendian tcpdump data");
 
 # Check facets short
@@ -165,3 +166,24 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $json = viewerPost("/api/buildquery");
     ok (exists $json->{esquery}, "buildquery returns esquery");
     ok (exists $json->{indices}, "buildquery returns indices");
+
+# should be able to download single pcap
+    $response = getBinary("/api/session/test/" . $id . "/pcap");
+    is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap");
+
+# should get error if not able to download pcap
+    $response = getBinary("/api/session/test/nonexistingid/pcap");
+    is (unpack("H*", $response->content), "", "shouldn't find pcap");
+    is ($response->{_rc}, "500", "can't find pcap returns 500");
+
+# should be able to download multiple sessions pcap using list of ids
+    $response = getBinary("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=". $id);
+    is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using list of ids");
+
+# should get error if get pcap can't find sessions from list of ids
+    $json = viewerGet("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=nonexistingid");
+    is ($json->{text}, "no sessions found", "can't download pcap because sessions can't be found with list of ids");
+
+# should be able to download multiple sessions pcap using query
+    $response = getBinary("/api/sessions/pcap/sessions.pcap?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using query");
