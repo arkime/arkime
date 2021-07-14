@@ -876,7 +876,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }, (err, session) => {
       if (err) {
         res.status(500);
-        console.trace('writePcap', err);
+        if (!Config.get('regressionTests', false)) {
+          console.trace('writePcap', err);
+        }
         return doneCb(err);
       }
       res.write(b.slice(0, boffset));
