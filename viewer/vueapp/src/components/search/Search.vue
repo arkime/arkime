@@ -9,37 +9,45 @@
         size="sm"
         class="pull-right ml-1 action-menu-dropdown"
         boundary="body"
-        variant="theme-primary">
+        variant="theme-primary"
+        title="Actions menu">
         <b-dropdown-item @click="exportPCAP"
-          v-has-permission="'!disablePcapDownload'">
+          v-has-permission="'!disablePcapDownload'"
+          title="Export PCAP">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
           Export PCAP
         </b-dropdown-item>
-        <b-dropdown-item @click="exportCSV">
+        <b-dropdown-item @click="exportCSV"
+          title="Export CSV">
           <span class="fa fa-fw fa-file-excel-o"></span>&nbsp;
           Export CSV
         </b-dropdown-item>
-        <b-dropdown-item @click="addTags">
+        <b-dropdown-item @click="addTags"
+          title="Add Tags">
           <span class="fa fa-fw fa-tags"></span>&nbsp;
           Add Tags
         </b-dropdown-item>
         <b-dropdown-item @click="removeTags"
-          v-has-permission="'removeEnabled'">
+          v-has-permission="'removeEnabled'"
+          title="Remove Tags">
           <span class="fa fa-fw fa-eraser"></span>&nbsp;
           Remove Tags
         </b-dropdown-item>
         <b-dropdown-item @click="removeData"
-          v-has-permission="'removeEnabled'">
+          v-has-permission="'removeEnabled'"
+          title="Remove Data">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           Remove Data
         </b-dropdown-item>
         <b-dropdown-item v-for="(cluster, key) in molochClusters"
           :key="key"
-          @click="sendSession(key)">
+          @click="sendSession(key)"
+          :title="`Send to ${cluster.name}`">
           <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
-          Send Session to {{ cluster.name }}
+          Send to {{ cluster.name }}
         </b-dropdown-item>
-        <b-dropdown-item @click="viewIntersection">
+        <b-dropdown-item @click="viewIntersection"
+          title="Export Intersection">
           <span class="fa fa-fw fa-venn">
             <span class="fa fa-circle-o">
             </span>
@@ -48,7 +56,8 @@
           </span>&nbsp;
           Export Intersection
         </b-dropdown-item>
-        <b-dropdown-item @click="periodicQuery">
+        <b-dropdown-item @click="periodicQuery"
+          title="Create Periodic Query">
           <span class="fa fa-fw fa-search" />&nbsp;
           Create Periodic Query
         </b-dropdown-item>
@@ -74,7 +83,8 @@
             <span class="sr-only">Views</span>
           </div>
         </template>
-        <b-dropdown-item @click="modView()">
+        <b-dropdown-item @click="modView()"
+          title="Create a new view">
           <span class="fa fa-plus-circle"></span>&nbsp;
           New View
         </b-dropdown-item>
@@ -596,35 +606,38 @@ export default {
     },
     /* helper functions ------------------------------------------ */
     getViews: function () {
-      UserService.getViews()
-        .then((response) => {
-          this.views = response;
-        });
+      UserService.getViews().then((response) => {
+        this.views = response;
+      }).catch((err) => {
+        console.log('ERROR - fetching views', err);
+      });
     },
     getMolochClusters: function () {
-      ConfigService.getMolochClusters()
-        .then((response) => {
-          this.molochClusters = response;
-        });
+      ConfigService.getMolochClusters().then((response) => {
+        this.molochClusters = response;
+      }).catch((err) => {
+        console.log('ERROR - fetching clusters', err);
+      });
     },
     /* MultiES functions ------------------------------------------ */
     getClusterInformation: function () {
       if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
-        ConfigService.getClusters()
-          .then((response) => {
-            this.availableCluster = response;
-            const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-            if (clusters.length === 0) {
-              this.selectedCluster = response.active;
-            } else {
-              this.selectedCluster = [];
-              for (let i = 0; i < clusters.length; i++) {
-                if (response.active.includes(clusters[i])) {
-                  this.selectedCluster.push(clusters[i]);
-                }
+        ConfigService.getClusters().then((response) => {
+          this.availableCluster = response;
+          const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+          if (clusters.length === 0) {
+            this.selectedCluster = response.active;
+          } else {
+            this.selectedCluster = [];
+            for (let i = 0; i < clusters.length; i++) {
+              if (response.active.includes(clusters[i])) {
+                this.selectedCluster.push(clusters[i]);
               }
             }
-          });
+          }
+        }).catch((err) => {
+          console.log('ERROR - fetching cluster info', err);
+        });
       }
     },
     isClusterVis: function (cluster) {

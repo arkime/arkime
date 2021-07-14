@@ -37,6 +37,14 @@ export const userSettings = {
 
 export const userWithSettings = { ...users[0], settings: { ...userSettings } };
 
+export const views = {
+  'test view 1': {
+    shared: false,
+    user: 'testuser',
+    expression: 'protocols == tls'
+  }
+};
+
 export const histories = [{
   api: '/api/users',
   body: { length: 50, sortField: 'userId' },

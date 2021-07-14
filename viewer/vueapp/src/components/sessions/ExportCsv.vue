@@ -47,7 +47,7 @@
             type="button">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;
-            Export Csv
+            Export CSV
           </button>
           <button class="btn btn-sm btn-warning"
             v-b-tooltip.hover

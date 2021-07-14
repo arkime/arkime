@@ -101,13 +101,18 @@ exports.initialize = async (info, cb) => {
   internals.client7 = new Client(esClientOptions);
 
   if (info.usersHost) {
-    esClientOptions.node = internals.info.usersHost;
+    const esUsersClientOptions = {
+      node: internals.info.usersHost,
+      maxRetries: 2,
+      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
+      ssl: esSSLOptions
+    };
     if (info.usersEsApiKey) {
-      esClientOptions.auth = {
+      esUsersClientOptions.auth = {
         apiKey: info.usersEsApiKey
       };
     }
-    internals.usersClient7 = new Client(esClientOptions);
+    internals.usersClient7 = new Client(esUsersClientOptions);
   } else {
     internals.usersClient7 = internals.client7;
   }

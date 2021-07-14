@@ -63,7 +63,7 @@ const store = {
 
 const $route = { query: {} };
 
-beforeAll(() => {
+beforeEach(() => {
   ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
     data: {
       name: 'Test2',
@@ -73,7 +73,7 @@ beforeAll(() => {
   ConfigService.getClusters = jest.fn().mockResolvedValue({
     data: { active: [], inactive: [] }
   });
-  UserService.getViews = jest.fn().mockResolvedValue({ data: {} });
+  UserService.getViews = jest.fn().mockResolvedValue({});
   UserService.getState = jest.fn().mockResolvedValue({ data: {} });
   SettingsService.getNotifiers = jest.fn().mockResolvedValue({ data: {} });
 });

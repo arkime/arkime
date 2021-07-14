@@ -59,7 +59,7 @@
           <span v-else>
             <span class="fa fa-spinner fa-spin">
             </span>&nbsp;
-            Remove Data
+            Removing Data
           </span>
         </button> <!-- /delete button -->
         <!-- cancel button -->

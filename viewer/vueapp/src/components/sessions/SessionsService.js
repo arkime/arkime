@@ -268,11 +268,12 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      const baseUrl = `api/sessions/pcap/${params.filename}`;
+      const filename = params.filename || 'sessions.pcap';
+      delete params.filename; // don't need this anymore
+
+      const baseUrl = `api/sessions/pcap/${filename}`;
       // save segments for later because getReqOptions deletes it
       const segments = params.segments;
-
-      delete params.filename; // don't need this anymore
 
       const options = this.getReqOptions(baseUrl, '', params, routeParams);
 
@@ -289,7 +290,12 @@ export default {
 
       const url = `${baseUrl}?${qs.stringify(options.params)}`;
 
-      window.location = url;
+      // use a link so any errors do not redirect to a broken page
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      link.remove();
 
       return resolve({ text: 'PCAP now exporting' });
     });
