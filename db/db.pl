@@ -5615,7 +5615,7 @@ sub index2time
 {
 my($index) = @_;
 
-  return 0 if ($index !~ /sessions3-(.*)$/);
+  return 0 if ($index !~ /sessions[23]-(.*)$/);
   $index = $1;
 
   my @t;
@@ -5652,28 +5652,28 @@ my($type, $prefix, $t) = @_;
 
     my @t = gmtime($t);
     if ($type eq "hourly") {
-        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
+        return sprintf("${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], $t[2]);
     }
 
     if ($type =~ /^hourly([23468])$/) {
         my $n = int($1);
-        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/$n)*$n);
+        return sprintf("${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/$n)*$n);
     }
 
     if ($type eq "hourly12") {
-        return sprintf("${PREFIX}${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/12)*12);
+        return sprintf("${prefix}%02d%02d%02dh%02d", $t[5] % 100, $t[4]+1, $t[3], int($t[2]/12)*12);
     }
 
     if ($type eq "daily") {
-        return sprintf("${PREFIX}${prefix}%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
+        return sprintf("${prefix}%02d%02d%02d", $t[5] % 100, $t[4]+1, $t[3]);
     }
 
     if ($type eq "weekly") {
-        return sprintf("${PREFIX}${prefix}%02dw%02d", $t[5] % 100, int($t[7]/7));
+        return sprintf("${prefix}%02dw%02d", $t[5] % 100, int($t[7]/7));
     }
 
     if ($type eq "monthly") {
-        return sprintf("${PREFIX}${prefix}%02dm%02d", $t[5] % 100, $t[4]+1);
+        return sprintf("${prefix}%02dm%02d", $t[5] % 100, $t[4]+1);
     }
 }
 
@@ -6108,14 +6108,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $SEGMENTSMIN = $SEGMENTS if ($SEGMENTSMIN == -1);
 
     # First handle sessions expire
-    my $indicesa = esGet("/_cat/indices/${OLDPREFIX}sessions2*,${PREFIX}sessions3?format=json", 1);
+    my $indicesa = esGet("/_cat/indices/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*?format=json", 1);
     my %indices = map { $_->{index} => $_ } @{$indicesa};
 
     my $endTime = time();
-    my $endTimeIndex2 = time2index($ARGV[2], "sessions2-", $endTime);
+    my $endTimeIndex2 = time2index($ARGV[2], "${OLDPREFIX}sessions2-", $endTime, "");
     delete $indices{$endTimeIndex2}; # Don't optimize current index
 
-    my $endTimeIndex3 = time2index($ARGV[2], "sessions3-", $endTime);
+    my $endTimeIndex3 = time2index($ARGV[2], "${PREFIX}sessions3-", $endTime);
     delete $indices{$endTimeIndex3}; # Don't optimize current index
 
     my @startTime = kind2time($ARGV[2], int($ARGV[3]));
@@ -6203,9 +6203,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/_flush/synced", "", 1);
 
     # Now figure out history expire
-    my $hindices = esGet("/${PREFIX}history_v1-*/_alias", 1);
+    my $hindices = esGet("/${PREFIX}history_v1-*,${OLDPREFIX}history_v1-*/_alias", 1);
 
-    my $endTimeIndex = time2index("weekly", "history_v1-", $endTime);
+    my $endTimeIndex = time2index("weekly", "${OLDPREFIX}history_v1-", $endTime);
+    delete $hindices->{$endTimeIndex};
+
+    $endTimeIndex = time2index("weekly", "${PREFIX}history_v1-", $endTime);
     delete $hindices->{$endTimeIndex};
 
     @startTime = gmtime;
@@ -6213,13 +6216,20 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     $optimizecnt = 0;
     $startTime = mktimegm(@startTime);
-    while ($startTime <= $endTime) {
-        my $iname = time2index("weekly", "history_v1-", $startTime);
+    while ($startTime <= $endTime + 2*24*60*60) {
+        my $iname = time2index("weekly", "${PREFIX}history_v1-", $startTime);
+        my $inameold = time2index("weekly", "${OLDPREFIX}history_v1-", $startTime);
         if (exists $hindices->{$iname} && $hindices->{$iname}->{OPTIMIZEIT} != 1) {
             $hindices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         } elsif (exists $hindices->{"$iname-shrink"} && $hindices->{"$iname-shrink"}->{OPTIMIZEIT} != 1) {
             $hindices->{"$iname-shrink"}->{OPTIMIZEIT} = 1;
+            $optimizecnt++;
+        } elsif (exists $hindices->{$inameold} && $hindices->{$inameold}->{OPTIMIZEIT} != 1) {
+            $hindices->{$inameold}->{OPTIMIZEIT} = 1;
+            $optimizecnt++;
+        } elsif (exists $hindices->{"$inameold-shrink"} && $hindices->{"$inameold-shrink"}->{OPTIMIZEIT} != 1) {
+            $hindices->{"$inameold-shrink"}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         }
         $startTime += 24*60*60;
@@ -6232,7 +6242,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
     }
-    esForceMerge("${PREFIX}history_*", 1, 1) unless $NOOPTIMIZE;
+    esForceMerge("${OLDPREFIX}history_*,${PREFIX}history_*", 1, 1) unless $NOOPTIMIZE;
     esPost("/_flush/synced", "", 1);
 
     # Give the cluster a kick to rebalance
