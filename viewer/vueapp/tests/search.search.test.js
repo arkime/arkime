@@ -22,9 +22,7 @@ Vue.use(BootstrapVue);
 Vue.directive('has-permission', HasPermission);
 
 Vue.prototype.$constants = {
-  MOLOCH_HUNTWARN: 10000,
-  MOLOCH_HUNTLIMIT: 1000000,
-  MOLOCH_ANONYMOUS_MODE: false
+  MOLOCH_MULTIVIEWER: false
 };
 
 jest.mock('../src/components/users/UserService');

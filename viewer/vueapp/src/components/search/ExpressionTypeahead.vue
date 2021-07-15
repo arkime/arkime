@@ -54,6 +54,7 @@
         <button type="button"
           @click="clear"
           :disabled="!expression"
+          title="Remove the search text"
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-close">
           </span>
@@ -78,6 +79,7 @@
             <strong v-if="!value.exp">{{ value }}</strong>
             <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
             <span class="fa fa-close pull-right mt-1"
+              :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)">
             </span>
           </a>
@@ -97,6 +99,7 @@
         <a :id="key+'item'"
           :key="key+'item'"
           class="dropdown-item cursor-pointer"
+          :title="value.help"
           :class="{'active':key+fieldHistoryResults.length === activeIdx}"
           @click="addToQuery(value)">
           <strong v-if="value.exp">{{ value.exp }}</strong>
@@ -219,10 +222,11 @@ export default {
 
     this.getFields();
 
-    UserService.getState('fieldHistory')
-      .then((response) => {
-        this.fieldHistory = response.data.fields || [];
-      });
+    UserService.getState('fieldHistory').then((response) => {
+      this.fieldHistory = response.data.fields || [];
+    }).catch((err) => {
+      console.log('ERROR - fetching state for fieldHistory', err);
+    });
   },
   mounted: function () {
     // set the results element for keyup event handler
@@ -597,16 +601,14 @@ export default {
       // autocomplete country values
       if (/^(country)/.test(token)) {
         this.loadingValues = true;
-        FieldService.getCountryCodes()
-          .then((result) => {
-            this.loadingValues = false;
-            this.results = this.findMatch(lastToken, result);
-            this.addExistsItem(lastToken, operatorToken);
-          })
-          .catch((error) => {
-            this.loadingValues = false;
-            this.loadingError = error;
-          });
+        FieldService.getCountryCodes().then((result) => {
+          this.loadingValues = false;
+          this.results = this.findMatch(lastToken, result);
+          this.addExistsItem(lastToken, operatorToken);
+        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = error;
+        });
 
         return;
       }
@@ -677,14 +679,12 @@ export default {
       }
     },
     getFields: function () {
-      FieldService.get()
-        .then((result) => {
-          this.fields = result;
-          this.loadingError = '';
-        })
-        .catch((error) => {
-          this.loadingError = error;
-        });
+      FieldService.get().then((result) => {
+        this.fields = result;
+        this.loadingError = '';
+      }).catch((error) => {
+        this.loadingError = error;
+      });
     },
     /**
      * Finds matching items from an array or map of values

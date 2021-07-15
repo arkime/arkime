@@ -392,3 +392,8 @@ export const fields = [{
   help: 'Unique number of Tags set for session',
   type: 'integer'
 }];
+
+export const fieldsMap = {};
+for (const field of fields) {
+  fieldsMap[field.exp] = field;
+}
