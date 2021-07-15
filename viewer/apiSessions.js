@@ -706,7 +706,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }, () => {
         // Get from remote DISK
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
-          let buffer = Buffer.alloc(Math.min(16200000, fields.network.packets * 20 + fields.network.bytes));
+          let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
           const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
