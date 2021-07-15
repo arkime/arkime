@@ -75,43 +75,43 @@ pcapDir = ${ARKIME_PCAPDIR:=/opt/arkime/raw}
 
 # The max raw pcap file size in gigabytes, with a max value of 36G.
 # The disk should have room for at least 10*maxFileSizeG
-maxFileSizeG = ${ARIKME_MAX_FILE_SIZE_G:=12}
+maxFileSizeG = ${ARKIME_MAX_FILE_SIZE_G:=12}
 
 # The max time in minutes between rotating pcap files.  Default is 0, which means
 # only rotate based on current file size and the maxFileSizeG variable
-maxFileTimeM = ${ARIKME_MAX_FILE_TIME_M:=0}
+maxFileTimeM = ${ARKIME_MAX_FILE_TIME_M:=0}
 
 # TCP timeout value.  Arkime writes a session record after this many seconds
 # of inactivity.
-tcpTimeout = 600
+tcpTimeout = ${ARKIME_TCP_TIMEOUT:=600}
 
 # Arkime writes a session record after this many seconds, no matter if
 # active or inactive
-tcpSaveTimeout = 720
+tcpSaveTimeout = ${ARKIME_TCP_SAVE_TIMEOUT:=720}
 
 # UDP timeout value.  Arkime assumes the UDP session is ended after this
 # many seconds of inactivity.
-udpTimeout = 30
+udpTimeout = ${ARKIME_UDP_TIMEOUT:=30}
 
 # ICMP timeout value.  Arkime assumes the ICMP session is ended after this
 # many seconds of inactivity.
-icmpTimeout = 10
+icmpTimeout = ${ARKIME_ICMP_TIMEOUT:=10}
 
 # An aproximiate maximum number of active sessions Arkime/libnids will try
 # and monitor
-maxStreams = 1000000
+maxStreams = ${ARKIME_MAX_STREAMS:=1000000}
 
 # Arkime writes a session record after this many packets
-maxPackets = 10000
+maxPackets = ${ARKIME_MAX_PACKETS:=10000}
 
 # Delete pcap files when free space is lower then this in gigabytes OR it can be
 # expressed as a percentage (ex: 5%).  This does NOT delete the session records in
 # the database. It is recommended this value is between 5% and 10% of the disk.
 # Database deletes are done by the db.pl expire script
-freeSpaceG = 5%
+freeSpaceG = ${ARKIME_FREE_SPACE_G:=5%}
 
 # The port to listen on, by default 8005
-viewPort = 8005
+viewPort = ${ARKIME_VIEW_PORT:=8005}
 
 # The host/ip to listen on, by default 0.0.0.0 which is ALL
 #viewHost = localhost
@@ -134,7 +134,7 @@ ouiFile = /opt/arkime/etc/oui.txt
 
 # Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state. 
 # See https://arkime.com/rulesformat
-#rulesFiles=/opt/arkime/etc/arkime.rules
+rulesFiles=${ARKIME_RULE_FILES}
 
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=nobody
@@ -185,19 +185,19 @@ dropGroup=daemon
 #userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
 # Should we parse extra smtp traffic info
-parseSMTP=true
+parseSMTP=${ARKIME_PARSE_SMTP:=true}
 
 # Should we parse extra smb traffic info
-parseSMB=true
+parseSMB=${ARKIME_PARSE_SMB:=true}
 
 # Should we parse HTTP QS Values
-parseQSValue=false
+parseQSValue=${ARKIME_PARSE_QS_VALUE:=false}
 
 # Should we calculate sha256 for bodies
-supportSha256=false
+supportSha256=${ARKIME_SUPPORT_SHA256:=false}
 
 # Only index HTTP request bodies less than this number of bytes */
-maxReqBody=64
+maxReqBody=${ARKIME_MAX_REQ_BODY:=64}
 
 # Only store request bodies that Utf-8?
 config.reqBodyOnlyUtf8 = true
@@ -213,9 +213,11 @@ pluginsDir=/opt/arkime/plugins
 
 # Semicolon ';' seperated list of plugins to load and the order to load in
 # plugins=tagger.so; netflow.so
+plugins=${ARKIME_PLUGINS}
 
 # Plugins to load as root, usually just readers
 #rootPlugins=reader-pfring; reader-daq.so
+rootPlugins=${ARKIME_ROOT_PLUGINS}
 
 # Semicolon ';' seperated list of viewer plugins to load and the order to load in
 # viewerPlugins=wise.js
@@ -249,7 +251,7 @@ spiDataMaxIndices=4
 #titleTemplate=_cluster_ - _page_ _-view_ _-expression_
 
 # Number of threads processing packets
-packetThreads=2
+packetThreads=${ARKIME_PACKET_THREADS:=2}
 
 # HSTS Header
 # If set to true, adds a Strict-Transport-Security response header with a max age of a year
@@ -278,54 +280,54 @@ packetThreads=2
 #  simple          = use O_DIRECT if available, writes in pcapWriteSize chunks,
 #                    a file per packet thread.
 #  simple-nodirect = don't use O_DIRECT.  Required for zfs and others
-pcapWriteMethod=simple
+pcapWriteMethod=${ARKIME_PCAP_WRITE_METHOD:=simple}
 
 # ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs
 # stripe size.  Defaults to 256k
-pcapWriteSize = 262143
+pcapWriteSize = ${ARKIME_PCAP_WRITE_SIZE:=262143}
 
 # ADVANCED - Number of bytes to bulk index at a time
-dbBulkSize = 300000
+dbBulkSize = ${ARKIME_DB_BULK_SIZE:=300000}
 
 # ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
 # of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
-compressES = false
+compressES = ${ARKIME_COMPRESS_ES:=false}
 
 # ADVANCED - Max number of connections to elastic search
-maxESConns = 30
+maxESConns = ${ARKIME_MAX_ES_CONNS:=30}
 
 # ADVANCED - Max number of es requests outstanding in q
-maxESRequests = 500
+maxESRequests = ${ARKIME_MAX_ES_REQUESTS:=500}
 
 # ADVANCED - Number of packets to ask libnids/libpcap to read per poll/spin
 # Increasing may hurt stats and ES performance
 # Decreasing may cause more dropped packets
-packetsPerPoll = 50000
+packetsPerPoll = ${ARKIME_PACKETS_PER_POLL:=50000}
 
 # ADVANCED - Arkime will try to compensate for SYN packet drops by swapping
 # the source and destination addresses when a SYN-acK packet was captured first.
 # Probably useful to set it false, when running Arkime in wild due to SYN floods.
-antiSynDrop = true
+antiSynDrop = ${ARKIME_ANTI_SYN_DROP:=true}
 
 # DEBUG - Write to stdout info every X packets.
 # Set to -1 to never log status
-logEveryXPackets = 100000
+logEveryXPackets = ${ARKIME_LOG_EVERY_PACKETS:=100000}
 
 # DEBUG - Write to stdout unknown protocols
-logUnknownProtocols = false
+logUnknownProtocols = ${ARKIME_LOG_UNKNOWN_PROTOCOLS:=false}
 
 # DEBUG - Write to stdout elastic search requests
-logESRequests = true
+logESRequests = ${ARKIME_LOG_ES_REQUESTS:=true}
 
 # DEBUG - Write to stdout file creation information
-logFileCreation = true
+logFileCreation = ${ARKIME_LOG_FILE_CREATION:=true}
 
 
 ### High Performance settings
 # https://arkime.com/settings#high-performance-settings
-# magicMode=basic
-# pcapReadMethod=tpacketv3
-# tpacketv3NumThreads=2
+magicMode=${ARKIME_MAGIC_MODE:=basic}
+pcapReadMethod=${ARKIME_PCAP_READ_METHOD:=tpacketv3}
+tpacketv3NumThreads=${ARKIME_TPACKETV3_NUM_THREADS:=2}
 # pcapWriteMethod=simple
 # pcapWriteSize = 2560000
 # packetThreads=5
@@ -335,6 +337,14 @@ logFileCreation = true
 # packetThreads=1
 # pcapWriteSize = 65536
 
+# More configuation via environment variables
+enablePacketLen = ${ARKIME_ENABLE_PACKET_LEN:=false}
+kafkaBootstrapServers = ${ARKIME_KAFKA_BOOTSTRAP_SERVER}
+snapLen = ${ARKIME_SNAP_LEN:=16384}
+parseCookieValue = ${ARKIME_PARSE_COOKIE_VALUE:=false}
+parseHTTPHeaderRequestAll = ${ARKIME_PARSE_HTTP_HEADER_REQUEST_ALL:=false}
+parseHTTPHeaderResponseAll = ${ARKIME_PARSE_HTTP_HEADER_RESPONSE_ALL:=false}
+isLocalViewRegExp = ${ARKIME_LOCAL_VIEW_REGEXP}
 
 ##############################################################################
 # Classes of nodes
