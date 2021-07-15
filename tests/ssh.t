@@ -4,8 +4,7 @@ use URI::Escape;
 use MolochTest;
 use strict;
 
-my $pwd = "*/pcap";
-my $files = "file=$pwd/ssh2.pcap";
+my $files = "file=*/pcap/ssh2.pcap";
 
 countTest(1, "date=-1&expression=" . uri_escape("$files&&protocols==ssh"));
 

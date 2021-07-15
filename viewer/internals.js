@@ -44,7 +44,7 @@ module.exports = (app, Config) => {
     runningHuntJob: undefined,
     proccessHuntJobsInitialized: false,
     notifiers: undefined,
-    prefix: Config.get('prefix', ''),
+    prefix: Config.get('prefix', 'arkime_'),
     shortcutTypeMap: {
       ip: 'ip',
       integer: 'number',
@@ -74,12 +74,12 @@ module.exports = (app, Config) => {
       sortColumn: 'firstPacket',
       sortDirection: 'desc',
       spiGraph: 'node',
-      connSrcField: 'srcIp',
+      connSrcField: 'source.ip',
       connDstField: 'ip.dst:port',
       numPackets: 'last',
       theme: 'default-theme',
       manualQuery: false,
-      timelineDataFilters: ['totPackets', 'totBytes', 'totDataBytes'] // dbField2 values from fields
+      timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'] // dbField2 values from fields
     },
     usersMissing: {
       userId: '',
@@ -96,8 +96,8 @@ module.exports = (app, Config) => {
   };
 
   iModule.internals.scriptAggs['ip.dst:port'] = {
-    script: 'if (doc.dstIp.value.indexOf(".") > 0) {return doc.dstIp.value + ":" + doc.dstPort.value} else {return doc.dstIp.value + "." + doc.dstPort.value}',
-    dbField: 'dstIp'
+    script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
+    dbField: 'destination.ip'
   };
 
   // make sure there's an _ after the prefix
@@ -109,7 +109,7 @@ module.exports = (app, Config) => {
     iModule.internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit'));
   }
 
-  if (iModule.internals.elasticBase[0].lastIndexOf('http', 0) !== 0) {
+  if (!iModule.internals.elasticBase[0].startsWith('http')) {
     iModule.internals.elasticBase[0] = 'http://' + iModule.internals.elasticBase[0];
   }
 

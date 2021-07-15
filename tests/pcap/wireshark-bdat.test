@@ -1,32 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:b3OsJEA3hc/+uQVqSYXaXUdh3fE=",
-            "dstBytes" : 798,
-            "dstDataBytes" : 130,
-            "dstIp" : "127.0.0.1",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 8765
+            },
+            "destination" : {
+               "bytes" : 798,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 1224
+            },
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 10,
             "dstPayload8" : "3232302047726565",
-            "dstPort" : 1224,
             "email" : {
                "dst" : [
                   "p@test.ex"
                ],
                "dstCnt" : 1,
                "header" : [
-                  "message-id",
-                  "from",
-                  "received",
                   "date",
+                  "from",
+                  "message-id",
+                  "received",
                   "subject"
                ],
                "headerCnt" : 5,
@@ -38,8 +42,8 @@
                ],
                "headerValueCnt" : 1,
                "host" : [
-                  "testhost.test.ex",
-                  "root"
+                  "root",
+                  "testhost.test.ex"
                ],
                "hostCnt" : 2,
                "id" : [
@@ -51,8 +55,8 @@
                ],
                "smtpHelloCnt" : 1,
                "src" : [
-                  "sender@dom",
-                  ""
+                  "",
+                  "sender@dom"
                ],
                "srcCnt" : 2,
                "subject" : [
@@ -66,6 +70,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1476878885949,
             "length" : 3,
+            "network" : {
+               "bytes" : 10231,
+               "community_id" : "1:b3OsJEA3hc/+uQVqSYXaXUdh3fE=",
+               "packets" : 20
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -118,20 +127,24 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 9433,
-            "srcDataBytes" : 8765,
-            "srcIp" : "127.0.0.1",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 130
+            },
+            "source" : {
+               "bytes" : 9433,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 59620
+            },
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 10,
             "srcPayload8" : "45484c4f20746573",
-            "srcPort" : 59620,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -143,15 +156,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 10231,
-            "totDataBytes" : 8895,
-            "totPackets" : 20
+            "totDataBytes" : 8895
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-161019",
-               "_type" : "session"
+               "_index" : "tests_sessions3-161019"
             }
          }
       }

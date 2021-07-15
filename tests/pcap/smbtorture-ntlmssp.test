@@ -1,22 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:MKEIesHzLctRLCFs3srzwj6vDhA=",
-            "dstBytes" : 1326,
-            "dstDataBytes" : 922,
-            "dstIp" : "192.168.114.129",
-            "dstMac" : [
-               "00:0c:29:30:60:27"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 902
+            },
+            "destination" : {
+               "bytes" : 1326,
+               "ip" : "192.168.114.129",
+               "mac" : [
+                  "00:0c:29:30:60:27"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 445
+            },
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 6,
             "dstPayload8" : "00000095ff534d42",
-            "dstPort" : 445,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1132371118535,
@@ -24,6 +28,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1132371118592,
             "length" : 56,
+            "network" : {
+               "bytes" : 2764,
+               "community_id" : "1:MKEIesHzLctRLCFs3srzwj6vDhA=",
+               "packets" : 14
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -63,6 +72,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 922
+            },
             "smb" : {
                "domain" : [
                   "VNET3"
@@ -89,20 +101,21 @@
                ],
                "versionCnt" : 1
             },
-            "srcBytes" : 1438,
-            "srcDataBytes" : 902,
-            "srcIp" : "192.168.114.1",
-            "srcMac" : [
-               "00:50:56:c0:00:01"
-            ],
-            "srcMacCnt" : 1,
+            "source" : {
+               "bytes" : 1438,
+               "ip" : "192.168.114.1",
+               "mac" : [
+                  "00:50:56:c0:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 52703
+            },
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "000000dbff534d42",
-            "srcPort" : 52703,
             "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 2,
@@ -115,15 +128,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2764,
-            "totDataBytes" : 1824,
-            "totPackets" : 14
+            "totDataBytes" : 1824
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-051119",
-               "_type" : "session"
+               "_index" : "tests_sessions3-051119"
             }
          }
       }

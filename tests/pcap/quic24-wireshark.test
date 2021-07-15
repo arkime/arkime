@@ -1,30 +1,47 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 2784,
-            "dstDataBytes" : 2700,
-            "dstGEO" : "US",
-            "dstIp" : "216.58.208.195",
-            "dstMac" : [
-               "00:12:ef:c0:d7:a3"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2740
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 2784,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "216.58.208.195",
+               "mac" : [
+                  "00:12:ef:c0:d7:a3"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 443
+            },
             "dstOui" : [
                "OneAccess SA"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 2,
             "dstPayload8" : "0c00db40daa3bbe2",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1429686316293,
             "ipProtocol" : 17,
             "lastPacket" : 1429686316327,
             "length" : 33,
+            "network" : {
+               "bytes" : 5650,
+               "community_id" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
+               "packets" : 5
+            },
             "node" : "test",
             "packetLen" : [
                1408,
@@ -41,9 +58,9 @@
                4346
             ],
             "protocol" : [
-               "udp",
                "iprulztest",
-               "quic"
+               "quic",
+               "udp"
             ],
             "protocolCnt" : 3,
             "quic" : {
@@ -61,29 +78,29 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
-            "srcBytes" : 2866,
-            "srcDataBytes" : 2740,
-            "srcIp" : "10.44.100.22",
-            "srcMac" : [
-               "a0:88:b4:1e:16:0c"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 2700
+            },
+            "source" : {
+               "bytes" : 2866,
+               "ip" : "10.44.100.22",
+               "mac" : [
+                  "a0:88:b4:1e:16:0c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 50509
+            },
             "srcOui" : [
                "Intel Corporate"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "0d00db40daa3bbe2",
-            "srcPort" : 50509,
-            "timestamp" : "SET",
-            "totBytes" : 5650,
-            "totDataBytes" : 5440,
-            "totPackets" : 5
+            "totDataBytes" : 5440
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-150422",
-               "_type" : "session"
+               "_index" : "tests_sessions3-150422"
             }
          }
       }

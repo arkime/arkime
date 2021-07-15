@@ -1,23 +1,35 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:hqeHY06nR5NH3ELRiceo1VcM3Fk=",
-            "dstASN" : "AS1",
-            "dstBytes" : 198,
-            "dstDataBytes" : 0,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 86
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 198,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "2c:6b:f5:d6:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 3000
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 3,
-            "dstPort" : 3000,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1466097898472,
@@ -25,6 +37,17 @@
             "ipProtocol" : 6,
             "lastPacket" : 1466097973153,
             "length" : 74681,
+            "network" : {
+               "bytes" : 786,
+               "community_id" : "1:hqeHY06nR5NH3ELRiceo1VcM3Fk=",
+               "packets" : 10,
+               "vlan" : {
+                  "id" : [
+                     50
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -56,22 +79,34 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 588,
-            "srcDataBytes" : 86,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 588,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "2c:6b:f5:d6:17:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 53226
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 7,
             "srcPayload8" : "0201000000000023",
-            "srcPort" : 53226,
             "tags" : [
                "acked-unseen-segment-src",
                "dstip",
@@ -91,7 +126,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -109,47 +144,60 @@
                   "16777226:53226,33554442:3000"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 786,
-            "totDataBytes" : 86,
-            "totPackets" : 10,
-            "vlan" : [
-               50
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 86
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160616",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160616"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:2ymV9tUsaCl3adnJMWUN+YlTL6k=",
-            "dstASN" : "AS2",
-            "dstBytes" : 444,
-            "dstDataBytes" : 86,
-            "dstIp" : "10.0.0.3",
-            "dstMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 22
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS2 Hmm!@#$%^&*()",
+                  "number" : 2,
+                  "organization" : {
+                     "name" : "Hmm!@#$%^&*()"
+                  }
+               },
+               "bytes" : 444,
+               "ip" : "10.0.0.3",
+               "mac" : [
+                  "00:22:83:3f:17:c5",
+                  "2c:6b:f5:d6:17:c5"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 5,
+               "port" : 3000
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "020100000000004e",
-            "dstPort" : 3000,
             "fileId" : [],
             "firstPacket" : 1466101718441,
             "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1466101718908,
             "length" : 467,
+            "network" : {
+               "bytes" : 894,
+               "community_id" : "1:2ymV9tUsaCl3adnJMWUN+YlTL6k=",
+               "packets" : 11,
+               "vlan" : {
+                  "id" : [
+                     50
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -183,21 +231,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 450,
-            "srcDataBytes" : 22,
-            "srcIp" : "10.0.0.4",
-            "srcMac" : [
-               "00:22:83:3f:17:cc",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 86
+            },
+            "source" : {
+               "bytes" : 450,
+               "ip" : "10.0.0.4",
+               "mac" : [
+                  "00:22:83:3f:17:cc",
+                  "2c:6b:f5:d6:17:cc"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 6,
+               "port" : 43178
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "020100000000000e",
-            "srcPort" : 43178,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -209,19 +261,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 894,
-            "totDataBytes" : 108,
-            "totPackets" : 11,
-            "vlan" : [
-               50
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 108
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160616",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160616"
             }
          }
       }

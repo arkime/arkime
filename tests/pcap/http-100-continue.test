@@ -1,22 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:sUieXKbsJ2FhfxmjSMYdjlRe8x0=",
-            "dstBytes" : 1311,
-            "dstDataBytes" : 689,
-            "dstIp" : "0102:0305:0220:0001:0248:1893:25c8:1946",
-            "dstMac" : [
-               "00:10:db:ff:10:01"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 151
+            },
+            "destination" : {
+               "bytes" : 1311,
+               "ip" : "102:305:220:1:248:1893:25c8:1946",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 80
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 7,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1580405643172,
             "http" : {
@@ -115,6 +119,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1580405643303,
             "length" : 131,
+            "network" : {
+               "bytes" : 2260,
+               "community_id" : "1:sUieXKbsJ2FhfxmjSMYdjlRe8x0=",
+               "packets" : 16
+            },
             "node" : "test",
             "packetLen" : [
                114,
@@ -158,20 +167,24 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 949,
-            "srcDataBytes" : 151,
-            "srcIp" : "0102:0304:ef6e:0000:586c:40b9:519f:7bae",
-            "srcMac" : [
-               "8c:85:90:4d:f2:12"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 689
+            },
+            "source" : {
+               "bytes" : 949,
+               "ip" : "102:304:ef6e:0:586c:40b9:519f:7bae",
+               "mac" : [
+                  "8c:85:90:4d:f2:12"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 9,
+               "port" : 61273
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 9,
             "srcPayload8" : "504f5354202f7265",
-            "srcPort" : 61273,
             "tcpflags" : {
                "ack" : 7,
                "dstZero" : 0,
@@ -183,15 +196,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2260,
-            "totDataBytes" : 840,
-            "totPackets" : 16
+            "totDataBytes" : 840
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-200130",
-               "_type" : "session"
+               "_index" : "tests_sessions3-200130"
             }
          }
       }

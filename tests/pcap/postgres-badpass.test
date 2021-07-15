@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:00y2N2+TsH6kM7On9rU3DFGgzZ8=",
-            "dstASN" : "AS1",
-            "dstBytes" : 352,
-            "dstDataBytes" : 14,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 82
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 352,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 5432
+            },
             "dstOui" : [
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "4e520000000c0000",
-            "dstPort" : 5432,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1399312748531,
@@ -26,6 +38,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1399312748549,
             "length" : 18,
+            "network" : {
+               "bytes" : 974,
+               "community_id" : "1:00y2N2+TsH6kM7On9rU3DFGgzZ8=",
+               "packets" : 13
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -68,24 +85,36 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 622,
-            "srcDataBytes" : 82,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 14
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 622,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:d0:2b:d1:76:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 8,
+               "port" : 53499
+            },
             "srcOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 8,
             "srcPayload8" : "0000000804d2162f",
-            "srcPort" : 53499,
             "tags" : [
                "dstip",
                "srcip"
@@ -104,7 +133,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -122,15 +151,11 @@
                   "16777226:53499,33554442:5432"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 974,
-            "totDataBytes" : 96,
-            "totPackets" : 13
+            "totDataBytes" : 96
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140505",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140505"
             }
          }
       }

@@ -79,7 +79,7 @@ if (process.argv.length < 3) {
 
 Db.initialize({
   host: escInfo,
-  prefix: Config.get('prefix', ''),
+  prefix: Config.get('prefix', 'arkime_'),
   esClientKey: Config.get('esClientKey', null),
   esClientCert: Config.get('esClientCert', null),
   esClientKeyPass: Config.get('esClientKeyPass', null),

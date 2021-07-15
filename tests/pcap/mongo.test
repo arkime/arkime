@@ -1,28 +1,44 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:OUrJ0XfBMwQ/wtfDj/bTOuUMkNE=",
-            "dstBytes" : 78,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.11",
-            "dstMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 247
+            },
+            "destination" : {
+               "bytes" : 78,
+               "ip" : "10.10.10.11",
+               "mac" : [
+                  "00:22:83:3f:17:c5",
+                  "2c:6b:f5:d6:17:c5"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 27017
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 27017,
             "fileId" : [],
             "firstPacket" : 1483459978959,
             "initRTT" : 171,
             "ipProtocol" : 6,
             "lastPacket" : 1483459979301,
             "length" : 343,
+            "network" : {
+               "bytes" : 699,
+               "community_id" : "1:OUrJ0XfBMwQ/wtfDj/bTOuUMkNE=",
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     300,
+                     50
+                  ],
+                  "id-cnt" : 2
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -46,22 +62,26 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 621,
-            "srcDataBytes" : 247,
-            "srcIp" : "10.10.10.10",
-            "srcMac" : [
-               "00:1b:17:00:02:30",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 621,
+               "ip" : "10.10.10.10",
+               "mac" : [
+                  "00:1b:17:00:02:30",
+                  "2c:6b:f5:d6:17:cc"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 5,
+               "port" : 51822
+            },
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 5,
             "srcPayload8" : "f700000098366e4d",
-            "srcPort" : 51822,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -73,48 +93,55 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 699,
-            "totDataBytes" : 247,
-            "totPackets" : 6,
-            "vlan" : [
-               50,
-               300
-            ],
-            "vlanCnt" : 2
+            "totDataBytes" : 247
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170103",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170103"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:kP7Af9QB6VQVXDn0O/EJYiYvD20=",
-            "dstBytes" : 78,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.13",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "3c:8a:b0:6e:77:c5",
-               "3c:8a:b0:6f:27:c5"
-            ],
-            "dstMacCnt" : 3,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 59
+            },
+            "destination" : {
+               "bytes" : 78,
+               "ip" : "10.10.10.13",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "3c:8a:b0:6e:77:c5",
+                  "3c:8a:b0:6f:27:c5"
+               ],
+               "mac-cnt" : 3,
+               "packets" : 1,
+               "port" : 27017
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 1,
-            "dstPort" : 27017,
             "fileId" : [],
             "firstPacket" : 1483558834969,
             "initRTT" : 80,
             "ipProtocol" : 6,
             "lastPacket" : 1483558835131,
             "length" : 163,
+            "network" : {
+               "bytes" : 511,
+               "community_id" : "1:kP7Af9QB6VQVXDn0O/EJYiYvD20=",
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     300,
+                     50
+                  ],
+                  "id-cnt" : 2
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -138,22 +165,26 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 433,
-            "srcDataBytes" : 59,
-            "srcIp" : "10.10.10.12",
-            "srcMac" : [
-               "00:1b:17:00:02:30",
-               "3c:8a:b0:6f:27:cc"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 433,
+               "ip" : "10.10.10.12",
+               "mac" : [
+                  "00:1b:17:00:02:30",
+                  "3c:8a:b0:6f:27:cc"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 5,
+               "port" : 55582
+            },
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 5,
             "srcPayload8" : "3b00000000000000",
-            "srcPort" : 55582,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -165,45 +196,51 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 511,
-            "totDataBytes" : 59,
-            "totPackets" : 6,
-            "vlan" : [
-               50,
-               300
-            ],
-            "vlanCnt" : 2
+            "totDataBytes" : 59
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170104",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170104"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:FAv9P0Hxb6xe0bFwPailhuJ2C7A=",
-            "dstBytes" : 78,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.15",
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 58
+            },
+            "destination" : {
+               "bytes" : 78,
+               "ip" : "10.10.10.15",
+               "mac" : [
+                  "00:1b:17:00:01:24"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 27017
+            },
             "dstOui" : [
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 27017,
             "fileId" : [],
             "firstPacket" : 1483726705497,
             "initRTT" : 3,
             "ipProtocol" : 6,
             "lastPacket" : 1483726705503,
             "length" : 6,
+            "network" : {
+               "bytes" : 358,
+               "community_id" : "1:FAv9P0Hxb6xe0bFwPailhuJ2C7A=",
+               "packets" : 4,
+               "vlan" : {
+                  "id" : [
+                     100
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -223,20 +260,24 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 280,
-            "srcDataBytes" : 58,
-            "srcIp" : "10.10.10.14",
-            "srcMac" : [
-               "00:22:83:3f:17:c5"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 280,
+               "ip" : "10.10.10.14",
+               "mac" : [
+                  "00:22:83:3f:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 61503
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "3a0000004c040000",
-            "srcPort" : 61503,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -248,44 +289,51 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 358,
-            "totDataBytes" : 58,
-            "totPackets" : 4,
-            "vlan" : [
-               100
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 58
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170106",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170106"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:JqA03AM5KTYsed7SvUcArxX55kM=",
-            "dstBytes" : 78,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.17",
-            "dstMac" : [
-               "00:1b:17:00:01:24"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 269
+            },
+            "destination" : {
+               "bytes" : 78,
+               "ip" : "10.10.10.17",
+               "mac" : [
+                  "00:1b:17:00:01:24"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 27017
+            },
             "dstOui" : [
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
-            "dstPort" : 27017,
             "fileId" : [],
             "firstPacket" : 1483737232974,
             "initRTT" : 2,
             "ipProtocol" : 6,
             "lastPacket" : 1483737232979,
             "length" : 5,
+            "network" : {
+               "bytes" : 569,
+               "community_id" : "1:JqA03AM5KTYsed7SvUcArxX55kM=",
+               "packets" : 4,
+               "vlan" : {
+                  "id" : [
+                     100
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -305,21 +353,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 491,
-            "srcDataBytes" : 269,
-            "srcIp" : "10.10.10.16",
-            "srcMac" : [
-               "00:22:83:3f:17:c5",
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 491,
+               "ip" : "10.10.10.16",
+               "mac" : [
+                  "00:22:83:3f:17:c5",
+                  "2c:6b:f5:d6:17:c5"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 3,
+               "port" : 51358
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "0d01000000000000",
-            "srcPort" : 51358,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -331,44 +383,52 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 569,
-            "totDataBytes" : 269,
-            "totPackets" : 4,
-            "vlan" : [
-               100
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 269
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170106",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170106"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:GWQtm0em+R21AYJfxszqjrBBnG4=",
-            "dstBytes" : 156,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.10.10.19",
-            "dstMac" : [
-               "2c:6b:f5:d6:17:c5"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 73
+            },
+            "destination" : {
+               "bytes" : 156,
+               "ip" : "10.10.10.19",
+               "mac" : [
+                  "2c:6b:f5:d6:17:c5"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 30000
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 2,
-            "dstPort" : 30000,
             "fileId" : [],
             "firstPacket" : 1483814916005,
             "initRTT" : 51,
             "ipProtocol" : 6,
             "lastPacket" : 1483814916108,
             "length" : 103,
+            "network" : {
+               "bytes" : 603,
+               "community_id" : "1:GWQtm0em+R21AYJfxszqjrBBnG4=",
+               "packets" : 7,
+               "vlan" : {
+                  "id" : [
+                     300,
+                     50
+                  ],
+                  "id-cnt" : 2
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -394,22 +454,26 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 447,
-            "srcDataBytes" : 73,
-            "srcIp" : "10.10.10.18",
-            "srcMac" : [
-               "00:1b:17:00:02:30",
-               "2c:6b:f5:d6:17:cc"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 447,
+               "ip" : "10.10.10.18",
+               "mac" : [
+                  "00:1b:17:00:02:30",
+                  "2c:6b:f5:d6:17:cc"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 5,
+               "port" : 64566
+            },
             "srcOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 5,
             "srcPayload8" : "4900000087910000",
-            "srcPort" : 64566,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -421,20 +485,11 @@
                "syn-ack" : 2,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 603,
-            "totDataBytes" : 73,
-            "totPackets" : 7,
-            "vlan" : [
-               50,
-               300
-            ],
-            "vlanCnt" : 2
+            "totDataBytes" : 73
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170107",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170107"
             }
          }
       }

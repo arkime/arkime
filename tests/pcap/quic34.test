@@ -1,29 +1,52 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:wsIXlWeJGuOz2bSIDvVc8VYIQ2Q=",
-            "dstASN" : "AS15169 Google LLC",
-            "dstBytes" : 0,
-            "dstDataBytes" : 0,
-            "dstGEO" : "US",
-            "dstIp" : "216.58.194.195",
-            "dstMac" : [
-               "00:00:5e:00:01:01"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1350
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "216.58.194.195",
+               "mac" : [
+                  "00:00:5e:00:01:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 443
+            },
             "dstOui" : [
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1467241187446,
             "ipProtocol" : 17,
             "lastPacket" : 1467241187446,
             "length" : 0,
+            "network" : {
+               "bytes" : 1396,
+               "community_id" : "1:wsIXlWeJGuOz2bSIDvVc8VYIQ2Q=",
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     300
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                1412
@@ -32,8 +55,8 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "quic"
+               "quic",
+               "udp"
             ],
             "protocolCnt" : 2,
             "quic" : {
@@ -51,33 +74,29 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
-            "srcBytes" : 1396,
-            "srcDataBytes" : 1350,
-            "srcIp" : "10.0.0.4",
-            "srcMac" : [
-               "00:1b:17:00:02:30"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 1396,
+               "ip" : "10.0.0.4",
+               "mac" : [
+                  "00:1b:17:00:02:30"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 54800
+            },
             "srcOui" : [
                "Palo Alto Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "0d9300a653775210",
-            "srcPort" : 54800,
-            "timestamp" : "SET",
-            "totBytes" : 1396,
-            "totDataBytes" : 1350,
-            "totPackets" : 1,
-            "vlan" : [
-               300
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 1350
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160629",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160629"
             }
          }
       }

@@ -173,7 +173,7 @@ function simpleGather (req, res, bodies, doneCb) {
     let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
 
-    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix);
+    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
     const options = { method: req.method };
     let client;
@@ -190,8 +190,8 @@ function simpleGather (req, res, bodies, doneCb) {
       });
       pres.on('end', () => {
         if (result.length) {
-          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions2|sessions|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4])"', 'g'), '$1"MULTIPREFIX_$2"');
+          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
           result = JSON.parse(result);
         } else {
           result = {};
@@ -283,6 +283,11 @@ app.get('/_cluster/health', simpleGatherAdd);
 app.get('/:index/_aliases', simpleGatherNodes);
 app.get('/:index/_alias', simpleGatherNodes);
 
+app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
+  req.url = '/sessions*/_refresh';
+  return simpleGatherFirst(req, res);
+});
+
 app.get('/_cluster/:type/details', function (req, res) {
   const result = { available: [], active: [], inactive: [] };
   const activeNodes = getActiveNodes();
@@ -338,7 +343,22 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
+      if (results[i].MULTIPREFIX_sessions2_template &&
+          results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
+        obj = results[i];
+      }
+    }
+    res.send(obj);
+  });
+});
+
+app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
+  simpleGather(req, res, null, (err, results) => {
+    // console.log("DEBUG -", JSON.stringify(results, null, 2));
+
+    let obj = results[0];
+    for (let i = 1; i < results.length; i++) {
+      if (results[i].MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
     }
@@ -590,7 +610,7 @@ function fixQuery (node, body, doneCb) {
   function doProcess (qParent, obj, item) {
     let query;
 
-    if (item === 'index' && obj[item] === 'lookups') {
+    if (item === 'index' && obj[item] === 'arkime_lookups') {
       obj[item] = `${node2Prefix(node)}lookups`;
     } else if (item === 'fileand' && typeof obj[item] === 'string') {
       const qName = obj.fileand;
@@ -640,9 +660,15 @@ function combineResults (obj, result) {
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
-    for (let i = 0; i < result.hits.hits.length; i++) {
-      result.hits.hits[i].cluster = result.cluster;
-      result.hits.hits[i]._source.cluster = result.cluster;
+    const hits = result.hits.hits;
+    for (let i = 0; i < hits.length; i++) {
+      hits[i].cluster = result.cluster;
+      if (hits[i]._source) {
+        hits[i]._source.cluster = result.cluster;
+      }
+      if (hits[i].fields) {
+        hits[i].fields.cluster = result.cluster;
+      }
     }
     obj.hits.hits = obj.hits.hits.concat(result.hits.hits);
   }
@@ -792,7 +818,7 @@ function msearch (req, res) {
     }, (err) => {
       bodies[node] = nlines.join('\n') + '\n';
       const prefix = node2Prefix(node);
-      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
+      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
       nodeCb();
     });
   }, (err) => {
@@ -828,7 +854,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     delete body.cluster;
 
     const prefix = node2Prefix(node);
-    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
     const id = req.params.id;
     const params = {
       retry_on_conflict: 3,

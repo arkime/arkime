@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
@@ -52,24 +53,35 @@
                }
             ],
             "certCnt" : 2,
-            "communityId" : "1:JebvFh6+fkj6uRw7LYcK388Vcy8=",
-            "dstASN" : "AS36459",
-            "dstBytes" : 4810,
-            "dstDataBytes" : 4208,
-            "dstGEO" : "US",
-            "dstIp" : "192.30.252.130",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstMacCnt" : 2,
+            "client" : {
+               "bytes" : 630
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS36459 GitHub, Inc.",
+                  "number" : 36459,
+                  "organization" : {
+                     "name" : "GitHub, Inc."
+                  }
+               },
+               "bytes" : 4810,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "192.30.252.130",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0e:d6:0b:98:80"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 9,
+               "port" : 443
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 9,
             "dstPayload8" : "1603010055020000",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1385396821013,
@@ -83,6 +95,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1385396821236,
             "length" : 223,
+            "network" : {
+               "bytes" : 6340,
+               "community_id" : "1:JebvFh6+fkj6uRw7LYcK388Vcy8=",
+               "packets" : 23
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -141,21 +158,27 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 1530,
-            "srcDataBytes" : 630,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.141",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 4208
+            },
+            "source" : {
+               "bytes" : 1530,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.141",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 62599
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 14,
             "srcPayload8" : "1603010072010000",
-            "srcPort" : 62599,
             "tcpflags" : {
                "ack" : 8,
                "dstZero" : 0,
@@ -167,7 +190,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_RSA_WITH_RC4_128_SHA"
@@ -197,14 +219,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 6340,
-            "totDataBytes" : 4838,
-            "totPackets" : 23
+            "totDataBytes" : 4838
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131125",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131125"
             }
          }
       }

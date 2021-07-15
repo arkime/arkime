@@ -113,11 +113,12 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
         query.query.bool.filter.push({ exists: { field: req.query.srcField } });
         query.query.bool.filter.push({ exists: { field: req.query.dstField } });
 
-        query._source = fields;
+        query.fields = fields;
+        query._source = false;
         query.docvalue_fields = [fsrc, fdst];
 
         if (dstipport) {
-          query._source.push('dstPort');
+          query.fields.push('destination.port');
         }
 
         result.query = JSON.parse(JSON.stringify(query));
@@ -164,7 +165,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       } else {
         Db.searchSessions(connQueries[0].indices, connQueries[0].query, connQueries[0].options, (err, graph) => {
           if (err || graph.error) {
-            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50), util.inspect(graph.error, false, 50));
+            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50));
             resultSet.err = err || graph.error;
           }
           resultSet.graph = graph;
@@ -201,25 +202,26 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // --------------------------------------------------------------------------
   function buildConnections (req, res, cb) {
     let dstipport;
-    if (req.query.dstField === 'ip.dst:port') {
+    if (req.query.dstField === 'ip.dst:port' || req.query.dstField === 'destination.ip:port') {
       dstipport = true;
-      req.query.dstField = 'dstIp';
+      req.query.dstField = 'destination.ip';
     }
 
-    req.query.srcField = req.query.srcField || 'srcIp';
-    req.query.dstField = req.query.dstField || 'dstIp';
+    req.query.srcField = Config.getDBField(req.query.srcField ?? 'source.ip', 'dbField');
+    req.query.dstField = Config.getDBField(req.query.dstField ?? 'destination.ip', 'dbField');
     const fsrc = req.query.srcField;
     const fdst = req.query.dstField;
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
-    let reqFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+    let reqFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
     if (req.query.fields) { reqFields = req.query.fields.split(','); }
 
     let options = {};
     if (req.query.cancelId) {
       options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
+    options.arkime_unflatten = false;
     options = ViewerUtils.addCluster(req.query.cluster, options);
 
     const dstIsIp = fdst.match(/(\.ip|Ip)$/);
@@ -232,15 +234,14 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
 
     // ------------------------------------------------------------------------
     // updateValues and process are for aggregating query results into their final form
-    const dbFieldsMap = Config.getDBFieldsMap();
     function updateValues (data, property, fields) {
       for (const i in fields) {
         const dbField = fields[i];
-        const field = dbFieldsMap[dbField];
+        const field = Config.getDBField(dbField);
         if (data[dbField]) {
           // sum integers
           if (field.type === 'integer' && field.category !== 'port') {
-            property[dbField] = (property[dbField] || 0) + data[dbField];
+            property[dbField] = (property[dbField] ?? 0) + data[dbField];
           } else { // make a list of values
             if (!property[dbField]) { property[dbField] = []; }
             // make all values an array (because sometimes they are by default)
@@ -255,6 +256,8 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               property[dbField] = [...new Set(property[dbField])]; // unique only
             }
           }
+        } else if (property[dbField] === undefined && field.type === 'integer' && field.category !== 'port') {
+          property[dbField] = 0;
         }
       }
     } // updateValues
@@ -318,8 +321,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           return processResultSetsCb([resultSetStatus]);
         } else {
           async.eachLimit(connResultSets[0].graph.hits.hits, 10, (hit, hitCb) => {
-            let f = hit._source;
-            f = ViewerUtils.flattenFields(f);
+            const f = hit.fields;
 
             let asrc = hit.fields[fsrc];
             let adst = hit.fields[fdst];
@@ -335,9 +337,9 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
               for (let vdst of adst) {
                 if (dstIsIp && dstipport) {
                   if (vdst.includes(':')) {
-                    vdst += '.' + f.dstPort;
+                    vdst += '.' + f['destination.port'];
                   } else {
-                    vdst += ':' + f.dstPort;
+                    vdst += ':' + f['destination.port'];
                   }
                 }
                 doProcess(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
@@ -500,14 +502,14 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   cModule.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
-    const seperator = req.query.seperator || ',';
+    const seperator = req.query.seperator ?? ',';
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
         return res.send(err);
       }
 
       // write out the fields requested
-      let fields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+      let fields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
       if (req.query.fields) { fields = req.query.fields.split(','); }
 
       res.write('Source, Destination, Sessions');

@@ -1,23 +1,29 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:zNTGsq2qV66R0SCEgw2VJAhwhVM=",
-            "dstBytes" : 1290,
-            "dstDataBytes" : 486,
-            "dstGEO" : "US",
-            "dstIp" : "64.236.64.225",
-            "dstMac" : [
-               "00:25:90:7e:28:f6"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1573
+            },
+            "destination" : {
+               "bytes" : 1290,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "64.236.64.225",
+               "mac" : [
+                  "00:25:90:7e:28:f6"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 25
+            },
             "dstOui" : [
                "Super Micro Computer, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 14,
             "dstPayload8" : "3232302078787878",
-            "dstPort" : 25,
             "dstRIR" : "ARIN",
             "email" : {
                "ASN" : [
@@ -27,13 +33,13 @@
                ],
                "GEO" : [
                   "---",
-                  "US",
-                  "---"
+                  "---",
+                  "US"
                ],
                "RIR" : [
-                  "ARIN",
                   "",
-                  ""
+                  "",
+                  "ARIN"
                ],
                "contentType" : [
                   "multipart/alternative; boundary=\"_000_CEC790C31A0F0xxxxxxxxxxxxxxxxxx_\""
@@ -44,41 +50,41 @@
                ],
                "dstCnt" : 1,
                "header" : [
+                  "accept-language",
+                  "content-language",
                   "content-type",
+                  "date",
+                  "from",
                   "message-id",
                   "mime-version",
-                  "from",
+                  "received",
+                  "subject",
+                  "thread-index",
+                  "thread-topic",
                   "to",
                   "user-agent",
-                  "x-ms-tnef-correlator",
-                  "received",
-                  "thread-index",
-                  "date",
-                  "subject",
-                  "content-language",
-                  "x-originating-ip",
                   "x-ms-has-attach",
-                  "accept-language",
-                  "thread-topic"
+                  "x-ms-tnef-correlator",
+                  "x-originating-ip"
                ],
                "headerCnt" : 16,
                "headerField" : [
-                  "thread-topic",
-                  "thread-index",
-                  "date",
                   "accept-language",
                   "content-language",
+                  "date",
+                  "thread-index",
+                  "thread-topic",
                   "x-ms-has-attach",
                   "x-ms-tnef-correlator"
                ],
                "headerValue" : [
+                  "",
+                  "",
                   "=?gb2312?B?dGVzdCCy4srU?=",
-                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx==",
                   "Fri, 6 Dec 2013 19:33:40 +0000",
                   "en-US",
                   "en-US",
-                  "",
-                  ""
+                  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=="
                ],
                "headerValueCnt" : 7,
                "host" : [
@@ -91,9 +97,9 @@
                ],
                "idCnt" : 1,
                "ip" : [
-                  "169.254.4.195",
+                  "10.0.0.4",
                   "10.180.121.151",
-                  "10.0.0.4"
+                  "169.254.4.195"
                ],
                "ipCnt" : 3,
                "md5" : [
@@ -131,6 +137,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386358429964,
             "length" : 7755,
+            "network" : {
+               "bytes" : 3439,
+               "community_id" : "1:zNTGsq2qV66R0SCEgw2VJAhwhVM=",
+               "packets" : 24
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -190,22 +201,28 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 2149,
-            "srcDataBytes" : 1573,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.121.151",
-            "srcMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0b:5f:6b:5d:40"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 486
+            },
+            "source" : {
+               "bytes" : 2149,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.121.151",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0b:5f:6b:5d:40"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 10,
+               "port" : 24962
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 10,
             "srcPayload8" : "45484c4f20787878",
-            "srcPort" : 24962,
             "tags" : [
                "smtp:statuscode:250"
             ],
@@ -221,15 +238,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3439,
-            "totDataBytes" : 2059,
-            "totPackets" : 24
+            "totDataBytes" : 2059
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131206",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131206"
             }
          }
       }

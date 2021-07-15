@@ -1,22 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:X7UpSqqooWNz7fR2GEUYfGnLVK0=",
-            "dstBytes" : 455,
-            "dstDataBytes" : 155,
-            "dstIp" : "10.156.206.202",
-            "dstMac" : [
-               "00:10:db:ff:26:00"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 157
+            },
+            "destination" : {
+               "bytes" : 455,
+               "ip" : "10.156.206.202",
+               "mac" : [
+                  "00:10:db:ff:26:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 80
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1361891420707,
             "http" : {
@@ -38,9 +42,9 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
                   "connection",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 4,
                "requestHeaderField" : [
@@ -53,23 +57,23 @@
                ],
                "requestHeaderValueCnt" : 2,
                "responseHeader" : [
+                  "connection",
                   "content-type",
                   "date",
-                  "connection",
                   "server"
                ],
                "responseHeaderCnt" : 4,
                "responseHeaderField" : [
-                  "date",
-                  "server",
                   "connection",
-                  "content-type"
+                  "content-type",
+                  "date",
+                  "server"
                ],
                "responseHeaderValue" : [
-                  "tue, 26 feb 2013 15:10:21 gmt",
                   "apache",
                   "close",
-                  "text/html; charset=iso-8859-1"
+                  "text/html; charset=iso-8859-1",
+                  "tue, 26 feb 2013 15:10:21 gmt"
                ],
                "responseHeaderValueCnt" : 4,
                "serverVersion" : [
@@ -93,6 +97,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1361891421481,
             "length" : 775,
+            "network" : {
+               "bytes" : 912,
+               "community_id" : "1:X7UpSqqooWNz7fR2GEUYfGnLVK0=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -124,22 +133,26 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 457,
-            "srcDataBytes" : 157,
-            "srcIp" : "10.172.10.16",
-            "srcMac" : [
-               "00:00:5e:00:01:03",
-               "78:fe:3d:11:21:f2"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 155
+            },
+            "source" : {
+               "bytes" : 457,
+               "ip" : "10.172.10.16",
+               "mac" : [
+                  "00:00:5e:00:01:03",
+                  "78:fe:3d:11:21:f2"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 5,
+               "port" : 49323
+            },
             "srcOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "srcOuiCnt" : 2,
-            "srcPackets" : 5,
             "srcPayload8" : "48454144202f5570",
-            "srcPort" : 49323,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -151,15 +164,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 912,
-            "totDataBytes" : 312,
-            "totPackets" : 10
+            "totDataBytes" : 312
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-130226",
-               "_type" : "session"
+               "_index" : "tests_sessions3-130226"
             }
          }
       }

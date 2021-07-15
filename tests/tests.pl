@@ -76,22 +76,14 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
-            if (substr($key, -3) eq "ASN") {
-                $obj->{$key} = [map {s/ .+$//g; $_} @{$obj->{$key}}];
-            }
-
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert)/);
-            if ("$parentkey.$key" =~ /.vlan|http.statuscode|icmp.type|icmp.code/) {
+            if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
             } else {
                 my @tmp = sort (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
-            }
-        } else {
-            if (substr($key, -3) eq "ASN") {
-                $obj->{$key} =~ s/ .+$//g;
             }
         }
     }
@@ -100,7 +92,7 @@ sub sortObj {
 sub sortJson {
     my ($json) = @_;
 
-    foreach my $session (@{$json->{sessions2}}) {
+    foreach my $session (@{$json->{sessions3}}) {
         sortObj("", $session->{body});
     }
     return $json;
@@ -170,11 +162,8 @@ sub doFix {
 sub fix {
 my ($json) = @_;
     my $json = sortJson($json);
-    foreach my $session (@{$json->{sessions2}}) {
+    foreach my $session (@{$json->{sessions3}}) {
         my $body = $session->{body};
-
-        # Keep as session for now
-        $session->{header}->{index}->{_type} = "session";
 
         delete $session->{header}->{index}->{_id};
         if (exists $body->{rootId}) {
@@ -182,6 +171,9 @@ my ($json) = @_;
         }
         if (exists $body->{timestamp}) {
             $body->{timestamp} = "SET";
+        }
+        if (exists $body->{"\@timestamp"}) {
+            $body->{"\@timestamp"} = "SET";
         }
 
         if ($body->{srcIp} =~ /:/) {
@@ -223,10 +215,10 @@ my ($json) = @_;
         }
     }
 
-    @{$json->{sessions2}} = sort {
+    @{$json->{sessions3}} = sort {
         return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
-        return $a->{body}->{srcIp} <=> $b->{body}->{srcIp};
-    } @{$json->{sessions2}};
+        return $a->{body}->{source}->{ip} <=> $b->{body}->{source}->{ip};
+    } @{$json->{sessions3}};
 }
 
 ################################################################################

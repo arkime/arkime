@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
@@ -117,24 +118,35 @@
                }
             ],
             "certCnt" : 3,
-            "communityId" : "1:0fpFZ67cFV8oLbPA0QZ5Ry59f4Q=",
-            "dstASN" : "AS15169",
-            "dstBytes" : 5008,
-            "dstDataBytes" : 4472,
-            "dstGEO" : "US",
-            "dstIp" : "74.125.228.39",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstMacCnt" : 2,
+            "client" : {
+               "bytes" : 318
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 5008,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "74.125.228.39",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0e:d6:0b:98:80"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 8,
+               "port" : 443
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 8,
             "dstPayload8" : "160301003d020000",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1413337821624,
@@ -142,6 +154,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1413337822763,
             "length" : 1138,
+            "network" : {
+               "bytes" : 6126,
+               "community_id" : "1:0fpFZ67cFV8oLbPA0QZ5Ry59f4Q=",
+               "packets" : 20
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -193,22 +210,34 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 1118,
-            "srcDataBytes" : 318,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 4472
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 1118,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 12,
+               "port" : 40111
+            },
             "srcOui" : [
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 12,
             "srcPayload8" : "16030100a4010000",
-            "srcPort" : 40111,
             "tags" : [
                "srcip"
             ],
@@ -226,7 +255,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -244,7 +273,6 @@
                   "16777226:40111,669285706:443"
                ]
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
@@ -271,14 +299,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 6126,
-            "totDataBytes" : 4790,
-            "totPackets" : 20
+            "totDataBytes" : 4790
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-141015",
-               "_type" : "session"
+               "_index" : "tests_sessions3-141015"
             }
          }
       }

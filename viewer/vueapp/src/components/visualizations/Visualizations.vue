@@ -702,24 +702,30 @@ export default {
       });
     },
     setupGraphData: function () {
-      if (this.graphType === 'totPacketsHisto') {
+      switch (this.graphType) {
+      case 'totPacketsHisto':
+      case 'network.packetsHisto':
         this.graph = [
-          { data: this.graphData.srcPacketsHisto, color: srcColor },
-          { data: this.graphData.dstPacketsHisto, color: dstColor }
+          { data: this.graphData['source.packetsHisto'], color: srcColor },
+          { data: this.graphData['destination.packetsHisto'], color: dstColor }
         ];
-      } else if (this.graphType === 'totBytesHisto') {
+        break;
+      case 'totBytesHisto':
+      case 'network.bytesHisto':
         this.graph = [
-          { data: this.graphData.srcBytesHisto, color: srcColor },
-          { data: this.graphData.dstBytesHisto, color: dstColor }
+          { data: this.graphData['source.bytesHisto'], color: srcColor },
+          { data: this.graphData['destination.bytesHisto'], color: dstColor }
         ];
-      } else if (this.graphType === 'totDataBytesHisto') {
+        break;
+      case 'totDataBytesHisto':
         this.graph = [
-          { data: this.graphData.srcDataBytesHisto, color: srcColor },
-          { data: this.graphData.dstDataBytesHisto, color: dstColor }
+          { data: this.graphData['client.bytesHisto'], color: srcColor },
+          { data: this.graphData['server.bytesHisto'], color: dstColor }
         ];
-      } else {
+        break;
+      default:
         this.graph = [{ data: this.graphData[this.graphType], color: primaryColor }];
-      }
+      } /* switch */
 
       const showBars = this.seriesType === 'bars';
 

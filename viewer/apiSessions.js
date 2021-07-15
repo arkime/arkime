@@ -25,11 +25,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (err) {
         return res.send('Could not build query.  Err: ' + err);
       }
-      query._source = fields;
+      query._source = false;
+      query.fields = fields;
       if (Config.debug) {
         console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
       }
       const options = ViewerUtils.addCluster(req.query.cluster);
+      options.arkime_unflatten = false;
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err || result.error) {
           console.log('ERROR - Could not fetch list of sessions:', util.inspect(err, false, 50), ' Result: ', result, 'query:', query);
@@ -198,8 +200,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   function csvListWriter (req, res, list, fields, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
-    } else if (list.length > 0 && list[0]._source) {
-      list = list.sort((a, b) => { return a._source.lastPacket - b._source.lastPacket; });
+    } else if (list.length > 0 && list[0].fields) {
+      list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
     }
 
     const fieldObjects = Config.getDBFieldsMap();
@@ -216,7 +218,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     for (let j = 0; j < list.length; j++) {
-      const sessionData = ViewerUtils.flattenFields(list[j]._source || list[j].fields);
+      const sessionData = list[j].fields;
       sessionData._id = list[j]._id;
 
       if (!fields) { continue; }
@@ -265,7 +267,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     // Do a ro search on each item
     let writes = 0;
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       if (!fields.rootId || processedRo[fields.rootId]) {
         if (writes++ > 100) {
           writes = 0;
@@ -508,9 +510,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       session.id = req.params.id;
       sortFields(session);
 
-      const sep = session.srcIp.includes(':') ? '.' : ':';
-      session.sourceKey = `${session.srcIp}${sep}${session.srcPort}`;
-      session.destinationKey = `${session.dstIp}${sep}${session.dstPort}`;
+      if (session.source?.ip) {
+        const sep = session.source.ip.includes(':') ? '.' : ':';
+        session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
+        session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
+      } else {
+        session.sourceKey = 'Fix 1';
+        session.destinationKey = 'Fix 2';
+      }
 
       if (req.query.showFrames && packets.length !== 0) {
         Pcap.packetFlow(session, packets, +req.query.packets || 200, (err, results, sourceKey, destinationKey) => {
@@ -536,8 +543,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.srcIp;
-        Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.srcPort, (err, results) => {
+        const key = session.source.ip;
+        Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
           session._err = err;
           localSessionDetailReturn(req, res, session, results || []);
         });
@@ -594,7 +601,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    const fields = session._source || session.fields;
+    const fields = session.fields;
 
     let fileNum;
     let itemPos = 0;
@@ -680,9 +687,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
       });
-    } else if (list.length > 0 && list[0]._source) {
+    } else if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
-        return a._source.lastPacket - b._source.lastPacket;
+        return a.fields.lastPacket - b.fields.lastPacket;
       });
     } else if (list.length === 0) {
       res.status(404);
@@ -692,14 +699,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const writerOptions = { writeHeader: true };
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       sModule.isLocalView(fields.node, () => {
         // Get from our DISK
         pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, () => {
         // Get from remote DISK
         ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
-          let buffer = Buffer.alloc(Math.min(16200000, fields.totPackets * 20 + fields.totBytes));
+          let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
           const sessionPath = Config.basePath(fields.node) + fields.node + '/' + extension + '/' + Db.session2Sid(item) + '.' + extension;
@@ -795,7 +802,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
       const sid = Db.session2Sid(item);
       sModule.isLocalView(fields.node, () => {
         const options = {
@@ -829,7 +836,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   function sessionsPcap (req, res, pcapWriter, extension) {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    const fields = ['lastPacket', 'node', 'totBytes', 'totPackets', 'rootId'];
+    const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
@@ -984,10 +991,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }
 
-    Db.getSession(sid, { _source: 'node,ipProtocol,packetPos' }, async (err, session) => {
+    Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
-      const fields = session._source || session.fields;
+      const fields = session.fields;
 
       if (whatToRemove === 'spi') { // just removing es data for session
         try {
@@ -1050,7 +1057,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item._source || item.fields;
+      const fields = item.fields;
 
       sModule.isLocalView(fields.node, () => {
         // Get from our DISK
@@ -1081,7 +1088,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   sModule.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
-      options = { _source: 'node,totPackets,packetPos,srcIp,srcPort,dstIp,dstPort,ipProtocol,packetLen' };
+      options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
     }
 
     Db.getSession(id, options, (err, session) => {
@@ -1090,7 +1097,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         return endCb('Session not found', null);
       }
 
-      const fields = session._source || session.fields;
+      const fields = session.fields;
 
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
@@ -1159,7 +1166,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} view - The view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
-     Default is ipProtocol, rootId, totDataBytes, srcDataBytes, dstDataBytes, firstPacket, lastPacket, srcIp, srcPort, dstIp, dstPort, totPackets, srcPackets, dstPackets, totBytes, srcBytes, dstBytes, node, http.uri, srcGEO, dstGEO, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
+     Default is ipProtocol, rootId, totDataBytes, client.bytes, server.bytes, firstPacket, lastPacket, source.ip, source.port, destination.ip, destination.port, network.packets, source.packets, destination.packets, network.bytes, source.bytes, destination.bytes, node, http.uri, source.geo.country_iso_code, destination.geo.country_iso_code, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
    * @param {string} bounding=last - Query sessions based on different aspects of a session's time. Options include:
      'first' - First Packet: the timestamp of the first packet received for the session.
      'last' - Last Packet: The timestamp of the last packet received for the session.
@@ -1271,13 +1278,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
     }
 
-    if (parseInt(reqQuery.facets) === 1) {
+    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
       query.aggregations = {};
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
-          mapG1: { terms: { field: 'srcGEO', size: 1000, min_doc_count: 1 } },
-          mapG2: { terms: { field: 'dstGEO', size: 1000, min_doc_count: 1 } },
+          mapG1: { terms: { field: 'source.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
+          mapG2: { terms: { field: 'destination.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
           mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1 } }
         };
       }
@@ -1288,17 +1295,23 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       for (let i = 0; i < filters.length; i++) {
         const filter = filters[i];
 
-        // Will also grap src/dst of these options instead to show on the timeline
-        if (filter === 'totPackets') {
-          query.aggregations.dbHisto.aggregations.srcPackets = { sum: { field: 'srcPackets' } };
-          query.aggregations.dbHisto.aggregations.dstPackets = { sum: { field: 'dstPackets' } };
-        } else if (filter === 'totBytes') {
-          query.aggregations.dbHisto.aggregations.srcBytes = { sum: { field: 'srcBytes' } };
-          query.aggregations.dbHisto.aggregations.dstBytes = { sum: { field: 'dstBytes' } };
-        } else if (filter === 'totDataBytes') {
-          query.aggregations.dbHisto.aggregations.srcDataBytes = { sum: { field: 'srcDataBytes' } };
-          query.aggregations.dbHisto.aggregations.dstDataBytes = { sum: { field: 'dstDataBytes' } };
-        } else {
+        // Will also grab src/dst of these options instead to show on the timeline
+        switch (filter) {
+        case 'network.packets':
+        case 'totPackets':
+          query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
+          query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+          break;
+        case 'network.bytes':
+        case 'totBytes':
+          query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
+          query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
+          break;
+        case 'totDataBytes':
+          query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
+          query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+          break;
+        default:
           query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
         }
       }
@@ -1362,10 +1375,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     const list = [];
-    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO', 'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node', 'rootId', 'http.xffGEO'];
+    const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code', 'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node', 'rootId', 'http.xffGEO'];
     const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
 
-    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: fields.join(',') });
+    const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: false, fields: fields });
+    options.arkime_unflatten = false;
     async.eachLimit(ids, 10, (id, nextCb) => {
       Db.getSession(id, options, (err, session) => {
         if (err) {
@@ -1374,8 +1388,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         for (let i = 0; i < fixFields.length; i++) {
           const field = fixFields[i];
-          if (session._source[field] && Array.isArray(session._source[field])) {
-            session._source[field] = session._source[field][0];
+          if (session.fields[field] && Array.isArray(session.fields[field])) {
+            session.fields[field] = session.fields[field][0];
           }
         }
 
@@ -1385,7 +1399,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }, (err) => {
       if (processSegments) {
         sModule.buildSessionQuery(req, (err, query, indices) => {
-          query._source = fields;
+          query.fields = fields;
+          query._source = false;
           sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
             cb(err, addSegmentsList);
           });
@@ -1469,7 +1484,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
-      if (!session._source && !session.fields) {
+      if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return nextCb(null);
       }
@@ -1491,7 +1506,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     async.eachLimit(sessionList, 10, (session, nextCb) => {
-      if (!session._source && !session.fields) {
+      if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
         return nextCb(null);
       }
@@ -1504,7 +1519,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         }
         nextCb(null);
       });
-    }, (err) => {
+    }, async (err) => {
+      await Db.refresh('sessions*');
       return res.send(JSON.stringify({
         success: true,
         text: 'Tags removed successfully'
@@ -1538,8 +1554,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           return doneCb(err, session, results);
         });
       } else if (packets[0].ip.p === 6) {
-        const key = session.srcIp;
-        Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.srcPort, (err, results) => {
+        const key = session.source.ip;
+        Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
           return doneCb(err, session, results);
         });
       } else if (packets[0].ip.p === 17) {
@@ -1579,7 +1595,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       if (req.query.fields) {
-        query._source = ViewerUtils.queryValueToArray(req.query.fields);
+        query._source = false;
+        query.fields = ViewerUtils.queryValueToArray(req.query.fields);
       }
 
       res.send({ esquery: query, indices: indices });
@@ -1607,6 +1624,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
     }
     options = ViewerUtils.addCluster(req.query.cluster, options);
+    options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
 
     const response = {
       data: [],
@@ -1624,20 +1642,22 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       let addMissing = false;
       if (req.query.fields) {
-        query._source = ViewerUtils.queryValueToArray(req.query.fields);
-        ['node', 'srcIp', 'srcPort', 'dstIp', 'dstPort'].forEach((item) => {
-          if (query._source.indexOf(item) === -1) {
-            query._source.push(item);
+        query._source = false;
+        query.fields = ViewerUtils.queryValueToArray(req.query.fields);
+        ['node', 'source.ip', 'source.port', 'destination.ip', 'destination.port'].forEach((item) => {
+          if (query.fields.indexOf(item) === -1) {
+            query.fields.push(item);
           }
         });
       } else {
         addMissing = true;
-        query._source = [
-          'ipProtocol', 'rootId', 'totDataBytes', 'srcDataBytes',
-          'dstDataBytes', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort',
-          'dstIp', 'dstPort', 'totPackets', 'srcPackets', 'dstPackets',
-          'totBytes', 'srcBytes', 'dstBytes', 'node', 'http.uri', 'srcGEO',
-          'dstGEO', 'email.subject', 'email.src', 'email.dst', 'email.filename',
+        query._source = false;
+        query.fields = [
+          'ipProtocol', 'rootId', 'totDataBytes', 'client.bytes',
+          'server.bytes', 'firstPacket', 'lastPacket', 'source.ip', 'source.port',
+          'destination.ip', 'destination.port', 'network.packets', 'source.packets', 'destination.packets',
+          'network.bytes', 'source.bytes', 'destination.bytes', 'node', 'http.uri', 'source.geo.country_iso_code',
+          'destination.geo.country_iso_code', 'email.subject', 'email.src', 'email.dst', 'email.filename',
           'dns.host', 'cert', 'irc.channel', 'http.xffGEO'
         ];
       }
@@ -1652,7 +1672,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       Promise.all([
         Db.searchSessions(indices, query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('/api/sessions result', util.inspect(sessions, false, 50));
@@ -1665,23 +1685,30 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         const results = { total: sessions.hits.total, results: [] };
         async.each(sessions.hits.hits, (hit, hitCb) => {
-          let fields = hit._source || hit.fields;
+          const fields = hit.fields;
           if (fields === undefined) {
             return hitCb(null);
           }
 
           fields.id = Db.session2Sid(hit);
 
-          if (parseInt(req.query.flatten) === 1) {
-            fields = ViewerUtils.flattenFields(fields);
-          }
-
           if (addMissing) {
-            ['srcPackets', 'dstPackets', 'srcBytes', 'dstBytes', 'srcDataBytes', 'dstDataBytes'].forEach((item) => {
-              if (fields[item] === undefined) {
-                fields[item] = -1;
-              }
-            });
+            if (options.arkime_unflatten) {
+              [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']].forEach((item) => {
+                if (fields[item[0]] === undefined) {
+                  fields[item[0]] = {};
+                }
+                if (fields[item[0]][item[1]] === undefined) {
+                  fields[item[0]][item[1]] = -1;
+                }
+              });
+            } else {
+              ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes'].forEach((item) => {
+                if (fields[item] === undefined) {
+                  fields[item] = -1;
+                }
+              });
+            }
             results.results.push(fields);
             return hitCb();
           } else {
@@ -1726,8 +1753,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     // default fields to display in csv
     let fields = [
-      'ipProtocol', 'firstPacket', 'lastPacket', 'srcIp', 'srcPort', 'srcGEO',
-      'dstIp', 'dstPort', 'dstGEO', 'totBytes', 'totDataBytes', 'totPackets', 'node'
+      'ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code',
+      'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node'
     ];
 
     // save requested fields because sessionsListFromQuery returns fields with
@@ -1829,7 +1856,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       const options = ViewerUtils.addCluster(req.query.cluster);
 
       Promise.all([Db.searchSessions(indices, query, options),
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('/api/spiview result', util.inspect(sessions, false, 50));
@@ -1960,7 +1987,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
       if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'dstIp', size: size }, aggregations: { sub: { terms: { field: 'dstPort', size: size } } } };
+        query.aggregations.field = { terms: { field: 'destination.ip', size: size }, aggregations: { sub: { terms: { field: 'destination.port', size: size } } } };
       } else if (field === 'fileand') {
         query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size: size } } } };
       } else {
@@ -1968,7 +1995,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       Promise.all([
-        Db.numberOfDocuments('sessions2-*', options.cluster ? { cluster: options.cluster } : {}),
+        Db.numberOfDocuments(['sessions2-*', 'sessions3-*'], options.cluster ? { cluster: options.cluster } : {}),
         Db.searchSessions(indices, query, options)
       ]).then(([total, result]) => {
         if (result.error) { throw result.error; }
@@ -2000,7 +2027,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           const queries = queriesInfo.map((item) => { return item.query; });
 
           try {
-            const { body: searchResult } = await Db.msearch(indices, 'session', queries, options);
+            const { body: searchResult } = await Db.msearchSessions(indices, queries, options);
 
             searchResult.responses.forEach((item, i) => {
               const response = {
@@ -2041,14 +2068,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
                 }
               }
 
-              if (graph.totPacketsTotal !== undefined) {
-                response.totPacketsHisto = graph.totPacketsTotal;
+              if (graph['network.packetsTotal'] !== undefined) {
+                response['network.packetsHisto'] = graph['network.packetsTotal'];
               }
               if (graph.totDataBytesTotal !== undefined) {
                 response.totDataBytesHisto = graph.totDataBytesTotal;
               }
-              if (graph.totBytesTotal !== undefined) {
-                response.totBytesHisto = graph.totBytesTotal;
+              if (graph['network.bytesTotal'] !== undefined) {
+                response['network.bytesHisto'] = graph['network.bytesTotal'];
               }
 
               if (results.items.length === searchResult.responses.length) {
@@ -2066,6 +2093,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               }
             });
           } catch (err) {
+            console.log(`ERROR - ${req.method} /api/spigraph`, util.inspect(err, false, 50));
             return res.send(results);
           }
         }
@@ -2089,10 +2117,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
         aggs.forEach((item) => {
           if (field === 'ip.dst:port') {
-            filter.term.dstIp = item.key;
+            filter.term['destination.ip'] = item.key;
             const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
             item.sub.buckets.forEach((sitem) => {
-              sfilter.term.dstPort = sitem.key;
+              sfilter.term['destination.port'] = sitem.key;
               queriesInfo.push({ key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
             });
           } else if (field === 'fileand') {
@@ -2175,6 +2203,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
+
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
@@ -2299,7 +2328,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         item.field2.buckets.forEach((item2) => {
@@ -2313,10 +2342,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       delete query.sort;
       delete query.aggregations;
 
-      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort)/)) {
-        query.aggregations = { field: { terms: { field: 'srcIp', size: aggSize }, aggregations: { field2: { terms: { field: 'srcPort', size: 100 } } } } };
-      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort)/)) {
-        query.aggregations = { field: { terms: { field: 'dstIp', size: aggSize }, aggregations: { field2: { terms: { field: 'dstPort', size: 100 } } } } };
+      if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|source.ip:source.port|ip.src:source.port)/)) {
+        query.aggregations = { field: { terms: { field: 'source.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'source.port', size: 100 } } } } };
+      } else if (req.query.field.match(/(ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|destination.ip:destination.port|ip.dst:destination.port)/)) {
+        query.aggregations = { field: { terms: { field: 'destination.ip', size: aggSize }, aggregations: { field2: { terms: { field: 'destination.port', size: 100 } } } } };
       } else if (req.query.field === 'fileand') {
         query.aggregations = { field: { terms: { field: 'node', size: aggSize }, aggregations: { field2: { terms: { field: 'fileId', size: 100 } } } } };
       } else {
@@ -2479,12 +2508,15 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    */
   sModule.getDetail = (req, res) => {
     const options = ViewerUtils.addCluster(req.query.cluster);
+    options._source = 'cert';
+    options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        return res.end("Couldn't look up SPI data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        console.log("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
+        return res.serverError(500, "Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
       }
 
-      session = session._source;
+      session = session.fields;
 
       session.id = req.params.id;
 
@@ -2498,7 +2530,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           compileDebug: !internals.isProduction,
           user: req.user,
           session: session,
-          sep: session.srcIp.includes(':') ? '.' : ':',
+          sep: session.source.ip?.includes(':') ? '.' : ':',
           Db: Db,
           query: req.query,
           basedir: '/',
@@ -2569,7 +2601,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, () => {
+        sModule.addTagsList(tags, list, async () => {
+          await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
             text: 'Tags added successfully'
@@ -2581,7 +2614,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, () => {
+        sModule.addTagsList(tags, list, async () => {
+          await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
             text: 'Tags added successfully'
@@ -2757,7 +2791,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       console.log(`/api/session/entire/${req.params.nodeName}/${req.params.id}/pcap query`, JSON.stringify(query, false, 2));
     }
 
-    Db.searchSessions('sessions2-*', query, null, (err, data) => {
+    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
         writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
@@ -2861,13 +2895,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       query.size = 1;
       query.sort = { lastPacket: { order: 'desc' } };
-      query._source = ['node'];
+      query._source = false;
+      query.fields = ['node'];
 
       if (Config.debug) {
         console.log(`/api/sessions/bodyhash/${req.params.hash} ${indices} query`, JSON.stringify(query, null, 2));
       }
 
-      Db.searchSessions(indices, query, null, (err, sessions) => {
+      Db.searchSessions(indices, query, {}, (err, sessions) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/sessions/bodyhash/${req.params.hash}`, util.inspect(err, false, 50));
           res.status(400);
@@ -2882,7 +2917,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           }
 
           if (sessions.hits.hits.length > 0) {
-            nodeName = sessions.hits.hits[0]._source.node;
+            nodeName = sessions.hits.hits[0].fields.node;
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 

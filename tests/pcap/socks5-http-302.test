@@ -1,26 +1,38 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:JyQ6uQSVR95peZHUdpcExPE7Dzw=",
-            "dstASN" : "AS1",
-            "dstBytes" : 1290,
-            "dstDataBytes" : 942,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:df:17:c7"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 419
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 1290,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "00:26:88:df:17:c7"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 6,
+               "port" : 21477
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 6,
             "dstPayload8" : "0500050000010a00",
-            "dstPort" : 21477,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1385474294492,
@@ -149,6 +161,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1385474412431,
             "length" : 117939,
+            "network" : {
+               "bytes" : 2176,
+               "community_id" : "1:JyQ6uQSVR95peZHUdpcExPE7Dzw=",
+               "packets" : 14
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -189,26 +206,38 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 942
+            },
             "socks" : {
                "host" : "www.google.com",
                "port" : 80
             },
-            "srcASN" : "AS0",
-            "srcBytes" : 886,
-            "srcDataBytes" : 419,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:0b:45:b7:16:c0"
-            ],
-            "srcMacCnt" : 1,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 886,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:0b:45:b7:16:c0"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 1637
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "050100050100030e",
-            "srcPort" : 1637,
             "tags" : [
                "dstip",
                "srcip"
@@ -227,7 +256,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -245,15 +274,11 @@
                   "16777226:1637,33554442:21477"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 2176,
-            "totDataBytes" : 1361,
-            "totPackets" : 14
+            "totDataBytes" : 1361
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131126",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131126"
             }
          }
       }

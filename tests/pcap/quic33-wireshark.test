@@ -1,30 +1,47 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:p/vcUPTuHDxAg7xjWnl7DygZ6gk=",
-            "dstASN" : "AS43515 Google Ireland Limited",
-            "dstBytes" : 119,
-            "dstDataBytes" : 77,
-            "dstGEO" : "US",
-            "dstIp" : "64.15.116.182",
-            "dstMac" : [
-               "52:54:00:12:35:02"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2700
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS43515 Google Ireland Limited",
+                  "number" : 43515,
+                  "organization" : {
+                     "name" : "Google Ireland Limited"
+                  }
+               },
+               "bytes" : 119,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "64.15.116.182",
+               "mac" : [
+                  "52:54:00:12:35:02"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 443
+            },
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "0a79f24eb64a9c07",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1462966377795,
             "ipProtocol" : 17,
             "lastPacket" : 1462966377990,
             "length" : 195,
+            "network" : {
+               "bytes" : 2903,
+               "community_id" : "1:p/vcUPTuHDxAg7xjWnl7DygZ6gk=",
+               "packets" : 3
+            },
             "node" : "test",
             "packetLen" : [
                1408,
@@ -37,8 +54,8 @@
                2840
             ],
             "protocol" : [
-               "udp",
-               "quic"
+               "quic",
+               "udp"
             ],
             "protocolCnt" : 2,
             "quic" : {
@@ -52,29 +69,29 @@
                "versionCnt" : 1
             },
             "segmentCnt" : 1,
-            "srcBytes" : 2784,
-            "srcDataBytes" : 2700,
-            "srcIp" : "10.0.2.15",
-            "srcMac" : [
-               "08:00:27:cc:18:37"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 77
+            },
+            "source" : {
+               "bytes" : 2784,
+               "ip" : "10.0.2.15",
+               "mac" : [
+                  "08:00:27:cc:18:37"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 40482
+            },
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
             "srcPayload8" : "0979f24eb64a9c07",
-            "srcPort" : 40482,
-            "timestamp" : "SET",
-            "totBytes" : 2903,
-            "totDataBytes" : 2777,
-            "totPackets" : 3
+            "totDataBytes" : 2777
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160511",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160511"
             }
          }
       }

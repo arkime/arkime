@@ -1,26 +1,38 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:I/NY/ZdvnK7EtFfAgYuqVZkOKxY=",
-            "dstASN" : "AS1",
-            "dstBytes" : 2199,
-            "dstDataBytes" : 954,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "80:71:1f:83:9f:c6"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 23392
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 2199,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "80:71:1f:83:9f:c6"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 21,
+               "port" : 8855
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 21,
             "dstPayload8" : "050100050100014a",
-            "dstPort" : 8855,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1386790367120,
@@ -211,6 +223,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386790404657,
             "length" : 37537,
+            "network" : {
+               "bytes" : 27311,
+               "community_id" : "1:I/NY/ZdvnK7EtFfAgYuqVZkOKxY=",
+               "packets" : 52
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -328,29 +345,41 @@
             ],
             "protocolCnt" : 4,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 954
+            },
             "socks" : {
-               "ASN" : "AS15169",
+               "ASN" : "AS15169 Google LLC",
                "GEO" : "US",
                "RIR" : "ARIN",
                "ip" : "74.125.131.103",
                "port" : 80
             },
-            "srcASN" : "AS0",
-            "srcBytes" : 25112,
-            "srcDataBytes" : 23392,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:0a:f3:31:94:00"
-            ],
-            "srcMacCnt" : 1,
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 25112,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:0a:f3:31:94:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 31,
+               "port" : 54263
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 31,
             "srcPayload8" : "4e5a8d08874e0500",
-            "srcPort" : 54263,
             "tags" : [
                "dstip",
                "srcip"
@@ -369,7 +398,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -387,15 +416,11 @@
                   "16777226:54263,33554442:8855"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 27311,
-            "totDataBytes" : 24346,
-            "totPackets" : 52
+            "totDataBytes" : 24346
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131211",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131211"
             }
          }
       }

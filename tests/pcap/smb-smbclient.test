@@ -1,28 +1,37 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:LT9Z29Iuexn4cHmfWwxgATdmZcg=",
-            "dstBytes" : 1667,
-            "dstDataBytes" : 801,
-            "dstIp" : "127.0.0.1",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 868
+            },
+            "destination" : {
+               "bytes" : 1667,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 13,
+               "port" : 445
+            },
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 13,
             "dstPayload8" : "00000061ff534d42",
-            "dstPort" : 445,
             "fileId" : [],
             "firstPacket" : 1387494788141,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1387494791811,
             "length" : 3669,
+            "network" : {
+               "bytes" : 3929,
+               "community_id" : "1:LT9Z29Iuexn4cHmfWwxgATdmZcg=",
+               "packets" : 34
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -102,6 +111,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 801
+            },
             "smb" : {
                "domain" : [
                   "WORKGROUP"
@@ -128,20 +140,21 @@
                ],
                "versionCnt" : 1
             },
-            "srcBytes" : 2262,
-            "srcDataBytes" : 868,
-            "srcIp" : "127.0.0.1",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
+            "source" : {
+               "bytes" : 2262,
+               "ip" : "127.0.0.1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 21,
+               "port" : 41823
+            },
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 21,
             "srcPayload8" : "000000beff534d42",
-            "srcPort" : 41823,
             "tcpflags" : {
                "ack" : 10,
                "dstZero" : 0,
@@ -153,15 +166,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3929,
-            "totDataBytes" : 1669,
-            "totPackets" : 34
+            "totDataBytes" : 1669
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131219",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131219"
             }
          }
       }

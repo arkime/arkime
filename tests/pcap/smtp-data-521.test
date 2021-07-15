@@ -1,25 +1,31 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:YM2Rp2Xas6R1dgz686pLShQRVJA=",
-            "dstBytes" : 2308,
-            "dstDataBytes" : 854,
-            "dstGEO" : "US",
-            "dstIp" : "205.188.186.167",
-            "dstMac" : [
-               "00:00:5e:00:01:01",
-               "00:26:88:ca:1f:c6"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 3122
+            },
+            "destination" : {
+               "bytes" : 2308,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "205.188.186.167",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "00:26:88:ca:1f:c6"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 22,
+               "port" : 587
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 22,
             "dstPayload8" : "3232302d6d74616f",
-            "dstPort" : 587,
             "dstRIR" : "ARIN",
             "email" : {
                "contentType" : [
@@ -72,6 +78,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1386251823511,
             "length" : 8244,
+            "network" : {
+               "bytes" : 6494,
+               "community_id" : "1:YM2Rp2Xas6R1dgz686pLShQRVJA=",
+               "packets" : 38
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -159,22 +170,34 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 4186,
-            "srcDataBytes" : 3122,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:0b:45:b7:08:80"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 854
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 4186,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:0b:45:b7:08:80"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 16,
+               "port" : 56558
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 16,
             "srcPayload8" : "45484c4f20787878",
-            "srcPort" : 56558,
             "tags" : [
                "smtp:authplain",
                "smtp:statuscode:521",
@@ -194,7 +217,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -212,10 +235,7 @@
                   "16777226:56558,-1480934195:587"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 6494,
             "totDataBytes" : 3976,
-            "totPackets" : 38,
             "user" : [
                "123456789@aol.com"
             ],
@@ -223,8 +243,7 @@
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131205",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131205"
             }
          }
       }

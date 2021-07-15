@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:5BdEsxq5VUcXC7hPWokvwfOqdDQ=",
-            "dstASN" : "AS1",
-            "dstBytes" : 1002,
-            "dstDataBytes" : 706,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "88:43:e1:94:fc:2d"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 3413
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 1002,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "88:43:e1:94:fc:2d"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 80
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 5,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1404135320459,
@@ -221,6 +233,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1404135330336,
             "length" : 9877,
+            "network" : {
+               "bytes" : 4813,
+               "community_id" : "1:5BdEsxq5VUcXC7hPWokvwfOqdDQ=",
+               "packets" : 12
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -256,22 +273,34 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 3811,
-            "srcDataBytes" : 3413,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "a4:93:4c:43:13:9b"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 706
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 3811,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "a4:93:4c:43:13:9b"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 61462
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 7,
             "srcPayload8" : "474554202f782f78",
-            "srcPort" : 61462,
             "tags" : [
                "dstip",
                "srcip"
@@ -290,7 +319,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -308,15 +337,11 @@
                   "16777226:61462,33554442:80"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 4813,
-            "totDataBytes" : 4119,
-            "totPackets" : 12
+            "totDataBytes" : 4119
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140630",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140630"
             }
          }
       }

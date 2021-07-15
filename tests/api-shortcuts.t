@@ -133,6 +133,7 @@ ok(exists $shortcuts->{$shortcut1Id}->{help}, "Shortcut has help");
 ok(exists $shortcuts->{$shortcut1Id}->{dbField}, "Shortcut has dbField");
 
 # the local (test2) cluster should sync with the remote (test) cluster
+esGet("/_refresh");
 viewerGet2("/api/syncshortcuts");
 esGet("/_refresh");
 sleep(2);

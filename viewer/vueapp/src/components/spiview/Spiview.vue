@@ -399,7 +399,7 @@ import MolochCollapsible from '../utils/CollapsibleWrapper';
 // import utils
 import Utils from '../utils/utils';
 
-const defaultSpi = 'dstIp:100,protocol:100,srcIp:100';
+const defaultSpi = 'destination.ip:100,protocol:100,source.ip:100';
 
 let newQuery = true;
 let openedCategories = false;
@@ -465,7 +465,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => this.fields.find(f => f.dbField === i));
+      return filters.map(i => FieldService.getField(i, this.fields));
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -623,11 +623,11 @@ export default {
     showValues: function (value, more, currLen) {
       let count;
       const field = value.field;
-      if (this.spiQuery.includes(field.dbField)) {
+      if (this.spiQuery.includes(field.dbField) || this.spiQuery.includes(field.dbField2)) {
         // make sure field is in the spi query parameter
         const spiParamsArray = this.spiQuery.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-          if (spiParamsArray[i].includes(field.dbField)) {
+          if (spiParamsArray[i].includes(field.dbField) || spiParamsArray[i].includes(field.dbField2)) {
             const spiParam = spiParamsArray[i].split(':');
             if (more) {
               // get the max of the requested length and the actual results length
@@ -828,7 +828,7 @@ export default {
     fetchMapData: function () {
       const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
-      if (!field) { field = 'dstIp'; }
+      if (!field) { field = 'destination.ip'; }
 
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map data
@@ -875,6 +875,9 @@ export default {
 
         Vue.axios(options)
           .then((response) => {
+            if (response.data.bsqErr) {
+              response.data.error = response.data.bsqErr;
+            }
             resolve(response.data);
           })
           .catch((error) => {
@@ -965,15 +968,7 @@ export default {
         const split = param.split(':');
         const fieldID = split[0];
         const count = Math.max(split[1], 100); // min is 100
-
-        let field;
-
-        for (const key in this.fields) {
-          if (this.fields[key].dbField === fieldID) {
-            field = this.fields[key];
-            break;
-          }
-        }
+        const field = FieldService.getField(fieldID, this.fields);
 
         if (field) {
           category = this.setupCategory(this.categoryObjects, field);

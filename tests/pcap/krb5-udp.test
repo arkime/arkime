@@ -1,21 +1,25 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:37biltTX+G3ht//omeHKaBaSt6A=",
-            "dstBytes" : 0,
-            "dstDataBytes" : 0,
-            "dstIp" : "10.150.10.150",
-            "dstMac" : [
-               "00:00:5e:00:01:01"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 251
+            },
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "10.150.10.150",
+               "mac" : [
+                  "00:00:5e:00:01:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 88
+            },
             "dstOui" : [
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 88,
             "fileId" : [],
             "firstPacket" : 1466252055201,
             "ipProtocol" : 17,
@@ -35,6 +39,17 @@
             },
             "lastPacket" : 1466252055201,
             "length" : 0,
+            "network" : {
+               "bytes" : 297,
+               "community_id" : "1:37biltTX+G3ht//omeHKaBaSt6A=",
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     300
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                313
@@ -43,38 +58,34 @@
                24
             ],
             "protocol" : [
-               "udp",
-               "krb5"
+               "krb5",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 297,
-            "srcDataBytes" : 251,
-            "srcIp" : "10.172.10.172",
-            "srcMac" : [
-               "00:1b:17:00:02:30"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 297,
+               "ip" : "10.172.10.172",
+               "mac" : [
+                  "00:1b:17:00:02:30"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 58412
+            },
             "srcOui" : [
                "Palo Alto Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "6a81f83081f5a103",
-            "srcPort" : 58412,
-            "timestamp" : "SET",
-            "totBytes" : 297,
-            "totDataBytes" : 251,
-            "totPackets" : 1,
-            "vlan" : [
-               300
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 251
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160618",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160618"
             }
          }
       }

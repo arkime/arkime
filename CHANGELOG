@@ -24,7 +24,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 3.0.0 2021/07/xx
   - BREAKING - elasticsearch - ES 7.10.0 or later required
-  - BREAKING - multies - multiESNodes requires a name: attribute per entry
+  - BREAKING - if not using a ES prefix, the prefix arkime_ will now be used
+  - BREAKING - multies - multiESNodes requires a name: and prefix: attribute per entry
   - BREAKING - wise - custom sources will need to be modified
   - BREAKING - wise - redis urls have a new standard format
   - BREAKING - wise - for json data keyColumn has been renamed keyPath

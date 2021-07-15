@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 68;
+const MIN_DB_VERSION = 70;
 
 // ============================================================================
 // MODULES
@@ -762,6 +762,9 @@ function fillQueryFromBody (req, res, next) {
       ...req.body
     };
     req.query = query;
+  }
+  if (Config.debug > 1) {
+    console.log(`${req.url} query`, req.query);
   }
   next();
 }
@@ -2211,7 +2214,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
       console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
     }
 
-    Db.searchSessions('sessions2-*', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       async function doNext () {
         count += result.hits.hits.length;
 
@@ -2277,6 +2280,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
       }
     });
   }, () => {
+    Db.refresh('sessions*');
     if (Config.debug > 1) {
       console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
     }
@@ -2575,11 +2579,17 @@ processArgs(process.argv);
 // ============================================================================
 // DB
 // ============================================================================
+process.on('unhandledRejection', (reason, p) => {
+  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
+  // application specific logging, throwing an error, or other logic here
+});
+
 Db.initialize({
   host: internals.elasticBase,
-  prefix: Config.get('prefix', ''),
+  prefix: internals.prefix,
   usersHost: Config.get('usersElasticsearch') ? Config.getArray('usersElasticsearch', ',', '') : undefined,
-  usersPrefix: Config.get('usersPrefix'),
+  // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
+  usersPrefix: Config.get('usersPrefix', Config.get('multiES', false) ? '' : undefined),
   nodeName: Config.nodeName(),
   hostName: Config.hostName(),
   esClientKey: Config.get('esClientKey', null),
@@ -2591,7 +2601,6 @@ Db.initialize({
   requestTimeout: Config.get('elasticsearchTimeout', 300),
   esProfile: Config.esProfile,
   debug: Config.debug,
-  getSessionBySearch: Config.get('getSessionBySearch', ''),
   esApiKey: Config.get('elasticsearchAPIKey', null),
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
   cronQueries: Config.get('cronQueries', false)

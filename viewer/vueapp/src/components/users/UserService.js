@@ -4,7 +4,7 @@ import store from '../../store';
 // default settings also in internals.js
 const defaultSettings = {
   connDstField: 'ip.dst:port',
-  connSrcField: 'srcIp',
+  connSrcField: 'source.ip',
   detailFormat: 'last',
   numPackets: 'last',
   showTimestamps: 'last',

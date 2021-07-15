@@ -1,28 +1,43 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:fkJHVqMsfrrE5wz5ft7GLWZdX4A=",
-            "dstBytes" : 1359,
-            "dstDataBytes" : 879,
-            "dstIp" : "10.10.0.2",
-            "dstMac" : [
-               "00:50:56:a8:45:c0"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 965
+            },
+            "destination" : {
+               "bytes" : 1359,
+               "ip" : "10.10.0.2",
+               "mac" : [
+                  "00:50:56:a8:45:c0"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 445
+            },
             "dstOui" : [
                "VMware, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 8,
             "dstPayload8" : "000000cdff534d42",
-            "dstPort" : 445,
             "fileId" : [],
             "firstPacket" : 1429783872765,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1429783877023,
             "length" : 4258,
+            "network" : {
+               "bytes" : 3188,
+               "community_id" : "1:fkJHVqMsfrrE5wz5ft7GLWZdX4A=",
+               "packets" : 22,
+               "vlan" : {
+                  "id" : [
+                     1113
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -78,6 +93,9 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 879
+            },
             "smb" : {
                "domain" : [
                   "LAB"
@@ -96,8 +114,8 @@
                ],
                "osCnt" : 1,
                "share" : [
-                  "\\\\10.10.0.2\\IPC$",
-                  "\\\\10.10.0.2\\ADMIN$"
+                  "\\\\10.10.0.2\\ADMIN$",
+                  "\\\\10.10.0.2\\IPC$"
                ],
                "shareCnt" : 2,
                "user" : [
@@ -109,20 +127,21 @@
                ],
                "versionCnt" : 1
             },
-            "srcBytes" : 1829,
-            "srcDataBytes" : 965,
-            "srcIp" : "10.10.0.3",
-            "srcMac" : [
-               "00:50:56:a8:1f:7c"
-            ],
-            "srcMacCnt" : 1,
+            "source" : {
+               "bytes" : 1829,
+               "ip" : "10.10.0.3",
+               "mac" : [
+                  "00:50:56:a8:1f:7c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 2204
+            },
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 14,
             "srcPayload8" : "00000054ff534d42",
-            "srcPort" : 2204,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -134,19 +153,11 @@
                "syn-ack" : 2,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3188,
-            "totDataBytes" : 1844,
-            "totPackets" : 22,
-            "vlan" : [
-               1113
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 1844
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-150423",
-               "_type" : "session"
+               "_index" : "tests_sessions3-150423"
             }
          }
       }

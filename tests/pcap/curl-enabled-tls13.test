@@ -1,8 +1,21 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 70
+            },
+            "destination" : {
+               "bytes" : 242,
+               "ip" : "192.168.65.1",
+               "mac" : [
+                  "f6:16:36:bc:f9:c6"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
                   "AS13335 Cloudflare, Inc.",
@@ -17,9 +30,9 @@
                   "US"
                ],
                "RIR" : [
+                  "",
+                  "",
                   "ARIN",
-                  "",
-                  "",
                   "ARIN"
                ],
                "host" : [
@@ -28,9 +41,9 @@
                "hostCnt" : 1,
                "ip" : [
                   "104.16.125.34",
-                  "2606:4700:0000:0000:0000:0000:6810:7e22",
+                  "104.16.126.34",
                   "2606:4700:0000:0000:0000:0000:6810:7d22",
-                  "104.16.126.34"
+                  "2606:4700:0000:0000:0000:0000:6810:7e22"
                ],
                "ipCnt" : 4,
                "opcode" : [
@@ -42,8 +55,8 @@
                ],
                "qcCnt" : 1,
                "qt" : [
-                  "AAAA",
-                  "A"
+                  "A",
+                  "AAAA"
                ],
                "qtCnt" : 2,
                "status" : [
@@ -51,22 +64,18 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 242,
-            "dstDataBytes" : 158,
-            "dstIp" : "192.168.65.1",
-            "dstMac" : [
-               "f6:16:36:bc:f9:c6"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 2,
             "dstPayload8" : "ac66818000010002",
-            "dstPort" : 53,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1565212114674,
             "ipProtocol" : 17,
             "lastPacket" : 1565212114677,
             "length" : 2,
+            "network" : {
+               "bytes" : 396,
+               "community_id" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
+               "packets" : 4
+            },
             "node" : "test",
             "packetLen" : [
                93,
@@ -81,49 +90,61 @@
                335
             ],
             "protocol" : [
-               "udp",
-               "dns"
+               "dns",
+               "udp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 154,
-            "srcDataBytes" : 70,
-            "srcIp" : "192.168.65.3",
-            "srcMac" : [
-               "02:50:00:00:00:01"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 2,
+            "server" : {
+               "bytes" : 158
+            },
+            "source" : {
+               "bytes" : 154,
+               "ip" : "192.168.65.3",
+               "mac" : [
+                  "02:50:00:00:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 42060
+            },
             "srcPayload8" : "ac66010000010000",
-            "srcPort" : 42060,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 396,
-            "totDataBytes" : 228,
-            "totPackets" : 4
+            "totDataBytes" : 228
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190807",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190807"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:PpyBSRmS+2VJ1i6VN2xoHEI0ljc=",
-            "dstASN" : "AS13335 Cloudflare, Inc.",
-            "dstBytes" : 5056,
-            "dstDataBytes" : 4238,
-            "dstGEO" : "US",
-            "dstIp" : "104.16.125.34",
-            "dstMac" : [
-               "f6:16:36:bc:f9:c6"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 15,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 845
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS13335 Cloudflare, Inc.",
+                  "number" : 13335,
+                  "organization" : {
+                     "name" : "Cloudflare, Inc."
+                  }
+               },
+               "bytes" : 5056,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "104.16.125.34",
+               "mac" : [
+                  "f6:16:36:bc:f9:c6"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 15,
+               "port" : 443
+            },
             "dstPayload8" : "160303007a020000",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1565212114677,
@@ -137,6 +158,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1565212114804,
             "length" : 127,
+            "network" : {
+               "bytes" : 6785,
+               "community_id" : "1:PpyBSRmS+2VJ1i6VN2xoHEI0ljc=",
+               "packets" : 31
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -205,21 +231,25 @@
                7695
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1729,
-            "srcDataBytes" : 845,
-            "srcIp" : "192.168.65.3",
-            "srcMac" : [
-               "02:50:00:00:00:01"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 16,
+            "server" : {
+               "bytes" : 4238
+            },
+            "source" : {
+               "bytes" : 1729,
+               "ip" : "192.168.65.3",
+               "mac" : [
+                  "02:50:00:00:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 16,
+               "port" : 46638
+            },
             "srcPayload8" : "1603010200010001",
-            "srcPort" : 46638,
             "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 13,
@@ -232,7 +262,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_AES_256_GCM_SHA384"
@@ -265,14 +294,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 6785,
-            "totDataBytes" : 5083,
-            "totPackets" : 31
+            "totDataBytes" : 5083
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190807",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190807"
             }
          }
       }

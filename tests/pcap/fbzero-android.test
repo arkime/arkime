@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:Z3Q5W24QYzkDoI1VGO+4YY2G3BI=",
-            "dstASN" : "AS32934 Facebook, Inc.",
-            "dstBytes" : 5678,
-            "dstDataBytes" : 4416,
-            "dstGEO" : "IE",
-            "dstIp" : "31.13.74.1",
-            "dstMac" : [
-               "4c:02:89:0a:d2:76"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 4804
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS32934 Facebook, Inc.",
+                  "number" : 32934,
+                  "organization" : {
+                     "name" : "Facebook, Inc."
+                  }
+               },
+               "bytes" : 5678,
+               "geo" : {
+                  "country_iso_code" : "IE"
+               },
+               "ip" : "31.13.74.1",
+               "mac" : [
+                  "4c:02:89:0a:d2:76"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 19,
+               "port" : 443
+            },
             "dstOui" : [
                "Lex Computech Co., Ltd"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 19,
             "dstPayload8" : "3151545630300000",
-            "dstPort" : 443,
             "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1479719879541,
@@ -26,6 +38,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1479719902505,
             "length" : 22965,
+            "network" : {
+               "bytes" : 12140,
+               "community_id" : "1:Z3Q5W24QYzkDoI1VGO+4YY2G3BI=",
+               "packets" : 44
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -132,20 +149,24 @@
                "hostCnt" : 1
             },
             "segmentCnt" : 1,
-            "srcBytes" : 6462,
-            "srcDataBytes" : 4804,
-            "srcIp" : "192.168.1.111",
-            "srcMac" : [
-               "88:28:b3:b3:7c:41"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 4416
+            },
+            "source" : {
+               "bytes" : 6462,
+               "ip" : "192.168.1.111",
+               "mac" : [
+                  "88:28:b3:b3:7c:41"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 25,
+               "port" : 39584
+            },
             "srcOui" : [
                "Huawei Technologies Co.,Ltd"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 25,
             "srcPayload8" : "3151545630c60000",
-            "srcPort" : 39584,
             "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 18,
@@ -158,15 +179,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 12140,
-            "totDataBytes" : 9220,
-            "totPackets" : 44
+            "totDataBytes" : 9220
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-161121",
-               "_type" : "session"
+               "_index" : "tests_sessions3-161121"
             }
          }
       }

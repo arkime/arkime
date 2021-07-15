@@ -56,7 +56,6 @@
               </a>
             </span>
             <select v-model="sortBy"
-              @change="sort"
               class="form-control form-control-sm pull-right sort-by-select">
               <option disabled value="">
                 Sort by...
@@ -92,8 +91,8 @@
                     {{ session.lastPacket | timezoneDateString(timezone, ms) }}
                   </em>
                   <br>
-                  <strong>{{ session.srcIp }}</strong>:{{ session.srcPort }} <strong>{{ session.srcGEO }}</strong> -
-                  <strong>{{ session.dstIp }}</strong>:{{ session.dstPort }} <strong>{{ session.dstGEO }}</strong>
+                  <strong>{{ session['source.ip'] }}</strong>:{{ session['source.port'] }} <strong>{{ session['source.geo.country_iso_code'] }}</strong> -
+                  <strong>{{ session['destination.ip'] }}</strong>:{{ session['destination.port'] }} <strong>{{ session['destination.geo.country_iso_code'] }}</strong>
                   <br>
                   <strong>{{ session.ipProtocol | protocol }}</strong> - {{ session.node }}
                 </small>

@@ -9,41 +9,78 @@ const queryInProgress = {
   promise: undefined
 };
 
+const ipDstPortField = {
+  category: 'ip',
+  group: 'general',
+  dbField2: 'dstIp',
+  exp: 'ip.dst:port',
+  dbField: 'destination.ip:port',
+  fieldECS: 'destination.ip:port',
+  friendlyName: 'Dst IP:Dst Port',
+  help: 'Destination IP:Destination Port'
+};
+
 export default {
+
+  ipDstPortField: ipDstPortField,
 
   /**
    * Gets a field map from the server
    * @param {bool} array        Whether to request an array or map
+   * @param {bool} addIpDstPort Whether to add the ip.dst:port field to the results
+                                (don't add it to the cache because some pages don't want it)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (array) {
+  get (array, addIpDstPort) {
     if (queryInProgress && queryInProgress.array === array) {
       return queryInProgress.promise;
     }
 
-    queryInProgress.promise = new Promise((resolve, reject) => {
-      if (array && _fieldsArrayCache) {
-        resolve(_fieldsArrayCache);
-      } else if (!array && _fieldsMapCache) {
-        resolve(_fieldsMapCache);
+    function addIpDstPortFieldToResults (data) {
+      let result;
+
+      if (array) {
+        result = [...data]; // shallow copy so we don't mutate data
+        result.push(ipDstPortField);
+      } else {
+        result = { ...data }; // shallow copy so we don't mutate data
+        result[ipDstPortField.exp] = ipDstPortField;
       }
 
-      let url = 'api/fields';
-      if (array) { url += '?array=true'; }
+      return result;
+    }
 
-      Vue.axios.get(url)
+    queryInProgress.promise = new Promise((resolve, reject) => {
+      let cachedResult = false;
+      if (array && _fieldsArrayCache) {
+        cachedResult = _fieldsArrayCache;
+      } else if (!array && _fieldsMapCache) {
+        cachedResult = _fieldsMapCache;
+      }
+
+      if (cachedResult) { // if we have a cached result, return it
+        if (addIpDstPort) { cachedResult = addIpDstPortFieldToResults(cachedResult); }
+        return resolve(cachedResult);
+      }
+
+      // there is no cached result, so we need to fetch the fields
+      Vue.axios.get(`api/fields${array ? '?array=true' : ''}`)
         .then((response) => {
           queryInProgress.promise = undefined;
+
           if (array) {
             _fieldsArrayCache = response.data;
           } else {
             _fieldsMapCache = response.data;
           }
-          resolve(response.data);
+
+          let result = response.data;
+          if (addIpDstPort) { result = addIpDstPortFieldToResults(response.data); }
+          return resolve(result);
         }, (error) => {
           queryInProgress.promise = undefined;
-          reject(error);
+          return reject(error);
         });
     });
 
@@ -90,6 +127,50 @@ export default {
         reject(new Error('Error retrieving country codes'));
       }
     });
+  },
+
+  /**
+   * Retrieves a field object
+   * Matches dbField, dbField2, fieldECS, rawField, exp, or aliases
+   * @param {string} search - The value to search for
+   * @param {object|array} fields - A fields map or array
+   * @returns {object} The field or undefined
+   */
+  getField (search, fields) {
+    for (const k in fields) {
+      if (search === fields[k].exp ||
+          search === fields[k].dbField ||
+          search === fields[k].dbField2 ||
+          search === fields[k].fieldECS ||
+          search === fields[k].rawField) {
+        return fields[k];
+      }
+      if (fields[k].aliases) {
+        for (const alias of fields[k].aliases) {
+          if (search === alias) {
+            return fields[k];
+          }
+        }
+      }
+    }
+
+    return undefined;
+  },
+
+  /**
+   * Retrieves a field's property
+   * Matches dbField, dbField2, fieldECS, or rawField
+   * @param {string} search - The value to search for
+   * @param {string} prop - The field property value to return
+   * @param {object|array} fields - A fields map or array
+   * @returns {string} The field property value or undefined
+   */
+  getFieldProperty (search, prop, fields) {
+    const field = this.getField(search, fields);
+
+    if (field && field[prop]) { return field[prop]; }
+
+    return undefined;
   }
 
 };

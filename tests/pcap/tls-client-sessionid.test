@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:NBhOKOiIQwnX0s0SpX7a9Om6mAo=",
-            "dstASN" : "AS10913 Internap Corporation",
-            "dstBytes" : 983,
-            "dstDataBytes" : 459,
-            "dstGEO" : "US",
-            "dstIp" : "74.217.87.13",
-            "dstMac" : [
-               "60:73:5c:b4:90:00"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 618
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS10913 Internap Corporation",
+                  "number" : 10913,
+                  "organization" : {
+                     "name" : "Internap Corporation"
+                  }
+               },
+               "bytes" : 983,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "74.217.87.13",
+               "mac" : [
+                  "60:73:5c:b4:90:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 9,
+               "port" : 443
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 9,
             "dstPayload8" : "1603010051020000",
-            "dstPort" : 443,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1420490708340,
@@ -32,6 +44,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1420490708431,
             "length" : 91,
+            "network" : {
+               "bytes" : 2005,
+               "community_id" : "1:NBhOKOiIQwnX0s0SpX7a9Om6mAo=",
+               "packets" : 16
+            },
             "node" : "test",
             "packetLen" : [
                78,
@@ -70,26 +87,30 @@
                2209
             ],
             "protocol" : [
-               "tlsrulestest",
+               "tcp",
                "tls",
-               "tcp"
+               "tlsrulestest"
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 1022,
-            "srcDataBytes" : 618,
-            "srcIp" : "10.23.46.37",
-            "srcMac" : [
-               "b8:ca:3a:8d:c1:87"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 459
+            },
+            "source" : {
+               "bytes" : 1022,
+               "ip" : "10.23.46.37",
+               "mac" : [
+                  "b8:ca:3a:8d:c1:87"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 62938
+            },
             "srcOui" : [
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 7,
             "srcPayload8" : "16030100c0010000",
-            "srcPort" : 62938,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -101,7 +122,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_DHE_RSA_WITH_AES_128_CBC_SHA"
@@ -134,14 +154,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 2005,
-            "totDataBytes" : 1077,
-            "totPackets" : 16
+            "totDataBytes" : 1077
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-150105",
-               "_type" : "session"
+               "_index" : "tests_sessions3-150105"
             }
          }
       }

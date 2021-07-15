@@ -1,2 +1,2 @@
-exports.version = "@PACKAGE_VERSION@";
+exports.version = "@PACKAGE_VERSION@-ECS";
 exports.config_prefix = "@prefix@";

@@ -1,13 +1,37 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 93
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 91,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:1a:e3:dc:2e:c0",
+                  "00:23:04:17:9b:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 62928
+            },
             "dns" : {
                "ASN" : [
-                  "AS41231",
-                  "AS41231",
-                  "AS41231"
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited",
+                  "AS41231 Canonical Group Limited"
                ],
                "GEO" : [
                   "GB",
@@ -46,28 +70,27 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS0",
-            "dstBytes" : 91,
-            "dstDataBytes" : 45,
-            "dstGEO" : "RU",
-            "dstIp" : "10.0.0.1",
-            "dstMac" : [
-               "00:1a:e3:dc:2e:c0",
-               "00:23:04:17:9b:00"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "5aae011000010000",
-            "dstPort" : 62928,
             "fileId" : [],
             "firstPacket" : 1393428477363,
             "ipProtocol" : 17,
             "lastPacket" : 1393428477327,
             "length" : 4294967260,
+            "network" : {
+               "bytes" : 226,
+               "community_id" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
+               "packets" : 2,
+               "vlan" : {
+                  "id" : [
+                     500
+                  ],
+                  "id-cnt" : 1
+               }
+            },
             "node" : "test",
             "packetLen" : [
                151,
@@ -83,41 +106,45 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS15169",
-            "srcBytes" : 135,
-            "srcDataBytes" : 93,
-            "srcGEO" : "US",
-            "srcIp" : "8.8.8.8",
-            "srcMac" : [
-               "00:19:e2:b1:ef:c6",
-               "00:19:e2:ba:2f:c1"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 45
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 135,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "8.8.8.8",
+               "mac" : [
+                  "00:19:e2:b1:ef:c6",
+                  "00:19:e2:ba:2f:c1"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 53
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "5aae819000010003",
-            "srcPort" : 53,
             "srcRIR" : "ARIN",
             "tags" : [
                "srcip"
             ],
             "tagsCnt" : 1,
-            "timestamp" : "SET",
-            "totBytes" : 226,
-            "totDataBytes" : 138,
-            "totPackets" : 2,
-            "vlan" : [
-               500
-            ],
-            "vlanCnt" : 1
+            "totDataBytes" : 138
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140226",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140226"
             }
          }
       }

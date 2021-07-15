@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:SPYgVgvcW0g9bsfBLLnTtlWJezA=",
-            "dstASN" : "AS1",
-            "dstBytes" : 4574,
-            "dstDataBytes" : 4344,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstMac" : [
-               "00:09:0f:db:f4:3e"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 113
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 4574,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "00:09:0f:db:f4:3e"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 80
+            },
             "dstOui" : [
                "Fortinet Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 3,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1456042921641,
@@ -147,6 +159,18 @@
             "ipProtocol" : 6,
             "lastPacket" : 1456042921761,
             "length" : 120,
+            "network" : {
+               "bytes" : 4917,
+               "community_id" : "1:SPYgVgvcW0g9bsfBLLnTtlWJezA=",
+               "packets" : 6,
+               "vlan" : {
+                  "id" : [
+                     200,
+                     201
+                  ],
+                  "id-cnt" : 2
+               }
+            },
             "node" : "test",
             "packetLen" : [
                98,
@@ -170,22 +194,34 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 343,
-            "srcDataBytes" : 113,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcMac" : [
-               "00:0c:29:c1:2d:24"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 4344
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 343,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "00:0c:29:c1:2d:24"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 54422
+            },
             "srcOui" : [
                "VMware, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 54422,
             "tags" : [
                "dstip",
                "srcip"
@@ -204,7 +240,7 @@
             },
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -222,20 +258,11 @@
                   "16777226:54422,33554442:80"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 4917,
-            "totDataBytes" : 4457,
-            "totPackets" : 6,
-            "vlan" : [
-               200,
-               201
-            ],
-            "vlanCnt" : 2
+            "totDataBytes" : 4457
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-160221",
-               "_type" : "session"
+               "_index" : "tests_sessions3-160221"
             }
          }
       }

@@ -1,11 +1,10 @@
-use Test::More tests => 659;
+use Test::More tests => 685;
 use Cwd;
 use URI::Escape;
 use MolochTest;
 use strict;
 
 my $pwd = "*/pcap";
-
 # Regex missing backslash tests
     errTest("date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==/js/xxxxxx/"));
     errTest("date=-1&expression=" . uri_escape("(file=$pwd/http-no-length.pcap)&&http.uri==[/js/xxxxxx/]"));
@@ -347,6 +346,8 @@ if (0) {
 # vlan tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan.cnt=1"));
+    countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan<501"));
+    countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan>501"));
 
 # mac.src tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&mac.src=00:1a:e3:dc:2e:c0"));
@@ -424,8 +425,21 @@ if (0) {
 
 # query DB field names by using db: prefix (#1461)
     errTest("date=-1&expression=" . uri_escape("db:noSuchField=10.0.0.2"));
-    errTest("date=-1&expression=" . uri_escape("srcIp=10.0.0.2"));
-    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp=10.0.0.2"));
-    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:srcIp>=10.0.0.2"));
+    errTest("date=-1&expression=" . uri_escape("fred.ip=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:source.ip=10.0.0.2"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&db:source.ip>=10.0.0.2"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&db:dstOui=Juniper*"));
     countTest(24, "date=-1&expression=" . uri_escape("file=$pwd/wireshark-esp.pcap&&db:protocol=esp"));
+
+# ECS
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.geo.country_iso_code==CA"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&destination.as.full==\"AS0 This is neat\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&destination.as.number==0"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&destination.as.organization.name==\"This is neat\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-https-example.pcap&&destination.bytes>9200"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-https-example.pcap&&server.bytes>8282"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&destination.packets==0"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.ip=10.0.0.2"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.port=50759"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.ip=10.0.0.2:50759"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&source.mac=00:1a:e3:dc:2e:c0"));

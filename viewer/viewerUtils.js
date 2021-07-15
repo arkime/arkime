@@ -251,12 +251,12 @@ module.exports = (Config, Db, molochparser, internals) => {
     vModule.lookupQueryItems(query.query.bool.filter, async (lerr) => {
       if (reqQuery.date === '-1' || // An all query
           Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-        return finalCb(err || lerr, query, 'sessions2-*'); // Then we just go against all indices for a slight overhead
+        return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*'])); // Then we just go against all indices for a slight overhead
       }
 
       const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'));
       if (indices.length > 3000) { // Will url be too long
-        return finalCb(err || lerr, query, 'sessions2-*');
+        return finalCb(err || lerr, query, Db.fixIndex(['sessions2-*', 'sessions3-*']));
       } else {
         return finalCb(err || lerr, query, indices);
       }
@@ -286,7 +286,14 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   vModule.graphMerge = (req, query, aggregations) => {
-    const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+    let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+
+    // Convert old names to names locally
+    filters = filters.map(x => {
+      if (x === 'totPackets') return 'network.packets';
+      if (x === 'totBytes') return 'network.bytes';
+      return x;
+    });
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,
@@ -298,9 +305,11 @@ module.exports = (Config, Db, molochparser, internals) => {
 
     // allowed tot* data map
     const filtersMap = {
-      totPackets: ['srcPackets', 'dstPackets'],
-      totBytes: ['srcBytes', 'dstBytes'],
-      totDataBytes: ['srcDataBytes', 'dstDataBytes']
+      totPackets: ['source.packets', 'destination.packets'],
+      'network.packets': ['source.packets', 'destination.packets'],
+      totBytes: ['source.bytes', 'destination.bytes'],
+      'network.bytes': ['source.bytes', 'destination.bytes'],
+      totDataBytes: ['client.bytes', 'server.bytes']
     };
 
     for (let i = 0; i < filters.length; i++) {
@@ -332,8 +341,8 @@ module.exports = (Config, Db, molochparser, internals) => {
         // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
         // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
         if (filters.includes(prop) ||
-          prop === 'srcPackets' || prop === 'dstPackets' || prop === 'srcBytes' ||
-          prop === 'dstBytes' || prop === 'srcDataBytes' || prop === 'dstDataBytes') {
+          prop === 'source.packets' || prop === 'destination.packets' || prop === 'source.bytes' ||
+          prop === 'destination.bytes' || prop === 'client.bytes' || prop === 'server.bytes') {
           // Note: prop will never be one of the chosen tot* exceptions
           graph[prop + 'Histo'].push([key, item[prop].value]);
 
@@ -343,11 +352,11 @@ module.exports = (Config, Db, molochparser, internals) => {
           }
 
           // Add src/dst to tot* counters.
-          if ((prop === 'srcPackets' || prop === 'dstPackets') && filters.includes('totPackets')) {
-            graph.totPacketsTotal += item[prop].value;
-          } else if ((prop === 'srcBytes' || prop === 'dstBytes') && filters.includes('totBytes')) {
-            graph.totBytesTotal += item[prop].value;
-          } else if ((prop === 'srcDataBytes' || prop === 'dstDataBytes') && filters.includes('totDataBytes')) {
+          if ((prop === 'source.packets' || prop === 'destination.packets') && filters.includes('network.packets')) {
+            graph['network.packetsTotal'] += item[prop].value;
+          } else if ((prop === 'source.bytes' || prop === 'destination.bytes') && filters.includes('network.bytes')) {
+            graph['network.bytesTotal'] += item[prop].value;
+          } else if ((prop === 'client.bytes' || prop === 'server.bytes') && filters.includes('totDataBytes')) {
             graph.totDataBytesTotal += item[prop].value;
           }
         }
@@ -355,62 +364,6 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
 
     return graph;
-  };
-
-  /**
-   * Flattens fields that are objects (only goes 1 level deep)
-   *
-   * @example
-   * { http: { statuscode: [200, 302] } } => { "http.statuscode": [200, 302] }
-   * @example
-   * { cert: [ { alt: ["test.com"] } ] } => { "cert.alt": ["test.com"] }
-   *
-   * @param {object} fields The object containing fields to be flattened
-   * @returns {object} fields The object with fields flattened
-   */
-  vModule.flattenFields = (fields) => {
-    const newFields = {};
-
-    for (const key in fields) {
-      if (fields[key]) {
-        const field = fields[key];
-        const baseKey = key + '.';
-        if (typeof field === 'object' && !field.length) {
-          // flatten out object
-          for (const nestedKey in field) {
-            const nestedField = field[nestedKey];
-            const newKey = baseKey + nestedKey;
-            newFields[newKey] = nestedField;
-          }
-          fields[key] = null;
-          delete fields[key];
-        } else if (Array.isArray(field)) {
-          // flatten out list
-          for (const nestedField of field) {
-            if (typeof nestedField === 'object') {
-              for (const nestedKey in nestedField) {
-                const newKey = baseKey + nestedKey;
-                if (newFields[newKey] === undefined) {
-                  newFields[newKey] = nestedField[nestedKey];
-                } else if (Array.isArray(newFields[newKey])) {
-                  newFields[newKey].push(nestedField[nestedKey]);
-                } else {
-                  newFields[newKey] = [newFields[newKey], nestedField[nestedKey]];
-                }
-              }
-              fields[key] = null;
-              delete fields[key];
-            }
-          }
-        }
-      }
-    }
-
-    for (const key in newFields) {
-      fields[key] = newFields[key];
-    }
-
-    return fields;
   };
 
   vModule.fixFields = (fields, fixCb) => {
@@ -459,11 +412,20 @@ module.exports = (Config, Db, molochparser, internals) => {
       let data = await Db.loadFields();
       data = data.hits.hits;
 
-      // Everything will use dbField2 as dbField
+      // Everything will use fieldECS or dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
-        internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
-        data[i]._source.dbField = data[i]._source.dbField2;
-        if (data[i]._source.portField2) {
+        if (data[i]._source.fieldECS) {
+          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+          internals.oldDBFields[data[i]._source.dbField2] = data[i]._source;
+          data[i]._source.dbField = data[i]._source.fieldECS;
+        } else {
+          internals.oldDBFields[data[i]._source.dbField] = data[i]._source;
+          data[i]._source.dbField = data[i]._source.dbField2;
+        }
+
+        if (data[i]._source.portFieldECS) {
+          data[i]._source.portField = data[i]._source.portFieldECS;
+        } else if (data[i]._source.portField2) {
           data[i]._source.portField = data[i]._source.portField2;
         } else {
           delete data[i]._source.portField;
@@ -486,7 +448,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   vModule.oldDB2newDB = (x) => {
     if (!internals.oldDBFields[x]) { return x; }
-    return internals.oldDBFields[x].dbField2;
+    return internals.oldDBFields[x].dbFieldECS || internals.oldDBFields[x].dbField2;
   };
 
   vModule.mergeUnarray = (to, from) => {

@@ -1,26 +1,38 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:YdkGov/c+KLtmg7Cf5DLDB4+YdQ=",
-            "dstASN" : "AS23028 Team Cymru Inc.",
-            "dstBytes" : 7899,
-            "dstDataBytes" : 6901,
-            "dstGEO" : "US",
-            "dstIp" : "38.229.70.20",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 114
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS23028 Team Cymru Inc.",
+                  "number" : 23028,
+                  "organization" : {
+                     "name" : "Team Cymru Inc."
+                  }
+               },
+               "bytes" : 7899,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "38.229.70.20",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:d0:2b:d1:76:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 15,
+               "port" : 8000
+            },
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 15,
             "dstPayload8" : "3a636172642e6672",
-            "dstPort" : 8000,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1387554241634,
@@ -38,6 +50,11 @@
             },
             "lastPacket" : 1387554256201,
             "length" : 14568,
+            "network" : {
+               "bytes" : 8945,
+               "community_id" : "1:YdkGov/c+KLtmg7Cf5DLDB4+YdQ=",
+               "packets" : 29
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -107,21 +124,27 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1046,
-            "srcDataBytes" : 114,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.249",
-            "srcMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 6901
+            },
+            "source" : {
+               "bytes" : 1046,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 45921
+            },
             "srcOui" : [
                "Dell Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 14,
             "srcPayload8" : "5553455220787878",
-            "srcPort" : 45921,
             "tcpflags" : {
                "ack" : 16,
                "dstZero" : 0,
@@ -133,15 +156,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 8945,
-            "totDataBytes" : 7015,
-            "totPackets" : 29
+            "totDataBytes" : 7015
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131220",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131220"
             }
          }
       }

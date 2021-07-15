@@ -1,14 +1,27 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstASN" : "AS1",
-            "dstBytes" : 520,
-            "dstDataBytes" : 400,
-            "dstGEO" : "CA",
-            "dstIp" : "10.0.0.2",
-            "dstPackets" : 5,
-            "dstPort" : 0,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 400
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 520,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "packets" : 5,
+               "port" : 0
+            },
             "dstRIR" : "TEST",
             "fileId" : [],
             "firstPacket" : 1213470754490,
@@ -24,6 +37,10 @@
             "ipProtocol" : 1,
             "lastPacket" : 1213470754604,
             "length" : 113,
+            "network" : {
+               "bytes" : 1040,
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                120,
@@ -54,13 +71,25 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS0",
-            "srcBytes" : 520,
-            "srcDataBytes" : 400,
-            "srcGEO" : "RU",
-            "srcIp" : "10.0.0.1",
-            "srcPackets" : 5,
-            "srcPort" : 0,
+            "server" : {
+               "bytes" : 400
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 520,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "packets" : 5,
+               "port" : 0
+            },
             "tags" : [
                "dstip",
                "srcip"
@@ -68,7 +97,7 @@
             "tagsCnt" : 2,
             "test" : {
                "ASN" : [
-                  "AS0"
+                  "AS0 This is neat"
                ],
                "GEO" : [
                   "RU"
@@ -86,15 +115,11 @@
                   "16777226:0,33554442:0"
                ]
             },
-            "timestamp" : "SET",
-            "totBytes" : 1040,
-            "totDataBytes" : 800,
-            "totPackets" : 10
+            "totDataBytes" : 800
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-080614",
-               "_type" : "session"
+               "_index" : "tests_sessions3-080614"
             }
          }
       }

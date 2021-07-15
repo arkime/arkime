@@ -292,12 +292,12 @@ ${Config.arkimeWebURL()}hunt
     const failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
     // we don't need to search the db for session, we just need to search each session in failedSessionIds
     async.forEachLimit(failedSessions, 3, (sessionId, cb) => {
-      Db.getSession(sessionId, { _source: 'node,huntName,huntId,lastPacket,field' }, (err, session) => {
+      Db.getSession(sessionId, { arkime_unflatten: true, _source: false, fields: 'node,huntName,huntId,lastPacket,field'.split(',') }, (err, session) => {
         if (err) {
           return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
         }
 
-        session = session._source;
+        session = session.fields;
 
         const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
 
@@ -377,7 +377,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return huntFailedSessions(hunt, huntId, options, searchedSessions, user);
     }
 
-    Db.searchSessions('sessions2-*', query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+    Db.searchSessions(['sessions2-*', 'sessions3-*'], query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
       if (err || result.error) {
         pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching sessions: ${err}` });
         return;
@@ -1007,8 +1007,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           // iterate through sessions and remove hunt stuff from each one
           for (const hit of result.hits.hits) {
-            const sessionId = Db.session2Sid(hit);
-            Db.removeHuntFromSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), req.params.id, hunt.name, () => {});
+            Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name, () => {});
           }
 
           hunt.removed = true;

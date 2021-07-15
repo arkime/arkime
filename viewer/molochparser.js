@@ -502,7 +502,7 @@ function formatExists(yy, field, op)
 {
   var info = getFieldInfo(yy, field);
   if (!info)
-    throw "Unknown field " + field;
+    throw "Unknown exists field " + field;
 
   if (info.requiredRight && yy[info.requiredRight] !== true) {
     throw field + " - permission denied";
@@ -589,8 +589,7 @@ function formatQuery(yy, field, op, value)
     obj = { terms: {} };
     obj.terms[info.dbField] = {
       index : `${yy.prefix}lookups`,
-      id : shortcut._id,
-      type: 'lookup'
+      id : shortcut._id
     };
 
     var type = info.type2 || info.type;

@@ -224,6 +224,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} List of values to populate the cubism graph.
    */
   sModule.getDetailedStats = (req, res) => {
+    if (req.query.name === undefined) {
+      return res.send('{}');
+    }
+
     const nodeName = req.query.nodeName;
 
     const query = {
@@ -894,7 +898,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
-      Db.getTemplate('sessions2_template')
+      Db.getTemplate('sessions3_template')
     ]).then(([{ body: settings }, ilm, { body: template }]) => {
       const rsettings = [];
 
@@ -968,22 +972,22 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         '^(|null|\\d+%)$');
 
       addSetting('arkime.sessions.shards', 'Integer',
-        'Sessions - Number of shards for FUTURE sessions2 indices',
+        'Sessions - Number of shards for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-shards',
         '^\\d+$',
-        template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards']);
+        template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards']);
 
       addSetting('arkime.sessions.replicas', 'Integer',
-        'Sessions - Number of replicas for FUTURE sessions2 indices',
+        'Sessions - Number of replicas for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-number-of-replicas',
         '^\\d+$',
-        template[`${internals.prefix}sessions2_template`].settings['index.number_of_replicas'] || 0);
+        template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] || 0);
 
       addSetting('arkime.sessions.shards_per_node', 'Empty or Integer',
-        'Sessions - Number of shards_per_node for FUTURE sessions2 indices',
+        'Sessions - Number of shards_per_node for FUTURE sessions3 indices',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-total-shards.html',
         '^(|\\d+)$',
-        template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
+        template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] || '');
 
       function addIlm (key, current, ilmName, type, regex) {
         rsettings.push({ key: key, current: current, name: ilmName, type: type, url: 'https://arkime.com/faq#ilm', regex: regex });
@@ -1095,25 +1099,25 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions2_template')]).then(([{ body: template }]) => {
+      Promise.all([Db.getTemplate('sessions3_template')]).then(([{ body: template }]) => {
         switch (req.body.key) {
         case 'arkime.sessions.shards':
-          template[`${internals.prefix}sessions2_template`].settings['index.number_of_shards'] = req.body.value;
+          template[`${internals.prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
           break;
         case 'arkime.sessions.replicas':
-          template[`${internals.prefix}sessions2_template`].settings['index.number_of_replicas'] = req.body.value;
+          template[`${internals.prefix}sessions3_template`].settings['index.number_of_replicas'] = req.body.value;
           break;
         case 'arkime.sessions.shards_per_node':
           if (req.body.value === '') {
-            delete template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'];
+            delete template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'];
           } else {
-            template[`${internals.prefix}sessions2_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
+            template[`${internals.prefix}sessions3_template`].settings['index.routing.allocation.total_shards_per_node'] = req.body.value;
           }
           break;
         default:
           return res.serverError(500, 'Unknown field');
         }
-        Db.putTemplate('sessions2_template', template[`${internals.prefix}sessions2_template`]);
+        Db.putTemplate('sessions3_template', template[`${internals.prefix}sessions3_template`]);
         return res.send(JSON.stringify({ success: true, text: 'Successfully set ES settings' }));
       });
       return;

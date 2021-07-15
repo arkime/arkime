@@ -1,55 +1,72 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstASN" : "AS20940 Akamai International B.V.",
-            "dstBytes" : 328,
-            "dstDataBytes" : 160,
-            "dstGEO" : "US",
-            "dstIp" : "23.0.0.3",
-            "dstMac" : [
-               "64:00:f1:e2:01:01",
-               "64:00:f1:e2:01:12"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 160
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS20940 Akamai International B.V.",
+                  "number" : 20940,
+                  "organization" : {
+                     "name" : "Akamai International B.V."
+                  }
+               },
+               "bytes" : 328,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "23.0.0.3",
+               "mac" : [
+                  "64:00:f1:e2:01:01",
+                  "64:00:f1:e2:01:12"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 2,
+               "port" : 0
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 2,
-            "dstPort" : 0,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1402723255667,
             "greASN" : [
-               "AS3215 Orange",
-               "AS13335 Cloudflare, Inc."
+               "AS13335 Cloudflare, Inc.",
+               "AS3215 Orange"
             ],
             "greGEO" : [
-               "FR",
-               "AU"
+               "AU",
+               "FR"
             ],
             "greIp" : [
-               "2.2.2.2",
-               "1.1.1.1"
+               "1.1.1.1",
+               "2.2.2.2"
             ],
             "greIpCnt" : 2,
             "greRIR" : [
-               "RIPE",
-               "APNIC"
+               "APNIC",
+               "RIPE"
             ],
             "icmp" : {
                "code" : [
                   0
                ],
                "type" : [
-                  8,
-                  0
+                  0,
+                  8
                ]
             },
             "ipProtocol" : 1,
             "lastPacket" : 1402723255669,
             "length" : 1,
+            "network" : {
+               "bytes" : 656,
+               "packets" : 4
+            },
             "node" : "test",
             "packetLen" : [
                180,
@@ -64,41 +81,49 @@
                1499
             ],
             "protocol" : [
-               "icmp",
-               "gre"
+               "gre",
+               "icmp"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS20940 Akamai International B.V.",
-            "srcBytes" : 328,
-            "srcDataBytes" : 160,
-            "srcGEO" : "US",
-            "srcIp" : "23.0.0.2",
-            "srcMac" : [
-               "64:00:f1:e2:01:01",
-               "64:00:f1:e2:01:12"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 160
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS20940 Akamai International B.V.",
+                  "number" : 20940,
+                  "organization" : {
+                     "name" : "Akamai International B.V."
+                  }
+               },
+               "bytes" : 328,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "23.0.0.2",
+               "mac" : [
+                  "64:00:f1:e2:01:01",
+                  "64:00:f1:e2:01:12"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 2,
+               "port" : 0
+            },
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 2,
-            "srcPort" : 0,
             "srcRIR" : "ARIN",
             "tags" : [
                "gretest-erspan"
             ],
             "tagsCnt" : 1,
-            "timestamp" : "SET",
-            "totBytes" : 656,
-            "totDataBytes" : 320,
-            "totPackets" : 4
+            "totDataBytes" : 320
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140614",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140614"
             }
          }
       }

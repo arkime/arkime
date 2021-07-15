@@ -81,6 +81,10 @@ void moloch_field_define_json(unsigned char *expression, int expression_len, uns
             g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
             info->dbFieldLen  = out[i+3];
+        } else if (strncmp("fieldECS", (char*)data + out[i], 7) == 0) {
+            g_free(info->dbFieldFull);
+            info->dbFieldFull = info->dbField = g_strndup((char*)data + out[i+2], out[i+3]);
+            info->dbFieldLen  = out[i+3];
         } else if (strncmp("type", (char*)data + out[i], 4) == 0) {
             g_free(info->kind);
             info->kind = g_strndup((char*)data + out[i+2], out[i+3]);
@@ -347,6 +351,16 @@ int moloch_field_define(char *group, char *kind, char *expression, char *friendl
     MolochFieldInfo_t *info;
     if (flags & MOLOCH_FIELD_FLAG_CNT) {
         snprintf(dbField2, sizeof(dbField2), "%sCnt", dbField);
+        HASH_FIND(d_, fieldsByDb, dbField2, info);
+        if (!info) {
+            snprintf(expression2, sizeof(expression2), "%s.cnt", expression);
+            snprintf(friendlyName2, sizeof(friendlyName2), "%s Cnt", friendlyName);
+            snprintf(help2, sizeof(help2), "Unique number of %s", help);
+            moloch_db_add_field(group, "integer", expression2, friendlyName2, dbField2, help2, FALSE, empty_va_list);
+            moloch_field_by_exp_add_special_type(expression2, minfo->pos + MOLOCH_FIELDS_CNT_MIN, MOLOCH_FIELD_TYPE_INT);
+        }
+    } else if (flags & MOLOCH_FIELD_FLAG_ECS_CNT) {
+        snprintf(dbField2, sizeof(dbField2), "%s-cnt", dbField);
         HASH_FIND(d_, fieldsByDb, dbField2, info);
         if (!info) {
             snprintf(expression2, sizeof(expression2), "%s.cnt", expression);

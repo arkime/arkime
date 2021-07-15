@@ -1,16 +1,21 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "dstBytes" : 670,
-            "dstDataBytes" : 300,
-            "dstIp" : "2001:0db8:0000:0001:0000:0000:0000:0002",
-            "dstMac" : [
-               "c2:01:42:02:00:00"
-            ],
-            "dstMacCnt" : 1,
-            "dstPackets" : 5,
-            "dstPort" : 0,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 300
+            },
+            "destination" : {
+               "bytes" : 670,
+               "ip" : "2001:db8:0:1::2",
+               "mac" : [
+                  "c2:01:42:02:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
             "fileId" : [],
             "firstPacket" : 1214308747487,
             "icmp" : {
@@ -25,6 +30,10 @@
             "ipProtocol" : 58,
             "lastPacket" : 1214308747559,
             "length" : 72,
+            "network" : {
+               "bytes" : 1340,
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                150,
@@ -55,24 +64,24 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcBytes" : 670,
-            "srcDataBytes" : 300,
-            "srcIp" : "2001:0db8:0000:0001:0000:0000:0000:0001",
-            "srcMac" : [
-               "c2:00:42:02:00:00"
-            ],
-            "srcMacCnt" : 1,
-            "srcPackets" : 5,
-            "srcPort" : 0,
-            "timestamp" : "SET",
-            "totBytes" : 1340,
-            "totDataBytes" : 600,
-            "totPackets" : 10
+            "server" : {
+               "bytes" : 300
+            },
+            "source" : {
+               "bytes" : 670,
+               "ip" : "2001:db8:0:1::1",
+               "mac" : [
+                  "c2:00:42:02:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
+            "totDataBytes" : 600
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-080624",
-               "_type" : "session"
+               "_index" : "tests_sessions3-080624"
             }
          }
       }

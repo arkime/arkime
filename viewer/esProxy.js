@@ -42,10 +42,12 @@ for (const sensor in sensors) {
     sensors[sensor].ip = sensors[sensor].ip.split(',');
   }
 }
-let prefix = Config.get('prefix', '');
+let prefix = Config.get('prefix', 'arkime_');
 if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
   prefix += '_';
 }
+
+const oldprefix = prefix === 'arkime_' ? '' : prefix;
 
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
@@ -67,8 +69,11 @@ const getExact = {
   '/_refresh': 1,
   '/_nodes/stats/jvm,process,fs,os,indices,thread_pool': 1
 };
-getExact[`/_template/${prefix}sessions2_template`] = 1;
-getExact[`/${prefix}sessions2-*/_alias`] = 1;
+getExact[`/_template/${prefix}sessions3_template`] = 1;
+getExact[`/_template/${oldprefix}sessions2_template`] = 1;
+getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
+getExact[`/${prefix}sessions3-*/_alias`] = 1;
+getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
 getExact[`/${prefix}stats/_stats`] = 1;
 getExact[`/${prefix}users/_stats`] = 1;
 getExact[`/${prefix}users/_count`] = 1;
@@ -219,6 +224,7 @@ app.get('*', (req, res) => {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
+  } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:${path}`);
     return res.status(400).send('Not authorized for API');
@@ -235,7 +241,7 @@ function validateBulk (req) {
 
   const index = req.body.toString('utf8').match(/{"_index": *"[^"]*"}/g);
   for (const i in index) {
-    if (!index[i].includes('sessions2')) {
+    if (!index[i].includes('sessions2') && !index[i].includes('sessions2')) {
       console.log(`Invalid index ${index[i]} for bulk`);
       return false;
     }
@@ -249,6 +255,15 @@ function validateFilesSearch (req) {
   try {
     const json = JSON.parse(req.body.toString('utf8'));
     return json.query.bool.must[0].terms.node.includes(req.sensor.node);
+  } catch (e) {
+    return false;
+  }
+}
+
+function validateSearchIds (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return json.query.ids.values.length === 1;
   } catch (e) {
     return false;
   }
@@ -268,9 +283,11 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
+  } else if (path.startsWith(`/${prefix}sessions3-`) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
+    // console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);

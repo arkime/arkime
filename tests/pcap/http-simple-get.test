@@ -1,23 +1,29 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:5FhVg97ow4NPd5Q5nqaxA/Bx83A=",
-            "dstBytes" : 5773,
-            "dstDataBytes" : 5237,
-            "dstGEO" : "US",
-            "dstIp" : "10.180.156.249",
-            "dstMac" : [
-               "00:13:72:c4:f1:e1"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 152
+            },
+            "destination" : {
+               "bytes" : 5773,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.249",
+               "mac" : [
+                  "00:13:72:c4:f1:e1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 80
+            },
             "dstOui" : [
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 8,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "fileId" : [],
             "firstPacket" : 1385391358382,
             "http" : {
@@ -47,8 +53,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -59,28 +65,28 @@
                ],
                "requestHeaderValueCnt" : 1,
                "responseHeader" : [
-                  "content-type",
                   "accept-ranges",
-                  "content-length",
-                  "date",
                   "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
                   "server"
                ],
                "responseHeaderCnt" : 6,
                "responseHeaderField" : [
-                  "date",
-                  "server",
                   "accept-ranges",
-                  "content-length",
                   "connection",
-                  "content-type"
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "server"
                ],
                "responseHeaderValue" : [
-                  "mon, 25 nov 2013 14:55:52 gmt",
+                  "5039",
                   "apache/2.2.15 (centos)",
                   "bytes",
-                  "5039",
                   "close",
+                  "mon, 25 nov 2013 14:55:52 gmt",
                   "text/html; charset=utf-8"
                ],
                "responseHeaderValueCnt" : 6,
@@ -109,6 +115,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1385391358387,
             "length" : 5,
+            "network" : {
+               "bytes" : 6465,
+               "community_id" : "1:5FhVg97ow4NPd5Q5nqaxA/Bx83A=",
+               "packets" : 16
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -152,21 +163,27 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 692,
-            "srcDataBytes" : 152,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.141",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 5237
+            },
+            "source" : {
+               "bytes" : 692,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.141",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 61450
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 61450,
             "tcpflags" : {
                "ack" : 10,
                "dstZero" : 0,
@@ -178,15 +195,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 6465,
-            "totDataBytes" : 5389,
-            "totPackets" : 16
+            "totDataBytes" : 5389
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131125",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131125"
             }
          }
       }

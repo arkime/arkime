@@ -11,11 +11,11 @@
     </div> <!-- /detail loading -->
 
     <!-- detail error -->
-    <div v-if="error"
-      class="text-danger mt-1 mb-1 large">
+    <h5 v-if="error"
+      class="text-danger mt-3 mb-3 ml-2">
       <span class="fa fa-exclamation-triangle"></span>&nbsp;
       {{ error }}
-    </div> <!-- /detail error -->
+    </h5> <!-- /detail error -->
 
     <!-- detail -->
     <div class="detail-container"
@@ -380,7 +380,10 @@ export default {
               },
               openPermalink: function () {
                 const id = this.session.id.split(':');
-                const prefixlessId = id.length > 1 ? id[1] : id[0];
+                let prefixlessId = id.length > 1 ? id[1] : id[0];
+                if (prefixlessId[1] === '@') {
+                  prefixlessId = prefixlessId.substr(2);
+                }
 
                 const params = {
                   expression: `id == ${prefixlessId}`,
@@ -481,7 +484,7 @@ export default {
         })
         .catch((error) => {
           this.loading = false;
-          this.error = error;
+          this.error = error.text || error;
         });
     },
     toggleColVis: function (fieldID) {

@@ -1,24 +1,30 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:eJlWVTyMD/0EOX2chOPekExOXNA=",
-            "dstBytes" : 1696,
-            "dstDataBytes" : 1444,
-            "dstGEO" : "US",
-            "dstIp" : "13.12.11.10",
-            "dstMac" : [
-               "40:a6:77:50:37:c2",
-               "40:a6:77:53:e7:c3"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 785
+            },
+            "destination" : {
+               "bytes" : 1696,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "13.12.11.10",
+               "mac" : [
+                  "40:a6:77:50:37:c2",
+                  "40:a6:77:53:e7:c3"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 4,
+               "port" : 80
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 4,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1559004678546,
@@ -36,9 +42,9 @@
                ],
                "hostCnt" : 1,
                "key" : [
+                  "Command",
                   "CurrentFolder",
-                  "Type",
-                  "Command"
+                  "Type"
                ],
                "keyCnt" : 3,
                "md5" : [
@@ -58,79 +64,79 @@
                ],
                "request-refererCnt" : 1,
                "requestHeader" : [
-                  "content-type",
                   "accept",
-                  "user-agent",
-                  "referer",
-                  "content-length",
                   "connection",
-                  "host"
+                  "content-length",
+                  "content-type",
+                  "host",
+                  "referer",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 7,
                "requestHeaderField" : [
-                  "connection",
-                  "content-type",
                   "accept",
-                  "content-length"
+                  "connection",
+                  "content-length",
+                  "content-type"
                ],
                "requestHeaderValue" : [
-                  "keep-alive",
-                  "multipart/form-data; boundary=----7df271da040a",
                   "*/*",
-                  "300"
+                  "300",
+                  "keep-alive",
+                  "multipart/form-data; boundary=----7df271da040a"
                ],
                "requestHeaderValueCnt" : 4,
                "responseHeader" : [
-                  "content-type",
-                  "x-frame-options",
-                  "referrer-policy",
-                  "vary",
+                  "age",
                   "cache-control",
-                  "x-xss-protection",
-                  "content-length",
-                  "date",
                   "connection",
+                  "content-length",
+                  "content-security-policy",
+                  "content-type",
+                  "date",
                   "p3p",
+                  "referrer-policy",
                   "server",
                   "set-cookie",
-                  "content-security-policy",
+                  "vary",
                   "x-content-type-options",
-                  "age"
+                  "x-frame-options",
+                  "x-xss-protection"
                ],
                "responseHeaderCnt" : 15,
                "responseHeaderField" : [
+                  "age",
+                  "cache-control",
+                  "connection",
+                  "content-length",
+                  "content-security-policy",
+                  "content-type",
                   "date",
                   "p3p",
-                  "set-cookie",
-                  "cache-control",
-                  "vary",
-                  "content-length",
-                  "content-type",
-                  "age",
-                  "connection",
-                  "server",
-                  "x-frame-options",
-                  "x-content-type-options",
-                  "x-xss-protection",
                   "referrer-policy",
-                  "content-security-policy"
+                  "server",
+                  "set-cookie",
+                  "vary",
+                  "x-content-type-options",
+                  "x-frame-options",
+                  "x-xss-protection"
                ],
                "responseHeaderValue" : [
-                  "tue, 28 may 2019 00:51:19 gmt",
-                  "policyref=\"https://policies.xxxxx.com/w3c/p3p.xml\", cp=\"cao dsp cor cur adm dev tai psa psd ivai ivdi coni telo otpi our deli sami otri unri pubi ind phy onl uni pur fin com nav int dem cnt sta pol hea pre loc gov\"",
-                  "xx=xxxxxxxxxxxxx&x=x&x=xx; expires=wed, 27-may-2020 00:51:19 gmt; path=/; domain=.xxx.xx; secure",
-                  "max-age=3600, private",
-                  "accept-encoding",
-                  "3388",
-                  "text/html; charset=utf-8",
                   "0",
-                  "keep-alive",
+                  "1; mode=block",
+                  "3388",
+                  "accept-encoding",
                   "ats",
                   "deny",
+                  "keep-alive",
+                  "max-age=3600, private",
                   "nosniff",
-                  "1; mode=block",
+                  "policyref=\"https://policies.xxxxx.com/w3c/p3p.xml\", cp=\"cao dsp cor cur adm dev tai psa psd ivai ivdi coni telo otpi our deli sami otri unri pubi ind phy onl uni pur fin com nav int dem cnt sta pol hea pre loc gov\"",
+                  "sandbox; default-src 'self'; script-src 'none'; object-src 'none'; report-uri https://xxx.xxxxx.xxx/xxxxxx/xxx?xxx=xxxxxxx",
                   "strict-origin-when-cross-origin",
-                  "sandbox; default-src 'self'; script-src 'none'; object-src 'none'; report-uri https://xxx.xxxxx.xxx/xxxxxx/xxx?xxx=xxxxxxx"
+                  "text/html; charset=utf-8",
+                  "tue, 28 may 2019 00:51:19 gmt",
+                  "xx=xxxxxxxxxxxxx&x=x&x=xx; expires=wed, 27-may-2020 00:51:19 gmt; path=/; domain=.xxx.xx; secure"
                ],
                "responseHeaderValueCnt" : 15,
                "serverVersion" : [
@@ -154,9 +160,9 @@
                ],
                "useragentCnt" : 1,
                "value" : [
+                  "/",
                   "File",
-                  "FileUpload",
-                  "/"
+                  "FileUpload"
                ],
                "valueCnt" : 3
             },
@@ -164,6 +170,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1559004679353,
             "length" : 808,
+            "network" : {
+               "bytes" : 2955,
+               "community_id" : "1:eJlWVTyMD/0EOX2chOPekExOXNA=",
+               "packets" : 7
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -189,21 +200,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 1259,
-            "srcDataBytes" : 785,
-            "srcIp" : "10.11.12.13",
-            "srcMac" : [
-               "40:a6:77:50:2f:c3",
-               "54:1e:56:b2:4f:c2"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 1444
+            },
+            "source" : {
+               "bytes" : 1259,
+               "ip" : "10.11.12.13",
+               "mac" : [
+                  "40:a6:77:50:2f:c3",
+                  "54:1e:56:b2:4f:c2"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 3,
+               "port" : 54162
+            },
             "srcOui" : [
                "Juniper Networks"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "504f5354202f7878",
-            "srcPort" : 54162,
             "tags" : [
                "out-of-order-src"
             ],
@@ -219,15 +234,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 2955,
-            "totDataBytes" : 2229,
-            "totPackets" : 7
+            "totDataBytes" : 2229
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190528",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190528"
             }
          }
       }

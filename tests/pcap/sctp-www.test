@@ -1,29 +1,46 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
-            "dstASN" : "AS9270 National Infomation Society Agency",
-            "dstBytes" : 22472,
-            "dstDataBytes" : 22296,
-            "dstGEO" : "KR",
-            "dstIp" : "203.255.252.194",
-            "dstMac" : [
-               "00:04:96:08:e0:40"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2130
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS9270 National Infomation Society Agency",
+                  "number" : 9270,
+                  "organization" : {
+                     "name" : "National Infomation Society Agency"
+                  }
+               },
+               "bytes" : 22472,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "203.255.252.194",
+               "mac" : [
+                  "00:04:96:08:e0:40"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 22,
+               "port" : 80
+            },
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 22,
-            "dstPort" : 80,
             "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844756,
             "ipProtocol" : 132,
             "lastPacket" : 1137034859213,
             "length" : 14458,
+            "network" : {
+               "bytes" : 24770,
+               "community_id" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
+               "packets" : 43
+            },
             "node" : "test",
             "packetLen" : [
                122,
@@ -120,58 +137,83 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS10052 Kyungpook National University",
-            "srcBytes" : 2298,
-            "srcDataBytes" : 2130,
-            "srcGEO" : "KR",
-            "srcIp" : "155.230.24.155",
-            "srcMac" : [
-               "00:0e:2e:24:37:5f"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 22296
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10052 Kyungpook National University",
+                  "number" : 10052,
+                  "organization" : {
+                     "name" : "Kyungpook National University"
+                  }
+               },
+               "bytes" : 2298,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "155.230.24.155",
+               "mac" : [
+                  "00:0e:2e:24:37:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 21,
+               "port" : 32836
+            },
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 21,
-            "srcPort" : 32836,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 24770,
-            "totDataBytes" : 24426,
-            "totPackets" : 43
+            "totDataBytes" : 24426
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-060112",
-               "_type" : "session"
+               "_index" : "tests_sessions3-060112"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:9dAr7BinXFjtYMLvvPdJMq34dY4=",
-            "dstASN" : "AS9270 National Infomation Society Agency",
-            "dstBytes" : 20770,
-            "dstDataBytes" : 20618,
-            "dstGEO" : "KR",
-            "dstIp" : "203.255.252.194",
-            "dstMac" : [
-               "00:04:96:08:e0:40"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1614
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS9270 National Infomation Society Agency",
+                  "number" : 9270,
+                  "organization" : {
+                     "name" : "National Infomation Society Agency"
+                  }
+               },
+               "bytes" : 20770,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "203.255.252.194",
+               "mac" : [
+                  "00:04:96:08:e0:40"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 19,
+               "port" : 80
+            },
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 19,
-            "dstPort" : 80,
             "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844891,
             "ipProtocol" : 132,
             "lastPacket" : 1137034859213,
             "length" : 14322,
+            "network" : {
+               "bytes" : 22536,
+               "community_id" : "1:9dAr7BinXFjtYMLvvPdJMq34dY4=",
+               "packets" : 38
+            },
             "node" : "test",
             "packetLen" : [
                122,
@@ -258,58 +300,83 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS10052 Kyungpook National University",
-            "srcBytes" : 1766,
-            "srcDataBytes" : 1614,
-            "srcGEO" : "KR",
-            "srcIp" : "155.230.24.155",
-            "srcMac" : [
-               "00:0e:2e:24:37:5f"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 20618
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10052 Kyungpook National University",
+                  "number" : 10052,
+                  "organization" : {
+                     "name" : "Kyungpook National University"
+                  }
+               },
+               "bytes" : 1766,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "155.230.24.155",
+               "mac" : [
+                  "00:0e:2e:24:37:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 19,
+               "port" : 32837
+            },
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 19,
-            "srcPort" : 32837,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 22536,
-            "totDataBytes" : 22232,
-            "totPackets" : 38
+            "totDataBytes" : 22232
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-060112",
-               "_type" : "session"
+               "_index" : "tests_sessions3-060112"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:EsmQhihL1F8Uoc8T7wwqcUge3W4=",
-            "dstASN" : "AS4766 Korea Telecom",
-            "dstBytes" : 0,
-            "dstDataBytes" : 0,
-            "dstGEO" : "KR",
-            "dstIp" : "222.96.156.151",
-            "dstMac" : [
-               "00:04:96:08:e0:40"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 294
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS4766 Korea Telecom",
+                  "number" : 4766,
+                  "organization" : {
+                     "name" : "Korea Telecom"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "222.96.156.151",
+               "mac" : [
+                  "00:04:96:08:e0:40"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 80
+            },
             "dstOui" : [
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 0,
-            "dstPort" : 80,
             "dstRIR" : "APNIC",
             "fileId" : [],
             "firstPacket" : 1137034844900,
             "ipProtocol" : 132,
             "lastPacket" : 1137034853900,
             "length" : 9000,
+            "network" : {
+               "bytes" : 318,
+               "community_id" : "1:EsmQhihL1F8Uoc8T7wwqcUge3W4=",
+               "packets" : 3
+            },
             "node" : "test",
             "packetLen" : [
                122,
@@ -326,31 +393,39 @@
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
-            "srcASN" : "AS10052 Kyungpook National University",
-            "srcBytes" : 318,
-            "srcDataBytes" : 294,
-            "srcGEO" : "KR",
-            "srcIp" : "155.230.24.155",
-            "srcMac" : [
-               "00:0e:2e:24:37:5f"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10052 Kyungpook National University",
+                  "number" : 10052,
+                  "organization" : {
+                     "name" : "Kyungpook National University"
+                  }
+               },
+               "bytes" : 318,
+               "geo" : {
+                  "country_iso_code" : "KR"
+               },
+               "ip" : "155.230.24.155",
+               "mac" : [
+                  "00:0e:2e:24:37:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 32838
+            },
             "srcOui" : [
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
-            "srcPort" : 32838,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 318,
-            "totDataBytes" : 294,
-            "totPackets" : 3
+            "totDataBytes" : 294
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-060112",
-               "_type" : "session"
+               "_index" : "tests_sessions3-060112"
             }
          }
       }

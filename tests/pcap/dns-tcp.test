@@ -1,21 +1,35 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:aiyyBmnGUlby3uK/mWpMfvJm2U4=",
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 30
+            },
+            "destination" : {
+               "bytes" : 614,
+               "ip" : "10.2.95.39",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0e:d6:0b:98:80"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 4,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169"
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "GEO" : [
                   "US",
@@ -62,10 +76,10 @@
                ],
                "ipCnt" : 11,
                "nameserverASN" : [
-                  "AS15169",
-                  "AS15169",
-                  "AS15169",
-                  "AS15169"
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC",
+                  "AS15169 Google LLC"
                ],
                "nameserverGEO" : [
                   "MX",
@@ -110,27 +124,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 614,
-            "dstDataBytes" : 342,
-            "dstIp" : "10.2.95.39",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 4,
             "dstPayload8" : "01545e6381800001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 1385482078892,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1385482078899,
             "length" : 7,
+            "network" : {
+               "bytes" : 1052,
+               "community_id" : "1:aiyyBmnGUlby3uK/mWpMfvJm2U4=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -162,21 +171,27 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 438,
-            "srcDataBytes" : 30,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.141",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 342
+            },
+            "source" : {
+               "bytes" : 438,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.141",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49342
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "001c5e6301000001",
-            "srcPort" : 49342,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -188,21 +203,31 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 1052,
-            "totDataBytes" : 372,
-            "totPackets" : 10
+            "totDataBytes" : 372
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131126",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131126"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:Ni+vClyYvGtwxC4Wu5dkGjaQ8ts=",
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 27
+            },
+            "destination" : {
+               "bytes" : 530,
+               "ip" : "10.2.95.39",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:0e:d6:0b:98:80"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 4,
+               "port" : 53
+            },
             "dns" : {
                "ASN" : [
                   "---",
@@ -286,27 +311,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstBytes" : 530,
-            "dstDataBytes" : 258,
-            "dstIp" : "10.2.95.39",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:0e:d6:0b:98:80"
-            ],
-            "dstMacCnt" : 2,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 4,
             "dstPayload8" : "0100e2ec81800001",
-            "dstPort" : 53,
             "fileId" : [],
             "firstPacket" : 1385482080084,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1385482080086,
             "length" : 2,
+            "network" : {
+               "bytes" : 965,
+               "community_id" : "1:Ni+vClyYvGtwxC4Wu5dkGjaQ8ts=",
+               "packets" : 10
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -338,21 +358,27 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 435,
-            "srcDataBytes" : 27,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.141",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 258
+            },
+            "source" : {
+               "bytes" : 435,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.141",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49343
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 6,
             "srcPayload8" : "0019e2ec01000001",
-            "srcPort" : 49343,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -364,15 +390,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 965,
-            "totDataBytes" : 285,
-            "totPackets" : 10
+            "totDataBytes" : 285
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131126",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131126"
             }
          }
       }

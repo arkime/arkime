@@ -1,26 +1,38 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:/wxImZfyysTBc/FfJh8ZIhrdJbI=",
-            "dstASN" : "AS36459 GitHub, Inc.",
-            "dstBytes" : 313,
-            "dstDataBytes" : 107,
-            "dstGEO" : "US",
-            "dstIp" : "192.30.252.130",
-            "dstMac" : [
-               "00:00:0c:07:ac:01",
-               "00:d0:2b:d1:76:00"
-            ],
-            "dstMacCnt" : 2,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 145
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS36459 GitHub, Inc.",
+                  "number" : 36459,
+                  "organization" : {
+                     "name" : "GitHub, Inc."
+                  }
+               },
+               "bytes" : 313,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "192.30.252.130",
+               "mac" : [
+                  "00:00:0c:07:ac:01",
+                  "00:d0:2b:d1:76:00"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 3,
+               "port" : 80
+            },
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
             ],
             "dstOuiCnt" : 2,
-            "dstPackets" : 3,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 80,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1385394928482,
@@ -43,8 +55,8 @@
                "pathCnt" : 1,
                "requestHeader" : [
                   "accept",
-                  "user-agent",
-                  "host"
+                  "host",
+                  "user-agent"
                ],
                "requestHeaderCnt" : 3,
                "requestHeaderField" : [
@@ -58,14 +70,14 @@
                   "https://www.github.com/"
                ],
                "responseHeader" : [
-                  "content-length",
                   "connection",
+                  "content-length",
                   "location"
                ],
                "responseHeaderCnt" : 3,
                "responseHeaderField" : [
-                  "content-length",
-                  "connection"
+                  "connection",
+                  "content-length"
                ],
                "responseHeaderValue" : [
                   "0",
@@ -93,6 +105,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1385394928608,
             "length" : 125,
+            "network" : {
+               "bytes" : 800,
+               "community_id" : "1:/wxImZfyysTBc/FfJh8ZIhrdJbI=",
+               "packets" : 8
+            },
             "node" : "test",
             "packetLen" : [
                94,
@@ -120,21 +137,27 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 487,
-            "srcDataBytes" : 145,
-            "srcGEO" : "US",
-            "srcIp" : "10.180.156.141",
-            "srcMac" : [
-               "00:1f:5b:ff:51:cb"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 107
+            },
+            "source" : {
+               "bytes" : 487,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "10.180.156.141",
+               "mac" : [
+                  "00:1f:5b:ff:51:cb"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 62341
+            },
             "srcOui" : [
                "Apple, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 5,
             "srcPayload8" : "474554202f204854",
-            "srcPort" : 62341,
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,
@@ -146,15 +169,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 800,
-            "totDataBytes" : 252,
-            "totPackets" : 8
+            "totDataBytes" : 252
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-131125",
-               "_type" : "session"
+               "_index" : "tests_sessions3-131125"
             }
          }
       }

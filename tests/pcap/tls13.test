@@ -1,24 +1,36 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:+howsemozCcnIdXPNBANfoSfiAw=",
-            "dstASN" : "AS13335 Cloudflare, Inc.",
-            "dstBytes" : 1454,
-            "dstDataBytes" : 1220,
-            "dstGEO" : "US",
-            "dstIp" : "2400:cb00:2048:0001:0000:0000:6813:c266",
-            "dstMac" : [
-               "00:26:55:d1:4d:97"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 517
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS13335 Cloudflare, Inc.",
+                  "number" : 13335,
+                  "organization" : {
+                     "name" : "Cloudflare, Inc."
+                  }
+               },
+               "bytes" : 1454,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2400:cb00:2048:1::6813:c266",
+               "mac" : [
+                  "00:26:55:d1:4d:97"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 443
+            },
             "dstOui" : [
                "Hewlett Packard"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 3,
             "dstPayload8" : "1603010052020000",
-            "dstPort" : 443,
             "fileId" : [],
             "firstPacket" : 1483560476240,
             "http" : {
@@ -31,6 +43,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1483560476263,
             "length" : 23,
+            "network" : {
+               "bytes" : 2205,
+               "community_id" : "1:+howsemozCcnIdXPNBANfoSfiAw=",
+               "packets" : 6
+            },
             "node" : "test",
             "packetLen" : [
                102,
@@ -49,27 +66,39 @@
                1015
             ],
             "protocol" : [
-               "tls",
-               "tcp"
+               "tcp",
+               "tls"
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcASN" : "AS16150 Availo Networks AB",
-            "srcBytes" : 751,
-            "srcDataBytes" : 517,
-            "srcGEO" : "SE",
-            "srcIp" : "2001:16d8:ffce:0010:aca8:353c:291d:a9b3",
-            "srcMac" : [
-               "c8:f7:33:1d:84:95"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 1220
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS16150 Availo Networks AB",
+                  "number" : 16150,
+                  "organization" : {
+                     "name" : "Availo Networks AB"
+                  }
+               },
+               "bytes" : 751,
+               "geo" : {
+                  "country_iso_code" : "SE"
+               },
+               "ip" : "2001:16d8:ffce:10:aca8:353c:291d:a9b3",
+               "mac" : [
+                  "c8:f7:33:1d:84:95"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 62510
+            },
             "srcOui" : [
                "Intel Corporate"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "1603010200010001",
-            "srcPort" : 62510,
             "tcpflags" : {
                "ack" : 3,
                "dstZero" : 0,
@@ -81,7 +110,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_AES_128_GCM_SHA256"
@@ -108,14 +136,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 2205,
-            "totDataBytes" : 1737,
-            "totPackets" : 6
+            "totDataBytes" : 1737
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-170104",
-               "_type" : "session"
+               "_index" : "tests_sessions3-170104"
             }
          }
       }

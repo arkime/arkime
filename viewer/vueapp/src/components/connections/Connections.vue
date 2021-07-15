@@ -113,8 +113,8 @@
                 v-model="weight"
                 @change="changeWeight">
                 <option value="sessions">Sessions</option>
-                <option value="totPackets">Packets</option>
-                <option value="totBytes">Total Raw Bytes</option>
+                <option value="network.packets">Packets</option>
+                <option value="network.bytes">Total Raw Bytes</option>
                 <option value="totDataBytes">Total Data Bytes</option>
                 <option value="">None</option>
               </select>
@@ -141,6 +141,12 @@
                   placeholder="Search for fields..."
                 />
               </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                @click.stop.prevent="resetNodeFieldsDefault">
+                Reset to default
+              </b-dropdown-item>
               <b-dropdown-divider>
               </b-dropdown-divider>
               <template v-for="(group, key) in filteredFields">
@@ -191,6 +197,12 @@
                   placeholder="Search for fields..."
                 />
               </b-dropdown-header>
+              <b-dropdown-divider>
+              </b-dropdown-divider>
+              <b-dropdown-item
+                @click.stop.prevent="resetLinkFieldsDefault">
+                Reset to default
+              </b-dropdown-item>
               <b-dropdown-divider>
               </b-dropdown-divider>
               <template v-for="(group, key) in filteredFields">
@@ -531,8 +543,8 @@ function closePopupsOnEsc (keyCode) {
 
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
-const defaultLinkFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
-const defaultNodeFields = ['totBytes', 'totDataBytes', 'totPackets', 'node'];
+const defaultLinkFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
+const defaultNodeFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
 
 // vue definition ---------------------------------------------------------- */
 export default {
@@ -580,8 +592,8 @@ export default {
         date: this.$store.state.timeRange,
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
-        srcField: this.$route.query.srcField || 'srcIp',
-        dstField: this.$route.query.dstField || 'dstIp',
+        srcField: this.$route.query.srcField || this.$store.state.user.settings.connSrcField || 'source.ip',
+        dstField: this.$route.query.dstField || this.$store.state.user.settings.connDstField || 'destination.ip',
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
@@ -612,11 +624,25 @@ export default {
 
       return filteredGroupedFields;
     },
-    nodeFields: function () {
-      return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+    nodeFields: {
+      get: function () {
+        return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+      },
+      set: function (newValue) {
+        const settings = this.$store.state.user.settings;
+        settings.connNodeFields = newValue;
+        this.$store.commit('setUserSettings', settings);
+      }
     },
-    linkFields: function () {
-      return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+    linkFields: {
+      get: function () {
+        return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+      },
+      set: function (newValue) {
+        const settings = this.$store.state.user.settings;
+        settings.connLinkFields = newValue;
+        this.$store.commit('setUserSettings', settings);
+      }
     }
   },
   watch: {
@@ -667,7 +693,20 @@ export default {
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
 
-    this.cancelAndLoad(true);
+    FieldService.get(true, true)
+      .then((result) => {
+        this.fields = result;
+
+        this.setupFields();
+
+        this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
+        this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
+
+        // IMPORTANT: this kicks off loading data and drawing the graph
+        this.cancelAndLoad(true);
+      }).catch((error) => {
+        this.error = error.text || error;
+      });
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
@@ -805,6 +844,18 @@ export default {
     isFieldVisible: function (id, list) {
       return list.indexOf(id);
     },
+    resetNodeFieldsDefault: function () {
+      this.nodeFields = defaultNodeFields;
+      this.closePopups();
+      this.cancelAndLoad(true);
+      this.saveVisibleFields();
+    },
+    resetLinkFieldsDefault: function () {
+      this.linkFields = defaultLinkFields;
+      this.closePopups();
+      this.cancelAndLoad(true);
+      this.saveVisibleFields();
+    },
     toggleFieldVisibility: function (id, list) {
       const index = this.isFieldVisible(id, list);
 
@@ -814,6 +865,7 @@ export default {
       } else { // it's hidden
         // add it to the visible headers list
         list.push(id);
+        this.closePopups();
         this.cancelAndLoad(true);
       }
 
@@ -857,7 +909,7 @@ export default {
         const availableCluster = this.$store.state.esCluster.availableCluster.active;
         const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
-          this.getFields({ nodes: [], links: [] });
+          this.drawGraph({ nodes: [], links: [] }); // draw empty graph
           this.recordsFiltered = 0;
           pendingPromise = null;
           this.error = selection.error;
@@ -867,10 +919,10 @@ export default {
       }
 
       if (!this.$route.query.srcField) {
-        this.query.srcField = this.user.settings.connSrcField;
+        this.query.srcField = FieldService.getFieldProperty(this.user.settings.connSrcField, 'dbField', this.fields);
       }
       if (!this.$route.query.dstField) {
-        this.query.dstField = this.user.settings.connDstField;
+        this.query.dstField = FieldService.getFieldProperty(this.user.settings.connDstField, 'dbField', this.fields);
       }
 
       // send the requested fields with the query
@@ -897,45 +949,20 @@ export default {
         pendingPromise = null;
         this.error = '';
         this.loading = false;
-        // IMPORTANT: this kicks off drawing the connections graph
-        this.getFields(response.data);
         this.recordsFiltered = response.data.recordsFiltered;
+        this.drawGraph(response.data);
       }).catch((error) => {
         pendingPromise = null;
         this.loading = false;
         this.error = error.text || error;
       });
     },
-    getFields: function (connectionsData) {
-      FieldService.get(true)
-        .then((result) => {
-          this.fields = result;
-
-          this.setupFields();
-
-          for (const field of this.fields) {
-            if (field.dbField === this.query.srcField) {
-              this.srcFieldTypeahead = field.friendlyName;
-            }
-            if (field.dbField === this.query.dstField) {
-              this.dstFieldTypeahead = field.friendlyName;
-            }
-          }
-
-          this.drawGraph(connectionsData);
-        }).catch((error) => {
-          this.error = error.text || error;
-        });
-    },
     setupFields: function () {
       // group fields map by field group
       // and remove duplicate fields (e.g. 'host.dns' & 'dns.host')
       const existingFieldsLookup = {}; // lookup map of fields in fieldsArray
       this.groupedFields = {};
-      let ipDstPortFieldExists = false;
       for (const field of this.fields) {
-        // found the ip.dst:port field
-        if (field.dbField === 'ip.dst:port') { ipDstPortFieldExists = true; }
         // don't include fields with regex
         if (field.regex) { continue; }
         if (!existingFieldsLookup[field.exp]) {
@@ -946,20 +973,6 @@ export default {
           }
           this.groupedFields[field.group].push(field);
         }
-      }
-
-      // only add this field if it doesn't already exist
-      if (!ipDstPortFieldExists) {
-        const ipDstPortField = {
-          dbField: 'ip.dst:port',
-          exp: 'ip.dst:port',
-          help: 'Destination IP:Destination Port',
-          group: 'general',
-          friendlyName: 'Dst IP:Dst Port'
-        };
-        this.fields.push(ipDstPortField);
-        this.fieldsMap['ip.dst:port'] = ipDstPortField;
-        this.groupedFields.general.push(ipDstPortField);
       }
     },
     saveVisibleFields: function () {
@@ -982,8 +995,8 @@ export default {
       if (!data.nodes.length) { return; }
 
       // convert time in ms to timezone date string
-      const srcFieldIsTime = this.dbField2Type(this.query.srcField) === 'seconds';
-      const dstFieldIsTime = this.dbField2Type(this.query.dstField) === 'seconds';
+      const srcFieldIsTime = FieldService.getFieldProperty(this.query.srcField, 'type') === 'seconds';
+      const dstFieldIsTime = FieldService.getFieldProperty(this.query.dstField, 'type') === 'seconds';
 
       if (srcFieldIsTime || dstFieldIsTime) {
         for (const dataNode of data.nodes) {
@@ -1285,33 +1298,13 @@ export default {
       const val = this.calculateNodeWeight(n);
       return 2 * val;
     },
-    dbField2Type: function (dbField) {
-      for (const k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k].type;
-        }
-      }
-
-      return undefined;
-    },
-    dbField2Exp: function (dbField) {
-      for (const k in this.fields) {
-        if (dbField === this.fields[k].dbField ||
-            dbField === this.fields[k].rawField) {
-          return this.fields[k].exp;
-        }
-      }
-
-      return undefined;
-    },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
-        dataNode.dbField = this.query.dstField;
-        dataNode.exp = this.dbField2Exp(this.query.dstField);
+        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField', this.fields);
+        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp', this.fields);
       } else {
-        dataNode.dbField = this.query.srcField;
-        dataNode.exp = this.dbField2Exp(this.query.srcField);
+        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField', this.fields);
+        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp', this.fields);
       }
 
       closePopups();
@@ -1345,30 +1338,32 @@ export default {
 
                 <span v-for="field in nodeFields"
                   :key="field">
-                  <dt>
-                    {{ fields[field].friendlyName }}
-                  </dt>
-                  <dd>
-                    <span v-if="!Array.isArray(dataNode[field])">
-                      <moloch-session-field
-                        :value="dataNode[field]"
-                        :session="dataNode"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>
-                    <span v-else
-                      v-for="value in dataNode[field]">
-                      <moloch-session-field
-                        :value="value"
-                        :session="dataNode"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>&nbsp;
-                  </dd>
+                  <template v-if="fields[field]">
+                    <dt>
+                      {{ fields[field].friendlyName }}
+                    </dt>
+                    <dd>
+                      <span v-if="!Array.isArray(dataNode[field])">
+                        <moloch-session-field
+                          :value="dataNode[field]"
+                          :session="dataNode"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>
+                      <span v-else
+                        v-for="value in dataNode[field]">
+                        <moloch-session-field
+                          :value="value"
+                          :session="dataNode"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>&nbsp;
+                    </dd>
+                    </template>
                 </span>
 
                 <div v-if="baselineDate !== '0'">
@@ -1421,10 +1416,10 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = this.query.dstField;
-      linkData.srcDbField = this.query.srcField;
-      linkData.dstExp = this.dbField2Exp(this.query.dstField);
-      linkData.srcExp = this.dbField2Exp(this.query.srcField);
+      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField', this.fields);
+      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField', this.fields);
+      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp', this.fields);
+      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp', this.fields);
 
       closePopups();
       if (!popupVue) {
@@ -1463,30 +1458,32 @@ export default {
 
                 <span v-for="field in linkFields"
                   :key="field">
-                  <dt>
-                    {{ fields[field].friendlyName }}
-                  </dt>
-                  <dd>
-                    <span v-if="!Array.isArray(linkData[field])">
-                      <moloch-session-field
-                        :value="linkData[field]"
-                        :session="linkData"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>
-                    <span v-else
-                      v-for="value in linkData[field]">
-                      <moloch-session-field
-                        :value="value"
-                        :session="linkData"
-                        :expr="fields[field].exp"
-                        :field="fields[field]"
-                        :pull-left="true">
-                      </moloch-session-field>
-                    </span>&nbsp;
-                  </dd>
+                  <template v-if="fields[field]">
+                    <dt>
+                      {{ fields[field].friendlyName }}
+                    </dt>
+                    <dd>
+                      <span v-if="!Array.isArray(linkData[field])">
+                        <moloch-session-field
+                          :value="linkData[field]"
+                          :session="linkData"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>
+                      <span v-else
+                        v-for="value in linkData[field]">
+                        <moloch-session-field
+                          :value="value"
+                          :session="linkData"
+                          :expr="fields[field].exp"
+                          :field="fields[field]"
+                          :pull-left="true">
+                        </moloch-session-field>
+                      </span>&nbsp;
+                    </dd>
+                  </template>
                 </span>
               </dl>
 

@@ -1,27 +1,31 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:zh1wHfnraW5ScARr5s9Ht63yBFo=",
-            "dstBytes" : 1251,
-            "dstDataBytes" : 517,
-            "dstIp" : "10.0.0.6",
-            "dstMac" : [
-               "00:25:90:a2:c2:6c"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1655
+            },
+            "destination" : {
+               "bytes" : 1251,
+               "ip" : "10.0.0.6",
+               "mac" : [
+                  "00:25:90:a2:c2:6c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 25
+            },
             "dstOui" : [
                "Super Micro Computer, Inc."
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 11,
             "dstPayload8" : "3232302078787878",
-            "dstPort" : 25,
             "email" : {
                "ASN" : [
                   "---",
-                  "AS1",
-                  "AS2"
+                  "AS1 Cool Beans!",
+                  "AS2 Hmm!@#$%^&*()"
                ],
                "GEO" : [
                   "---",
@@ -112,6 +116,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1389625274669,
             "length" : 822,
+            "network" : {
+               "bytes" : 3766,
+               "community_id" : "1:zh1wHfnraW5ScARr5s9Ht63yBFo=",
+               "packets" : 24
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -171,21 +180,25 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 2515,
-            "srcDataBytes" : 1655,
-            "srcIp" : "10.0.0.5",
-            "srcMac" : [
-               "00:00:5e:00:01:01",
-               "82:71:1f:83:98:f6"
-            ],
-            "srcMacCnt" : 2,
+            "server" : {
+               "bytes" : 517
+            },
+            "source" : {
+               "bytes" : 2515,
+               "ip" : "10.0.0.5",
+               "mac" : [
+                  "00:00:5e:00:01:01",
+                  "82:71:1f:83:98:f6"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 13,
+               "port" : 55713
+            },
             "srcOui" : [
                "ICANN, IANA Department"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 13,
             "srcPayload8" : "45484c4f20787878",
-            "srcPort" : 55713,
             "tags" : [
                "dstip",
                "smtp:statuscode:250"
@@ -202,15 +215,11 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 3766,
-            "totDataBytes" : 2172,
-            "totPackets" : 24
+            "totDataBytes" : 2172
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140113",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140113"
             }
          }
       }

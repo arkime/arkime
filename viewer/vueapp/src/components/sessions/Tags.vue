@@ -4,7 +4,7 @@
   <div class="row"
     @keyup.stop.prevent.enter="apply(add)">
 
-    <SegmentSelect :segments.sync="segments"/>
+    <SegmentSelect :segments.sync="segments" />
 
     <div class="col-md-5">
 

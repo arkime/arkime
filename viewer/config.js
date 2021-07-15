@@ -277,7 +277,7 @@ exports.getFull = function (node, key, defaultValue) {
     value = internals.config[node][key];
   } else if (internals.config[node] && internals.config[node].nodeClass && internals.config[internals.config[node].nodeClass] && internals.config[internals.config[node].nodeClass][key]) {
     value = internals.config[internals.config[node].nodeClass][key];
-  } else if (internals.config.default[key]) {
+  } else if (internals.config.default[key] !== undefined) {
     value = internals.config.default[key];
   } else {
     value = defaultValue;
@@ -555,6 +555,13 @@ function loadCertData () {
   exports.certFileData = fs.readFileSync(exports.certFileLocation);
 }
 
+if (exports.debug === 0) {
+  exports.debug = parseInt(exports.get('debug', 0));
+  if (exports.debug) {
+    console.log('Debug Level', exports.debug);
+  }
+}
+
 if (exports.isHTTPS()) {
   try {
     loadCertData();
@@ -584,6 +591,12 @@ exports.getDBFieldsMap = function () {
   return internals.dbFieldsMap;
 };
 
+exports.getDBField = function (field, property) {
+  if (internals.dbFieldsMap[field] === undefined) { return undefined; }
+  if (property === undefined) { return internals.dbFieldsMap[field]; }
+  return internals.dbFieldsMap[field][property];
+};
+
 exports.getCategories = function () {
   return internals.categories;
 };
@@ -609,6 +622,11 @@ exports.loadFields = function (data) {
 
     internals.fieldsMap[field._id] = source;
     internals.dbFieldsMap[source.dbField] = source;
+    internals.dbFieldsMap[source.dbField2] = source;
+    if (source.fieldECS !== undefined) {
+      internals.dbFieldsMap[source.fieldECS] = source;
+      internals.fieldsMap[source.fieldECS] = source;
+    }
     internals.fields.push(source);
     if (!internals.categories[source.group]) {
       internals.categories[source.group] = [];

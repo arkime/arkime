@@ -46,20 +46,23 @@ const internals = {
 exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
-  internals.getSessionBySearch = info.getSessionBySearch || false;
 
   delete info.multiES;
   delete info.debug;
 
   internals.info = info;
 
-  if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
+  if (info.prefix === '') {
+    internals.prefix = '';
+  } else if (info.prefix && info.prefix.charAt(info.prefix.length - 1) !== '_') {
     internals.prefix = info.prefix + '_';
   } else {
     internals.prefix = info.prefix || '';
   }
 
-  if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
+  if (info.usersPrefix === '') {
+    internals.usersPrefix = '';
+  } else if (info.usersPrefix && info.usersPrefix.charAt(info.usersPrefix.length - 1) !== '_') {
     internals.usersPrefix = info.usersPrefix + '_';
   } else {
     internals.usersPrefix = info.usersPrefix || internals.prefix;
@@ -120,10 +123,14 @@ exports.initialize = async (info, cb) => {
     internals.prefix = 'MULTIPREFIX_';
   }
 
+  if (internals.debug) {
+    console.log(`prefix:${internals.prefix} usersPrefix:${internals.usersPrefix}`);
+  }
+
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    exports.getAliasesCache('sessions2-*');
-    setInterval(() => { exports.getAliasesCache('sessions2-*'); }, 2 * 60 * 1000);
+    exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    setInterval(() => { exports.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
   }
 
   // if there's a user's db and cronQueries is set, sync shortcuts from user's
@@ -140,10 +147,14 @@ exports.initialize = async (info, cb) => {
       exports.updateLocalShortcuts(); // immediately update shortcuts
       setInterval(() => { exports.updateLocalShortcuts(); }, 60000); // and every minute
     }
-  } else if (internals.info.usersHost && internals.multiES) {
+  } else if (internals.info.usersHost && internals.usersPrefix !== undefined) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
   } else { // there is no remote shorcuts index, just set it to local
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
+  }
+
+  if (internals.debug > 1) {
+    console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
 
   try {
@@ -161,7 +172,7 @@ exports.initialize = async (info, cb) => {
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting ES client info, is ES running?', err.toString());
+    console.log('ERROR - getting ES client info, is ES running?', err);
   }
 };
 
@@ -171,33 +182,42 @@ exports.initialize = async (info, cb) => {
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
-  if (Array.isArray(index)) {
-    return index.map((val) => {
-      if (val.lastIndexOf(internals.prefix, 0) === 0) {
-        return val;
-      } else {
-        return internals.prefix + val;
-      }
-    });
+  if (index === 'sessions*') {
+    // Didn't used to have a prefix, don't use one for sessions2
+    if (internals.prefix === 'arkime_') {
+      return `sessions2*,${internals.prefix}sessions3*`;
+    }
+    return `${internals.prefix}sessions2*,${internals.prefix}sessions3*`;
   }
 
-  // If prefix isn't there, add it
-  if (index.lastIndexOf(internals.prefix, 0) !== 0) {
+  if (Array.isArray(index)) {
+    return index.map((val) => {
+      if (val.startsWith(internals.prefix)) {
+        return val;
+      } else {
+        return fixIndex(val);
+      }
+    }).join(',');
+  }
+
+  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
+  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
     index = internals.prefix + index;
   }
 
-  // If the index doesn't exist but the shrink version does exist, add -shrink
-  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-shrink']) {
-    index += '-shrink';
-  }
-
-  // If the index doesn't exist but the reindex version does exist, add -reindex
-  if (internals.aliasesCache && !internals.aliasesCache[index] && internals.aliasesCache[index + '-reindex']) {
-    index += '-reindex';
+  if (internals.aliasesCache && !internals.aliasesCache[index]) {
+    if (internals.aliasesCache[index + '-shrink']) {
+      // If the index doesn't exist but the shrink version does exist, add -shrink
+      index += '-shrink';
+    } else if (internals.aliasesCache[index + '-reindex']) {
+      // If the index doesn't exist but the reindex version does exist, add -reindex
+      index += '-reindex';
+    }
   }
 
   return index;
 }
+exports.fixIndex = fixIndex;
 
 exports.merge = (to, from) => {
   for (const key in from) {
@@ -223,6 +243,104 @@ exports.getSessionPromise = (id, options) => {
     });
   });
 };
+
+// Fields too hard to leave as arrays for now
+const singletonFields = {
+  'destination.ip': true,
+  'destination.port': true,
+  'destination.packets': true,
+  'destination.bytes': true,
+  dstPayload8: true,
+  'server.bytes': true,
+  'server.packets': true,
+  'destination.geo.country_iso_code': true,
+  'destination.as.full': true,
+  dstRIR: true,
+
+  'source.ip': true,
+  'source.port': true,
+  'source.packets': true,
+  'source.bytes': true,
+  srcPayload8: true,
+  'client.bytes': true,
+  'client.packets': true,
+  'source.geo.country_iso_code': true,
+  'source.as.full': true,
+  srcRIR: true,
+
+  firstPacket: true,
+  lastPacket: true,
+  ipProtocol: true,
+  node: true,
+  'tcpflags.rst': true,
+  'tcpflags.syn': true,
+  'tcpflags.srcZero': true,
+  'tcpflags.psh': true,
+  'tcpflags.dstZero': true,
+  'tcpflags.syn-ack': true,
+  'tcpflags.fin': true,
+  'tcpflags.ack': true,
+  'tcpflags.urg': true,
+  'network.community_id': true,
+  totDataBytes: true,
+  'network.bytes': true,
+  'network.packets': true,
+  rootId: true
+};
+
+const dateFields = {
+  firstPacket: true,
+  lastPacket: true
+};
+
+// Change foo.bar to foo: {bar:}
+// Unarray singleton fields
+// Change string dates to MS
+function fixSessionFields (fields, unflatten) {
+  if (!fields) { return; }
+  if (unflatten) {
+    fields.source = { as: {}, geo: {} };
+    fields.destination = { as: {}, geo: {} };
+  }
+  for (const f in fields) {
+    const path = f.split('.');
+    let key = fields;
+
+    // No dot in name, maybe no change
+    if (path.length === 1) {
+      if (fields[f].length > 0 && (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt'))) {
+        fields[f] = fields[f][0];
+      }
+      if (dateFields[f]) {
+        fields[f] = Date.parse(fields[f]);
+      }
+      continue;
+    }
+
+    // Dot in name, will be moving
+    let value = fields[f];
+    if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
+      value = value[0];
+    }
+    if (dateFields[f]) {
+      value = Date.parse(value);
+    }
+    if (!unflatten) {
+      fields[f] = value;
+      continue;
+    }
+    delete fields[f];
+    for (let i = 0; i < path.length; i++) {
+      if (i === path.length - 1) {
+        key[path[i]] = value;
+        break;
+      } else if (key[path[i]] === undefined) {
+        key[path[i]] = {};
+      }
+      key = key[path[i]];
+    }
+  }
+}
 
 // Get a session from ES and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
@@ -308,28 +426,34 @@ exports.getSession = async (id, options, cb) => {
     });
   }
 
-  if (internals.getSessionBySearch) {
-    exports.search(exports.sid2Index(id), '_doc', { query: { ids: { values: [exports.sid2Id(id)] } } }, options, (err, results) => {
-      if (err) { return cb(err); }
-      if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
-      const session = results.hits.hits[0];
-      session.found = true;
-      if (options && options._source && !options._source.includes('packetPos')) {
-        return cb(null, session);
-      }
-      return fixPacketPos(session, session._source || session.fields);
-    });
-  } else {
-    try {
-      const { body: session } = await exports.getWithOptions(exports.sid2Index(id), '_doc', exports.sid2Id(id), options);
-      if (options && options._source && !options._source.includes('packetPos')) {
-        return cb(null, session);
-      }
-      return fixPacketPos(session, session._source || session.fields);
-    } catch (err) {
-      return cb(err, {});
-    }
+  const optionsReplaced = options === undefined;
+  if (!options) {
+    options = { _source: 'cert', fields: ['*'] };
   }
+  const query = { query: { ids: { values: [exports.sid2Id(id)] } }, _source: options._source, fields: options.fields };
+
+  const unflatten = options?.arkime_unflatten ?? true;
+  const params = { };
+  exports.merge(params, options);
+  delete params._source;
+  delete params.fields;
+  delete params.arkime_unflatten;
+
+  exports.search(exports.sid2Index(id, { multiple: true }), '_doc', query, params, (err, results) => {
+    if (err) { return cb(err); }
+    if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+    const session = results.hits.hits[0];
+    session.found = true;
+    if (session.fields && session._source && session._source.cert) {
+      session.fields.cert = session._source.cert;
+    }
+    delete session._source;
+    fixSessionFields(session.fields, unflatten);
+    if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
+      return cb(null, session);
+    }
+    return fixPacketPos(session, session.fields);
+  });
 };
 
 exports.index = async (index, type, id, doc) => {
@@ -368,6 +492,7 @@ exports.search = async (index, type, query, options, cb) => {
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
+    console.trace(`ES Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
     if (cb) { return cb(err, null); }
     throw err;
   }
@@ -479,12 +604,30 @@ exports.searchPrimary = function (index, type, query, options, cb) {
 };
 
 exports.searchSessions = function (index, query, options, cb) {
+  if (cb === undefined) {
+    return new Promise((resolve, reject) => {
+      exports.searchSessions(index, query, options, (err, result) => {
+        err ? reject(err) : resolve(result);
+      });
+    });
+  }
+
+  if (!options) { options = {}; }
+  const unflatten = options.arkime_unflatten ?? true;
   const params = { preference: 'primaries', ignore_unavailable: 'true' };
   exports.merge(params, options);
-  return exports.searchScroll(index, 'session', query, params, cb);
+  delete params.arkime_unflatten;
+  exports.searchScroll(index, 'session', query, params, (err, result) => {
+    if (err || result.hits.hits.length === 0) { return cb(err, result); }
+
+    for (let i = 0; i < result.hits.hits.length; i++) {
+      fixSessionFields(result.hits.hits[i].fields, unflatten);
+    }
+    return cb(null, result);
+  });
 };
 
-exports.msearch = async (index, type, queries, options) => {
+exports.msearchSessions = async (index, queries, options) => {
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {
@@ -725,9 +868,9 @@ exports.flush = async (index) => {
 exports.refresh = async (index) => {
   if (index === 'users' || index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
-  } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
+
+  return internals.client7.indices.refresh({ index: fixIndex(index) });
 };
 
 exports.addTagsToSession = function (index, id, tags, cluster, cb) {
@@ -855,6 +998,7 @@ exports.flushCache = function () {
   internals.usersCache = {};
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
+  exports.getAliasesCache();
 };
 
 // search against user index, promise only
@@ -950,7 +1094,7 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-exports.historyIt = async (doc) => {
+exports.historyIt = async function (doc) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
@@ -963,12 +1107,15 @@ exports.historyIt = async (doc) => {
 };
 exports.searchHistory = async (query) => {
   return internals.client7.search({
-    index: fixIndex('history_v1-*'), body: query, rest_total_hits_as_int: true
+    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
+    body: query,
+    rest_total_hits_as_int: true
   });
 };
 exports.countHistory = async () => {
   return internals.client7.count({
-    index: fixIndex('history_v1-*'), ignoreUnavailable: true
+    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
+    ignoreUnavailable: true
   });
 };
 exports.deleteHistory = async (id, index) => {
@@ -997,6 +1144,7 @@ exports.deleteHunt = async (id) => {
   });
 };
 exports.setHunt = async (id, doc) => {
+  exports.refresh('sessions*');
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, id: id, refresh: true, timeout: '10m'
   });
@@ -1368,9 +1516,9 @@ exports.healthCache = async () => {
     const health = await exports.health();
     try {
       const { body: doc } = await internals.client7.indices.getTemplate({
-        name: fixIndex('sessions2_template'), filter_path: '**._meta'
+        name: fixIndex('sessions3_template'), filter_path: '**._meta'
       });
-      health.molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
       internals.healthCache = health;
       internals.healthCache._timeStamp = Date.now();
       return health;
@@ -1482,16 +1630,16 @@ exports.fileIdToFile = async (node, num, cb) => {
     });
   }
 
+  let file = null;
   try {
     const { body: fresult } = await exports.get('files', 'file', node + '-' + num);
-    const file = fresult._source;
+    file = fresult._source;
     internals.fileId2File[key] = file;
     internals.fileName2File[file.name] = file;
-    return cb(file);
   } catch (err) { // Cache file is unknown
     internals.fileId2File[key] = null;
-    return cb(null);
   }
+  return cb(file);
 };
 
 exports.fileNameToFiles = function (fileName, cb) {
@@ -1573,12 +1721,12 @@ exports.checkVersion = async function (minVersion, checkUsers) {
 
   try {
     const { body: doc } = await internals.client7.indices.getTemplate({
-      name: fixIndex('sessions2_template'),
+      name: fixIndex('sessions3_template'),
       filter_path: '**._meta'
     });
 
     try {
-      const molochDbVersion = doc[fixIndex('sessions2_template')].mappings._meta.molochDbVersion;
+      const molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
 
       if (molochDbVersion < minVersion) {
         console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
@@ -1635,14 +1783,24 @@ exports.deleteFile = function (node, id, path, cb) {
 };
 
 exports.session2Sid = function (item) {
+  const ver = item._index.includes('sessions2') ? '2@' : '3@';
   if (item._id.length < 31) {
-    return item._index.substring(internals.prefix.length + 10) + ':' + item._id;
+    // sessions2 didn't have new arkime_ prefix
+    if (ver === '2@' && internals.prefix === 'arkime_') {
+      return ver + item._index.substring(10) + ':' + item._id;
+    } else {
+      return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
+    }
   }
 
-  return item._id;
+  return ver + item._id;
 };
 
 exports.sid2Id = function (id) {
+  if (id[1] === '@') {
+    id = id.substr(2);
+  }
+
   const colon = id.indexOf(':');
   if (colon > 0) {
     return id.substr(colon + 1);
@@ -1651,12 +1809,41 @@ exports.sid2Id = function (id) {
   return id;
 };
 
-exports.sid2Index = function (id) {
+exports.sid2Index = function (id, options) {
   const colon = id.indexOf(':');
-  if (colon > 0) {
-    return 'sessions2-' + id.substr(0, colon);
+
+  if (id[1] === '@') {
+    if (colon > 0) {
+      return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
+    }
+    return 'sessions' + id[0] + '-' + id.substr(2, id.indexOf('-') - 2);
   }
-  return 'sessions2-' + id.substr(0, id.indexOf('-'));
+
+  const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+  const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+
+  if (!internals.aliasesCache) {
+    return s3;
+  }
+
+  const fs2 = fixIndex(s2);
+
+  const results = [];
+
+  if (internals.aliasesCache[fs2] || internals.aliasesCache[fs2 + '-reindex'] || internals.aliasesCache[fs2 + '-shrink']) {
+    results.push(fs2);
+  }
+
+  const fs3 = fixIndex(s3);
+  if (internals.aliasesCache[fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
+    results.push(fs3);
+  }
+
+  if (results.length > 1 && options?.multiple) {
+    return results;
+  }
+
+  return results[0];
 };
 
 exports.loadFields = async () => {
@@ -1665,7 +1852,7 @@ exports.loadFields = async () => {
 
 exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
   try {
-    const aliases = await exports.getAliasesCache('sessions2-*');
+    const aliases = await exports.getAliasesCache(['sessions2-*', 'sessions3-*']);
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1688,7 +1875,11 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
       if (index.endsWith('-reindex')) {
         index = index.substring(0, index.length - 8);
       }
-      index = index.substring(internals.prefix.length + 10);
+      if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
+        index = index.substring(10);
+      } else {
+        index = index.substring(internals.prefix.length + 10);
+      }
       let year; let month; let day = 0; let hour = 0; let len;
 
       if (+index[0] >= 6) {
@@ -1738,7 +1929,7 @@ exports.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
     }
 
     if (indices.length === 0) {
-      return internals.prefix + 'sessions2-*';
+      return fixIndex(['sessions2-*', 'sessions3-*']);
     }
 
     return indices.join();

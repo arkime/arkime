@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
@@ -20,27 +21,35 @@
                }
             ],
             "certCnt" : 1,
-            "communityId" : "1:IkHJKD/fDcrb4ph0Zven4FrlFl4=",
-            "dstBytes" : 3422,
-            "dstDataBytes" : 2050,
-            "dstIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "dstMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "dstMacCnt" : 1,
+            "client" : {
+               "bytes" : 1651
+            },
+            "destination" : {
+               "bytes" : 3422,
+               "ip" : "::1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 16,
+               "port" : 389
+            },
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 16,
             "dstPayload8" : "300c02010178070a",
-            "dstPort" : 389,
             "fileId" : [],
             "firstPacket" : 1422673532664,
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1422673558484,
             "length" : 25820,
+            "network" : {
+               "bytes" : 6801,
+               "community_id" : "1:IkHJKD/fDcrb4ph0Zven4FrlFl4=",
+               "packets" : 36
+            },
             "node" : "test",
             "packetLen" : [
                110,
@@ -125,20 +134,24 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 3379,
-            "srcDataBytes" : 1651,
-            "srcIp" : "0000:0000:0000:0000:0000:0000:0000:0001",
-            "srcMac" : [
-               "00:00:00:00:00:00"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 2050
+            },
+            "source" : {
+               "bytes" : 3379,
+               "ip" : "::1",
+               "mac" : [
+                  "00:00:00:00:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 20,
+               "port" : 37386
+            },
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 20,
             "srcPayload8" : "301d020101771880",
-            "srcPort" : 37386,
             "tags" : [
                "cert:self-signed"
             ],
@@ -154,7 +167,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_RSA_WITH_AES_128_CBC_SHA"
@@ -184,14 +196,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 6801,
-            "totDataBytes" : 3701,
-            "totPackets" : 36
+            "totDataBytes" : 3701
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-150131",
-               "_type" : "session"
+               "_index" : "tests_sessions3-150131"
             }
          }
       }

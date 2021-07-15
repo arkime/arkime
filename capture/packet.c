@@ -42,11 +42,11 @@ extern uint32_t              pluginsCbs;
 uint64_t                     writtenBytes;
 uint64_t                     unwrittenBytes;
 
-LOCAL int                    mac1Field;
-LOCAL int                    mac2Field;
+int                          mac1Field;
+int                          mac2Field;
+int                          vlanField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
-LOCAL int                    vlanField;
 LOCAL int                    greIpField;
 
 LOCAL uint64_t               droppedFrags;
@@ -1479,17 +1479,19 @@ void moloch_packet_init()
     g_timeout_add_seconds(10, moloch_packet_save_drophash, 0);
 
     mac1Field = moloch_field_define("general", "lotermfield",
-        "mac.src", "Src MAC", "srcMac",
+        "mac.src", "Src MAC", "source.mac",
         "Source ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
+        "fieldECS", "source.mac",
         (char *)NULL);
 
     mac2Field = moloch_field_define("general", "lotermfield",
-        "mac.dst", "Dst MAC", "dstMac",
+        "mac.dst", "Dst MAC", "destination.mac",
         "Destination ethernet mac addresses set for session",
-        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
+        "fieldECS", "destination.mac",
         (char *)NULL);
 
     moloch_field_define("general", "lotermfield",
@@ -1512,11 +1514,10 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
         (char *)NULL);
 
-
     vlanField = moloch_field_define("general", "integer",
-        "vlan", "VLan", "vlan",
+        "vlan", "VLan", "network.vlan.id",
         "vlan value",
-        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS,
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         (char *)NULL);
 
     greIpField = moloch_field_define("general", "ip",
@@ -1571,12 +1572,14 @@ void moloch_packet_init()
         "packets.src", "Src Packets", "srcPackets",
         "Total number of packets sent by source in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "source.packets",
         (char *)NULL);
 
     moloch_field_define("general", "integer",
         "packets.dst", "Dst Packets", "dstPackets",
         "Total number of packets sent by destination in a session",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "destination.packets",
         (char *)NULL);
 
     moloch_field_define("general", "integer",
@@ -1589,6 +1592,7 @@ void moloch_packet_init()
         "communityId", "Community Id", "communityId",
         "Community id flow hash",
         0,  MOLOCH_FIELD_FLAG_FAKE,
+        "fieldECS", "network.community_id",
         (char *)NULL);
 
     int t;

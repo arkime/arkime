@@ -1,22 +1,26 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
-            "communityId" : "1:edLn61HrOoPJoKGLwmvOMdlNXWI=",
-            "dstBytes" : 5240,
-            "dstDataBytes" : 576,
-            "dstIp" : "172.17.96.77",
-            "dstMac" : [
-               "00:19:56:bb:8d:70"
-            ],
-            "dstMacCnt" : 1,
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 5222
+            },
+            "destination" : {
+               "bytes" : 5240,
+               "ip" : "172.17.96.77",
+               "mac" : [
+                  "00:19:56:bb:8d:70"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 44,
+               "port" : 4000
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 44,
             "dstPayload8" : "485454502f312e31",
-            "dstPort" : 4000,
             "dstRIR" : "ARIN",
             "fileId" : [],
             "firstPacket" : 1259023909119,
@@ -177,6 +181,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1259023939991,
             "length" : 30872,
+            "network" : {
+               "bytes" : 30384,
+               "community_id" : "1:edLn61HrOoPJoKGLwmvOMdlNXWI=",
+               "packets" : 108
+            },
             "node" : "test",
             "packetLen" : [
                90,
@@ -404,20 +413,24 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 25144,
-            "srcDataBytes" : 5222,
-            "srcIp" : "172.17.96.143",
-            "srcMac" : [
-               "00:0b:ab:0e:e8:ec"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 576
+            },
+            "source" : {
+               "bytes" : 25144,
+               "ip" : "172.17.96.143",
+               "mac" : [
+                  "00:0b:ab:0e:e8:ec"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 64,
+               "port" : 59221
+            },
             "srcOui" : [
                "Advantech Technology (CHINA) Co., Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 64,
             "srcPayload8" : "504f5354202f6578",
-            "srcPort" : 59221,
             "srcRIR" : "ARIN",
             "tcpflags" : {
                "ack" : 44,
@@ -430,15 +443,11 @@
                "syn-ack" : 4,
                "urg" : 0
             },
-            "timestamp" : "SET",
-            "totBytes" : 30384,
-            "totDataBytes" : 5798,
-            "totPackets" : 108
+            "totDataBytes" : 5798
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-091124",
-               "_type" : "session"
+               "_index" : "tests_sessions3-091124"
             }
          }
       }

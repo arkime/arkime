@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "alt" : [
@@ -54,15 +55,26 @@
                }
             ],
             "certCnt" : 2,
-            "communityId" : "1:/wxqZ626SZRx3CanjPRZ6tl4iH8=",
-            "dstASN" : "AS13335",
-            "dstBytes" : 3142,
-            "dstDataBytes" : 2810,
-            "dstGEO" : "US",
-            "dstIp" : "2606:4700:0000:0000:0000:0000:6811:d209",
-            "dstPackets" : 5,
+            "client" : {
+               "bytes" : 237
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS13335 Cloudflare, Inc.",
+                  "number" : 13335,
+                  "organization" : {
+                     "name" : "Cloudflare, Inc."
+                  }
+               },
+               "bytes" : 3142,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2606:4700::6811:d209",
+               "packets" : 5,
+               "port" : 443
+            },
             "dstPayload8" : "1603030064020000",
-            "dstPort" : 443,
             "fileId" : [],
             "firstPacket" : 1593980608621,
             "http" : {
@@ -75,6 +87,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1593980608696,
             "length" : 75,
+            "network" : {
+               "bytes" : 3659,
+               "community_id" : "1:/wxqZ626SZRx3CanjPRZ6tl4iH8=",
+               "packets" : 9
+            },
             "node" : "test",
             "packetLen" : [
                104,
@@ -105,14 +122,26 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcASN" : "AS10310",
-            "srcBytes" : 517,
-            "srcDataBytes" : 237,
-            "srcGEO" : "US",
-            "srcIp" : "2001:4998:ef83:0014:8000:0000:0000:100d",
-            "srcPackets" : 4,
+            "server" : {
+               "bytes" : 2810
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10310 Oath Holdings Inc.",
+                  "number" : 10310,
+                  "organization" : {
+                     "name" : "Oath Holdings Inc."
+                  }
+               },
+               "bytes" : 517,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2001:4998:ef83:14:8000::100d",
+               "packets" : 4,
+               "port" : 64034
+            },
             "srcPayload8" : "16030100e8010000",
-            "srcPort" : 64034,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -124,7 +153,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
@@ -154,14 +182,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 3659,
-            "totDataBytes" : 3047,
-            "totPackets" : 9
+            "totDataBytes" : 3047
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-200705",
-               "_type" : "session"
+               "_index" : "tests_sessions3-200705"
             }
          }
       }

@@ -6,7 +6,7 @@
     <div class="row">
 
       <!-- segments select input -->
-      <SegmentSelect :segments.sync="segments"/> <!-- /segments select input -->
+      <SegmentSelect :segments.sync="segments" /> <!-- /segments select input -->
 
       <div class="col-md-4">
 

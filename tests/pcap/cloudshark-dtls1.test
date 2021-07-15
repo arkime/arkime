@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "hash" : "",
@@ -19,29 +20,45 @@
                }
             ],
             "certCnt" : 1,
-            "communityId" : "1:UPZ9f3UdNc+eoCm8yVYQOonoaBE=",
-            "dstASN" : "AS24940",
-            "dstBytes" : 1018,
-            "dstDataBytes" : 934,
-            "dstGEO" : "DE",
-            "dstIp" : "188.40.206.23",
-            "dstMac" : [
-               "c0:25:06:be:ec:c3"
-            ],
-            "dstMacCnt" : 1,
+            "client" : {
+               "bytes" : 487
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS24940 Hetzner Online GmbH",
+                  "number" : 24940,
+                  "organization" : {
+                     "name" : "Hetzner Online GmbH"
+                  }
+               },
+               "bytes" : 1018,
+               "geo" : {
+                  "country_iso_code" : "DE"
+               },
+               "ip" : "188.40.206.23",
+               "mac" : [
+                  "c0:25:06:be:ec:c3"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2,
+               "port" : 7000
+            },
             "dstOui" : [
                "AVM GmbH"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 2,
             "dstPayload8" : "16feff0000000000",
-            "dstPort" : 7000,
             "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1404648102097,
             "ipProtocol" : 17,
             "lastPacket" : 1404648102237,
             "length" : 139,
+            "network" : {
+               "bytes" : 1631,
+               "community_id" : "1:UPZ9f3UdNc+eoCm8yVYQOonoaBE=",
+               "packets" : 5
+            },
             "node" : "test",
             "packetLen" : [
                222,
@@ -63,66 +80,89 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 613,
-            "srcDataBytes" : 487,
-            "srcIp" : "192.168.178.20",
-            "srcMac" : [
-               "50:e5:49:d8:73:12"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 934
+            },
+            "source" : {
+               "bytes" : 613,
+               "ip" : "192.168.178.20",
+               "mac" : [
+                  "50:e5:49:d8:73:12"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 6000
+            },
             "srcOui" : [
                "Giga-Byte Technology Co.,Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 3,
             "srcPayload8" : "16feff0000000000",
-            "srcPort" : 6000,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 1631,
-            "totDataBytes" : 1421,
-            "totPackets" : 5
+            "totDataBytes" : 1421
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140706",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140706"
             }
          }
       },
       {
          "body" : {
-            "communityId" : "1:DuL94POE3Q8ma0tVDRZS9/PU/5o=",
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 28
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                  "number" : 25152,
+                  "organization" : {
+                     "name" : "Reseaux IP Europeens Network Coordination Centre (RIPE NCC)"
+                  }
+               },
+               "bytes" : 955,
+               "geo" : {
+                  "country_iso_code" : "NL"
+               },
+               "ip" : "193.0.14.129",
+               "mac" : [
+                  "c0:25:06:be:ec:c3"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
             "dns" : {
                "host" : [
                   "<root>"
                ],
                "hostCnt" : 1,
                "nameserverASN" : [
-                  "AS10515",
-                  "AS10515",
-                  "AS10886",
-                  "AS10886",
-                  "AS13",
-                  "AS1508",
-                  "AS20144",
-                  "AS20144",
-                  "AS20172",
-                  "AS20431",
-                  "AS2149",
-                  "AS2149",
-                  "AS21556",
-                  "AS25152",
-                  "AS25152",
-                  "AS29216",
-                  "AS29216",
-                  "AS3557",
-                  "AS3557",
-                  "AS394353",
-                  "AS394353",
-                  "AS5927",
-                  "AS7500",
-                  "AS7500"
+                  "AS10515 VeriSign Infrastructure & Operations",
+                  "AS10515 VeriSign Infrastructure & Operations",
+                  "AS10886 University of Maryland",
+                  "AS10886 University of Maryland",
+                  "AS13 Headquarters, USAISC",
+                  "AS1508 Headquarters, USAISC",
+                  "AS20144 ICANN",
+                  "AS20144 ICANN",
+                  "AS20172 VeriSign Global Registry Services",
+                  "AS20431 VeriSign Global Registry Services",
+                  "AS2149 Cogent Communications",
+                  "AS2149 Cogent Communications",
+                  "AS21556 NASA Ames Research Center",
+                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                  "AS29216 NETNOD Internet Exchange i Sverige AB",
+                  "AS29216 NETNOD Internet Exchange i Sverige AB",
+                  "AS3557 Internet Systems Consortium, Inc.",
+                  "AS3557 Internet Systems Consortium, Inc.",
+                  "AS394353 B.Root-Server-OPS",
+                  "AS394353 B.Root-Server-OPS",
+                  "AS5927 DoD Network Information Center",
+                  "AS7500 WIDE Project",
+                  "AS7500 WIDE Project"
                ],
                "nameserverGEO" : [
                   "---",
@@ -236,28 +276,22 @@
                ],
                "statusCnt" : 1
             },
-            "dstASN" : "AS25152",
-            "dstBytes" : 955,
-            "dstDataBytes" : 913,
-            "dstGEO" : "NL",
-            "dstIp" : "193.0.14.129",
-            "dstMac" : [
-               "c0:25:06:be:ec:c3"
-            ],
-            "dstMacCnt" : 1,
             "dstOui" : [
                "AVM GmbH"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 1,
             "dstPayload8" : "273b85000001000e",
-            "dstPort" : 53,
             "dstRIR" : "RIPE",
             "fileId" : [],
             "firstPacket" : 1404648108283,
             "ipProtocol" : 17,
             "lastPacket" : 1404648108320,
             "length" : 36,
+            "network" : {
+               "bytes" : 1025,
+               "community_id" : "1:DuL94POE3Q8ma0tVDRZS9/PU/5o=",
+               "packets" : 2
+            },
             "node" : "test",
             "packetLen" : [
                86,
@@ -273,30 +307,30 @@
             ],
             "protocolCnt" : 2,
             "segmentCnt" : 1,
-            "srcBytes" : 70,
-            "srcDataBytes" : 28,
-            "srcIp" : "192.168.178.20",
-            "srcMac" : [
-               "50:e5:49:d8:73:12"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 913
+            },
+            "source" : {
+               "bytes" : 70,
+               "ip" : "192.168.178.20",
+               "mac" : [
+                  "50:e5:49:d8:73:12"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 60170
+            },
             "srcOui" : [
                "Giga-Byte Technology Co.,Ltd."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 1,
             "srcPayload8" : "273b012000010000",
-            "srcPort" : 60170,
             "srcRIR" : "ARIN",
-            "timestamp" : "SET",
-            "totBytes" : 1025,
-            "totDataBytes" : 941,
-            "totPackets" : 2
+            "totDataBytes" : 941
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-140706",
-               "_type" : "session"
+               "_index" : "tests_sessions3-140706"
             }
          }
       }

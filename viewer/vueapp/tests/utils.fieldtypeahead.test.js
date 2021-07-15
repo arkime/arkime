@@ -99,14 +99,16 @@ test('field typeahead selected field gets emitted', async () => {
     expect(emitted().fieldSelected[0][0]).toMatchObject({
       aliases: ['ip.dst:port'],
       category: 'ip',
-      dbField: 'dstIp',
+      dbField: 'destination.ip',
       dbField2: 'dstIp',
+      fieldECS: 'destination.ip',
       exp: 'ip.dst',
       friendlyName: 'Dst IP',
       group: 'general',
       help: 'Destination IP',
-      portField: 'dstPort',
+      portField: 'destination.port',
       portField2: 'dstPort',
+      portFieldECS: 'destination.port',
       type: 'ip'
     });
   });

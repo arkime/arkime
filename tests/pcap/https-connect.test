@@ -1,7 +1,8 @@
 {
-   "sessions2" : [
+   "sessions3" : [
       {
          "body" : {
+            "@timestamp" : "SET",
             "cert" : [
                {
                   "alt" : [
@@ -54,21 +55,24 @@
                }
             ],
             "certCnt" : 2,
-            "communityId" : "1:sFCNFHlziFG+4mKUlz6T9fm4bYU=",
-            "dstBytes" : 4459,
-            "dstDataBytes" : 3901,
-            "dstIp" : "10.9.8.7",
-            "dstMac" : [
-               "00:10:db:ff:10:01"
-            ],
-            "dstMacCnt" : 1,
+            "client" : {
+               "bytes" : 499
+            },
+            "destination" : {
+               "bytes" : 4459,
+               "ip" : "10.9.8.7",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 8080
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
-            "dstPackets" : 10,
             "dstPayload8" : "485454502f312e30",
-            "dstPort" : 8080,
             "fileId" : [],
             "firstPacket" : 1567450613383,
             "http" : {
@@ -130,6 +134,11 @@
             "ipProtocol" : 6,
             "lastPacket" : 1567450613614,
             "length" : 231,
+            "network" : {
+               "bytes" : 5426,
+               "community_id" : "1:sFCNFHlziFG+4mKUlz6T9fm4bYU=",
+               "packets" : 18
+            },
             "node" : "test",
             "packetLen" : [
                82,
@@ -178,20 +187,24 @@
             ],
             "protocolCnt" : 3,
             "segmentCnt" : 1,
-            "srcBytes" : 967,
-            "srcDataBytes" : 499,
-            "srcIp" : "10.11.12.13",
-            "srcMac" : [
-               "0c:c4:7a:f2:c1:d2"
-            ],
-            "srcMacCnt" : 1,
+            "server" : {
+               "bytes" : 3901
+            },
+            "source" : {
+               "bytes" : 967,
+               "ip" : "10.11.12.13",
+               "mac" : [
+                  "0c:c4:7a:f2:c1:d2"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 8,
+               "port" : 54723
+            },
             "srcOui" : [
                "Super Micro Computer, Inc."
             ],
             "srcOuiCnt" : 1,
-            "srcPackets" : 8,
             "srcPayload8" : "434f4e4e45435420",
-            "srcPort" : 54723,
             "tcpflags" : {
                "ack" : 9,
                "dstZero" : 0,
@@ -203,7 +216,6 @@
                "syn-ack" : 1,
                "urg" : 0
             },
-            "timestamp" : "SET",
             "tls" : {
                "cipher" : [
                   "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
@@ -230,14 +242,11 @@
                ],
                "versionCnt" : 1
             },
-            "totBytes" : 5426,
-            "totDataBytes" : 4400,
-            "totPackets" : 18
+            "totDataBytes" : 4400
          },
          "header" : {
             "index" : {
-               "_index" : "tests_sessions2-190902",
-               "_type" : "session"
+               "_index" : "tests_sessions3-190902"
             }
          }
       }
