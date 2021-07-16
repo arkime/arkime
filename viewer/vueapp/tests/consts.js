@@ -74,6 +74,23 @@ export const files = [{
   num: 2
 }];
 
+export const sessions = [{
+  'destination.geo.country_iso_code': 'JP',
+  'destination.ip': '139.162.123.134',
+  'destination.port': 80,
+  fileId: [],
+  firstPacket: 1593995681271,
+  id: '3@200706:JElsqnoB6EjWLLLrts6W',
+  ipProtocol: 6,
+  lastPacket: 1593995683015,
+  'network.bytes': 70573,
+  'network.packets': 101,
+  node: 'test',
+  'source.ip': '10.89.85.15',
+  'source.port': 49570,
+  totDataBytes: 64897
+}];
+
 export const hunts = [{
   created: 1625595118,
   dst: true,

@@ -55,7 +55,7 @@ const store = {
   }
 };
 
-test('search expression typeahead', async () => {
+test('search time', async () => {
   const $route = { query: { date: timeRange, stopTime, startTime } };
   const $router = { push: jest.fn() };
 
