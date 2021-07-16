@@ -17,12 +17,14 @@
             </span>
           </span>
         </span>
-        <select class="form-control time-range-control"
+        <select
           tabindex="3"
+          role="listbox"
           v-model="timeRange"
           @change="changeTimeRange"
           @blur="onOffTimeRangeFocus"
-          v-focus-input="focusTimeRange">
+          v-focus-input="focusTimeRange"
+          class="form-control time-range-control">
           <option value="1">Last hour</option>
           <option value="6"
             v-if="!user.timeLimit || user.timeLimit >= 6">
@@ -91,9 +93,11 @@
           id="startTime"
           tabindex="4">
         </date-picker>
-        <span class="input-group-append cursor-pointer"
+        <span
           id="prevStartTime"
-          @click="prevTime('start')">
+          @click="prevTime('start')"
+          class="input-group-append cursor-pointer"
+          :title="`${isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day'}`">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
@@ -113,6 +117,7 @@
         </b-tooltip>
         <span class="input-group-append cursor-pointer"
           v-b-tooltip.hover.bottom.d300="'Beginning of next day'"
+          title="Beginning of next day"
           @click="nextTime('start')">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
@@ -142,15 +147,18 @@
         </date-picker>
         <span class="input-group-append cursor-pointer"
           v-b-tooltip.hover.bottom.d300="'End of previous day'"
+          title="End of previous day"
           @click="prevTime('stop')">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
           </div>
         </span>
-        <span class="input-group-append cursor-pointer"
+        <span
           id="nextStopTime"
-          @click="nextTime('stop')">
+          @click="nextTime('stop')"
+          class="input-group-append cursor-pointer"
+          :title="`${isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day'}`">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
             </span>
@@ -158,13 +166,13 @@
         </span>
         <b-tooltip
           placement="bottom"
-          v-if="isEndOfDay(time.stopTime)"
-          target="nextStopTime">
+          target="nextStopTime"
+          v-if="isEndOfDay(time.stopTime)">
           End of next day
         </b-tooltip>
         <b-tooltip
           v-else
-            placement="bottom"
+          placement="bottom"
           target="nextStopTime">
           End of this day
         </b-tooltip>
