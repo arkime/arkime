@@ -1101,14 +1101,14 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
 // ============================================================================
 // EXPIRING
 // ============================================================================
-// Search for all files on a set of nodes in a set of directories.
-// If less then size items are returned we don't delete anything.
+// Search the oldest 500 files on a set of nodes in a set of directories.
+// If less then 10 items are returned we don't delete anything.
 // Doesn't support mounting sub directories in main directory, don't do it.
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
-    size: 200,
+    size: 500,
     query: {
       bool: {
         must: [
