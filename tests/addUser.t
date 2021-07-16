@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 13;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -32,6 +32,10 @@ eq_or_diff($users->{data}->[4]->{expression}, "ip.src == 10.0.0.1");
 ok($users->{data}->[5]->{removeEnabled}, "Remove");
 ok($users->{data}->[6]->{headerAuthEnabled}, "Web auth");
 ok($users->{data}->[7]->{packetSearch}, "Packet search");
+
+# user should have password
+my $esUsers = esGet("/tests_users/_search")->{hits}->{hits};
+ok(exists $esUsers->[0]->{_source}->{passStore}, "Users has password");
 
 # --createOnly flag should not overwrite the user if it already exists
 my $user7 = $users->{data}->[7];
