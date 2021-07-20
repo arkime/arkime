@@ -31,4 +31,5 @@ fi
 # https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
 if [ -x "/usr/bin/geoipupdate" ]; then
     /usr/bin/geoipupdate
+    chmod a+r /usr/share/GeoIP/*.mmdb
 fi
