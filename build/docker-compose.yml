@@ -1,7 +1,7 @@
 version: "3"
 services:
   arkime:
-    image: metis-external/arkime:v3
+    image: touilleio/arkime:v3
     build:
       dockerfile: build/Dockerfile
       context: ..
