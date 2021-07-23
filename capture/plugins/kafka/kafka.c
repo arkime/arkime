@@ -45,25 +45,25 @@ extern MolochConfig_t config;
 LOCAL void kafka_msg_delivered_cb(rd_kafka_t *rk,
                            const rd_kafka_message_t *rkmessage, void *opaque) {
 
-        if (rkmessage->err)
-                LOG(
-                        "%% Message delivery failed (broker %"PRId32"): %s\n",
-                        rd_kafka_message_broker_id(rkmessage),
-                        rd_kafka_err2str(rkmessage->err));
-        else if (config.debug)
-                LOG(
-                        "%% Message delivered in %.2fms (%zd bytes, offset %"PRId64", "
-                        "partition %"PRId32", broker %"PRId32"): %.*s\n",
-                        (float)rd_kafka_message_latency(rkmessage) / 1000.0,
-                        rkmessage->len, rkmessage->offset,
-                        rkmessage->partition,
-                        rd_kafka_message_broker_id(rkmessage),
-                        (int)rkmessage->len, (const char *)rkmessage->payload);
+    if (rkmessage->err)
+        LOG(
+            "%% Message delivery failed (broker %"PRId32"): %s\n",
+            rd_kafka_message_broker_id(rkmessage),
+            rd_kafka_err2str(rkmessage->err));
+    else if (config.debug)
+        LOG(
+            "%% Message delivered in %.2fms (%zd bytes, offset %"PRId64", "
+            "partition %"PRId32", broker %"PRId32"): %.*s\n",
+            (float)rd_kafka_message_latency(rkmessage) / 1000.0,
+            rkmessage->len, rkmessage->offset,
+            rkmessage->partition,
+            rd_kafka_message_broker_id(rkmessage),
+            (int)rkmessage->len, (const char *)rkmessage->payload);
 
-       char *json = (char *)rkmessage->_private; /* V_OPAQUE */
-       if (config.debug)
-                LOG("%% opaque=%p\n", json);
-       MOLOCH_SIZE_FREE(buffer, json);
+    char *json = (char *)rkmessage->_private; /* V_OPAQUE */
+    if (config.debug > 2)
+        LOG("%% opaque=%p\n", json);
+    MOLOCH_SIZE_FREE(buffer, json);
 }
 
 /******************************************************************************/
@@ -72,7 +72,8 @@ LOCAL void kafka_send_session(char *json, int len)
 
     rd_kafka_resp_err_t err;
 
-    LOG("About to send %d bytes in kafka %s, opaque=%p\n", len, topic, json);
+    if (config.debug)
+        LOG("About to send %d bytes in kafka %s, opaque=%p\n", len, topic, json);
 
 retry:
     err = rd_kafka_producev(
@@ -115,9 +116,10 @@ retry:
     }
     else
     {
-        LOG("%% Enqueued message (%d bytes) "
-            "for topic %s\n",
-            len, topic);
+        if (config.debug)
+            LOG("%% Enqueued message (%d bytes) "
+                "for topic %s\n",
+                len, topic);
     }
 
     /* A producer application should continually serve
@@ -144,7 +146,8 @@ LOCAL void kafka_plugin_exit()
 {
     if (rk != NULL)
     {
-        LOG("%% Flushing final messages..\n");
+        if (config.debug)
+            LOG("%% Flushing final messages..\n");
         rd_kafka_flush(rk, 10 * 1000 /* wait for max 10 seconds */);
 
         /* If the output queue is still not empty there is an issue
@@ -180,7 +183,7 @@ void moloch_plugin_init()
 
     conf = rd_kafka_conf_new();
     brokers = *moloch_config_str_list(NULL, "kafkaBootstrapServers", "");
-    topic = moloch_config_str(NULL, "kafkaTopic", "moloch-json");
+    topic = moloch_config_str(NULL, "kafkaTopic", "arkime-json");
 
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
@@ -204,6 +207,4 @@ void moloch_plugin_init()
     moloch_db_set_send_bulk(send_to_kafka);
 
     LOG("%% Kafka plugin loaded");
-
-    // signal(SIGINT, stop);
 }
