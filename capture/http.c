@@ -313,7 +313,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     return dataIn;
 }
 /******************************************************************************/
-LOCAL void  moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async)
+LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async)
 {
     struct timeval now;
     gettimeofday(&now, NULL);

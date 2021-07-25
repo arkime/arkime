@@ -2,5 +2,6 @@ How to build moloch with kafka plugin
 ====
 
 ```
-docker-compose build
+cd build
+docker-compose build arkime-centos7
 ```

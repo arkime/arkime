@@ -345,6 +345,8 @@ parseCookieValue = ${ARKIME_PARSE_COOKIE_VALUE:=false}
 parseHTTPHeaderRequestAll = ${ARKIME_PARSE_HTTP_HEADER_REQUEST_ALL:=false}
 parseHTTPHeaderResponseAll = ${ARKIME_PARSE_HTTP_HEADER_RESPONSE_ALL:=false}
 isLocalViewRegExp = ${ARKIME_LOCAL_VIEW_REGEXP}
+simpleMaxQ = ${ARKIME_SIMPLE_MAX_Q:=2000}
+debug = ${ARKIME_DEBUG:=0}
 
 ##############################################################################
 # Classes of nodes

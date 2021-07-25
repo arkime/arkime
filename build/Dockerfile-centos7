@@ -2,8 +2,6 @@ FROM centos:7 as build
 
 MAINTAINER Benoit Perroud <benoit@sqooba.io>
 
-ARG MOLOCH_VERSION
-
 RUN \
   yum -y update; \
   yum -y install centos-release-scl scl-utils centos-release-scl-rh wget sudo; \
@@ -26,6 +24,8 @@ RUN \
   scl enable devtoolset-9 rh-python36 'make install' && \
   mkdir -p /opt/arkime/raw
 
+
+
 FROM centos:7 as run
 
 RUN mkdir -p /opt
@@ -47,4 +47,4 @@ COPY build/config.ini.envsubst /opt/arkime/etc/config.ini.envsubst
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-# metis-external/arkime:v3
+# touilleio/arkime:v3-centos7
