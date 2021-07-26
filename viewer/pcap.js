@@ -925,6 +925,13 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
 
       packets2.push(packets[i]);
     }
+
+    if (keys.length === 1) {
+      key = packets[0].ip.addr2 + ':' + packets[0].tcp.dport;
+      info[key] = { min: packets[0].tcp.ack, max: packets[0].tcp.ack, wrapseq: false, wrapack: false };
+      keys.push(key);
+    }
+
     packets = packets2;
 
     if (packets.length === 0) {
