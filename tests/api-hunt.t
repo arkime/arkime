@@ -173,7 +173,13 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id6 = $json->{hunt}->{id};
 
+  esGet("/_flush");
+  esGet("/_refresh");
+
   viewerGet("/processHuntJobs");
+
+  esGet("/_flush");
+  esGet("/_refresh");
 
   $hunts = viewerGet("/hunt/list?history=true");
   my ($viewHunt, $badHunt);
