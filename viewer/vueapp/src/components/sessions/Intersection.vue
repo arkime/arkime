@@ -59,6 +59,7 @@
             </span>
           </button>
           <button class="btn btn-sm btn-theme-tertiary pull-right mr-1"
+            title="Export Intersection"
             @click="openIntersection"
             type="button">
             <span class="fa fa-venn">
@@ -79,19 +80,23 @@
 
         <!-- fields -->
         <div class="input-group input-group-sm fields-input">
-          <div class="input-group-prepend cursor-help"
+          <div
             v-b-tooltip.hover
-            title="Comma separated list of fields to export the intersection of">
+            class="input-group-prepend cursor-help"
+            title="Comma separated list of fields (in expression field format - see help page)">
             <span class="input-group-text">
               Fields
             </span>
           </div>
-          <input type="text"
+          <input
+            type="text"
             class="form-control"
             v-model="intersectionFields"
+            placeholder="Comma separated list of fields (in expression field format - see help page)"
           />
-          <div class="input-group-prepend cursor-help"
+          <div
             v-b-tooltip.hover
+            class="input-group-prepend cursor-help"
             title="This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)">
             <span class="input-group-text">
               <span class="fa fa-question-circle">
@@ -139,7 +144,7 @@ export default {
     /* exposed functions ----------------------------------------- */
     openIntersection: function () {
       if (!this.intersectionFields) {
-        this.error = 'No fields to display. Make sure there is a comma separated list of field expression values.';
+        this.error = 'No fields to display. Make sure there is a comma separated list of field expression values, please consult the help page for field expression values (click the owl, then the fields section).';
         return;
       }
 
