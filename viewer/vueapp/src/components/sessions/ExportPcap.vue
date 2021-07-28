@@ -37,6 +37,7 @@
     <div class="col-md-3">
       <div class="pull-right">
         <button class="btn btn-sm btn-theme-tertiary"
+          title="Export PCAP"
           @click="exportPcap"
           type="button">
           <span class="fa fa-paper-plane-o">
