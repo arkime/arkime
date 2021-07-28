@@ -1396,6 +1396,21 @@
             </div>
           </div> <!-- /logo picker -->
 
+          <div v-if="settings.shiftyEyes">
+            <hr>
+            <h3>
+              Yahaha! You found me!
+              <button class="btn btn-primary"
+                @click="toggleShiftyEyes">
+                Turn Me Off
+              </button>
+            </h3>
+            <p>
+              I am now watching you while data loads
+            </p>
+            <img src="assets/watching.gif" />
+          </div>
+
           <hr>
 
           <!-- custom theme -->
@@ -1760,6 +1775,7 @@
                   <input type="text"
                     class="form-control"
                     v-model="themeString"
+                    @keyup.37.38.39.40.65.66="secretStuff"
                   />
                   <span class="input-group-append">
                     <button class="btn btn-theme-secondary"
@@ -2500,6 +2516,8 @@ let clockInterval;
 let shortcutsInputTimeout;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
+const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+let secrets = [];
 
 export default {
   name: 'Settings',
@@ -3281,6 +3299,31 @@ export default {
     changeLogo: function (newLogoLocation) {
       this.settings.logo = newLogoLocation;
       this.update();
+    },
+    secretStuff: function (e) {
+      secrets.push(e.keyCode);
+      for (let i = 0; i < secrets.length; i++) {
+        if (secrets[i] !== secretMatch[i]) {
+          secrets = [];
+          break;
+        }
+      }
+
+      if (secrets.length === secretMatch.length) {
+        this.toggleShiftyEyes();
+      }
+    },
+    toggleShiftyEyes: function () {
+      this.settings.shiftyEyes = !this.settings.shiftyEyes;
+      UserService.saveSettings(this.settings, this.userId).then((response) => {
+        // display success message to user
+        this.msg = 'SUPER SECRET THING HAPPENED!';
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* PASSWORD ---------------------------------------- */
     /* changes the user's password given the current password, the new password,
