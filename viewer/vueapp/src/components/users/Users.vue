@@ -111,16 +111,17 @@
                 <!-- /toggle settings button -->
                 <td :class="{'btn-indicator':listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit || listUser.expression}">
                   <toggle-btn v-if="listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit || listUser.expression"
-                    :opened="listUser.expanded"
                     v-b-tooltip.hover
-                    title="This user has additional restricted permissions"
                     class="btn-toggle-user"
+                    :opened="listUser.expanded"
+                    @toggle="toggleAdvSettings(listUser)"
                     :class="{expanded: listUser.expanded}"
-                    @toggle="toggleAdvSettings(listUser)">
+                    title="This user has additional restricted permissions">
                   </toggle-btn>
                   <toggle-btn v-else
-                    :opened="listUser.expanded"
                     class="btn-toggle-user"
+                    :opened="listUser.expanded"
+                    :class="{expanded: listUser.expanded}"
                     @toggle="toggleAdvSettings(listUser)">
                   </toggle-btn>
                 </td> <!-- /toggle advanced settings button -->
@@ -1033,11 +1034,6 @@ export default {
   transition: transform .5s;
 }
 
-/* center cell content vertically */
-.btn-toggle-user {
-  margin-top: 2px;
-}
-
 td .cell-text {
   margin-top: 5px;
 }
@@ -1046,9 +1042,17 @@ td input[type="checkbox"] {
   margin-top: 9px;
 }
 
+/* center cell content vertically */
+.btn-toggle-user {
+  margin-top: 2px;
+}
+.btn-toggle-user.collapsed {
+  background: var(--color-tertiary);
+}
+
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, #28a745 1%, #28a745 75%, #28a745 75%, #1c7730 77%, #1c7730 100%);
+  background: linear-gradient(135deg, var(--color-tertiary) 1%, var(--color-tertiary) 75%, var(--color-tertiary) 75%, var(--color-tertiary-darker) 77%, var(--color-tertiary-darker) 100%);
 }
 
 .form-control.time-limit-select {
