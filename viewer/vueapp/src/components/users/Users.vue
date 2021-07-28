@@ -115,6 +115,7 @@
                     v-b-tooltip.hover
                     title="This user has additional restricted permissions"
                     class="btn-toggle-user"
+                    :class="{expanded: listUser.expanded}"
                     @toggle="toggleAdvSettings(listUser)">
                   </toggle-btn>
                   <toggle-btn v-else
@@ -1046,7 +1047,7 @@ td input[type="checkbox"] {
 }
 
 /* indication that a user has additional permissions set */
-.btn-indicator .btn-toggle-user.btn-success {
+.btn-indicator .btn-toggle-user:not(.expanded) {
   background: linear-gradient(135deg, #28a745 1%, #28a745 75%, #28a745 75%, #1c7730 77%, #1c7730 100%);
 }
 
