@@ -25,7 +25,7 @@ const props = {
   fields: [fieldsMap['ip.src'], fieldsMap['ip.dst']]
 };
 
-test('export csv', async () => {
+test('sessions - export csv', async () => {
   SessionsService.exportCsv = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: {} };

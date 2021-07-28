@@ -47,10 +47,12 @@
     <div class="col-md-4">
       <div class="pull-right">
         <!-- delete button -->
-        <button class="btn btn-danger btn-sm"
+        <button
+          type="button"
+          title=" Remove Data"
           @click="deleteSessions"
           :class="{'disabled':loading}"
-          type="button">
+          class="btn btn-danger btn-sm">
           <span v-if="!loading">
             <span class="fa fa-trash-o">
             </span>&nbsp;

@@ -24,7 +24,7 @@ const props = {
   applyTo: 'matching'
 };
 
-test('export pcap', async () => {
+test('sessions - export pcap', async () => {
   SessionsService.exportPcap = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: {} };

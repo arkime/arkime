@@ -27,7 +27,7 @@ const props = {
   fields: [fieldsMap['ip.src'], fieldsMap['ip.dst']]
 };
 
-test('intersection', async () => {
+test('sessions - intersection', async () => {
   SessionsService.viewIntersection = jest.fn().mockResolvedValue({ text: 'yay!' });
 
   const $route = { query: {} };
