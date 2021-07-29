@@ -6,10 +6,12 @@
           Include
         </span>
       </div>
-      <select :value="segments"
-        @input="$emit('update:segments', $event.target.value)"
+      <select
+        role="listbox"
+        :value="segments"
         class="form-control"
-        style="-webkit-appearance:none;">
+        style="-webkit-appearance:none;"
+        @input="$emit('update:segments', $event.target.value)">
         <option value="no">no</option>
         <option value="all">all</option>
         <option value="time">same time period</option>

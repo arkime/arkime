@@ -15,9 +15,10 @@
             Tags
           </span>
         </div>
-        <input v-model="tags"
-          v-focus-input="true"
+        <input
           type="text"
+          v-model="tags"
+          v-focus-input="true"
           class="form-control"
           placeholder="Enter a comma separated list of tags"
         />
@@ -36,10 +37,12 @@
     <!-- buttons -->
     <div class="col-md-3">
       <div class="pull-right">
-        <button class="btn btn-sm btn-theme-tertiary"
+        <button
+          type="button"
           @click="send"
+          title="Send Session(s)"
           :class="{'disabled':loading}"
-          type="button">
+          class="btn btn-sm btn-theme-tertiary">
           <span v-if="!loading">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;
@@ -51,11 +54,12 @@
             Sending Session(s)
           </span>
         </button>
-        <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
+        <button
+          type="button"
           title="cancel"
+          v-b-tooltip.hover
           @click="done(null)"
-          type="button">
+          class="btn btn-sm btn-warning">
           <span class="fa fa-ban">
           </span>
         </button>
@@ -120,25 +124,23 @@ export default {
         numMatching: this.numMatching
       };
 
-      SessionsService.send(data, this.$route.query)
-        .then((response) => {
-          this.tags = '';
-          this.loading = false;
+      SessionsService.send(data, this.$route.query).then((response) => {
+        this.tags = '';
+        this.loading = false;
 
-          let reloadData = false;
-          //  only reload data if tags were added to only one
-          if (data.sessions && data.sessions.length === 1) {
-            reloadData = true;
-          }
+        let reloadData = false;
+        //  only reload data if tags were added to only one
+        if (data.sessions && data.sessions.length === 1) {
+          reloadData = true;
+        }
 
-          this.done(response.data.text, response.data.success, reloadData);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an oportunity to try again (don't close the form)
-          this.error = error.text;
-          this.loading = false;
-        });
+        this.done(response.data.text, response.data.success, reloadData);
+      }).catch((error) => {
+        // display the error under the form so that user
+        // has an oportunity to try again (don't close the form)
+        this.error = error.text;
+        this.loading = false;
+      });
     }
   }
 };

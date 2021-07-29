@@ -15,10 +15,11 @@
             Tags
           </span>
         </div>
-        <input v-model="tags"
-          v-focus-input="true"
+        <input
           type="text"
+          v-model="tags"
           class="form-control"
+          v-focus-input="true"
           placeholder="Enter a comma separated list of tags"
         />
       </div> <!-- /tags input -->
@@ -36,11 +37,13 @@
     <!-- buttons -->
     <div class="col-md-3">
       <div class="pull-right">
-        <button class="btn btn-sm btn-theme-tertiary"
+        <button
           v-if="add"
+          type="button"
+          title="Add Tags"
           @click="apply(true)"
           :class="{'disabled':loading}"
-          type="button">
+          class="btn btn-sm btn-theme-tertiary">
           <span v-if="!loading">
             <span class="fa fa-plus-circle">
             </span>&nbsp;
@@ -52,11 +55,13 @@
             Adding Tags
           </span>
         </button>
-        <button class="btn btn-sm btn-danger"
+        <button
           v-else
+          type="button"
+          title="Remove Tags"
           @click="apply(false)"
           :class="{'disabled':loading}"
-          type="button">
+          class="btn btn-sm btn-danger">
           <span v-if="!loading">
             <span class="fa fa-trash-o">
             </span>&nbsp;
@@ -68,11 +73,12 @@
             Removing Tags
           </span>
         </button>
-        <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
+        <button
+          type="button"
           title="cancel"
+          v-b-tooltip.hover
           @click="done(null)"
-          type="button">
+          class="btn btn-sm btn-warning">
           <span class="fa fa-ban">
           </span>
         </button>
@@ -130,18 +136,16 @@ export default {
         numMatching: this.numMatching
       };
 
-      SessionsService.tag(addTags, data, this.$route.query)
-        .then((response) => {
-          this.tags = '';
-          this.loading = false;
-          this.done(response.data.text, response.data.success, this.single);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an opportunity to try again (don't close the form)
-          this.error = error.text;
-          this.loading = false;
-        });
+      SessionsService.tag(addTags, data, this.$route.query).then((response) => {
+        this.tags = '';
+        this.loading = false;
+        this.done(response.data.text, response.data.success, this.single);
+      }).catch((error) => {
+        // display the error under the form so that user
+        // has an opportunity to try again (don't close the form)
+        this.error = error.text;
+        this.loading = false;
+      });
     }
   }
 };
