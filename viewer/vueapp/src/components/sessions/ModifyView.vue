@@ -12,13 +12,14 @@
             View Name
           </span>
         </div>
-        <input v-model="name"
-          v-focus-input="true"
+        <input
           type="text"
           maxlength="20"
+          v-model="name"
+          v-focus-input="true"
           class="form-control"
-          v-on:keydown.enter="$event.stopPropagation()"
           placeholder="Enter a (short) view name"
+          v-on:keydown.enter="$event.stopPropagation()"
         />
       </div>
     </div> <!-- /view name input -->
@@ -33,11 +34,12 @@
             Expression
           </span>
         </div>
-        <input v-model="viewExpression"
+        <input
           type="text"
           class="form-control"
-          v-on:keydown.enter="$event.stopPropagation()"
+          v-model="viewExpression"
           placeholder="Enter a query expression"
+          v-on:keydown.enter="$event.stopPropagation()"
         />
       </div> <!-- /view expression input -->
 
@@ -53,15 +55,18 @@
 
     <div v-if="sessionsPage"
       class="col-md-1 no-wrap">
-      <div class="form-check small mt-1 pl-0"
+      <div
         v-b-tooltip.hover
+        class="form-check small mt-1 pl-0"
         title="Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.">
-        <input v-model="useColConfig"
-          class="form-check-input"
+        <input
           type="checkbox"
-          id="useColConfig">
-        <label class="form-check-label"
-          for="useColConfig">
+          id="useColConfig"
+          v-model="useColConfig"
+          class="form-check-input">
+        <label
+          for="useColConfig"
+          class="form-check-label">
           Save Columns
         </label>
       </div>
@@ -69,38 +74,36 @@
 
     <!-- cancel button -->
     <div class="col-md-3">
-    <button class="btn btn-sm btn-theme-tertiary pull-right ml-1"
-      @click="modifyView"
-      :class="{'disabled':loading}"
-      type="button">
-      <span v-if="!loading">
-        <span v-if="mode === 'create'">
-          <span class="fa fa-plus-circle">
-          </span>&nbsp;
-          Create View
+      <button
+        type="button"
+        @click="modifyView"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-theme-tertiary pull-right ml-1"
+        :title="`${mode === 'create' ? 'Create View' : 'Save View'}`">
+        <span v-if="!loading">
+          <span v-if="mode === 'create'">
+            <span class="fa fa-plus-circle" />&nbsp;
+            Create View
+          </span>
+          <span v-else-if="mode === 'edit'">
+            <span class="fa fa-save" />&nbsp;
+            Save View
+          </span>
         </span>
-        <span v-else-if="mode === 'edit'">
-          <span class="fa fa-save">
-          </span>&nbsp;
-          Save Edits
+        <span v-if="loading">
+          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <span v-if="mode === 'create'">
+            Creating View
+          </span>
+          <span v-else-if="mode === 'edit'">
+            Saving View
+          </span>
         </span>
-      </span>
-      <span v-if="loading">
-        <span class="fa fa-spinner fa-spin">
-        </span>&nbsp;
-
-        <span v-if="mode === 'create'">
-          Creating View
-        </span>
-        <span v-else-if="mode === 'edit'">
-          Saving View
-        </span>
-      </span>
-    </button>
-      <div class="btn btn-sm btn-warning pull-right"
-        @click="done(null)">
-        <span class="fa fa-ban">
-        </span>
+      </button>
+      <div
+        @click="done(null)"
+        class="btn btn-sm btn-warning pull-right">
+        <span class="fa fa-ban" />
         <span class="d-sm-none d-md-none d-lg-none d-xl-inline">
           &nbsp;Cancel
         </span>
@@ -137,6 +140,9 @@ export default {
     // only display the useColConfig checkbox on the sessions page
     sessionsPage: function () {
       return this.$route.name === 'Sessions';
+    },
+    appliedView: function () {
+      return this.$route.query.view || undefined;
     }
   },
   methods: {
@@ -171,21 +177,19 @@ export default {
         data.sessionsColConfig = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
       }
 
-      UserService.createView(data)
-        .then((response) => {
-          this.loading = false;
-          // close the form and display success/error message
-          this.done(response.text, response.success);
-          // add the new view to the views dropdown
-          this.$store.commit('addViews', data);
-          this.$emit('setView', data.name);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an opportunity to try again (don't close the form)
-          this.error = error;
-          this.loading = false;
-        });
+      UserService.createView(data).then((response) => {
+        this.loading = false;
+        // close the form and display success/error message
+        this.done(response.text, response.success);
+        // add the new view to the views dropdown
+        this.$store.commit('addViews', data);
+        this.$emit('setView', data.name);
+      }).catch((error) => {
+        // display the error under the form so that user
+        // has an opportunity to try again (don't close the form)
+        this.error = error;
+        this.loading = false;
+      });
     },
     updateView: function (key) {
       const data = JSON.parse(JSON.stringify(this.editView));
@@ -205,23 +209,25 @@ export default {
       // key is always old name if data.name changes
       data.key = this.editView.name;
 
-      this.$store.commit('updateViews', JSON.parse(JSON.stringify(data)));
-
-      UserService.updateView(data, this.userId)
-        .then((response) => {
-          this.loading = false;
-          // close the form and display success/error message
-          this.done(response.text, response.success);
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          this.loading = false;
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.updateView(data, this.userId).then((response) => {
+        this.loading = false;
+        // close the form and display success/error message
+        this.done(response.text, response.success);
+        // update the view
+        this.$store.commit('updateViews', JSON.parse(JSON.stringify(data)));
+        if (this.appliedView === data.key) {
+          // if this is the applied view, make sure it is still applied
+          this.$emit('setView', data.name);
+        }
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        this.loading = false;
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     }
   }
 };

@@ -585,14 +585,18 @@ export default {
       // update the url and session storage (to persist user's choice)
       // triggers the '$route.query.view' watcher that issues changeSearch event
       sessionStorage['moloch-view'] = view;
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          view: view
-        }
-      });
+      if (this.$route.query.view !== view) { // view name changed
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            view: view
+          }
+        });
 
-      this.$emit('setView');
+        this.$emit('setView');
+      } else { // view name is the same but expression or columns are different
+        this.$emit('changeSearch');
+      }
     },
     applyView: function (view) {
       this.expression = view.expression;

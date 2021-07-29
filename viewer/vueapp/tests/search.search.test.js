@@ -29,6 +29,8 @@ jest.mock('../src/components/users/UserService');
 jest.mock('../src/components/utils/ConfigService');
 jest.mock('../src/components/sessions/SessionsService');
 
+const $router = { push: jest.fn() };
+
 const store = {
   state: {
     user: userWithSettings,
@@ -81,7 +83,7 @@ test("search bar doesn't have actions button", async () => {
     queryByTitle
   } = render(Search, {
     store,
-    mocks: { $route },
+    mocks: { $route, $router },
     props: { openSessions: [], fields: fields }
   });
 
@@ -96,7 +98,7 @@ test('search bar', async () => {
     getByText, getAllByText, getByTitle, getByPlaceholderText
   } = render(Search, {
     store,
-    mocks: { $route },
+    mocks: { $route, $router },
     props: { openSessions: [], fields: fields }
   });
 
@@ -144,4 +146,58 @@ test('search bar', async () => {
 
   await fireEvent.click(getByTitle('Delete this view.'));
   expect(UserService.deleteView).toHaveBeenCalledTimes(1); // view can be deleted
+});
+
+test('search bar - change view with no view applied', async () => {
+  const $route = { query: {} };
+
+  const {
+    getByText, emitted
+  } = render(Search, {
+    store,
+    mocks: { $route, $router },
+    props: { openSessions: [], fields: fields }
+  });
+
+  // setView gets called when there is no view applied
+  // there should only be one element with 'text view 1' since this view is not applied
+  await fireEvent.click(getByText('test view 1'));
+  expect(emitted()).toHaveProperty('setView');
+  expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
+});
+
+test('search bar - change view when same view applied', async () => {
+  const $route = { query: { view: 'test view 1' }, name: 'Sessions' };
+
+  const {
+    getAllByText, emitted
+  } = render(Search, {
+    store,
+    mocks: { $route, $router },
+    props: { openSessions: [], fields: fields }
+  });
+
+  // changeSearch gets called when there is the view applied has the same name
+  // there should be 2 elements with 'text view 1' since this view not applied
+  await fireEvent.click(getAllByText('test view 1')[1]);
+  expect(emitted()).toHaveProperty('changeSearch');
+  expect($router.push).not.toHaveBeenCalled();
+});
+
+test('search bar - change search when same view applied', async () => {
+  const $route = { query: { view: 'test view 2' }, name: 'Sessions' };
+
+  const {
+    getByText, emitted
+  } = render(Search, {
+    store,
+    mocks: { $route, $router },
+    props: { openSessions: [], fields: fields }
+  });
+
+  // changeSearch gets called when there is the view applied has the same name
+  // there should be 2 elements with 'text view 1' since this view not applied
+  await fireEvent.click(getByText('test view 1'));
+  expect(emitted()).toHaveProperty('setView');
+  expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
 });
