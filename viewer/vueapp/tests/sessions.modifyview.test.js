@@ -148,7 +148,6 @@ test('sessions - update applied view', async () => {
   expect(emitted().setView[0][0]).toBe(updatedView.name);
 });
 
-// TODO doesn't set view if not applied
 test('sessions - update unapplied view', async () => {
   const props = {
     done: jest.fn(),

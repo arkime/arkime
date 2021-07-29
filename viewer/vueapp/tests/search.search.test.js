@@ -195,8 +195,8 @@ test('search bar - change search when same view applied', async () => {
     props: { openSessions: [], fields: fields }
   });
 
-  // changeSearch gets called when there is the view applied has the same name
-  // there should be 2 elements with 'text view 1' since this view not applied
+  // setview gets called when there is a different view applied
+  // there should only be one element with 'text view 1' since this view is not applied
   await fireEvent.click(getByText('test view 1'));
   expect(emitted()).toHaveProperty('setView');
   expect($router.push).toHaveBeenCalledWith({ query: { view: 'test view 1' } });
