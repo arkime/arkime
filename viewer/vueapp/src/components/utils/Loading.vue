@@ -6,6 +6,7 @@
     <img
       @click="twirl"
       :class="{'twirling':twirling, 'shifty-eyes': shiftyEyes}"
+      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
       :src="shiftyEyes ? 'assets/watching.gif' : 'assets/Arkime_Logo_Mark_FullGradient.png'"
     />
     <div class="loader-section rectangle"
