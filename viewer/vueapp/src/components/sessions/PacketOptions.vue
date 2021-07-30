@@ -4,8 +4,9 @@
       <!-- # packets -->
       <b-form-select
         size="sm"
-        class="mr-1 form-control"
+        role="listbox"
         :value="params.packets"
+        class="mr-1 form-control"
         :options="[
           { value: 50, text: '50 packets' },
           { value: 200, text: '200 packets' },
@@ -18,8 +19,9 @@
       <!-- packet display type -->
       <b-form-select
         size="sm"
-        class="mr-1 form-control"
+        role="listbox"
         :value="params.base"
+        class="mr-1 form-control"
         :options="[
           { value: 'natural', text: 'natural' },
           { value: 'ascii', text: 'ascii' },
@@ -33,30 +35,36 @@
         size="sm"
         class="mr-1"
         variant="checkbox"
-        text="Packet Options">
+        text="Packet Options"
+        title="Packet Options">
         <b-dropdown-item
-          @click="$emit('toggleShowFrames')">
+          @click="$emit('toggleShowFrames')"
+          :title="params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets'">
           {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
         </b-dropdown-item>
         <b-dropdown-item
-          @click="$emit('toggleTimestamps')">
+          @click="$emit('toggleTimestamps')"
+          :title="params.ts ? 'Hide Packet Info' : 'Show Packet Info'">
           {{ params.ts ? 'Hide' : 'Show' }}
           Packet Info
         </b-dropdown-item>
         <b-dropdown-item
           v-if="params.base === 'hex'"
-          @click="$emit('toggleLineNumbers')">
+          @click="$emit('toggleLineNumbers')"
+          :title="params.line ? 'Hide Line Numbers' : 'Show Line Numbers'">
           {{ params.line ? 'Hide' : 'Show'}}
           Line Numbers
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!params.showFrames"
-          @click="$emit('toggleCompression')">
+          @click="$emit('toggleCompression')"
+          :title="params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing'">
           {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!params.showFrames"
-          @click="$emit('toggleImages')">
+          @click="$emit('toggleImages')"
+          :title="params.image ? 'Hide Images & Files' : 'Show Images & Files'">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
         </b-dropdown-item>
@@ -74,20 +82,22 @@
       </b-dropdown> <!-- /toggle options -->
       <!-- src/dst packets -->
       <div class="btn-group mr-1">
-        <button type="button"
-          class="btn btn-sm btn-secondary btn-checkbox btn-sm"
-          :class="{'active':params.showSrc}"
-          @click="$emit('toggleShowSrc')"
+        <button
           v-b-tooltip
-          title="Toggle source packet visibility">
+          type="button"
+          @click="$emit('toggleShowSrc')"
+          :class="{'active':params.showSrc}"
+          title="Toggle source packet visibility"
+          class="btn btn-sm btn-secondary btn-checkbox btn-sm">
           Src
         </button>
-        <button type="button"
-          class="btn btn-secondary btn-checkbox btn-sm"
-          :class="{'active':params.showDst}"
-          @click="$emit('toggleShowDst')"
+        <button
           v-b-tooltip
-          title="Toggle destination packet visibility">
+          type="button"
+          @click="$emit('toggleShowDst')"
+          :class="{'active':params.showDst}"
+          title="Toggle destination packet visibility"
+          class="btn btn-secondary btn-checkbox btn-sm">
           Dst
         </button>
       </div> <!-- /src/dst packets -->
@@ -121,26 +131,29 @@
                 </span>
               </span>
               <input
-                v-model="field.value"
-                class="form-control"
                 type="field.type"
+                class="form-control"
+                v-model="field.value"
+                :placeholder="field.name"
               />
             </div>
           </div>
         </span>
         <div class="btn-group btn-group-sm pull-right mt-1">
-          <button type="button"
-            class="btn btn-warning"
+          <button
+            type="button"
             title="cancel"
             v-b-tooltip.hover
+            class="btn btn-warning"
             @click="closeDecodingForm(false)">
             <span class="fa fa-ban">
             </span>
           </button>
-          <button type="button"
-            class="btn btn-theme-primary"
+          <button
+            type="button"
             title="apply"
             v-b-tooltip.hover
+            class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
             <span class="fa fa-check">
             </span>

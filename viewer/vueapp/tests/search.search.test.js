@@ -184,7 +184,7 @@ test('search bar - change view when same view applied', async () => {
   expect($router.push).not.toHaveBeenCalled();
 });
 
-test('search bar - change search when same view applied', async () => {
+test('search bar - change view to different view', async () => {
   const $route = { query: { view: 'test view 2' }, name: 'Sessions' };
 
   const {
