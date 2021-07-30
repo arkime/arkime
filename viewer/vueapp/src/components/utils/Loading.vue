@@ -1,5 +1,4 @@
 <template>
-
   <div class="loading">
     <div class="rainbow-container">
       <div class="rainbow"></div>
@@ -17,16 +16,16 @@
         </h4>
         <div v-if="canCancel"
           class="mt-1">
-          <button type="button"
-            class="btn btn-sm btn-theme-primary"
-            @click="cancel">
+          <button
+            type="button"
+            @click="cancel"
+            class="btn btn-sm btn-theme-primary">
             cancel
           </button>
         </div>
       </div>
     </div>
   </div>
-
 </template>
 
 <script>
