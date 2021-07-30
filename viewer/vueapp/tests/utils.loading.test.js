@@ -1,12 +1,17 @@
 'use strict';
 
-import { render } from '@testing-library/vue';
+import '@testing-library/jest-dom';
+import { render, fireEvent } from '@testing-library/vue';
 import LoadingComponent from '../src/components/utils/Loading.vue';
+const { userWithSettings } = require('./consts');
+
+const props = { canCancel: false };
+const store = { state: { user: userWithSettings } };
 
 test('loading', async () => {
-  const { getByText, queryByText, updateProps } = render(LoadingComponent, {
-    props: { canCancel: false }
-  });
+  const {
+    getByText, queryByText, getByTitle, updateProps, emitted
+  } = render(LoadingComponent, { props, store });
 
   getByText('I\'m hootin');
 
@@ -14,5 +19,18 @@ test('loading', async () => {
 
   await updateProps({ canCancel: true });
 
-  getByText('cancel');
+  const cancelBtn = getByText('cancel'); // can use cancel button
+  await fireEvent.click(cancelBtn);
+  expect(emitted()).toHaveProperty('cancel');
+
+  const image = getByTitle('Arkime Logo'); // logo twirls on click
+  await fireEvent.click(image);
+  expect(image).toHaveClass('twirling');
+});
+
+test('loading - watching', async () => {
+  store.state.user.settings.shiftyEyes = true;
+  const { getByTitle } = render(LoadingComponent, { props, store });
+
+  getByTitle("I'm watching you");
 });

@@ -10,6 +10,8 @@ import FocusInput from '../src/components/utils/FocusInput.vue';
 import '../src/filters.js';
 const { users, userWithSettings } = require('./consts');
 
+jest.setTimeout(30000);
+
 console.info = jest.fn(); // don't display console.info messages
 
 Vue.use(BootstrapVue);
@@ -63,8 +65,8 @@ test('users page user crud', async () => {
   });
 
   const {
-    getByText, getAllByRole, getByTitle, queryByText,
-    getByLabelText, getByPlaceholderText
+    getByText, getAllByRole, getByTitle, queryByText, getByLabelText,
+    getByPlaceholderText
   } = render(Users, {
     store,
     mocks: { $route }
