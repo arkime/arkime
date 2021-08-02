@@ -88,7 +88,7 @@ export default {
   font-weight: bold;
   position: relative;
   top: calc(50% + 60px);
-  color: var(--color-gray-dark);
+  color: var(--color-foreground-accent);
 }
 .loading .im-hootin > h4.blinking {
   animation: blinker 0.5s linear infinite;
@@ -112,7 +112,16 @@ export default {
   height: 200px;
   border-radius: 32px;
   margin: -90px 0 0 -90px;
-  background: rgb(200, 200, 200, 0.7);
+}
+.loading .loader-section.rectangle:before {
+  left: 0;
+  content: "";
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  position: absolute;
+  border-radius: 32px;
+  background-color: var(--color-gray);
 }
 .loading .loader-section.rectangle.tall-rectangle {
   height: 245px;
@@ -161,17 +170,17 @@ export default {
   }
 }
 @keyframes rainbow-color {
-  0%  { border-top-color: var(--color-primary); border-right-color: var(--color-primary); }
-  24% { border-top-color: var(--color-primary); border-right-color: var(--color-primary); }
+  0%  { border-top-color: var(--color-primary-light); border-right-color: var(--color-primary-light); }
+  24% { border-top-color: var(--color-primary-light); border-right-color: var(--color-primary-light); }
 
-  25% { border-top-color: var(--color-secondary); border-right-color: var(--color-secondary); }
-  49% { border-top-color: var(--color-secondary); border-right-color: var(--color-secondary); }
+  25% { border-top-color: var(--color-secondary-light); border-right-color: var(--color-secondary-light); }
+  49% { border-top-color: var(--color-secondary-light); border-right-color: var(--color-secondary-light); }
 
-  50% { border-top-color: var(--color-tertiary); border-right-color: var(--color-tertiary); }
-  74% { border-top-color: var(--color-tertiary); border-right-color: var(--color-tertiary); }
+  50% { border-top-color: var(--color-tertiary-light); border-right-color: var(--color-tertiary-light); }
+  74% { border-top-color: var(--color-tertiary-light); border-right-color: var(--color-tertiary-light); }
 
-  75% { border-top-color: var(--color-quaternary); border-right-color: var(--color-quaternary); }
-  99% { border-top-color: var(--color-quaternary); border-right-color: var(--color-quaternary); }
+  75% { border-top-color: var(--color-quaternary-light); border-right-color: var(--color-quaternary-light); }
+  100% { border-top-color: var(--color-quaternary-light); border-right-color: var(--color-quaternary-light); }
 }
 @keyframes bounce {
   0%   { transform: scale(1,1)      translateY(0); }
