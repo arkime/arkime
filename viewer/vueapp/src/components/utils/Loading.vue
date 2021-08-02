@@ -4,15 +4,15 @@
       <div class="rainbow"></div>
     </div>
     <img
-      @click="twirl"
-      :class="{'twirling':twirling, 'shifty-eyes': shiftyEyes}"
+      @click="bounce"
+      :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
       :src="shiftyEyes ? 'assets/watching.gif' : 'assets/Arkime_Logo_Mark_FullGradient.png'"
     />
     <div class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">
       <div class="im-hootin text-center">
-        <h4 :class="{'blinking':twirling}">
+        <h4 :class="{'blinking':bouncing}">
           I'm hootin
         </h4>
         <div v-if="canCancel"
@@ -35,7 +35,7 @@ export default {
   props: ['canCancel'],
   data () {
     return {
-      twirling: false
+      bouncing: false
     };
   },
   computed: {
@@ -47,11 +47,12 @@ export default {
     cancel () {
       this.$emit('cancel');
     },
-    twirl () {
-      this.twirling = true;
+    bounce () {
+      if (this.bouncing) { return; }
+      this.bouncing = true;
       setTimeout(() => {
-        this.twirling = false;
-      }, 2400);
+        this.bouncing = false;
+      }, 1500);
     }
   }
 };
@@ -59,14 +60,17 @@ export default {
 
 <style scoped>
 .loading img {
-  display: flex;
-  z-index: 1499;
-  position: fixed;
   top: 50%;
   left: 50%;
   height: 120px;
+  display: flex;
+  z-index: 10002;
+  position: fixed;
   margin-top: -50px;
   margin-left: -32px;
+  animation-duration: 2s;
+  transform-origin: bottom;
+  animation-iteration-count: infinite;
 }
 
 .loading img.shifty-eyes {
@@ -75,18 +79,19 @@ export default {
   margin-left: -43px;
 }
 
-.loading img.twirling {
-  animation: twirl 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+.loading img.bouncing {
+  animation-name: bounce;
+  animation-timing-function: cubic-bezier(0.280, 0.840, 0.420, 1);
 }
 
 .loading .im-hootin {
+  font-weight: bold;
   position: relative;
   top: calc(50% + 60px);
   color: var(--color-gray-dark);
-  font-weight: bold;
 }
 .loading .im-hootin > h4.blinking {
-  animation: blinker 0.6s linear infinite;
+  animation: blinker 0.5s linear infinite;
 }
 
 /* taller rectangle to accommodate cancel action */
@@ -95,18 +100,18 @@ export default {
 }
 
 .loading .loader-section {
-  position: fixed;
   top: 50%;
   left: 50%;
   z-index: 1000;
+  position: fixed;
 }
 
 /* rectangle background */
 .loading .loader-section.rectangle {
   width: 180px;
   height: 200px;
-  margin: -90px 0 0 -90px;
   border-radius: 32px;
+  margin: -90px 0 0 -90px;
   background: rgb(200, 200, 200, 0.7);
 }
 .loading .loader-section.rectangle.tall-rectangle {
@@ -126,13 +131,13 @@ export default {
   width: 100px;
   height: 100px;
   z-index: 10001;
+  border-radius: 50%;
+  box-sizing: border-box;
   border-style: solid;
   border-top-color: #FFF;
   border-right-color: #FFF;
   border-left-color: transparent;
   border-bottom-color: transparent;
-  border-radius: 50%;
-  box-sizing: border-box;
   animation: rainbow 3s ease-in-out infinite, rainbow-color 6s linear infinite;
   transform: rotate(-200deg)
 }
@@ -168,19 +173,14 @@ export default {
   75% { border-top-color: var(--color-quaternary); border-right-color: var(--color-quaternary); }
   99% { border-top-color: var(--color-quaternary); border-right-color: var(--color-quaternary); }
 }
-@keyframes twirl {
-  0%, 50%, 100% {
-    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5);
-  }
-  0% {
-    transform: rotateY(0deg);
-  }
-  50% {
-    transform: rotateY(1080deg);
-  }
-  100% {
-    transform: rotateY(720deg);
-  }
+@keyframes bounce {
+  0%   { transform: scale(1,1)      translateY(0); }
+  10%  { transform: scale(1.1,.9)   translateY(0); }
+  30%  { transform: scale(.9,1.1)   translateY(-100px); }
+  50%  { transform: scale(1.05,.95) translateY(0); }
+  57%  { transform: scale(1,1)      translateY(-7px); }
+  64%  { transform: scale(1,1)      translateY(0); }
+  100% { transform: scale(1,1)      translateY(0); }
 }
 @keyframes blinker {
   50% { opacity: 0; }
