@@ -293,6 +293,6 @@ table.table tr.border-top-bold > td {
   opacity: 1;
 }
 .badge-master {
-  background-color: var(--color-primary-darker);
+  background-color: var(--color-quaternary);
 }
 </style>
