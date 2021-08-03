@@ -488,7 +488,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     req.query.base = req.query.base || 'ascii';
     req.query.showFrames = req.query.showFrames === 'true' || false;
     // displaying images and uncompressing require all the packets from a session
-    req.query.packets = req.query.needimage || req.query.needgzip ? 10000 : +req.query.packets;
+    // *2 because the packets can be out of order, we truncate again in the reassemble call
+    req.query.packets = req.query.needimage || req.query.needgzip ? 10000 : +req.query.packets * 2;
 
     const packets = [];
     sModule.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
