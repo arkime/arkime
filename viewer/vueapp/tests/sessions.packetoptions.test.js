@@ -19,7 +19,7 @@ const props = {
     line: true,
     base: 'hex',
     gzip: false,
-    image: true,
+    image: false,
     packets: '50',
     showDst: true,
     showSrc: true,
@@ -75,7 +75,7 @@ test('sessions - packet options', async () => {
   expect(emitted()).toHaveProperty('toggleCompression');
 
   // click image toggle emits imagesToggle --------------------------------- //
-  const imagesToggle = getByTitle('Hide Images & Files');
+  const imagesToggle = getByTitle(/Show Images & Files/);
   await fireEvent.click(imagesToggle);
   expect(emitted()).toHaveProperty('toggleImages');
 
@@ -98,7 +98,7 @@ test('sessions - packet options', async () => {
       line: false,
       base: 'ascii', // line numbers should only be availble for 'hex'
       gzip: true,
-      image: false,
+      image: true,
       packets: '200',
       showDst: false,
       showSrc: false,
@@ -112,7 +112,7 @@ test('sessions - packet options', async () => {
 
   // gzip should disable the num packets select and display why
   expect(numPacketsSelect).toHaveClass('disabled');
-  getByTitle(/Cannot select number of packets/);
+  getByTitle(/You cannot select the number of packets/);
 
   // updated values
   expect(numPacketsSelect.value).toBe('200');
@@ -124,7 +124,7 @@ test('sessions - packet options', async () => {
   expect(queryByTitle('Show Line Numbers')).not.toBeInTheDocument();
   expect(queryByTitle('Hide Line Numbers')).not.toBeInTheDocument();
   getByTitle('Disable Uncompressing');
-  getByTitle(/Show Images & Files/);
+  getByTitle('Hide Images & Files');
   expect(getByTitle('Toggle source packet visibility')).not.toHaveClass('active');
   expect(getByTitle('Toggle destination packet visibility')).not.toHaveClass('active');
 

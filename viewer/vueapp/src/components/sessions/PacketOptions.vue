@@ -3,12 +3,12 @@
     <div class="form-group">
       <!-- # packets -->
       <span v-b-tooltip.hover
-        :title="params.gzip || params.image ? 'Cannot select number of packets because uncompress might need them all. To select the number of packets returned, disable uncompressing from the Packet Options menu' : ''">
+        :title="numPacketsInfo">
         <b-form-select
           size="sm"
           role="listbox"
           :value="params.packets"
-          :disabled="params.gzip"
+          :disabled="params.gzip || params.image"
           class="mr-1 form-control"
           :class="{'disabled':params.gzip}"
           :options="[
@@ -190,6 +190,27 @@ export default {
       decodingForm: false,
       decodingsClone: JSON.parse(JSON.stringify(this.decodings))
     };
+  },
+  computed: {
+    numPacketsInfo () {
+      let toggle;
+
+      if (this.params.gzip && this.params.image) {
+        toggle = 'uncompress and images & files';
+      } else if (this.params.gzip) {
+        toggle = 'uncompress';
+      } else if (this.params.image) {
+        toggle = 'images and files';
+      } else {
+        return '';
+      }
+
+      return `
+        Displaying all packets for this session.
+        You cannot select the number of packets because ${toggle} might need them all.
+        To select the number of packets returned, disable ${toggle} from the Packet Options menu.
+      `;
+    }
   },
   watch: {
     decodings (newVal) {
