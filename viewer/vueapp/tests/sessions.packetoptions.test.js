@@ -19,7 +19,7 @@ const props = {
     line: true,
     base: 'hex',
     gzip: false,
-    image: true,
+    image: false,
     packets: '50',
     showDst: true,
     showSrc: true,
@@ -70,12 +70,12 @@ test('sessions - packet options', async () => {
   expect(emitted()).toHaveProperty('toggleLineNumbers');
 
   // click compressing toggle emits toggleCompression ---------------------- //
-  const compressingToggle = getByTitle('Enable Uncompressing');
+  const compressingToggle = getByTitle(/Enable Uncompressing/);
   await fireEvent.click(compressingToggle);
   expect(emitted()).toHaveProperty('toggleCompression');
 
   // click image toggle emits imagesToggle --------------------------------- //
-  const imagesToggle = getByTitle('Hide Images & Files');
+  const imagesToggle = getByTitle(/Show Images & Files/);
   await fireEvent.click(imagesToggle);
   expect(emitted()).toHaveProperty('toggleImages');
 
@@ -98,7 +98,7 @@ test('sessions - packet options', async () => {
       line: false,
       base: 'ascii', // line numbers should only be availble for 'hex'
       gzip: true,
-      image: false,
+      image: true,
       packets: '200',
       showDst: false,
       showSrc: false,
@@ -110,14 +110,21 @@ test('sessions - packet options', async () => {
     cyberChefDstUrl: `cyberchef.html?nodeId=test&sessionId=${sessions[0].id}&type=dst`
   });
 
-  expect(getAllByRole('listbox')[0].value).toBe('200');
+  // gzip should disable the num packets select and display why
+  expect(numPacketsSelect).toHaveClass('disabled');
+  getByTitle(/You cannot select the number of packets/);
+
+  // updated values
+  expect(numPacketsSelect.value).toBe('200');
   expect(getAllByRole('listbox')[1].value).toBe('ascii');
+
+  // updated titles
   getByTitle('Show Raw Packets');
   getByTitle('Hide Packet Info');
   expect(queryByTitle('Show Line Numbers')).not.toBeInTheDocument();
   expect(queryByTitle('Hide Line Numbers')).not.toBeInTheDocument();
   getByTitle('Disable Uncompressing');
-  getByTitle('Show Images & Files');
+  getByTitle('Hide Images & Files');
   expect(getByTitle('Toggle source packet visibility')).not.toHaveClass('active');
   expect(getByTitle('Toggle destination packet visibility')).not.toHaveClass('active');
 
@@ -161,8 +168,8 @@ test('sessions - packet options', async () => {
   });
 
   expect(queryByTitle('Disable Uncompressing')).not.toBeInTheDocument();
-  expect(queryByTitle('Enable Uncompressing')).not.toBeInTheDocument();
-  expect(queryByTitle('Show Images & Files')).not.toBeInTheDocument();
+  expect(queryByTitle(/Enable Uncompressing/)).not.toBeInTheDocument();
+  expect(queryByTitle(/Show Images & Files/)).not.toBeInTheDocument();
   expect(queryByTitle('Hide Images & Files')).not.toBeInTheDocument();
 
   // toggle decoding without form ------------------------------------------ //
