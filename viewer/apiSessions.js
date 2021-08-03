@@ -487,6 +487,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     req.query.line = req.query.line || false;
     req.query.base = req.query.base || 'ascii';
     req.query.showFrames = req.query.showFrames === 'true' || false;
+    // displaying images and uncompressing require all the packets from a session
+    req.query.packets = req.query.needimage || req.query.needgzip ? 10000 : +req.query.packets;
 
     const packets = [];
     sModule.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
@@ -578,7 +580,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         localSessionDetailReturn(req, res, session, []);
       }
     },
-    req.query.needimage ? 10000 : 400, 10);
+    req.query.packets, 10);
   }
 
   function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {

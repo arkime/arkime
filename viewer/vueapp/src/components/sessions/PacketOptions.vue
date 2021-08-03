@@ -2,20 +2,25 @@
   <span>
     <div class="form-group">
       <!-- # packets -->
-      <b-form-select
-        size="sm"
-        role="listbox"
-        :value="params.packets"
-        class="mr-1 form-control"
-        :options="[
-          { value: 50, text: '50 packets' },
-          { value: 200, text: '200 packets' },
-          { value: 500, text: '500 packets' },
-          { value: 1000, text: '1,000 packets' },
-          { value: 2000, text: '2,000 packets' }
-        ]"
-        @change="$emit('updateNumPackets', $event)"
-      /> <!-- /# packets -->
+      <span v-b-tooltip.hover
+        :title="params.gzip || params.image ? 'Cannot select number of packets because uncompress might need them all. To select the number of packets returned, disable uncompressing from the Packet Options menu' : ''">
+        <b-form-select
+          size="sm"
+          role="listbox"
+          :value="params.packets"
+          :disabled="params.gzip"
+          class="mr-1 form-control"
+          :class="{'disabled':params.gzip}"
+          :options="[
+            { value: 50, text: '50 packets' },
+            { value: 200, text: '200 packets' },
+            { value: 500, text: '500 packets' },
+            { value: 1000, text: '1,000 packets' },
+            { value: 2000, text: '2,000 packets' }
+          ]"
+          @change="$emit('updateNumPackets', $event)"
+        />
+      </span> <!-- /# packets -->
       <!-- packet display type -->
       <b-form-select
         size="sm"
@@ -58,13 +63,15 @@
         <b-dropdown-item
           v-if="!params.showFrames"
           @click="$emit('toggleCompression')"
-          :title="params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing'">
+          v-b-tooltip.hover.right="{ disabled: params.gzip }"
+          :title="params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing (Note: all packets will be requested)'">
           {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!params.showFrames"
           @click="$emit('toggleImages')"
-          :title="params.image ? 'Hide Images & Files' : 'Show Images & Files'">
+          v-b-tooltip.hover.right="{ disabled: params.image }"
+          :title="params.image ? 'Hide Images & Files' : 'Show Images & Files (Note: all packets will be requested)'">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
         </b-dropdown-item>
