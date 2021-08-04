@@ -269,7 +269,7 @@ jobs:
 
     release-build:
         image: andywick/arkime-build-7:3.0.0-6
-        requires: [~pr]
+        requires: []
         annotations:
             beta.screwdriver.cd/cpu: LOW
             beta.screwdriver.cd/ram: LOW
@@ -277,7 +277,7 @@ jobs:
             - echo "Hi!"
 
     release-centos-7:
-        requires: [release-build]
+        requires: [~pr,release-build]
         image: andywick/arkime-build-7:3.0.0-6
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -308,7 +308,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     release-centos-8:
-        requires: [release-build]
+        requires: [~pr,release-build]
         image: andywick/arkime-build-8:3.0.0-6
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -341,7 +341,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     release-ubuntu-18:
-        requires: [release-build]
+        requires: [~pr,release-build]
         image: andywick/arkime-build-18:3.0.0-6
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -375,7 +375,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     release-ubuntu-20:
-        requires: [release-build]
+        requires: [~pr,release-build]
         image: andywick/arkime-build-20:3.0.0-6
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
@@ -409,7 +409,7 @@ jobs:
             - AWS_SECRET_ACCESS_KEY
 
     release-arch:
-        requires: [release-build]
+        requires: [~pr,release-build]
         image: andywick/arkime-build-arch:3.0.0-7
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
