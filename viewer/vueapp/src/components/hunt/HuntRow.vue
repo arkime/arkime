@@ -75,7 +75,7 @@
         {{ job.id }}
       </span>
     </td>
-    <td>
+    <td class="no-wrap">
       <button v-if="user.userId === job.userId || user.createEnabled"
         @click="$emit('removeJob', job, arrayName)"
         :disabled="job.loading"
@@ -188,7 +188,6 @@
         <span v-else
           class="fa fa-spinner fa-spin fa-fw">
         </span>
-        {{ job.id }}
       </button>
     </td>
   </tr>
