@@ -53,13 +53,13 @@
         class="fa fa-info-circle fa-fw cursor-help text-warning"
       />
     </td>
-    <td>
+    <td class="word-break">
       {{ job.name }}
     </td>
     <td>
       {{ job.userId }}
     </td>
-    <td>
+    <td class="word-break">
       <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
         {{ job.search }} ({{ job.searchType }})
       </span>
