@@ -283,7 +283,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -314,7 +314,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -348,7 +348,7 @@ jobs:
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -382,7 +382,7 @@ jobs:
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
+            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
@@ -415,7 +415,7 @@ jobs:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall
             - test-capture: (cd tests ; ./tests.pl)
-            - export PATH=/opt/arkime/bin:$PATH
+            - export PATH=/opt/arkime/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root
             - installing: make install
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
