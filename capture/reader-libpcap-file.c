@@ -582,11 +582,11 @@ LOCAL void reader_libpcapfile_opened()
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
 
 	if (pcap_setfilter(pcap, &bpf) == -1) {
-            LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+            LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
         pcap_freecode(&bpf);
     }

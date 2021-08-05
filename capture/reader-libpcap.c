@@ -100,11 +100,11 @@ void reader_libpcap_start() {
             struct bpf_program   bpf;
 
             if (pcap_compile(pcaps[i], &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
+                LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
 
             if (pcap_setfilter(pcaps[i], &bpf) == -1) {
-                LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
+                LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
             pcap_freecode(&bpf);
         }

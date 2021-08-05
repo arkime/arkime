@@ -587,29 +587,29 @@ void moloch_config_load()
             } else if (strncmp(s, "ip:", 3) == 0) {
                 int n = atoi(s+3);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("Bad value: %s", s);
+                    LOGEXIT("Bad saveUnknownPackets ip value: %s", s);
                 BIT_SET(n, config.ipSavePcap);
             } else if (strncmp(s, "-ip:", 4) == 0) {
                 int n = atoi(s+4);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("Bad value: %s", s);
+                    LOGEXIT("Bad saveUnknownPackets -ip value: %s", s);
                 BIT_CLR(n, config.ipSavePcap);
             } else if (strncmp(s, "ether:", 6) == 0) {
                 int n = atoi(s+6);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("Bad value: %s", s);
+                    LOGEXIT("Bad saveUnknownPackets ether value: %s", s);
                 BIT_SET(n, config.etherSavePcap);
             } else if (strncmp(s, "-ether:", 7) == 0) {
                 int n = atoi(s+7);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("Bad value: %s", s);
+                    LOGEXIT("Bad saveUnknownPackets -ether value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
             } else if (strcmp(s, "corrupt") == 0) {
                 config.corruptSavePcap = 1;
             } else if (strcmp(s, "-corrupt") == 0) {
                 config.corruptSavePcap = 0;
             } else {
-                LOGEXIT("Not sure what %s is", s);
+                LOGEXIT("Not sure what saveUnknownPackets %s is", s);
             }
         }
         g_strfreev(saveUnknownPackets);
@@ -643,7 +643,7 @@ void moloch_config_load_local_ips()
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
                 if (!g_regex_match(asnRegex, values[v]+4, 0, NULL)) {
-                    LOGEXIT("Doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
+                    LOGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
                 }
                 char *sp = strchr(values[v]+6, ' ');
                 *sp = 0;

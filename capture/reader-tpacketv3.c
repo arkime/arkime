@@ -209,7 +209,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     if (config.bpf) {
         if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
         }
     }
 
@@ -278,7 +278,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             int fanout_type = PACKET_FANOUT_HASH;
             int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
             if(setsockopt(infos[i].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                LOGEXIT("Error setting packet fanout parameters: (%d,%s)", fanout_group_id, strerror(errno));
+                LOGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }
     }
 

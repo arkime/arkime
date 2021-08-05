@@ -533,7 +533,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             g_hash_table_add(field->ghash, (gpointer)string);
             goto added;
         default:
-            LOGEXIT("Not a string %s", info->dbField);
+            LOGEXIT("Not a string %s field and tried to set '%.*s'", info->dbField, len, string);
         }
     }
 
@@ -591,7 +591,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         g_hash_table_add(field->ghash, (gpointer)string);
         goto added;
     default:
-        LOGEXIT("Not a string %s", info->dbField);
+        LOGEXIT("Not a string %s field and tried to set '%.*s'", info->dbField, len, string);
     }
 
 added:
@@ -695,7 +695,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
                 moloch_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
         default:
-            LOGEXIT("Not a string hash %s", info->dbField);
+            LOGEXIT("Not a string hash %s field and tried to set '%.*s'", info->dbField, len, string);
         }
     }
 
@@ -733,7 +733,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
-        LOGEXIT("Not a string hash %s", info->dbField);
+        LOGEXIT("Not a string hash %s field and tried to set '%.*s'", info->dbField, len, string);
     }
 }
 /******************************************************************************/
@@ -770,7 +770,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             g_hash_table_add(field->ghash, (void *)(long)i);
             goto added;
         default:
-            LOGEXIT("Not a int %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a int %s field and tried to set %d", config.fields[pos]->dbField, i);
         }
     }
 
@@ -799,7 +799,7 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         }
         goto added;
     default:
-        LOGEXIT("Not a int %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a int %s field and tried to set %d", config.fields[pos]->dbField, i);
     }
 
 added:
@@ -880,7 +880,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a ip %s field and tried to set '%s'", config.fields[pos]->dbField, str);
         }
     }
 
@@ -899,7 +899,7 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
             goto added;
         }
     default:
-        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a ip %s field and tried to set '%s'", config.fields[pos]->dbField, str);
     }
 
 added:
@@ -935,7 +935,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a ip %s field", config.fields[pos]->dbField);
         }
     }
 
@@ -954,7 +954,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
             goto added;
         }
     default:
-        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a ip %s field", config.fields[pos]->dbField);
     }
 
 added:
@@ -986,7 +986,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a ip %s field", config.fields[pos]->dbField);
         }
     }
 
@@ -1005,7 +1005,7 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
             goto added;
         }
     default:
-        LOGEXIT("Not a ip %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a ip %s field", config.fields[pos]->dbField);
     }
 
 added:
@@ -1111,7 +1111,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
             HASH_ADD(t_, *hash, certs, certs);
             return TRUE;
         default:
-            LOGEXIT("Not a certsinfo %s", config.fields[pos]->dbField);
+            LOGEXIT("Not a certsinfo %s field", config.fields[pos]->dbField);
         }
     }
 
@@ -1125,7 +1125,7 @@ gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCer
         HASH_ADD(t_, *(field->cihash), certs, certs);
         return TRUE;
     default:
-        LOGEXIT("Not a certsinfo %s", config.fields[pos]->dbField);
+        LOGEXIT("Not a certsinfo %s field", config.fields[pos]->dbField);
     }
 }
 /******************************************************************************/

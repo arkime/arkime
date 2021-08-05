@@ -325,7 +325,7 @@ void reader_pcapoverip_init(char *name)
     deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
     if (config.bpf) {
         if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile bpf '%s' with %s", config.bpf, pcap_geterr(deadPcap));
+            LOGEXIT("ERROR - Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
         }
     }
 }

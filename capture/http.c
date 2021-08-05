@@ -237,7 +237,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         key_len = strlen(key);
 
     if (key_len > 1000) {
-        LOGEXIT("Url too long %.*s", key_len, key);
+        LOGEXIT("URL too long %.*s", key_len, key);
     }
 
     memcpy(server->syncRequest.key, key, key_len);
@@ -738,7 +738,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
         key_len = strlen(key);
 
     if (key_len > 1000) {
-        LOGEXIT("Url too long %.*s", key_len, key);
+        LOGEXIT("URL too long %.*s", key_len, key);
     }
 
     // Are we overloaded
