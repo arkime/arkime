@@ -6988,6 +6988,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/_template/${OLDPREFIX}sessions_template", 1);
     esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
+    esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
