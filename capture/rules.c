@@ -1063,7 +1063,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                 if (g_hash_table_contains(rule->hash[p], ikey)) {
                     good = 1;
-                    RULE_LOG_INT(hint->i_hash);
+                    RULE_LOG_INT((long)ikey);
                     break;
                 }
             }
