@@ -1250,6 +1250,7 @@ sub sessions3ECSTemplate
 # Modfified version of https://raw.githubusercontent.com/elastic/ecs/1.10/generated/elasticsearch/7/template.json
 # 1) change index_patterns
 # 2) Delete cloud,dns,http,tls,user
+# 3) Change constant_keyword -> keyword
 my $template = '
 {
   "index_patterns": "' . $PREFIX . 'sessions3-*",
@@ -1517,13 +1518,13 @@ my $template = '
       "data_stream": {
         "properties": {
           "dataset": {
-            "type": "constant_keyword"
+            "type": "keyword"
           },
           "namespace": {
-            "type": "constant_keyword"
+            "type": "keyword"
           },
           "type": {
-            "type": "constant_keyword"
+            "type": "keyword"
           }
         }
       },
