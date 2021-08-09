@@ -79,7 +79,8 @@
     "wise:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files wiseService/*.js > ../arkimeweb/_wiki/api_wise.md",
     "wise:dev": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:devdebug": "(cd wiseService && nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
-    "test": "cd viewer && jest"
+    "test": "cd viewer && jest",
+    "version": "npm version $(git describe --tags)"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
