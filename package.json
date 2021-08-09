@@ -143,5 +143,6 @@
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2",
     "webpack-merge": "^5.7.3"
-  }
+  },
+  "version": "2.7.1-439-g49dee221"
 }
