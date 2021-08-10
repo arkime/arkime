@@ -33,6 +33,7 @@ const molochparser = require('./molochparser.js');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 const version = require('./version');
+const buildVersion = require('../buildVersion');
 const http = require('http');
 const https = require('https');
 const onHeaders = require('on-headers');
@@ -2169,7 +2170,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
-    businessDays: Config.get('businessDays', '1,2,3,4,5')
+    businessDays: Config.get('businessDays', '1,2,3,4,5'),
+    buildVersion: buildVersion.build_version
   };
 
   // Create a fresh Vue app instance

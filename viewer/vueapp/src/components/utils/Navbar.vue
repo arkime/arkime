@@ -63,7 +63,8 @@
 
         <b-navbar-nav
           class="ml-auto">
-          <small class="navbar-text mr-2 text-right">
+          <small class="navbar-text mr-2 text-right cursor-help"
+            v-b-tooltip.hover="`${buildVersion}`">
             v{{ molochVersion }}
           </small>
           <router-link
@@ -108,6 +109,7 @@ export default {
   data: function () {
     return {
       molochVersion: this.$constants.MOLOCH_VERSION,
+      buildVersion: this.$constants.BUILD_VERSION,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users'
