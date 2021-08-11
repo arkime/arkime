@@ -5,11 +5,11 @@
     <meta charset="utf-8">
     <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta property="csp-nonce" content="{{ serverNonce }}">
+    <meta property="csp-nonce" content="{{ nonce }}">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     <title>Arkime</title>
     <link rel="stylesheet" href="{{ themeUrl }}">
-    <script nonce="{{ serverNonce }}">
+    <script nonce="{{ nonce }}">
       const MOLOCH_TITLE_CONFIG = '{{ titleConfig }}';
       const MOLOCH_DEMO_MODE = {{ demoMode }};
       const MOLOCH_DEV_MODE = {{ devMode }};

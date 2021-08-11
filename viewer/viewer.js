@@ -136,27 +136,27 @@ app.use((req, res, next) => {
 });
 
 // define csp headers
+const cspDirectives = {
+  defaultSrc: ["'self'"],
+  styleSrc: ["'self'"],
+  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+  objectSrc: ["'none'"],
+  imgSrc: ["'self'", 'data:']
+};
+if (process.env.NODE_ENV === 'development') {
+  // need unsafe inline styles for hot module replacement
+  cspDirectives.styleSrc.push("'unsafe-inline'");
+}
 const cspHeader = helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    /* can remove unsafe-inline for css when this is fixed
-    https://github.com/vuejs/vue-style-loader/issues/33 */
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
-    objectSrc: ["'none'"],
-    imgSrc: ["'self'", 'data:']
-  }
+  directives: cspDirectives
 });
-
-const unsafeInlineCspHeader = helmet.contentSecurityPolicy({
+const cyberchefCspHeader = helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
     styleSrc: ["'self'", "'unsafe-inline'"],
     scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-    objectSrc: ["'self'", 'data:'],
-    workerSrc: ["'self'", 'data:', 'blob:'],
-    imgSrc: ["'self'", 'data:'],
-    fontSrc: ["'self'", 'data:']
+    objectSrc: ["'self'", 'data:']
   }
 });
 
@@ -1754,7 +1754,7 @@ app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
 
 app.get( // session detail (SPI) endpoint
   ['/api/session/:nodeName/:id/detail', '/:nodeName/session/:id/detail'],
-  [cspHeader, logAction()],
+  [logAction()],
   sessionAPIs.getDetail
 );
 
@@ -2040,17 +2040,17 @@ app.get(
 app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
   { maxAge: 600 * 1000, fallthrough: false }
-), missingResource);
+), missingResource, cyberchefCspHeader);
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
-  [checkPermissions(['webEnabled']), checkProxyRequest, unsafeInlineCspHeader],
+  [checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
   miscAPIs.cyberChef
 );
 
 app.use( // cyberchef UI endpoint
   ['/cyberchef/', '/modules/'],
-  unsafeInlineCspHeader,
+  cyberchefCspHeader,
   miscAPIs.getCyberChefUI
 );
 
@@ -2165,7 +2165,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
-    serverNonce: res.locals.nonce,
+    nonce: res.locals.nonce,
     anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
