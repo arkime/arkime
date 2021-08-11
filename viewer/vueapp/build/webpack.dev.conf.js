@@ -1,6 +1,7 @@
 'use strict'
 
 const utils = require('./utils')
+const { git } = require('./git')
 const webpack = require('webpack')
 const config = require('../config')
 const { merge } = require('webpack-merge')
@@ -25,7 +26,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   mode: 'development',
   plugins: [
     new webpack.DefinePlugin({
-      'process.env': require('../config/dev.env')
+      'process.env': require('../config/dev.env'),
+      BUILD_VERSION: JSON.stringify(git('describe --tags')),
+      BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
