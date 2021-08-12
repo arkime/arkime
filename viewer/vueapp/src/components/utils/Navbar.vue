@@ -63,7 +63,8 @@
 
         <b-navbar-nav
           class="ml-auto">
-          <small class="navbar-text mr-2 text-right">
+          <small class="navbar-text mr-2 text-right cursor-help"
+            v-b-tooltip.hover="buildInfo">
             v{{ molochVersion }}
           </small>
           <router-link
@@ -107,6 +108,8 @@ export default {
   components: { ESHealth },
   data: function () {
     return {
+      buildDate: this.$constants.BUILD_DATE,
+      buildVersion: this.$constants.BUILD_VERSION,
       molochVersion: this.$constants.MOLOCH_VERSION,
       menuOrder: [
         'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
@@ -115,6 +118,12 @@ export default {
     };
   },
   computed: {
+    buildInfo: function () {
+      let date = new Date(this.buildDate).getTime();
+      const tz = this.$store.state?.user?.settings?.timezone || 'gmt';
+      date = this.$options.filters.timezoneDateString(date, tz);
+      return `${this.buildVersion} @ ${date}`;
+    },
     userLogo: function () {
       if (this.user && this.user.settings.logo && this.user.settings.logo) {
         return this.user.settings.logo;
