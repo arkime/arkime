@@ -63,8 +63,10 @@
 
         <b-navbar-nav
           class="ml-auto">
-          <small class="navbar-text mr-2 text-right cursor-help"
-            v-b-tooltip.hover="buildInfo">
+          <small
+            :title="buildInfo"
+            v-b-tooltip.hover="buildInfo"
+            class="navbar-text mr-2 text-right cursor-help">
             v{{ molochVersion }}
           </small>
           <router-link
@@ -119,10 +121,10 @@ export default {
   },
   computed: {
     buildInfo: function () {
-      let date = new Date(this.buildDate).getTime();
+      const dateMs = new Date(this.buildDate).getTime();
       const tz = this.$store.state?.user?.settings?.timezone || 'gmt';
-      date = this.$options.filters.timezoneDateString(date, tz);
-      return `${this.buildVersion} @ ${date}`;
+      const date = this.$options.filters.timezoneDateString(dateMs, tz);
+      return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
     },
     userLogo: function () {
       if (this.user && this.user.settings.logo && this.user.settings.logo) {
