@@ -11,15 +11,15 @@
 # * install arkime if --install
 
 
-GLIB=2.66.4
+GLIB=2.68.3
 YARA=4.0.2
 MAXMIND=1.4.3
 PCAP=1.9.1
 CURL=7.78.0
 LUA=5.3.6
 DAQ=2.0.7
-NODE=14.17.4
-NGHTTP2=1.42.0
+NODE=14.17.5
+NGHTTP2=1.44.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
