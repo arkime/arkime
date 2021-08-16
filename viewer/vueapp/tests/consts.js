@@ -15,7 +15,7 @@ export const users = [{
   webEnabled: true,
   welcomeMsgNum: 1
 }, {
-  createEnabled: true,
+  createEnabled: false,
   emailSearch: false,
   enabled: true,
   expression: '',
@@ -32,7 +32,8 @@ export const users = [{
 
 export const userSettings = {
   timezone: 'gmt',
-  ms: false
+  ms: false,
+  timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes']
 };
 
 export const userWithSettings = { ...users[0], settings: { ...userSettings } };
@@ -44,6 +45,22 @@ export const views = {
     expression: 'protocols == tls'
   }
 };
+
+export const periodicQueries = [{
+  enabled: true,
+  name: 'test query name',
+  query: 'protocols == tls',
+  tags: 'testtag1,testtag2',
+  action: 'tag',
+  created: 1628793487,
+  description: 'test query description',
+  lastRun: 1628793492,
+  lpValue: 3974400,
+  count: 24,
+  createor: 'testuserid',
+  lastCount: 2,
+  key: 's_6oO3sBcKdkTkqAQBiF'
+}];
 
 export const histories = [{
   api: '/api/users',
@@ -72,6 +89,44 @@ export const files = [{
   name: '/path/to/anotherfile.pcap',
   node: 'test',
   num: 2
+}];
+
+export const notifierTypes = {
+  slack: {
+    fields: [{
+      description: 'Incoming Webhooks are a simple way to post messages from external sources into Slack.',
+      name: 'slackWebhookUrl',
+      required: true,
+      type: 'secret'
+    }],
+    name: 'Slack',
+    type: 'slack'
+  }
+};
+
+export const notifiers = [{
+  created: 1629132794,
+  fields: [{
+    description: 'Incoming Webhooks are a simple way to post messages from external sources into Slack.',
+    name: 'slackWebhookUrl',
+    required: true,
+    type: 'secret',
+    value: 'https://slack.webhook.url'
+  }],
+  key: 'Slack',
+  name: 'Slack',
+  type: 'slack',
+  user: 'testuserid'
+}];
+
+export const shortcuts = [{
+  description: 'test shortcut description',
+  id: '6f7tT3sBcKdkTkqAFBjf',
+  name: 'SHORTCUT_1',
+  shared: true,
+  type: 'ip',
+  userId: 'testuserid',
+  value: '10.0.0.1\n10.0.0.2\n10.0.0.3'
 }];
 
 export const sessions = [{
@@ -420,6 +475,24 @@ export const fields = [{
   group: 'general',
   help: 'Unique number of Tags set for session',
   type: 'integer'
+}, {
+  dbField: 'firstPacket',
+  dbField2: 'firstPacket',
+  exp: 'starttime',
+  friendlyName: 'Start Time',
+  group: 'general',
+  help: 'Session Start Time',
+  type: 'seconds',
+  type2: 'date'
+}, {
+  dbField: 'lastPacket',
+  dbField2: 'lastPacket',
+  exp: 'stoptime',
+  friendlyName: 'Stop Time',
+  group: 'general',
+  help: 'Session Stop Time',
+  type: 'seconds',
+  type2: 'date'
 }];
 
 export const fieldsMap = {};

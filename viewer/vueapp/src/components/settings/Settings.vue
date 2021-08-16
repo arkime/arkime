@@ -644,9 +644,11 @@
                 </td>
                 <td>&nbsp;</td>
                 <td>
-                  <button class="btn btn-theme-tertiary btn-sm pull-right"
+                  <button
                     type="button"
-                    @click="createView">
+                    @click="createView"
+                    title="Create new view"
+                    class="btn btn-theme-tertiary btn-sm pull-right">
                     <span class="fa fa-plus-circle">
                     </span>&nbsp;
                     Create
@@ -2501,6 +2503,7 @@
 import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
+import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
 import MolochToast from '../utils/Toast';
 import MolochError from '../utils/Error';
@@ -2686,27 +2689,12 @@ export default {
 
     this.getThemeColors();
 
-    UserService.getCurrent()
-      .then((response) => {
-        this.displayName = response.userId;
-        // only admins can edit other users' settings
-        if (response.createEnabled && this.$route.query.userId) {
-          if (response.userId === this.$route.query.userId) {
-            // admin editing their own user so the routeParam is unnecessary
-            this.$router.push({
-              hash: this.$route.hash,
-              query: {
-                ...this.$route.query,
-                userId: undefined
-              }
-            });
-          } else { // admin editing another user
-            this.userId = this.$route.query.userId;
-            this.displayName = this.$route.query.userId;
-          }
-        } else if (this.$route.query.userId) {
-          // normal user has no permission, so remove the routeParam
-          // (even if it's their own userId because it's unnecessary)
+    UserService.getCurrent().then((response) => {
+      this.displayName = response.userId;
+      // only admins can edit other users' settings
+      if (response.createEnabled && this.$route.query.userId) {
+        if (response.userId === this.$route.query.userId) {
+          // admin editing their own user so the routeParam is unnecessary
           this.$router.push({
             hash: this.$route.hash,
             query: {
@@ -2714,22 +2702,36 @@ export default {
               userId: undefined
             }
           });
+        } else { // admin editing another user
+          this.userId = this.$route.query.userId;
+          this.displayName = this.$route.query.userId;
         }
+      } else if (this.$route.query.userId) {
+        // normal user has no permission, so remove the routeParam
+        // (even if it's their own userId because it's unnecessary)
+        this.$router.push({
+          hash: this.$route.hash,
+          query: {
+            ...this.$route.query,
+            userId: undefined
+          }
+        });
+      }
 
-        // always get the user's settings because current user is cached
-        // so response.settings might be stale
-        // NOTE: this kicks of fetching all the other data
-        this.getSettings(true);
-      })
-      .catch((error) => {
-        this.error = error.text;
-        this.loading = false;
-      });
+      // always get the user's settings because current user is cached
+      // so response.settings might be stale
+      // NOTE: this kicks of fetching all the other data
+      this.getSettings(true);
+    }).catch((error) => {
+      this.error = error.text;
+      this.loading = false;
+    });
 
-    ConfigService.getMolochClusters()
-      .then((response) => {
-        this.molochClusters = response;
-      });
+    ConfigService.getMolochClusters().then((response) => {
+      this.molochClusters = response;
+    }).catch((error) => {
+      console.log('ERROR - getMolochClusters', error);
+    });
   },
   methods: {
     /* vue-clipboard2 directives are broken, use their internal method instead */
@@ -2755,42 +2757,38 @@ export default {
      * @param updateTheme whether to update the UI theme
      */
     update: function (updateTheme) {
-      UserService.saveSettings(this.settings, this.userId)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
+      UserService.saveSettings(this.settings, this.userId).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
 
-          if (updateTheme) {
-            const now = Date.now();
-            if ($('link[href^="api/user/css"]').length) {
-              $('link[href^="api/user/css"]').remove();
-            }
-            $('head').append(`<link rel="stylesheet"
-                              href="api/user/css?v${now}"
-                              type="text/css" />`);
+        if (updateTheme) {
+          const now = Date.now();
+          if ($('link[href^="api/user/css"]').length) {
+            $('link[href^="api/user/css"]').remove();
           }
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+          $('head').append(`<link rel="stylesheet"
+                            href="api/user/css?v${now}"
+                            type="text/css" />`);
+        }
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     resetSettings: function () {
       // Choosing to skip reset of theme. UserService will save state to store
-      UserService.resetSettings(this.userId, this.settings.theme)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-          this.getSettings(false);
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.resetSettings(this.userId, this.settings.theme).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        this.getSettings(false);
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     updateTimezone (newTimezone) {
       this.settings.timezone = newTimezone;
@@ -2912,33 +2910,31 @@ export default {
         expression: this.newViewExpression
       };
 
-      UserService.createView(data, this.userId)
-        .then((response) => {
-          // add the view to the view list
-          if (response.view && response.viewName) {
-            if (this.views[response.viewName]) {
-              // a shared view with this name already exists
-              // so just get the list of views again
-              this.getViews();
-            } else {
-              response.view.name = response.viewName;
-              this.views[response.viewName] = response.view;
-            }
+      UserService.createView(data, this.userId).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        // clear the inputs and any error
+        this.viewFormError = false;
+        this.newViewName = null;
+        this.newViewExpression = null;
+        this.newViewShared = false;
+        // add the view to the view list
+        if (response.view && response.viewName) {
+          if (this.views[response.viewName]) {
+            // a shared view with this name already exists
+            // so just get the list of views again
+            this.getViews();
+          } else {
+            response.view.name = response.viewName;
+            this.$set(this.views, response.viewName, response.view);
           }
-          // clear the inputs and any error
-          this.viewFormError = false;
-          this.newViewName = null;
-          this.newViewExpression = null;
-          this.newViewShared = false;
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+        }
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /**
      * Deletes a view given its name
@@ -2946,20 +2942,18 @@ export default {
      * @param {string} viewName The name of the view to delete
      */
     deleteView: function (view, viewName) {
-      UserService.deleteView(view, this.userId)
-        .then((response) => {
-          // remove the view from the view list
-          this.views[viewName] = null;
-          delete this.views[viewName];
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.deleteView(view, this.userId).then((response) => {
+        // remove the view from the view list
+        this.views[viewName] = null;
+        delete this.views[viewName];
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /**
      * Sets a view as having been changed
@@ -2973,13 +2967,11 @@ export default {
      * @param {string} key The unique id of the view
      */
     cancelViewChange: function (key) {
-      UserService.getViews(this.userId)
-        .then((response) => {
-          this.views[key] = response[key];
-        })
-        .catch((error) => {
-          this.viewListError = error.text;
-        });
+      UserService.getViews(this.userId).then((response) => {
+        this.views[key] = response[key];
+      }).catch((error) => {
+        this.viewListError = error.text;
+      });
     },
     /**
      * Updates a view
@@ -3002,36 +2994,32 @@ export default {
 
       data.key = key;
 
-      UserService.updateView(data, this.userId)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-          // set the view as unchanged
-          data.changed = false;
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.updateView(data, this.userId).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        // set the view as unchanged
+        data.changed = false;
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /**
      * Shares or unshares a view given its name
      * @param {Object} view The view to share/unshare
      */
     toggleShared: function (view) {
-      UserService.toggleShareView(view, view.user)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.toggleShareView(view, view.user).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* CRON QUERIES ------------------------------------ */
     /* creates a cron query given the name, expression, process, and tags */
@@ -3067,28 +3055,26 @@ export default {
         data.notifier = this.newCronQueryNotifier;
       }
 
-      UserService.createCronQuery(data, this.userId)
-        .then((response) => {
-          // add the cron query to the view
-          this.cronQueryFormError = false;
-          this.cronQueries.push(response.query);
-          // reset fields
-          this.newCronQueryName = '';
-          this.newCronQueryTags = '';
-          this.newCronQueryExpression = '';
-          this.newCronQueryNotifier = undefined;
-          this.newCronQueryDescription = '';
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-          this.cronLoading = false;
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-          this.cronLoading = false;
-        });
+      UserService.createCronQuery(data, this.userId).then((response) => {
+        // add the cron query to the view
+        this.cronQueryFormError = false;
+        this.cronQueries.push(response.query);
+        // reset fields
+        this.newCronQueryName = '';
+        this.newCronQueryTags = '';
+        this.newCronQueryExpression = '';
+        this.newCronQueryNotifier = undefined;
+        this.newCronQueryDescription = '';
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        this.cronLoading = false;
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+        this.cronLoading = false;
+      });
     },
     /**
      * Toggles a query's detail display
@@ -3122,19 +3108,17 @@ export default {
      * @param {number} index The index of the query in the list
      */
     deleteCronQuery: function (query, index) {
-      UserService.deleteCronQuery(query.key, this.userId)
-        .then((response) => {
-          // remove the query from the list
-          this.cronQueries.splice(index, 1);
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.deleteCronQuery(query.key, this.userId).then((response) => {
+        // remove the query from the list
+        this.cronQueries.splice(index, 1);
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /**
      * Enables/Disables a query given its key and updates the query
@@ -3161,13 +3145,11 @@ export default {
      * Cancels a query change by retrieving the list of queries
      */
     cancelCronQueryChange: function () {
-      UserService.getCronQueries(this.userId)
-        .then((response) => {
-          this.cronQueries = response;
-        })
-        .catch((error) => {
-          this.cronQueryListError = error.text;
-        });
+      UserService.getCronQueries(this.userId).then((response) => {
+        this.cronQueries = response;
+      }).catch((error) => {
+        this.cronQueryListError = error.text;
+      });
     },
     /**
      * Updates a cron query
@@ -3181,21 +3163,19 @@ export default {
         return;
       }
 
-      UserService.updateCronQuery(query, this.userId)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-          // set the cron query as unchanged
-          this.$set(query, 'changed', false);
-          response.query.expanded = query.expanded;
-          this.$set(this.cronQueries, index, response.query);
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.updateCronQuery(query, this.userId).then((response) => {
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        // set the cron query as unchanged
+        this.$set(query, 'changed', false);
+        response.query.expanded = query.expanded;
+        this.$set(this.cronQueries, index, response.query);
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* COLUMN CONFIGURATIONS --------------------------- */
     /**
@@ -3204,18 +3184,16 @@ export default {
      * @param {int} index       The index in the array of the column config to remove
      */
     deleteColConfig: function (colName, index) {
-      UserService.deleteColumnConfig(colName, this.userId)
-        .then((response) => {
-          this.colConfigs.splice(index, 1);
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.deleteColumnConfig(colName, this.userId).then((response) => {
+        this.colConfigs.splice(index, 1);
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* SPIVIEW FIELD CONFIGURATIONS -------------------- */
     /**
@@ -3224,18 +3202,16 @@ export default {
      * @param {int} index       The index in the array of the field config to remove
      */
     deleteSpiviewConfig: function (spiName, index) {
-      UserService.deleteSpiviewFieldConfig(spiName, this.userId)
-        .then((response) => {
-          this.spiviewConfigs.splice(index, 1);
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.deleteSpiviewFieldConfig(spiName, this.userId).then((response) => {
+        this.spiviewConfigs.splice(index, 1);
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* THEMES ------------------------------------------ */
     setTheme: function () {
@@ -3354,21 +3330,19 @@ export default {
         currentPassword: this.currentPassword
       };
 
-      UserService.changePassword(data, this.userId)
-        .then((response) => {
-          this.changePasswordError = false;
-          this.currentPassword = null;
-          this.newPassword = null;
-          this.confirmNewPassword = null;
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.changePassword(data, this.userId).then((response) => {
+        this.changePasswordError = false;
+        this.currentPassword = null;
+        this.newPassword = null;
+        this.confirmNewPassword = null;
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     /* NOTIFIERS --------------------------------------- */
     /* opens the form to create a new notifier */
@@ -3412,20 +3386,18 @@ export default {
         }
       }
 
-      this.$http.post('api/notifier', this.newNotifier)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully created new notifier.';
-          this.msgType = 'success';
-          this.notifiersError = '';
-          // add notifier to the list
-          this.notifiers.push(response.data.notifier);
-          this.newNotifier = undefined;
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error creating new notifier.';
-          this.msgType = 'danger';
-        });
+      SettingsService.createNotifier(this.newNotifier).then((response) => {
+        // display success message to user
+        this.msg = response.text || 'Successfully created new notifier.';
+        this.msgType = 'success';
+        this.notifiersError = '';
+        // add notifier to the list
+        this.notifiers.push(response.notifier);
+        this.newNotifier = undefined;
+      }).catch((error) => {
+        this.msg = error.text || 'Error creating new notifier.';
+        this.msgType = 'danger';
+      });
     },
     /* toggles the visibility of the value of secret fields */
     toggleVisibleSecretField: function (field) {
@@ -3433,33 +3405,29 @@ export default {
     },
     /* deletes a notifier */
     removeNotifier: function (notifierName, index) {
-      this.$http.delete(`api/notifier/${notifierName}`)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully deleted notifier.';
-          this.msgType = 'success';
-          this.notifiers.splice(index, 1);
-          this.notifiersError = '';
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error deleting notifier.';
-          this.msgType = 'danger';
-        });
+      SettingsService.deleteNotifier(notifierName).then((response) => {
+        // display success message to user
+        this.msg = response.text || 'Successfully deleted notifier.';
+        this.msgType = 'success';
+        this.notifiers.splice(index, 1);
+        this.notifiersError = '';
+      }).catch((error) => {
+        this.msg = error.text || 'Error deleting notifier.';
+        this.msgType = 'danger';
+      });
     },
     /* updates a notifier */
     updateNotifier: function (key, index, notifier) {
-      this.$http.put(`api/notifier/${key}`, notifier)
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully updated notifier.';
-          this.msgType = 'success';
-          this.notifiers.splice(index, 1, response.data.notifier);
-          this.notifiersError = '';
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error updating notifier.';
-          this.msgType = 'danger';
-        });
+      SettingsService.updateNotifier(key, notifier).then((response) => {
+        // display success message to user
+        this.msg = response.text || 'Successfully updated notifier.';
+        this.msgType = 'success';
+        this.notifiers.splice(index, 1, response.notifier);
+        this.notifiersError = '';
+      }).catch((error) => {
+        this.msg = error.text || 'Error updating notifier.';
+        this.msgType = 'danger';
+      });
     },
     /* tests a notifier */
     testNotifier: function (notifierName, index) {
@@ -3468,18 +3436,17 @@ export default {
       }
 
       this.$set(this.notifiers[index], 'loading', true);
-      this.$http.post(`api/notifier/${notifierName}/test`, {})
-        .then((response) => {
-          // display success message to user
-          this.msg = response.data.text || 'Successfully issued alert.';
-          this.msgType = 'success';
-          this.$set(this.notifiers[index], 'loading', false);
-        })
-        .catch((error) => {
-          this.msg = error.text || 'Error issuing alert.';
-          this.msgType = 'danger';
-          this.$set(this.notifiers[index], 'loading', false);
-        });
+
+      SettingsService.testNotifier(notifierName).then((response) => {
+        // display success message to user
+        this.msg = response.text || 'Successfully issued alert.';
+        this.msgType = 'success';
+        this.$set(this.notifiers[index], 'loading', false);
+      }).catch((error) => {
+        this.msg = error.text || 'Error issuing alert.';
+        this.msgType = 'danger';
+        this.$set(this.notifiers[index], 'loading', false);
+      });
     },
     /* SHORTCUTS --------------------------------------- */
     /**
@@ -3547,25 +3514,23 @@ export default {
         description: this.newShortcutDescription
       };
 
-      this.$http.post('api/shortcut', data)
-        .then((response) => {
-          this.getShortcuts();
-          // clear the inputs and any error
-          this.shortcutFormError = false;
-          this.newShortcutName = '';
-          this.newShortcutValue = '';
-          this.newShortcutShared = false;
-          this.newShortcutDescription = '';
-          // display success message to user
-          this.msg = response.data.text;
-          this.msgType = 'success';
-          this.createShortcutLoading = false;
-        })
-        .catch((error) => {
-          this.msg = error.text;
-          this.msgType = 'danger';
-          this.createShortcutLoading = false;
-        });
+      SettingsService.createShortcut(data).then((response) => {
+        this.getShortcuts();
+        // clear the inputs and any error
+        this.shortcutFormError = false;
+        this.newShortcutName = '';
+        this.newShortcutValue = '';
+        this.newShortcutShared = false;
+        this.newShortcutDescription = '';
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        this.createShortcutLoading = false;
+      }).catch((error) => {
+        this.msg = error.text;
+        this.msgType = 'danger';
+        this.createShortcutLoading = false;
+      });
     },
     /* updates a specified shortcut (only shared and value are editable) */
     updateShortcut: function (shortcut, index) {
@@ -3580,44 +3545,39 @@ export default {
         description: shortcut.newDescription || shortcut.description
       };
 
-      this.$http.put(`api/shortcut/${shortcut.id}`, data)
-        .then((response) => {
-          response.data.shortcut.id = shortcut.id;
-          response.data.shortcut.type = shortcut.newType || shortcut.type;
-          this.$set(this.shortcuts.data, index, response.data.shortcut);
-
-          // display success message to user
-          this.msg = response.data.text;
-          this.msgType = 'success';
-          this.$set(shortcut, 'loading', false);
-        })
-        .catch((error) => {
-          this.msg = error.text;
-          this.msgType = 'danger';
-          this.$set(shortcut, 'loading', false);
-        });
+      SettingsService.updateShortcut(shortcut.id, data).then((response) => {
+        response.shortcut.id = shortcut.id;
+        response.shortcut.type = shortcut.newType || shortcut.type;
+        this.$set(this.shortcuts.data, index, response.shortcut);
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        this.$set(shortcut, 'loading', false);
+      }).catch((error) => {
+        this.msg = error.text;
+        this.msgType = 'danger';
+        this.$set(shortcut, 'loading', false);
+      });
     },
     /* deletes a shortcut and removes it from the shortcuts array */
     deleteShortcut: function (shortcut, index) {
       this.$set(shortcut, 'loading', true);
 
-      this.$http.delete(`api/shortcut/${shortcut.id}`)
-        .then((response) => {
-          // remove it from the array
-          this.shortcuts.data.splice(index, 1);
-          this.shortcuts.recordsTotal--;
-          this.shortcuts.recordsFiltered--;
-          // display success message to user
-          this.msg = response.data.text;
-          this.msgType = 'success';
-          this.$set(shortcut, 'loading', false);
-        })
-        .catch((error) => {
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-          this.$set(shortcut, 'loading', false);
-        });
+      SettingsService.deleteShortcut(shortcut.id).then((response) => {
+        // remove it from the array
+        this.shortcuts.data.splice(index, 1);
+        this.shortcuts.recordsTotal--;
+        this.shortcuts.recordsFiltered--;
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+        this.$set(shortcut, 'loading', false);
+      }).catch((error) => {
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+        this.$set(shortcut, 'loading', false);
+      });
     },
 
     /* helper functions ---------------------------------------------------- */
@@ -3654,61 +3614,61 @@ export default {
     },
     /* retrieves the specified user's settings */
     getSettings: function (initLoad) {
-      UserService.getSettings(this.userId)
-        .then((response) => {
-          // set the user settings individually
-          for (const key in response) {
-            this.$set(this.settings, key, response[key]);
-          }
+      UserService.getSettings(this.userId).then((response) => {
+        // set the user settings individually
+        for (const key in response) {
+          this.$set(this.settings, key, response[key]);
+        }
 
-          // set defaults if a user setting doesn't exists
-          // so that radio buttons show the default value
-          if (!response.timezone) {
-            this.$set(this.settings, 'timezone', 'local');
-          }
-          if (!response.detailFormat) {
-            this.$set(this.settings, 'detailFormat', 'last');
-          }
-          if (!response.numPackets) {
-            this.$set(this.settings, 'numPackets', 'last');
-          }
-          if (!response.showTimestamps) {
-            this.$set(this.settings, 'showTimestamps', 'last');
-          }
-          if (!response.manualQuery) {
-            this.$set(this.settings, 'manualQuery', false);
-          }
+        // set defaults if a user setting doesn't exists
+        // so that radio buttons show the default value
+        if (!response.timezone) {
+          this.$set(this.settings, 'timezone', 'local');
+        }
+        if (!response.detailFormat) {
+          this.$set(this.settings, 'detailFormat', 'last');
+        }
+        if (!response.numPackets) {
+          this.$set(this.settings, 'numPackets', 'last');
+        }
+        if (!response.showTimestamps) {
+          this.$set(this.settings, 'showTimestamps', 'last');
+        }
+        if (!response.manualQuery) {
+          this.$set(this.settings, 'manualQuery', false);
+        }
 
-          this.getFields().then(() => {
-            this.loading = false;
-
-            if (initLoad) {
-              // get all the other things!
-              this.getViews();
-              this.getCronQueries();
-              this.getColConfigs();
-              this.getSpiviewConfigs();
-              this.getNotifierTypes();
-              this.getNotifiers();
-              this.getShortcuts();
-            }
-
-            this.setTheme();
-            this.startClock();
-          });
-        })
-        .catch((error) => {
+        this.getFields().then(() => {
           this.loading = false;
-          if (error.text === 'User not found') {
-            this.error = `<div class="text-center">
-                            ${error.text}
-                            <small><a href="settings">View your own settings?</a></small>
-                          </div>`;
-          } else {
-            this.error = error.text;
+
+          if (initLoad) {
+            // get all the other things!
+            this.getViews();
+            this.getCronQueries();
+            this.getColConfigs();
+            this.getSpiviewConfigs();
+            this.getNotifierTypes();
+            this.getNotifiers();
+            this.getShortcuts();
           }
-          this.displayName = '';
+
+          this.setTheme();
+          this.startClock();
+        }).catch((error) => {
+          console.log('ERROR getting fields to populdate page', error);
         });
+      }).catch((error) => {
+        this.loading = false;
+        if (error.text === 'User not found') {
+          this.error = `<div class="text-center">
+                          ${error.text}
+                          <small><a href="settings">View your own settings?</a></small>
+                        </div>`;
+        } else {
+          this.error = error.text;
+        }
+        this.displayName = '';
+      });
     },
     /* retrieves moloch fields and visible column headers for sessions table
      * adds custom columns to fields
@@ -3718,158 +3678,147 @@ export default {
     getFields: function () {
       return new Promise((resolve, reject) => {
         // get fields from field service then get sessionsNew state
-        FieldService.get(true, true)
-          .then((response) => {
-            this.fields = response;
+        FieldService.get(true, true).then((response) => {
+          this.fields = response;
 
-            this.integerFields = this.fields.filter(i => i.type === 'integer');
+          this.integerFields = this.fields.filter(i => i.type === 'integer');
 
-            // attach the full field object to the component's timelineDataFilters from array of dbField
-            this.timelineDataFilters = [];
-            for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
-              const filter = this.settings.timelineDataFilters[i];
-              const fieldOBJ = FieldService.getField(filter, this.integerFields);
-              if (fieldOBJ) {
-                this.timelineDataFilters.push(fieldOBJ);
-              }
+          // attach the full field object to the component's timelineDataFilters from array of dbField
+          this.timelineDataFilters = [];
+          for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
+            const filter = this.settings.timelineDataFilters[i];
+            const fieldOBJ = FieldService.getField(filter, this.integerFields);
+            if (fieldOBJ) {
+              this.timelineDataFilters.push(fieldOBJ);
             }
+          }
 
-            // add custom columns to the fields array
-            this.fieldsPlusCustom = JSON.parse(JSON.stringify(response));
-            for (const key in customCols) {
-              this.fieldsPlusCustom.push(customCols[key]);
-            }
+          // add custom columns to the fields array
+          this.fieldsPlusCustom = JSON.parse(JSON.stringify(response));
+          for (const key in customCols) {
+            this.fieldsPlusCustom.push(customCols[key]);
+          }
 
-            // update the user settings for spigraph field & connections src/dst fields
-            // NOTE: dbField is saved in settings, but show the field's friendlyName
-            const spigraphField = FieldService.getField(this.settings.spiGraph, this.fields);
-            if (spigraphField) {
-              this.$set(this, 'spiGraphField', spigraphField);
-              this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
-            }
-            const connSrcField = FieldService.getField(this.settings.connSrcField, this.fields);
-            if (connSrcField) {
-              this.$set(this, 'connSrcField', connSrcField);
-              this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
-            }
-            const connDstField = FieldService.getField(this.settings.connDstField, this.fields);
-            if (connDstField) {
-              this.$set(this, 'connDstField', connDstField);
-              this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
-            }
+          // update the user settings for spigraph field & connections src/dst fields
+          // NOTE: dbField is saved in settings, but show the field's friendlyName
+          const spigraphField = FieldService.getField(this.settings.spiGraph, this.fields);
+          if (spigraphField) {
+            this.$set(this, 'spiGraphField', spigraphField);
+            this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
+          }
+          const connSrcField = FieldService.getField(this.settings.connSrcField, this.fields);
+          if (connSrcField) {
+            this.$set(this, 'connSrcField', connSrcField);
+            this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
+          }
+          const connDstField = FieldService.getField(this.settings.connDstField, this.fields);
+          if (connDstField) {
+            this.$set(this, 'connDstField', connDstField);
+            this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
+          }
 
-            this.$set(this, 'filtersTypeahead', '');
+          this.$set(this, 'filtersTypeahead', '');
 
-            // build fields map for quick lookup by dbField
-            this.fieldsMap = {};
-            for (let i = 0, len = this.fieldsPlusCustom.length; i < len; ++i) {
-              const field = this.fieldsPlusCustom[i];
-              this.fieldsMap[field.dbField] = field;
-              if (field.dbField2 && field.dbField2 !== field.dbField) {
-                this.fieldsMap[field.dbField2] = field;
-              }
+          // build fields map for quick lookup by dbField
+          this.fieldsMap = {};
+          for (let i = 0, len = this.fieldsPlusCustom.length; i < len; ++i) {
+            const field = this.fieldsPlusCustom[i];
+            this.fieldsMap[field.dbField] = field;
+            if (field.dbField2 && field.dbField2 !== field.dbField) {
+              this.fieldsMap[field.dbField2] = field;
             }
+          }
 
-            // get the visible headers for the sessions table configuration
-            UserService.getState('sessionsNew')
-              .then((sessionsTableRes) => {
-                const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.visibleHeaders;
-                this.setupColumns(headers);
-                // if the sort column setting does not match any of the visible
-                // headers, set the sort column setting to last
-                if (headers.indexOf(this.settings.sortColumn) === -1) {
-                  this.settings.sortColumn = 'last';
-                }
-                resolve();
-              })
-              .catch((err) => {
-                this.setupColumns(this.defaultColConfig.visibleHeaders);
-                resolve();
-              });
+          // get the visible headers for the sessions table configuration
+          UserService.getState('sessionsNew').then((sessionsTableRes) => {
+            const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.visibleHeaders;
+            this.setupColumns(headers);
+            // if the sort column setting does not match any of the visible
+            // headers, set the sort column setting to last
+            if (headers.indexOf(this.settings.sortColumn) === -1) {
+              this.settings.sortColumn = 'last';
+            }
+            resolve();
+          }).catch((error) => {
+            this.setupColumns(this.defaultColConfig.visibleHeaders);
+            resolve();
           });
+        }).catch((error) => {
+          console.log('ERROR - fetching fields', error);
+        });
       });
     },
     /* retrieves the specified user's views */
     getViews: function () {
-      UserService.getViews(this.userId)
-        .then((response) => {
-          this.views = response;
-        })
-        .catch((error) => {
-          this.viewListError = error.text;
-        });
+      UserService.getViews(this.userId).then((response) => {
+        this.views = response;
+      }).catch((error) => {
+        this.viewListError = error.text;
+      });
     },
     /* retrieves the specified user's cron queries */
     getCronQueries: function () {
-      UserService.getCronQueries(this.userId)
-        .then((response) => {
-          this.cronQueries = response;
-        })
-        .catch((error) => {
-          this.cronQueryListError = error.text;
-        });
+      UserService.getCronQueries(this.userId).then((response) => {
+        this.cronQueries = response;
+      }).catch((error) => {
+        this.cronQueryListError = error.text;
+      });
     },
     /* retrieves the specified user's custom column configurations */
     getColConfigs: function () {
-      UserService.getColumnConfigs(this.userId)
-        .then((response) => {
-          this.colConfigs = response;
-        })
-        .catch((error) => {
-          this.colConfigError = error.text;
-        });
+      UserService.getColumnConfigs(this.userId).then((response) => {
+        this.colConfigs = response;
+      }).catch((error) => {
+        this.colConfigError = error.text;
+      });
     },
     /* retrieves the specified user's custom spiview fields configurations.
      * dissects the visible spiview fields for view consumption */
     getSpiviewConfigs: function () {
-      UserService.getSpiviewFields(this.userId)
-        .then((response) => {
-          this.spiviewConfigs = response;
+      UserService.getSpiviewFields(this.userId).then((response) => {
+        this.spiviewConfigs = response;
 
-          for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
-            const config = this.spiviewConfigs[x];
-            const spiParamsArray = config.fields.split(',');
+        for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
+          const config = this.spiviewConfigs[x];
+          const spiParamsArray = config.fields.split(',');
 
-            // get each field from the spi query parameter and issue
-            // a query for one field at a time
-            for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
-              const param = spiParamsArray[i];
-              const split = param.split(':');
-              const fieldID = split[0];
-              const count = split[1];
+          // get each field from the spi query parameter and issue
+          // a query for one field at a time
+          for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
+            const param = spiParamsArray[i];
+            const split = param.split(':');
+            const fieldID = split[0];
+            const count = split[1];
 
-              const field = FieldService.getField(fieldID, this.fields);
+            const field = FieldService.getField(fieldID, this.fields);
 
-              if (field) {
-                if (!config.fieldObjs) { config.fieldObjs = []; }
+            if (field) {
+              if (!config.fieldObjs) { config.fieldObjs = []; }
 
-                field.count = count;
-                config.fieldObjs.push(field);
-              }
+              field.count = count;
+              config.fieldObjs.push(field);
             }
           }
-        })
-        .catch((error) => {
-          this.spiviewConfigError = error.text;
-        });
+        }
+      }).catch((error) => {
+        this.spiviewConfigError = error.text;
+      });
     },
     /* retrieves the types of notifiers that can be configured */
     getNotifierTypes: function () {
-      this.$http.get('api/notifierTypes')
-        .then((response) => {
-          this.notifierTypes = response.data;
-        }, (error) => {
-          this.notifiersError = error.text || error;
-        });
+      SettingsService.getNotifierTypes().then((response) => {
+        this.notifierTypes = response;
+      }).catch((error) => {
+        this.notifiersError = error.text || error;
+      });
     },
     /* retrieves the notifiers that have been configured */
     getNotifiers: function () {
-      this.$http.get('api/notifiers')
-        .then((response) => {
-          this.notifiers = response.data;
-        }, (error) => {
-          this.notifiersError = error.text || error;
-        });
+      SettingsService.getNotifiers().then((response) => {
+        this.notifiers = response;
+      }).catch((error) => {
+        this.notifiersError = error.text || error;
+      });
     },
     getShortcuts: function () {
       const queryParams = {
@@ -3882,13 +3831,12 @@ export default {
       if (this.shortcutsQuery.search) { queryParams.searchTerm = this.shortcutsQuery.search; }
       if (this.userId) { queryParams.userId = this.userId; }
 
-      this.$http.get('api/shortcuts', { params: queryParams })
-        .then((response) => {
-          this.shortcuts = response.data;
-          this.shortcutsListError = '';
-        }, (error) => {
-          this.shortcutsListError = error.text || error;
-        });
+      SettingsService.getShortcuts().then((response) => {
+        this.shortcuts = response;
+        this.shortcutsListError = '';
+      }).catch((error) => {
+        this.shortcutsListError = error.text || error;
+      });
     },
     /**
      * Setup this.columns with a list of field objects
