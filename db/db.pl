@@ -1249,8 +1249,8 @@ sub sessions3ECSTemplate
 {
 # Modfified version of https://raw.githubusercontent.com/elastic/ecs/1.10/generated/elasticsearch/7/template.json
 # 1) change index_patterns
-# 2) Delete cloud,dns,http,tls,user
-# 3) Change constant_keyword -> keyword
+# 2) Delete cloud,dns,http,tls,user,data_stream
+# 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt
 my $template = '
 {
   "index_patterns": "' . $PREFIX . 'sessions3-*",
@@ -1515,19 +1515,6 @@ my $template = '
           }
         }
       },
-      "data_stream": {
-        "properties": {
-          "dataset": {
-            "type": "keyword"
-          },
-          "namespace": {
-            "type": "keyword"
-          },
-          "type": {
-            "type": "keyword"
-          }
-        }
-      },
       "destination": {
         "properties": {
           "address": {
@@ -1536,6 +1523,9 @@ my $template = '
           },
           "as": {
             "properties": {
+              "full" : {
+                "type" : "keyword"
+              },
               "number": {
                 "type": "long"
               },
@@ -1615,6 +1605,9 @@ my $template = '
           "mac": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "mac-cnt" : {
+            "type" : "long"
           },
           "nat": {
             "properties": {
@@ -3640,6 +3633,9 @@ my $template = '
           },
           "as": {
             "properties": {
+              "full" : {
+                "type" : "keyword"
+              },
               "number": {
                 "type": "long"
               },
@@ -3719,6 +3715,9 @@ my $template = '
           "mac": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "mac-cnt" : {
+            "type" : "long"
           },
           "nat": {
             "properties": {
