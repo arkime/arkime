@@ -1250,7 +1250,7 @@ sub sessions3ECSTemplate
 # Modfified version of https://raw.githubusercontent.com/elastic/ecs/1.10/generated/elasticsearch/7/template.json
 # 1) change index_patterns
 # 2) Delete cloud,dns,http,tls,user,data_stream
-# 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt
+# 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt, network.vlan.id-cnt
 my $template = '
 {
   "index_patterns": "' . $PREFIX . 'sessions3-*",
@@ -2621,6 +2621,9 @@ my $template = '
               "id": {
                 "ignore_above": 1024,
                 "type": "keyword"
+              },
+              "id-cnt" : {
+                "type" : "long"
               },
               "name": {
                 "ignore_above": 1024,
