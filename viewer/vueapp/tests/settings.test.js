@@ -57,6 +57,8 @@ const $router = {
   replace: jest.fn()
 };
 
+const newView = { name: 'newview', expression: 'protocols == tls' };
+
 // setting services
 SettingsService.getNotifierTypes = jest.fn().mockResolvedValue(notifierTypes);
 SettingsService.getNotifiers = jest.fn().mockResolvedValue(notifiers);
@@ -92,7 +94,7 @@ UserService.updateView = jest.fn().mockResolvedValue({ text: 'updateView YAY!' }
 UserService.toggleShareView = jest.fn().mockResolvedValue({ text: 'toggleShareView YAY!' });
 UserService.deleteView = jest.fn().mockResolvedValue({ text: 'deleteView YAY!' });
 UserService.createView = jest.fn().mockResolvedValue({
-  view: { name: 'newview', expression: 'protocols == tls' },
+  view: newView,
   viewName: 'newview',
   text: 'createView YAY!'
 });
@@ -130,7 +132,7 @@ FieldService.get = jest.fn().mockResolvedValue(fields);
 test('settings - self', async () => {
   const {
     getByText, getAllByText, getByRole, getAllByRole, getByPlaceholderText,
-    getByTitle, getAllByTitle
+    getByTitle, getAllByTitle, getByDisplayValue
   } = render(Settings, {
     store,
     mocks: { $route, $router }
@@ -194,6 +196,25 @@ test('settings - self', async () => {
   await waitFor(() => { // displays new view
     expect(getAllByTitle("Copy this views's expression").length).toBe(2);
   });
+
+  // can share a view ------------------------------------------------------ //
+  await fireEvent.click(getAllByRole('checkbox')[0]);
+  const view = views[Object.keys(views)[0]];
+  expect(UserService.toggleShareView).toHaveBeenCalledWith(view, view.user);
+
+  // can update a view ----------------------------------------------------- //
+  await fireEvent.update(getByDisplayValue(view.name), 'updated view name');
+  await waitFor(() => {
+    fireEvent.click(getByTitle('Save changes to this view'));
+  });
+  expect(UserService.updateView).toHaveBeenCalledWith({
+    ...view,
+    name: 'updated view name'
+  }, undefined);
+
+  // can delete a view ----------------------------------------------------- //
+  await fireEvent.click(getByTitle('Delete this view'));
+  expect(UserService.deleteView).toHaveBeenCalledWith(newView, undefined);
 });
 
 test('settings - admin editing another', async () => {

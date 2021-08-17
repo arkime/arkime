@@ -42,6 +42,7 @@ export const views = {
   'test view 1': {
     shared: false,
     user: 'testuser',
+    name: 'test view 1',
     expression: 'protocols == tls'
   }
 };
