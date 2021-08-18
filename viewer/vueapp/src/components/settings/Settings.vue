@@ -795,8 +795,9 @@
                         </span>
                       </button>
                       <button type="button"
-                        class="btn btn-danger"
                         v-if="!item.changed"
+                        class="btn btn-danger"
+                        title="Delete this periodic query"
                         @click="deleteCronQuery(item, index)">
                         <span class="fa fa-trash-o fa-fw">
                         </span>
@@ -884,6 +885,7 @@
               <button type="button"
                 :disabled="cronLoading"
                 :class="{'disabled':cronLoading}"
+                title="Create new periodic query"
                 class="btn btn-theme-tertiary btn-sm pull-right"
                 @click="createCronQuery">
                 <template v-if="!cronLoading">
@@ -1118,7 +1120,8 @@
                   <td>
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
-                      @click="deleteColConfig(config.name, index)">
+                      @click="deleteColConfig(config.name, index)"
+                      title="Delete this custom column configuration">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       Delete

@@ -58,6 +58,11 @@ const $router = {
 };
 
 const newView = { name: 'newview', expression: 'protocols == tls' };
+const newPeriodicQuery = {
+  ...periodicQueries[0],
+  key: 'newuniquekey329084',
+  name: 'test query name 2'
+};
 
 // setting services
 SettingsService.getNotifierTypes = jest.fn().mockResolvedValue(notifierTypes);
@@ -99,18 +104,21 @@ UserService.createView = jest.fn().mockResolvedValue({
   text: 'createView YAY!'
 });
 // periodic query services
-UserService.createCronQuery = jest.fn().mockResolvedValue({ text: 'createCronQuery YAY!' });
+UserService.createCronQuery = jest.fn().mockResolvedValue({
+  text: 'createCronQuery YAY!',
+  query: newPeriodicQuery
+});
 UserService.deleteCronQuery = jest.fn().mockResolvedValue({ text: 'deleteCronQuery YAY!' });
 UserService.getCronQueries = jest.fn().mockResolvedValue(periodicQueries);
 UserService.updateCronQuery = jest.fn().mockResolvedValue({
   text: 'updateCronQuery YAY!',
-  query: periodicQueries[0]
+  query: newPeriodicQuery
 });
 // field config services
-UserService.getColumnConfigs = jest.fn().mockResolvedValue({
+UserService.getColumnConfigs = jest.fn().mockResolvedValue([{
   ...Utils.getDefaultTableState(),
   name: 'dupe default'
-});
+}]);
 UserService.deleteColumnConfig = jest.fn().mockResolvedValue({ text: 'deleteColumnConfig YAY!' });
 UserService.getSpiviewFields = jest.fn().mockResolvedValue({
   fields: 'destination.ip:100,protocol:100,source.ip:100,node:100',
@@ -132,7 +140,7 @@ FieldService.get = jest.fn().mockResolvedValue(fields);
 test('settings - self', async () => {
   const {
     getByText, getAllByText, getByRole, getAllByRole, getByPlaceholderText,
-    getByTitle, getAllByTitle, getByDisplayValue
+    getByTitle, getAllByTitle, getByDisplayValue, queryByText
   } = render(Settings, {
     store,
     mocks: { $route, $router }
@@ -158,6 +166,7 @@ test('settings - self', async () => {
   await fireEvent.click(getByText('Views'));
   getAllByText('Views');
 
+  // VIEWS! ///////////////////////////////////////////////////////////////////
   // displays views -------------------------------------------------------- //
   await waitFor(() => { // displays view with buttons
     getByTitle("Copy this views's expression");
@@ -215,6 +224,77 @@ test('settings - self', async () => {
   // can delete a view ----------------------------------------------------- //
   await fireEvent.click(getByTitle('Delete this view'));
   expect(UserService.deleteView).toHaveBeenCalledWith(newView, undefined);
+
+  // PERIODIC QUERIES! ////////////////////////////////////////////////////////
+  // display periodic queries ---------------------------------------------- //
+  await fireEvent.click(getByText('Periodic Queries'));
+  getAllByText('Periodic Queries');
+
+  // create periodic query form validation --------------------------------- //
+  const createQueryBtn = getByTitle('Create new periodic query');
+  await fireEvent.click(createQueryBtn);
+  getByText('No query name specified.');
+  const queryNameInput = getByPlaceholderText('Periodic query name');
+  const newQueryName = 'queryname1';
+  await fireEvent.update(queryNameInput, newQueryName);
+  await fireEvent.click(createQueryBtn);
+  getByText('No query expression specified.');
+  const queryExpressionInput = getByPlaceholderText('Periodic query expression');
+  const newQueryExpression = 'protocols == tls';
+  await fireEvent.update(queryExpressionInput, newQueryExpression);
+  await fireEvent.click(createQueryBtn);
+  getByText('No query tags specified.');
+
+  // can create a periodic query ------------------------------------------- //
+  const queryTagsInput = getByPlaceholderText('Comma separated list of tags');
+  const newQueryTags = 'tag1,tag2';
+  await fireEvent.update(queryTagsInput, newQueryTags);
+  await fireEvent.click(createQueryBtn);
+  expect(UserService.createCronQuery).toHaveBeenCalledWith({
+    enabled: true,
+    name: newQueryName,
+    query: newQueryExpression,
+    action: 'tag',
+    tags: newQueryTags,
+    since: '0',
+    description: ''
+  }, undefined);
+
+  await waitFor(() => { // create query to return
+    getByText('createCronQuery YAY!'); // displays success
+  });
+  expect(queryNameInput.value).toBe(''); // clears form
+  expect(queryTagsInput.value).toBe('');
+  expect(queryExpressionInput.value).toBe('');
+
+  // displays new periodic query
+  const newQueryNameInput = getByDisplayValue('test query name 2');
+
+  // can update a periodic query ------------------------------------------- //
+  await fireEvent.update(newQueryNameInput, 'test update query name');
+  const saveQueryBtn = getByTitle('Save changes to this query');
+  await fireEvent.click(saveQueryBtn);
+  expect(UserService.updateCronQuery).toHaveBeenCalledWith({
+    ...newPeriodicQuery,
+    name: 'test update query name'
+  }, undefined);
+
+  // can delete periodic query --------------------------------------------- //
+  const deleteQueryBtn = getAllByTitle('Delete this periodic query')[1];
+  await fireEvent.click(deleteQueryBtn);
+  expect(UserService.deleteCronQuery).toHaveBeenCalledWith(newPeriodicQuery.key, undefined);
+
+  // CUSTOM COLUMN CONFIGURATIONS /////////////////////////////////////////////
+  // display custom session's table column configurations ------------------ //
+  await fireEvent.click(getByText('Column Configs'));
+  getAllByText('Column Configs');
+  getByText('dupe default');
+
+  // can delete custom column configuration -------------------------------- //
+  await fireEvent.click(getByTitle('Delete this custom column configuration'));
+  expect(UserService.deleteColumnConfig).toHaveBeenCalledWith('dupe default', undefined);
+  expect(queryByText('dupe default')).not.toBeInTheDocument(); // removes config
+  getByText('deleteColumnConfig YAY!'); // displays success
 });
 
 test('settings - admin editing another', async () => {
