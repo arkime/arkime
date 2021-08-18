@@ -209,7 +209,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     if (config.bpf) {
         if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
+            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
         }
     }
 
@@ -255,7 +255,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
                              PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i].fd, 0);
         if (unlikely(infos[i].map == MAP_FAILED)) {
-            LOGEXIT("ERROR - MMap64 failure in reader_tpacketv3_init, %d: %s",errno, strerror(errno));
+            LOGEXIT("ERROR - MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * tpacketv3NumThreads: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i].req.tp_block_size * infos[i].req.tp_block_nr, blocksize, numThreads);
         }
         infos[i].rd = malloc(infos[i].req.tp_block_nr * sizeof(struct iovec));
 
@@ -278,7 +278,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             int fanout_type = PACKET_FANOUT_HASH;
             int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
             if(setsockopt(infos[i].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                LOGEXIT("Error setting packet fanout parameters: (%d,%s)", fanout_group_id, strerror(errno));
+                LOGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }
     }
 

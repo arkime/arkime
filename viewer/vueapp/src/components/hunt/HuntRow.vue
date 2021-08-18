@@ -53,13 +53,13 @@
         class="fa fa-info-circle fa-fw cursor-help text-warning"
       />
     </td>
-    <td>
+    <td class="word-break">
       {{ job.name }}
     </td>
     <td>
       {{ job.userId }}
     </td>
-    <td>
+    <td class="word-break">
       <span v-if="user.userId === job.userId || user.createEnabled || job.users.indexOf(user.userId) > -1">
         {{ job.search }} ({{ job.searchType }})
       </span>
@@ -75,7 +75,7 @@
         {{ job.id }}
       </span>
     </td>
-    <td>
+    <td class="no-wrap">
       <button v-if="user.userId === job.userId || user.createEnabled"
         @click="$emit('removeJob', job, arrayName)"
         :disabled="job.loading"
@@ -188,7 +188,6 @@
         <span v-else
           class="fa fa-spinner fa-spin fa-fw">
         </span>
-        {{ job.id }}
       </button>
     </td>
   </tr>

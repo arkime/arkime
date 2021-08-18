@@ -731,7 +731,7 @@ void moloch_rules_recompile()
             pcap_freecode(&rule->bpfp);
             if (pcapFileHeader.dlt != DLT_NFLOG) {
                 if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                    LOGEXIT("ERROR - Couldn't compile filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
+                    LOGEXIT("ERROR - Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
             } else {
                 rule->bpfp.bf_len = 0;
@@ -1063,7 +1063,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                 if (g_hash_table_contains(rule->hash[p], ikey)) {
                     good = 1;
-                    RULE_LOG_INT(hint->i_hash);
+                    RULE_LOG_INT((long)ikey);
                     break;
                 }
             }

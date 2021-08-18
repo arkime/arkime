@@ -27,7 +27,7 @@
     <div v-show="!loading && !hidePackets && !user.hidePcap"
       class="packet-options mr-1 ml-1">
       <form class="form-inline mb-2 pt-2 border-top">
-        <fieldset :disabled="hidePackets || loading || loadingPackets || errorPackets || renderingPackets">
+        <fieldset :disabled="hidePackets || loading || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"
@@ -101,7 +101,7 @@
     <div v-show="!loading && !loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
       class="mr-1 ml-1">
       <form class="form-inline mb-2 pt-2">
-        <fieldset :disabled="loading || loadingPackets || errorPackets || renderingPackets">
+        <fieldset :disabled="loading || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"

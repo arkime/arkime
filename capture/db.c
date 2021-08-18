@@ -1898,7 +1898,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
         if (flen >= sizeof(filename)-1) {
-            LOGEXIT("pcapDir %s is too large", config.pcapDir[config.pcapDirPos]);
+            LOGEXIT("pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
         }
 
         g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
@@ -2076,7 +2076,7 @@ LOCAL void moloch_db_check()
     version = moloch_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
 
     if (!version)
-        LOGEXIT("ERROR - Database version couldn't be found, have your run \"db/db.pl host:port init\"");
+        LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
 
     if (atoi((char*)version) < MOLOCH_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, MOLOCH_MIN_DB_VERSION);
@@ -2456,7 +2456,7 @@ gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)
         if ((value = moloch_js0n_get(source, source_len, "num", &len))) {
             *outputId = atoi((char*)value);
         } else {
-            LOGEXIT("ERROR - No num field in %.*s", source_len, source);
+            LOGEXIT("ERROR - Files check has no num field in %.*s", source_len, source);
         }
     }
 

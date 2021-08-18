@@ -545,7 +545,7 @@ LOCAL gboolean reader_libpcapfile_read()
         }
 
         if (config.pcapMonitor)
-            g_timeout_add(100, reader_libpcapfile_monitor_gfunc, 0);
+            g_timeout_add(25, reader_libpcapfile_monitor_gfunc, 0);
         else {
             moloch_quit();
         }
@@ -561,14 +561,15 @@ LOCAL void reader_libpcapfile_opened()
 
     if (config.flushBetween) {
         moloch_session_flush();
-        int rc[5];
+        g_main_context_iteration(NULL, TRUE);
+        int rc[4];
 
         // Pause until all packets and commands are done
-        while ((rc[0] = moloch_session_cmd_outstanding()) + (rc[1] = moloch_session_close_outstanding()) + (rc[2] = moloch_packet_outstanding()) + (rc[3] = moloch_session_monitoring()) + (rc[4] = moloch_db_can_quit()) > 0) {
+        while ((rc[0] = moloch_session_cmd_outstanding()) + (rc[1] = moloch_session_close_outstanding()) + (rc[2] = moloch_packet_outstanding()) + (rc[3] = moloch_session_monitoring()) > 0) {
             if (config.debug) {
-                LOG("Waiting next file %d %d %d %d %d", rc[0], rc[1], rc[2], rc[3], rc[4]);
+                LOG("Waiting next file %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
             }
-            usleep(50000);
+            usleep(5000);
             g_main_context_iteration(NULL, TRUE);
         }
     }
@@ -581,11 +582,11 @@ LOCAL void reader_libpcapfile_opened()
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+            LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
 
 	if (pcap_setfilter(pcap, &bpf) == -1) {
-            LOGEXIT("ERROR - Couldn't set filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
+            LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcap));
         }
         pcap_freecode(&bpf);
     }
@@ -600,7 +601,7 @@ LOCAL void reader_libpcapfile_opened()
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {
-        g_timeout_add(100, reader_libpcapfile_read, NULL);
+        g_timeout_add(25, reader_libpcapfile_read, NULL);
     } else {
         moloch_watch_fd(fd, MOLOCH_GIO_READ_COND, reader_libpcapfile_read, NULL);
     }
@@ -691,7 +692,7 @@ LOCAL void reader_libpcapfile_start() {
     reader_libpcapfile_next();
     if (!pcap) {
         if (config.pcapMonitor) {
-            g_timeout_add(100, reader_libpcapfile_monitor_gfunc, 0);
+            g_timeout_add(25, reader_libpcapfile_monitor_gfunc, 0);
         } else {
             moloch_quit();
         }

@@ -31,7 +31,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - BREAKING - wise - for json data keyColumn has been renamed keyPath
   - BREAKING - wise - now lower case lotermfield and upper case uptermfield fields
   - BREAKING - capture - override-ips will no longer have leading 0s for ASN
-  - release - curl 7.78.0, node 14.17.3, glib 2.66.4, yara 4.0.2, lua 5.3.6, maxmind 1.4.3
+  - release - curl 7.78.0, node 14.17.5, glib 2.68.3, yara 4.0.2, lua 5.3.6, maxmind 1.4.3, nghttp2 1.44.0
   - capture - search for GeoIP files first in /var/lib/GeoIP
   - capture - fixed possible ABR with time parsing
   - capture - fixed memory leak with dns bad hostname parsing
@@ -59,10 +59,10 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - spigraph visualization improvements
   - viewer - Can set watermark settings again
   - viewer - Start moloch -> arkime cookie changes
-  - viewer - dark theme improvements
+  - viewer - dark theme improvements and new themes
   - viewer - can now toggle on/off capture start times
   - viewer - improve toolbar for packet display
-  - viewer - standardize on . ipv6 and : ipv4 por separator
+  - viewer - standardize on . ipv6 and : ipv4 port separator
   - viewer - send shallower queries to ES when possible
   - viewer - fix cron queries when using autoGenerateId
   - viewer - improve session settings across sessions
@@ -70,9 +70,16 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fix setting user permissions not applying until page reload
   - viewer - improve column resizing
   - viewer - add button to open sessions cron query tagged
+  - viewer - rename cron queries to periodic queries, fix bugs, and add data (created time, creator userId, last run time, enabled/disabled time)
+  - viewer - add create periodic query to action menu dropdown
   - viewer - notifier links to results
+  - viewer - notifier displays more data (creator userId, created time, last updated time)
   - viewer - cancel hunts & remove hunt name and id from sessions
   - viewer - shortcuts sync across all clusters if usersElasticsearch and cronQueries is set
+  - viewer - monitor cert and key files and reload them if they change
+  - viewer - display http request method in history page
+  - viewer - add bad status codes for failing to fetch pcap
+  - viewer - fix uncompress packets by requesting all packets
   - wise - new config UI, enable with --webconfig
   - wise - more moloch->arkime changes
   - wise - for json data can now set arrayPath for start of where to parse

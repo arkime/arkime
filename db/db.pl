@@ -1249,7 +1249,8 @@ sub sessions3ECSTemplate
 {
 # Modfified version of https://raw.githubusercontent.com/elastic/ecs/1.10/generated/elasticsearch/7/template.json
 # 1) change index_patterns
-# 2) Delete cloud,dns,http,tls,user
+# 2) Delete cloud,dns,http,tls,user,data_stream
+# 3) Add source.as.full, destination.as.full, source.mac-cnt, destination.mac-cnt, network.vlan.id-cnt
 my $template = '
 {
   "index_patterns": "' . $PREFIX . 'sessions3-*",
@@ -1514,19 +1515,6 @@ my $template = '
           }
         }
       },
-      "data_stream": {
-        "properties": {
-          "dataset": {
-            "type": "constant_keyword"
-          },
-          "namespace": {
-            "type": "constant_keyword"
-          },
-          "type": {
-            "type": "constant_keyword"
-          }
-        }
-      },
       "destination": {
         "properties": {
           "address": {
@@ -1535,6 +1523,9 @@ my $template = '
           },
           "as": {
             "properties": {
+              "full" : {
+                "type" : "keyword"
+              },
               "number": {
                 "type": "long"
               },
@@ -1614,6 +1605,9 @@ my $template = '
           "mac": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "mac-cnt" : {
+            "type" : "long"
           },
           "nat": {
             "properties": {
@@ -2628,6 +2622,9 @@ my $template = '
                 "ignore_above": 1024,
                 "type": "keyword"
               },
+              "id-cnt" : {
+                "type" : "long"
+              },
               "name": {
                 "ignore_above": 1024,
                 "type": "keyword"
@@ -3639,6 +3636,9 @@ my $template = '
           },
           "as": {
             "properties": {
+              "full" : {
+                "type" : "keyword"
+              },
               "number": {
                 "type": "long"
               },
@@ -3718,6 +3718,9 @@ my $template = '
           "mac": {
             "ignore_above": 1024,
             "type": "keyword"
+          },
+          "mac-cnt" : {
+            "type" : "long"
           },
           "nat": {
             "properties": {
@@ -5160,7 +5163,7 @@ if ($DOILM) {
             progress("$i ");
             esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
         }
-        logmsg "\n";
+        logmsg "\n" if (scalar(keys %{$indices}) != 0);
     }
 
     sessions3ECSTemplate();
@@ -5257,9 +5260,9 @@ if ($UPGRADEALLSESSIONS) {
         progress("$i ");
         esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
     }
+    logmsg "\n" if (scalar(keys %{$indices}) != 0);
 }
 
-logmsg "\n";
 }
 ################################################################################
 
@@ -5960,7 +5963,7 @@ showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|se
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
-parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean)$/);
+parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore|backup)$/);
 
 $ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm)$/);
@@ -6972,68 +6975,30 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         waitFor("CLEAN", "do you want to clean everything?");
     }
     logmsg "Erasing\n";
-    esDelete("/${OLDPREFIX}tags_v3", 1);
-    esDelete("/${OLDPREFIX}tags_v2", 1);
-    esDelete("/${OLDPREFIX}tags", 1);
-    esDelete("/${OLDPREFIX}sequence", 1);
-    esDelete("/${OLDPREFIX}sequence_v1", 1);
-    esDelete("/${OLDPREFIX}sequence_v2", 1);
-    esDelete("/${OLDPREFIX}sequence_v3", 1);
-    esDelete("/${OLDPREFIX}files_v6", 1);
-    esDelete("/${OLDPREFIX}files_v5", 1);
-    esDelete("/${OLDPREFIX}files_v4", 1);
-    esDelete("/${OLDPREFIX}files_v3", 1);
-    esDelete("/${OLDPREFIX}files", 1);
-    esDelete("/${OLDPREFIX}stats", 1);
-    esDelete("/${OLDPREFIX}stats_v1", 1);
-    esDelete("/${OLDPREFIX}stats_v2", 1);
-    esDelete("/${OLDPREFIX}stats_v3", 1);
-    esDelete("/${OLDPREFIX}stats_v4", 1);
-    esDelete("/${OLDPREFIX}dstats", 1);
-    esDelete("/${OLDPREFIX}fields", 1);
-    esDelete("/${OLDPREFIX}dstats_v1", 1);
-    esDelete("/${OLDPREFIX}dstats_v2", 1);
-    esDelete("/${OLDPREFIX}dstats_v3", 1);
-    esDelete("/${OLDPREFIX}dstats_v4", 1);
+    esDelete("/${PREFIX}sequence_v30,${OLDPREFIX}sequence_v3,${OLDPREFIX}sequence_v2,${OLDPREFIX}sequence_v1,${OLDPREFIX}sequence?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}files_v30,${OLDPREFIX}files_v6,${OLDPREFIX}files_v5,${OLDPREFIX}files_v4,${OLDPREFIX}files_v3,${OLDPREFIX}files?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}stats_v30,${OLDPREFIX}stats_v4,${OLDPREFIX}stats_v3,${OLDPREFIX}stats_v2,${OLDPREFIX}stats_v1,${OLDPREFIX}stats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}dstats_v30,${OLDPREFIX}dstats_v4,${OLDPREFIX}dstats_v3,${OLDPREFIX}dstats_v2,${OLDPREFIX}dstats_v1,${OLDPREFIX}dstats?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}fields_v30,${OLDPREFIX}fields_v3,${OLDPREFIX}fields_v2,${OLDPREFIX}fields_v1,${OLDPREFIX}fields?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${OLDPREFIX}sessions-*", 1);
     esDelete("/${OLDPREFIX}sessions2-*", 1);
+    esDelete("/${PREFIX}sessions3-*", 1);
+    esDelete("/${OLDPREFIX}history_v1-*", 1);
+    esDelete("/${PREFIX}history_v1-*", 1);
     esDelete("/_template/${OLDPREFIX}template_1", 1);
     esDelete("/_template/${OLDPREFIX}sessions_template", 1);
     esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
-    esDelete("/${OLDPREFIX}fields", 1);
-    esDelete("/${OLDPREFIX}fields_v1", 1);
-    esDelete("/${OLDPREFIX}fields_v2", 1);
-    esDelete("/${OLDPREFIX}fields_v3", 1);
-    esDelete("/${OLDPREFIX}history_v1-*", 1);
+    esDelete("/_template/${PREFIX}sessions3_template", 1);
+    esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
-    esDelete("/${OLDPREFIX}hunts_v1", 1);
-    esDelete("/${OLDPREFIX}hunts_v2", 1);
-    esDelete("/${OLDPREFIX}lookups_v1", 1);
+    esDelete("/_template/${PREFIX}history_v1_template", 1);
     if ($ARGV[1] =~ /^(init|clean)/) {
-        esDelete("/${OLDPREFIX}users_v5", 1);
-        esDelete("/${OLDPREFIX}users_v6", 1);
-        esDelete("/${OLDPREFIX}users_v7", 1);
-        esDelete("/${OLDPREFIX}users", 1);
-        esDelete("/${OLDPREFIX}queries", 1);
-        esDelete("/${OLDPREFIX}queries_v1", 1);
-        esDelete("/${OLDPREFIX}queries_v2", 1);
-        esDelete("/${OLDPREFIX}queries_v3", 1);
-
-        esDelete("/${OLDPREFIX}users_v30", 1);
-        esDelete("/${OLDPREFIX}queries_v30", 1);
+        esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
-
-    esDelete("/${PREFIX}sequence_v30", 1);
-    esDelete("/${PREFIX}fields_v30", 1);
-    esDelete("/${PREFIX}files_v30", 1);
-    esDelete("/${PREFIX}dstats_v30", 1);
-    esDelete("/${PREFIX}stats_v30", 1);
-    esDelete("/${PREFIX}hunts_v30", 1);
-    esDelete("/${PREFIX}lookups_v30", 1);
-    esDelete("/_template/${PREFIX}sessions3_template", 1);
-    esDelete("/_template/${PREFIX}history_v1_template", 1);
-    esDelete("/${PREFIX}sessions3-*", 1);
 
     sleep(1);
 

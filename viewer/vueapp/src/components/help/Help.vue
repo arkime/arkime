@@ -2,7 +2,7 @@
 
   <div class="help-content">
     <!-- Side navbar -->
-    <div class="nav nav-pills col-1">
+    <div class="nav nav-pills">
       <a href="help#about"
         class="nav-link">
         <span class="fa fa-fw fa-question-circle">
@@ -1454,7 +1454,7 @@ export default {
 
 /* help navigation */
 .help-content div.nav-pills {
-  min-width: 150px;
+  width: 150px;
   border: 1px solid var(--color-gray);
   border-radius: 0 8px 8px 0;
   position: fixed;

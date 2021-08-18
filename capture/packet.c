@@ -1456,7 +1456,7 @@ int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const 
 void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
     if (type >= MOLOCH_IPPROTO_MAX) 
-      LOGEXIT ("type value to large %d", type);
+      LOGEXIT ("type value too large %d", type);
 
     ipCbs[type] = enqueueCb;
 }

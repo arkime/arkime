@@ -438,10 +438,22 @@ exports.getSession = async (id, options, cb) => {
   delete params._source;
   delete params.fields;
   delete params.arkime_unflatten;
+  delete params.final;
 
-  exports.search(exports.sid2Index(id, { multiple: true }), '_doc', query, params, (err, results) => {
+  const index = exports.sid2Index(id, { multiple: true });
+  exports.search(index, '_doc', query, params, (err, results) => {
     if (err) { return cb(err); }
-    if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) { return cb('Not found'); }
+    if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) {
+      if (options.final === true) {
+        delete options.final;
+        return cb('Not found');
+      }
+      options.final = true;
+      internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
+        exports.getSession(id, options, cb);
+      });
+      return;
+    }
     const session = results.hits.hits[0];
     session.found = true;
     if (session.fields && session._source && session._source.cert) {

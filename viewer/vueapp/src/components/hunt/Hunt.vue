@@ -684,7 +684,7 @@
               <span v-show="query.sortField === 'name' && query.desc" class="fa fa-sort-desc"></span>
               <span v-show="query.sortField !== 'name'" class="fa fa-sort"></span>
             </th>
-            <th class="cursor-pointer"
+            <th class="cursor-pointer no-wrap"
               @click="columnClick('userId')">
               User
               <span v-show="query.sortField === 'userId' && !query.desc" class="fa fa-sort-asc"></span>
@@ -1336,7 +1336,7 @@ export default {
     /* retrieves the notifiers that have been configured */
     loadNotifiers: function () {
       SettingsService.getNotifiers().then((response) => {
-        this.notifiers = response.data;
+        this.notifiers = response;
       });
     }
   },

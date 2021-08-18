@@ -23,9 +23,9 @@ test('loading', async () => {
   await fireEvent.click(cancelBtn);
   expect(emitted()).toHaveProperty('cancel');
 
-  const image = getByTitle('Arkime Logo'); // logo twirls on click
+  const image = getByTitle('Arkime Logo'); // logo bounces on click
   await fireEvent.click(image);
-  expect(image).toHaveClass('twirling');
+  expect(image).toHaveClass('bouncing');
 });
 
 test('loading - watching', async () => {
