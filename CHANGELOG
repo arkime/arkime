@@ -22,6 +22,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+3.0.1 2021/09/xx
+
 3.0.0 2021/08/18
   - BREAKING - elasticsearch - ES 7.10.0 or later required
   - BREAKING - if not using a ES prefix, the prefix arkime_ will now be used
