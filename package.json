@@ -108,7 +108,6 @@
     "eslint-plugin-vue": "^7.6.0",
     "eslint-webpack-plugin": "^2.5.2",
     "file-loader": "^6.2.0",
-    "flot": "^4.2.2",
     "html-webpack-plugin": "^5.2.0",
     "jest": "^27.0.4",
     "jsdoc-to-markdown": "^7.0.1",

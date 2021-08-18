@@ -171,16 +171,15 @@ app.use((req, res, next) => {
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  // unsafe-inline required for json editor (https://github.com/dirkliu/vue-json-editor)
+  styleSrc: ["'self'", "'unsafe-inline'"],
   // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
-  imgSrc: ["'self'", 'data:']
+  imgSrc: ["'self'", 'data:'],
+  // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
+  workerSrc: ["'self'", 'blob:']
 };
-if (process.env.NODE_ENV === 'development') {
-  // need unsafe inline styles for hot module replacement
-  cspDirectives.styleSrc.push("'unsafe-inline'");
-}
 const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });

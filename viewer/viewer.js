@@ -138,16 +138,13 @@ app.use((req, res, next) => {
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  // need unsafe-inline for jquery flot (https://github.com/flot/flot/issues/1574, https://github.com/flot/flot/issues/828)
+  styleSrc: ["'self'", "'unsafe-inline'"],
   // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
 };
-if (process.env.NODE_ENV === 'development') {
-  // need unsafe inline styles for hot module replacement
-  cspDirectives.styleSrc.push("'unsafe-inline'");
-}
 const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });

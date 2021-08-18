@@ -226,9 +226,9 @@ const cspDirectives = {
   // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
-  imgSrc: ["'self'", 'data:']
+  imgSrc: ["'self'"]
 };
-if (process.env.NODE_ENV === 'developement') {
+if (process.env.NODE_ENV === 'development') {
   // need unsafe inline styles for hot module replacement
   cspDirectives.styleSrc.push("'unsafe-inline'");
 }

@@ -247,14 +247,12 @@ import moment from 'moment-timezone';
 import '../../../../public/jquery-jvectormap-1.2.2.min.js';
 import '../../../../public/jquery-jvectormap-world-en.js';
 
-// graph imports TODO - not working
-import 'flot/dist/es5/jquery.flot';
-import 'flot/source/jquery.flot';
-import 'flot/source/jquery.flot.uiConstants';
-import 'flot/source/jquery.flot.selection';
-import 'flot/source/jquery.flot.navigate';
-import 'flot/source/jquery.flot.resize';
-import 'flot/source/jquery.flot.stack';
+// graph imports
+import '../../../../public/flot-0.7/jquery.flot';
+import '../../../../public/flot-0.7/jquery.flot.selection';
+import '../../../../public/flot-0.7/jquery.flot.navigate';
+import '../../../../public/flot-0.7/jquery.flot.resize';
+import '../../../../public/flot-0.7/jquery.flot.stack';
 
 // color vars
 let foregroundColor;
