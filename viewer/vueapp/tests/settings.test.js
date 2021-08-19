@@ -120,10 +120,10 @@ UserService.getColumnConfigs = jest.fn().mockResolvedValue([{
   name: 'dupe default'
 }]);
 UserService.deleteColumnConfig = jest.fn().mockResolvedValue({ text: 'deleteColumnConfig YAY!' });
-UserService.getSpiviewFields = jest.fn().mockResolvedValue({
-  fields: 'destination.ip:100,protocol:100,source.ip:100,node:100',
+UserService.getSpiviewFields = jest.fn().mockResolvedValue([{
+  fields: 'destination.ip:100,source.ip:100',
   name: 'test spiview field config'
-});
+}]);
 UserService.deleteSpiviewFieldConfig = jest.fn().mockResolvedValue({ text: 'deleteSpiviewFieldConfig YAY!' });
 UserService.getState = jest.fn().mockResolvedValue({
   data: {
@@ -284,7 +284,7 @@ test('settings - self', async () => {
   await fireEvent.click(deleteQueryBtn);
   expect(UserService.deleteCronQuery).toHaveBeenCalledWith(newPeriodicQuery.key, undefined);
 
-  // CUSTOM COLUMN CONFIGURATIONS /////////////////////////////////////////////
+  // CUSTOM SESSIONS COLUMN CONFIGURATIONS ////////////////////////////////////
   // display custom session's table column configurations ------------------ //
   await fireEvent.click(getByText('Column Configs'));
   getAllByText('Column Configs');
@@ -295,6 +295,18 @@ test('settings - self', async () => {
   expect(UserService.deleteColumnConfig).toHaveBeenCalledWith('dupe default', undefined);
   expect(queryByText('dupe default')).not.toBeInTheDocument(); // removes config
   getByText('deleteColumnConfig YAY!'); // displays success
+
+  // CUSTOM SPIVIEW FIELDS CONFIGURATIONS /////////////////////////////////////
+  // display custom spiview fields configurations -------------------------- //
+  await fireEvent.click(getByText('SPI View Configs'));
+  getAllByText('SPI View Configs');
+  getByText('test spiview field config');
+
+  // can delete custom column configuration -------------------------------- //
+  await fireEvent.click(getByTitle('Delete this custom spiview field configuration'));
+  expect(UserService.deleteSpiviewFieldConfig).toHaveBeenCalledWith('test spiview field config', undefined);
+  expect(queryByText('test spiview field config')).not.toBeInTheDocument(); // removes config
+  getByText('deleteSpiviewFieldConfig YAY!'); // displays success
 });
 
 test('settings - admin editing another', async () => {

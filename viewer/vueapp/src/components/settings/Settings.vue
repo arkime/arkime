@@ -1188,13 +1188,16 @@
                   Arkime Default
                 </td>
                 <td>
-                  <label class="badge badge-secondary mr-1 help-cursor"
-                    :title="fieldsMap[field].help"
-                    v-b-tooltip.hover
-                    v-for="field in defaultSpiviewConfig.fields"
-                    :key="field">
-                    {{ fieldsMap[field].friendlyName }} (100)
-                  </label>
+                  <template v-for="field in defaultSpiviewConfig.fields">
+                    <label
+                      :key="field"
+                      v-b-tooltip.hover
+                      v-if="fieldsMap[field]"
+                      class="badge badge-secondary mr-1 help-cursor"
+                      :title="fieldsMap[field].help">
+                      {{ fieldsMap[field].friendlyName }} (100)
+                    </label>
+                  </template>
                 </td>
                 <td>&nbsp;</td>
               </tr> <!-- /default spiview field confg -->
@@ -1218,7 +1221,8 @@
                   <td>
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
-                      @click="deleteSpiviewConfig(config.name, index)">
+                      @click="deleteSpiviewConfig(config.name, index)"
+                      title="Delete this custom spiview field configuration">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       Delete
