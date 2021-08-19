@@ -1,7 +1,8 @@
 shared:
     annotations:
-        beta.screwdriver.cd/cpu: HIGH
-        beta.screwdriver.cd/ram: HIGH
+        screwdriver.cd/cpu: HIGH
+        screwdriver.cd/ram: HIGH
+        screwdriver.cd/restrictPR: fork
 
     environment:
         MOLOCH_COPY_BRANCH: "origin/main"
