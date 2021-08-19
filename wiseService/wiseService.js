@@ -168,18 +168,22 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    /* can remove unsafe-inline for css when this is fixed
-    https://github.com/vuejs/vue-style-loader/issues/33 */
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
-    objectSrc: ["'none'"],
-    imgSrc: ["'self'", 'data:'],
-    frameSrc: ["'none'"]
-  }
-}));
+// define csp headers
+const cspDirectives = {
+  defaultSrc: ["'self'"],
+  // unsafe-inline required for json editor (https://github.com/dirkliu/vue-json-editor)
+  styleSrc: ["'self'", "'unsafe-inline'"],
+  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+  objectSrc: ["'none'"],
+  imgSrc: ["'self'", 'data:'],
+  // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
+  workerSrc: ["'self'", 'blob:']
+};
+const cspHeader = helmet.contentSecurityPolicy({
+  directives: cspDirectives
+});
+app.use(cspHeader);
 
 function getConfig (section, sectionKey, d) {
   if (!internals.config[section]) {
