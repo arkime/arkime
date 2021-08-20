@@ -2,7 +2,31 @@
 
   <span>
 
-    <span v-if="!field.children && parsed !== undefined">
+    <span v-if="!field">
+      <span
+        class="cursor-help text-danger"
+        :id="`tooltip-${expr}-${uuid}`">
+        <span class="fa fa-exclamation-triangle fa-fw" />
+        {{ missingFieldValue }}
+      </span>
+      <b-tooltip
+        variant="danger"
+        :target="`tooltip-${expr}-${uuid}`">
+        <h6 class="mb-1">
+          We cannot locate this field: <strong>{{ this.expr }}</strong>
+        </h6>
+        Maybe viewer crashed? Or a proxy or firewall is blocking?
+        Or you're using an
+        <a target="_blank"
+          rel="noreferrer noopener nofollow"
+          href="https://arkime.com/faq#what-browsers-are-supported">
+          unsupported browser</a>?
+        <br>
+        <em>Please contact your administrator.</em>
+      </b-tooltip>
+    </span>
+
+    <span v-else-if="!field.children && parsed !== undefined">
       <span v-for="pd of parsed"
         :key="pd.id">
 
@@ -170,6 +194,7 @@
 import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
 import MolochSessionInfo from './SessionInfo';
+import Utils from '../utils/utils';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
@@ -274,6 +299,12 @@ export default {
       }
 
       return result;
+    },
+    missingFieldValue () {
+      return this.value ?? 'unknown';
+    },
+    uuid () {
+      return Utils.createRandomString();
     }
   },
   methods: {
