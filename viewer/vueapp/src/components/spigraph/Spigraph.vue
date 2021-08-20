@@ -131,13 +131,12 @@
     </MolochCollapsible>
 
     <!-- main visualization -->
-    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && capStartTimes.length && showToolBars">
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && showToolBars">
       <moloch-visualizations
         id="primary"
         :graph-data="graphData"
         :map-data="mapData"
         :primary="true"
-        :cap-start-times="capStartTimes"
         :timelineDataFilters="timelineDataFilters"
         @fetchMapData="cancelAndLoad(true)">
       </moloch-visualizations>
@@ -190,7 +189,7 @@
             <div class="row">
               <div class="col-md-12">
                 <moloch-visualizations
-                  :id="index.toString()"
+                  :id="(index + 1).toString()"
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
@@ -274,7 +273,6 @@ export default {
       filtered: 0,
       graphData: undefined,
       mapData: undefined,
-      capStartTimes: [],
       refresh: 0,
       recordsTotal: 0,
       recordsFiltered: 0,
@@ -346,8 +344,6 @@ export default {
     }
   },
   created: function () {
-    this.getCaptureStats();
-
     FieldService.get(true, true)
       .then((result) => {
         this.fields = result;
@@ -527,24 +523,6 @@ export default {
         this.loading = false;
         this.error = error.text || error;
       });
-    },
-    /* Fetches capture stats to show the last time each capture node started */
-    getCaptureStats: function () {
-      this.$http.get('api/stats')
-        .then((response) => {
-          for (const data of response.data.data) {
-            this.capStartTimes.push({
-              nodeName: data.nodeName,
-              startTime: data.startTime * 1000
-            });
-          }
-        })
-        .catch((error) => {
-          this.capStartTimes = [{
-            nodeName: 'none',
-            startTime: 1
-          }];
-        });
     }
   },
   beforeDestroy: function () {
