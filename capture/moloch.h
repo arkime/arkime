@@ -78,7 +78,6 @@
 #define MOLOCH_VAR_ARG_SKIP (char *)1LL
 
 #define POINTER_TO_FLOAT(p) *(float *)&p
-#define FLOAT_TO_POINTER(f) (void *)(long)(int)*(long *)(float *)&f
 
 /******************************************************************************/
 /*

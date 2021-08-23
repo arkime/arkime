@@ -267,6 +267,7 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
 {
     uint32_t         n;
     float            f;
+    uint32_t         fint;
     GPtrArray       *rules;
     patricia_node_t *node;
 
@@ -298,12 +299,13 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
             loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, moloch_rules_free_array);
 
         f = atof(key);
-        g_hash_table_add(rule->hash[pos], FLOAT_TO_POINTER(f));
+        memcpy(&fint, &f, 4);
+        g_hash_table_add(rule->hash[pos], (gpointer)(long)fint);
 
-        rules = g_hash_table_lookup(loading.fieldsHash[pos], FLOAT_TO_POINTER(f));
+        rules = g_hash_table_lookup(loading.fieldsHash[pos], (gpointer)(long)fint);
         if (!rules) {
             rules = g_ptr_array_new();
-            g_hash_table_insert(loading.fieldsHash[pos], FLOAT_TO_POINTER(f), rules);
+            g_hash_table_insert(loading.fieldsHash[pos], (gpointer)(long)fint, rules);
         }
         g_ptr_array_add(rules, rule);
         break;

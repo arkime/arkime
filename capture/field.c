@@ -815,6 +815,7 @@ added:
 gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
 {
     MolochField_t        *field;
+    uint32_t             fint;
 
     if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
@@ -833,7 +834,8 @@ gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
             goto added;
         case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
             field->ghash = g_hash_table_new(NULL, NULL);
-            g_hash_table_add(field->ghash, FLOAT_TO_POINTER(f));
+            memcpy(&fint, &f, 4);
+            g_hash_table_add(field->ghash, (gpointer)(long)fint);
             goto added;
         default:
             LOGEXIT("Not a float %s field and tried to set %f", config.fields[pos]->dbField, f);
@@ -850,7 +852,9 @@ gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
         g_array_append_val(field->farray, f);
         goto added;
     case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
-        if (!g_hash_table_add(field->ghash, FLOAT_TO_POINTER(f))) {
+        memcpy(&fint, &f, 4);
+        g_hash_table_add(field->ghash, (gpointer)(long)fint);
+        if (!g_hash_table_add(field->ghash, (gpointer)(long)fint)) {
             field->jsonSize -= 13;
             return FALSE;
         }
