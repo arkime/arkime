@@ -29,6 +29,5 @@ installmoloch:
 	@mkdir -p $(etcdir) @prefix@/logs
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > @prefix@/bin/moloch_update_geo.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > @prefix@/bin/moloch_add_user.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_config_interfaces.sh > @prefix@/bin/arkime_config_interfaces.sh
 	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure.moloch > @prefix@/bin/Configure
-	chmod 0755 @prefix@/bin/moloch_update_geo.sh @prefix@/bin/moloch_add_user.sh @prefix@/bin/Configure @prefix@/bin/arkime_config_interfaces.sh
+	chmod 0755 @prefix@/bin/moloch_update_geo.sh @prefix@/bin/moloch_add_user.sh @prefix@/bin/Configure
