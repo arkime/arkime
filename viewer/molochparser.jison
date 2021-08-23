@@ -495,6 +495,25 @@ function formatQuery(yy, field, op, value)
     obj.range[info.dbField] = {};
     obj.range[info.dbField][op] = value;
     return obj;
+  case "float":
+    if (value[0] === "/")
+      throw value + " - Regex queries not supported for float queries";
+
+    if (op === "eq" || op === "ne") {
+      obj = termOrTermsFloat(info.dbField, value);
+      if (op === "ne") {
+        obj = {bool: {must_not: obj}};
+      }
+      return obj;
+    }
+
+    if (value[0] === "\[")
+      throw value + " - List queries not supported for gt/lt queries - " + value;
+
+    obj = {range: {}};
+    obj.range[info.dbField] = {};
+    obj.range[info.dbField][op] = value;
+    return obj;
   case "lotermfield":
   case "lotextfield":
     if (op === "eq")
@@ -792,6 +811,34 @@ function termOrTermsInt(dbField, str) {
       obj.range[dbField] = {gte: match[1], lte: match[2]};
       return obj;
     } else if (str.match(/[^\d]+/)) {
+      throw str + " is not a number";
+    }
+    obj = {term: {}};
+    obj.term[dbField] = str;
+  }
+  return obj;
+}
+
+function termOrTermsFloat(dbField, str) {
+  var obj = {};
+  if (str[0] === "[" && str[str.length -1] === "]") {
+    obj = {terms: {}};
+    obj.terms[dbField] = ListToArray(str);
+    obj.terms[dbField].forEach(function(str) {
+      str = stripQuotes(str);
+      if (typeof str !== "float" && str.match(/-?\d*\.?\d*/))
+        throw str + " is not a number";
+    });
+  } else {
+    str = stripQuotes(str);
+    let match;
+    if ((match = str.match(/-\d*\.?\d*/))) {
+      // good non range
+    } else if ((match = str.match(/(-?\d*\.?\d*)-(-?\d*\.?\d*)/))) {
+      obj = {range: {}};
+      obj.range[dbField] = {gte: match[1], lte: match[2]};
+      return obj;
+    } else if (!str.match(/-?\d*\.?\d*/)) {
       throw str + " is not a number";
     }
     obj = {term: {}};

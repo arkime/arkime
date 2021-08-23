@@ -40,7 +40,9 @@ const store = new Vuex.Store({
         inactive: []
       },
       selectedCluster: []
-    }
+    },
+    showCapStartTimes: true,
+    capStartTimes: [{ nodeName: 'none', startTime: 1 }]
   },
   getters: {
     sessionsTableState (state) {
@@ -190,6 +192,12 @@ const store = new Vuex.Store({
     },
     setStickySessionsBtn (state, value) {
       state.stickySessionsBtn = value;
+    },
+    setShowCapStartTimes (state, value) {
+      state.showCapStartTimes = value;
+    },
+    setCapStartTimes (state, value) {
+      state.capStartTimes = value;
     }
   }
 });

@@ -65,23 +65,22 @@ export default {
       }
 
       // there is no cached result, so we need to fetch the fields
-      Vue.axios.get(`api/fields${array ? '?array=true' : ''}`)
-        .then((response) => {
-          queryInProgress.promise = undefined;
+      Vue.axios.get(`api/fields${array ? '?array=true' : ''}`).then((response) => {
+        queryInProgress.promise = undefined;
 
-          if (array) {
-            _fieldsArrayCache = response.data;
-          } else {
-            _fieldsMapCache = response.data;
-          }
+        if (array) {
+          _fieldsArrayCache = response.data;
+        } else {
+          _fieldsMapCache = response.data;
+        }
 
-          let result = response.data;
-          if (addIpDstPort) { result = addIpDstPortFieldToResults(response.data); }
-          return resolve(result);
-        }, (error) => {
-          queryInProgress.promise = undefined;
-          return reject(error);
-        });
+        let result = response.data;
+        if (addIpDstPort) { result = addIpDstPortFieldToResults(response.data); }
+        return resolve(result);
+      }).catch((error) => {
+        queryInProgress.promise = undefined;
+        return reject(error);
+      });
     });
 
     return queryInProgress.promise;

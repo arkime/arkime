@@ -241,6 +241,7 @@
 
 <script>
 // imports
+import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
 
 // map imports
@@ -286,15 +287,6 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
-    },
-    capStartTimes: {
-      type: Array,
-      default: () => {
-        return [{
-          nodeName: 'none',
-          startTime: 1
-        }];
-      }
     }
   },
   data: function () {
@@ -312,8 +304,7 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      stickyViz: false,
-      showCapStartTimes: true
+      stickyViz: false
     };
   },
   computed: {
@@ -369,6 +360,19 @@ export default {
     },
     timezone: function () {
       return this.$store.state.user.settings.timezone;
+    },
+    showCapStartTimes: {
+      get: function () {
+        return this.$store.state.showCapStartTimes;
+      },
+      set: function (newValue) {
+        if (this.primary) {
+          this.$store.commit('setShowCapStartTimes', newValue);
+        }
+      }
+    },
+    capStartTimes: function () {
+      return this.$store.state.capStartTimes;
     }
   },
   watch: {
@@ -383,10 +387,15 @@ export default {
     },
     graphType: function (newVal, oldVal) {
       function changeGraphType (that) {
-        that.setupGraphData();
-        that.plot.setData(that.graph);
-        that.plot.setupGrid();
-        that.plot.draw();
+        let interval = 0;
+        // need to wait for graph to load initially if there is a req for cap times
+        if (!that.graph) { interval = 100; }
+        setTimeout(() => {
+          that.setupGraphData();
+          that.plot.setData(that.graph);
+          that.plot.setupGrid();
+          that.plot.draw();
+        }, interval);
       }
       if (this.primary) {
         changeGraphType(this);
@@ -417,6 +426,12 @@ export default {
         setTimeout(() => { // show/hide maps one at a time
           this.showMap = newVal;
         }, id * 100);
+      }
+    },
+    capStartTimes (newVal, oldVal) {
+      if (!this.primary) {
+        this.setupGraphData();
+        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
       }
     }
   },
@@ -474,7 +489,7 @@ export default {
       this.seriesType = this.$route.query.seriesType || 'bars';
       this.$store.commit('updateSeriesType', this.seriesType);
 
-      setupMapAndGraph(this);
+      StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
     } else { // wait for values in store to be accessible
       const id = parseInt(this.id);
       setTimeout(() => { setupMapAndGraph(this); }, id * 100);
@@ -566,8 +581,10 @@ export default {
     toggleCapStartTimes () {
       this.showCapStartTimes = !this.showCapStartTimes;
       localStorage[`${basePath}-cap-times`] = this.showCapStartTimes;
-      this.setupGraphData();
-      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+      StatsService.getCapRestartTimes(basePath).then(() => {
+        this.setupGraphData();
+        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+      });
     },
     /* helper functions ---------------------------------------------------- */
     debounce: function (func, funcParam, ms) {

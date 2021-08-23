@@ -1336,7 +1336,7 @@ export default {
     /* retrieves the notifiers that have been configured */
     loadNotifiers: function () {
       SettingsService.getNotifiers().then((response) => {
-        this.notifiers = response.data;
+        this.notifiers = response;
       });
     }
   },
