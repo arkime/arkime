@@ -344,11 +344,17 @@ function fixSessionFields (fields, unflatten) {
 
 // Get a session from ES and decode packetPos if requested
 exports.getSession = async (id, options, cb) => {
+  if (internals.debug > 2) {
+    console.log('GETSESSION -', id, options);
+  }
   function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
     }
     exports.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+      if (internals.debug > 2) {
+        console.log('GETSESSION - fixPackPos', fileInfo);
+      }
       if (fileInfo && fileInfo.packetPosEncoding) {
         if (fileInfo.packetPosEncoding === 'gap0') {
           // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
@@ -442,6 +448,9 @@ exports.getSession = async (id, options, cb) => {
 
   const index = exports.sid2Index(id, { multiple: true });
   exports.search(index, '_doc', query, params, (err, results) => {
+    if (internals.debug > 2) {
+      console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
+    }
     if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) {
       if (options.final === true) {
