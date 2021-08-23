@@ -119,6 +119,11 @@ void http_common_add_header_value(MolochSession_t *session, int pos, const char 
     case MOLOCH_FIELD_TYPE_INT_GHASH:
         moloch_field_int_add(pos, session, atoi(s));
         break;
+    case MOLOCH_FIELD_TYPE_FLOAT:
+    case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+    case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+        moloch_field_float_add(pos, session, atof(s));
+        break;
     case MOLOCH_FIELD_TYPE_STR:
     case MOLOCH_FIELD_TYPE_STR_ARRAY:
     case MOLOCH_FIELD_TYPE_STR_HASH:

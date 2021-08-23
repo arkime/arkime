@@ -94,6 +94,9 @@ LOCAL void scrubspi_plugin_save(MolochSession_t *session, int UNUSED(final))
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
         case MOLOCH_FIELD_TYPE_INT_HASH:
         case MOLOCH_FIELD_TYPE_INT_GHASH:
+        case MOLOCH_FIELD_TYPE_FLOAT:
+        case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+        case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
         case MOLOCH_FIELD_TYPE_IP:
         case MOLOCH_FIELD_TYPE_IP_GHASH:
         case MOLOCH_FIELD_TYPE_CERTSINFO:

@@ -943,6 +943,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                 g_free(session->fields[pos]->str);
             }
             break;
+        case MOLOCH_FIELD_TYPE_FLOAT:
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":%f", config.fields[pos]->dbField, session->fields[pos]->f);
+            BSB_EXPORT_u08(jbsb, ',');
+            break;
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->iarray->len);
@@ -1031,6 +1035,39 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             g_hash_table_iter_init (&iter, ghash);
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                 BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+
+            if (freeField) {
+                g_hash_table_destroy(ghash);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            break;
+        case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->farray->len);
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            for(i = 0; i < session->fields[pos]->farray->len; i++) {
+                BSB_EXPORT_sprintf(jbsb, "%f", g_array_index(session->fields[pos]->farray, float, i));
+                BSB_EXPORT_u08(jbsb, ',');
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+            if (freeField) {
+                g_array_free(session->fields[pos]->farray, TRUE);
+            }
+            break;
+        case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+            ghash = session->fields[pos]->ghash;
+            if (flags & MOLOCH_FIELD_FLAG_CNT) {
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+            }
+            BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                BSB_EXPORT_sprintf(jbsb, "%f", POINTER_TO_FLOAT(ikey));
                 BSB_EXPORT_u08(jbsb, ',');
             }
 
