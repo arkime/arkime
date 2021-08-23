@@ -161,14 +161,12 @@ export default {
     return {
       activeIdx: -1,
       results: [],
-      fields: null,
       loadingError: '',
       loadingValues: false,
       caretPos: 0,
       cancellablePromise: null,
       resultsElement: null,
       // field history vars
-      fieldHistory: [],
       fieldHistoryResults: [],
       lastTokenWasField: false,
       autocompletingField: false,
@@ -196,8 +194,14 @@ export default {
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     },
-    views: function () { // set by search.vue
+    views: function () {
       return this.$store.state.views;
+    },
+    fieldHistory: function () {
+      return this.$store.state.fieldhistory;
+    },
+    fields: function () {
+      return this.$store.state.fieldsMap;
     }
   },
   watch: {
@@ -219,14 +223,6 @@ export default {
     if (this.$route.query.expression) {
       this.expression = this.$route.query.expression;
     }
-
-    this.getFields();
-
-    UserService.getState('fieldHistory').then((response) => {
-      this.fieldHistory = response.data.fields || [];
-    }).catch((err) => {
-      console.log('ERROR - fetching state for fieldHistory', err);
-    });
   },
   mounted: function () {
     // set the results element for keyup event handler
@@ -677,14 +673,6 @@ export default {
         this.loadingValues = false;
         this.loadingError = '';
       }
-    },
-    getFields: function () {
-      FieldService.get().then((result) => {
-        this.fields = result;
-        this.loadingError = '';
-      }).catch((error) => {
-        this.loadingError = error;
-      });
     },
     /**
      * Finds matching items from an array or map of values

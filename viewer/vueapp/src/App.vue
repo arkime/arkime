@@ -2,6 +2,15 @@
   <div v-if="compatibleBrowser">
     <moloch-navbar></moloch-navbar>
     <router-view v-if="user" />
+    <div class="pull-right small app-info-error">
+      <moloch-toast
+        class="mr-1"
+        type="danger"
+        :duration="1000000"
+        :done="messageDone"
+        :message="appInfoMissing">
+      </moloch-toast>
+    </div>
     <transition name="shortcuts-slide">
       <moloch-keyboard-shortcuts
         v-if="displayKeyboardShortcutsHelp">
@@ -24,7 +33,8 @@
 </template>
 
 <script>
-import UserService from './components/users/UserService';
+import ConfigService from './components/utils/ConfigService';
+import MolochToast from './components/utils/Toast';
 import MolochNavbar from './components/utils/Navbar';
 import MolochFooter from './components/utils/Footer';
 import MolochWelcomeMessage from './components/utils/WelcomeMessage';
@@ -34,6 +44,7 @@ import MolochKeyboardShortcuts from './components/utils/KeyboardShortcuts';
 export default {
   name: 'App',
   components: {
+    MolochToast,
     MolochNavbar,
     MolochFooter,
     MolochWelcomeMessage,
@@ -42,6 +53,7 @@ export default {
   },
   data: function () {
     return {
+      appInfoMissing: '',
       compatibleBrowser: true,
       inputs: ['input', 'select', 'textarea']
     };
@@ -81,18 +93,18 @@ export default {
       return;
     }
 
-    // get the current user for the entire app
-    // the rest of the app should compute the user with $store.state.user
-    UserService.getCurrent()
-      .then((response) => {
-        this.user = response;
-        if (!this.user.settings.theme || this.user.settings.theme === 'default-theme') {
-          this.setTheme();
-        }
-      }, (error) => {
-        this.user = { settings: { timezone: 'local' } };
+    // get the information for the entire app
+    // the rest of the app should compute from $store.state
+    ConfigService.getAppInfo().then((response) => {
+      if (!response.user.settings.theme || response.user.settings.theme === 'default-theme') {
         this.setTheme();
-      });
+      }
+    }).catch((error) => {
+      // display appwide error that floats at the bottom right of the screen on top of everything
+      this.appInfoMissing = 'Error fetching app info! Arkime will not work as intended.';
+      this.user = { settings: { timezone: 'local' } };
+      this.setTheme();
+    });
 
     // watch for keyup/down events for the entire app
     // the rest of the app should compute necessary values with:
@@ -211,6 +223,10 @@ export default {
         const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.body.className = darkMode ? 'arkime-dark-theme' : 'arkime-light-theme';
       }
+    },
+    /* remove the message when user is done with it or duration ends */
+    messageDone: function () {
+      this.appInfoMissing = '';
     }
   }
 };
@@ -604,5 +620,16 @@ table.table {
   line-height: 0.4;
   font-size: 1.2rem;
   margin-left: 0.3rem;
+}
+
+/* application information error */
+.app-info-error {
+  right: 10px;
+  bottom: 15px;
+  z-index: 999;
+  position: fixed;
+}
+.app-info-error > div.alert {
+  font-size: 17px;
 }
 </style>

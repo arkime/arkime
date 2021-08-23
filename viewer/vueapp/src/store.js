@@ -7,6 +7,20 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    eshealth: undefined,
+    user: undefined,
+    views: undefined,
+    remotecluster: undefined,
+    esCluster: {
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
+    },
+    fieldsArr: [],
+    fieldsMap: {},
+    fieldhistory: [],
     timeRange: 1,
     expression: undefined,
     time: {
@@ -26,21 +40,12 @@ const store = new Vuex.Store({
     focusTimeRange: undefined,
     shiftKeyHold: false,
     displayKeyboardShortcutsHelp: undefined,
-    user: undefined,
     responseTime: undefined,
     sessionsTableState: undefined,
-    views: undefined,
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
     stickySessionsBtn: false,
-    esCluster: {
-      availableCluster: {
-        active: [],
-        inactive: []
-      },
-      selectedCluster: []
-    },
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }]
   },
@@ -198,6 +203,16 @@ const store = new Vuex.Store({
     },
     setCapStartTimes (state, value) {
       state.capStartTimes = value;
+    },
+    setAppInfo (state, value) {
+      state.user = value.user;
+      state.views = value.views;
+      state.eshealth = value.eshealth;
+      state.fieldsArr = value.fieldsArr;
+      state.fieldsMap = value.fieldsMap;
+      state.remoteclusters = value.remoteclusters;
+      state.fieldhistory = value.fieldhistory.fields;
+      state.esCluster.availableCluster = value.clusters;
     }
   }
 });

@@ -331,7 +331,6 @@
 
 <script>
 import UserService from '../users/UserService';
-import ConfigService from '../utils/ConfigService';
 import ExpressionTypeahead from './ExpressionTypeahead';
 import MolochTime from './Time';
 import MolochToast from '../utils/Toast';
@@ -368,7 +367,6 @@ export default {
   ],
   data: function () {
     return {
-      molochClusters: {},
       actionFormItemRadio: 'visible',
       actionFormItemRadioOptions: [
         { text: 'Open Item', value: 'open' },
@@ -448,6 +446,9 @@ export default {
         );
       }
       return filteredGroupedClusters;
+    },
+    molochClusters: function () {
+      return this.$store.state.remoteclusters;
     }
   },
   watch: {
@@ -468,10 +469,21 @@ export default {
       this.$parent.$emit('recalc-collapse');
     }
   },
+  // TODO - this is not setting clusters properly
   created: function () {
-    this.getViews();
-    this.getMolochClusters();
-    this.getClusterInformation();
+    if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
+      const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+      if (clusters.length === 0) {
+        this.selectedCluster = this.availableCluster.active.active;
+      } else {
+        this.selectedCluster = [];
+        for (let i = 0; i < clusters.length; i++) {
+          if (this.availableCluster.active.includes(clusters[i])) {
+            this.selectedCluster.push(clusters[i]);
+          }
+        }
+      }
+    }
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -563,21 +575,19 @@ export default {
         this.setView(undefined);
       }
 
-      UserService.deleteView(view, this.user.userId)
-        .then((response) => {
-          // remove the view from the view list
-          this.$store.commit('deleteViews', viewName);
-          this.getViews();
-          // display success message to user
-          this.msg = response.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          console.log(error);
-          // display error message to user
-          this.msg = error.text;
-          this.msgType = 'danger';
-        });
+      UserService.deleteView(view, this.user.userId).then((response) => {
+        // remove the view from the view list
+        this.$store.commit('deleteViews', viewName);
+        this.getViews();
+        // display success message to user
+        this.msg = response.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        console.log(error);
+        // display error message to user
+        this.msg = error.text;
+        this.msgType = 'danger';
+      });
     },
     setView: function (view) {
       this.view = view;
@@ -608,42 +618,7 @@ export default {
     applyColumns: function (view) {
       this.$emit('setColumns', view.sessionsColConfig);
     },
-    /* helper functions ------------------------------------------ */
-    getViews: function () {
-      UserService.getViews().then((response) => {
-        this.views = response;
-      }).catch((err) => {
-        console.log('ERROR - fetching views', err);
-      });
-    },
-    getMolochClusters: function () {
-      ConfigService.getMolochClusters().then((response) => {
-        this.molochClusters = response;
-      }).catch((err) => {
-        console.log('ERROR - fetching clusters', err);
-      });
-    },
     /* MultiES functions ------------------------------------------ */
-    getClusterInformation: function () {
-      if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
-        ConfigService.getClusters().then((response) => {
-          this.availableCluster = response;
-          const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-          if (clusters.length === 0) {
-            this.selectedCluster = response.active;
-          } else {
-            this.selectedCluster = [];
-            for (let i = 0; i < clusters.length; i++) {
-              if (response.active.includes(clusters[i])) {
-                this.selectedCluster.push(clusters[i]);
-              }
-            }
-          }
-        }).catch((err) => {
-          console.log('ERROR - fetching cluster info', err);
-        });
-      }
-    },
     isClusterVis: function (cluster) {
       if (this.availableCluster.active.includes(cluster)) { // found in active cluster list
         return this.selectedCluster.includes(cluster); // returns True if found in selected cluster list
