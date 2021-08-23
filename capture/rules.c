@@ -266,6 +266,7 @@ GPtrArray *moloch_rules_parser_get_values(YamlNode_t *parent, char *path)
 void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
 {
     uint32_t         n;
+    float            f;
     GPtrArray       *rules;
     patricia_node_t *node;
 
@@ -286,6 +287,23 @@ void moloch_rules_load_add_field(MolochRule_t *rule, int pos, char *key)
         if (!rules) {
             rules = g_ptr_array_new();
             g_hash_table_insert(loading.fieldsHash[pos], (void *)(long)n, rules);
+        }
+        g_ptr_array_add(rules, rule);
+        break;
+
+    case MOLOCH_FIELD_TYPE_FLOAT:
+    case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+    case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+        if (!loading.fieldsHash[pos])
+            loading.fieldsHash[pos] = g_hash_table_new_full(NULL, NULL, NULL, moloch_rules_free_array);
+
+        f = atof(key);
+        g_hash_table_add(rule->hash[pos], FLOAT_TO_POINTER(f));
+
+        rules = g_hash_table_lookup(loading.fieldsHash[pos], FLOAT_TO_POINTER(f));
+        if (!rules) {
+            rules = g_ptr_array_new();
+            g_hash_table_insert(loading.fieldsHash[pos], FLOAT_TO_POINTER(f), rules);
         }
         g_ptr_array_add(rules, rule);
         break;
@@ -479,6 +497,16 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_INT_ARRAY:
             case MOLOCH_FIELD_TYPE_INT_HASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
+                if (mtype != 0)
+                    LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
+
+                if (!rule->hash[pos])
+                    rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
+                break;
+
+            case MOLOCH_FIELD_TYPE_FLOAT:
+            case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+            case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
                 if (mtype != 0)
                     LOGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
@@ -858,6 +886,10 @@ LOCAL void moloch_rules_match(MolochSession_t * const session, MolochRule_t * co
     if (good && logStr) \
         BSB_EXPORT_sprintf(*logStr, "%s: %u, ", config.fields[p]->expression, (unsigned int)(_v))
 
+#define RULE_LOG_FLOAT(_v) \
+    if (good && logStr) \
+        BSB_EXPORT_sprintf(*logStr, "%s: %f, ", config.fields[p]->expression, (float)(_v))
+
 #define G_HASH_TABLE_CONTAINS_CHECK(_v) \
     good = g_hash_table_contains(rule->hash[p], (gpointer)(long)_v); \
     RULE_LOG_INT(_v);
@@ -876,6 +908,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
     GHashTable            *ghash;
     GHashTableIter         iter;
     gpointer               ikey;
+    gpointer               fkey;
     char                  *communityId = NULL;
     int                    i;
     int                    f;
@@ -970,6 +1003,7 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             switch (config.fields[cp]->type) {
             case MOLOCH_FIELD_TYPE_IP:
             case MOLOCH_FIELD_TYPE_INT:
+            case MOLOCH_FIELD_TYPE_FLOAT:
             case MOLOCH_FIELD_TYPE_STR:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)1);
                 RULE_LOG_INT(1);
@@ -979,12 +1013,17 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
                 RULE_LOG_INT(session->fields[cp]->iarray->len);
                 break;
+            case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+                good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->farray->len);
+                RULE_LOG_INT(session->fields[cp]->farray->len);
+                break;
             case MOLOCH_FIELD_TYPE_INT_HASH:
                 ihash = session->fields[cp]->ihash;
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *ihash));
                 RULE_LOG_INT(HASH_COUNT(s_, *ihash));
                 break;
             case MOLOCH_FIELD_TYPE_IP_GHASH:
+            case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
             case MOLOCH_FIELD_TYPE_STR_GHASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[cp]->ghash;
@@ -1023,7 +1062,6 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
             good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->i);
             RULE_LOG_INT(session->fields[p]->i);
             break;
-
         case MOLOCH_FIELD_TYPE_INT_ARRAY:
             good = 0;
             for(i = 0; i < (int)session->fields[p]->iarray->len; i++) {
@@ -1045,17 +1083,6 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
                 }
             );
             break;
-        case MOLOCH_FIELD_TYPE_IP_GHASH:
-            ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
-            good = 0;
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                if (moloch_rules_check_ip(rule, p, ikey, logStr)) {
-                    good = 1;
-                    break;
-                }
-            }
-            break;
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[p]->ghash;
             g_hash_table_iter_init (&iter, ghash);
@@ -1064,6 +1091,45 @@ LOCAL void moloch_rules_check_rule_fields(MolochSession_t * const session, Moloc
                 if (g_hash_table_contains(rule->hash[p], ikey)) {
                     good = 1;
                     RULE_LOG_INT((long)ikey);
+                    break;
+                }
+            }
+            break;
+
+        case MOLOCH_FIELD_TYPE_FLOAT:
+            good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->f);
+            RULE_LOG_FLOAT(session->fields[p]->f);
+            break;
+        case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+            good = 0;
+            for(i = 0; i < (int)session->fields[p]->farray->len; i++) {
+                if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, float, i))) {
+                    good = 1;
+                    RULE_LOG_FLOAT(g_array_index(session->fields[p]->farray, float, i));
+                    break;
+                }
+            }
+            break;
+        case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+            ghash = session->fields[p]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            good = 0;
+            while (g_hash_table_iter_next (&iter, &fkey, NULL)) {
+                if (g_hash_table_contains(rule->hash[p], fkey)) {
+                    good = 1;
+                    RULE_LOG_FLOAT(POINTER_TO_FLOAT(fkey));
+                    break;
+                }
+            }
+            break;
+
+        case MOLOCH_FIELD_TYPE_IP_GHASH:
+            ghash = session->fields[p]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            good = 0;
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                if (moloch_rules_check_ip(rule, p, ikey, logStr)) {
+                    good = 1;
                     break;
                 }
             }

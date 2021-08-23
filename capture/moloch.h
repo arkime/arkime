@@ -77,6 +77,9 @@
 
 #define MOLOCH_VAR_ARG_SKIP (char *)1LL
 
+#define POINTER_TO_FLOAT(p) *(float *)&p
+#define FLOAT_TO_POINTER(f) (void *)(long)(int)*(long *)(float *)&f
+
 /******************************************************************************/
 /*
  * Base Hash Table Types
@@ -180,7 +183,10 @@ typedef enum {
     MOLOCH_FIELD_TYPE_STR_GHASH,
     MOLOCH_FIELD_TYPE_IP,
     MOLOCH_FIELD_TYPE_IP_GHASH,
-    MOLOCH_FIELD_TYPE_CERTSINFO
+    MOLOCH_FIELD_TYPE_CERTSINFO,
+    MOLOCH_FIELD_TYPE_FLOAT,
+    MOLOCH_FIELD_TYPE_FLOAT_ARRAY,
+    MOLOCH_FIELD_TYPE_FLOAT_GHASH
 } MolochFieldType;
 
 /* These are ones you should set */
@@ -242,6 +248,8 @@ typedef struct {
         int                       i;
         GArray                   *iarray;
         MolochIntHashStd_t       *ihash;
+        float                     f;
+        GArray                   *farray;
         MolochCertsInfoHashStd_t *cihash;
         GHashTable               *ghash;
         struct in6_addr          *ip;
@@ -253,7 +261,10 @@ typedef struct {
 
 typedef struct {
     char                 *str;
-    int                   strLenOrInt;
+    union {
+      int                 strLenOrInt;
+      float               f;
+    };
     int16_t               fieldPos;
 } MolochFieldOp_t;
 
@@ -1243,6 +1254,7 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i);
 gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val);
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str);
 gboolean moloch_field_certsinfo_add(int pos, MolochSession_t *session, MolochCertsInfo_t *certs, int len);
+gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f);
 void moloch_field_macoui_add(MolochSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  moloch_field_count(int pos, MolochSession_t *session);

@@ -708,6 +708,24 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                     wise_lookup(session, iRequest, buf, type);
                 }
                 break;
+            case MOLOCH_FIELD_TYPE_FLOAT:
+                snprintf(buf, sizeof(buf), "%f", session->fields[pos]->f);
+                wise_lookup(session, iRequest, buf, type);
+                break;
+            case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
+                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
+                    snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->iarray, float, i));
+                    wise_lookup(session, iRequest, buf, type);
+                }
+                break;
+            case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
+                ghash = session->fields[pos]->ghash;
+                g_hash_table_iter_init (&iter, ghash);
+                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    snprintf(buf, sizeof(buf), "%f", POINTER_TO_FLOAT(ikey));
+                    wise_lookup(session, iRequest, buf, type);
+                }
+                break;
             case MOLOCH_FIELD_TYPE_IP:
                 wise_lookup_ip(session, iRequest, (struct in6_addr *)session->fields[pos]->ip);
                 break;

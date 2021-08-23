@@ -2,10 +2,13 @@
 #field:wise.int;kind:integer;count:true;friendly:Int;db:wise.int;help:Help Int;shortcut:1
 #field:tags;shortcut:2
 #field:email.dst
+#field:wise.float;kind:float;count:true;friendly:Float;db:wise.float;help:Help float;shortcut:3
 #view:if (session.wise)
 #view:  div.sessionDetailMeta.bold Wise
 #view:  dl.sessionDetailMeta
 #view:    +arrayList(session.wise, 'str', 'Str', 'wise.str')
-12345678@aol.com;email.dst=wiseadded1;2=wisesrcmatch;0=house;wise.str=boat
-xxxxx-xxxx@xxxx.xxx.xx.jp;email.src=wiseadded2;tags=wisedstmatch;1=1;wise.int=3
+#view:    +arrayList(session.wise, 'int', 'Int', 'wise.int')
+#view:    +arrayList(session.wise, 'float', 'Float', 'wise.float')
+12345678@aol.com;email.dst=wiseadded1;2=wisesrcmatch;0=house;wise.str=boat;wise.float=1.2345
+xxxxx-xxxx@xxxx.xxx.xx.jp;email.src=wiseadded2;tags=wisedstmatch;1=1;wise.int=3;3=-5.4321
 fudge@fudge.com
