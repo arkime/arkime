@@ -713,8 +713,8 @@ void wise_plugin_pre_save(MolochSession_t *session, int UNUSED(final))
                 wise_lookup(session, iRequest, buf, type);
                 break;
             case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
-                    snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->iarray, float, i));
+                for(i = 0; i < (int)session->fields[pos]->farray->len; i++) {
+                    snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->farray, float, i));
                     wise_lookup(session, iRequest, buf, type);
                 }
                 break;
