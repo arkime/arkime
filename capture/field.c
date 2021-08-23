@@ -864,8 +864,10 @@ gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
-      moloch_rules_run_field_set(session, pos, (gpointer)(long)f);
+    if (config.fields[pos]->ruleEnabled) {
+      memcpy(&fint, &f, 4);
+      moloch_rules_run_field_set(session, pos, (gpointer)(long)fint);
+    }
 
     return TRUE;
 }
