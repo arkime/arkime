@@ -494,6 +494,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       req.query.packets = 10000;
     }
 
+    if (Config.debug > 1) {
+      console.log('localSessionDetail query', req.query);
+    }
+
     const packets = [];
     sModule.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
       let obj = {};
@@ -592,6 +596,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   function processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
     function processFile (pcap, pos, i, nextCb) {
       pcap.ref();
+
+      if (Config.debug > 2) {
+        console.log('readPacket', pos);
+      }
       pcap.readPacket(pos, (packet) => {
         switch (packet) {
         case null:
