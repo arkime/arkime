@@ -330,16 +330,35 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    */
   mModule.getAppInfo = async (req, res) => {
     try {
-      const clusters = await getClusters();
-      const fieldsArr = internals.fieldsArr;
-      const eshealth = await Db.healthCache();
-      const remoteclusters = remoteClusters();
+      let esHealth, esHealthError;
+      try { // deal with es health errors
+        esHealth = await Db.healthCache();
+      } catch (err) {
+        esHealthError = err.toString();
+      }
+
+      // these always returns something and never return an error
+      const clusters = await getClusters(); // { active: [], inactive: [] }
+      const remoteclusters = remoteClusters(); // {}
+      const views = await userAPIs.getViews(req); // {}
+      const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
+
+      // can't fetch user or fields is FATAL, so let it fall through to outer
+      // catch and send an error to the client
       const user = userAPIs.getCurrentUser(req);
-      const views = await userAPIs.getViews(req);
+      const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
-      const fieldhistory = userAPIs.findUserState('fieldHistory', req.user);
+
       return res.send({
-        eshealth, user, views, remoteclusters, clusters, fieldsArr, fieldsMap, fieldhistory
+        esHealth,
+        esHealthError,
+        views,
+        fieldhistory,
+        remoteclusters,
+        clusters,
+        user,
+        fieldsArr,
+        fieldsMap
       });
     } catch (err) {
       console.log('ERROR - /api/appinfo', err);

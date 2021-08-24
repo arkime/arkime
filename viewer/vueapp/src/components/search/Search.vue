@@ -469,12 +469,11 @@ export default {
       this.$parent.$emit('recalc-collapse');
     }
   },
-  // TODO - this is not setting clusters properly
   created: function () {
-    if (this.availableCluster.active.length === 0 && this.availableCluster.inactive.length === 0) {
+    if (this.multiviewer) { // set clusters to search if in multiviewer mode
       const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
       if (clusters.length === 0) {
-        this.selectedCluster = this.availableCluster.active.active;
+        this.selectedCluster = this.availableCluster.active;
       } else {
         this.selectedCluster = [];
         for (let i = 0; i < clusters.length; i++) {

@@ -7,7 +7,8 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    eshealth: undefined,
+    esHealth: undefined,
+    esHealthError: undefined,
     user: undefined,
     views: undefined,
     remotecluster: undefined,
@@ -204,10 +205,17 @@ const store = new Vuex.Store({
     setCapStartTimes (state, value) {
       state.capStartTimes = value;
     },
+    setESHealth (state, value) {
+      state.esHealth = value;
+    },
+    setESHealthError (state, value) {
+      state.esHealthError = value;
+    },
     setAppInfo (state, value) {
+      state.esHealth = value.esHealth;
+      state.esHealthError = value.esHealthError;
       state.user = value.user;
       state.views = value.views;
-      state.eshealth = value.eshealth;
       state.fieldsArr = value.fieldsArr;
       state.fieldsMap = value.fieldsMap;
       state.remoteclusters = value.remoteclusters;

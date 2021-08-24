@@ -4,11 +4,12 @@
 
     <!-- error -->
     <div v-if="error"
+      v-b-tooltip.hover
       :title="errorTitle"
       class="error-div text-muted-more mt-2 text-right pull-right cursor-help">
       <small>
         {{ error || 'Network Error' }} - try
-        <a @click="reload"
+        <a @click="window.location.reload()"
           class="cursor-pointer reload-btn mr-2">
           reloading the page
         </a>
@@ -26,7 +27,6 @@
 
     <!-- tooltip content -->
     <b-tooltip
-      :showTooltip.sync="showTooltip"
       target="infoTooltip"
       placement="bottom"
       boundary="viewport">
@@ -61,54 +61,37 @@
 </template>
 
 <script>
+import StatsService from '../stats/StatsService';
 let interval;
 
 export default {
   name: 'ESHealth',
-  data: function () {
-    return {
-      error: null,
-      esHealth: null,
-      errorTitle: null,
-      showTooltip: true
-    };
-  },
   created: function () {
-    this.loadData();
     interval = setInterval(() => {
-      this.loadData();
+      StatsService.getESHealth();
     }, 10000);
   },
   computed: {
+    esHealth () {
+      return this.$store.state.esHealth;
+    },
+    error () {
+      // truncate the error and show the full error in a title attribute
+      let error = this.$store.state.esHealthError || '';
+      if (error.length > 50) {
+        error = error.substring(0, 50) + '...';
+      }
+      return error;
+    },
+    errorTitle () {
+      return this.$store.state.esHealthError;
+    },
     esHealthClass: function () {
       return {
         'health-green': this.esHealth.status === 'green',
         'health-yellow': this.esHealth.status === 'yellow',
         'health-red': this.esHealth.status === 'red'
       };
-    }
-  },
-  methods: {
-    loadData: function () {
-      this.error = null;
-
-      this.$http.get('api/eshealth')
-        .then((response) => {
-          this.esHealth = response.data;
-          this.error = null;
-          this.errorTite = null;
-        }, (error) => {
-          console.log(error);
-          this.error = error;
-          // truncate the error and show the full error in a title attribute
-          this.errorTitle = this.error;
-          if (this.error.length > 50) {
-            this.error = this.error.substring(0, 50) + '...';
-          }
-        });
-    },
-    reload: function () {
-      window.location.reload();
     }
   },
   beforeDestroy: function () {
