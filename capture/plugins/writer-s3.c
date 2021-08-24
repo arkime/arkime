@@ -717,7 +717,7 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
-    s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseHttp", TRUE);
+    s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
     s3Token               = NULL;
     s3TokenTime           = 0;
     s3Role                = NULL;
