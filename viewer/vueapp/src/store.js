@@ -20,7 +20,7 @@ const store = new Vuex.Store({
       selectedCluster: []
     },
     fieldsArr: [],
-    fieldsMap: {},
+    fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
     fieldhistory: [],
     timeRange: 1,
     expression: undefined,

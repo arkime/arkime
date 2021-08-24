@@ -29,7 +29,9 @@ const store = {
     expression: '',
     focusSearch: false,
     shiftKeyHold: false,
-    views: {}
+    views: {},
+    fieldsMap: fieldsMap,
+    fieldhistory: []
   },
   mutations: {
     setFocusSearch: jest.fn(),
@@ -48,7 +50,6 @@ function addCaretPosition (input, pos) {
 beforeEach(() => {
   UserService.getState = jest.fn().mockResolvedValue({ data: {} });
   UserService.saveState = jest.fn().mockResolvedValue({});
-  FieldService.get = jest.fn().mockResolvedValue(fieldsMap);
   FieldService.getCountryCodes = jest.fn().mockResolvedValue(countries);
   FieldService.getValues = jest.fn(() => {
     const source = Vue.axios.CancelToken.source();

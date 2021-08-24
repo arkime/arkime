@@ -10,7 +10,6 @@ import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import Search from '../src/components/search/Search.vue';
 import UserService from '../src/components/users/UserService';
-import ConfigService from '../src/components/utils/ConfigService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
 const { userWithSettings, fields, views } = require('./consts');
@@ -26,7 +25,6 @@ Vue.prototype.$constants = {
 };
 
 jest.mock('../src/components/users/UserService');
-jest.mock('../src/components/utils/ConfigService');
 jest.mock('../src/components/sessions/SessionsService');
 
 const $router = { push: jest.fn() };
@@ -40,6 +38,7 @@ const store = {
     views: views,
     timeRange: -1,
     time: { startTime: 0, stopTime: 0 },
+    remoteclusters: { test2: { name: 'Test2', url: 'http://localhost:8124' } },
     esCluster: {
       availableCluster: {
         active: [],
@@ -60,13 +59,6 @@ const store = {
 };
 
 beforeEach(() => {
-  ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
-    test2: { name: 'Test2', url: 'http://localhost:8124' }
-  });
-  ConfigService.getClusters = jest.fn().mockResolvedValue({
-    data: { active: [], inactive: [] }
-  });
-  UserService.getViews = jest.fn().mockResolvedValue(views);
   UserService.deleteView = jest.fn().mockResolvedValue({
     success: true, text: 'yay!'
   });
@@ -114,9 +106,7 @@ test('search bar', async () => {
   await fireEvent.click(getByTitle('Remove Data'));
   expect(getAllByText('Remove Data').length).toBe(2);
 
-  await waitFor(() => { // need to wait for getMolochClusters to return
-    fireEvent.click(getByTitle('Send to Test2')); // displays clusters
-  });
+  await fireEvent.click(getByTitle('Send to Test2')); // displays clusters
   getByText('Send Session(s)');
 
   await fireEvent.click(getByTitle('Export Intersection'));

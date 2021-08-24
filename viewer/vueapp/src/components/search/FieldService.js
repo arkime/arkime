@@ -12,7 +12,7 @@ const queryInProgress = {
 const ipDstPortField = {
   category: 'ip',
   group: 'general',
-  dbField2: 'dstIp',
+  dbField2: 'dstIp:port',
   exp: 'ip.dst:port',
   dbField: 'destination.ip:port',
   fieldECS: 'destination.ip:port',
@@ -23,6 +23,20 @@ const ipDstPortField = {
 export default {
 
   ipDstPortField: ipDstPortField,
+
+  addIpDstPortField (fields) {
+    let result;
+
+    if (Array.isArray(fields)) {
+      result = [...fields]; // shallow copy so we don't mutate data
+      result.push(ipDstPortField);
+    } else {
+      result = { ...fields }; // shallow copy so we don't mutate data
+      result[ipDstPortField.exp] = ipDstPortField;
+    }
+
+    return result;
+  },
 
   /**
    * Gets a field map from the server
@@ -37,20 +51,6 @@ export default {
       return queryInProgress.promise;
     }
 
-    function addIpDstPortFieldToResults (data) {
-      let result;
-
-      if (array) {
-        result = [...data]; // shallow copy so we don't mutate data
-        result.push(ipDstPortField);
-      } else {
-        result = { ...data }; // shallow copy so we don't mutate data
-        result[ipDstPortField.exp] = ipDstPortField;
-      }
-
-      return result;
-    }
-
     queryInProgress.promise = new Promise((resolve, reject) => {
       let cachedResult = false;
       if (array && _fieldsArrayCache) {
@@ -60,7 +60,7 @@ export default {
       }
 
       if (cachedResult) { // if we have a cached result, return it
-        if (addIpDstPort) { cachedResult = addIpDstPortFieldToResults(cachedResult); }
+        if (addIpDstPort) { cachedResult = this.addIpDstPortField(cachedResult); }
         return resolve(cachedResult);
       }
 
@@ -75,7 +75,7 @@ export default {
         }
 
         let result = response.data;
-        if (addIpDstPort) { result = addIpDstPortFieldToResults(response.data); }
+        if (addIpDstPort) { result = this.addIpDstPortField(response.data); }
         return resolve(result);
       }).catch((error) => {
         queryInProgress.promise = undefined;
@@ -133,9 +133,10 @@ export default {
    * Matches dbField, dbField2, fieldECS, rawField, exp, or aliases
    * @param {string} search - The value to search for
    * @param {object|array} fields - A fields map or array
+   * @param {boolean} ignoreAliases - Whether to ignore the alias list
    * @returns {object} The field or undefined
    */
-  getField (search, fields) {
+  getField (search, fields, ignoreAliases) {
     for (const k in fields) {
       if (search === fields[k].exp ||
           search === fields[k].dbField ||
@@ -144,7 +145,7 @@ export default {
           search === fields[k].rawField) {
         return fields[k];
       }
-      if (fields[k].aliases) {
+      if (!ignoreAliases && fields[k].aliases) {
         for (const alias of fields[k].aliases) {
           if (search === alias) {
             return fields[k];
@@ -162,10 +163,11 @@ export default {
    * @param {string} search - The value to search for
    * @param {string} prop - The field property value to return
    * @param {object|array} fields - A fields map or array
+   * @param {boolean} ignoreAliases - Whether to ignore the alias list
    * @returns {string} The field property value or undefined
    */
-  getFieldProperty (search, prop, fields) {
-    const field = this.getField(search, fields);
+  getFieldProperty (search, prop, fields, ignoreAliases) {
+    const field = this.getField(search, fields, ignoreAliases);
 
     if (field && field[prop]) { return field[prop]; }
 

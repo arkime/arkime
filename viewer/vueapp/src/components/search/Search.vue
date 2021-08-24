@@ -569,15 +569,13 @@ export default {
       }
     },
     deleteView: function (view, viewName) {
-      // check if deleting current view
-      if (this.view === viewName) {
-        this.setView(undefined);
-      }
-
-      UserService.deleteView(view, this.user.userId).then((response) => {
+      UserService.deleteView(view, viewName, this.user.userId).then((response) => {
+        // check if deleting current view
+        if (this.view === viewName) {
+          this.setView(undefined);
+        }
         // remove the view from the view list
         this.$store.commit('deleteViews', viewName);
-        this.getViews();
         // display success message to user
         this.msg = response.text;
         this.msgType = 'success';

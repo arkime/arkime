@@ -88,9 +88,9 @@
 
             <!-- min connections select -->
             <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
-                <span class="input-group-text">
+              <div class="input-group-prepend help-cursor">
+                <span class="input-group-text"
+                  v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
                   Min. Connections
                 </span>
               </div>
@@ -564,7 +564,6 @@ export default {
       loading: true,
       settings: {}, // user settings
       recordsFiltered: 0,
-      fields: [],
       fieldsMap: {},
       fieldQuery: '',
       srcFieldTypeahead: undefined,
@@ -643,6 +642,9 @@ export default {
         settings.connLinkFields = newValue;
         this.$store.commit('setUserSettings', settings);
       }
+    },
+    fields () {
+      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
     }
   },
   watch: {
@@ -693,20 +695,12 @@ export default {
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
 
-    FieldService.get(true, true)
-      .then((result) => {
-        this.fields = result;
+    this.setupFields();
+    this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
+    this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
 
-        this.setupFields();
-
-        this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
-        this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
-
-        // IMPORTANT: this kicks off loading data and drawing the graph
-        this.cancelAndLoad(true);
-      }).catch((error) => {
-        this.error = error.text || error;
-      });
+    // IMPORTANT: this kicks off loading data and drawing the graph
+    this.cancelAndLoad(true);
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
@@ -741,12 +735,11 @@ export default {
       };
 
       if (pendingPromise) {
-        ConfigService.cancelEsTask(pendingPromise.cancelId)
-          .then((response) => {
-            clientCancel();
-          }).catch((error) => {
-            clientCancel();
-          });
+        ConfigService.cancelEsTask(pendingPromise.cancelId).then((response) => {
+          clientCancel();
+        }).catch((error) => {
+          clientCancel();
+        });
       } else if (runNewQuery) {
         this.loadData();
       }
