@@ -178,7 +178,7 @@ unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_le
     unsigned char *token;
     char *requestHeaders[1];
     char tokenHeader[200];
-    char *tokenRequestHeaders[] = {"X-aws-ec2-metadata-token-ttl-seconds: 30"};
+    char *tokenRequestHeaders[1] = {"X-aws-ec2-metadata-token-ttl-seconds: 30"};
     if (s3UseTokenForMetadata) {
         LOG("Requesting metadata token");
         token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
