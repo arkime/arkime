@@ -905,6 +905,10 @@
                "packets" : 428,
                "port" : 0
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

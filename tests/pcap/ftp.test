@@ -26,6 +26,10 @@
                "packets" : 5,
                "port" : 21
             },
+            "dstDscp" : [
+               10
+            ],
+            "dstDscpCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],

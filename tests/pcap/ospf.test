@@ -579,6 +579,10 @@
                "packets" : 203,
                "port" : 0
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -763,6 +767,10 @@
                "packets" : 54,
                "port" : 0
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1316,6 +1324,10 @@
                "packets" : 3,
                "port" : 179
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1400,6 +1412,10 @@
                "packets" : 3,
                "port" : 179
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1440,6 +1456,10 @@
                "packets" : 4,
                "port" : 179
             },
+            "dstDscp" : [
+               48
+            ],
+            "dstDscpCnt" : 1,
             "dstOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -1494,6 +1514,10 @@
                "packets" : 4,
                "port" : 33359
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2562,6 +2586,10 @@
                "packets" : 1,
                "port" : 123
             },
+            "srcDscp" : [
+               11
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -2735,6 +2763,10 @@
                "packets" : 1,
                "port" : 123
             },
+            "srcDscp" : [
+               11
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
@@ -3448,6 +3480,10 @@
                "packets" : 3,
                "port" : 0
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

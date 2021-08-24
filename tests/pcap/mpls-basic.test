@@ -61,6 +61,10 @@
                "packets" : 6,
                "port" : 711
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -135,6 +139,10 @@
                "packets" : 6,
                "port" : 711
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],
@@ -258,6 +266,10 @@
                "packets" : 8,
                "port" : 23
             },
+            "dstDscp" : [
+               48
+            ],
+            "dstDscpCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -337,6 +349,10 @@
                "packets" : 11,
                "port" : 11001
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Cisco Systems, Inc"
             ],

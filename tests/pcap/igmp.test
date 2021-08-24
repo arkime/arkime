@@ -120,6 +120,10 @@
                "packets" : 29,
                "port" : 0
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],

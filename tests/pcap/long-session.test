@@ -86,6 +86,10 @@
                "packets" : 3,
                "port" : 54869
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Dell Inc."
             ],

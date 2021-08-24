@@ -220,6 +220,10 @@
                "packets" : 1,
                "port" : 3478
             },
+            "dstDscp" : [
+               2
+            ],
+            "dstDscpCnt" : 1,
             "dstOui" : [
                "Juniper Networks",
                "Palo Alto Networks"
