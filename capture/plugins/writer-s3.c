@@ -81,6 +81,7 @@ LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
 LOCAL  char                   s3UseHttp;
+LOCAL  char                   s3UseTokenForMetadata;
 
 LOCAL  int                    inprogress;
 
@@ -172,6 +173,24 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
 
 }
 /******************************************************************************/
+unsigned char *moloch_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
+{
+    unsigned char *token;
+    char *requestHeaders[1];
+    char tokenHeader[200];
+    char *tokenRequestHeaders[] = {"X-aws-ec2-metadata-token-ttl-seconds: 30"};
+    if (s3UseTokenForMetadata) {
+        LOG("Requesting metadata token");
+        token = moloch_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen);
+        LOG("Metadata token received");
+        snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
+        requestHeaders[0] = tokenHeader;
+    } else {
+        requestHeaders [0] = NULL;
+    }
+    return moloch_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen);
+}
+/******************************************************************************/
 void writer_s3_refresh_s3credentials(void)
 {
     char role_url[1000];
@@ -187,7 +206,7 @@ void writer_s3_refresh_s3credentials(void)
 
     snprintf(role_url, sizeof(role_url), "/latest/meta-data/iam/security-credentials/%s", s3Role);
 
-    unsigned char *credentials = moloch_http_get(metadataServer, role_url, -1, &rlen);
+    unsigned char *credentials = moloch_get_instance_metadata(metadataServer, role_url, -1, &rlen);
 
     char *newS3AccessKeyId = NULL;
     char *newS3SecretAccessKey = NULL;
@@ -678,6 +697,7 @@ writer_s3_write(const MolochSession_t *const UNUSED(session), MolochPacket_t * c
     }
     MOLOCH_UNLOCK(output);
 }
+
 /******************************************************************************/
 void writer_s3_init(char *UNUSED(name))
 {
@@ -697,6 +717,7 @@ void writer_s3_init(char *UNUSED(name))
     s3MaxConns            = moloch_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = moloch_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3UseHttp             = moloch_config_boolean(NULL, "s3UseHttp", FALSE);
+    s3UseTokenForMetadata = moloch_config_boolean(NULL, "s3UseHttp", TRUE);
     s3Token               = NULL;
     s3TokenTime           = 0;
     s3Role                = NULL;
@@ -715,7 +736,7 @@ void writer_s3_init(char *UNUSED(name))
 
         s3AccessKeyId = 0;
 
-        unsigned char *rolename = moloch_http_get(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
+        unsigned char *rolename = moloch_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
 
         if (!rolename || !rlen || rolename[0] == '<') {
             printf("Cannot retrieve role name from metadata service\n");
