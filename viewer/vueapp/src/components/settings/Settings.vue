@@ -2581,7 +2581,6 @@ export default {
       newCronQueryNotifier: undefined,
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
-      molochClusters: {},
       // column config settings vars
       colConfigs: undefined,
       colConfigError: '',
@@ -2676,6 +2675,9 @@ export default {
         fields.push(customCols[key]);
       }
       return fields;
+    },
+    molochClusters: function () {
+      return this.$store.state.remoteclusters;
     }
   },
   created: function () {
@@ -2746,12 +2748,6 @@ export default {
     }).catch((error) => {
       this.error = error.text;
       this.loading = false;
-    });
-
-    ConfigService.getMolochClusters().then((response) => {
-      this.molochClusters = response;
-    }).catch((error) => {
-      console.log('ERROR - getMolochClusters', error);
     });
   },
   methods: {
