@@ -12,7 +12,7 @@ import ExpressionTypeahead from '../src/components/search/ExpressionTypeahead.vu
 import UserService from '../src/components/users/UserService';
 import FieldService from '../src/components/search/FieldService';
 import countries from '../src/components/search/countries.json';
-const { fieldsMap } = require('./consts');
+const { fields, fieldsMap } = require('./consts');
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -22,7 +22,6 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
 jest.mock('../src/components/users/UserService');
-jest.mock('../src/components/search/FieldService');
 
 const store = {
   state: {
@@ -30,7 +29,7 @@ const store = {
     focusSearch: false,
     shiftKeyHold: false,
     views: {},
-    fieldsMap: fieldsMap,
+    fieldsArr: fields,
     fieldhistory: []
   },
   mutations: {

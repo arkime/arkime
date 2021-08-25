@@ -201,7 +201,7 @@ export default {
       return this.$store.state.fieldhistory;
     },
     fields: function () {
-      return this.$store.state.fieldsMap;
+      return this.$store.state.fieldsArr;
     }
   },
   watch: {
@@ -515,7 +515,7 @@ export default {
 
       // display operators (depending on field type)
       let token = tokens[tokens.length - 2];
-      let field = this.fields[token];
+      let field = FieldService.getField(token, this.fields, true);
 
       if (field) { // add field to the history
         this.addFieldToHistory(field);
@@ -540,7 +540,7 @@ export default {
       const operatorToken = token;
 
       token = tokens[tokens.length - 3];
-      field = this.fields[token];
+      field = FieldService.getField(token, this.fields, true);
 
       if (!field) {
         if (/^[!<=>]/.test(token)) {
@@ -686,24 +686,22 @@ export default {
       let exact = false;
 
       for (const key in values) {
-        if (values[key]) {
-          let str;
-          const field = values[key];
+        let str;
+        const field = values[key];
 
-          strToMatch = strToMatch.toLowerCase();
+        strToMatch = strToMatch.toLowerCase();
 
-          if (field.exp) {
-            str = field.exp.toLowerCase();
-          } else {
-            str = field.toLowerCase();
-          }
+        if (field.exp) {
+          str = field.exp.toLowerCase();
+        } else {
+          str = field.toLowerCase();
+        }
 
-          if (str === strToMatch) {
-            exact = field;
-          } else {
-            const match = str.match(strToMatch);
-            if (match) { results.push(field); }
-          }
+        if (str === strToMatch) {
+          exact = field;
+        } else {
+          const match = str.match(strToMatch);
+          if (match) { results.push(field); }
         }
       }
 
