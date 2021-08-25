@@ -2508,7 +2508,6 @@
 
 <script>
 import UserService from '../users/UserService';
-import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
