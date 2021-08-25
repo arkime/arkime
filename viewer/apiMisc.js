@@ -340,8 +340,9 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
       // these always returns something and never return an error
       const clusters = await getClusters(); // { active: [], inactive: [] }
       const remoteclusters = remoteClusters(); // {}
-      const views = await userAPIs.getViews(req); // {}
       const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
+      const getViews = util.promisify(userAPIs.getViews);
+      const views = await getViews(req); // {}
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
       // catch and send an error to the client

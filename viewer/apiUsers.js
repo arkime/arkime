@@ -144,13 +144,13 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return clone;
   };
 
-  uModule.getViews = async (req) => {
+  uModule.getViews = async (req, cb) => {
     if (!req.settingUser) { return {}; }
 
     // Clone the views so we don't modify that cached user
     const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
 
-    await Db.getUser('_moloch_shared', (err, sharedUser) => {
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
       if (sharedUser && sharedUser.found) {
         sharedUser = sharedUser._source;
         for (const viewName in sharedUser.views) {
@@ -162,9 +162,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           views[sharedViewName] = sharedUser.views[viewName];
         }
       }
-    });
 
-    return views;
+      // don't send error, just send views that we could get
+      return cb(null, views);
+    });
   };
 
   uModule.findUserState = (stateName, user) => {
@@ -700,9 +701,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/views
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
-  uModule.getUserViews = async (req, res) => {
-    const views = await uModule.getViews(req);
-    res.send(views);
+  uModule.getUserViews = (req, res) => {
+    uModule.getViews(req, (err, views) => {
+      res.send(views);
+    });
   };
 
   /**
