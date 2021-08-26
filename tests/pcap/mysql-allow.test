@@ -17,9 +17,10 @@
                "port" : 3306
             },
             "dstDscp" : [
-               2
+               "2",
+               "6"
             ],
-            "dstDscpCnt" : 1,
+            "dstDscpCnt" : 2,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],

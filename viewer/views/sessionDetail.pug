@@ -566,3 +566,24 @@ dl
       +arrayPrint(session.icmp, "type", "icmp.type")
       strong.medium.ml-4 Code
       +arrayPrint(session.icmp, "code", "icmp.code")
+
+  if (session.srcDscp || session.dstDscp)
+    dt
+      b-dropdown.clickable-label(text="DSCP", size="sm", variant="default")
+        if (session.srcDscp)
+          b-dropdown-item(@click="exportUnique('dscp.src', 0)")
+            | Export Unique DSCP Src
+          b-dropdown-item(@click="exportUnique('dscp.src', 1)")
+            | Export Unique DSCP Src with counts
+        if (session.dstDscp)
+          b-dropdown-item(@click="exportUnique('dscp.dst', 0)")
+            | Export Unique DSCP Dst
+          b-dropdown-item(@click="exportUnique('dscp.dst', 1)")
+            | Export Unique DSCP Dst with counts
+    dd
+      if (session.srcDscp)
+        strong.medium.ml-1 Src
+        +arrayPrint(session, "srcDscp", "dscp.src")
+      if (session.dstDscp)
+        strong.medium.ml-4 Dst
+        +arrayPrint(session, "dstDscp", "dscp.dst")
