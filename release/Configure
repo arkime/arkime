@@ -171,19 +171,6 @@ EOF
 fi
 
 ################################################################################
-INTERFACES=${ARKIME_INTERFACE//;/ }
-cat << EOF > $ARKIME_INSTALL_DIR/bin/arkime_config_interfaces.sh
-#!/bin/sh
-for interface in $INTERFACES; do
-  /sbin/ethtool -G \$interface rx 4096 tx 4096 || true
-  for i in rx tx sg tso ufo gso gro lro; do
-      /sbin/ethtool -K \$interface \$i off || true
-  done
-done
-EOF
-chmod a+x $ARKIME_INSTALL_DIR/bin/arkime_config_interfaces.sh
-
-################################################################################
 if [ -d "/etc/security/limits.d" ] && [ ! -f "/etc/security/limits.d/99-arkime.conf" ]; then
     echo "Arkime - Installing /etc/security/limits.d/99-arkime.conf to make core and memlock unlimited"
     cat << EOF > /etc/security/limits.d/99-arkime.conf
