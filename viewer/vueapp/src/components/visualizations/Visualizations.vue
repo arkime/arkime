@@ -245,15 +245,14 @@ import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
 
 // map imports
-import '../../../../public/jquery-jvectormap-1.2.2.min.js';
-import '../../../../public/jquery-jvectormap-world-en.js';
+import 'public/jquery-jvectormap-1.2.2.min.js';
 
 // graph imports
-import '../../../../public/flot-0.7/jquery.flot';
-import '../../../../public/flot-0.7/jquery.flot.selection';
-import '../../../../public/flot-0.7/jquery.flot.navigate';
-import '../../../../public/flot-0.7/jquery.flot.resize';
-import '../../../../public/flot-0.7/jquery.flot.stack';
+import 'public/flot-0.7/jquery.flot.min';
+import 'public/flot-0.7/jquery.flot.selection.min';
+import 'public/flot-0.7/jquery.flot.navigate.min';
+import 'public/flot-0.7/jquery.flot.resize'; // NOTE: min version doesn't work
+import 'public/flot-0.7/jquery.flot.stack.min';
 
 // color vars
 let foregroundColor;
@@ -454,46 +453,49 @@ export default {
     }
   },
   mounted: function () {
-    function setupMapAndGraph (that) {
-      // create map
-      that.displayMap();
-      // create graph
-      // setup the graph data and options
-      that.setupGraphData();
-      // create flot graph
-      that.setupGraphElement();
-    }
+    // lazy load jvector map world so it loads after data
+    import(/* webpackChunkName: "jvectormapworld" */ 'public/jquery-jvectormap-world-en.js').then(() => {
+      function setupMapAndGraph (that) {
+        // create map
+        that.displayMap();
+        // create graph
+        // setup the graph data and options
+        that.setupGraphData();
+        // create flot graph
+        that.setupGraphElement();
+      }
 
-    basePath = this.$route.path.split('/')[1];
+      basePath = this.$route.path.split('/')[1];
 
-    const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
-      localStorage[`${basePath}-open-map`] !== 'false';
+      const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
+        localStorage[`${basePath}-open-map`] !== 'false';
 
-    const stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
-      localStorage[`${basePath}-sticky-viz`] !== 'false';
+      const stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
+        localStorage[`${basePath}-sticky-viz`] !== 'false';
 
-    this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
-      localStorage[`${basePath}-cap-times`] !== 'false';
+      this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
+        localStorage[`${basePath}-cap-times`] !== 'false';
 
-    this.$store.commit('toggleStickyViz', stickyViz);
+      this.$store.commit('toggleStickyViz', stickyViz);
 
-    this.showMap = showMap;
-    this.stickyViz = stickyViz;
+      this.showMap = showMap;
+      this.stickyViz = stickyViz;
 
-    if (this.primary) {
-      this.$store.commit('toggleMaps', showMap);
+      if (this.primary) {
+        this.$store.commit('toggleMaps', showMap);
 
-      this.graphType = this.getDefaultGraphType();
-      this.$store.commit('updateGraphType', this.graphType);
+        this.graphType = this.getDefaultGraphType();
+        this.$store.commit('updateGraphType', this.graphType);
 
-      this.seriesType = this.$route.query.seriesType || 'bars';
-      this.$store.commit('updateSeriesType', this.seriesType);
+        this.seriesType = this.$route.query.seriesType || 'bars';
+        this.$store.commit('updateSeriesType', this.seriesType);
 
-      StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
-    } else { // wait for values in store to be accessible
-      const id = parseInt(this.id);
-      setTimeout(() => { setupMapAndGraph(this); }, id * 100);
-    }
+        StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
+      } else { // wait for values in store to be accessible
+        const id = parseInt(this.id);
+        setTimeout(() => { setupMapAndGraph(this); }, id * 100);
+      }
+    });
   },
   methods: {
     getDefaultGraphType: function () {

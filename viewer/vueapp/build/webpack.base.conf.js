@@ -17,7 +17,8 @@ module.exports = {
   output: {
     clean: true,
     path: config.build.assetsRoot,
-    filename: '[name].js',
+    filename: utils.assetsPath('js/[name].[chunkhash].js'),
+    chunkFilename: utils.assetsPath('js/[id].[chunkhash].js'),
     hotUpdateChunkFilename: 'hot/hot-update.js',
     hotUpdateMainFilename: 'hot/hot-update.json',
     publicPath: process.env.NODE_ENV === 'production'
@@ -29,6 +30,7 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
+      'public': resolve('../public')
     }
   },
   module: {
@@ -40,7 +42,7 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|public/,
         use: {
           loader: 'babel-loader',
           options: {

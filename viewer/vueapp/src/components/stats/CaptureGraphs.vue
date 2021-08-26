@@ -33,9 +33,9 @@
 </template>
 
 <script>
-import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.min.js';
-import '../../../../public/highlight.min.js';
+import d3 from 'public/d3.min.js';
+import cubism from 'public/cubism.v1.min.js';
+import 'public/highlight.min.js';
 
 import '../../cubismoverrides.css';
 import MolochPaging from '../utils/Pagination';
