@@ -33,7 +33,7 @@ module.exports = (app, Config) => {
     oldDBFields: {},
     isLocalViewRegExp: Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined,
     uploadLimits: {},
-    allowUploads: Config.get('uploadCommand') ? true : false,
+    allowUploads: !!Config.get('uploadCommand'),
     cronTimeout: +Config.get('dbFlushTimeout', 5) + // How long capture holds items
                  60 + // How long before ES reindexs
                  20, // Transmit and extra time
