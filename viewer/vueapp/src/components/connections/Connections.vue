@@ -441,11 +441,11 @@ import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
 // import external
 import Vue from 'vue';
-import * as d3 from 'd3';
-import saveSvgAsPng from 'save-svg-as-png';
 import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
+// lazy import these
+let d3, saveSvgAsPng;
 
 // d3 force directed graph vars/functions ---------------------------------- */
 let nodeFillColors;
@@ -879,11 +879,16 @@ export default {
       svg.transition().duration(500).call(zoom.scaleBy, direction);
     },
     exportPng: function () {
-      saveSvgAsPng.saveSvgAsPng(
-        document.getElementById('graphSvg'),
-        'connections.png',
-        { backgroundColor: '#FFFFFF' }
-      );
+      import(
+        /* webpackChunkName: "saveSvgAsPng" */ 'save-svg-as-png'
+      ).then((saveSvgAsPngModule) => {
+        saveSvgAsPng = saveSvgAsPngModule;
+        saveSvgAsPng.saveSvgAsPng(
+          document.getElementById('graphSvg'),
+          'connections.png',
+          { backgroundColor: '#FFFFFF' }
+        );
+      });
     },
     updateTextSize: function (direction) {
       this.fontSize = direction > 0
@@ -902,7 +907,7 @@ export default {
         const availableCluster = this.$store.state.esCluster.availableCluster.active;
         const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
-          this.drawGraph({ nodes: [], links: [] }); // draw empty graph
+          this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
           this.recordsFiltered = 0;
           pendingPromise = null;
           this.error = selection.error;
@@ -943,7 +948,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsFiltered = response.data.recordsFiltered;
-        this.drawGraph(response.data);
+        this.drawGraphWrapper(response.data);
       }).catch((error) => {
         pendingPromise = null;
         this.loading = false;
@@ -973,6 +978,12 @@ export default {
       this.user.settings.connLinkFields = this.linkFields;
 
       UserService.saveSettings(this.user.settings, this.user.userId);
+    },
+    drawGraphWrapper: function (data) {
+      import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
+        d3 = d3Module;
+        this.drawGraph(data);
+      });
     },
     drawGraph: function (data) {
       if (svg) { // remove any existing nodes

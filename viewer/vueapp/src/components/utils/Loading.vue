@@ -4,10 +4,18 @@
       <div class="rainbow"></div>
     </div>
     <img
+      v-if="!shiftyEyes"
       @click="bounce"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-      :src="shiftyEyes ? 'assets/watching.gif' : 'assets/Arkime_Logo_Mark_FullGradient.png'"
+      src="../../../../../assets/Arkime_Logo_Mark_FullGradient.png"
+    />
+    <img
+      v-else
+      @click="bounce"
+      src="../../../../../assets/watching.gif"
+      :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
+      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
     />
     <div class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">
