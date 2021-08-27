@@ -22,6 +22,10 @@
                "packets" : 7,
                "port" : 179
             },
+            "dstDscp" : [
+               48
+            ],
+            "dstDscpCnt" : 1,
             "dstPayload8" : "ffffffffffffffff",
             "dstRIR" : "ARIN",
             "fileId" : [],
@@ -88,6 +92,10 @@
                "packets" : 7,
                "port" : 25820
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcPayload8" : "ffffffffffffffff",
             "srcRIR" : "ARIN",
             "tcpflags" : {
@@ -130,6 +138,10 @@
                "packets" : 1,
                "port" : 179
             },
+            "dstDscp" : [
+               48
+            ],
+            "dstDscpCnt" : 1,
             "dstPayload8" : "ffffffffffffffff",
             "dstRIR" : "ARIN",
             "fileId" : [],
@@ -171,6 +183,10 @@
                "packets" : 1,
                "port" : 25820
             },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
             "srcPayload8" : "ffffffffffffffff",
             "srcRIR" : "ARIN",
             "tcpflags" : {

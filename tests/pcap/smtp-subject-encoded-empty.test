@@ -169,6 +169,10 @@
                "packets" : 19,
                "port" : 62855
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Apple, Inc."
             ],

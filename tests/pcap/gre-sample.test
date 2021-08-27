@@ -16,6 +16,10 @@
                "packets" : 6,
                "port" : 0
             },
+            "dstDscp" : [
+               48
+            ],
+            "dstDscpCnt" : 1,
             "dstOui" : [
                "Alfa, Inc."
             ],
@@ -227,6 +231,10 @@
                "packets" : 1,
                "port" : 123
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -643,6 +651,10 @@
                "packets" : 1,
                "port" : 123
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Agere Systems"
             ],
@@ -759,6 +771,10 @@
                "packets" : 1,
                "port" : 123
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Agere Systems"
             ],

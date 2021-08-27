@@ -16,6 +16,11 @@
                "packets" : 5,
                "port" : 3306
             },
+            "dstDscp" : [
+               "2",
+               "6"
+            ],
+            "dstDscpCnt" : 2,
             "dstOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
@@ -83,6 +88,10 @@
                "packets" : 6,
                "port" : 42803
             },
+            "srcDscp" : [
+               2
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],

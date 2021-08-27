@@ -47,6 +47,7 @@ int                          mac2Field;
 int                          vlanField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
+LOCAL int                    dscpField[2];
 LOCAL int                    greIpField;
 
 LOCAL uint64_t               droppedFrags;
@@ -312,9 +313,16 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         MOLOCH_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
     }
 
-    // Check the first 10 packets for vlans, tunnels, and macs
+    // Check the first 10 packets for dscp, vlans, tunnels, and macs
     if (session->packets[packet->direction] <= 10) {
         const uint8_t *pcapData = packet->pkt;
+
+        if (packet->ipProtocol) {
+            int tc = ip4->ip_v == 4 ? ip4->ip_tos >> 2 : ip6->ip6_vfc & 0xf;
+            if (tc != 0) {
+                moloch_field_int_add(dscpField[packet->direction], session, tc);
+            }
+        }
 
         if (pcapFileHeader.dlt == DLT_EN10MB) {
             if (packet->direction == 1) {
@@ -1492,6 +1500,18 @@ void moloch_packet_init()
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_ECS_CNT | MOLOCH_FIELD_FLAG_LINKED_SESSIONS | MOLOCH_FIELD_FLAG_NOSAVE,
         "transform", "dash2Colon",
         "fieldECS", "destination.mac",
+        (char *)NULL);
+
+    dscpField[0] = moloch_field_define("general", "integer",
+        "dscp.src", "Src DSCP", "srcDscp",
+        "Source non zero differentiated services class selector set for session",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    dscpField[1] = moloch_field_define("general", "integer",
+        "dscp.dst", "Dst DSCP", "dstDscp",
+        "Destination non zero differentiated services class selector set for session",
+        MOLOCH_FIELD_TYPE_INT_GHASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     moloch_field_define("general", "lotermfield",

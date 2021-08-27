@@ -104,6 +104,10 @@
                "packets" : 10,
                "port" : 42971
             },
+            "srcDscp" : [
+               4
+            ],
+            "srcDscpCnt" : 1,
             "srcOui" : [
                "Officially Xerox, but 0:0:0:0:0:0 is more common"
             ],
