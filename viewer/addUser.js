@@ -41,7 +41,7 @@ function help () {
   console.log('Config Options:');
   console.log('  -c <config file>      Config file to use');
   console.log('  -n <node name>        Node name section to use in config file');
-  console.log('  --insecure            Allow insecure HTTPS');
+  console.log('  --insecure            Disable certificate verification for https calls');
 
   process.exit(0);
 }

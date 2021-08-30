@@ -137,7 +137,7 @@ sub showHelp($)
     print "  --prefix <prefix>            - Prefix for table names\n";
     print "  --clientkey <keypath>        - Path to key for client authentication.  Must not have a passphrase.\n";
     print "  --clientcert <certpath>      - Path to cert for client authentication\n";
-    print "  --insecure                   - Don't verify http certificates\n";
+    print "  --insecure                   - Disable certificate verification for https calls\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
     print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
