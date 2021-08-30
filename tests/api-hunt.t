@@ -305,7 +305,7 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":70,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/processHuntJobs");
@@ -380,8 +380,8 @@ my $hToken = getTokenCookie('huntuser');
   my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
   my $result = $RESULTS{$id};
   is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
-  is ($result->{searchedSessions}, 68, "raw-regex-both-(.*a){25}x searchedSessions check");
-  is ($result->{totalSessions}, 68, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{searchedSessions}, 70, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 70, "raw-regex-both-(.*a){25}x totalSessions check");
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup

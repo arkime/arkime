@@ -80,6 +80,8 @@ LOCAL  int headerReqValue;
 LOCAL  int headerResField;
 LOCAL  int headerResValue;
 
+LOCAL  int ntlmPayloadField;
+
 /******************************************************************************/
 void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
 {
@@ -381,6 +383,15 @@ LOCAL void moloch_http_parse_authorization(MolochSession_t *session, char *str)
             end++;
         }
         moloch_field_string_add(userField, session, str, end - str, TRUE);
+    } else if (strncasecmp("NTLM", str, 4) == 0) {
+        moloch_session_add_protocol(session, "ntlm");
+        str += 5;
+        while (isspace(*str)) str++;
+
+        int len = strlen(str);
+
+        moloch_field_string_add(ntlmPayloadField, session, str, len, TRUE);
+
     }
 }
 /******************************************************************************/
@@ -1038,6 +1049,12 @@ static const char *method_strings[] =
     moloch_config_add_header(&httpReqHeaders, "host", hostField);
     moloch_config_load_header("headers-http-request", "http", "Request header ", "http.", "http.request-", &httpReqHeaders, 0);
     moloch_config_load_header("headers-http-response", "http", "Response header ", "http.", "http.response-", &httpResHeaders, 0);
+
+    ntlmPayloadField = moloch_field_define("ntlm", "termfield",
+        "ntlm.payload", "NTLM Payload", "ntlm.payload",
+        "NTLM Payload in the HTTP Authorization header",
+        MOLOCH_FIELD_TYPE_STR_HASH, MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
 
     int i;
     for (i = 0; method_strings[i]; i++) {

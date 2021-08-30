@@ -1,0 +1,470 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 398
+            },
+            "destination" : {
+               "bytes" : 2705,
+               "ip" : "10.122.144.182",
+               "mac" : [
+                  "00:10:18:55:70:a7"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 80
+            },
+            "dstOui" : [
+               "Broadcom"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "485454502f312e31",
+            "fileId" : [],
+            "firstPacket" : 1486411973569,
+            "http" : {
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "www.purple.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "68957048b5326a7d038b9b0903235ab7"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "http://www.purple.com/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "host",
+                  "proxy-connection",
+                  "upgrade-insecure-requests",
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 7,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "proxy-connection",
+                  "upgrade-insecure-requests"
+               ],
+               "requestHeaderValue" : [
+                  "1",
+                  "en-us,en;q=0.8",
+                  "gzip, deflate, sdch",
+                  "keep-alive",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+               ],
+               "requestHeaderValueCnt" : 5,
+               "responseHeader" : [
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "mime-version",
+                  "proxy-authenticate",
+                  "proxy-connection",
+                  "via"
+               ],
+               "responseHeaderCnt" : 8,
+               "responseHeaderField" : [
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "mime-version",
+                  "proxy-authenticate",
+                  "proxy-connection",
+                  "via"
+               ],
+               "responseHeaderValue" : [
+                  "1.0",
+                  "1.1 poseidon.ciscolab.com:80 (cisco-wsa/8.5.3-069)",
+                  "2075",
+                  "close",
+                  "close",
+                  "mon, 06 feb 2017 20:12:53 gmt",
+                  "ntlm",
+                  "text/html"
+               ],
+               "responseHeaderValueCnt" : 8,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "3b168ea704b9915ab51a8f7839768d98855acf9f65c527f18bd1028eeaf299a4"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  407
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "http://www.purple.com/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+               ],
+               "useragentCnt" : 1
+            },
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1486411973637,
+            "length" : 68,
+            "network" : {
+               "bytes" : 3403,
+               "community_id" : "1:8z/7KdV9z2h2g20JOnAEridVp78=",
+               "packets" : 11
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               76,
+               468,
+               76,
+               1530,
+               961,
+               76,
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               732,
+               808,
+               2338,
+               3299,
+               3375,
+               3451,
+               3527
+            ],
+            "protocol" : [
+               "http",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 2351
+            },
+            "source" : {
+               "bytes" : 698,
+               "ip" : "10.122.142.190",
+               "mac" : [
+                  "f4:ac:c1:d2:76:c9"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 10252
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "4745542068747470",
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 2,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 2749
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-170206"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1508
+            },
+            "destination" : {
+               "bytes" : 2578,
+               "ip" : "10.122.144.182",
+               "mac" : [
+                  "00:10:18:55:70:a7"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 80
+            },
+            "dstOui" : [
+               "Broadcom"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "485454502f312e31",
+            "fileId" : [],
+            "firstPacket" : 1486411981687,
+            "http" : {
+               "authType" : [
+                  "ntlm"
+               ],
+               "authTypeCnt" : 1,
+               "bodyMagic" : [
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 1,
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "www.purple.com"
+               ],
+               "hostCnt" : 1,
+               "md5" : [
+                  "cbf977470ad654c3761799948690a2b3"
+               ],
+               "md5Cnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "methodCnt" : 1,
+               "path" : [
+                  "http://www.purple.com/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "accept-encoding",
+                  "accept-language",
+                  "host",
+                  "proxy-authorization",
+                  "proxy-connection",
+                  "upgrade-insecure-requests",
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 8,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept",
+                  "accept-encoding",
+                  "accept-encoding",
+                  "accept-language",
+                  "accept-language",
+                  "proxy-authorization",
+                  "proxy-authorization",
+                  "proxy-connection",
+                  "proxy-connection",
+                  "upgrade-insecure-requests",
+                  "upgrade-insecure-requests"
+               ],
+               "requestHeaderValue" : [
+                  "1",
+                  "1",
+                  "en-us,en;q=0.8",
+                  "en-us,en;q=0.8",
+                  "gzip, deflate, sdch",
+                  "gzip, deflate, sdch",
+                  "keep-alive",
+                  "keep-alive",
+                  "ntlm tlrmtvntuaabaaaab4iiogaaaaaaaaaaaaaaaaaaaaagabedaaaadw==",
+                  "ntlm tlrmtvntuaadaaaagaayaiwaaaaear4bpaaaabgagabyaaaacgakahaaaaasabiaegaaaaaaaadcaqaabykiogybsr0aaaapjmify9uyfzn4qdgmgqmqs2maaqbzagmabwbsageaygauagmabwbtahuacwblahiamqbsaeuaqwbsaeuaqqbuaeuamgaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4xjyn0jmvqmnptimrw72maqeaaaaaaadcjqq9tydsasglf/uvl56qaaaaaaiaeabdaekauwbdae8atabbaeiaaqaqafaatwbtaeuasqbeae8atgaeabgaywbpahmaywbvagwayqbiac4aywbvag0aawaqahaabwbzaguaaqbkag8abgauagmaaqbzagmabwbsageaygauagmabwbtaagamaawaaaaaaaaaaaaaaaamaaabnn0tvjy08dofqynhvcluyk925n5hc78di9eibfptngkabaaaaaaaaaaaaaaaaaaaaaaaakalabiafqavabqac8amqawac4amqayadialgaxadqanaauadeaoaayadoaoaawaaaaaaaaaaaa",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+               ],
+               "requestHeaderValueCnt" : 12,
+               "responseHeader" : [
+                  "accept-ranges",
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "keep-alive",
+                  "last-modified",
+                  "mime-version",
+                  "proxy-authenticate",
+                  "proxy-connection",
+                  "server",
+                  "via"
+               ],
+               "responseHeaderCnt" : 13,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "connection",
+                  "connection",
+                  "content-length",
+                  "content-length",
+                  "content-type",
+                  "content-type",
+                  "date",
+                  "date",
+                  "etag",
+                  "keep-alive",
+                  "last-modified",
+                  "mime-version",
+                  "proxy-authenticate",
+                  "proxy-connection",
+                  "proxy-connection",
+                  "server",
+                  "via",
+                  "via"
+               ],
+               "responseHeaderValue" : [
+                  "\"502-53a7138487d59\"",
+                  "0",
+                  "1.0",
+                  "1.1 poseidon.ciscolab.com:80 (cisco-wsa/8.5.3-069)",
+                  "1.1 rtp5-dmz-wsa-2-old-mgmt.cisco.com:80 (cisco-wsa/9.0.1-162), 1.1 poseidon.ciscolab.com:80 (cisco-wsa/8.5.3-069)",
+                  "1282",
+                  "bytes",
+                  "chaos",
+                  "fri, 19 aug 2016 18:53:53 gmt",
+                  "keep-alive",
+                  "keep-alive",
+                  "keep-alive",
+                  "keep-alive",
+                  "mon, 06 feb 2017 20:13:01 gmt",
+                  "mon, 06 feb 2017 20:15:19 gmt",
+                  "ntlm tlrmtvntuaacaaaaeaaqadaaaaafgominwxbg0va2i4aaaaaaaaaahyadgbaaaaaqwbjafmaqwbpaewaqqbcaaiaeabdaekauwbdae8atabbaeiaaqaqafaatwbtaeuasqbeae8atgaeabgaywbpahmaywbvagwayqbiac4aywbvag0aawaqahaabwbzaguaaqbkag8abgauagmaaqbzagmabwbsageaygauagmabwbtaaaaaaa=",
+                  "text/html",
+                  "text/html",
+                  "timeout=5, max=100"
+               ],
+               "responseHeaderValueCnt" : 19,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "ee36d3a2f4a697a7241d5bee2fda134a6ff7ea7d0612ab3e7d0907131a4f1e23"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200,
+                  407
+               ],
+               "statuscodeCnt" : 2,
+               "uri" : [
+                  "http://www.purple.com/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+               ],
+               "useragentCnt" : 1
+            },
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1486411981721,
+            "length" : 33,
+            "network" : {
+               "bytes" : 4380,
+               "community_id" : "1:Hue2xlf2RydXqNOQuxB5U9cHp9M=",
+               "packets" : 11
+            },
+            "node" : "test",
+            "ntlm" : {
+               "payload" : [
+                  "TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==",
+                  "TlRMTVNTUAADAAAAGAAYAIwAAAAeAR4BpAAAABgAGABYAAAACgAKAHAAAAASABIAegAAAAAAAADCAQAABYKIogYBsR0AAAAPjmifY9uyfZn4QdGMGQMqs2MAaQBzAGMAbwBsAGEAYgAuAGMAbwBtAHUAcwBlAHIAMQBSAEUAQwBSAEUAQQBUAEUAMgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4xjyn0jmVqMNptImrW72mAQEAAAAAAADCjQq9tYDSASgLf/uvL56qAAAAAAIAEABDAEkAUwBDAE8ATABBAEIAAQAQAFAATwBTAEUASQBEAE8ATgAEABgAYwBpAHMAYwBvAGwAYQBiAC4AYwBvAG0AAwAqAHAAbwBzAGUAaQBkAG8AbgAuAGMAaQBzAGMAbwBsAGEAYgAuAGMAbwBtAAgAMAAwAAAAAAAAAAAAAAAAMAAABnn0Tvjy08dOfQYnHvcLuyK925n5Hc78di9EIBfPTngKABAAAAAAAAAAAAAAAAAAAAAAAAkALABIAFQAVABQAC8AMQAwAC4AMQAyADIALgAxADQANAAuADEAOAAyADoAOAAwAAAAAAAAAAAA"
+               ],
+               "payloadCnt" : 2
+            },
+            "packetLen" : [
+               82,
+               82,
+               76,
+               552,
+               76,
+               598,
+               1096,
+               76,
+               1530,
+               312,
+               76
+            ],
+            "packetPos" : [
+               3603,
+               3685,
+               3767,
+               3843,
+               4395,
+               4471,
+               5069,
+               6165,
+               6241,
+               7771,
+               8083
+            ],
+            "protocol" : [
+               "http",
+               "ntlm",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 2230
+            },
+            "source" : {
+               "bytes" : 1802,
+               "ip" : "10.122.142.190",
+               "mac" : [
+                  "f4:ac:c1:d2:76:c9"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 10258
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "4745542068747470",
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 4,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 3738
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-170206"
+            }
+         }
+      }
+   ]
+}
+
