@@ -123,6 +123,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return user.columnConfigs || [];
   }
 
+  function userSpiview (user) {
+    if (!user) { return []; }
+    return user.spiviewFieldConfigs || [];
+  }
+
   uModule.getCurrentUser = (req) => {
     const userProps = [
       'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
@@ -1399,9 +1404,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
    */
   uModule.getUserSpiviewFields = (req, res) => {
-    if (!req.settingUser) { return res.send([]); }
-
-    return res.send(req.settingUser.spiviewFieldConfigs || []);
+    return res.send(userSpiview(req.settingUser));
   };
 
   /**
@@ -1644,14 +1647,19 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {object} config The configuration data for the page
    */
   uModule.getPageConfig = (req, res) => {
-    if (req.params.page === 'sessions') {
+    switch (req.params.page) {
+    case 'sessions':
       const colConfigs = userColumns(req.settingUser);
       const tableState = uModule.findUserState('sessionsNew', req.user);
       const colWidths = uModule.findUserState('sessionsColWidths', req.user);
       return res.send({ colWidths, tableState, colConfigs });
+    case 'spiview':
+      const fieldConfigs = userSpiview(req.settingUser);
+      const spiviewFields = uModule.findUserState('spiview', req.user);
+      return res.send({ fieldConfigs, spiviewFields });
+    default:
+      return res.serverError(404, 'Cannot find the requested page');
     }
-
-    return res.serverError(404, 'Cannot find the requested page');
   };
 
   return uModule;

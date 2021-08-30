@@ -59,26 +59,28 @@
                   title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
                   Arkime Default
                 </b-dropdown-item>
-                <b-dropdown-item
-                  v-for="(config, key) in fieldConfigs"
-                  :key="config.name"
-                  @click.self.stop.prevent="loadFieldConfiguration(key)">
-                  <button class="btn btn-xs btn-danger pull-right ml-1"
-                    type="button"
-                    @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                    <span class="fa fa-trash-o">
-                    </span>
-                  </button>
-                  <button class="btn btn-xs btn-warning pull-right"
-                    type="button"
-                    v-b-tooltip.hover.right
-                    title="Update this field configuration with the currently visible fields"
-                    @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                    <span class="fa fa-save">
-                    </span>
-                  </button>
-                  {{ config.name }}
-                </b-dropdown-item>
+                <template v-if="fieldConfigs">
+                  <b-dropdown-item
+                    v-for="(config, key) in fieldConfigs"
+                    :key="config.name"
+                    @click.self.stop.prevent="loadFieldConfiguration(key)">
+                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                      type="button"
+                      @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </button>
+                    <button class="btn btn-xs btn-warning pull-right"
+                      type="button"
+                      v-b-tooltip.hover.right
+                      title="Update this field configuration with the currently visible fields"
+                      @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                    {{ config.name }}
+                  </b-dropdown-item>
+                </template>
                 <b-dropdown-item
                   v-if="fieldConfigError"
                   key="config-error">
@@ -430,7 +432,7 @@ export default {
       loadingVisualizations: true,
       staleData: undefined,
       filtered: 0,
-      fieldConfigs: [],
+      fieldConfigs: undefined,
       graphData: undefined,
       mapData: undefined,
       categoryList: [],
@@ -473,11 +475,12 @@ export default {
     }
   },
   mounted: function () {
-    if (!this.spiQuery) {
-      // get what's saved in the db
-      UserService.getState('spiview').then((response) => {
-        this.spiQuery = response.data.visibleFields || defaultSpi;
-        this.issueQueries();
+    if (!this.spiQuery) { // there's no list of fields in the url params
+      // so get what's saved in the db
+      UserService.getPageConfig('spiview').then((response) => {
+        this.fieldConfigs = response.fieldConfigs;
+        this.spiQuery = response.spiviewFields.visibleFields || defaultSpi;
+        this.issueQueries(true);
       }).catch((error) => {
         this.spiQuery = defaultSpi;
         this.issueQueries();
@@ -746,6 +749,7 @@ export default {
       UserService.createSpiviewFieldConfig(data).then((response) => {
         data.name = response.name; // update column config name
 
+        if (!this.fieldConfigs) { this.fieldConfigs = []; }
         this.fieldConfigs.push(data);
 
         this.newFieldConfigName = null;
@@ -865,25 +869,23 @@ export default {
           url: 'api/spiview'
         };
 
-        Vue.axios(options)
-          .then((response) => {
-            if (response.data.bsqErr) {
-              response.data.error = response.data.bsqErr;
-            }
-            resolve(response.data);
-          })
-          .catch((error) => {
-            if (!Vue.axios.isCancel(error)) {
-              reject(error);
-            }
-          });
+        Vue.axios(options).then((response) => {
+          if (response.data.bsqErr) {
+            response.data.error = response.data.bsqErr;
+          }
+          resolve(response.data);
+        }).catch((error) => {
+          if (!Vue.axios.isCancel(error)) {
+            reject(error);
+          }
+        });
       });
 
       return { promise, source };
     },
     issueQueries: function () {
       this.categorizeFields(); // IMPORTANT: kicks off initial query for spi data!
-      this.getSpiviewFieldConfigs();
+      if (!this.fieldConfigs) { this.getSpiviewFieldConfigs(); }
     },
     categorizeFields: function () {
       this.loading = false;
@@ -984,21 +986,19 @@ export default {
 
       if (tasks.length) {
         // start processing tasks serially
-        this.serial(tasks)
-          .then((response) => { // returns the last result in the series
-            if (response && response.error) {
-              this.error = response.error;
-            }
-            this.dataLoading = false;
-            pendingPromise = null;
-            this.spiviewFieldTransition = 'list';
-          })
-          .catch((error) => {
-            this.error = error.text || error;
-            this.dataLoading = false;
-            pendingPromise = null;
-            this.spiviewFieldTransition = 'list';
-          });
+        this.serial(tasks).then((response) => { // returns the last result in the series
+          if (response && response.error) {
+            this.error = response.error;
+          }
+          this.dataLoading = false;
+          pendingPromise = null;
+          this.spiviewFieldTransition = 'list';
+        }).catch((error) => {
+          this.error = error.text || error;
+          this.dataLoading = false;
+          pendingPromise = null;
+          this.spiviewFieldTransition = 'list';
+        });
       } else if (this.fields) {
         // if we couldn't figure out the fields to request,
         // request the default ones

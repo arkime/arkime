@@ -1388,7 +1388,7 @@ export default {
     /* gets all the information to display the table and custom col config dropdown
        widths of columns, table columns and sort order, custom col configs */
     getSessionsConfig: function () {
-      UserService.getSessionsConfig().then((response) => {
+      UserService.getPageConfig('sessions').then((response) => {
         this.colWidths = response.colWidths;
         this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;

@@ -749,13 +749,14 @@ export default {
   },
 
   /**
-   * Gets the sessions page configruation variables
+   * Gets the page configruation variables
+   * @param {string} page The page to request the configuration for
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getSessionsConfig () {
+  getPageConfig (page) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('api/user/config/sessions').then((response) => {
+      Vue.axios.get(`api/user/config/${page}`).then((response) => {
         resolve(response.data);
       }).catch((error) => {
         reject(error);
