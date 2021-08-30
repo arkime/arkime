@@ -85,6 +85,7 @@ hosttaggertest2, 7
 iptaggertest1, 2
 iptaggertest2, 2
 ipwise, 3
+ipwise2, 3
 ipwisecsv, 4
 smtp:authlogin, 1
 socks:password, 2

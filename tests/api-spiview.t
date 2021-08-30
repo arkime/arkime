@@ -136,8 +136,8 @@ my $pwd = "*/pcap";
     my @dbuckets = sort {$a->{key} cmp $b->{key}} @{$djson->{spi}->{tags}->{buckets}};
     $djson->{spi}->{tags}->{buckets} = \@dbuckets;
 
-    eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 8,
-            "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"domainwise"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"},{"doc_count":3, "key":"wisebyhost2"}]}'), "ALL ta");
+    eq_or_diff($json->{spi}->{tags}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 9,
+            "buckets":[{"doc_count":3, "key":"byhost2"},{"doc_count":3, "key":"domainwise"},{"doc_count":3, "key":"hosttaggertest1"},{"doc_count":3, "key":"hosttaggertest2"},{"doc_count":3, "key":"wisebyhost2"}]}'), "ALL tags");
 
     eq_or_diff($json->{spi}->{"http.requestHeader"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":3, "key":"accept"},{"doc_count":3, "key":"host"}, {"doc_count":3, "key":"user-agent"}]}'), "ALL http.requestHeader");
