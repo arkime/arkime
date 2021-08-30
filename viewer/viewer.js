@@ -1463,6 +1463,12 @@ app.post( // update/create user state endpoint
   userAPIs.updateUserState
 );
 
+app.get( // user page configuration endpoint
+  '/api/user/config/:page',
+  [noCacheJson, checkCookieToken, getSettingUserCache],
+  userAPIs.getPageConfig
+);
+
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes', '/notifierTypes'],

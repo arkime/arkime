@@ -106,6 +106,23 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   }
 
+  function userColumns (user) {
+    if (!user) { return []; }
+
+    // Fix for new names
+    if (user.columnConfigs) {
+      for (const key in user.columnConfigs) {
+        const item = user.columnConfigs[key];
+        item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
+        if (item.order && item.order.length > 0) {
+          item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
+        }
+      }
+    }
+
+    return user.columnConfigs || [];
+  }
+
   uModule.getCurrentUser = (req) => {
     const userProps = [
       'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
@@ -1221,20 +1238,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
   uModule.getUserColumns = (req, res) => {
-    if (!req.settingUser) { return res.send([]); }
-
-    // Fix for new names
-    if (req.settingUser.columnConfigs) {
-      for (const key in req.settingUser.columnConfigs) {
-        const item = req.settingUser.columnConfigs[key];
-        item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
-        if (item.order && item.order.length > 0) {
-          item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-        }
-      }
-    }
-
-    return res.send(req.settingUser.columnConfigs || []);
+    return res.send(userColumns(req.settingUser));
   };
 
   /**
@@ -1630,6 +1634,24 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }));
       });
     });
+  };
+
+  /**
+   * GET - /api/user/config/:page
+   *
+   * Fetches the configuration information for a UI page for a user.
+   * @name /user/config/:page
+   * @returns {object} config The configuration data for the page
+   */
+  uModule.getPageConfig = (req, res) => {
+    if (req.params.page === 'sessions') {
+      const colConfigs = userColumns(req.settingUser);
+      const tableState = uModule.findUserState('sessionsNew', req.user);
+      const colWidths = uModule.findUserState('sessionsColWidths', req.user);
+      return res.send({ colWidths, tableState, colConfigs });
+    }
+
+    return res.serverError(404, 'Cannot find the requested page');
   };
 
   return uModule;
