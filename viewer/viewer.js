@@ -87,7 +87,7 @@ const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap
 const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 const historyAPIs = require('./apiHistory')(Db);
 const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);
-const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, ViewerUtils);
+const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils);
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1270,33 +1270,6 @@ app.get('/about', checkPermissions(['webEnabled']), (req, res) => {
   res.redirect('help');
 });
 
-app.get(['/remoteclusters', '/molochclusters'], function (req, res) {
-  function cloneClusters (clusters) {
-    const clone = {};
-
-    for (const key in clusters) {
-      if (clusters[key]) {
-        const cluster = clusters[key];
-        clone[key] = {
-          name: cluster.name,
-          url: cluster.url
-        };
-      }
-    }
-
-    return clone;
-  }
-
-  if (!internals.remoteClusters) {
-    res.status(404);
-    return res.send('Cannot locate remote clusters');
-  }
-
-  const clustersClone = cloneClusters(internals.remoteClusters);
-
-  return res.send(clustersClone);
-});
-
 // ============================================================================
 // APIS
 // ============================================================================
@@ -2031,6 +2004,18 @@ app.post(
 app.get(
   ['/api/clusters', '/clusters'],
   miscAPIs.getClusters
+);
+
+app.get(
+  ['/remoteclusters', '/molochclusters'],
+  miscAPIs.getRemoteClusters
+);
+
+// app apis -------------------------------------------------------------------
+app.get(
+  '/api/appinfo',
+  [noCacheJson, checkCookieToken, getSettingUserCache, checkPermissions(['webEnabled'])],
+  miscAPIs.getAppInfo
 );
 
 // cyberchef apis -------------------------------------------------------------

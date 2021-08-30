@@ -189,7 +189,6 @@
 <script>
 // import external
 import Vue from 'vue';
-import * as d3 from 'd3';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
@@ -199,6 +198,9 @@ import Popup from './Popup';
 import DragList from '../utils/DragList';
 // import utils
 import Utils from '../utils/utils';
+let d3; // lazy load d3
+
+let init = true;
 
 // common page variables --------------------------------------------------- //
 let pendingPromise; // save a pending promise to be able to cancel it
@@ -210,11 +212,10 @@ let background; // color of app background
 let foreground; // color of app foreground
 
 // page pie variables ------------------------------------------------------ //
-let g, newSlice;
+let g, newSlice, arc;
 let width = getWindowWidth();
 let height = getWindowHeight();
 let radius = getRadius();
-const arc = getArc();
 
 // page treemap variables -------------------------------------------------- //
 let gtree, newBox;
@@ -395,13 +396,6 @@ export default {
       for (const exp of subFieldExps) {
         this.fieldTypeaheadList.push(this.getFieldObj(exp));
       }
-    }
-
-    if (!this.fieldTypeaheadList.length) {
-      // just use spigraph data if there are no additional levels of fields to display
-      this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
-    } else { // otherwise load the data for the additional fields
-      this.initializeGraphs();
     }
 
     this.loadData();
@@ -936,13 +930,26 @@ export default {
       pendingPromise = { cancellablePromise, source, cancelId };
 
       cancellablePromise.then((response) => {
-        pendingPromise = null;
-        this.$emit('toggleLoad', false);
-        this.applyGraphData(response.data.hierarchicalResults);
-        this.tableData = response.data.tableResults;
-        this.sortTable();
-        this.applyColorsToTableData(this.tableData);
-        this.showHiddenColumns(); // initializes resizeable cols
+        import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
+          d3 = d3Module;
+          if (init) {
+            init = false;
+            if (!this.fieldTypeaheadList.length) {
+              // just use spigraph data if there are no additional levels of fields to display
+              this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
+            } else { // otherwise load the data for the additional fields
+              this.initializeGraphs();
+            }
+          }
+          arc = getArc();
+          pendingPromise = null;
+          this.$emit('toggleLoad', false);
+          this.applyGraphData(response.data.hierarchicalResults);
+          this.tableData = response.data.tableResults;
+          this.sortTable();
+          this.applyColorsToTableData(response.data.tableResults);
+          this.showHiddenColumns(); // initializes resizeable cols
+        });
       }).catch((error) => {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
@@ -1041,6 +1048,7 @@ export default {
 
     // cleanup global vars
     setTimeout(() => {
+      init = true;
       g = undefined;
       gtree = undefined;
       colors = undefined;

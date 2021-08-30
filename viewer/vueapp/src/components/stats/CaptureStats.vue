@@ -33,7 +33,7 @@
         :show-avg-tot="true"
         :action-column="true"
         :info-row="true"
-        :info-row-function="toggleStatDetail"
+        :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
         table-animation="list"
@@ -49,15 +49,13 @@
 </template>
 
 <script>
-import d3 from '../../../../public/d3.min.js';
-import cubism from '../../../../public/cubism.v1.min.js';
-import '../../../../public/highlight.min.js';
-
 import '../../cubismoverrides.css';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochTable from '../utils/Table';
+
+let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -259,6 +257,23 @@ export default {
           this.error = error.text || error;
         });
     },
+    toggleStatDetailWrapper: function (stat) {
+      import( // NOTE: imports must be in this order
+        /* webpackChunkName: "old-d3" */ 'public/d3.min.js'
+      ).then((d3Module) => {
+        oldD3 = d3Module;
+        import(
+          /* webpackChunkName: "cubism" */ 'public/cubism.v1.min.js'
+        ).then((cubismModule) => {
+          cubism = cubismModule;
+          import(
+            /* webpackChunkName: "highlight" */ 'public/highlight.min.js'
+          ).then((highlightModule) => {
+            this.toggleStatDetail(stat);
+          });
+        });
+      });
+    },
     toggleStatDetail: function (stat) {
       if (!stat.opened) { return; }
       const self = this;
@@ -314,7 +329,7 @@ export default {
         }
       }
 
-      d3.select('#moreInfo-' + id).call(function (div) {
+      oldD3.select('#moreInfo-' + id).call(function (div) {
         if (div[0][0]) {
           div.append('div')
             .attr('class', 'axis')

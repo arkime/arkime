@@ -88,9 +88,9 @@
 
             <!-- min connections select -->
             <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
-                <span class="input-group-text">
+              <div class="input-group-prepend help-cursor">
+                <span class="input-group-text"
+                  v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
                   Min. Connections
                 </span>
               </div>
@@ -441,11 +441,11 @@ import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
 // import external
 import Vue from 'vue';
-import * as d3 from 'd3';
-import saveSvgAsPng from 'save-svg-as-png';
 import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
+// lazy import these
+let d3, saveSvgAsPng;
 
 // d3 force directed graph vars/functions ---------------------------------- */
 let nodeFillColors;
@@ -564,7 +564,6 @@ export default {
       loading: true,
       settings: {}, // user settings
       recordsFiltered: 0,
-      fields: [],
       fieldsMap: {},
       fieldQuery: '',
       srcFieldTypeahead: undefined,
@@ -643,6 +642,9 @@ export default {
         settings.connLinkFields = newValue;
         this.$store.commit('setUserSettings', settings);
       }
+    },
+    fields () {
+      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
     }
   },
   watch: {
@@ -693,20 +695,12 @@ export default {
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
 
-    FieldService.get(true, true)
-      .then((result) => {
-        this.fields = result;
+    this.setupFields();
+    this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
+    this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
 
-        this.setupFields();
-
-        this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
-        this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
-
-        // IMPORTANT: this kicks off loading data and drawing the graph
-        this.cancelAndLoad(true);
-      }).catch((error) => {
-        this.error = error.text || error;
-      });
+    // IMPORTANT: this kicks off loading data and drawing the graph
+    this.cancelAndLoad(true);
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
@@ -741,12 +735,11 @@ export default {
       };
 
       if (pendingPromise) {
-        ConfigService.cancelEsTask(pendingPromise.cancelId)
-          .then((response) => {
-            clientCancel();
-          }).catch((error) => {
-            clientCancel();
-          });
+        ConfigService.cancelEsTask(pendingPromise.cancelId).then((response) => {
+          clientCancel();
+        }).catch((error) => {
+          clientCancel();
+        });
       } else if (runNewQuery) {
         this.loadData();
       }
@@ -886,11 +879,16 @@ export default {
       svg.transition().duration(500).call(zoom.scaleBy, direction);
     },
     exportPng: function () {
-      saveSvgAsPng.saveSvgAsPng(
-        document.getElementById('graphSvg'),
-        'connections.png',
-        { backgroundColor: '#FFFFFF' }
-      );
+      import(
+        /* webpackChunkName: "saveSvgAsPng" */ 'save-svg-as-png'
+      ).then((saveSvgAsPngModule) => {
+        saveSvgAsPng = saveSvgAsPngModule;
+        saveSvgAsPng.saveSvgAsPng(
+          document.getElementById('graphSvg'),
+          'connections.png',
+          { backgroundColor: '#FFFFFF' }
+        );
+      });
     },
     updateTextSize: function (direction) {
       this.fontSize = direction > 0
@@ -909,7 +907,7 @@ export default {
         const availableCluster = this.$store.state.esCluster.availableCluster.active;
         const selection = Utils.checkClusterSelection(this.query.cluster, availableCluster);
         if (!selection.valid) { // invlaid selection
-          this.drawGraph({ nodes: [], links: [] }); // draw empty graph
+          this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
           this.recordsFiltered = 0;
           pendingPromise = null;
           this.error = selection.error;
@@ -950,7 +948,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsFiltered = response.data.recordsFiltered;
-        this.drawGraph(response.data);
+        this.drawGraphWrapper(response.data);
       }).catch((error) => {
         pendingPromise = null;
         this.loading = false;
@@ -980,6 +978,12 @@ export default {
       this.user.settings.connLinkFields = this.linkFields;
 
       UserService.saveSettings(this.user.settings, this.user.userId);
+    },
+    drawGraphWrapper: function (data) {
+      import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
+        d3 = d3Module;
+        this.drawGraph(data);
+      });
     },
     drawGraph: function (data) {
       if (svg) { // remove any existing nodes

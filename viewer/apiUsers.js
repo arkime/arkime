@@ -106,6 +106,87 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   }
 
+  uModule.getCurrentUser = (req) => {
+    const userProps = [
+      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
+      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
+    ];
+
+    const clone = {};
+
+    for (const prop of userProps) {
+      if (req.user[prop]) {
+        clone[prop] = req.user[prop];
+      }
+    }
+
+    clone.canUpload = internals.allowUploads;
+
+    // If esAdminUser is set use that, other wise use createEnable privilege
+    if (internals.esAdminUsersSet) {
+      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+    } else {
+      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+    }
+
+    // If no settings, use defaults
+    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
+
+    // Use settingsDefaults for any settings that are missing
+    for (const item in internals.settingDefaults) {
+      if (clone.settings[item] === undefined) {
+        clone.settings[item] = internals.settingDefaults[item];
+      }
+    }
+
+    return clone;
+  };
+
+  uModule.getViews = async (req, cb) => {
+    if (!req.settingUser) { return {}; }
+
+    // Clone the views so we don't modify that cached user
+    const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
+
+    Db.getUser('_moloch_shared', (err, sharedUser) => {
+      if (sharedUser && sharedUser.found) {
+        sharedUser = sharedUser._source;
+        for (const viewName in sharedUser.views) {
+          // check for views with the same name as a shared view so user specific views don't get overwritten
+          let sharedViewName = viewName;
+          if (views[sharedViewName] && !views[sharedViewName].shared) {
+            sharedViewName = `shared:${sharedViewName}`;
+          }
+          views[sharedViewName] = sharedUser.views[viewName];
+        }
+      }
+
+      // don't send error, just send views that we could get
+      return cb(null, views);
+    });
+  };
+
+  uModule.findUserState = (stateName, user) => {
+    if (!user.tableStates || !user.tableStates[stateName]) {
+      return {};
+    }
+
+    // Fix for new names
+    if (stateName === 'sessionsNew' && user.tableStates && user.tableStates.sessionsNew) {
+      const item = user.tableStates.sessionsNew;
+      if (item.visibleHeaders) {
+        item.visibleHeaders = item.visibleHeaders.map(ViewerUtils.oldDB2newDB);
+      }
+      if (item.order && item.order.length > 0) {
+        item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
+      }
+    }
+
+    return user.tableStates[stateName];
+  };
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -211,41 +292,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeUser} user - The currently logged in user.
    */
   uModule.getUser = (req, res) => {
-    const userProps = [
-      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
-      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
-    ];
-
-    const clone = {};
-
-    for (const prop of userProps) {
-      if (req.user[prop]) {
-        clone[prop] = req.user[prop];
-      }
-    }
-
-    clone.canUpload = internals.allowUploads;
-
-    // If esAdminUser is set use that, other wise use createEnable privilege
-    if (internals.esAdminUsersSet) {
-      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
-    } else {
-      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
-    }
-
-    // If no settings, use defaults
-    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
-
-    // Use settingsDefaults for any settings that are missing
-    for (const item in internals.settingDefaults) {
-      if (clone.settings[item] === undefined) {
-        clone.settings[item] = internals.settingDefaults[item];
-      }
-    }
-
-    return res.send(clone);
+    return res.send(uModule.getCurrentUser(req));
   };
 
   /**
@@ -655,25 +702,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
   uModule.getUserViews = (req, res) => {
-    if (!req.settingUser) { return res.send({}); }
-
-    // Clone the views so we don't modify that cached user
-    const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
-
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser && sharedUser.found) {
-        sharedUser = sharedUser._source;
-        for (const viewName in sharedUser.views) {
-          // check for views with the same name as a shared view so user specific views don't get overwritten
-          let sharedViewName = viewName;
-          if (views[sharedViewName] && !views[sharedViewName].shared) {
-            sharedViewName = `shared:${sharedViewName}`;
-          }
-          views[sharedViewName] = sharedUser.views[viewName];
-        }
-      }
-
-      return res.send(views);
+    uModule.getViews(req, (err, views) => {
+      res.send(views);
     });
   };
 
@@ -1562,22 +1592,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {object} tableState - The table state requested.
    */
   uModule.getUserState = (req, res) => {
-    if (!req.user.tableStates || !req.user.tableStates[req.params.name]) {
-      return res.send('{}');
-    }
-
-    // Fix for new names
-    if (req.params.name === 'sessionsNew' && req.user.tableStates && req.user.tableStates.sessionsNew) {
-      const item = req.user.tableStates.sessionsNew;
-      if (item.visibleHeaders) {
-        item.visibleHeaders = item.visibleHeaders.map(ViewerUtils.oldDB2newDB);
-      }
-      if (item.order && item.order.length > 0) {
-        item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-      }
-    }
-
-    return res.send(req.user.tableStates[req.params.name]);
+    return res.send(uModule.findUserState(req.params.name, req.user));
   };
 
   /**

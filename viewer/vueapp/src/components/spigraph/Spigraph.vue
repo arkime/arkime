@@ -268,7 +268,6 @@ export default {
   data: function () {
     return {
       error: '',
-      fields: [],
       loading: true,
       filtered: 0,
       graphData: undefined,
@@ -320,6 +319,9 @@ export default {
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    fields: function () {
+      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
     }
   },
   watch: {
@@ -343,23 +345,16 @@ export default {
       }
     }
   },
-  created: function () {
-    FieldService.get(true, true)
-      .then((result) => {
-        this.fields = result;
-        const field = FieldService.getField(this.query.exp, this.fields);
-        if (field) {
-          this.fieldTypeahead = field.friendlyName;
-          this.baseField = field.exp;
-          this.query.exp = field.exp;
+  mounted: function () {
+    const field = FieldService.getField(this.query.exp, this.fields, true);
+    if (field) {
+      this.fieldTypeahead = field.friendlyName;
+      this.baseField = field.exp;
+      this.query.exp = field.exp;
 
-          this.cancelAndLoad(true);
-          this.changeRefreshInterval();
-        }
-      }).catch((error) => {
-        this.loading = false;
-        this.error = error.text || error;
-      });
+      this.cancelAndLoad(true);
+      this.changeRefreshInterval();
+    }
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -389,12 +384,11 @@ export default {
       };
 
       if (pendingPromise) {
-        ConfigService.cancelEsTask(pendingPromise.cancelId)
-          .then((response) => {
-            clientCancel();
-          }).catch((error) => {
-            clientCancel();
-          });
+        ConfigService.cancelEsTask(pendingPromise.cancelId).then((response) => {
+          clientCancel();
+        }).catch((error) => {
+          clientCancel();
+        });
       } else if (runNewQuery) {
         this.loadData();
       }

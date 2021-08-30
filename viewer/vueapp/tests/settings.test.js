@@ -16,7 +16,7 @@ import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
 const {
   userSettings, userWithSettings, views, periodicQueries, fields, notifiers,
-  notifierTypes, shortcuts, users
+  notifierTypes, shortcuts, users, fieldsMap
 } = require('./consts');
 
 console.info = jest.fn(); // ignore vue dev mode info
@@ -38,7 +38,9 @@ jest.mock('../src/components/settings/SettingsService');
 const store = {
   state: {
     views,
-    user: userWithSettings
+    user: userWithSettings,
+    fieldsArr: fields,
+    fieldsMap
   },
   mutations: {
     setViews: jest.fn()

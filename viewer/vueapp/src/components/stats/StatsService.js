@@ -7,6 +7,24 @@ const fetchedCapStartTimes = [];
 
 export default {
   /**
+   * Gets the elasticsearch health stats
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getESHealth: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/eshealth').then((response) => {
+        store.commit('setESHealthError', undefined);
+        store.commit('setESHealth', response.data);
+        resolve(response.data);
+      }).catch((error) => {
+        store.commit('setESHealthError', error.text || error);
+        reject(error);
+      });
+    });
+  },
+
+  /**
    * Gets a list capture start times
    * @param {string} basePath The page that is requesting this data
                               Determine whether it's toggled on/off for this page

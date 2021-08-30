@@ -5,9 +5,56 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
 
-module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
+module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
   const mModule = {};
 
+  // --------------------------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------------------------
+  async function getClusters () {
+    const clusters = { active: [], inactive: [] };
+    if (Config.get('multiES', false)) {
+      try {
+        const { body: results } = await Db.getClusterDetails();
+        clusters.active = results.active;
+        clusters.inactive = results.inactive;
+        return clusters;
+      } catch (err) {
+        console.log('ERROR - getClusters', util.inspect(err, false, 50));
+        return clusters;
+      }
+    } else {
+      return clusters;
+    }
+  }
+
+  function remoteClusters () {
+    function cloneClusters (clusters) {
+      const clone = {};
+
+      for (const key in clusters) {
+        if (clusters[key]) {
+          const cluster = clusters[key];
+          clone[key] = {
+            name: cluster.name,
+            url: cluster.url
+          };
+        }
+      }
+
+      return clone;
+    }
+
+    if (!internals.remoteClusters) {
+      return {};
+    }
+
+    return cloneClusters(internals.remoteClusters);
+  }
+
+  // --------------------------------------------------------------------------
+  // APIs
+  // --------------------------------------------------------------------------
   // field apis ---------------------------------------------------------------
   /**
    * GET - /api/fields
@@ -243,19 +290,80 @@ module.exports = (Config, Db, internals, sessionAPIs, ViewerUtils) => {
    * @returns {Array} inactive - The inactive Arkime clusters.
    */
   mModule.getClusters = async (req, res) => {
-    const clusters = { active: [], inactive: [] };
-    if (Config.get('multiES', false)) {
-      try {
-        const { body: results } = await Db.getClusterDetails();
-        clusters.active = results.active;
-        clusters.inactive = results.inactive;
-        return res.send(clusters);
+    const clusters = await getClusters();
+    res.send(clusters);
+  };
+
+  /**
+   * GET - /api/remoteclusters
+   *
+   * Retrieves a list of known configured remote Arkime clusters.
+   * @name /remoteclusters
+   * @returns {Object} remoteclusters - Key/value pairs of remote Arkime clusters, the key being the name of the cluster
+   */
+  mModule.getRemoteClusters = (req, res) => {
+    const clusters = remoteClusters();
+
+    if (!Object.keys(clusters).length) {
+      res.status(404);
+      return res.send('Cannot locate remote clusters');
+    }
+
+    return res.send(clusters);
+  };
+
+  // app info apis ------------------------------------------------------------
+  /**
+   * GET - /api/appinfo
+   *
+   * Retrieves information that the app uses on every page:
+   * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldshistory
+   * @name /appinfo
+   * @returns {ESHealth} eshealth - The Elasticsearch cluster health status and information.
+   * @returns {ArkimeUser} currentuser - The currently logged in user
+   * @returns {ArkimeView[]} views - A list of views accessible to the logged in user
+   * @returns {Object} remoteclusters - A list of known remote Arkime clusters
+   * @returns {Array} clusters - A list of known configured Arkime clusters (if in Mulit Viewer mode)
+   * @returns {Array} fields - Available database field objects pertaining to sessions
+   * @returns {Array} fieldsmap - Available database field objects pertaining to sessions
+   * @returns {Object} fieldshistory - The user's field history for the search expression input
+   */
+  mModule.getAppInfo = async (req, res) => {
+    try {
+      let esHealth, esHealthError;
+      try { // deal with es health errors
+        esHealth = await Db.healthCache();
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/clusters`, util.inspect(err, false, 50));
-        return res.send(clusters);
+        esHealthError = err.toString();
       }
-    } else {
-      return res.send(clusters);
+
+      // these always returns something and never return an error
+      const clusters = await getClusters(); // { active: [], inactive: [] }
+      const remoteclusters = remoteClusters(); // {}
+      const fieldhistory = userAPIs.findUserState('fieldHistory', req.user); // {}
+      const getViews = util.promisify(userAPIs.getViews);
+      const views = await getViews(req); // {}
+
+      // can't fetch user or fields is FATAL, so let it fall through to outer
+      // catch and send an error to the client
+      const user = userAPIs.getCurrentUser(req);
+      const fieldsArr = internals.fieldsArr;
+      const fieldsMap = JSON.parse(internals.fieldsMap);
+
+      return res.send({
+        esHealth,
+        esHealthError,
+        views,
+        fieldhistory,
+        remoteclusters,
+        clusters,
+        user,
+        fieldsArr,
+        fieldsMap
+      });
+    } catch (err) {
+      console.log('ERROR - /api/appinfo', err);
+      return res.serverError(500, err.toString());
     }
   };
 

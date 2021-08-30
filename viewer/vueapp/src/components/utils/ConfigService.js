@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import store from '../../store';
 
 let _molochClustersCache;
 let getMolochClustersQIP;
@@ -6,6 +7,22 @@ let _molochClickablesCache;
 let getMolochClickablesQIP;
 
 export default {
+  /**
+   * Gets the information that every page in the application needs to run
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getAppInfo: function () {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/appinfo').then((response) => {
+        store.commit('setAppInfo', response.data);
+        resolve(response.data);
+      }).catch((error) => {
+        console.log('ERROR - fetching app info. Arkime app will not function!', error);
+        reject(error);
+      });
+    });
+  },
 
   /**
    * Gets the available moloch clusters and caches the results

@@ -161,14 +161,12 @@ export default {
     return {
       activeIdx: -1,
       results: [],
-      fields: null,
       loadingError: '',
       loadingValues: false,
       caretPos: 0,
       cancellablePromise: null,
       resultsElement: null,
       // field history vars
-      fieldHistory: [],
       fieldHistoryResults: [],
       lastTokenWasField: false,
       autocompletingField: false,
@@ -196,8 +194,14 @@ export default {
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     },
-    views: function () { // set by search.vue
+    views: function () {
       return this.$store.state.views;
+    },
+    fieldHistory: function () {
+      return this.$store.state.fieldhistory;
+    },
+    fields: function () {
+      return this.$store.state.fieldsArr;
     }
   },
   watch: {
@@ -219,14 +223,6 @@ export default {
     if (this.$route.query.expression) {
       this.expression = this.$route.query.expression;
     }
-
-    this.getFields();
-
-    UserService.getState('fieldHistory').then((response) => {
-      this.fieldHistory = response.data.fields || [];
-    }).catch((err) => {
-      console.log('ERROR - fetching state for fieldHistory', err);
-    });
   },
   mounted: function () {
     // set the results element for keyup event handler
@@ -519,7 +515,7 @@ export default {
 
       // display operators (depending on field type)
       let token = tokens[tokens.length - 2];
-      let field = this.fields[token];
+      let field = FieldService.getField(token, this.fields, true);
 
       if (field) { // add field to the history
         this.addFieldToHistory(field);
@@ -544,7 +540,7 @@ export default {
       const operatorToken = token;
 
       token = tokens[tokens.length - 3];
-      field = this.fields[token];
+      field = FieldService.getField(token, this.fields, true);
 
       if (!field) {
         if (/^[!<=>]/.test(token)) {
@@ -678,14 +674,6 @@ export default {
         this.loadingError = '';
       }
     },
-    getFields: function () {
-      FieldService.get().then((result) => {
-        this.fields = result;
-        this.loadingError = '';
-      }).catch((error) => {
-        this.loadingError = error;
-      });
-    },
     /**
      * Finds matching items from an array or map of values
      * @param {string} strToMatch  The string to compare with the values
@@ -698,24 +686,22 @@ export default {
       let exact = false;
 
       for (const key in values) {
-        if (values[key]) {
-          let str;
-          const field = values[key];
+        let str;
+        const field = values[key];
 
-          strToMatch = strToMatch.toLowerCase();
+        strToMatch = strToMatch.toLowerCase();
 
-          if (field.exp) {
-            str = field.exp.toLowerCase();
-          } else {
-            str = field.toLowerCase();
-          }
+        if (field.exp) {
+          str = field.exp.toLowerCase();
+        } else {
+          str = field.toLowerCase();
+        }
 
-          if (str === strToMatch) {
-            exact = field;
-          } else {
-            const match = str.match(strToMatch);
-            if (match) { results.push(field); }
-          }
+        if (str === strToMatch) {
+          exact = field;
+        } else {
+          const match = str.match(strToMatch);
+          if (match) { results.push(field); }
         }
       }
 

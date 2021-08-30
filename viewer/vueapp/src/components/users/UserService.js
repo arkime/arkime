@@ -271,16 +271,16 @@ export default {
   /**
    * Deletes a user's specified view
    * @param {Object} view       The view object to be deleted
-   * @param {string} name       The name of the view to delete
+   * @param {string} viewName   The name of the view to delete
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteView (view, userId) {
+  deleteView (view, viewName, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/view/${view.name}`,
+        url: `api/user/view/${viewName}`,
         method: 'DELETE',
         data: view,
         params: { userId: userId }

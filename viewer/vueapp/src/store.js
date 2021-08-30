@@ -7,6 +7,21 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    esHealth: undefined,
+    esHealthError: undefined,
+    user: undefined,
+    views: undefined,
+    remotecluster: undefined,
+    esCluster: {
+      availableCluster: {
+        active: [],
+        inactive: []
+      },
+      selectedCluster: []
+    },
+    fieldsArr: [],
+    fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
+    fieldhistory: [],
     timeRange: 1,
     expression: undefined,
     time: {
@@ -26,21 +41,12 @@ const store = new Vuex.Store({
     focusTimeRange: undefined,
     shiftKeyHold: false,
     displayKeyboardShortcutsHelp: undefined,
-    user: undefined,
     responseTime: undefined,
     sessionsTableState: undefined,
-    views: undefined,
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
     stickySessionsBtn: false,
-    esCluster: {
-      availableCluster: {
-        active: [],
-        inactive: []
-      },
-      selectedCluster: []
-    },
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }]
   },
@@ -198,6 +204,23 @@ const store = new Vuex.Store({
     },
     setCapStartTimes (state, value) {
       state.capStartTimes = value;
+    },
+    setESHealth (state, value) {
+      state.esHealth = value;
+    },
+    setESHealthError (state, value) {
+      state.esHealthError = value;
+    },
+    setAppInfo (state, value) {
+      state.esHealth = value.esHealth;
+      state.esHealthError = value.esHealthError;
+      state.user = value.user;
+      state.views = value.views;
+      state.fieldsArr = value.fieldsArr;
+      state.fieldsMap = value.fieldsMap;
+      state.remoteclusters = value.remoteclusters;
+      state.fieldhistory = value.fieldhistory.fields;
+      state.esCluster.availableCluster = value.clusters;
     }
   }
 });

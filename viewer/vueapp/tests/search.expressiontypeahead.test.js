@@ -12,7 +12,7 @@ import ExpressionTypeahead from '../src/components/search/ExpressionTypeahead.vu
 import UserService from '../src/components/users/UserService';
 import FieldService from '../src/components/search/FieldService';
 import countries from '../src/components/search/countries.json';
-const { fieldsMap } = require('./consts');
+const { fields, fieldsMap } = require('./consts');
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -22,14 +22,15 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
 jest.mock('../src/components/users/UserService');
-jest.mock('../src/components/search/FieldService');
 
 const store = {
   state: {
     expression: '',
     focusSearch: false,
     shiftKeyHold: false,
-    views: {}
+    views: {},
+    fieldsArr: fields,
+    fieldhistory: []
   },
   mutations: {
     setFocusSearch: jest.fn(),
@@ -48,7 +49,6 @@ function addCaretPosition (input, pos) {
 beforeEach(() => {
   UserService.getState = jest.fn().mockResolvedValue({ data: {} });
   UserService.saveState = jest.fn().mockResolvedValue({});
-  FieldService.get = jest.fn().mockResolvedValue(fieldsMap);
   FieldService.getCountryCodes = jest.fn().mockResolvedValue(countries);
   FieldService.getValues = jest.fn(() => {
     const source = Vue.axios.CancelToken.source();
