@@ -12,7 +12,7 @@
  },
  "file:ip": {
   "file": "../tests/ip.wise",
-  "tags": "ipwise",
+  "tags": "ipwise,ipwise2",
   "type": "ip",
   "format": "tagger"
  },

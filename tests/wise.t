@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 100;
+use Test::More tests => 102;
 use MolochTest;
 use Cwd;
 use URI::Escape;
@@ -19,6 +19,7 @@ $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/ip/10.0.0.3")
 eq_or_diff(\@wise, from_json('[
 {"field":"email.x-priority","len":3,"value":"999"},
 {"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"ipwisecsv"},
 {"field":"tags","len":9,"value":"wisebyip1"},
 {"field":"irc.channel","len":16,"value":"wisebyip1channel"}
@@ -30,6 +31,7 @@ $wise = $MolochTest::userAgent->get("http://$MolochTest::host:8081/file:ip/ip/10
 eq_or_diff(\@wise, from_json('[
 {"field":"email.x-priority","len":3,"value":"999"},
 {"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip1"},
 {"field":"irc.channel","len":16,"value":"wisebyip1channel"}
 ]'),"file:ip 10.0.0.3");
@@ -70,24 +72,28 @@ eq_or_diff(\@wise,
 from_json('[
 {"key":"10.0.0.3","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip1"},
 {"field":"irc.channel","len":16,"value":"wisebyip1channel"},
 {"field":"email.x-priority","len":3,"value":"999"}]
 },
 {"key":"128.128.128.0/24","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
 {"field":"test.ip","len":11,"value":"21.21.21.21"}]
 },
 {"key":"192.168.177.160","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip2"},
 {"field":"mysql.ver","len":21,"value":"wisebyip2mysqlversion"},
 {"field":"test.ip","len":11,"value":"21.21.21.21"}]
 },
 {"key":"fe80::211:25ff:fe82:95b5","ops":
 [{"field":"tags","len":6,"value":"ipwise"},
+{"field":"tags","len":7,"value":"ipwise2"},
 {"field":"tags","len":9,"value":"wisebyip3"},
 {"field":"mysql.ver","len":21,"value":"wisebyip3mysqlversion"},
 {"field":"test.ip","len":11,"value":"22.22.22.22"}]
@@ -138,6 +144,7 @@ my $pwd = "*/pcap";
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=wisebyhost2&&mysql.ver=wisebyhost2mysqlversion&&test.ip=101.101.101.101"));
 
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=ipwise"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=ipwise2"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&ip=10.0.0.3"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&tags=wisebyip1&&irc.channel=wisebyip1channel&&email.x-priority=999"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks5-rdp.pcap||file=$pwd/bt-udp.pcap||file=$pwd/bigendian.pcap)&&ip=192.168.177.160"));
