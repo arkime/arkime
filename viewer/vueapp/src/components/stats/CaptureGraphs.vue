@@ -33,14 +33,12 @@
 </template>
 
 <script>
-import d3 from 'public/d3.min.js';
-import cubism from 'public/cubism.v1.min.js';
-import 'public/highlight.min.js';
-
 import '../../cubismoverrides.css';
 import MolochPaging from '../utils/Pagination';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
+
+let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let initialized; // whether the graph has been initialized
@@ -120,7 +118,7 @@ export default {
       }
     }
   },
-  created: function () {
+  mounted: function () {
     this.loadData();
 
     // watch for the user to leave or return to the page
@@ -157,24 +155,40 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/stats', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data;
+      this.$http.get('api/stats', { params: this.query }).then((response) => {
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data;
 
-          if (!this.stats.data) { return; }
+        if (!this.stats.data) { return; }
 
-          if (this.stats.data && !initialized) {
-            initialized = true; // only make the graph when page loads or tab switched to 0
-            this.makeStatsGraph(this.graphType, parseInt(this.graphInterval, 10));
-          }
-        }, (error) => {
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
+        if (this.stats.data && !initialized) {
+          initialized = true; // only make the graph when page loads or tab switched to 0
+          this.makeStatsGraphWrapper(this.graphType, parseInt(this.graphInterval, 10));
+        }
+      }).catch((error) => {
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      });
+    },
+    makeStatsGraphWrapper: function (metricName, interval) {
+      import( // NOTE: imports must be in this order
+        /* webpackChunkName: "old-d3" */ 'public/d3.min.js'
+      ).then((d3Module) => {
+        oldD3 = d3Module;
+        import(
+          /* webpackChunkName: "cubism" */ 'public/cubism.v1.min.js'
+        ).then((cubismModule) => {
+          cubism = cubismModule;
+          import(
+            /* webpackChunkName: "highlight" */ 'public/highlight.min.js'
+          ).then((highlightModule) => {
+            this.makeStatsGraph(metricName, interval);
+          });
         });
+      });
     },
     makeStatsGraph: function (metricName, interval) {
       const self = this;
@@ -219,7 +233,7 @@ export default {
         }
       }
 
-      d3.select('#statsGraph').call((div) => {
+      oldD3.select('#statsGraph').call((div) => {
         const metrics = [];
         for (let i = 0, ilen = nodes.length; i < ilen; i++) {
           metrics.push(metric(nodes[i]));
@@ -231,7 +245,7 @@ export default {
 
           const timeStr = self.graphInterval >= 600 ? '%m/%d %H:%M:%S' : '%H:%M:%S';
 
-          const timeFormat = self.user.settings.timezone === 'gmt' ? d3.time.format.utc(timeStr + 'Z') : d3.time.format(timeStr);
+          const timeFormat = self.user.settings.timezone === 'gmt' ? oldD3.time.format.utc(timeStr + 'Z') : oldD3.time.format(timeStr);
 
           div.append('div')
             .attr('class', 'axis')
