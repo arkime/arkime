@@ -106,6 +106,28 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   }
 
+  function userColumns (user) {
+    if (!user) { return []; }
+
+    // Fix for new names
+    if (user.columnConfigs) {
+      for (const key in user.columnConfigs) {
+        const item = user.columnConfigs[key];
+        item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
+        if (item.order && item.order.length > 0) {
+          item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
+        }
+      }
+    }
+
+    return user.columnConfigs || [];
+  }
+
+  function userSpiview (user) {
+    if (!user) { return []; }
+    return user.spiviewFieldConfigs || [];
+  }
+
   uModule.getCurrentUser = (req) => {
     const userProps = [
       'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
@@ -1221,20 +1243,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
   uModule.getUserColumns = (req, res) => {
-    if (!req.settingUser) { return res.send([]); }
-
-    // Fix for new names
-    if (req.settingUser.columnConfigs) {
-      for (const key in req.settingUser.columnConfigs) {
-        const item = req.settingUser.columnConfigs[key];
-        item.columns = item.columns.map(ViewerUtils.oldDB2newDB);
-        if (item.order && item.order.length > 0) {
-          item.order[0][0] = ViewerUtils.oldDB2newDB(item.order[0][0]);
-        }
-      }
-    }
-
-    return res.send(req.settingUser.columnConfigs || []);
+    return res.send(userColumns(req.settingUser));
   };
 
   /**
@@ -1395,9 +1404,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
    */
   uModule.getUserSpiviewFields = (req, res) => {
-    if (!req.settingUser) { return res.send([]); }
-
-    return res.send(req.settingUser.spiviewFieldConfigs || []);
+    return res.send(userSpiview(req.settingUser));
   };
 
   /**
@@ -1630,6 +1637,66 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         }));
       });
     });
+  };
+
+  /**
+   * GET - /api/user/config/:page
+   *
+   * Fetches the configuration information for a UI page for a user.
+   * @name /user/config/:page
+   * @returns {object} config The configuration data for the page
+   */
+  uModule.getPageConfig = (req, res) => {
+    switch (req.params.page) {
+    case 'sessions': {
+      const colConfigs = userColumns(req.settingUser);
+      const tableState = uModule.findUserState('sessionsNew', req.user);
+      const colWidths = uModule.findUserState('sessionsColWidths', req.user);
+      return res.send({ colWidths, tableState, colConfigs });
+    }
+    case 'spiview': {
+      const fieldConfigs = userSpiview(req.settingUser);
+      const spiviewFields = uModule.findUserState('spiview', req.user);
+      return res.send({ fieldConfigs, spiviewFields });
+    }
+    case 'connections': {
+      const fieldHistoryConnectionsSrc = uModule.findUserState('fieldHistoryConnectionsSrc', req.user);
+      const fieldHistoryConnectionsDst = uModule.findUserState('fieldHistoryConnectionsDst', req.user);
+      return res.send({ fieldHistoryConnectionsSrc, fieldHistoryConnectionsDst });
+    }
+    case 'files': {
+      const tableState = uModule.findUserState('fieldsCols', req.user);
+      const columnWidths = uModule.findUserState('filesColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'captureStats': {
+      const tableState = uModule.findUserState('captureStatsCols', req.user);
+      const columnWidths = uModule.findUserState('captureStatsColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'esIndices': {
+      const tableState = uModule.findUserState('esIndicesCols', req.user);
+      const columnWidths = uModule.findUserState('esIndicesColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'esNodes': {
+      const tableState = uModule.findUserState('esNodesCols', req.user);
+      const columnWidths = uModule.findUserState('esNodesColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'esRecovery': {
+      const tableState = uModule.findUserState('esRecoveryCols', req.user);
+      const columnWidths = uModule.findUserState('esRecoveryColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'esTasks': {
+      const tableState = uModule.findUserState('esTasksCols', req.user);
+      const columnWidths = uModule.findUserState('esTasksColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    default:
+      return res.serverError(501, 'Requested page is not supported');
+    }
   };
 
   return uModule;

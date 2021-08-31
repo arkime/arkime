@@ -29,7 +29,7 @@ const store = {
 const $route = { query: {} };
 
 test('file page no results', async () => {
-  UserService.getState = jest.fn().mockResolvedValue({});
+  UserService.getPageConfig = jest.fn().mockResolvedValue({});
   FileService.get = jest.fn().mockResolvedValue({
     data: {
       data: [],

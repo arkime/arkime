@@ -712,9 +712,7 @@ export default {
     };
   },
   created: function () {
-    this.getColumnWidths();
-    this.getTableState(); // IMPORTANT: kicks off the initial search query!
-    this.getCustomColumnConfigurations();
+    this.getSessionsConfig(); // IMPORTANT: kicks off the initial search query!
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -1387,16 +1385,14 @@ export default {
       this.destroyColResizable();
       this.$nextTick(() => { this.initializeColResizable(); });
     },
-    /* Gets the column widths of the table if they exist */
-    getColumnWidths: function () {
-      UserService.getState('sessionsColWidths').then((response) => {
-        this.colWidths = response.data || {};
-      });
-    },
-    /* Gets the state of the table (sort order and column order/visibility) */
-    getTableState: function () {
-      UserService.getState('sessionsNew').then((response) => {
-        this.tableState = response.data;
+    /* gets all the information to display the table and custom col config dropdown
+       widths of columns, table columns and sort order, custom col configs */
+    getSessionsConfig: function () {
+      UserService.getPageConfig('sessions').then((response) => {
+        this.colWidths = response.colWidths;
+        this.colConfigs = response.colConfigs;
+        this.tableState = response.tableState;
+
         this.$store.commit('setSessionsTableState', this.tableState);
         if (Object.keys(this.tableState).length === 0 ||
           !this.tableState.visibleHeaders || !this.tableState.order) {
@@ -1410,16 +1406,8 @@ export default {
 
         this.setupUserSettings(); // IMPORTANT: kicks off the initial search query!
       }).catch((error) => {
-        this.loading = false;
         this.error = error;
-      });
-    },
-    /* Gets the current user's custom column configurations */
-    getCustomColumnConfigurations: function () {
-      UserService.getColumnConfigs().then((response) => {
-        this.colConfigs = response;
-      }).catch((error) => {
-        this.colConfigError = error.text;
+        this.loading = false;
       });
     },
     setupUserSettings: function () {

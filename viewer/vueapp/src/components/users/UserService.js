@@ -748,6 +748,22 @@ export default {
     });
   },
 
+  /**
+   * Gets the page configruation variables
+   * @param {string} page The page to request the configuration for
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getPageConfig (page) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get(`api/user/config/${page}`).then((response) => {
+        resolve(response.data);
+      }).catch((error) => {
+        reject(error);
+      });
+    });
+  },
+
   /* internal methods ---------------------------------------------------- */
   /**
    * Adds the name as a property on a view (instead of just key)
