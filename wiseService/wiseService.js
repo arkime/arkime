@@ -1993,6 +1993,8 @@ function buildConfigAndStart () {
       console.log('Config', internals.config);
     }
 
+    if (config.wiseService === undefined) { config.wiseService = {}; }
+
     internals.updateTime = internals.config.wiseService.updateTime || 0;
     delete internals.config.wiseService.updateTime;
 
