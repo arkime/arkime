@@ -1657,8 +1657,12 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       const fieldConfigs = userSpiview(req.settingUser);
       const spiviewFields = uModule.findUserState('spiview', req.user);
       return res.send({ fieldConfigs, spiviewFields });
+    case 'connections':
+      const fieldHistoryConnectionsSrc = uModule.findUserState('fieldHistoryConnectionsSrc', req.user);
+      const fieldHistoryConnectionsDst = uModule.findUserState('fieldHistoryConnectionsDst', req.user);
+      return res.send({ fieldHistoryConnectionsSrc, fieldHistoryConnectionsDst });
     default:
-      return res.serverError(404, 'Cannot find the requested page');
+      return res.serverError(501, 'Requested page is not supported');
     }
   };
 

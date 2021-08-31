@@ -68,7 +68,8 @@ export default {
     initialValue: String,
     queryParam: String,
     page: String,
-    dropup: Boolean
+    dropup: Boolean,
+    history: Array
   },
   data: function () {
     return {
@@ -76,8 +77,8 @@ export default {
       filteredFields: this.fields,
       value: this.initialValue,
       current: 0, // select first field
-      fieldHistory: [],
-      filteredFieldHistory: []
+      fieldHistory: this.history || [],
+      filteredFieldHistory: this.history || []
     };
   },
   watch: {
@@ -106,12 +107,12 @@ export default {
     // is undefined and we need to fill the input with the initial value)
     this.constantInitialVal = this.initialValue;
 
-    if (this.page) { // get the field history for this page
-      UserService.getState(`fieldHistory${this.page}`)
-        .then((response) => {
-          this.fieldHistory = response.data.fields || [];
-          this.filteredFieldHistory = response.data.fields || [];
-        });
+    if (this.page && !this.history) {
+      // get the field history for this page
+      UserService.getState(`fieldHistory${this.page}`).then((response) => {
+        this.fieldHistory = response.data.fields || [];
+        this.filteredFieldHistory = response.data.fields || [];
+      });
     }
   },
   methods: {

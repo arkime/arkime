@@ -36,7 +36,7 @@
 
             <!-- src select -->
             <div class="form-group ml-1"
-              v-if="fields && fields.length && srcFieldTypeahead">
+              v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover.bottom.d300="'Select a field for the source nodes. This is the color of a source node.'">
@@ -49,6 +49,7 @@
                   query-param="srcField"
                   :initial-value="srcFieldTypeahead"
                   @fieldSelected="changeSrcField"
+                  :history="fieldHistoryConnectionsSrc"
                   page="ConnectionsSrc">
                 </moloch-field-typeahead>
               </div>
@@ -56,7 +57,7 @@
 
             <!-- dst select -->
             <div class="form-group ml-1"
-              v-if="fields && dstFieldTypeahead">
+              v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help"
                   v-b-tooltip.hover.bottom.d300="'Select a field for the destination nodes. This is the color of a destination node.'">
@@ -69,6 +70,7 @@
                   query-param="dstField"
                   :initial-value="dstFieldTypeahead"
                   @fieldSelected="changeDstField"
+                  :history="fieldHistoryConnectionsDst"
                   page="ConnectionsDst">
                 </moloch-field-typeahead>
               </div>
@@ -580,7 +582,9 @@ export default {
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
-      multiviewer: this.$constants.MOLOCH_MULTIVIEWER
+      multiviewer: this.$constants.MOLOCH_MULTIVIEWER,
+      fieldHistoryConnectionsSrc: undefined,
+      fieldHistoryConnectionsDst: undefined
     };
   },
   computed: {
@@ -695,12 +699,16 @@ export default {
     this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
     nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
 
+    // IMPORTANT: this kicks off loading data and drawing the graph
+    this.cancelAndLoad(true);
+
+    UserService.getPageConfig('connections').then((response) => {
+      this.fieldHistoryConnectionsSrc = response.fieldHistoryConnectionsSrc.fields || [];
+      this.fieldHistoryConnectionsDst = response.fieldHistoryConnectionsDst.fields || [];
+    });
     this.setupFields();
     this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
     this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
-
-    // IMPORTANT: this kicks off loading data and drawing the graph
-    this.cancelAndLoad(true);
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
