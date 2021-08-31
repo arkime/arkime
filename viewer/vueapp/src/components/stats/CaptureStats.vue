@@ -36,6 +36,7 @@
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
+        page="captureStats"
         table-animation="list"
         table-classes="table-sm text-right small"
         table-state-name="captureStatsCols"

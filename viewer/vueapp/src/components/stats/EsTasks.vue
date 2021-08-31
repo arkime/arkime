@@ -37,6 +37,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        page="esTasks"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths">

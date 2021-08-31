@@ -27,6 +27,7 @@
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
+        page="esRecovery"
         table-classes="table-sm text-right small mt-2"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths">

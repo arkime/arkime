@@ -66,6 +66,7 @@
           :desc="query.desc"
           :sort-field="query.sortField"
           :action-column="true"
+          page="files"
           table-animation="list"
           table-classes="table-sm"
           table-state-name="fieldsCols"

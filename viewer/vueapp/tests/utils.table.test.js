@@ -21,8 +21,8 @@ const infoFn = jest.fn(() => {});
 jest.mock('../src/components/users/UserService');
 
 UserService.saveState = jest.fn().mockResolvedValue();
-UserService.getState = jest.fn().mockResolvedValue({
-  data: {
+UserService.getPageConfig = jest.fn().mockResolvedValue({
+  tableState: {
     order: [['test', 'asc']],
     visibleHeaders: ['test', 'col2']
   }
@@ -35,6 +35,7 @@ const store = {
 };
 
 const props = {
+  page: 'test',
   id: 'unique',
   loadData: loadFn,
   actionColumn: true,
@@ -85,7 +86,7 @@ test('table', async () => {
 
   await waitFor(() => {
     expect(loadFn).toHaveBeenCalled(); // load data function was called
-    expect(UserService.getState).toHaveBeenCalled(); // get state was called
+    expect(UserService.getPageConfig).toHaveBeenCalled(); // get state was called
   });
 
   getByRole('dropdown'); // displays info column dropdown btn

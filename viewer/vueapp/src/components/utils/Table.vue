@@ -332,6 +332,10 @@ export default {
       type: Boolean,
       required: true
     },
+    page: { // api endpoint to fetch the table configuration info (api/user/config/:page)
+      type: String,
+      required: true
+    },
     tableStateName: { // api endpoint to save table state (api/user/state/:tableStateName)
       type: String,
       required: true
@@ -417,8 +421,60 @@ export default {
   },
   mounted: function () {
     this.tableDiv = `#${this.id}`;
-    this.getTableState(); // IMPORTANT! this loads the data for the table
-    this.getColumnWidths();
+    // IMPORTANT! this loads the data for the table after we fetch sort field and order
+    UserService.getPageConfig(this.page).then((response) => {
+      if (response.tableState && response.tableState.order && response.tableState.visibleHeaders) {
+        // there is a saved table state for this table
+        // so apply it to sortField, desc, and column order
+        this.tableSortField = response.tableState.order[0][0];
+        this.tableDesc = response.tableState.order[0][1] === 'desc';
+        for (const c of response.tableState.visibleHeaders) {
+          for (const column of this.columns) {
+            if (column.id === c) {
+              const newCol = this.cloneColumn(column);
+              this.computedColumns.push(newCol);
+            }
+          }
+        }
+      } else {
+        // this table has not been saved, so use the defaults
+        this.displayDefaultColumns();
+      }
+
+      if (response.columnWidths) {
+        this.columnWidths = response.columnWidths || {};
+        let tableWidth = 0;
+        for (const column of this.computedColumns) {
+          for (const c in this.columnWidths) {
+            if (column.id === c) {
+              column.width = JSON.parse(JSON.stringify(this.columnWidths[c]));
+            }
+          }
+          tableWidth += column.width;
+        }
+
+        this.tableWidth = tableWidth;
+        if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
+          this.showFitButton = true;
+        }
+
+        if (!this.tableWidth) {
+          this.tableWidth = $(this.tableDiv).width();
+        }
+      }
+
+      this.initializeColResizable();
+
+      this.loadData(this.tableSortField, this.tableDesc);
+      this.initializeColDragDrop();
+    }).catch((error) => {
+      // if there's an error getting the table state,
+      // just use the default columns and fetch the data
+      this.displayDefaultColumns();
+      this.initializeColDragDrop();
+      this.initializeColResizable();
+      this.loadData(this.tableSortField, this.tableDesc);
+    });
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -674,36 +730,6 @@ export default {
       cols = undefined;
       table = undefined;
     },
-    getTableState: function () {
-      UserService.getState(this.tableStateName).then((response) => {
-        if (response.data && response.data.order && response.data.visibleHeaders) {
-          // there is a saved table state for this table
-          // so apply it to sortField, desc, and column order
-          this.tableSortField = response.data.order[0][0];
-          this.tableDesc = response.data.order[0][1] === 'desc';
-          for (const c of response.data.visibleHeaders) {
-            for (const column of this.columns) {
-              if (column.id === c) {
-                const newCol = this.cloneColumn(column);
-                this.computedColumns.push(newCol);
-              }
-            }
-          }
-        } else {
-          // this table has not been saved, so use the defaults
-          this.displayDefaultColumns();
-        }
-
-        this.loadData(this.tableSortField, this.tableDesc);
-        this.initializeColDragDrop();
-      }).catch(() => {
-        // if there's an error getting the table state,
-        // just use the default columns and fetch the data
-        this.displayDefaultColumns();
-        this.initializeColDragDrop();
-        this.loadData(this.tableSortField, this.tableDesc);
-      });
-    },
     saveTableState: function () {
       const tableState = {
         order: [[this.tableSortField, this.tableDesc === true ? 'desc' : 'asc']],
@@ -715,36 +741,6 @@ export default {
       }
 
       UserService.saveState(tableState, this.tableStateName);
-    },
-    getColumnWidths: function () {
-      UserService.getState(this.tableWidthsStateName)
-        .then((response) => {
-          this.columnWidths = response.data || {};
-          let tableWidth = 0;
-          for (const column of this.computedColumns) {
-            for (const c in this.columnWidths) {
-              if (column.id === c) {
-                column.width = JSON.parse(JSON.stringify(this.columnWidths[c]));
-              }
-            }
-            tableWidth += column.width;
-          }
-
-          this.tableWidth = tableWidth;
-          if (Math.abs(this.tableWidth - window.innerWidth) > 15) {
-            this.showFitButton = true;
-          }
-
-          if (!this.tableWidth) {
-            this.tableWidth = $(this.tableDiv).width();
-          }
-
-          this.initializeColResizable();
-        })
-        .catch(() => {
-          // don't do anything, just use the supplied widths
-          this.initializeColResizable();
-        });
     },
     saveColumnWidths: function () {
       UserService.saveState(this.columnWidths, this.tableWidthsStateName);
