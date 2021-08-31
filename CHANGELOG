@@ -26,9 +26,12 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
  - all - support float field type
  - capture - s3 writer uses IMDSv2 (thanks fj604)
  - capture - dscp src/dst (issue #1626)
- - viewer - stop upload menu showing up when empty command
  - release - much improved arkime_config_interfaces.sh (thanks arkaØm)
+ - viewer - stop upload menu showing up when empty command
+ - viewer - improve first load time by spliting bundle and lazy load items
+ - viewer - combine multiple calls into one
  - wise - handle empty config file on startup
+ - wise - support ./ with value-actions
 
 3.0.0 2021/08/18
   - BREAKING - elasticsearch - ES 7.10.0 or later required

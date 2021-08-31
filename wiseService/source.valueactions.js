@@ -43,7 +43,7 @@ class ValueActionsSource extends WISESource {
       this.url = this.url.substring(7);
     }
 
-    if (this.url[0] === '/' || this.url.startsWith('../')) {
+    if (this.url[0] === '/' || this.url.startsWith('./') || this.url.startsWith('../')) {
       if (!fs.existsSync(this.url)) {
         console.log(this.section, '- ERROR not loading', this.section, 'since', this.url, "doesn't exist");
         return;
