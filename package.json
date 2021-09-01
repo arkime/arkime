@@ -19,7 +19,7 @@
     "font-awesome": "^4.7.0",
     "glob": "^7.1.6",
     "helmet": "^3.23.3",
-    "iniparser": "http://github.com/awick/node-iniparser/tarball/master",
+    "iniparser": "https://github.com/awick/node-iniparser/tarball/master",
     "ioredis": "^4.23.0",
     "ipaddr.js": "^2.0.0",
     "lodash.template": "^4.5.0",

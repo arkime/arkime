@@ -39,6 +39,7 @@ const onHeaders = require('on-headers');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
+const dayMs = 60000 * 60 * 24;
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -194,11 +195,11 @@ app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 // handles 404s) and sending index.html is confusing
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ), missingResource);
 app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ), missingResource);
 
 // password, testing, or anonymous mode setup ---------------------------------
@@ -2027,7 +2028,7 @@ app.get(
 // cyberchef apis -------------------------------------------------------------
 app.get('/cyberchef.html', express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ), missingResource, cyberchefCspHeader);
 
 app.get( // cyberchef endpoint
@@ -2095,23 +2096,14 @@ function createApp () {
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-// expose vue bundles (prod)
+// expose vue bundles
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ), missingResource);
 app.use('/app.css', express.static(
   path.join(__dirname, '/vueapp/dist/app.css'),
-  { fallthrough: false }
-), missingResource);
-// expose vue bundle (dev)
-app.use(['/app.js', '/vueapp/app.js'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js'),
-  { fallthrough: false }
-), missingResource);
-app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js.map'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ), missingResource);
 
 app.use(cspHeader, setCookie, (req, res) => {
