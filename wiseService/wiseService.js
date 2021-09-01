@@ -45,6 +45,7 @@ const { Client } = require('@elastic/elasticsearch');
 const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
+const dayMs = 60000 * 60 * 24;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -748,21 +749,21 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 // handles 404s) and sending index.html is confusing
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 
 // expose vue bundles (prod) - need to be here because of wildcard endpoint matches
 app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 app.use('/app.css', express.static(
   path.join(__dirname, '/vueapp/dist/app.css'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 
 // expose vue bundle (dev)

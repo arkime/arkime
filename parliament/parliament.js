@@ -20,6 +20,7 @@ const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const upgrade = require('./upgrade');
 const path = require('path');
+const dayMs = 60000 * 60 * 24;
 
 /* app setup --------------------------------------------------------------- */
 const app = express();
@@ -241,11 +242,11 @@ app.use(cspHeader);
 // handles 404s) and sending index.html is confusing
 app.use('/parliament/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 app.use('/parliament/assets', express.static(
   path.join(__dirname, '/../assets'),
-  { maxAge: 600 * 1000, fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 
 // log requests
@@ -2038,11 +2039,11 @@ process.on('SIGINT', function () {
 // expose vue bundles (prod)
 app.use(['/static', '/parliament/static'], express.static(
   path.join(__dirname, '/vueapp/dist/static'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 app.use(['/app.css', '/parliament/app.css'], express.static(
   path.join(__dirname, '/vueapp/dist/app.css'),
-  { fallthrough: false }
+  { maxAge: dayMs, fallthrough: false }
 ));
 // expose vue bundle (dev)
 app.use(['/app.js', '/parliament/app.js'], express.static(
