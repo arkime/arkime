@@ -761,10 +761,6 @@ app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ));
-app.use('/app.css', express.static(
-  path.join(__dirname, '/vueapp/dist/app.css'),
-  { maxAge: dayMs, fallthrough: false }
-));
 
 // expose vue bundle (dev)
 app.use(['/app.js', '/vueapp/app.js'], express.static(

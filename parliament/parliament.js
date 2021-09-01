@@ -2041,10 +2041,6 @@ app.use(['/static', '/parliament/static'], express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ));
-app.use(['/app.css', '/parliament/app.css'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.css'),
-  { maxAge: dayMs, fallthrough: false }
-));
 // expose vue bundle (dev)
 app.use(['/app.js', '/parliament/app.js'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),

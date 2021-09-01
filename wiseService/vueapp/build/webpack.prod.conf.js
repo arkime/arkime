@@ -78,7 +78,9 @@ const webpackConfig = merge(baseWebpackConfig, {
       ]
     }),
     new VueLoaderPlugin(),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin({
+      filename: utils.assetsPath('css/[name].[chunkhash].css')
+    })
   ]
 })
 

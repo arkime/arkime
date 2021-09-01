@@ -2101,10 +2101,6 @@ app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ), missingResource);
-app.use('/app.css', express.static(
-  path.join(__dirname, '/vueapp/dist/app.css'),
-  { maxAge: dayMs, fallthrough: false }
-), missingResource);
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
