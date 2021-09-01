@@ -202,10 +202,20 @@ export default {
       this.loadTypeOptions();
     },
     '$route.query' (newParams) { // watch for url query changes and issue search
-      this.searchTerm = newParams.searchTerm || '';
-      this.chosenType = newParams.searchType || 'ip';
-      this.chosenSource = newParams.searchSource || '';
-      this.debounceSearch();
+      let change = false;
+      if (this.searchTerm !== newParams.searchTerm) {
+        this.searchTerm = newParams.searchTerm || '';
+        change = true;
+      }
+      if (this.chosenType !== newParams.searchType) {
+        this.chosenType = newParams.searchType || 'ip';
+        change = true;
+      }
+      if (this.chosenSource !== newParams.searchSource) {
+        this.chosenSource = newParams.searchSource || '';
+        change = true;
+      }
+      if (change) { this.debounceSearch(); }
     }
   },
   computed: {
