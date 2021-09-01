@@ -1987,13 +1987,12 @@ function buildConfigAndStart () {
       console.log(`Error reading ${internals.configFile}:\n\n`, err);
       process.exit(1);
     }
+    if (config.wiseService === undefined) { config.wiseService = {}; }
 
     internals.config = config;
     if (internals.debug > 1) {
       console.log('Config', internals.config);
     }
-
-    if (config.wiseService === undefined) { config.wiseService = {}; }
 
     internals.updateTime = internals.config.wiseService.updateTime || 0;
     delete internals.config.wiseService.updateTime;
@@ -2008,6 +2007,7 @@ function buildConfigAndStart () {
   setInterval(() => {
     internals.configScheme.load((err, config) => {
       if (err) { return; }
+      if (config.wiseService === undefined) { config.wiseService = {}; }
       const updateTime = config.wiseService.updateTime || 0;
       if (updateTime > internals.updateTime) {
         console.log('New config file, restarting');
