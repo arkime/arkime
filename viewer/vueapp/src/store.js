@@ -11,7 +11,7 @@ const store = new Vuex.Store({
     esHealthError: undefined,
     user: undefined,
     views: undefined,
-    remotecluster: undefined,
+    remoteclusters: undefined,
     esCluster: {
       availableCluster: {
         active: [],

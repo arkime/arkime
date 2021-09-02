@@ -131,9 +131,7 @@
 import Vue from 'vue';
 import qs from 'qs';
 import sanitizeHtml from 'sanitize-html';
-import ConfigService from '../utils/ConfigService';
 import SessionsService from './SessionsService';
-import FieldService from '../search/FieldService';
 import MolochTagSessions from '../sessions/Tags';
 import MolochRemoveData from '../sessions/Remove';
 import MolochSendSessions from '../sessions/Send';
@@ -164,7 +162,6 @@ export default {
       loadingPackets: false,
       packetPromise: undefined,
       detailHtml: undefined,
-      molochclusters: {},
       packetHtml: undefined,
       renderingPackets: false,
       decodingForm: false,
@@ -276,228 +273,215 @@ export default {
     getDetailData: function (message, messageType) {
       this.loading = true;
 
-      const p1 = FieldService.get();
-      const p2 = ConfigService.getMolochClusters();
-      const p3 = SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster);
-
       if (this.component) {
         this.component.$destroy(true);
         this.component.$el.parentNode.removeChild(this.component.$el);
         this.component = undefined;
       }
 
-      Promise.all([p1, p2, p3])
-        .then((responses) => {
-          this.loading = false;
+      SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster).then((response) => {
+        this.loading = false;
 
-          this.hidePackets = responses[2].data.includes('hidePackets="true"');
-          if (!this.hidePackets) {
-            this.getDecodings(); // IMPORTANT: kicks of packet request
-          }
-          this.fields = responses[0];
+        this.hidePackets = response.data.includes('hidePackets="true"');
+        if (!this.hidePackets) {
+          this.getDecodings(); // IMPORTANT: kicks of packet request
+        }
 
-          this.component = new Vue({
-            // template string here
-            template: responses[2].data,
-            // makes $parent work
-            parent: this,
-            // any props the component should receive.
-            // reference to data in the template will *not* have access the the current
-            // components scope, as you create a new component
-            propsData: {
-              session: this.session,
-              fields: this.fields,
-              molochclusters: responses[1]
-            },
-            props: ['session', 'fields', 'molochclusters'],
-            data: function () {
-              return {
-                form: undefined,
-                cluster: undefined,
-                message: message,
-                messageType: messageType
-              };
-            },
-            computed: {
-              expression: {
-                get: function () {
-                  return this.$store.state.expression;
-                },
-                set: function (newValue) {
-                  this.$store.commit('setExpression', newValue);
-                }
+        this.component = new Vue({
+          // template string here
+          template: response.data,
+          // makes $parent work
+          parent: this,
+          // any props the component should receive.
+          // reference to data in the template will *not* have access the the current
+          // components scope, as you create a new component
+          propsData: {
+            session: this.session,
+            fields: this.$store.state.fieldsMap,
+            molochclusters: this.$store.state.remoteclusters
+          },
+          props: ['session', 'fields', 'molochclusters'],
+          data: function () {
+            return {
+              form: undefined,
+              cluster: undefined,
+              message: message,
+              messageType: messageType
+            };
+          },
+          computed: {
+            expression: {
+              get: function () {
+                return this.$store.state.expression;
               },
-              startTime: {
-                get: function () {
-                  return this.$store.state.time.startTime;
-                },
-                set: function (newValue) {
-                  this.$store.commit('setTime', { startTime: newValue });
-                }
+              set: function (newValue) {
+                this.$store.commit('setExpression', newValue);
               }
             },
-            methods: {
-              getField: function (expr) {
-                if (!this.$parent.fields[expr]) {
-                  console.log('UNDEFINED', expr);
-                }
-                return this.$parent.fields[expr];
+            startTime: {
+              get: function () {
+                return this.$store.state.time.startTime;
               },
-              actionFormDone: function (doneMsg, success, reload) {
-                this.form = undefined; // clear the form
-                const doneMsgType = success ? 'success' : 'warning';
-
-                if (reload) {
-                  this.$parent.getDetailData(doneMsg, doneMsgType);
-                  this.getPackets();
-                  return;
-                }
-
-                if (doneMsg) {
-                  this.message = doneMsg;
-                  this.messageType = doneMsgType;
-                }
-              },
-              messageDone: function () {
-                this.message = undefined;
-                this.messageType = undefined;
-              },
-              addTags: function () {
-                this.form = 'add:tags';
-              },
-              removeTags: function () {
-                this.form = 'remove:tags';
-              },
-              exportPCAP: function () {
-                this.form = 'export:pcap';
-              },
-              removeData: function () {
-                this.form = 'remove:data';
-              },
-              sendSession: function (cluster) {
-                this.form = 'send:session';
-                this.cluster = cluster;
-              },
-              openPermalink: function () {
-                const id = this.session.id.split(':');
-                let prefixlessId = id.length > 1 ? id[1] : id[0];
-                if (prefixlessId[1] === '@') {
-                  prefixlessId = prefixlessId.substr(2);
-                }
-
-                const params = {
-                  expression: `id == ${prefixlessId}`,
-                  startTime: Math.floor(this.session.firstPacket / 1000),
-                  stopTime: Math.ceil(this.session.lastPacket / 1000),
-                  openAll: 1
-                };
-
-                const url = `sessions?${qs.stringify(params)}`;
-
-                window.location = url;
-              },
-              /**
-               * Adds a rootId expression and applies a new start time
-               * @param {string} rootId The root id of the session
-               * @param {int} startTime The start time of the session
-               */
-              allSessions: function (rootId, startTime) {
-                startTime = Math.floor(startTime / 1000);
-
-                const fullExpression = `rootId == ${rootId}`;
-
-                this.expression = fullExpression;
-
-                if (this.$route.query.startTime) {
-                  if (this.$route.query.startTime < startTime) {
-                    startTime = this.$route.query.startTime;
-                  }
-                }
-
-                this.startTime = startTime;
-              },
-              /**
-               * Opens a new browser tab containing all the unique values for a given field
-               * @param {string} fieldID  The field id to display unique values for
-               * @param {int} counts      Whether to display the unique values with counts (1 or 0)
-               */
-              exportUnique: function (fieldID, counts) {
-                SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
-              },
-              /**
-               * Opens the spi graph page in a new browser tab
-               * @param {string} fieldID The field id (dbField) to display spi graph data for
-               */
-              openSpiGraph: function (fieldID) {
-                SessionsService.openSpiGraph(fieldID, this.$route.query);
-              },
-              /**
-               * Shows more items in a list of values
-               * @param {object} e The click event
-               */
-              showMoreItems: function (e) {
-                e.target.style.display = 'none';
-                e.target.previousSibling.style.display = 'inline-block';
-              },
-              /**
-               * Hides more items in a list of values
-               * @param {object} e The click event
-               */
-              showFewerItems: function (e) {
-                e.target.parentElement.style.display = 'none';
-                e.target.parentElement.nextElementSibling.style.display = 'inline-block';
-              },
-              /**
-               * Toggles a column in the sessions table
-               * @param {string} fieldID  The field id to toggle in the sessions table
-               */
-              toggleColVis: function (fieldID) {
-                this.$parent.toggleColVis(fieldID);
-              },
-              /**
-               * Toggles a field's visibility in the info column
-               * @param {string} fieldID  The field id to toggle in the info column
-               */
-              toggleInfoVis: function (fieldID) {
-                this.$parent.toggleInfoVis(fieldID);
-              },
-              /**
-               * Adds field == EXISTS! to the search expression
-               * @param {string} field  The field name
-               * @param {string} op     The relational operator
-               */
-              fieldExists: function (field, op) {
-                const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
-                this.$store.commit('addToExpression', { expression: fullExpression });
+              set: function (newValue) {
+                this.$store.commit('setTime', { startTime: newValue });
               }
-            },
-            components: {
-              MolochTagSessions,
-              MolochRemoveData,
-              MolochSendSessions,
-              MolochExportPcap,
-              MolochToast
             }
-          }).$mount();
+          },
+          methods: {
+            getField: function (expr) {
+              if (!this.fields[expr]) {
+                console.log('UNDEFINED', expr);
+              }
+              return this.fields[expr];
+            },
+            actionFormDone: function (doneMsg, success, reload) {
+              this.form = undefined; // clear the form
+              const doneMsgType = success ? 'success' : 'warning';
 
-          $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
-        })
-        .catch((error) => {
-          this.loading = false;
-          this.error = error.text || error;
-        });
+              if (reload) {
+                this.$parent.getDetailData(doneMsg, doneMsgType);
+                this.getPackets();
+                return;
+              }
+
+              if (doneMsg) {
+                this.message = doneMsg;
+                this.messageType = doneMsgType;
+              }
+            },
+            messageDone: function () {
+              this.message = undefined;
+              this.messageType = undefined;
+            },
+            addTags: function () {
+              this.form = 'add:tags';
+            },
+            removeTags: function () {
+              this.form = 'remove:tags';
+            },
+            exportPCAP: function () {
+              this.form = 'export:pcap';
+            },
+            removeData: function () {
+              this.form = 'remove:data';
+            },
+            sendSession: function (cluster) {
+              this.form = 'send:session';
+              this.cluster = cluster;
+            },
+            openPermalink: function () {
+              const id = this.session.id.split(':');
+              let prefixlessId = id.length > 1 ? id[1] : id[0];
+              if (prefixlessId[1] === '@') {
+                prefixlessId = prefixlessId.substr(2);
+              }
+
+              const params = {
+                expression: `id == ${prefixlessId}`,
+                startTime: Math.floor(this.session.firstPacket / 1000),
+                stopTime: Math.ceil(this.session.lastPacket / 1000),
+                openAll: 1
+              };
+
+              const url = `sessions?${qs.stringify(params)}`;
+
+              window.location = url;
+            },
+            /**
+             * Adds a rootId expression and applies a new start time
+             * @param {string} rootId The root id of the session
+             * @param {int} startTime The start time of the session
+             */
+            allSessions: function (rootId, startTime) {
+              startTime = Math.floor(startTime / 1000);
+
+              const fullExpression = `rootId == ${rootId}`;
+
+              this.expression = fullExpression;
+
+              if (this.$route.query.startTime) {
+                if (this.$route.query.startTime < startTime) {
+                  startTime = this.$route.query.startTime;
+                }
+              }
+
+              this.startTime = startTime;
+            },
+            /**
+             * Opens a new browser tab containing all the unique values for a given field
+             * @param {string} fieldID  The field id to display unique values for
+             * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+             */
+            exportUnique: function (fieldID, counts) {
+              SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
+            },
+            /**
+             * Opens the spi graph page in a new browser tab
+             * @param {string} fieldID The field id (dbField) to display spi graph data for
+             */
+            openSpiGraph: function (fieldID) {
+              SessionsService.openSpiGraph(fieldID, this.$route.query);
+            },
+            /**
+             * Shows more items in a list of values
+             * @param {object} e The click event
+             */
+            showMoreItems: function (e) {
+              e.target.style.display = 'none';
+              e.target.previousSibling.style.display = 'inline-block';
+            },
+            /**
+             * Hides more items in a list of values
+             * @param {object} e The click event
+             */
+            showFewerItems: function (e) {
+              e.target.parentElement.style.display = 'none';
+              e.target.parentElement.nextElementSibling.style.display = 'inline-block';
+            },
+            /**
+             * Toggles a column in the sessions table
+             * @param {string} fieldID  The field id to toggle in the sessions table
+             */
+            toggleColVis: function (fieldID) {
+              this.$parent.toggleColVis(fieldID);
+            },
+            /**
+             * Toggles a field's visibility in the info column
+             * @param {string} fieldID  The field id to toggle in the info column
+             */
+            toggleInfoVis: function (fieldID) {
+              this.$parent.toggleInfoVis(fieldID);
+            },
+            /**
+             * Adds field == EXISTS! to the search expression
+             * @param {string} field  The field name
+             * @param {string} op     The relational operator
+             */
+            fieldExists: function (field, op) {
+              const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+              this.$store.commit('addToExpression', { expression: fullExpression });
+            }
+          },
+          components: {
+            MolochTagSessions,
+            MolochRemoveData,
+            MolochSendSessions,
+            MolochExportPcap,
+            MolochToast
+          }
+        }).$mount();
+
+        $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
+      }).catch((error) => {
+        this.loading = false;
+        this.error = error.text || error;
+      });
     },
     toggleColVis: function (fieldID) {
       this.$emit('toggleColVis', fieldID);
     },
     toggleInfoVis: function (fieldID) {
       this.$emit('toggleInfoVis', fieldID);
-    },
-    getMolochClusters: function () {
-      ConfigService.getMolochClusters()
-        .then((clusters) => {
-          this.molochclusters = clusters;
-        });
     },
     /* sets some of the session detail query parameters based on user settings */
     setUserParams: function () {
@@ -528,17 +512,15 @@ export default {
      * IMPORTANT: kicks of packet request
      */
     getDecodings: function () {
-      SessionsService.getDecodings()
-        .then((response) => {
-          this.decodings = response;
-          this.setBrowserParams();
-          this.getPackets();
-        })
-        .catch(() => {
-          this.setBrowserParams();
-          // still get the packets
-          this.getPackets();
-        });
+      SessionsService.getDecodings().then((response) => {
+        this.decodings = response;
+        this.setBrowserParams();
+        this.getPackets();
+      }).catch(() => {
+        this.setBrowserParams();
+        // still get the packets
+        this.getPackets();
+      });
     },
     /* sets some of the session detail query parameters based on browser saved options */
     setBrowserParams: function () {

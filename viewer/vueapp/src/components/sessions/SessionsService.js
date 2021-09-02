@@ -155,16 +155,16 @@ export default {
     if (getDecodingsQIP) { return getDecodingsQIP; }
 
     getDecodingsQIP = new Promise((resolve, reject) => {
-      if (_decodingsCache) { resolve(_decodingsCache); }
+      if (_decodingsCache) { return resolve(_decodingsCache); }
 
       Vue.axios.get('api/sessions/decodings')
         .then((response) => {
           getDecodingsQIP = undefined;
           _decodingsCache = response.data;
-          resolve(response.data);
+          return resolve(response.data);
         }, (error) => {
           getDecodingsQIP = undefined;
-          reject(error);
+          return reject(error);
         });
     });
 
