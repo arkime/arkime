@@ -690,6 +690,7 @@ export default {
   },
   mounted: function () {
     const styles = window.getComputedStyle(document.body);
+    this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
     this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
     this.primaryColor = styles.getPropertyValue('--color-primary').trim();
     this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
@@ -887,6 +888,8 @@ export default {
       svg.transition().duration(500).call(zoom.scaleBy, direction);
     },
     exportPng: function () {
+      const foregroundColor = this.foregroundColor;
+
       import(
         /* webpackChunkName: "saveSvgAsPng" */ 'save-svg-as-png'
       ).then((saveSvgAsPngModule) => {
@@ -894,7 +897,20 @@ export default {
         saveSvgAsPng.saveSvgAsPng(
           document.getElementById('graphSvg'),
           'connections.png',
-          { backgroundColor: '#FFFFFF' }
+          {
+            backgroundColor: this.backgroundColor,
+            modifyCss: function (selector, properties) {
+              if (selector === '.connections-page text') {
+                // remove .connections-page from selector since element is
+                // rendered outside connections page for saving as png
+                selector = 'text';
+                // make sure that the text uses the foreground property
+                // saveSvgAsPng cannot resolve var(--color-foreground)
+                properties = `fill: ${foregroundColor}`;
+              }
+              return selector + '{' + properties + '}';
+            }
+          }
         );
       });
     },
@@ -1596,8 +1612,13 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+.connections-page text {
+  fill: var(--color-foreground, #333);
+}
+</style>
 
+<style scoped>
 .connections-graph {
   /* don't allow selecting text */
   -webkit-user-select: none;
