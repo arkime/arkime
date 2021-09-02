@@ -2205,6 +2205,7 @@
                 </th>
                 <th>Value(s)</th>
                 <th>Type</th>
+                <th>Creator</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -2227,12 +2228,25 @@
                     v-b-tooltip.hover="item.description">
                     {{ item.description }}
                   </td>
-                  <td class="shortcut-value cursor-help"
-                    v-b-tooltip.hover="item.value">
-                    {{ item.value }}
+                  <td class="shortcut-value"
+                    :class="{'show-all':item.showAll}">
+                    <span
+                      v-if="item.value.length > 50"
+                      @click="toggleDisplayAllShortcut(item)"
+                      class="fa pull-right cursor-pointer mt-1"
+                      :class="{'fa-chevron-down':!item.showAll,'fa-chevron-up':item.showAll}"
+                    />
+                    <span v-if="!item.showAll">
+                      {{ item.value.substring(0, 50) }}
+                      <span v-if="item.value.length > 50">...</span>
+                    </span>
+                    <span v-else>{{ item.value }}</span>
                   </td>
                   <td>
                     {{ item.type }}
+                  </td>
+                  <td>
+                    {{ item.userId }}
                   </td>
                   <td class="shortcut-btns">
                     <span class="pull-right">
@@ -3508,6 +3522,10 @@ export default {
       this.$set(shortcut, 'newType', shortcut.type);
       this.$set(shortcut, 'newDescription', shortcut.description);
     },
+    /* show/hide the entire shortcut value */
+    toggleDisplayAllShortcut: function (shortcut) {
+      this.$set(shortcut, 'showAll', !shortcut.showAll);
+    },
     /* creates a new shortcut */
     createShortcut: function () {
       if (!this.newShortcutName) {
@@ -3919,10 +3937,14 @@ export default {
 
 /* shortcuts table */
 .settings-page .shortcut-value {
-  max-width: 360px;
+  max-width: 340px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.settings-page .shortcut-value.show-all {
+  overflow: visible;
+  white-space: normal;
 }
 .settings-page .shortcut-value.narrow {
   max-width: 160px;
