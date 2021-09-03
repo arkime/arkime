@@ -1,0 +1,11 @@
+mixin clickableValue(expr, value, parse, session)
+  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
+
+
+if (session.modbus)
+  div.sessionDetailMeta.bold modbus
+  dl.sessionDetailMeta
+    +arrayList(session.modbus, "transactionid", "Transaction IDs", "modbus.transactionid")
+    +arrayList(session.modbus, "protocolid", "Protocol ID", "modbus.protocolid")
+    +arrayList(session.modbus, "datalength", "Length of Modbus Data", "modbus.datalength")
+    +arrayList(session.modbus, "unitid", "Unit ID", "modbus.unitid")
