@@ -1,0 +1,273 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 192
+            },
+            "destination" : {
+               "bytes" : 444,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "30.0.0.2",
+               "mac" : [
+                  "00:1b:21:3c:ac:30"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
+            "dstOui" : [
+               "Intel Corporate"
+            ],
+            "dstOuiCnt" : 1,
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1422828273817,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  0,
+                  8
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1422828275817,
+            "length" : 2000,
+            "network" : {
+               "bytes" : 912,
+               "packets" : 6
+            },
+            "node" : "test",
+            "packetLen" : [
+               172,
+               164,
+               172,
+               164,
+               172,
+               164
+            ],
+            "packetPos" : [
+               24,
+               196,
+               6484,
+               6656,
+               9592,
+               9764
+            ],
+            "protocol" : [
+               "geneve",
+               "icmp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 192
+            },
+            "source" : {
+               "bytes" : 468,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "30.0.0.1",
+               "mac" : [
+                  "00:1b:21:3c:ab:64"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3,
+               "port" : 0
+            },
+            "srcOui" : [
+               "Intel Corporate"
+            ],
+            "srcOuiCnt" : 1,
+            "srcRIR" : "ARIN",
+            "totDataBytes" : 384
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-150201"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1829
+            },
+            "destination" : {
+               "bytes" : 4559,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "30.0.0.1",
+               "mac" : [
+                  "00:1b:21:3c:ab:64"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 16,
+               "port" : 22
+            },
+            "dstOui" : [
+               "Intel Corporate"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "5353482d322e302d",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1422828273999,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1422828275565,
+            "length" : 1567,
+            "network" : {
+               "bytes" : 8368,
+               "community_id" : "1:GX653mPN70ulA0YA40xwxJDzgUc=",
+               "packets" : 33
+            },
+            "node" : "test",
+            "packetLen" : [
+               140,
+               148,
+               132,
+               179,
+               132,
+               153,
+               140,
+               924,
+               140,
+               1124,
+               156,
+               292,
+               276,
+               860,
+               148,
+               140,
+               180,
+               140,
+               188,
+               196,
+               204,
+               132,
+               276,
+               172,
+               132,
+               260,
+               188,
+               580,
+               252,
+               428,
+               132,
+               220,
+               132
+            ],
+            "packetPos" : [
+               360,
+               500,
+               648,
+               780,
+               959,
+               1091,
+               1244,
+               1384,
+               2308,
+               2448,
+               3572,
+               3728,
+               4020,
+               4296,
+               5156,
+               5304,
+               5444,
+               5624,
+               5764,
+               5952,
+               6148,
+               6352,
+               6820,
+               7096,
+               7268,
+               7400,
+               7660,
+               7848,
+               8428,
+               8680,
+               9108,
+               9240,
+               9460
+            ],
+            "protocol" : [
+               "geneve",
+               "ssh",
+               "tcp"
+            ],
+            "protocolCnt" : 3,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 2567
+            },
+            "source" : {
+               "bytes" : 3809,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "30.0.0.2",
+               "mac" : [
+                  "00:1b:21:3c:ac:30"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 17,
+               "port" : 51225
+            },
+            "srcOui" : [
+               "Intel Corporate"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "5353482d322e302d",
+            "srcRIR" : "ARIN",
+            "ssh" : {
+               "hassh" : [
+                  "21b457a327ce7a2d4fce5ef2c42400bd"
+               ],
+               "hasshCnt" : 1,
+               "hasshServer" : [
+                  "ce3c327f37ea2ec21f317fbc3fd1ea43"
+               ],
+               "hasshServerCnt" : 1,
+               "key" : [
+                  "AAAAB3NzaC1yc2EAAAADAQABAAABAQD3hhRu6jfkHMwRwqx62+1UjpD59ai23ki8TdJs/vegGiSq6IK+V5ueuRC3Rio4A3XAVwNRLPOqEYmgHo37WVYRRtNnBm/uWfdHMDNs7mEIq65hv47A39K4HYxbFhFvxBUbuLbWt+1jy9Lc0beuJl8z3rIxZvGe7UO72Sg7fq1wOigxgYZ79nB1xk1nIFlHDziA1jS90WdyXSD74ycbqnmfyXmVeoRR2pQpc/a8e8TYH89W7kh1qHI/oe9MuXaqdyIE4dPYFrB/f/RmHRiakNolcET1YHjX4VFYt6fEH79W+Bo7YF4TCdr3Htj3DivZzX6zOcvT0ivXGlvFP7GaoqOH"
+               ],
+               "keyCnt" : 1,
+               "version" : [
+                  "ssh-2.0-openssh_5.3",
+                  "ssh-2.0-openssh_5.9p1 debian-5ubuntu1"
+               ],
+               "versionCnt" : 2
+            },
+            "tcpflags" : {
+               "ack" : 10,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 21,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 4396
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-150201"
+            }
+         }
+      }
+   ]
+}
+

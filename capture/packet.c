@@ -370,6 +370,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_VXLAN) {
             moloch_session_add_protocol(session, "vxlan");
         }
+
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GENEVE) {
+            moloch_session_add_protocol(session, "geneve");
+        }
     }
 
     if (mProtocols[packet->mProtocol].process) {
@@ -674,7 +678,7 @@ LOCAL void moloch_packet_log(SessionTypes ses)
 /******************************************************************************/
 LOCAL MolochPacketRC moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    if (len < 12) {
+    if (len <= 12) {
         return MOLOCH_PACKET_CORRUPT;
     }
     BSB bsb;
@@ -720,13 +724,45 @@ LOCAL MolochPacketRC moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPack
 /******************************************************************************/
 LOCAL MolochPacketRC moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
-    if (len < 8) {
+    if (len <= 8) {
         return MOLOCH_PACKET_CORRUPT;
     }
 
     packet->tunnel |= MOLOCH_PACKET_TUNNEL_VXLAN;
 
     return moloch_packet_ether(batch, packet, data+8, len-8);
+}
+/******************************************************************************/
+LOCAL MolochPacketRC moloch_packet_ip4_geneve(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
+{
+    uint8_t  veroptlen;
+    uint16_t protocol;
+    if (len <= 8) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+    BSB_IMPORT_u08(bsb, veroptlen);
+    BSB_IMPORT_skip(bsb, 1);
+    BSB_IMPORT_u16(bsb, protocol);
+    BSB_IMPORT_skip(bsb, 4);
+
+    if (BSB_IS_ERROR(bsb)) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    veroptlen &= 0x3f;
+    BSB_IMPORT_skip(bsb, veroptlen * 4);
+
+    if (BSB_IS_ERROR(bsb)) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
+    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GENEVE;
+
+    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), protocol, "GENEVE");
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -843,23 +879,35 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
 
         udphdr = (struct udphdr *)((char*)ip4 + ip_hdr_len);
 
-        // See if this is really GTP
-        if (udphdr->uh_dport == 0x6808 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
-            int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-            uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
-            if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
-                return moloch_packet_ip_gtp(batch, packet, buf, rem);
+        // UDP Encapsulation, maybe this should be another table
+        switch (udphdr->uh_dport) {
+        case 0x6808: // GTP
+            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
+                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
+                if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
+                    return moloch_packet_ip_gtp(batch, packet, buf, rem);
+                }
             }
-        }
-
-        // See if this is really VXLAN
-        if (udphdr->uh_dport == 0xb512 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
-            int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-            uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
-            if ((buf[0] & 0x77) == 0 && (buf[1] & 0xb7) == 0) {
-                return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
+            break;
+        case 0xb512: // VXLAN
+            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
+                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
+                if ((buf[0] & 0x77) == 0 && (buf[1] & 0xb7) == 0) {
+                    return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
+                }
             }
-        }
+            break;
+        case 0xc117: // GENEVE
+            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
+                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
+                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
+                if ((buf[0] & 0xc0) == 0 && (buf[1] & 0x3f) == 0) {
+                    return moloch_packet_ip4_geneve(batch, packet, buf, rem);
+                }
+            }
+        } // switch
 
         if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
             return MOLOCH_PACKET_DUPLICATE_DROPPED;
