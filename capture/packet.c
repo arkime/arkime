@@ -1144,6 +1144,7 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
         n += 2;
         switch (ethertype) {
         case 0x8100:
+        case 0x88a8:
             n += 2;
             break;
         default:
@@ -1451,7 +1452,7 @@ void moloch_packet_save_ethernet( MolochPacket_t * const packet, uint16_t type)
 int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
 #ifdef DEBUG_PACKET
-    LOG("enter %p %d %s %p %d", packet, type, str, data, len);
+    LOG("enter %p type:%d (0x%x) %s %p %d", packet, type, type, str, data, len);
 #endif
 
     if (type == MOLOCH_ETHERTYPE_DETECT) {

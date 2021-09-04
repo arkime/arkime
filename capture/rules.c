@@ -760,7 +760,7 @@ void moloch_rules_recompile()
 
             pcap_freecode(&rule->bpfp);
             if (pcapFileHeader.dlt != DLT_NFLOG) {
-                if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1 && !config.ignoreErrors) {
                     LOGEXIT("ERROR - Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
             } else {
