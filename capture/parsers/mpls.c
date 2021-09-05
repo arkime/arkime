@@ -19,7 +19,7 @@ extern MolochConfig_t        config;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL MolochPacketRC mpls_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), MolochPacket_t * const packet, const uint8_t *data, int len)
+LOCAL MolochPacketRC mpls_packet_enqueue(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
     while (1) {
         if (len < 4 + (int)sizeof(struct ip)) {
@@ -52,5 +52,5 @@ LOCAL MolochPacketRC mpls_packet_enqueue(MolochPacketBatch_t * UNUSED(batch), Mo
 /******************************************************************************/
 void moloch_parser_init()
 {
-    moloch_packet_set_ethernet_cb(0x8847, mpls_packet_enqueue);
+    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_MPLS, mpls_packet_enqueue);
 }

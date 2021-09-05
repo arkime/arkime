@@ -61,6 +61,7 @@ LOCAL patricia_tree_t       *ipTree6 = 0;
 
 extern MolochFieldOps_t      readerFieldOps[256];
 
+LOCAL MolochPacketEnqueue_cb udpPortCbs[0x10000];
 LOCAL MolochPacketEnqueue_cb ethernetCbs[0x10000];
 LOCAL MolochPacketEnqueue_cb ipCbs[MOLOCH_IPPROTO_MAX];
 
@@ -371,6 +372,10 @@ LOCAL void moloch_packet_process(MolochPacket_t *packet, int thread)
             moloch_session_add_protocol(session, "vxlan");
         }
 
+        if (packet->tunnel & MOLOCH_PACKET_TUNNEL_VXLAN_GPE) {
+            moloch_session_add_protocol(session, "vxlan-gpe");
+        }
+
         if (packet->tunnel & MOLOCH_PACKET_TUNNEL_GENEVE) {
             moloch_session_add_protocol(session, "geneve");
         }
@@ -676,95 +681,6 @@ LOCAL void moloch_packet_log(SessionTypes ses)
       }
 }
 /******************************************************************************/
-LOCAL MolochPacketRC moloch_packet_ip_gtp(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    if (len <= 12) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-    BSB bsb;
-    BSB_INIT(bsb, data, len);
-
-    uint8_t  flags = 0;
-    uint8_t  next = 0;
-
-
-    BSB_IMPORT_u08(bsb, flags);
-    BSB_IMPORT_skip(bsb, 1); // mtype
-    BSB_IMPORT_skip(bsb, 2); // mlen
-    BSB_IMPORT_skip(bsb, 4); // teid
-    if (flags & 0x7) {
-        BSB_IMPORT_skip(bsb, 3);
-        BSB_IMPORT_u08(bsb, next);
-    }
-
-    while (next != 0 && !BSB_IS_ERROR(bsb)) {
-        uint8_t extlen = 0;
-        BSB_IMPORT_u08(bsb, extlen);
-        if (extlen == 0) {
-            return MOLOCH_PACKET_CORRUPT;
-        }
-        BSB_IMPORT_skip(bsb, extlen*4-2);
-        BSB_IMPORT_u08(bsb, next);
-    }
-
-    if (BSB_IS_ERROR(bsb)) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GTP;
-
-    // Should check for v4 vs v6 here
-    BSB_IMPORT_u08(bsb, flags);
-    BSB_IMPORT_rewind(bsb, 1);
-
-    if ((flags & 0xf0) == 0x60)
-        return moloch_packet_ip6(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
-    return moloch_packet_ip4(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb));
-}
-/******************************************************************************/
-LOCAL MolochPacketRC moloch_packet_ip4_vxlan(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    if (len <= 8) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_VXLAN;
-
-    return moloch_packet_ether(batch, packet, data+8, len-8);
-}
-/******************************************************************************/
-LOCAL MolochPacketRC moloch_packet_ip4_geneve(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
-{
-    uint8_t  veroptlen;
-    uint16_t protocol;
-    if (len <= 8) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    BSB bsb;
-    BSB_INIT(bsb, data, len);
-
-    BSB_IMPORT_u08(bsb, veroptlen);
-    BSB_IMPORT_skip(bsb, 1);
-    BSB_IMPORT_u16(bsb, protocol);
-    BSB_IMPORT_skip(bsb, 4);
-
-    if (BSB_IS_ERROR(bsb)) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    veroptlen &= 0x3f;
-    BSB_IMPORT_skip(bsb, veroptlen * 4);
-
-    if (BSB_IS_ERROR(bsb)) {
-        return MOLOCH_PACKET_CORRUPT;
-    }
-
-    packet->tunnel |= MOLOCH_PACKET_TUNNEL_GENEVE;
-
-    return moloch_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), protocol, "GENEVE");
-}
-/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
@@ -879,35 +795,11 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
 
         udphdr = (struct udphdr *)((char*)ip4 + ip_hdr_len);
 
-        // UDP Encapsulation, maybe this should be another table
-        switch (udphdr->uh_dport) {
-        case 0x6808: // GTP
-            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
-                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
-                if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
-                    return moloch_packet_ip_gtp(batch, packet, buf, rem);
-                }
-            }
-            break;
-        case 0xb512: // VXLAN
-            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
-                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
-                if ((buf[0] & 0x77) == 0 && (buf[1] & 0xb7) == 0) {
-                    return moloch_packet_ip4_vxlan(batch, packet, buf, rem);
-                }
-            }
-            break;
-        case 0xc117: // GENEVE
-            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8) {
-                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-                uint8_t *buf = (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *);
-                if ((buf[0] & 0xc0) == 0 && (buf[1] & 0x3f) == 0) {
-                    return moloch_packet_ip4_geneve(batch, packet, buf, rem);
-                }
-            }
-        } // switch
+        if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
+            int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+            if (rc != MOLOCH_PACKET_UNKNOWN)
+                return rc;
+        }
 
         if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
             return MOLOCH_PACKET_DUPLICATE_DROPPED;
@@ -1062,13 +954,10 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport);
 
-            // See if this is really GTP
-            if (udphdr->uh_dport == 0x6808 && len > ip_hdr_len + (int)sizeof(struct udphdr) + 12) {
-                int rem = len - ip_hdr_len - sizeof(struct udphdr *);
-                const uint8_t *buf = (uint8_t *)udphdr + sizeof(struct udphdr *);
-                if ((buf[0] & 0xf0) == 0x30 && buf[1] == 0xff && (buf[2] << 8 | buf[3]) == rem - 8) {
-                    return moloch_packet_ip_gtp(batch, packet, buf, rem);
-                }
+            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
+                int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+                if (rc != MOLOCH_PACKET_UNKNOWN)
+                    return rc;
             }
 
             if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
@@ -1143,8 +1032,8 @@ LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPack
         }
         n += 2;
         switch (ethertype) {
-        case 0x8100:
-        case 0x88a8:
+        case ETHERTYPE_VLAN:
+        case MOLOCH_ETHERTYPE_QINQ:
             n += 2;
             break;
         default:
@@ -1168,7 +1057,7 @@ LOCAL MolochPacketRC moloch_packet_sll(MolochPacketBatch_t * batch, MolochPacket
 
     int ethertype = data[14] << 8 | data[15];
     switch (ethertype) {
-    case 0x8100:
+    case ETHERTYPE_VLAN:
         if ((data[20] & 0xf0) == 0x60)
             return moloch_packet_ip6(batch, packet, data+20, len - 20);
         else
@@ -1449,7 +1338,7 @@ void moloch_packet_save_ethernet( MolochPacket_t * const packet, uint16_t type)
         moloch_packet_save_unknown_packet(0, packet);
 }
 /******************************************************************************/
-int moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
+MolochPacketRC moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
 #ifdef DEBUG_PACKET
     LOG("enter %p type:%d (0x%x) %s %p %d", packet, type, type, str, data, len);
@@ -1485,7 +1374,7 @@ void moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueue
     ethernetCbs[type] = enqueueCb;
 }
 /******************************************************************************/
-int moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
+MolochPacketRC moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
 #ifdef DEBUG_PACKET
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
@@ -1516,6 +1405,11 @@ void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
       LOGEXIT ("type value too large %d", type);
 
     ipCbs[type] = enqueueCb;
+}
+/******************************************************************************/
+void moloch_packet_set_udpport_enqueue_cb(uint16_t port, MolochPacketEnqueue_cb enqueueCb)
+{
+    udpPortCbs[htons(port)] = enqueueCb;
 }
 /******************************************************************************/
 void moloch_packet_init()
@@ -1684,8 +1578,8 @@ void moloch_packet_init()
 
 
     moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_ETHER, moloch_packet_ether);
-    moloch_packet_set_ethernet_cb(0x6558, moloch_packet_ether); // ETH_P_TEB - Trans Ether Bridging
-    moloch_packet_set_ethernet_cb(0x6559, moloch_packet_frame_relay);
+    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_TEB, moloch_packet_ether); // ETH_P_TEB - Trans Ether Bridging
+    moloch_packet_set_ethernet_cb(MOLOCH_ETHERTYPE_RAWFR, moloch_packet_frame_relay);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IP, moloch_packet_ip4);
     moloch_packet_set_ethernet_cb(ETHERTYPE_IPV6, moloch_packet_ip6);
 }

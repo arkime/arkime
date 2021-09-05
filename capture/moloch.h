@@ -69,6 +69,12 @@
 #define MOLOCH_ETHERTYPE_UNKNOWN 1
 // The first 2 bytes have the ethertype
 #define MOLOCH_ETHERTYPE_DETECT  2
+#define MOLOCH_ETHERTYPE_TEB     0x6558
+#define MOLOCH_ETHERTYPE_RAWFR   0x6559
+#define MOLOCH_ETHERTYPE_NSH     0x894F
+#define MOLOCH_ETHERTYPE_MPLS    0x8847
+#define MOLOCH_ETHERTYPE_QINQ    0x88a8
+
 #define MOLOCH_IPPROTO_UNKNOWN 255
 #define MOLOCH_IPPROTO_CORRUPT 256
 #define MOLOCH_IPPROTO_MAX     257
@@ -534,13 +540,14 @@ struct moloch_pcap_sf_pkthdr {
 };
 
 /******************************************************************************/
-#define MOLOCH_PACKET_TUNNEL_GRE     0x01
-#define MOLOCH_PACKET_TUNNEL_PPPOE   0x02
-#define MOLOCH_PACKET_TUNNEL_MPLS    0x04
-#define MOLOCH_PACKET_TUNNEL_PPP     0x08
-#define MOLOCH_PACKET_TUNNEL_GTP     0x10
-#define MOLOCH_PACKET_TUNNEL_VXLAN   0x20
-#define MOLOCH_PACKET_TUNNEL_GENEVE  0x40
+#define MOLOCH_PACKET_TUNNEL_GRE        0x01
+#define MOLOCH_PACKET_TUNNEL_PPPOE      0x02
+#define MOLOCH_PACKET_TUNNEL_MPLS       0x04
+#define MOLOCH_PACKET_TUNNEL_PPP        0x08
+#define MOLOCH_PACKET_TUNNEL_GTP        0x10
+#define MOLOCH_PACKET_TUNNEL_VXLAN      0x20
+#define MOLOCH_PACKET_TUNNEL_VXLAN_GPE  0x40
+#define MOLOCH_PACKET_TUNNEL_GENEVE     0x80
 // Increase tunnel size below
 
 typedef struct molochpacket_t
@@ -565,7 +572,7 @@ typedef struct molochpacket_t
     uint32_t       v6:1;           // v6 or not
     uint32_t       copied:1;       // don't need to copy
     uint32_t       wasfrag:1;      // was a fragment
-    uint32_t       tunnel:7;       // tunnel type
+    uint32_t       tunnel:8;       // tunnel type
 } MolochPacket_t;
 
 typedef struct
@@ -1082,11 +1089,13 @@ uint32_t moloch_packet_dlt_to_linktype(int dlt);
 void     moloch_packet_drophash_add(MolochSession_t *session, int which, int min);
 
 void     moloch_packet_save_ethernet(MolochPacket_t * const packet, uint16_t type);
-int      moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
+MolochPacketRC moloch_packet_run_ethernet_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     moloch_packet_set_ethernet_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
 
-int      moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
+MolochPacketRC moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb);
+
+void     moloch_packet_set_udpport_enqueue_cb(uint16_t port, MolochPacketEnqueue_cb enqueueCb);
 
 
 /******************************************************************************/
