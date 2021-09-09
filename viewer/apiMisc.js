@@ -258,10 +258,11 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     }
 
     const cmd = Config.get('uploadCommand')
-      .replace('{TAGS}', tags)
-      .replace('{NODE}', Config.nodeName())
-      .replace('{TMPFILE}', req.file.path)
-      .replace('{CONFIG}', Config.getConfigFile());
+      .replace(/{TAGS}/g, tags)
+      .replace(/{NODE}/g, Config.nodeName())
+      .replace(/{TMPFILE}/g, req.file.path)
+      .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
+      .replace(/{CONFIG}/g, Config.getConfigFile());
 
     console.log('upload command: ', cmd);
     exec(cmd, (error, stdout, stderr) => {
