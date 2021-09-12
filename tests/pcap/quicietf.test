@@ -1,0 +1,116 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1330
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2607:f8b0:4004:835::2003",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 443
+            },
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "fileId" : [],
+            "firstPacket" : 1631043254696,
+            "http" : {
+               "host" : [
+                  "ssl.gstatic.com"
+               ],
+               "hostCnt" : 1
+            },
+            "ipProtocol" : 17,
+            "lastPacket" : 1631043254696,
+            "length" : 0,
+            "network" : {
+               "bytes" : 1396,
+               "community_id" : "1:9i39+GoaCudOlqIBBfXJoJHTe/8=",
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     948
+                  ],
+                  "id-cnt" : 1
+               }
+            },
+            "node" : "test",
+            "packetLen" : [
+               1412
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "quic",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10310 Oath Holdings Inc.",
+                  "number" : 10310,
+                  "organization" : {
+                     "name" : "Oath Holdings Inc."
+                  }
+               },
+               "bytes" : 1396,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2001:4998:ef5e:2b::12a0",
+               "mac" : [
+                  "f8:0f:6f:a1:a0:3c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 57349
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "c700000001083233",
+            "tls" : {
+               "ja3" : [
+                  "ddfef2ad23ab6dd55307813c2d0b7d58"
+               ],
+               "ja3Cnt" : 1,
+               "ja3string" : [
+                  "771,4865-4866-4867,0-10-16-13-51-45-43-57-27-17513-41,29-23-24,"
+               ],
+               "ja3stringCnt" : 1
+            },
+            "totDataBytes" : 1330
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-210907"
+            }
+         }
+      }
+   ]
+}
+

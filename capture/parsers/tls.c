@@ -512,9 +512,11 @@ LOCAL int tls_process_server_handshake_record(MolochSession_t *session, const un
     return 0;
 }
 /******************************************************************************/
-LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
+void tls_process_client_hello_data(MolochSession_t *session, const unsigned char *data, int len)
 {
-    BSB sslbsb;
+    if (len < 7)
+        return;
+
     char ja3[30000];
     BSB ja3bsb;
     char ecfja3[1000];
@@ -524,163 +526,168 @@ LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *dat
     char ecja3[10000];
     BSB ecja3bsb;
 
-    BSB_INIT(sslbsb, data, len);
     BSB_INIT(ja3bsb, ja3, sizeof(ja3));
     BSB_INIT(ecja3bsb, ecja3, sizeof(ecja3));
     BSB_INIT(ecfja3bsb, ecfja3, sizeof(ecfja3));
     BSB_INIT(eja3bsb, eja3, sizeof(eja3));
+
+    BSB pbsb;
+    BSB_INIT(pbsb, data, len);
+
+    unsigned char *pdata = BSB_WORK_PTR(pbsb);
+    int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
+
+    uint16_t ver = 0;
+    BSB_IMPORT_skip(pbsb, 4); // type + len
+    BSB_IMPORT_u16(pbsb, ver);
+
+    BSB_EXPORT_sprintf(ja3bsb, "%d,", ver);
+
+    BSB cbsb;
+    BSB_INIT(cbsb, pdata+6, plen-2); // The - 4 for plen is done above, confusing
+
+    if(BSB_REMAINING(cbsb) > 32) {
+        BSB_IMPORT_skip(cbsb, 32);     // Random
+
+        int skiplen = 0;
+        BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
+        if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
+            unsigned char *ptr = BSB_WORK_PTR(cbsb);
+            char sessionId[513];
+            int  i;
+
+            for(i=0; i < skiplen; i++) {
+                sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
+                sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
+            }
+            sessionId[skiplen*2] = 0;
+            moloch_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
+        }
+        BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
+
+        BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
+        while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
+            uint16_t c = 0;
+            BSB_IMPORT_u16(cbsb, c);
+            if (!tls_is_grease_value(c)) {
+                BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
+            }
+            skiplen -= 2;
+        }
+        BSB_EXPORT_rewind(ja3bsb, 1); // Remove last -
+        BSB_EXPORT_u08(ja3bsb, ',');
+
+        BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
+        BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
+
+        if (BSB_REMAINING(cbsb) > 6) {
+            int etotlen = 0;
+            BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
+
+            etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
+
+            BSB ebsb;
+            BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+
+            while (BSB_REMAINING(ebsb) > 4) {
+                uint16_t etype = 0, elen = 0;
+
+                BSB_IMPORT_u16 (ebsb, etype);
+                BSB_IMPORT_u16 (ebsb, elen);
+
+                if (!tls_is_grease_value(etype))
+                    BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
+
+                if (elen > BSB_REMAINING(ebsb))
+                    break;
+
+                if (etype == 0) { // SNI
+                    BSB snibsb;
+                    BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
+                    BSB_IMPORT_skip (ebsb, elen);
+
+                    int sni = 0;
+                    BSB_IMPORT_u16(snibsb, sni); // list len
+                    if (sni != BSB_REMAINING(snibsb))
+                        continue;
+
+                    BSB_IMPORT_u08(snibsb, sni); // type
+                    if (sni != 0)
+                        continue;
+
+                    BSB_IMPORT_u16(snibsb, sni); // len
+                    if (sni != BSB_REMAINING(snibsb))
+                        continue;
+
+                    moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
+                } else if (etype == 0x000a) { // Elliptic Curves
+                    BSB bsb;
+                    BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
+                    BSB_IMPORT_skip (ebsb, elen);
+
+                    uint16_t llen = 0;
+                    BSB_IMPORT_u16(bsb, llen); // list len
+                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                        uint16_t c = 0;
+                        BSB_IMPORT_u16(bsb, c);
+                        if (!tls_is_grease_value(c)) {
+                            BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
+                        }
+                        llen -= 2;
+                    }
+                    BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
+                } else if (etype == 0x000b) { // Elliptic Curves point formats
+                    BSB bsb;
+                    BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
+                    BSB_IMPORT_skip (ebsb, elen);
+
+                    uint16_t llen = 0;
+                    BSB_IMPORT_u08(bsb, llen); // list len
+                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                        uint8_t c = 0;
+                        BSB_IMPORT_u08(bsb, c);
+                        BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
+                        llen -= 1;
+                    }
+                    BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
+                } else {
+                    BSB_IMPORT_skip (ebsb, elen);
+                }
+            }
+            BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
+        }
+    }
+
+    if (BSB_LENGTH(ja3bsb) > 0 && BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb) && BSB_NOT_ERROR(ecfja3bsb)) {
+        BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
+
+        if (config.ja3Strings) {
+            moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+        }
+
+        gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
+
+        if (config.debug > 1) {
+            LOG("JA3: %s => %s", ja3, md5);
+        }
+        if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
+            g_free(md5);
+        }
+    }
+}
+/******************************************************************************/
+LOCAL void tls_process_client(MolochSession_t *session, const unsigned char *data, int len)
+{
+    BSB sslbsb;
+
+    BSB_INIT(sslbsb, data, len);
 
     if (BSB_REMAINING(sslbsb) > 5) {
         unsigned char *ssldata = BSB_WORK_PTR(sslbsb);
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
 
-        BSB pbsb;
-        BSB_INIT(pbsb, ssldata+5, ssllen);
-
-        if (BSB_REMAINING(pbsb) > 7) {
-            unsigned char *pdata = BSB_WORK_PTR(pbsb);
-            int            plen = MIN(BSB_REMAINING(pbsb) - 4, pdata[2] << 8 | pdata[3]);
-
-            uint16_t ver = 0;
-            BSB_IMPORT_skip(pbsb, 4); // type + len
-            BSB_IMPORT_u16(pbsb, ver);
-
-            BSB_EXPORT_sprintf(ja3bsb, "%d,", ver);
-
-            BSB cbsb;
-            BSB_INIT(cbsb, pdata+6, plen-2); // The - 4 for plen is done above, confusing
-
-            if(BSB_REMAINING(cbsb) > 32) {
-                BSB_IMPORT_skip(cbsb, 32);     // Random
-
-                int skiplen = 0;
-                BSB_IMPORT_u08(cbsb, skiplen);   // Session Id Length
-                if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
-                    unsigned char *ptr = BSB_WORK_PTR(cbsb);
-                    char sessionId[513];
-                    int  i;
-
-                    for(i=0; i < skiplen; i++) {
-                        sessionId[i*2] = moloch_char_to_hexstr[ptr[i]][0];
-                        sessionId[i*2+1] = moloch_char_to_hexstr[ptr[i]][1];
-                    }
-                    sessionId[skiplen*2] = 0;
-                    moloch_field_string_add(srcIdField, session, sessionId, skiplen*2, TRUE);
-                }
-                BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
-
-                BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
-                while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
-                    uint16_t c = 0;
-                    BSB_IMPORT_u16(cbsb, c);
-                    if (!tls_is_grease_value(c)) {
-                        BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
-                    }
-                    skiplen -= 2;
-                }
-                BSB_EXPORT_rewind(ja3bsb, 1); // Remove last -
-                BSB_EXPORT_u08(ja3bsb, ',');
-
-                BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
-                BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
-
-                if (BSB_REMAINING(cbsb) > 6) {
-                    int etotlen = 0;
-                    BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
-
-                    etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
-
-                    BSB ebsb;
-                    BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
-
-                    while (BSB_REMAINING(ebsb) > 4) {
-                        uint16_t etype = 0, elen = 0;
-
-                        BSB_IMPORT_u16 (ebsb, etype);
-                        BSB_IMPORT_u16 (ebsb, elen);
-
-                        if (!tls_is_grease_value(etype))
-                            BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
-
-                        if (elen > BSB_REMAINING(ebsb))
-                            break;
-
-                        if (etype == 0) { // SNI
-                            BSB snibsb;
-                            BSB_INIT(snibsb, BSB_WORK_PTR(ebsb), elen);
-                            BSB_IMPORT_skip (ebsb, elen);
-
-                            int sni = 0;
-                            BSB_IMPORT_u16(snibsb, sni); // list len
-                            if (sni != BSB_REMAINING(snibsb))
-                                continue;
-
-                            BSB_IMPORT_u08(snibsb, sni); // type
-                            if (sni != 0)
-                                continue;
-
-                            BSB_IMPORT_u16(snibsb, sni); // len
-                            if (sni != BSB_REMAINING(snibsb))
-                                continue;
-
-                            moloch_field_string_add(hostField, session, (char *)BSB_WORK_PTR(snibsb), sni, TRUE);
-                        } else if (etype == 0x000a) { // Elliptic Curves
-                            BSB bsb;
-                            BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
-                            BSB_IMPORT_skip (ebsb, elen);
-
-                            uint16_t llen = 0;
-                            BSB_IMPORT_u16(bsb, llen); // list len
-                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
-                                uint16_t c = 0;
-                                BSB_IMPORT_u16(bsb, c);
-                                if (!tls_is_grease_value(c)) {
-                                    BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
-                                }
-                                llen -= 2;
-                            }
-                            BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
-                        } else if (etype == 0x000b) { // Elliptic Curves point formats
-                            BSB bsb;
-                            BSB_INIT(bsb, BSB_WORK_PTR(ebsb), elen);
-                            BSB_IMPORT_skip (ebsb, elen);
-
-                            uint16_t llen = 0;
-                            BSB_IMPORT_u08(bsb, llen); // list len
-                            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
-                                uint8_t c = 0;
-                                BSB_IMPORT_u08(bsb, c);
-                                BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
-                                llen -= 1;
-                            }
-                            BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
-                        } else {
-                            BSB_IMPORT_skip (ebsb, elen);
-                        }
-                    }
-                    BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
-                }
-            }
-        }
-        BSB_IMPORT_skip(sslbsb, ssllen + 5);
-
-        if (BSB_LENGTH(ja3bsb) > 0 && BSB_NOT_ERROR(ja3bsb) && BSB_NOT_ERROR(ecja3bsb) && BSB_NOT_ERROR(eja3bsb) && BSB_NOT_ERROR(ecfja3bsb)) {
-            BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
-
-            if (config.ja3Strings) {
-                moloch_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
-            }
-
-            gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
-
-            if (config.debug > 1) {
-                LOG("JA3: %s => %s", ja3, md5);
-            }
-            if (!moloch_field_string_add(ja3Field, session, md5, 32, FALSE)) {
-                g_free(md5);
-            }
-        }
+        tls_process_client_hello_data(session, ssldata + 5, ssllen);
     }
 }
 

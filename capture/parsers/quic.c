@@ -18,6 +18,8 @@
  */
 #include "moloch.h"
 #include <arpa/inet.h>
+#include <dlfcn.h>
+#include "openssl/evp.h"
 
 extern MolochConfig_t        config;
 LOCAL  int hostField;
@@ -318,6 +320,247 @@ LOCAL void quic_fb_tcp_classify(MolochSession_t *session, const unsigned char *U
     }
 }
 /******************************************************************************/
+LOCAL uint64_t quic_get_number(BSB *bsb)
+{
+    uint64_t result = 0;
+    int      tmp = 0;
+
+    // Top 2 bits of first value maps to 1/2/4/8 bytes
+    BSB_IMPORT_u08(*bsb, tmp);
+    if (BSB_IS_ERROR(*bsb))
+        return 0;
+    if ((tmp & 0xc0) == 0)
+        return tmp & 0x3f;
+
+    BSB_IMPORT_rewind(*bsb, 1);
+    switch (tmp & 0xc0) {
+    case 0x40:
+        BSB_IMPORT_u16(*bsb, result);
+        result &= 0x3FFF;
+        break;
+    case 0x80:
+        BSB_IMPORT_u32(*bsb, result);
+        result &= 0x3FFFFFFF;
+        break;
+    case 0xc0:
+        BSB_IMPORT_u64(*bsb, result);
+        result &= 0x3FFFFFFFFFFFFFFFL;
+        break;
+    }
+    return result;
+}
+/******************************************************************************/
+LOCAL void hkdfExpandLabel(uint8_t *secret, int secretLen, char *label, uint8_t *okm, gsize okmLen)
+{
+    uint8_t data[100];
+    BSB bsb;
+    BSB_INIT(bsb, data, sizeof(data));
+
+    int labelLen = strlen(label);
+    BSB_EXPORT_u16(bsb, okmLen);
+    BSB_EXPORT_u08(bsb, labelLen);
+    BSB_EXPORT_ptr(bsb, label, labelLen);
+    BSB_EXPORT_u08(bsb, 0); //contextLength
+
+    // I think there is supposed to be a complex loop here, not sure if needed for what we are doing
+    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, secret, secretLen);
+    g_hmac_update(hmac, data, BSB_LENGTH(bsb));
+    uint8_t one = 1;
+    g_hmac_update(hmac, &one, 1);
+
+    // If we are truncating the digest get the whole thing and copy just the first part
+    if (okmLen < 32) {
+        uint8_t digest[32];
+        gsize len = 32;
+        g_hmac_get_digest(hmac, digest, &len);
+        memcpy(okm, digest, okmLen);
+    } else {
+        g_hmac_get_digest(hmac, okm, &okmLen);
+    }
+    g_hmac_unref(hmac);
+}
+/******************************************************************************/
+LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+{
+// This is the most obfuscate protocol ever
+// Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
+
+    static int init = 1;
+    void (*process_client_hello_data)(MolochSession_t *session, const uint8_t *data, int len) = NULL;
+
+    // Do this once. Has to be here since parsers can be loaded in any order
+    if (init) {
+        init = 0;
+        process_client_hello_data = dlsym(RTLD_DEFAULT, "tls_process_client_hello_data");
+    }
+
+    // Min length for quic packets because of padding
+    if (len < 1200 || len > 3000 || which != 0)
+        return;
+
+    // Only look for long form initial
+    if ((data[0] & 0xf0) != 0xc0)
+        return;
+
+    int rc;
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
+
+  // Decode Header
+    uint8_t flags;
+    BSB_IMPORT_u08(bsb, flags); // Still partially encrypted
+    BSB_IMPORT_skip(bsb, 4); // version
+
+    int dlen = 0;
+    // Destination
+    BSB_IMPORT_u08(bsb, dlen);
+    uint8_t *did = BSB_WORK_PTR(bsb);
+    BSB_IMPORT_skip(bsb, dlen);
+
+    // Source
+    int slen = 0;
+    BSB_IMPORT_u08(bsb, slen);
+    BSB_IMPORT_skip(bsb, slen);
+
+    // Token
+    int tlen = 0;
+    BSB_IMPORT_u08(bsb, tlen);
+    BSB_IMPORT_skip(bsb, tlen);
+
+    // Length
+    int packet_len = quic_get_number(&bsb);
+    if (packet_len != BSB_REMAINING(bsb)) {
+        LOG("Couldn't parse header packet len %d remaining %ld", packet_len, BSB_REMAINING(bsb));
+        return;
+    }
+
+    if (BSB_IS_ERROR(bsb))
+        return;
+
+  // HKDF - HMAC-based Key Derivation Function
+  // https://datatracker.ietf.org/doc/html/rfc5869
+
+  // HKDF-Extract(salt, IKM) -> PRK
+    static uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
+    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, salt, 20);
+    g_hmac_update(hmac, (guchar*)did, dlen);
+    uint8_t prk[65];
+    gsize   prkLen = sizeof(prk);
+    g_hmac_get_digest(hmac, (guchar*)prk, &prkLen);
+    g_hmac_unref(hmac);
+
+  // Calculate secrets for later
+    uint8_t clientOkm[32];
+    hkdfExpandLabel(prk, prkLen, "tls13 client in", clientOkm, sizeof(clientOkm));
+
+    uint8_t hpOkm[16];
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic hp", hpOkm, sizeof(hpOkm));
+
+    uint8_t keyOkm[16];
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic key", keyOkm, sizeof(keyOkm));
+
+    uint8_t ivOkm[12];
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic iv", ivOkm, sizeof(ivOkm));
+
+  // Get mask input data
+    BSB_IMPORT_skip(bsb, 4);
+    uint8_t maskInput[16];
+    BSB_IMPORT_byte(bsb, maskInput, 16);
+
+    if (BSB_IS_ERROR(bsb))
+        return;
+
+    BSB_IMPORT_rewind(bsb, 20); // Go back
+
+  // Calculate mask for packet number
+    uint8_t mask[100];
+    int     maskLen = sizeof(mask);
+
+    EVP_CIPHER_CTX      *hp_cipher_ctx;
+    const EVP_CIPHER    *hp_cipher = EVP_aes_128_ecb();
+    hp_cipher_ctx = EVP_CIPHER_CTX_new();
+    rc = EVP_EncryptInit(hp_cipher_ctx, hp_cipher, hpOkm, NULL);
+    rc += EVP_EncryptUpdate(hp_cipher_ctx, mask, &maskLen, maskInput, 16);
+    // EVP_EncryptFinal(hp_cipher_ctx, mask, &maskLen); --> Not sure why this isn't needed
+    EVP_CIPHER_CTX_free(hp_cipher_ctx);
+
+    if (rc != 2) {
+        if (config.debug)
+            LOG("Couldn't encrypt mask: %d", rc);
+        return;
+    }
+
+  // Decrypt Packet Number using mask
+  // https://datatracker.ietf.org/doc/html/draft-ietf-quic-tls-33#section-5.4.1
+    uint8_t packet0 = flags;
+    if ((packet0 & 0x80) == 0x80) {
+        packet0 ^= mask[0] & 0x0f;
+    } else {
+        packet0 ^= mask[0] & 0x1f;
+    }
+    int pn_length = (packet0 & 0x03) + 1;
+    uint64_t pn = 0;
+
+    if (pn_length > 2)
+        return;
+
+    for (int i = 0; pn_length > 0; pn_length--, i++) {
+        uint8_t tmp = 0;
+        BSB_IMPORT_u08(bsb, tmp);
+        pn |= (tmp ^ mask[i+1]) << (8*(pn_length - 1));
+    }
+
+  // Make copy, with decrypted first byte and packet number
+    uint8_t buffer[3100];
+    uint16_t headerLen = BSB_POSITION(bsb);
+
+    memcpy(buffer, data, len);
+
+    buffer[0] = packet0;
+    buffer[headerLen - 1] = pn & 0xff;
+    if (pn_length == 2) {
+        buffer[headerLen - 2] = (pn & 0xff) >> 8;
+    }
+
+  // Make nonce
+    uint8_t nonce[12];
+    memcpy(nonce, ivOkm, sizeof(nonce));
+    nonce[10] ^= (pn & 0xff) >> 8;
+    nonce[11] ^= (pn & 0xff);
+
+  // Decrypt Packet
+    EVP_CIPHER_CTX      *pp_cipher_ctx;
+    const EVP_CIPHER    *pp_cipher = EVP_aes_128_gcm();
+    uint8_t out[3000];
+    int outLen = sizeof(out);
+
+    pp_cipher_ctx = EVP_CIPHER_CTX_new();
+    rc = EVP_DecryptInit(pp_cipher_ctx, pp_cipher, keyOkm, nonce);
+    rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb)-16);
+    //rc = EVP_DecryptFinal(pp_cipher_ctx, out, &outLen); --> Not sure why this isn't needed
+    EVP_CIPHER_CTX_free(pp_cipher_ctx);
+    if (rc != 2) {
+        if (config.debug)
+            LOG("Couldn't decrypt packet: %d", rc);
+        return;
+    }
+
+    BSB_INIT(bsb, out, outLen);
+
+    // We are going to assume CRYPTO is first, ALW fix
+    if (BSB_PEEK(bsb) != 0x06)
+        return;
+
+    BSB_IMPORT_skip(bsb, 1);
+    quic_get_number(&bsb); // offset, ALW fix
+    int length = quic_get_number(&bsb);
+
+    if (process_client_hello_data)
+        process_client_hello_data(session, BSB_WORK_PTR(bsb), length);
+
+    moloch_session_add_protocol(session, "quic");
+}
+/******************************************************************************/
 void moloch_parser_init()
 {
     moloch_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"Q05", 3, quic_5x_udp_classify);
@@ -327,6 +570,8 @@ void moloch_parser_init()
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"Q02", 3, quic_2445_udp_classify);
     moloch_parsers_classifier_register_tcp("fbzero", NULL, 0, (const unsigned char *)"\x31QTV", 4, quic_fb_tcp_classify);
     moloch_parsers_classifier_register_udp("quic", NULL, 9, (const unsigned char *)"PRST", 4, quic_add);
+
+    moloch_parsers_classifier_register_udp("quic", NULL, 1, (const unsigned char *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
 
     hostField = moloch_field_define("quic", "lotermfield",
         "host.quic", "Hostname", "quic.host",

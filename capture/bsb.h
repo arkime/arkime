@@ -226,6 +226,22 @@ do {                                              \
         BSB_SET_ERROR(b);                         \
 } while (0)
 
+#define BSB_IMPORT_u64(b, x)                      \
+do {                                              \
+    if ((b).ptr && (b).ptr + 8 <= (b).end) {      \
+        x = ((uint64_t)((b).ptr)[0]) << 56 |      \
+            ((uint64_t)((b).ptr)[0]) << 48 |      \
+            ((uint64_t)((b).ptr)[0]) << 40 |      \
+            ((uint64_t)((b).ptr)[0]) << 32 |      \
+            ((uint64_t)((b).ptr)[0]) << 24 |      \
+            ((uint64_t)((b).ptr)[1]) << 16 |      \
+            ((uint64_t)((b).ptr)[2]) << 8  |      \
+            ((uint64_t)((b).ptr)[3]);             \
+        (b).ptr += 8;                             \
+    } else                                        \
+        BSB_SET_ERROR(b);                         \
+} while (0)
+
 #define BSB_LEXPORT_u08(b, x) BSB_EXPORT_u08(b, x)
 
 #define BSB_LEXPORT_u16(b, x)                     \
@@ -333,10 +349,20 @@ do {                                              \
 
 
 
+#define BSB_IMPORT_byte(b, x, size)               \
+do {                                              \
+    if ((b).ptr + size <= (b).end) {              \
+        memcpy(x, b.ptr, size);                   \
+        (b).ptr += size;                          \
+    } else {                                      \
+        BSB_SET_ERROR(b);                         \
+    }                                             \
+} while (0)
+
 #define BSB_IMPORT_zbyte(b, x, size)              \
 do {                                              \
     if ((b).ptr + size <= (b).end) {              \
-        memcpy(x, b, size);                       \
+        memcpy(x, b.ptr, size);                   \
         (x)[size] = 0;                            \
         (b).ptr += size;                          \
     } else {                                      \
