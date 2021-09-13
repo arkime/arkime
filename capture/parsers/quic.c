@@ -386,7 +386,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
 // Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
 
     static int init = 1;
-    void (*process_client_hello_data)(MolochSession_t *session, const uint8_t *data, int len) = NULL;
+    static void (*process_client_hello_data)(MolochSession_t *session, const uint8_t *data, int len) = NULL;
 
     // Do this once. Has to be here since parsers can be loaded in any order
     if (init) {
