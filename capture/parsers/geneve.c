@@ -27,7 +27,7 @@ LOCAL MolochPacketRC geneve_packet_enqueue(MolochPacketBatch_t * batch, MolochPa
     if ((data[0] & 0xc0) != 0 || (data[1] & 0x3f) != 0)
         return MOLOCH_PACKET_UNKNOWN;
 
-    uint8_t  veroptlen;
+    uint8_t  veroptlen = 0;
     uint16_t protocol;
 
     BSB bsb;

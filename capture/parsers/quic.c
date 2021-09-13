@@ -407,7 +407,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     BSB_INIT(bsb, data, len);
 
   // Decode Header
-    uint8_t flags;
+    uint8_t flags = 0;
     BSB_IMPORT_u08(bsb, flags); // Still partially encrypted
     BSB_IMPORT_skip(bsb, 4); // version
 
