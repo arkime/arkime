@@ -1103,6 +1103,9 @@ function sendSessionsListQL (pOptions, list, nextQLCb) {
 // If less then 10 items are returned we don't delete anything.
 // Doesn't support mounting sub directories in main directory, don't do it.
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
+  if (Config.debug > 0) {
+    console.log('EXPIRE - device', nodes, dirs, minFreeSpaceG);
+  }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
@@ -1129,16 +1132,33 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     query.query.bool.must[1].bool.should.push(obj);
   });
 
+  if (Config.debug > 1) {
+    console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
+  }
+
   // Keep at least 10 files
   Db.search('files', 'file', query, function (err, data) {
-    if (err || data.error || !data.hits || data.hits.total <= 10) {
+    if (err || data.error || !data.hits) {
+      if (Config.debug > 0) {
+        console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+      }
       return nextCb();
     }
-    async.forEachSeries(data.hits.hits, function (item, forNextCb) {
-      if (data.hits.total <= 10) {
-        return forNextCb('DONE');
-      }
 
+    if (Config.debug === 1) {
+      console.log('EXPIRE - device results hits:', data.hits.hits.length);
+    } else if (Config.debug > 1) {
+      console.log('EXPIRE - device results', JSON.stringify(err, false, 2), JSON.stringify(data, false, 2));
+    }
+
+    if (data.hits.total <= 10) {
+      if (Config.debug > 0) {
+        console.log('EXPIRE - device results not deleting any files since 10 or less');
+      }
+      return nextCb();
+    }
+
+    async.forEachSeries(data.hits.hits, function (item, forNextCb) {
       const fields = item._source || item.fields;
 
       let freeG;
@@ -1158,6 +1178,9 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         }
         return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
       } else {
+        if (Config.debug > 0) {
+          console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
+        }
         return forNextCb('DONE');
       }
     }, function () {
@@ -1175,6 +1198,9 @@ function expireCheckDevice (nodes, stat, nextCb) {
       freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.f_frsize / 1024.0 * stat.f_blocks / (1024.0 * 1024.0);
     }
     const freeG = stat.f_frsize / 1024.0 * stat.f_bavail / (1024.0 * 1024.0);
+    if (Config.debug > 0) {
+      console.log(`EXPIRE check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
+    }
     if (freeG < freeSpaceG) {
       doit = true;
     }
