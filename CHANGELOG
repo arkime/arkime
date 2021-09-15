@@ -39,6 +39,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - added expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
   - viewer - shortcut display improvements
+  - viewer - didn't decrypt pcap for large packets correctly (issue #1756)
   - wise - handle empty config file on startup
   - wise - support ./ with value-actions
 

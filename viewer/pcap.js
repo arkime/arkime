@@ -226,7 +226,7 @@ Pcap.prototype.readPacket = function (pos, cb) {
       }
       // Full packet didn't fit, get what was missed
       try {
-        const buffer2 = Buffer.alloc((16 + len) - bytesRead - posoffset);
+        const buffer2 = Buffer.alloc((16 + len) - (bytesRead - posoffset));
         fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, subBytesRead, ignore) => {
           if (this.encoding === 'aes-256-ctr') {
             const decipher = this.createDecipher((pos + subBytesRead) / 16);
