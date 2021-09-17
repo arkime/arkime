@@ -20,11 +20,13 @@
 const http = require('http');
 
 exports.init = function (Config, emitter) {
-  const port = Config.get('wisePort', 8081);
-  const host = Config.get('wiseHost', '127.0.0.1');
+  let baseURL = Config.get('wiseURL', undefined);
+  if (baseURL === undefined) {
+    baseURL = 'http://' + Config.get('wiseHost', '127.0.0.1') + ':' + Config.get('wisePort', 8081);
+  }
 
   emitter.on('makeSessionDetail', function (cb) {
-    const url = 'http://' + host + ':' + port + '/views';
+    const url = baseURL + '/views';
     const req = http.request(url, function (res) {
       let body = '';
       res.on('data', function (chunk) {
@@ -46,7 +48,7 @@ exports.init = function (Config, emitter) {
   });
 
   emitter.on('makeRightClick', function (cb) {
-    const url = 'http://' + host + ':' + port + '/rightClicks';
+    const url = baseURL + '/rightClicks';
     const req = http.request(url, function (res) {
       let body = '';
       res.on('data', function (chunk) {
