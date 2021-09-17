@@ -68,6 +68,7 @@
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use JSON;
+use MIME::Base64;
 use Data::Dumper;
 use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
@@ -308,7 +309,7 @@ sub esPost
     if ($response->code == 500 || ($response->code != 200 && $response->code != 201 && !$dontcheck)) {
       return from_json("{}") if ($dontcheck == 2);
 
-      logmsg "POST RESULT:", $response->content, "\n" if ($verbose > 3);
+      logmsg "POST RESULT:", $response->content, "\n" if ($response->code == 401 || $verbose > 3 || ($verbose > 0 && int($response->code / 100) == 4));
       die "Couldn't POST ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
 
@@ -5956,8 +5957,8 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|reindex|force-sessions3-update)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -6429,6 +6430,30 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esDelete("/${PREFIX}fields_*", 1);
     esDelete("/${PREFIX}fields", 1);
     fieldsCreate();
+    exit 0;
+} elsif ($ARGV[1] =~ /^es-adduser$/) {
+    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
+    my $json = to_json({
+      roles => ["superuser"],
+      password => $password});
+    esPost("/_security/user/$ARGV[2]", $json);
+    exit 0;
+} elsif ($ARGV[1] =~ /^es-passwd$/) {
+    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
+    my $json = to_json({password => $password});
+    if (@ARGV < 3) {
+        esPost("/_security/user/_password", $json);
+    } else {
+        esPost("/_security/user/$ARGV[2]/_password", $json);
+    }
+    exit 0;
+} elsif ($ARGV[1] =~ /^es-addapikey$/) {
+    my $json = to_json({ name => $ARGV[2] });
+    $json = esPost("/_security/api_key", $json);
+    print Dumper($json);
+    print "\n";
+    my $key = encode_base64($json->{id} . ':' . $json->{api_key});
+    print "Add to config file:\nelasticsearchAPIKey=$key\n";
     exit 0;
 } elsif ($ARGV[1] eq "force-sessions3-update") {
     my $nodes = esGet("/_nodes");
