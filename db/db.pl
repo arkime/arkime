@@ -106,6 +106,7 @@ my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
 my $ESAPIKEY = "";
+my $USERPASS;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -141,6 +142,7 @@ sub showHelp($)
     print "  --insecure                   - Disable certificate verification for https calls\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
+    print "  --esuser <user>[:<password>] - ES User and Password";
     print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
     print "\n";
     print "General Commands:\n";
@@ -289,7 +291,7 @@ sub esGet
       die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure elasticsearch is running/reachable?";
     }
     my $json = from_json($response->content);
-    logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3);
+    logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
     return $json
 }
 
@@ -5947,6 +5949,15 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     } elsif ($ARGV[0] =~ /(--esapikey|--elasticsearchAPIKey)$/) {
         $ESAPIKEY = $ARGV[1];
         shift @ARGV;
+    } elsif ($ARGV[0] =~ /--esuser$/) {
+        $USERPASS = $ARGV[1];
+        shift @ARGV;
+        if ($USERPASS !~ ':') {
+            system ("stty -echo");
+            $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
+            system ("stty echo");
+        }
+        $USERPASS = encode_base64($USERPASS);
     } else {
         showHelp("Unknkown global option $ARGV[0]")
     }
@@ -5973,6 +5984,8 @@ $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 
 
 if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "ApiKey $ESAPIKEY");
+} elsif ($USERPASS ne "") {
+    $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
 if ($CLIENTCERT ne "") {
