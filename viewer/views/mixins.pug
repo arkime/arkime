@@ -1,6 +1,6 @@
 //- Display a clickable value
 mixin clickableValue(expr, value, parse, session)
-  if (value)
+  if (value !== undefined)
     moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
   else
     | &nbsp;
