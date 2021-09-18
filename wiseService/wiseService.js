@@ -70,6 +70,7 @@ const internals = {
         { name: 'httpRealm', ifField: 'userNameHeader', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'userNameHeader', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
+        { name: 'usersElasticsearchAPIKey', required: false, help: 'an Elastisearch API key for users DB access', password: true },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, usually empty' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
@@ -266,11 +267,20 @@ function setupAuth () {
     internals.usersPrefix = internals.usersPrefix || '';
   }
 
-  internals.usersElasticSearch = new Client({
+  const esOptions = {
     node: es,
     maxRetries: 2,
     requestTimeout: 300000
-  });
+  };
+
+  const usersElasticsearchAPIKey = getConfig('wiseService', 'usersElasticsearchAPIKey');
+  if (usersElasticsearchAPIKey) {
+    esOptions.auth = {
+      apiKey: usersElasticsearchAPIKey
+    };
+  }
+
+  internals.usersElasticSearch = new Client(esOptions);
 
   if (internals.userNameHeader === 'digest') {
     passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },

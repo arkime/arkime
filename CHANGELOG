@@ -44,6 +44,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - display "0" values
   - wise - handle empty config file on startup
   - wise - support ./ with value-actions
+  - wise - support usersElasticsearchAPIKey
 
 3.0.0 2021/08/18
   - BREAKING - elasticsearch - ES 7.10.0 or later required
