@@ -45,6 +45,7 @@ const clients = {};
 let nodes = [];
 const clusters = {};
 const clusterList = [];
+const authHeader = {};
 let activeESNodes = [];
 const httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
 const httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
@@ -134,6 +135,17 @@ function node2ESAPIKey (node) {
   return null;
 }
 
+function node2ESBasicAuth (node) {
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const kv = parts[p].split(':');
+    if (kv[0] === 'elasticsearchBasicAuth') {
+      return kv[1];
+    }
+  }
+  return null;
+}
+
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -170,6 +182,7 @@ function simpleGather (req, res, bodies, doneCb) {
   }
   async.map(activeNodes, (node, asyncCb) => {
     let result = '';
+    const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
     const prefix = node2Prefix(node);
 
@@ -183,6 +196,11 @@ function simpleGather (req, res, bodies, doneCb) {
     } else {
       options.agent = httpAgent;
       client = http;
+    }
+    if (authHeader[nodeName]) {
+      options.headers = {
+        Authorization: authHeader[nodeName]
+      };
     }
     const preq = client.request(url, options, (pres) => {
       pres.on('data', (chunk) => {
@@ -932,22 +950,35 @@ nodes.forEach((node) => {
     console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
   }
 
-  let nodeName = node.split(',')[0];
-
-  nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
+  let esNode = node.split(',')[0];
+  esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
 
   const esClientOptions = {
-    node: nodeName,
+    node: esNode,
     requestTimeout: 300000,
     maxRetries: 2,
     ssl: esSSLOptions
   };
 
+  const nodeName = node2Name(node);
   const esAPIKey = node2ESAPIKey(node);
+  let esBasicAuth = node2ESBasicAuth(node);
   if (esAPIKey) {
     esClientOptions.auth = {
       apiKey: esAPIKey
     };
+    authHeader[nodeName] = `ApiKey ${esAPIKey}`;
+  } else if (esBasicAuth) {
+    if (!esBasicAuth.includes(':')) {
+      esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
+    }
+    esBasicAuth = esBasicAuth.split(':');
+    esClientOptions.auth = {
+      username: esBasicAuth[0],
+      password: esBasicAuth[1]
+    };
+    const b64 = Buffer.to(esBasicAuth, 'base64').toString();
+    authHeader[nodeName] = `Basic ${b64}`;
   }
 
   clients[node] = new Client(esClientOptions);
