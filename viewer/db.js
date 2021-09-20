@@ -96,6 +96,16 @@ exports.initialize = async (info, cb) => {
     esClientOptions.auth = {
       apiKey: info.esApiKey
     };
+  } else if (info.esBasicAuth) {
+    let basicAuth = info.esBasicAuth;
+    if (!basicAuth.includes(':')) {
+      basicAuth = Buffer.from(basicAuth, 'base64').toString();
+    }
+    basicAuth = basicAuth.split(':');
+    esClientOptions.auth = {
+      user: basicAuth[0],
+      pass: basicAuth[1]
+    };
   }
 
   internals.client7 = new Client(esClientOptions);

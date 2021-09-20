@@ -2605,5 +2605,7 @@ Db.initialize({
   debug: Config.debug,
   esApiKey: Config.get('elasticsearchAPIKey', null),
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
   cronQueries: Config.get('cronQueries', false)
 }, main);

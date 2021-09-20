@@ -26,6 +26,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - all - support float field type
   - all - support Q-in-Q ether type
   - all - --insecure has consistent messaging now
+  - all - Finally added elasticsearchBasicAuth/usersElasticsearchBasicAuth can be
+          user:pass or base64(user:pass)
   - capture - s3 writer uses IMDSv2 (thanks fj604)
   - capture - dscp src/dst (issue #1626)
   - capture - refactor how udp tunnels are added, just normal parsers now

@@ -87,5 +87,7 @@ Db.initialize({
   usersHost: Config.get('usersElasticsearch'),
   usersPrefix: Config.get('usersPrefix'),
   esApiKey: Config.get('elasticsearchAPIKey', null),
-  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null)
+  usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
+  esBasicAuth: Config.get('elasticsearchBasicAuth', null),
+  usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null)
 }, main);

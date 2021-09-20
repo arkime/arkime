@@ -2568,9 +2568,20 @@ void moloch_db_init()
         static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
 
         char* elasticsearchAPIKey = moloch_config_str(NULL, "elasticsearchAPIKey", NULL);
+        char* elasticsearchBasicAuth = moloch_config_str(NULL, "elasticsearchBasicAuth", NULL);
         if (elasticsearchAPIKey) {
             static char auth[1024];
             snprintf(auth, sizeof(auth), "Authorization: ApiKey %s", elasticsearchAPIKey);
+            headers[2] = auth;
+        } else if (elasticsearchBasicAuth) {
+            static char auth[1024];
+            if (strchr(elasticsearchBasicAuth, ':') != NULL) {
+                gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, -1);
+                snprintf(auth, sizeof(auth), "Authorization: Basic %s", b64);
+                g_free(b64);
+            } else {
+                snprintf(auth, sizeof(auth), "Authorization: Basic %s", elasticsearchBasicAuth);
+            }
             headers[2] = auth;
         }
 
