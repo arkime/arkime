@@ -977,7 +977,7 @@ nodes.forEach((node) => {
       username: esBasicAuth[0],
       password: esBasicAuth[1]
     };
-    const b64 = Buffer.to(esBasicAuth, 'base64').toString();
+    const b64 = Buffer.from(esBasicAuth.join(':')).toString('base64');
     authHeader[nodeName] = `Basic ${b64}`;
   }
 
