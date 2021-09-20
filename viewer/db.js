@@ -103,8 +103,8 @@ exports.initialize = async (info, cb) => {
     }
     basicAuth = basicAuth.split(':');
     esClientOptions.auth = {
-      user: basicAuth[0],
-      pass: basicAuth[1]
+      username: basicAuth[0],
+      password: basicAuth[1]
     };
   }
 
@@ -120,6 +120,16 @@ exports.initialize = async (info, cb) => {
     if (info.usersEsApiKey) {
       esUsersClientOptions.auth = {
         apiKey: info.usersEsApiKey
+      };
+    } else if (info.usersEsBasicAuth) {
+      let basicAuth = info.usersEsBasicAuth;
+      if (!basicAuth.includes(':')) {
+        basicAuth = Buffer.from(basicAuth, 'base64').toString();
+      }
+      basicAuth = basicAuth.split(':');
+      esUsersClientOptions.auth = {
+        username: basicAuth[0],
+        password: basicAuth[1]
       };
     }
     internals.usersClient7 = new Client(esUsersClientOptions);
