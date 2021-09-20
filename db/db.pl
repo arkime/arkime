@@ -5953,9 +5953,9 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $USERPASS = $ARGV[1];
         shift @ARGV;
         if ($USERPASS !~ ':') {
-            system ("stty -echo");
-            $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
-            system ("stty echo");
+            system ("stty -echo 2> /dev/null");
+            $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character password for $USERPASS:");
+            system ("stty echo 2> /dev/null");
         }
         $USERPASS = encode_base64($USERPASS);
     } else {
@@ -6445,14 +6445,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     fieldsCreate();
     exit 0;
 } elsif ($ARGV[1] =~ /^es-adduser$/) {
-    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
+    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password for $ARGV[2]:");
     my $json = to_json({
       roles => ["superuser"],
       password => $password});
     esPost("/_security/user/$ARGV[2]", $json);
     exit 0;
 } elsif ($ARGV[1] =~ /^es-passwd$/) {
-    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password:");
+    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password for $ARGV[2]:");
     my $json = to_json({password => $password});
     if (@ARGV < 3) {
         esPost("/_security/user/_password", $json);
