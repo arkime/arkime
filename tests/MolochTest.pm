@@ -32,7 +32,7 @@ my ($url, $debug) = @_;
 sub viewerGetToken {
 my ($url, $token, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url", "x-moloch-cookie" => $token);
+    my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8123$url", "x-arkime-cookie" => $token);
     diag $url, " response:>", $response->content, "<:\n" if ($debug);
     my $tmp = $response->content;
     $tmp =~ s,/[A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
@@ -74,7 +74,7 @@ my ($url, $debug) = @_;
 sub viewerDeleteToken {
 my ($url, $token, $debug) = @_;
 
-    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url", "x-moloch-cookie" => $token));
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$MolochTest::host:8123$url", "x-arkime-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);
@@ -134,9 +134,9 @@ my ($url, $content, $token, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
     }
     my $json = from_json($response->content);
     return ($json);
@@ -147,9 +147,9 @@ my ($url, $content, $token, $debug) = @_;
 
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->post("http://$MolochTest::host:8124$url", Content => $content, "x-arkime-cookie" => $token);
     }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
@@ -175,9 +175,9 @@ sub viewerPutToken {
 my ($url, $content, $token, $debug) = @_;
     my $response;
     if (substr($content, 0, 2) eq '{"') {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
     } else {
-        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "x-moloch-cookie" => $token);
+        $response = $MolochTest::userAgent->put("http://$MolochTest::host:8123$url", Content => $content, "x-arkime-cookie" => $token);
     }
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
