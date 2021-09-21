@@ -61,6 +61,20 @@ if (esClientKey) {
   }
 }
 
+const esAPIKey = Config.get('elasticsearchAPIKey');
+const esBasicAuth = Config.get('elasticsearchBasicAuth');
+let authHeader;
+
+if (esAPIKey) {
+  authHeader = `ApiKey ${esAPIKey}`;
+} else if (esBasicAuth) {
+  if (!esBasicAuth.includes(':')) {
+    authHeader = `Basic ${esBasicAuth}`;
+  } else {
+    authHeader = `Basic ${Buffer.from(esBasicAuth, 'base64').toString()}`;
+  }
+}
+
 // GET calls we can match exactly
 const getExact = {
   '/': 1,
@@ -177,6 +191,12 @@ function doProxy (req, res, cb) {
   } else {
     options.agent = httpAgent;
     client = http;
+  }
+
+  if (authHeader) {
+    options.headers = {
+      Authorization: authHeader
+    };
   }
 
   const preq = client.request(url, options, (pres) => {
