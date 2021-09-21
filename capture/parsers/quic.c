@@ -556,7 +556,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     int length = quic_get_number(&bsb);
 
     if (process_client_hello_data)
-        process_client_hello_data(session, BSB_WORK_PTR(bsb), length);
+        process_client_hello_data(session, BSB_WORK_PTR(bsb), MIN(BSB_REMAINING(bsb), length));
 
     moloch_session_add_protocol(session, "quic");
 }
