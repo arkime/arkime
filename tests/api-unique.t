@@ -12,8 +12,8 @@ my ($param) = @_;
     my $txt = $MolochTest::userAgent->get("http://$MolochTest::host:8123/unique.txt?$param")->content;
     my $mtxt = $MolochTest::userAgent->get("http://$MolochTest::host:8125/unique.txt?$param")->content;
 
-    $txt =~ s,/[-A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
-    $mtxt =~ s,/[-A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $txt =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
+    $mtxt =~ s,/[-0-9A-Za-z./]+tests/pcap/,/DIR/tests/pcap/,g;
 
     my @lines = split(/\n/, $txt);
     my @mlines = split(/\n/, $mtxt);
