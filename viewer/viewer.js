@@ -40,6 +40,7 @@ const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
+const cryptoLib = require('crypto');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -287,8 +288,9 @@ if (Config.get('passwordSecret')) {
             return ucb(err, suser, userName);
           } else if ((err && err.toString().includes('Not Found')) ||
              (!suser || !suser.found)) { // Try dynamic creation
-            const nuser = JSON.parse(new Function('return `' +
+            let nuser = JSON.parse(new Function('return `' +
                    internals.userAutoCreateTmpl + '`;').call(req.headers));
+            nuser.passStore = Config.pass2store(nuser.userId, cryptoLib.randomBytes(48)
             Db.setUser(userName, nuser, (err, info) => {
               if (err) {
                 console.log('Elastic search error adding user: (' + userName + '):(' + JSON.stringify(nuser) + '):' + err);
