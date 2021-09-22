@@ -214,6 +214,7 @@ exports.initialize = async (info, cb) => {
     return cb();
   } catch (err) {
     console.log('ERROR - getting ES client info, is ES running?', err);
+    process.exit(1);
   }
 };
 
