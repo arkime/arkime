@@ -288,9 +288,11 @@ if (Config.get('passwordSecret')) {
             return ucb(err, suser, userName);
           } else if ((err && err.toString().includes('Not Found')) ||
              (!suser || !suser.found)) { // Try dynamic creation
-            let nuser = JSON.parse(new Function('return `' +
+            const nuser = JSON.parse(new Function('return `' +
                    internals.userAutoCreateTmpl + '`;').call(req.headers));
-            nuser.passStore = Config.pass2store(nuser.userId, cryptoLib.randomBytes(48)
+            if (nuser.passStore === undefined) {
+              nuser.passStore = Config.pass2store(nuser.userId, cryptoLib.randomBytes(48));
+            }
             Db.setUser(userName, nuser, (err, info) => {
               if (err) {
                 console.log('Elastic search error adding user: (' + userName + '):(' + JSON.stringify(nuser) + '):' + err);
