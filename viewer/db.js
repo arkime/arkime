@@ -43,6 +43,24 @@ const internals = {
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
 };
 
+function checkURLs (nodes) {
+  if (nodes === undefined) {
+    return;
+  }
+
+  if (Array.isArray(nodes)) {
+    nodes.forEach(node => {
+      if (!node.startsWith('http')) {
+        console.log(`ERROR - Elasticsearch endpoint url '${node}' must start with http:// or https://`);
+        process.exit();
+      }
+    });
+  } else if (!nodes.startswith('http')) {
+    console.log(`ERROR - Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
+    process.exit();
+  }
+}
+
 exports.initialize = async (info, cb) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   internals.debug = info.debug || 0;
@@ -51,6 +69,9 @@ exports.initialize = async (info, cb) => {
   delete info.debug;
 
   internals.info = info;
+
+  checkURLs(info.host);
+  checkURLs(info.usersHost);
 
   if (info.prefix === '') {
     internals.prefix = '';
