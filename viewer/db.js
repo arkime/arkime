@@ -587,7 +587,27 @@ exports.cancelByOpaqueId = async (cancelId) => {
   return 'ES task cancelled succesfully';
 };
 
-function searchScrollInternal (index, type, query, options, cb) {
+exports.searchScroll = function (index, type, query, options, cb) {
+  // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
+  if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
+    console.log('ALW scrolling');
+    return exports.search(index, type, query, options, cb);
+  }
+
+  // Convert promise to cb by calling ourselves
+  if (!cb) {
+    return new Promise((resolve, reject) => {
+      exports.searchScroll(index, query, type, options, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  }
+
+  // Now actually do the search scroll
   const from = +query.from || 0;
   const size = +query.size || 0;
 
@@ -637,33 +657,6 @@ function searchScrollInternal (index, type, query, options, cb) {
         return cb(null, totalResults);
       }
     });
-}
-
-exports.searchScroll = function (index, type, query, options, cb) {
-  if ((query.size || 0) + (parseInt(query.from, 10) || 0) >= 10000) {
-    if (cb) {
-      return searchScrollInternal(index, type, query, options, cb);
-    } else {
-      return new Promise((resolve, reject) => {
-        searchScrollInternal(index, type, query, options, (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
-    }
-  } else {
-    return exports.search(index, type, query, options, cb);
-  }
-};
-
-exports.searchPrimary = function (index, type, query, options, cb) {
-  // ALW - FIXME - 6.1+ has removed primary_first :(
-  const params = { preference: 'primaries', ignore_unavailable: 'true' };
-  exports.merge(params, options);
-  return exports.searchScroll(index, type, query, params, cb);
 };
 
 exports.searchSessions = function (index, query, options, cb) {

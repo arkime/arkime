@@ -43,7 +43,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     };
 
     // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
-    //   then two queries will be run (ie., run buildSessionQuery->searchPrimary->process twice): first for the
+    //   then two queries will be run (ie., run buildSessionQuery->searchSessions->process twice): first for the
     //   original specified time frame and second for the same time frame immediately preceding it.
     //
     // Nodes have an .inresult attribute where:
@@ -139,7 +139,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   // dbConnectionQuerySearch(connQueries, resultId, cb)
   //
   // Executes the query/queries specified in the connQueries array (elements are
-  // of the type returned by buildConnectionQuery) by calling Db.searchPrimary
+  // of the type returned by buildConnectionQuery) by calling Db.searchSessions
   // and returns the results via callback (see the definition of the "resultSet"
   // object at the beginning of this function). The results are returned in an
   // array containing the result sets which correspond to the queries in the
@@ -165,7 +165,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       } else {
         Db.searchSessions(connQueries[0].indices, connQueries[0].query, connQueries[0].options, (err, graph) => {
           if (err || graph.error) {
-            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchPrimary', connQueries[0].resultId, util.inspect(err, false, 50));
+            console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch -> Db.searchSessions', connQueries[0].resultId, util.inspect(err, false, 50));
             resultSet.err = err || graph.error;
           }
           resultSet.graph = graph;
@@ -176,7 +176,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
           } else {
             return cb([resultSet]);
           }
-        }); // Db.searchPrimary
+        }); // Db.searchSessions
       } // if connQueries[0].err) / else
     } else {
       return cb([null]);
@@ -193,7 +193,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
   //
   // 0. buildConnections
   // 1. buildConnectionQuery       - creates array of 1..2 connQueries
-  // 2. dbConnectionQuerySearch    - executes connQueries searches via Db.searchPrimary
+  // 2. dbConnectionQuerySearch    - executes connQueries searches via Db.searchSessions
   // 3. processResultSets          - accumulate nodes and links into nodesHash/connects hashes
   //    - process
   //      - updateValues
@@ -377,7 +377,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
       // The call to process() will ensure the resultId value is OR'ed into the .inresult
       //   attribute of each node.
 
-      // prepare and execute the Db.searchPrimary query|queries
+      // prepare and execute the Db.searchSessions query|queries
       if (connQueries.length > 0) {
         dbConnectionQuerySearch(connQueries, (connResultSets) => {
           if (Config.debug) {

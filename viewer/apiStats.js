@@ -278,7 +278,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     const func = mapping[req.query.name] ? mapping[req.query.name].func : function (item) { return item[req.query.name]; };
 
-    Db.searchScroll('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
+    Db.search('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
       if (err || result.error) {
         console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err || result.error, false, 50));
       }
