@@ -44,7 +44,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
+                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   scl enable devtoolset-9 rh-python36 'aws s3 cp moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
@@ -82,7 +82,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
+                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
@@ -132,7 +132,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
@@ -184,7 +184,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
                   aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
@@ -243,7 +243,7 @@ jobs:
                 mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
 
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | head -n 1 | tr "-" "_"`
-                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https /data/moloch'
+                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
                   scl enable devtoolset-9 rh-python36 'aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                   scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
@@ -303,7 +303,7 @@ jobs:
                 (cd release ; make installmoloch)
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
-                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
+                scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
                 scl enable devtoolset-9 rh-python36 'aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-7/ --acl public-read'
             - ls -l *.rpm
         secrets:
@@ -335,7 +335,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
+                fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch
                 aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-8/ --acl public-read
             - ls -l *.rpm
 
@@ -370,7 +370,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
             - ls -l *.deb
         secrets:
@@ -404,7 +404,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
+                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-20.04/ --acl public-read
             - ls -l *.deb
         secrets:
