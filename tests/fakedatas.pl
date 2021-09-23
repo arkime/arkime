@@ -311,7 +311,7 @@ sub generateHTTP()
 "dstBytes" : ${dstBytes},
 "dstDataBytes" : ${dstDataBytes},
 "dstGEO" : "${\geo()}",
-"dstIp" : "${dstIp}",
+"destination.ip" : "${dstIp}",
 "dstMac" : [
    "00:c0:ca:30:eb:0c"
 ],
@@ -322,7 +322,7 @@ sub generateHTTP()
 "dstOuiCnt" : 1,
 "dstPackets" : ${dstPackets},
 "dstPayload8" : "485454502f312e30",
-"dstPort" : 80,
+"destination.port" : 80,
 "fileId" : [],
 "firstPacket" : ${firstPacket},
 "http" : {
@@ -473,7 +473,7 @@ sub generateHTTP()
 "srcBytes" : ${srcBytes},
 "srcDataBytes" : ${srcDataBytes},
 "srcGEO" : "${\geo()}",
-"srcIp" : "${srcIp}",
+"source.ip" : "${srcIp}",
 "srcMac" : [
    "00:16:44:a0:a0:7e"
 ],
@@ -484,7 +484,7 @@ sub generateHTTP()
 "srcOuiCnt" : 1,
 "srcPackets" : ${srcPackets},
 "srcPayload8" : "474554202f6a732f",
-"srcPort" : ${\num(1,65000)},
+"source.port" : ${\num(1,65000)},
 "tags" : [
    "$TAG",
    "dstip",
@@ -503,14 +503,14 @@ sub generateHTTP()
    "urg" : 0
 },
 "timestamp" : ${lastPacket},
-"totBytes" : @{[$srcBytes + $dstBytes]},
+"network.bytes" : @{[$srcBytes + $dstBytes]},
 "totDataBytes" : @{[$srcDataBytes + $dstDataBytes]},
-"totPackets" : @{[$srcPackets + $dstPackets]}
+"network.packets" : @{[$srcPackets + $dstPackets]}
 }
 );
 
   my @tinfo = gmtime($lastPacket/1000);
-  my $index = sprintf("tests_sessions2-%02d%02d%02d", $tinfo[5]%100, $tinfo[4]+1, $tinfo[3]);
+  my $index = sprintf("tests_sessions3-%02d%02d%02d", $tinfo[5]%100, $tinfo[4]+1, $tinfo[3]);
 
   print $json if ($DEBUG);
   my $result = esPost("/$index/_doc", $json);
@@ -586,4 +586,3 @@ esGet("/_flush");
 esGet("/_refresh");
 esGet("/_flush");
 esGet("/_refresh");
-
