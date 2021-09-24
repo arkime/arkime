@@ -69,7 +69,11 @@ void moloch_readers_init()
     moloch_readers_add("pcap-over-ip-client", reader_pcapoverip_init);
     moloch_readers_add("pcapoveripserver", reader_pcapoverip_init);
     moloch_readers_add("pcap-over-ip-server", reader_pcapoverip_init);
+}
 
+/******************************************************************************/
+void moloch_readers_start()
+{
     char **interfaceOps;
     interfaceOps = moloch_config_raw_str_list(NULL, "interfaceOps", "");
 
@@ -102,6 +106,7 @@ void moloch_readers_init()
         g_strfreev(opsstr);
     }
     g_strfreev(interfaceOps);
+    moloch_reader_start();
 }
 /******************************************************************************/
 void moloch_readers_exit()

@@ -33,6 +33,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - refactor how udp tunnels are added, just normal parsers now
   - capture - initial GENEVE, VXLAN-GPE support
   - capture - initial IETF QUIC support
+  - capture - fix interfaceOps crash (issue #1763)
   - release - much improved arkime_config_interfaces.sh (thanks arkaØm)
   - release - node 14.17.6
   - viewer - stop upload menu showing up when empty command

@@ -680,7 +680,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
             moloch_writers_start(NULL);
         }
     }
-    moloch_reader_start();
+    moloch_readers_start();
     if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
         LOGEXIT("Reader didn't call moloch_packet_set_dltsnap");
     return FALSE;
