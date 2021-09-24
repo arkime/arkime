@@ -244,22 +244,25 @@
                 size="sm"
                 buttons
                 v-model="actionFormItemRadio">
-                <b-radio value="open"
+                <b-radio
+                  value="open"
+                  class="btn-radio"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + openSessions.length + ' opened sessions'"
-                  class="btn-radio">
+                  :title="openItemsTooltip">
                   Open Items
                 </b-radio>
-                <b-radio value="visible"
+                <b-radio
+                  value="visible"
+                  class="btn-radio"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + Math.min(numVisibleSessions, numMatchingSessions) + ' visible sessions'"
-                  class="btn-radio">
+                  :title="visibleItemsTooltip">
                   Visible Items
                 </b-radio>
-                <b-radio value="matching"
+                <b-radio
+                  value="matching"
+                  class="btn-radio"
                   v-b-tooltip.hover
-                  :title="'Apply action to ' + numMatchingSessions + ' query matching sessions'"
-                  class="btn-radio">
+                  :title="matchingItemsTooltip">
                   Matching Items
                 </b-radio>
               </b-form-radio-group>
@@ -449,6 +452,15 @@ export default {
     },
     molochClusters: function () {
       return this.$store.state.remoteclusters;
+    },
+    openItemsTooltip: function () {
+      return 'Apply action to ' + this.$options.filters.commaString(this.openSessions.length) + ' opened sessions';
+    },
+    visibleItemsTooltip: function () {
+      return 'Apply action to ' + this.$options.filters.commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) + ' visible sessions';
+    },
+    matchingItemsTooltip: function () {
+      return 'Apply action to ' + this.$options.filters.commaString(this.numMatchingSessions) + ' query matching sessions';
     }
   },
   watch: {
