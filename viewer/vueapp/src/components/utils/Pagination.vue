@@ -12,11 +12,11 @@
       <!-- paging -->
       <b-pagination
         size="sm"
-        :limit="5"
+        :limit="10"
         hide-ellipsis
         :per-page="length"
         v-model="currentPage"
-        :total-rows="recordsFiltered"
+        :total-rows="Math.min(recordsFiltered, 10000)"
         @input="notifyParent(true)">
       </b-pagination> <!-- paging -->
       <!-- page info -->
