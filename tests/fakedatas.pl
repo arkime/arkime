@@ -564,7 +564,7 @@ for (my $pos;$pos <= $#ARGV; $pos++) {
         $pos++;
         $TAG = $ARGV[$pos];
     } else {
-        print "--debug                - turn on debugging100\n";
+        print "--debug                - turn on debugging\n";
         print "--http <number>        - number of http records to create, default 100\n";
         print "--sticky-src [<ip>]    - All src ips will be the same, which can be optionally provided\n";
         print "--sticky-dst [<ip>]    - All dst ips will be the same, which can be optionally provided\n";
