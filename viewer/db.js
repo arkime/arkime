@@ -590,7 +590,6 @@ exports.cancelByOpaqueId = async (cancelId) => {
 exports.searchScroll = function (index, type, query, options, cb) {
   // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
   if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    console.log('ALW scrolling');
     return exports.search(index, type, query, options, cb);
   }
 
