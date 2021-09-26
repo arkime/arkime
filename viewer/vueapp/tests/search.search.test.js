@@ -12,6 +12,7 @@ import Search from '../src/components/search/Search.vue';
 import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
+import '../src/filters.js';
 const { userWithSettings, fields, views } = require('./consts');
 
 global.$ = global.jQuery = $;
