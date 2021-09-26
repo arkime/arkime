@@ -1628,8 +1628,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
    * @returns {array} data - The list of sessions with the requested fields
-   * @returns {number} recordsTotal - The total number of files Arkime knows about
-   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {number} recordsTotal - The total number of sessions Arkime knows about
+   * @returns {number} recordsFiltered - The number of sessions matching query
    */
   sModule.getSessions = (req, res) => {
     let map = {};
@@ -1804,8 +1804,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} graph - The data to populate the sessions timeline graph
    * @returns {object} spi - The list of spi fields with values and counts
    * @returns {object} protocols - The list of protocols with counts
-   * @returns {number} recordsTotal - The total number of files Arkime knows about
-   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {number} recordsTotal - The total number of sessions Arkime knows about
+   * @returns {number} recordsFiltered - The number of sessions matching query
    */
   sModule.getSPIView = (req, res) => {
     if (req.query.spi === undefined) {
@@ -1976,8 +1976,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
-   * @returns {number} recordsTotal - The total number of files Arkime knows about
-   * @returns {number} recordsFiltered - The number of files returned in this result
+   * @returns {number} recordsTotal - The total number of sessions Arkime knows about
+   * @returns {number} recordsFiltered - The number of sessions matching query
    */
   sModule.getSPIGraph = (req, res) => {
     req.query.facets = 1;

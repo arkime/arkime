@@ -1,4 +1,4 @@
-use Test::More tests => 70;
+use Test::More tests => 80;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -59,12 +59,28 @@ my ($url) = @_;
 
 
 # bigendian pcap file tests
-    my $json = get("/sessions.json?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
+    is (scalar @{$json->{data}}, 1);
 
     my $id = $json->{data}->[0]->{id};
     my $response = getBinary("/test/raw/" . $id . "?type=src");
     is (unpack("H*", $response->content), "08000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363708004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "Correct bigendian tcpdump data");
+
+    # Start at second element
+    my $json = get("/sessions.json?length=1000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
+    is (scalar @{$json->{data}}, 0);
+
+    # Force a scroll
+    $json = get("/sessions.json?length=20000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    is ($json->{recordsFiltered}, 1);
+    is (scalar @{$json->{data}}, 1);
+
+    # Force a scroll and start at second element
+    $json = get("/sessions.json?length=20000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    is ($json->{recordsFiltered}, 1);
+    is (scalar @{$json->{data}}, 0);
 
 # Check facets short
     $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

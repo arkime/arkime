@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 37;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -96,4 +96,10 @@ my $json;
     }
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 
-    #print Dumper($json);
+    $json = mesPost("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"size":20000}');
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-141015", "Correct sessions index name");
+    cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
+
+    $json = mesPost("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"from": 100, "size":20000}');
+    is (scalar @{$json->{hits}->{hits}}, 0);
+    cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");

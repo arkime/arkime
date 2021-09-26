@@ -46,6 +46,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - support wiseURL for wise.js viewer plugin (issue #1758)
   - viewer - display "0" values
   - multies - support elasticsearchApiKey
+  - multies - support scrolling and large queries/pagination
   - wise - handle empty config file on startup
   - wise - support ./ with value-actions
   - wise - support usersElasticsearchAPIKey

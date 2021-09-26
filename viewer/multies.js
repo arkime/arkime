@@ -169,6 +169,42 @@ function getActiveNodes (clusterin) {
   }
 }
 
+function makeRequest (url, options, cb) {
+  let result = '';
+
+  const preq = options.arkime_client.request(url, options, (pres) => {
+    pres.on('data', (chunk) => {
+      result += chunk.toString();
+    });
+    pres.on('end', () => {
+      if (result.length) {
+        result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+        result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+        result = JSON.parse(result);
+      } else {
+        result = {};
+      }
+      if (cb) {
+        cb(null, result);
+      }
+    });
+  });
+  preq.setHeader('content-type', 'application/json');
+  if (options.arkime_opaque !== undefined) {
+    preq.setHeader('X-Opaque-Id', options.arkime_opaque);
+  }
+  if (options.arkime_body !== undefined) {
+    if (options.method === 'DELETE') {
+      preq.setHeader('content-length', options.arkime_body.length);
+    }
+    preq.end(options.arkime_body);
+  }
+  preq.on('error', (e) => {
+    console.log('Request error', e);
+  });
+  preq.end();
+}
+
 function simpleGather (req, res, bodies, doneCb) {
   let cluster = null;
   if (req.query.cluster) {
@@ -181,58 +217,82 @@ function simpleGather (req, res, bodies, doneCb) {
     return doneCb(true, [{}]);
   }
   async.map(activeNodes, (node, asyncCb) => {
-    let result = '';
     const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
-    const prefix = node2Prefix(node);
 
-    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
+    const options = { method: req.method, arkime_opaque: req.headers['x-opaque-id'] };
+    options.arkime_prefix = node2Prefix(node);
+    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix).replace(/arkime_sessions2/g, 'sessions2');
     const url = new URL(nodeUrl);
-    const options = { method: req.method };
-    let client;
-    if (nodeUrl.match(/^https:/)) {
+    if (url.protocol === 'https:') {
       options.agent = httpsAgent;
-      client = https;
+      options.arkime_client = https;
     } else {
       options.agent = httpAgent;
-      client = http;
+      options.arkime_client = http;
     }
     if (authHeader[nodeName]) {
       options.headers = {
         Authorization: authHeader[nodeName]
       };
     }
-    const preq = client.request(url, options, (pres) => {
-      pres.on('data', (chunk) => {
-        result += chunk.toString();
-      });
-      pres.on('end', () => {
-        if (result.length) {
-          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-          result = result.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
-          result = JSON.parse(result);
+    if (req._body) {
+      if (bodies && bodies[node]) {
+        options.arkime_body = bodies[node];
+      } else {
+        options.arkime_body = req.body;
+      }
+    }
+
+    if (req.arkime_need_to_scroll) {
+      // Save size and reset to 1000 per scroll call
+      let body = JSON.parse(options.arkime_body);
+      const totSize = body.size;
+      body.size = 1000;
+      options.arkime_body = JSON.stringify(body);
+
+      // Add scroll parameter to url to turn on scrolling
+      url.href += '&scroll=2m';
+
+      let fullResults;
+      makeRequest(url, options, function doResponse (err, result) {
+        // First response just save, after append
+        if (fullResults === undefined) {
+          fullResults = result;
+          fullResults.cluster = clusters[node];
         } else {
-          result = {};
+          fullResults.hits.hits = fullResults.hits.hits.concat(result.hits.hits);
         }
+
+        // We are done, return the results
+        if (result.hits.hits.length === 0 || fullResults.hits.hits.length >= totSize) {
+          // Clear the scroll if we have a scroll id
+          if (result._scroll_id !== undefined) {
+            url.pathname = '/_search/scroll';
+            url.search = '';
+            body = { scroll_id: result._scroll_id };
+            options.arkime_body = JSON.stringify(body);
+            options.method = 'DELETE';
+            makeRequest(url, options);
+          }
+
+          return asyncCb(null, fullResults);
+        }
+
+        // Not done, but just keep doing a scroll, clearing any search parameters
+        url.pathname = '/_search/scroll';
+        url.search = '';
+        body = { scroll: '2m', scroll_id: result._scroll_id };
+        options.arkime_body = JSON.stringify(body);
+        makeRequest(url, options, doResponse);
+      });
+    } else {
+      // Not a scroll
+      makeRequest(url, options, (err, result) => {
         result.cluster = clusters[node];
         asyncCb(null, result);
       });
-    });
-    preq.setHeader('content-type', 'application/json');
-    if (req.headers['x-opaque-id'] !== undefined) {
-      preq.setHeader('X-Opaque-Id', req.headers['x-opaque-id']);
     }
-    if (req._body) {
-      if (bodies && bodies[node]) {
-        preq.end(bodies[node]);
-      } else {
-        preq.end(req.body);
-      }
-    }
-    preq.on('error', (e) => {
-      console.log('Request error with node', node, e);
-    });
-    preq.end();
   }, doneCb);
 }
 
@@ -701,7 +761,7 @@ function combineResults (obj, result) {
   }
 }
 
-function sortResults (search, obj) {
+function sortResultsAndTruncate (search, obj) {
   // Resort items
   if (search.sort && search.sort.length > 0) {
     const sortorder = [];
@@ -787,6 +847,10 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
 app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   const bodies = {};
   const search = JSON.parse(req.body);
+
+  if (+search.size + (+search.from || 0) > 10000) {
+    req.arkime_need_to_scroll = true;
+  }
   // console.log("DEBUG - INCOMING SEARCH", JSON.stringify(search, null, 2));
   const activeNodes = getActiveNodes();
   async.each(activeNodes, (node, asyncCb) => {
@@ -811,7 +875,7 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
         aggConvert2Arr(obj.aggregations);
       }
 
-      sortResults(search, obj);
+      sortResultsAndTruncate(search, obj);
 
       res.send(obj);
     });
@@ -857,7 +921,7 @@ function msearch (req, res) {
           aggConvert2Arr(obj.responses[h].aggregations);
         }
 
-        sortResults(JSON.parse(lines[h * 2 + 1]), obj.responses[h]);
+        sortResultsAndTruncate(JSON.parse(lines[h * 2 + 1]), obj.responses[h]);
       }
 
       res.send(obj);

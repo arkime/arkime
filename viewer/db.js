@@ -614,7 +614,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
   delete query.from;
 
   let totalResults;
-  const params = { scroll: '5m' };
+  const params = { scroll: '2m' };
   exports.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
@@ -639,7 +639,7 @@ exports.searchScroll = function (index, type, query, options, cb) {
       if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
         try {
           const { body: results } = await exports.scroll({
-            scroll: '5m', body: { scroll_id: response._scroll_id }
+            scroll: '2m', body: { scroll_id: response._scroll_id }
           });
           getMoreUntilDone(null, results);
         } catch (err) {
