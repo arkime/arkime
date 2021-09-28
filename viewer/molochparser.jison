@@ -336,7 +336,7 @@ function formatExists(yy, field, op)
   return {exists: {field: field2Raw(yy, field)}};
 }
 
-function formatQuery(yy, field, op, value)
+function formatQuery(yy, field, op, value, parent)
 {
   var obj;
   //console.log("field", field, "op", op, "value", value);
@@ -398,12 +398,11 @@ function formatQuery(yy, field, op, value)
       switch (type) {
       case 'ip':
         if (field === 'ip') {
-          // TODO this works for == but not for !=. for some reason the bool.must_not of the terms gets nested in an outer bool.must_not
           let infos = getIpInfoList(yy, false);
           for (let info of infos) {
-            const newObj = formatQuery(yy, info.exp, op, '$' + value);
+            let newObj = formatQuery(yy, info.exp, op, '$' + value, obj);
             if (newObj) {
-              obj.bool[operation].push(newObj);
+              obj.bool[operation].concat(newObj);
             }
           }
         } else {
@@ -411,6 +410,9 @@ function formatQuery(yy, field, op, value)
             index: `${yy.prefix}lookups`,
             id: shortcut._id,
             path: 'ip'
+          }
+          if (parent) {
+            obj = parent;
           }
           obj.bool[operation].push({ terms });
         }
