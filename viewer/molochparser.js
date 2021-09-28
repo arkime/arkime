@@ -535,7 +535,7 @@ function formatExists(yy, field, op)
   return {exists: {field: field2Raw(yy, field)}};
 }
 
-function formatQuery(yy, field, op, value)
+function formatQuery(yy, field, op, value, parent)
 {
   var obj;
   //console.log("field", field, "op", op, "value", value);
@@ -552,6 +552,99 @@ function formatQuery(yy, field, op, value)
     throw field + " - permission denied";
   }
 
+  /* look for value that starts with $ */
+  if (value[0] === '$' || (value[1] === '$' && value[0] === '[')) {
+    if (op !== "eq" && op !== "ne") {
+      throw 'Shortcuts only support == and !=';
+    }
+
+    let shortcuts = value;
+    if (value[0] !== "[" && value[value.length -1] !== "]") {
+      shortcuts = `[${value}]`;
+    }
+
+    shortcuts = ListToArray(shortcuts);
+
+    obj = { bool: {} };
+
+    let operation = 'should';
+    if (op === 'ne') {
+      operation = 'must_not';
+    }
+    obj.bool[operation] = [];
+
+    shortcuts.forEach(function(shortcut) {
+      shortcut = value = shortcut.substr(1); /* remove $ */
+      if (!yy.shortcuts || !yy.shortcuts[shortcut]) {
+        throw shortcut + ' - Shortcut not found';
+      }
+
+      shortcut = yy.shortcuts[shortcut];
+
+      var type = info.type2 || info.type;
+      var shortcutType = yy.shortcutTypeMap[type];
+
+      if (!shortcutType) {
+        throw "Unsupported field type: " + type
+      }
+
+      if (!shortcut._source[shortcutType]) {
+        throw 'shortcut must be of type ' + shortcutType;
+      }
+
+      const terms = {};
+
+      switch (type) {
+      case 'ip':
+        if (field === 'ip') {
+          let infos = getIpInfoList(yy, false);
+          for (let info of infos) {
+            let newObj = formatQuery(yy, info.exp, op, '$' + value, obj);
+            if (newObj) {
+              obj.bool[operation].concat(newObj);
+            }
+          }
+        } else {
+          terms[info.dbField] = {
+            index: `${yy.prefix}lookups`,
+            id: shortcut._id,
+            path: 'ip'
+          }
+          if (parent) {
+            obj = parent;
+          }
+          obj.bool[operation].push({ terms });
+        }
+        break;
+      case 'integer':
+        terms[info.dbField] = {
+          index: `${yy.prefix}lookups`,
+          id: shortcut._id,
+          path: 'number'
+        }
+        obj.bool[operation].push({ terms });
+        break;
+      case 'lotermfield':
+      case 'lotextfield':
+      case 'termfield':
+      case 'textfield':
+      case 'uptermfield':
+      case 'uptextfield':
+        terms[info.dbField] = {
+          index: `${yy.prefix}lookups`,
+          id: shortcut._id,
+          path: 'string'
+        }
+        obj.bool[operation].push({ terms });
+        break;
+      default:
+        throw "Unsupported field type: " + type;
+      }
+    });
+
+    return obj;
+  }
+
   if (info.regex) {
     var regex = new RegExp(info.regex);
     var obj = [];
@@ -566,83 +659,12 @@ function formatQuery(yy, field, op, value)
         completed[yy.fieldsMap[f].dbField] = 1;
       }
     }
+
     if (op === "ne")
       return {bool: {must_not: obj}};
     else
       return {bool: {should: obj}};
     throw "Invalid operator '" + op + "' for " + field;
-  }
-
-  /* look for value that starts with $ */
-  if (value[0] === '$') {
-    if (op !== "eq" && op !== "ne") {
-      throw 'Shortcuts only support == and !=';
-    }
-
-    value = value.substr(1); /* remove $ */
-    if (!yy.shortcuts || !yy.shortcuts[value]) {
-      throw value + ' - Shortcut not found';
-    }
-
-    var shortcut = yy.shortcuts[value];
-
-    obj = { terms: {} };
-    obj.terms[info.dbField] = {
-      index : `${yy.prefix}lookups`,
-      id : shortcut._id
-    };
-
-    var type = info.type2 || info.type;
-    var shortcutType = yy.shortcutTypeMap[type];
-
-    if (!shortcutType) {
-      throw "Unsupported field type: " + type
-    }
-
-    if (!shortcut._source[shortcutType]) {
-      throw 'shortcut must be of type ' + shortcutType;
-    }
-
-    switch (type) {
-    case 'ip':
-      if (field === 'ip') {
-        let infos = getIpInfoList(yy, false);
-        var ors = [];
-        for (let info of infos) {
-          obj = formatQuery(yy, info.exp, op, '$' + value);
-          if (obj) {
-            ors.push(obj);
-          }
-        }
-        obj = {bool: {should: ors}};
-      } else {
-        obj.terms[info.dbField].path = 'ip';
-      }
-
-      if (op === "ne") {
-        return { bool: { must_not: obj } };
-      }
-      return obj;
-    case 'integer':
-      obj.terms[info.dbField].path = 'number';
-      if (op === "ne") {
-        return { bool: { must_not: obj } };
-      }
-      return obj;
-    case 'lotermfield':
-    case 'lotextfield':
-    case 'termfield':
-    case 'textfield':
-    case 'uptermfield':
-    case 'uptextfield':
-      obj.terms[info.dbField].path = 'string';
-      if (op === "ne") {
-        return { bool: { must_not: obj } };
-      }
-      return obj;
-    default:
-      throw "Unsupported field type: " + type;
-    }
   }
 
   switch (info.type2 || info.type) {
