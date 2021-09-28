@@ -552,6 +552,7 @@ exports.search = async (index, type, query, options, cb) => {
   exports.merge(params, options);
 
   try {
+    console.log('ES SEARCH QUERY', JSON.stringify(params, false, 2)); // TODO remove
     const { body: results } = await internals.client7.search(params, cancelId);
     return cb ? cb(null, results) : results;
   } catch (err) {
