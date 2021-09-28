@@ -504,7 +504,7 @@ export default {
       // add the space to the tokens
       if (spaceCP) { tokens.push(' '); }
 
-      const lastToken = tokens[tokens.length - 1];
+      let lastToken = tokens[tokens.length - 1];
 
       // display fields
       if (tokens.length <= 1) {
@@ -565,6 +565,10 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
+      if (/^(\[)/.test(lastToken)) { // it is a list of values
+        lastToken = lastToken.substring(1); // remove first char '['
+      }
+
       // autocomplete variables
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
@@ -572,15 +576,14 @@ export default {
         if (field && field.type) {
           url += `&fieldType=${field.type}`;
         }
-        this.$http.get(url)
-          .then((response) => {
-            this.loadingValues = false;
-            const escapedToken = lastToken.replace('$', '\\$');
-            this.results = this.findMatch(escapedToken, response.data);
-          }, (error) => {
-            this.loadingValues = false;
-            this.loadingError = error.text || error;
-          });
+        this.$http.get(url).then((response) => {
+          this.loadingValues = false;
+          const escapedToken = lastToken.replace('$', '\\$');
+          this.results = this.findMatch(escapedToken, response.data);
+        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = error.text || error;
+        });
 
         return;
       }
@@ -634,21 +637,19 @@ export default {
 
         this.cancellablePromise = FieldService.getValues(params);
 
-        this.cancellablePromise.promise
-          .then((result) => {
-            this.cancellablePromise = null;
-            if (result) {
-              this.loadingValues = false;
-              this.loadingError = '';
-              this.results = result;
-              this.addExistsItem(lastToken, operatorToken);
-            }
-          })
-          .catch((error) => {
-            this.cancellablePromise = null;
+        this.cancellablePromise.promise.then((result) => {
+          this.cancellablePromise = null;
+          if (result) {
             this.loadingValues = false;
-            this.loadingError = error.message || error;
-          });
+            this.loadingError = '';
+            this.results = result;
+            this.addExistsItem(lastToken, operatorToken);
+          }
+        }).catch((error) => {
+          this.cancellablePromise = null;
+          this.loadingValues = false;
+          this.loadingError = error.message || error;
+        });
       }
     },
     /**
@@ -727,12 +728,29 @@ export default {
         result = q += str + ' ';
       } else { // replace the last token and rebuild query
         let t, i;
+
+        const isArray = /^(\[)/.test(lastToken);
+        if (isArray) { // it's an array of values
+          if (/,/.test(lastToken)) {
+            // contains a , so we need to split the last token by the ,
+            const split = lastToken.split(',');
+            split[split.length - 1] = str;
+            str = split.join(',');
+          } else {
+            str = `[${str}`;
+          }
+        }
         tokens[tokens.length - 1] = str;
 
         for (i = 0; i < tokens.length; ++i) {
           t = tokens[i];
           if (t === ' ') { break; }
           result += t + ' ';
+          if (i === tokens.length - 1 && isArray) { // if were at the end
+            // and we're building an array of values, remove the last space
+            // the next char will either be a comma or closing square bracket
+            result = result.substring(0, result.length - 1);
+          }
         }
 
         if (allTokens.length > tokens.length) {
