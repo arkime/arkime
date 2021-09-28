@@ -1,4 +1,4 @@
-use Test::More tests => 72;
+use Test::More tests => 82;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -86,13 +86,19 @@ countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\$test_shortcut_updated,\$ip_shortcut]"));
-$json = viewerDeleteToken("/api/shortcut/$ipShortcutId", $token); # cleanup
 
 # same tests with multi
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTestMulti(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$test_shortcut_updated"));
+countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=[\$test_shortcut_updated,\$ip_shortcut]"));
+countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
+countTestMulti(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==[\$test_shortcut_updated,\$ip_shortcut]"));
+countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\$test_shortcut_updated,\$ip_shortcut]"));
+
+$json = viewerDeleteToken("/api/shortcut/$ipShortcutId", $token); # cleanup
 
 # create shortcut by another user
 $json = viewerPostToken("/api/shortcut?molochRegressionUser=user2", '{"name":"other_test_shortcut","type":"string","value":"udp"}', $otherToken);
