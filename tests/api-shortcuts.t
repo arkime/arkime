@@ -1,4 +1,4 @@
-use Test::More tests => 62;
+use Test::More tests => 72;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -76,6 +76,17 @@ countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
 countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
 countTest(0, "molochRegressionUser=user2&date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$test_shortcut_updated"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$test_shortcut_updated"));
+
+# create another ip shortcut
+$json = viewerPostToken("/api/shortcut", '{"name":"ip_shortcut","type":"ip","value":"10.0.0.3"}', $token);
+my $ipShortcutId = $json->{shortcut}->{id};
+# search by list of shortcuts
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=[\$test_shortcut_updated,\$ip_shortcut]"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==[\$test_shortcut_updated,\$ip_shortcut]"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\$test_shortcut_updated,\$ip_shortcut]"));
+$json = viewerDeleteToken("/api/shortcut/$ipShortcutId", $token); # cleanup
 
 # same tests with multi
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
