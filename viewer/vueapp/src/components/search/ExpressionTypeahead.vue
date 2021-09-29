@@ -565,31 +565,14 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
-      if (/^(\[)/.test(lastToken)) { // it is a list of values
-        lastToken = lastToken.substring(1); // remove first char '['
-      }
-
-      // autocomplete variables
-      if (/^(\$)/.test(lastToken)) {
-        this.loadingValues = true;
-        let url = 'api/shortcuts?fieldFormat=true&map=true';
-        if (field && field.type) {
-          url += `&fieldType=${field.type}`;
-        }
-        this.$http.get(url).then((response) => {
-          this.loadingValues = false;
-          const escapedToken = lastToken.replace('$', '\\$');
-          this.results = this.findMatch(escapedToken, response.data);
-        }).catch((error) => {
-          this.loadingValues = false;
-          this.loadingError = error.text || error;
-        });
-
-        return;
-      }
-
       // Don't try and autocomplete these fields
       if (field.noFacet || field.regex || field.type.match(/textfield/)) { return; }
+
+      let isValueList = false;
+      if (/^(\[)/.test(lastToken)) { // it is a list of values
+        isValueList = true;
+        lastToken = lastToken.substring(1); // remove first char '['
+      }
 
       // regular expressions start with a forward slash
       // lists start with an open square bracket
@@ -607,6 +590,45 @@ export default {
         }).catch((error) => {
           this.loadingValues = false;
           this.loadingError = error;
+        });
+
+        return;
+      }
+
+      // if the token is a list of values and there are multiple values entered
+      if (isValueList && /(,)/.test(lastToken)) {
+        // find the value from , | [ to the cursor position
+        let pos = this.caretPos;
+        const queryChars = [];
+        for (pos; pos >= 0; pos--) {
+          const char = this.expression[pos];
+          if (char === ',' || char === '[') {
+            break;
+          }
+          queryChars.push(char);
+        }
+        lastToken = queryChars.reverse().join('');
+
+        if (/(])$/.test(lastToken)) {
+          // if theres a closing brace, remove it from the token for querying
+          lastToken = lastToken.substring(0, lastToken.length - 1);
+        }
+      }
+
+      // autocomplete variables
+      if (/^(\$)/.test(lastToken)) {
+        this.loadingValues = true;
+        let url = 'api/shortcuts?fieldFormat=true&map=true';
+        if (field && field.type) {
+          url += `&fieldType=${field.type}`;
+        }
+        this.$http.get(url).then((response) => {
+          this.loadingValues = false;
+          const escapedToken = lastToken.replace('$', '\\$');
+          this.results = this.findMatch(escapedToken, response.data);
+        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = error.text || error;
         });
 
         return;
@@ -721,7 +743,7 @@ export default {
      */
     rebuildQuery: function (q, str) {
       let result = '';
-      const lastToken = tokens[tokens.length - 1];
+      let lastToken = tokens[tokens.length - 1];
       const allTokens = this.splitExpression(q);
 
       if (lastToken === ' ') {
@@ -731,15 +753,54 @@ export default {
 
         const isArray = /^(\[)/.test(lastToken);
         if (isArray) { // it's an array of values
-          if (/,/.test(lastToken)) {
-            // contains a , so we need to split the last token by the ,
-            const split = lastToken.split(',');
-            split[split.length - 1] = str;
-            str = split.join(',');
-          } else {
-            str = `[${str}`;
+          let pos = this.caretPos;
+
+          // if were not at the end of the list or we're not right before a comma
+          // we need to add a comma after the cursor position so that the list of
+          // values can be split into tokens and the appropriate token replaced
+          if (this.expression[pos + 1] !== ',' && this.expression[pos + 1] !== ']') {
+            const subExpr = tokens.join(' ');
+            const tokenCaretPos = this.caretPos - (subExpr.length - lastToken.length);
+            if (tokenCaretPos !== lastToken.length - 1) { // add the comma if we're not at the end
+              lastToken = lastToken.slice(0, tokenCaretPos + 1) + ',' + lastToken.slice(tokenCaretPos + 1);
+            }
           }
+
+          // remove surrounding brackets so the search works
+          let hasEndBracket = false;
+          if (/(])$/.test(lastToken)) { // remove last char if it's ']'
+            hasEndBracket = true;
+            lastToken = lastToken.substring(0, lastToken.length - 1);
+          }
+          const split = lastToken.split(',');
+          split[0] = split[0].substring(1); // remove first char (always '[')
+
+          // find the token we're trying to replace by finding the value from
+          // , or [ to the cursor position by traversing back from the cursor pos
+          const queryChars = [];
+          for (pos; pos >= 0; pos--) {
+            const char = this.expression[pos];
+            if (char === ',' || char === '[') {
+              break;
+            }
+            queryChars.push(char);
+          }
+
+          // the token we're looking to replace has been found but is backwards
+          const replacingToken = queryChars.reverse().join('');
+
+          // find the token to replace in the list of values
+          for (i = 0; i < split.length; ++i) {
+            if (split[i] === replacingToken) {
+              split[i] = str; // replace it with the autocomplete string
+              break;
+            }
+          }
+
+          str = `[${split.join(',')}`; // join back the values with a ,
+          if (hasEndBracket) { str += ']'; } // add the ']' back
         }
+
         tokens[tokens.length - 1] = str;
 
         for (i = 0; i < tokens.length; ++i) {
@@ -754,7 +815,7 @@ export default {
         }
 
         if (allTokens.length > tokens.length) {
-          // add the rest of the tokens
+          // add the rest of the tokens (after the autocomplete result was added)
           for (i; i < allTokens.length; ++i) {
             t = allTokens[i];
             if (t === ' ') { break; }
