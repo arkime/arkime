@@ -137,9 +137,8 @@ test('search expression typeahead', async () => {
   await fireEvent.update(searchInput, 'ip.src == 10.0.0.1 && ip.dst == [10.0');
   addCaretPosition(searchInput, 10);
 
-  let ipResult
   await waitFor(() => { // need to wait for the debounce
-    ipResult = getByText('10.0.0.2'); // autocompletes values
+    getByText('10.0.0.2'); // autocompletes values
   });
   await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
   await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
@@ -150,7 +149,7 @@ test('search expression typeahead', async () => {
   addCaretPosition(searchInput, 3);
 
   await waitFor(() => { // need to wait for the debounce
-    ipResult = getByText('10.0.0.4'); // autocompletes values
+    getByText('10.0.0.4'); // autocompletes values
   });
   await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
   await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
