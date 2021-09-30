@@ -35,7 +35,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - initial IETF QUIC support
   - capture - fix interfaceOps crash (issue #1763)
   - release - much improved arkime_config_interfaces.sh (thanks arkaØm)
-  - release - node 14.17.6
+  - release - node 14.18.0
   - viewer - stop upload menu showing up when empty command
   - viewer - improve first load time by spliting bundle and lazy load items
   - viewer - combine multiple calls into one
@@ -45,6 +45,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - didn't decrypt pcap for large packets correctly (issue #1756)
   - viewer - support wiseURL for wise.js viewer plugin (issue #1758)
   - viewer - display "0" values
+  - viewer - Test alert includes who requested it
   - multies - support elasticsearchApiKey
   - multies - support scrolling and large queries/pagination
   - wise - handle empty config file on startup

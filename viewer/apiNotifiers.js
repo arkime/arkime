@@ -441,7 +441,7 @@ module.exports = (Config, Db, internals) => {
       }));
     }
 
-    nModule.issueAlert(req.params.name, 'Test alert', continueProcess);
+    nModule.issueAlert(req.params.name, `Test alert from ${req.user.userId}`, continueProcess);
   };
 
   return nModule;
