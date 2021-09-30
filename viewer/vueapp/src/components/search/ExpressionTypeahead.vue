@@ -17,15 +17,18 @@
           </span>
         </span>
       </span>
-      <input type="text"
+      <input
+        type="text"
         tabindex="1"
+        id="expression"
+        ref="expression"
+        placeholder="Search"
         v-model="expression"
         v-caret-pos="caretPos"
         v-focus-input="focusInput"
-        placeholder="Search"
         @input="debounceExprChange"
-        @keyup.enter="enterClick"
-        @keyup.esc.tab.enter.down.up.stop="keyup($event)"
+        @keydown.enter.prevent.stop="enterClick"
+        @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
         class="form-control search-control"
       />
       <span class="input-group-append"
@@ -244,7 +247,8 @@ export default {
       let str = val;
       if (val.exp) { str = val.exp; }
 
-      this.expression = this.rebuildQuery(this.expression, str);
+      const { expression, replacing } = this.rebuildQuery(this.expression, str);
+      this.expression = expression;
 
       if (this.lastTokenWasField) { // add field to history
         this.addFieldToHistory(val);
@@ -252,12 +256,14 @@ export default {
 
       this.results = null;
       this.fieldHistoryResults = [];
-      this.focusInput = true; // re-focus on input
       this.activeIdx = -1;
 
-      setTimeout(() => { // unfocus input for further re-focusing
-        this.focusInput = false;
-      }, 1000);
+      const newCaretPos = this.caretPos + 1 + (str.length - replacing.length);
+      this.$nextTick(() => {
+        const expressionInput = document.getElementById('expression');
+        expressionInput.focus();
+        expressionInput.setSelectionRange(newCaretPos, newCaretPos);
+      });
     },
     /* Fired when the search input is changed */
     debounceExprChange: function () {
@@ -317,8 +323,6 @@ export default {
 
       // check for tab click when results are visible
       if (this.results && this.results.length && e.keyCode === 9) {
-        e.preventDefault();
-
         // if there is no item in the results is selected, use the first one
         if (this.activeIdx < 0) { this.activeIdx = 0; }
 
@@ -355,7 +359,6 @@ export default {
 
       switch (e.keyCode) {
       case 40: // down arrow
-        e.preventDefault();
         this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
@@ -363,7 +366,6 @@ export default {
         }
         break;
       case 38: // up arrow
-        e.preventDefault();
         this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
@@ -372,14 +374,18 @@ export default {
         break;
       case 13: // enter
         if (this.activeIdx >= 0) {
-          e.preventDefault();
           let result;
           if (this.activeIdx < this.fieldHistoryResults.length) {
             result = this.fieldHistoryResults[this.activeIdx];
           } else {
             result = this.results[this.activeIdx - this.fieldHistoryResults.length];
           }
-          if (result) { this.addToQuery(result); }
+          if (result) {
+            // need to decrement counter if the user used arrow keys to select
+            // result because this increments the counter by 1
+            this.caretPos--;
+            this.addToQuery(result);
+          }
         }
         break;
       }
@@ -745,6 +751,7 @@ export default {
       let result = '';
       let lastToken = tokens[tokens.length - 1];
       const allTokens = this.splitExpression(q);
+      let replacingToken = lastToken;
 
       if (lastToken === ' ') {
         result = q += str + ' ';
@@ -787,7 +794,7 @@ export default {
           }
 
           // the token we're looking to replace has been found but is backwards
-          const replacingToken = queryChars.reverse().join('');
+          replacingToken = queryChars.reverse().join('');
 
           // find the token to replace in the list of values
           for (i = 0; i < split.length; ++i) {
@@ -807,11 +814,6 @@ export default {
           t = tokens[i];
           if (t === ' ') { break; }
           result += t + ' ';
-          if (i === tokens.length - 1 && isArray) { // if were at the end
-            // and we're building an array of values, remove the last space
-            // the next char will either be a comma or closing square bracket
-            result = result.substring(0, result.length - 1);
-          }
         }
 
         if (allTokens.length > tokens.length) {
@@ -824,7 +826,7 @@ export default {
         }
       }
 
-      return result;
+      return { expression: result, replacing: replacingToken };
     },
     /**
      * Splits a string into tokens
