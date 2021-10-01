@@ -259,6 +259,11 @@ function parseIpPort(yy, field, ipPortStr) {
     let slash = colons[0].split('/');
     let dots = slash[0].split('.');
 
+    // If the last one is empty just pretend . isn't there, for auto complete
+    if (dots[dots.length - 1] === '') {
+      dots.length--;
+    }
+
     switch(dots.length) {
     case 4:
       ip = `${dots[0]}.${dots[1]}.${dots[2]}.${dots[3]}`;
