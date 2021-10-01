@@ -493,8 +493,7 @@ export default {
 
       // if the cursor is at a space
       const spaceCP = (this.caretPos > 0 &&
-        this.caretPos === this.expression.length &&
-        this.expression[this.caretPos - 1] === ' ');
+        this.expression[this.caretPos] === ' ');
 
       let end = this.caretPos;
       const endLen = this.expression.length;
