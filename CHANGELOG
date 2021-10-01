@@ -22,7 +22,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.0.1 2021/09/xx
+3.0.1 2021/10/xx
   - all - support float field type
   - all - support Q-in-Q ether type
   - all - --insecure has consistent messaging now
@@ -42,6 +42,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - added expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
   - viewer - shortcut display improvements
+  - viewer - shortcuts can be in arrays
+  - viewer - basic shortcut wildcard support, only support * at end (issue #1554)
   - viewer - didn't decrypt pcap for large packets correctly (issue #1756)
   - viewer - support wiseURL for wise.js viewer plugin (issue #1758)
   - viewer - display "0" values

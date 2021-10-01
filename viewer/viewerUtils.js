@@ -137,7 +137,9 @@ module.exports = (Config, Db, molochparser, internals) => {
    * understands.  This includes using the collapse function and the filename mapping.
    */
   vModule.lookupQueryItems = (query, doneCb) => {
+    // console.log('BEFORE', JSON.stringify(query, false, 2));
     collapseQuery(query);
+    // console.log('AFTER', JSON.stringify(query, false, 2));
     if (Config.get('multiES', false)) {
       return doneCb(null);
     }
@@ -221,8 +223,8 @@ module.exports = (Config, Db, molochparser, internals) => {
           // We can collapse both must_not: most_not: and most_not: should:
           const len = query.bool.must_not.length;
           const newItems = newArray(newArray(query.bool.must_not, 'must_not'), 'should');
+          query.bool.must_not = newItems;
           if (newItems.length !== len) {
-            query.bool.must_not = newItems;
             collapseQuery(query);
           } else {
             collapseQuery(query.bool.must_not);
@@ -231,8 +233,8 @@ module.exports = (Config, Db, molochparser, internals) => {
           // Collapse should: should:
           const len = query.bool.should.length;
           const newItems = newArray(query.bool.should, 'should');
+          query.bool.should = newItems;
           if (newItems.length !== len) {
-            query.bool.should = newItems;
             collapseQuery(query);
           } else {
             collapseQuery(query.bool.should);
@@ -241,8 +243,8 @@ module.exports = (Config, Db, molochparser, internals) => {
           // Collapse must: must:
           const len = query.bool.must.length;
           const newItems = newArray(query.bool.must, 'must');
+          query.bool.must = newItems;
           if (newItems.length !== len) {
-            query.bool.must = newItems;
             collapseQuery(query);
           } else {
             collapseQuery(query.bool.must);

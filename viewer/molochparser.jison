@@ -341,9 +341,8 @@ function formatExists(yy, field, op)
   return {exists: {field: field2Raw(yy, field)}};
 }
 
-function formatQuery(yy, field, op, value, parent)
+function formatQuery(yy, field, op, value)
 {
-  var obj;
   //console.log("field", field, "op", op, "value", value);
   //console.log("yy", util.inspect(yy, false, 50));
   if (value[0] === "/" && value[value.length -1] === "/") {
@@ -358,101 +357,121 @@ function formatQuery(yy, field, op, value, parent)
     throw field + " - permission denied";
   }
 
-  /* look for value that starts with $ */
-  if (value[0] === '$' || (value[1] === '$' && value[0] === '[')) {
-    if (op !== "eq" && op !== "ne") {
-      throw 'Shortcuts only support == and !=';
-    }
+  const nonShortcuts = ListToArray(value, true);
 
-    let shortcuts = value;
-    if (value[0] !== "[" && value[value.length -1] !== "]") {
-      shortcuts = `[${value}]`;
-    }
+  const shortcutsObj = formatShortcutsQuery(yy, field, op, value);
+  if (nonShortcuts.length === 0)
+    return shortcutsObj;
 
-    shortcuts = ListToArray(shortcuts);
+  const normalObj = formatNormalQuery(yy, field, op, value);
+  if (!shortcutsObj)
+    return normalObj;
 
-    obj = { bool: {} };
+  if (op === "eq")
+    return {bool: {should: [normalObj, shortcutsObj]}};
+  else
+    return {bool: {must_not: [normalObj, shortcutsObj]}};
+}
 
-    let operation = 'should';
-    if (op === 'ne') {
-      operation = 'must_not';
-    }
-    obj.bool[operation] = [];
+function formatShortcutsQuery(yy, field, op, value, parent) {
+  let shortcuts = ListToArrayShortcuts(yy, value);
+  if (shortcuts.length === 0)
+    return undefined;
 
-    shortcuts.forEach(function(shortcut) {
-      shortcut = value = shortcut.substr(1); /* remove $ */
-      if (!yy.shortcuts || !yy.shortcuts[shortcut]) {
-        throw shortcut + ' - Shortcut not found';
-      }
+  var obj;
+  var info = getFieldInfo(yy, field);
 
-      shortcut = yy.shortcuts[shortcut];
-
-      var type = info.type2 || info.type;
-      var shortcutType = yy.shortcutTypeMap[type];
-
-      if (!shortcutType) {
-        throw "Unsupported field type: " + type
-      }
-
-      if (!shortcut._source[shortcutType]) {
-        throw 'shortcut must be of type ' + shortcutType;
-      }
-
-      const terms = {};
-
-      switch (type) {
-      case 'ip':
-        if (field === 'ip') {
-          let infos = getIpInfoList(yy, false);
-          for (let info of infos) {
-            let newObj = formatQuery(yy, info.exp, op, '$' + value, obj);
-            if (newObj) {
-              obj.bool[operation].concat(newObj);
-            }
-          }
-        } else {
-          terms[info.dbField] = {
-            index: `${yy.prefix}lookups`,
-            id: shortcut._id,
-            path: 'ip'
-          }
-          if (parent) {
-            obj = parent;
-          }
-          obj.bool[operation].push({ terms });
-        }
-        break;
-      case 'integer':
-        terms[info.dbField] = {
-          index: `${yy.prefix}lookups`,
-          id: shortcut._id,
-          path: 'number'
-        }
-        obj.bool[operation].push({ terms });
-        break;
-      case 'lotermfield':
-      case 'lotextfield':
-      case 'termfield':
-      case 'textfield':
-      case 'uptermfield':
-      case 'uptextfield':
-        terms[info.dbField] = {
-          index: `${yy.prefix}lookups`,
-          id: shortcut._id,
-          path: 'string'
-        }
-        obj.bool[operation].push({ terms });
-        break;
-      default:
-        throw "Unsupported field type: " + type;
-      }
-    });
-
-    if (obj?.bool?.should?.length === 1) {
-      obj = obj.bool.should[0];
-    }
-    return obj;
+  if (op !== "eq" && op !== "ne") {
+    throw 'Shortcuts only support == and !=';
   }
+
+  obj = { bool: {} };
+
+  let operation = 'should';
+  if (op === 'ne') {
+    operation = 'must_not';
+  }
+  obj.bool[operation] = [];
+
+  shortcuts.forEach(function(shortcut) {
+    shortcut = value = shortcut.substr(1); /* remove $ */
+    if (!yy.shortcuts || !yy.shortcuts[shortcut]) {
+      throw shortcut + ' - Shortcut not found';
+    }
+
+    shortcut = yy.shortcuts[shortcut];
+
+    var type = info.type2 || info.type;
+    var shortcutType = yy.shortcutTypeMap[type];
+
+    if (!shortcutType) {
+      throw "Unsupported field type: " + type
+    }
+
+    if (!shortcut._source[shortcutType]) {
+      throw 'shortcut must be of type ' + shortcutType;
+    }
+
+    const terms = {};
+
+    switch (type) {
+    case 'ip':
+      if (field === 'ip') {
+        let infos = getIpInfoList(yy, false);
+        for (let info of infos) {
+          let newObj = formatShortcutsQuery(yy, info.exp, op, '$' + value, obj);
+          if (newObj) {
+            obj.bool[operation].concat(newObj);
+          }
+        }
+      } else {
+        terms[info.dbField] = {
+          index: `${yy.prefix}lookups`,
+          id: shortcut._id,
+          path: 'ip'
+        }
+        if (parent) {
+          obj = parent;
+        }
+        obj.bool[operation].push({ terms });
+      }
+      break;
+    case 'integer':
+      terms[info.dbField] = {
+        index: `${yy.prefix}lookups`,
+        id: shortcut._id,
+        path: 'number'
+      }
+      obj.bool[operation].push({ terms });
+      break;
+    case 'lotermfield':
+    case 'lotextfield':
+    case 'termfield':
+    case 'textfield':
+    case 'uptermfield':
+    case 'uptextfield':
+      terms[info.dbField] = {
+        index: `${yy.prefix}lookups`,
+        id: shortcut._id,
+        path: 'string'
+      }
+      obj.bool[operation].push({ terms });
+      break;
+    default:
+      throw "Unsupported field type: " + type;
+    }
+  });
+
+  if (obj?.bool?.should?.length === 1) {
+    obj = obj.bool.should[0];
+  }
+
+  return obj;
+}
+
+function formatNormalQuery(yy, field, op, value) {
+  var obj;
+  var info = getFieldInfo(yy, field);
 
   if (info.regex) {
     var regex = new RegExp(info.regex);
@@ -810,17 +829,45 @@ global.moloch.removeProtocolAndURI = function (text) {
   return text;
 }
 
-function ListToArray(text) {
-  if (text[0] !== "[" || text[text.length -1] !== "]")
+function ListToArray(text, always) {
+  if (text[0] === "[" && text[text.length -1] === "]") {
+    text = text.substring(1, text.length-1);
+  } else if (!always) {
     return text;
+  }
 
   // JS doesn't have negative look behind
-  text = text.substring(1, text.length-1);
-  strs = text.replace(/\\\\/g, "**BACKSLASH**").replace(/\\,/g, "**COMMA**").split(/\s*,\s*/);
+  strs = text.replace(/\\\\/g, "**BACKSLASH**").replace(/\\,/g, "**COMMA**").split(/\s*,\s*/).filter(part => part.trim()[0] !== '$');
   for (var i = 0; i < strs.length; i++) {
     strs[i] = strs[i].replace("**COMMA**", ",").replace("**BACKSLASH**", "\\");
   }
   return strs;
+}
+
+function ListToArrayShortcuts(yy, text) {
+  if (text[0] === "[" && text[text.length -1] === "]") {
+    text = text.substring(1, text.length-1);
+  }
+
+  // JS doesn't have negative look behind
+  strs = text.replace(/\\\\/g, "**BACKSLASH**").replace(/\\,/g, "**COMMA**").split(/\s*,\s*/).filter(part => part.trim()[0] === '$');
+  let nstrs = [];
+  for (var i = 0; i < strs.length; i++) {
+    const str = strs[i].replace("**COMMA**", ",").replace("**BACKSLASH**", "\\");
+
+    // Would be nice if we did a real glob here instead of just ending with *
+    if (str[str.length - 1] === '*') {
+      const sstr = str.substring(1, str.length-1);
+      Object.keys(yy.shortcuts).forEach((s) => {
+        if (s.startsWith(sstr))
+          nstrs.push('$' + s);
+      });
+    } else {
+      nstrs.push(str);
+    }
+  }
+
+  return nstrs;
 }
 
 function termOrTermsInt(dbField, str) {
