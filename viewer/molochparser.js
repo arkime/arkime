@@ -647,6 +647,9 @@ function formatQuery(yy, field, op, value, parent)
       }
     });
 
+    if (obj?.bool?.should?.length === 1) {
+      obj = obj.bool.should[0];
+    }
     return obj;
   }
 

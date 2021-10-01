@@ -137,7 +137,7 @@ module.exports = (Config, Db, molochparser, internals) => {
    * understands.  This includes using the collapse function and the filename mapping.
    */
   vModule.lookupQueryItems = (query, doneCb) => {
-    vModule.collapseQuery(query);
+    collapseQuery(query);
     if (Config.get('multiES', false)) {
       return doneCb(null);
     }
@@ -192,8 +192,8 @@ module.exports = (Config, Db, molochparser, internals) => {
   /* This method collapses cascading bool should/must into one. I couldn't figure
    * out how to do this in jison.
    */
-  vModule.collapseQuery = (query) => {
-    function newArray(items, kind) {
+  function collapseQuery (query) {
+    function newArray (items, kind) {
       let newItems = [];
       const len = items.length;
 
@@ -207,49 +207,52 @@ module.exports = (Config, Db, molochparser, internals) => {
       return newItems;
     }
 
+    if (query?.bool?.should?.length === 1) {
+      query = query.bool.should[0];
+    }
 
     for (const prop in query) {
       if (prop === 'bool') {
-        if (query.bool.must_not && query.bool.must_not.bool && query.bool.must_not.bool.should) {
+        if (query.bool?.must_not?.bool?.should) {
           // most_not: { - when just NOTing one thing
           query.bool.must_not = query.bool.must_not.bool.should;
-          vModule.collapseQuery(query);
-        } else if (query.bool.must_not && query.bool.must_not.length > 0) {
+          collapseQuery(query);
+        } else if (query.bool?.must_not?.length > 0) {
           // We can collapse both must_not: most_not: and most_not: should:
           const len = query.bool.must_not.length;
           const newItems = newArray(newArray(query.bool.must_not, 'must_not'), 'should');
-          if (newItems.length != len) {
+          if (newItems.length !== len) {
             query.bool.must_not = newItems;
-            vModule.collapseQuery(query);
+            collapseQuery(query);
           } else {
-            vModule.collapseQuery(query.bool.must_not);
+            collapseQuery(query.bool.must_not);
           }
-        } else if (query.bool.should && query.bool.should.length > 0) {
+        } else if (query.bool?.should?.length > 0) {
           // Collapse should: should:
           const len = query.bool.should.length;
           const newItems = newArray(query.bool.should, 'should');
-          if (newItems.length != len) {
+          if (newItems.length !== len) {
             query.bool.should = newItems;
-            vModule.collapseQuery(query);
+            collapseQuery(query);
           } else {
-            vModule.collapseQuery(query.bool.should);
+            collapseQuery(query.bool.should);
           }
-        } else if (query.bool.must && query.bool.must.length > 0) {
+        } else if (query.bool?.must?.length > 0) {
           // Collapse must: must:
           const len = query.bool.must.length;
           const newItems = newArray(query.bool.must, 'must');
-          if (newItems.length != len) {
+          if (newItems.length !== len) {
             query.bool.must = newItems;
-            vModule.collapseQuery(query);
+            collapseQuery(query);
           } else {
-            vModule.collapseQuery(query.bool.must);
+            collapseQuery(query.bool.must);
           }
         } else {
           // Just recurse
-          vModule.collapseQuery(query.bool);
+          collapseQuery(query.bool);
         }
       } else if (typeof query[prop] === 'object') {
-        vModule.collapseQuery(query[prop]);
+        collapseQuery(query[prop]);
       }
     }
   };
