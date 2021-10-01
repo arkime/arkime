@@ -138,7 +138,7 @@ function getIpInfoList(yy, needPort)
     ors.push(info);
   }
 
-  return ors;
+  return ors.sort((a, b) => { return a.exp.localeCompare(b.exp); });
 }
 
 /* Do all the magic around ip field parsing.
