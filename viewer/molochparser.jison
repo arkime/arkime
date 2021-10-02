@@ -818,12 +818,18 @@ global.moloch.ipProtocolLookup = function (text) {
 
 // Remove the "http://", "https://", etc from http.uri queries
 global.moloch.removeProtocol = function (text) {
+  if (text[0] === '/' && text[text.length - 1] === '/') {
+    return text;
+  }
   text = text.replace(/^[a-z]+:\/\//i, '');
   return text;
 }
 
 // Remove the "http://", "https://" and after the first slash, etc from host queries
 global.moloch.removeProtocolAndURI = function (text) {
+  if (text[0] === '/' && text[text.length - 1] === '/') {
+    return text;
+  }
   text = text.replace(/^[a-z]+:\/\//i, '');
   text = text.replace(/\/.*/, '');
   return text;
@@ -855,11 +861,10 @@ function ListToArrayShortcuts(yy, text) {
   for (var i = 0; i < strs.length; i++) {
     const str = strs[i].replace("**COMMA**", ",").replace("**BACKSLASH**", "\\");
 
-    // Would be nice if we did a real glob here instead of just ending with *
-    if (str[str.length - 1] === '*') {
-      const sstr = str.substring(1, str.length-1);
+    if (str.match(/[*?]/)) {
+      const re = new RegExp('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
       Object.keys(yy.shortcuts).forEach((s) => {
-        if (s.startsWith(sstr))
+        if (s.match(re))
           nstrs.push('$' + s);
       });
     } else {
@@ -903,20 +908,20 @@ function termOrTermsFloat(dbField, str) {
     obj.terms[dbField] = ListToArray(str);
     obj.terms[dbField].forEach(function(str) {
       str = stripQuotes(str);
-      if (typeof str !== "float" && str.match(/-?\d*\.?\d*/))
+      if (typeof str === "string" && !str.match(/-?\d*\.?\d*/))
         throw str + " is not a number";
     });
   } else {
     str = stripQuotes(str);
     let match;
-    if ((match = str.match(/-\d*\.?\d*/))) {
+    if (str.match(/^-?\d+$/) || str.match(/^-?\d+\.\d+$/)) {
       // good non range
     } else if ((match = str.match(/(-?\d*\.?\d*)-(-?\d*\.?\d*)/))) {
       obj = {range: {}};
       obj.range[dbField] = {gte: match[1], lte: match[2]};
       return obj;
-    } else if (!str.match(/-?\d*\.?\d*/)) {
-      throw str + " is not a number";
+    } else if (!(str.match(/^-?\d+$/) || str.match(/^-?\d+\.\d+$/))) {
+      throw str + " is not a float";
     }
     obj = {term: {}};
     obj.term[dbField] = str;

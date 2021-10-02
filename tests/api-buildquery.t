@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 105;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -22,7 +22,7 @@ esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": 
 my $token = getTokenCookie();
 my $ipshortcut1 = viewerPostToken("/api/shortcut", '{"name":"ipshortcut1","type":"ip","value":"10.10.10.10"}', $token)->{shortcut}->{id};
 my $ipshortcut2 = viewerPostToken("/api/shortcut", '{"name":"ipshortcut2","type":"ip","value":"10.10.10.10"}', $token)->{shortcut}->{id};
-
+my $ipshort3 = viewerPostToken("/api/shortcut", '{"name":"ipshort3","type":"ip","value":"10.10.10.10"}', $token)->{shortcut}->{id};
 
 #### IP.SRC
 doTest('ip.src == 1.2.3.4', '{"term":{"source.ip":"1.2.3.4"}}');
@@ -61,6 +61,11 @@ doTest('ip.src != :80', '{"bool":{"must_not":{"term":{"source.port":"80"}}}}');
 doTest('ip.src == [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"must":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"must":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
 doTest('ip.src != [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"must":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"must":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
 
+doTest('ip.src == 1.2.3.4 || ip.src == 2.3.4.5:80 || ip.src == :81 || ip.src == 1.2.3:82', '{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"must":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"must":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
+doTest('ip.src == 1.2.3.4 && ip.src == 2.3.4.5:80 && ip.src == :81 && ip.src == 1.2.3:82', '{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}},{"term":{"source.port":"81"}},{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}');
+doTest('!(ip.src == 1.2.3.4 || ip.src == 2.3.4.5:80 || ip.src == :81 || ip.src == 1.2.3:82)', '{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"must":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"must":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
+doTest('!(ip.src == 1.2.3.4 && ip.src == 2.3.4.5:80 && ip.src == :81 && ip.src == 1.2.3:82)', '{"bool":{"must_not":{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}},{"term":{"source.port":"81"}},{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}}}');
+
 doTest('ip.src == $ipshortcut1', qq({"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}));
 doTest('ip.src != $ipshortcut1', qq({"bool":{"must_not":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 
@@ -75,6 +80,11 @@ doTest('ip.src != $ipshortcut*', qq({"bool":{"must_not":[{"terms":{"source.ip":{
 
 doTest('ip.src == [$ipshortcut*]', qq({"bool":{"should":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
 doTest('ip.src != [$ipshortcut*]', qq({"bool":{"must_not":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
+
+doTest('ip.src != [$ipshortcut?]', qq({"bool":{"must_not":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
+doTest('ip.src == $ip*cut*', qq({"bool":{"should":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
+doTest('ip.src == $ip*cut?', qq({"bool":{"should":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
+doTest('ip.src == $*cut*', qq({"bool":{"should":[{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
 
 doTest('ip.src == [1.2.3.4,$ipshortcut1]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src == [$ipshortcut1,1.2.3.4]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
@@ -111,3 +121,56 @@ doTest('ip != [$ipshortcut1,$ipshortcut2]', qq({"bool":{"must_not":[{"terms":{"g
 
 # Delete shortcuts
 esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
+#### host.http
+
+doTest('host.http == fred', '{"term":{"http.host":"fred"}}');
+doTest('host.http != fred', '{"bool":{"must_not":{"term":{"http.host":"fred"}}}}');
+doTest('host.http == fred*', '{"wildcard":{"http.host":"fred*"}}');
+doTest('host.http != fred*', '{"bool":{"must_not":{"wildcard":{"http.host":"fred*"}}}}');
+doTest('host.http == /fred/', '{"regexp":{"http.host":"fred"}}');
+doTest('host.http != /fred/', '{"bool":{"must_not":{"regexp":{"http.host":"fred"}}}}');
+
+doTest('host.http == [/barney/,fred,fred*]', '{"bool":{"should":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+doTest('host.http == [/barney/,http://fred,fred*]', '{"bool":{"should":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+doTest('host.http == [/barney/,fred/foobar,fred*]', '{"bool":{"should":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+
+doTest('host.http != [/barney/,fred,fred*]', '{"bool":{"must_not":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+doTest('host.http != [/barney/,http://fred,fred*]', '{"bool":{"must_not":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+doTest('host.http != [/barney/,fred/foobar,fred*]', '{"bool":{"must_not":[{"regexp":{"http.host":"barney"}},{"terms":{"http.host":["fred"]}},{"wildcard":{"http.host":"fred*"}}]}}');
+
+#### host.http.cnt
+doTest('host.http.cnt == 1', '{"term":{"http.hostCnt":1}}');
+doTest('host.http.cnt != 1', '{"bool":{"must_not":{"term":{"http.hostCnt":1}}}}');
+doTest('host.http.cnt == [1]', '{"terms":{"http.hostCnt":[1]}}');
+doTest('host.http.cnt != [1]', '{"bool":{"must_not":{"terms":{"http.hostCnt":[1]}}}}');
+doTest('host.http.cnt == [1,2,3]', '{"terms":{"http.hostCnt":[1,2,3]}}');
+doTest('host.http.cnt != [1,2,3]', '{"bool":{"must_not":{"terms":{"http.hostCnt":[1,2,3]}}}}');
+doTest('host.http.cnt == 1-5', '{"range":{"http.hostCnt":{"gte":"1","lte":"5"}}}');
+doTest('host.http.cnt != -1-5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":"-1","lte":"5"}}}}}');
+doTest('host.http.cnt != -10--5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":"-10","lte":"-5"}}}}}');
+
+#### wise.float
+doTest('wise.float == 1', '{"term":{"wise.float":1}}');
+doTest('wise.float == 0.1', '{"term":{"wise.float":0.1}}');
+doTest('wise.float == 10.1', '{"term":{"wise.float":10.1}}');
+doTest('wise.float == 10.1234', '{"term":{"wise.float":10.1234}}');
+
+doTest('wise.float == -1', '{"term":{"wise.float":-1}}');
+doTest('wise.float == -0.1', '{"term":{"wise.float":-0.1}}');
+doTest('wise.float == -10.1', '{"term":{"wise.float":-10.1}}');
+doTest('wise.float == -10.1234', '{"term":{"wise.float":-10.1234}}');
+
+doTest('wise.float == 1.2', '{"term":{"wise.float":1.2}}');
+doTest('wise.float != 1.2', '{"bool":{"must_not":{"term":{"wise.float":1.2}}}}');
+doTest('wise.float == [1.2]', '{"terms":{"wise.float":[1.2]}}');
+doTest('wise.float != [1.2]', '{"bool":{"must_not":{"terms":{"wise.float":[1.2]}}}}');
+doTest('wise.float == [-1,-0.2,3.2]', '{"terms":{"wise.float":[-1,-0.2,3.2]}}');
+doTest('wise.float != [-1,-0.2,3.2]', '{"bool":{"must_not":{"terms":{"wise.float":[-1,-0.2,3.2]}}}}');
+
+doTest('wise.float == 1.2-5.2', '{"range":{"wise.float":{"gte":"1.2","lte":"5.2"}}}');
+doTest('wise.float != -1-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1","lte":"5.2"}}}}}');
+doTest('wise.float != -1-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1","lte":"5"}}}}}');
+doTest('wise.float != -1.2-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1.2","lte":"5"}}}}}');
+doTest('wise.float != -1.2-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1.2","lte":"5.2"}}}}}');
+doTest('wise.float != -10.2--5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-10.2","lte":"-5.2"}}}}}');

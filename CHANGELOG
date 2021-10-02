@@ -38,16 +38,17 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - release - node 14.18.0
   - viewer - stop upload menu showing up when empty command
   - viewer - improve first load time by spliting bundle and lazy load items
-  - viewer - combine multiple calls into one
-  - viewer - added expire debugging
+  - viewer - combine multiple calls from UI into one call
+  - viewer - added pcap expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
   - viewer - shortcut display improvements
   - viewer - shortcuts can be in arrays
-  - viewer - basic shortcut wildcard support, only support * at end (issue #1554)
+  - viewer - shortcut wildcard support (issue #1554)
   - viewer - didn't decrypt pcap for large packets correctly (issue #1756)
   - viewer - support wiseURL for wise.js viewer plugin (issue #1758)
   - viewer - display "0" values
   - viewer - Test alert includes who requested it
+  - viewer - fixed regex and floats not always working in array expressions
   - multies - support elasticsearchApiKey
   - multies - support scrolling and large queries/pagination
   - wise - handle empty config file on startup
