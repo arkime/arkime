@@ -146,9 +146,9 @@ doTest('host.http.cnt == [1]', '{"terms":{"http.hostCnt":[1]}}');
 doTest('host.http.cnt != [1]', '{"bool":{"must_not":{"terms":{"http.hostCnt":[1]}}}}');
 doTest('host.http.cnt == [1,2,3]', '{"terms":{"http.hostCnt":[1,2,3]}}');
 doTest('host.http.cnt != [1,2,3]', '{"bool":{"must_not":{"terms":{"http.hostCnt":[1,2,3]}}}}');
-doTest('host.http.cnt == 1-5', '{"range":{"http.hostCnt":{"gte":"1","lte":"5"}}}');
-doTest('host.http.cnt != -1-5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":"-1","lte":"5"}}}}}');
-doTest('host.http.cnt != -10--5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":"-10","lte":"-5"}}}}}');
+doTest('host.http.cnt == 1-5', '{"range":{"http.hostCnt":{"gte":1,"lte":5}}}');
+doTest('host.http.cnt != -1-5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":-1,"lte":5}}}}}');
+doTest('host.http.cnt != -10--5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":-10,"lte":-5}}}}}');
 
 #### wise.float
 doTest('wise.float == 1', '{"term":{"wise.float":1}}');
