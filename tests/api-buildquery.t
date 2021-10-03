@@ -168,9 +168,9 @@ doTest('wise.float != [1.2]', '{"bool":{"must_not":{"terms":{"wise.float":[1.2]}
 doTest('wise.float == [-1,-0.2,3.2]', '{"terms":{"wise.float":[-1,-0.2,3.2]}}');
 doTest('wise.float != [-1,-0.2,3.2]', '{"bool":{"must_not":{"terms":{"wise.float":[-1,-0.2,3.2]}}}}');
 
-doTest('wise.float == 1.2-5.2', '{"range":{"wise.float":{"gte":"1.2","lte":"5.2"}}}');
-doTest('wise.float != -1-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1","lte":"5.2"}}}}}');
-doTest('wise.float != -1-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1","lte":"5"}}}}}');
-doTest('wise.float != -1.2-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1.2","lte":"5"}}}}}');
-doTest('wise.float != -1.2-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-1.2","lte":"5.2"}}}}}');
-doTest('wise.float != -10.2--5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":"-10.2","lte":"-5.2"}}}}}');
+doTest('wise.float == 1.2-5.2', '{"range":{"wise.float":{"gte":1.2,"lte":5.2}}}');
+doTest('wise.float != -1-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1,"lte":5.2}}}}}');
+doTest('wise.float != -1-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1,"lte":5}}}}}');
+doTest('wise.float != -1.2-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5}}}}}');
+doTest('wise.float != -1.2-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5.2}}}}}');
+doTest('wise.float != -10.2--5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-10.2,"lte":-5.2}}}}}');

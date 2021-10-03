@@ -1078,24 +1078,19 @@ function termOrTermsInt(dbField, str) {
   var obj = {};
   if (str[0] === "[" && str[str.length -1] === "]") {
     obj = {terms: {}};
-    obj.terms[dbField] = ListToArray(str);
-    obj.terms[dbField].forEach(function(str) {
-      str = stripQuotes(str);
-      if (typeof str !== "integer" && str.match(/[^\d]+/))
-        throw str + " is not a number";
-    });
+    obj.terms[dbField] = ListToArray(str).map(x => parseInt(x));
   } else {
     str = stripQuotes(str);
     let match;
     if ((match = str.match(/(-?\d+)-(-?\d+)/))) {
       obj = {range: {}};
-      obj.range[dbField] = {gte: match[1], lte: match[2]};
+      obj.range[dbField] = {gte: parseInt(match[1]), lte: parseInt(match[2])};
       return obj;
     } else if (str.match(/[^\d]+/)) {
       throw str + " is not a number";
     }
     obj = {term: {}};
-    obj.term[dbField] = str;
+    obj.term[dbField] = parseInt(str);
   }
   return obj;
 }
@@ -1105,11 +1100,7 @@ function termOrTermsFloat(dbField, str) {
   if (str[0] === "[" && str[str.length -1] === "]") {
     obj = {terms: {}};
     obj.terms[dbField] = ListToArray(str);
-    obj.terms[dbField].forEach(function(str) {
-      str = stripQuotes(str);
-      if (typeof str === "string" && !str.match(/-?\d*\.?\d*/))
-        throw str + " is not a number";
-    });
+    obj.terms[dbField] = ListToArray(str).map(x => parseFloat(x));
   } else {
     str = stripQuotes(str);
     let match;
@@ -1117,13 +1108,13 @@ function termOrTermsFloat(dbField, str) {
       // good non range
     } else if ((match = str.match(/(-?\d*\.?\d*)-(-?\d*\.?\d*)/))) {
       obj = {range: {}};
-      obj.range[dbField] = {gte: match[1], lte: match[2]};
+      obj.range[dbField] = {gte: parseFloat(match[1]), lte: parseFloat(match[2])};
       return obj;
     } else if (!(str.match(/^-?\d+$/) || str.match(/^-?\d+\.\d+$/))) {
       throw str + " is not a float";
     }
     obj = {term: {}};
-    obj.term[dbField] = str;
+    obj.term[dbField] = parseFloat(str);
   }
   return obj;
 }
@@ -1133,9 +1124,7 @@ function termOrTermsSeconds(dbField, str) {
   if (str[0] === "[" && str[str.length -1] === "]") {
     obj = {terms: {}};
     obj.terms[dbField] = ListToArray(str);
-    obj.terms[dbField].forEach(function(str) {
-      str = parseSeconds(stripQuotes(str));
-    });
+    obj.terms[dbField] = ListToArray(str).map(x => parseSeconds(x));
   } else {
     str = parseSeconds(stripQuotes(str));
     obj = {term: {}};
@@ -1162,7 +1151,6 @@ function termOrTermsDate(dbField, str) {
 }
 
 function str2format(str) {
-  var m;
   if (str.match(/^(s|sec|secs|second|seconds)$/)) {
     return "seconds";
   } else if (str.match(/^(m|min|mins|minute|minutes)$/)) {
@@ -1171,7 +1159,7 @@ function str2format(str) {
     return "hours";
   } else if (str.match(/^(d|day|days)$/)) {
     return "days";
-  } else if (m = str.match(/^(w|week|weeks)\d*$/)) {
+  } else if (str.match(/^(w|week|weeks)\d*$/)) {
     return "weeks";
   } else if (str.match(/^(M|mon|mons|month|months)$/)) {
     return "months";
