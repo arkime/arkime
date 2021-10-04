@@ -258,11 +258,13 @@ export default {
       this.fieldHistoryResults = [];
       this.activeIdx = -1;
 
-      const newCaretPos = this.caretPos + 1 + (str.length - replacing.length);
       this.$nextTick(() => {
         const expressionInput = document.getElementById('expression');
+        if (replacing) {
+          const newCaretPos = this.caretPos + 1 + (str.length - replacing.length);
+          expressionInput.setSelectionRange(newCaretPos, newCaretPos);
+        }
         expressionInput.focus();
-        expressionInput.setSelectionRange(newCaretPos, newCaretPos);
       });
     },
     /* Fired when the search input is changed */
@@ -753,6 +755,7 @@ export default {
       let replacingToken = lastToken;
 
       if (lastToken === ' ') {
+        replacingToken = null; // we're not replacing just adding to the end
         result = q += str + ' ';
       } else { // replace the last token and rebuild query
         let t, i;
