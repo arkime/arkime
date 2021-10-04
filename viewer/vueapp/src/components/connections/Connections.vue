@@ -689,17 +689,6 @@ export default {
     }
   },
   mounted: function () {
-    const styles = window.getComputedStyle(document.body);
-    this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-    this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-    this.primaryColor = styles.getPropertyValue('--color-primary').trim();
-    this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
-    this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
-    this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
-    this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
-    this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-    nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
-
     // IMPORTANT: this kicks off loading data and drawing the graph
     this.cancelAndLoad(true);
 
@@ -813,8 +802,12 @@ export default {
     },
     changeNodeDist: function (direction) {
       this.query.nodeDist = direction > 0
-        ? Math.min(this.query.nodeDist + direction, 200)
-        : Math.max(this.query.nodeDist + direction, 10);
+        ? Math.min(+this.query.nodeDist + direction, 200)
+        : Math.max(+this.query.nodeDist + direction, 10);
+
+      if (this.query.nodeDist === +this.$route.query.nodeDist) {
+        return;
+      }
 
       this.$router.push({
         query: {
@@ -1010,6 +1003,19 @@ export default {
       });
     },
     drawGraph: function (data) {
+      if (!nodeFillColors) {
+        const styles = window.getComputedStyle(document.body);
+        this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+        this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
+        this.primaryColor = styles.getPropertyValue('--color-primary').trim();
+        this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+        this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+        this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
+      }
+
       if (svg) { // remove any existing nodes
         node.exit().remove();
         link.exit().remove();
