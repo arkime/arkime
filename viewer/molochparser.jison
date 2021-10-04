@@ -520,7 +520,7 @@ function formatNormalQuery (yy, field, op, value) {
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
-    obj.range[info.dbField][op] = value;
+    obj.range[info.dbField][op] = parseInt(value);
     return obj;
   case 'float':
     if (value[0] === '/') { throw value + ' - Regex queries not supported for float queries'; }
