@@ -1,4 +1,4 @@
-use Test::More tests => 105;
+use Test::More tests => 135;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -13,6 +13,7 @@ sub doTest {
 my ($expression, $expected, $debug) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     $json = viewerGet('/api/buildquery?date=-1&expression=' . uri_escape($expression));
+    diag "ERROR: ", $json->{error} if (exists $json->{error});
     eq_or_diff($json->{esquery}->{query}->{bool}->{filter}[0], from_json($expected), {context => 3});
     diag to_json($json->{esquery}->{query}->{bool}->{filter}[0]) if ($debug);
 }
@@ -150,6 +151,15 @@ doTest('host.http.cnt == 1-5', '{"range":{"http.hostCnt":{"gte":1,"lte":5}}}');
 doTest('host.http.cnt != -1-5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":-1,"lte":5}}}}}');
 doTest('host.http.cnt != -10--5', '{"bool":{"must_not":{"range":{"http.hostCnt":{"gte":-10,"lte":-5}}}}}');
 
+doTest('host.http.cnt > 1', '{"range":{"http.hostCnt":{"gt":1}}}');
+doTest('host.http.cnt >= 1', '{"range":{"http.hostCnt":{"gte":1}}}');
+doTest('host.http.cnt <= 1', '{"range":{"http.hostCnt":{"lte":1}}}');
+doTest('host.http.cnt < 1', '{"range":{"http.hostCnt":{"lt":1}}}');
+doTest('host.http.cnt > -1', '{"range":{"http.hostCnt":{"gt":-1}}}');
+doTest('host.http.cnt >= -1', '{"range":{"http.hostCnt":{"gte":-1}}}');
+doTest('host.http.cnt <= -1', '{"range":{"http.hostCnt":{"lte":-1}}}');
+doTest('host.http.cnt < -1', '{"range":{"http.hostCnt":{"lt":-1}}}');
+
 #### wise.float
 doTest('wise.float == 1', '{"term":{"wise.float":1}}');
 doTest('wise.float == 0.1', '{"term":{"wise.float":0.1}}');
@@ -174,3 +184,31 @@ doTest('wise.float != -1-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":
 doTest('wise.float != -1.2-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5}}}}}');
 doTest('wise.float != -1.2-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5.2}}}}}');
 doTest('wise.float != -10.2--5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-10.2,"lte":-5.2}}}}}');
+
+doTest('wise.float > 1', '{"range":{"wise.float":{"gt":1}}}');
+doTest('wise.float >= 1', '{"range":{"wise.float":{"gte":1}}}');
+doTest('wise.float <= 1', '{"range":{"wise.float":{"lte":1}}}');
+doTest('wise.float < 1', '{"range":{"wise.float":{"lt":1}}}');
+doTest('wise.float > -1', '{"range":{"wise.float":{"gt":-1}}}');
+doTest('wise.float >= -1', '{"range":{"wise.float":{"gte":-1}}}');
+doTest('wise.float <= -1', '{"range":{"wise.float":{"lte":-1}}}');
+doTest('wise.float < -1', '{"range":{"wise.float":{"lt":-1}}}');
+
+doTest('wise.float > 1.2', '{"range":{"wise.float":{"gt":1.2}}}');
+doTest('wise.float >= 1.2', '{"range":{"wise.float":{"gte":1.2}}}');
+doTest('wise.float <= 1.2', '{"range":{"wise.float":{"lte":1.2}}}');
+doTest('wise.float < 1.2', '{"range":{"wise.float":{"lt":1.2}}}');
+doTest('wise.float > -1.2', '{"range":{"wise.float":{"gt":-1.2}}}');
+doTest('wise.float >= -1.2', '{"range":{"wise.float":{"gte":-1.2}}}');
+doTest('wise.float <= -1.2', '{"range":{"wise.float":{"lte":-1.2}}}');
+doTest('wise.float < -1.2', '{"range":{"wise.float":{"lt":-1.2}}}');
+
+### stoptime
+doTest('stoptime=="2014/02/26 10:27:57"', '{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}}');
+doTest('stoptime!="2014/02/26 10:27:57"', '{"bool":{"must_not":{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}}}}');
+
+doTest('stoptime>"2014/02/26 10:27:57"', '{"range":{"lastPacket":{"gt":"2014-02-26T10:27:57-05:00"}}}');
+doTest('stoptime<"2014/02/26 10:27:57"', '{"range":{"lastPacket":{"lt":"2014-02-26T10:27:57-05:00"}}}');
+
+doTest('stoptime==["2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"]', '{"bool":{"should":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}');
+doTest('stoptime!=["2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"]', '{"bool":{"must_not":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}');

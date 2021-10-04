@@ -537,7 +537,7 @@ function formatNormalQuery (yy, field, op, value) {
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
-    obj.range[info.dbField][op] = value;
+    obj.range[info.dbField][op] = parseFloat(value);
     return obj;
   case 'lotermfield':
   case 'lotextfield':
@@ -885,6 +885,8 @@ function termOrTermsSeconds (dbField, str) {
   return obj;
 }
 
+// This uses weird gte/lte range of the same date because if you give a second
+// date, you want everything that happen from 0ms-1000ms, not just at 0ms
 function termOrTermsDate (dbField, str) {
   let obj = {};
   if (str[0] === '[' && str[str.length - 1] === ']') {
