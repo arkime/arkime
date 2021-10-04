@@ -829,6 +829,7 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
                 }
                 return TRUE;
             }
+            break;
         case MOLOCH_RULES_STR_MATCH_HEAD:
             if (memcmp(akey+2, key, akey[1]) == 0) {
                 if (logStr) {
@@ -836,6 +837,7 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
                 }
                 return TRUE;
             }
+            break;
         case MOLOCH_RULES_STR_MATCH_CONTAINS:
             if (moloch_memstr(key, len, (char*)akey+2, akey[1]) != 0) {
                 if (logStr) {
@@ -843,6 +845,7 @@ LOCAL gboolean moloch_rules_check_str_match(const MolochRule_t * const rule, int
                 }
                 return TRUE;
             }
+            break;
         }
     }
 

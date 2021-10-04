@@ -22,7 +22,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.0.1 2021/09/xx
+3.0.1 2021/10/xx
   - all - support float field type
   - all - support Q-in-Q ether type
   - all - --insecure has consistent messaging now
@@ -38,14 +38,17 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - release - node 14.18.0
   - viewer - stop upload menu showing up when empty command
   - viewer - improve first load time by spliting bundle and lazy load items
-  - viewer - combine multiple calls into one
-  - viewer - added expire debugging
+  - viewer - combine multiple calls from UI into one call
+  - viewer - added pcap expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
   - viewer - shortcut display improvements
+  - viewer - shortcuts can be in arrays
+  - viewer - shortcut wildcard support (issue #1554)
   - viewer - didn't decrypt pcap for large packets correctly (issue #1756)
   - viewer - support wiseURL for wise.js viewer plugin (issue #1758)
   - viewer - display "0" values
   - viewer - Test alert includes who requested it
+  - viewer - fixed regex and floats not always working in array expressions
   - viewer - fix always putting cursor at end of input when selecting typeahead result
   - viewer - add typeahead results in search expression for values in a list
   - multies - support elasticsearchApiKey

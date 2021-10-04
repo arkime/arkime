@@ -746,9 +746,10 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
         char *kind = 0;
         for (v = 0; v < values_len; v++) {
             if (strcmp(values[v], "type:integer") == 0 ||
-                strcmp(values[v], "type:seconds") == 0) {
+                strcmp(values[v], "type:seconds") == 0 ||
+                strcmp(values[v], "type:date") == 0) {
                 type = 1;
-                kind = values[v] + 5;
+                kind = values[v] + 5; // after type:
             } else if (strcmp(values[v], "type:ip") == 0) {
                 type = 2;
             } else if (strcmp(values[v], "unique:false") == 0) {
@@ -782,8 +783,6 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
             t = MOLOCH_FIELD_TYPE_IP_GHASH;
             break;
         }
-
-
 
         MolochString_t *hstring;
 
