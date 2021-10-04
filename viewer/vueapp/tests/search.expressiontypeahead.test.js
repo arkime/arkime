@@ -84,17 +84,18 @@ test('search expression typeahead', async () => {
 
   // can get typeahead results --------------------------------------------- //
   await fireEvent.update(searchInput, 'ip.sr');
+
   let srcIPResult;
   await waitFor(() => { // need to wait for the debounce
     srcIPResult = getByTitle('Source IP'); // autocompletes fields
   });
 
   // arrow keys select a result -------------------------------------------- //
-  await fireEvent.keyUp(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
   expect(srcIPResult).toHaveClass('active');
 
   // enter click adds the selected result to the query and clears results -- //
-  await fireEvent.keyUp(searchInput, { key: 'Enter', code: 'Enter', keyCode: 13, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter', keyCode: 13, charCode: 0 });
   expect(searchInput.value).toBe('ip.src ');
   expect(queryByTitle('Source IP')).not.toBeInTheDocument();
 
@@ -118,16 +119,41 @@ test('search expression typeahead', async () => {
   await waitFor(() => { // need to wait for the debounce
     getByText('10.0.0.1'); // autocompletes values
   });
-  await fireEvent.keyUp(searchInput, { key: 'Escape', code: 'Escape', keyCode: 27, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'Escape', code: 'Escape', keyCode: 27, charCode: 0 });
   expect(queryByText('10.0.0.1')).not.toBeInTheDocument();
 
   // can remove from history ----------------------------------------------- //
   await fireEvent.update(searchInput, 'ip.src == 10.0.0.1 && ip.sr');
   addCaretPosition(searchInput, 11);
+
   let removeFromHistoryBtn;
   await waitFor(() => { // need to wait for the debounce
     removeFromHistoryBtn = getByTitle('Remove ip.src from your field history');
   });
   await fireEvent.click(removeFromHistoryBtn);
   expect(UserService.saveState).toHaveBeenCalledWith({ fields: [] }, 'fieldHistory');
+
+  // autocomplete values -------------------------------------------------- //
+  await fireEvent.update(searchInput, 'ip.src == 10.0.0.1 && ip.dst == [10.0');
+  addCaretPosition(searchInput, 10);
+
+  await waitFor(() => { // need to wait for the debounce
+    getByText('10.0.0.2'); // autocompletes values
+  });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter', keyCode: 13, charCode: 0 });
+  expect(searchInput.value).toBe('ip.src == 10.0.0.1 && ip.dst == [10.0.0.2 ');
+
+  await fireEvent.update(searchInput, 'ip.src == 10.0.0.1 && ip.dst == [10.0.0.2,10.0');
+  addCaretPosition(searchInput, 3);
+
+  await waitFor(() => { // need to wait for the debounce
+    getByText('10.0.0.4'); // autocompletes values
+  });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, charCode: 0 });
+  await fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter', keyCode: 13, charCode: 0 });
+  expect(searchInput.value).toBe('ip.src == 10.0.0.1 && ip.dst == [10.0.0.2,10.0.0.4 ');
 });

@@ -49,6 +49,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - display "0" values
   - viewer - Test alert includes who requested it
   - viewer - fixed regex and floats not always working in array expressions
+  - viewer - fix always putting cursor at end of input when selecting typeahead result
+  - viewer - add typeahead results in search expression for values in a list
   - multies - support elasticsearchApiKey
   - multies - support scrolling and large queries/pagination
   - wise - handle empty config file on startup

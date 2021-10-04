@@ -219,7 +219,7 @@ const store = new Vuex.Store({
       state.fieldsArr = value.fieldsArr;
       state.fieldsMap = value.fieldsMap;
       state.remoteclusters = value.remoteclusters;
-      state.fieldhistory = value.fieldhistory.fields;
+      state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
     }
   }
