@@ -153,7 +153,8 @@
                     :value="item.name"
                     :expr="fieldList[item.parents.length].exp"
                     :parse="true"
-                    :session-btn="true">
+                    :session-btn="true"
+                    :pull-left="true">
                   </moloch-session-field>
                 </template>
                 <template v-else>
@@ -162,7 +163,8 @@
                     :value="item.name"
                     :expr="fieldList[0].exp"
                     :parse="true"
-                    :session-btn="true">
+                    :session-btn="true"
+                    :pull-left="true">
                   </moloch-session-field>
                 </template>
               </td>
