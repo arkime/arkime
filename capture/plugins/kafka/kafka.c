@@ -35,6 +35,11 @@ LOCAL rd_kafka_conf_t *conf; /* Temporary configuration object */
 LOCAL char errstr[512];      /* librdkafka API error reporting buffer */
 LOCAL const char *brokers;   /* Argument: broker list */
 LOCAL const char *topic;     /* Argument: topic to produce to */
+LOCAL const char kafkaSSL;
+LOCAL const char *kafkaSSLCALocation;
+LOCAL const char *kafkaSSLCertificateLocation;
+LOCAL const char *kafkaSSLKeyLocation;
+LOCAL const char *kafkaSSLKeyPassword;
 
 extern MolochConfig_t config;
 
@@ -189,11 +194,62 @@ void moloch_plugin_init()
     if (rd_kafka_conf_set(conf, "metadata.broker.list", brokers,
                           errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
     {
-        LOGEXIT("Error finding %s\n", errstr);
+        LOGEXIT("Error configuring kafka:metadata.broker.list, error = %s\n", errstr);
     }
 
     if (config.debug)
         LOG("%% kafka broker %s", brokers);
+
+    kafkaSSL = moloch_config_boolean(NULL, "kafkaSSL", false);
+    if kafkaSSL
+    {
+        if (config.debug)
+            LOG("%% kafka SSL is turned on");
+
+        if (rd_kafka_conf_set(conf, "security.protocol", "SSL",
+                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
+        {
+            LOGEXIT("Error configuring kafka:security.protocol, error = %s\n", errstr);
+        }
+
+        kafkaSSLCALocation = moloch_config_str(NULL, "kafkaSSLCALocation", NULL);
+        if kafkaSSLCALocation
+        {
+            if (rd_kafka_conf_set(conf, "ssl.ca.location", ca_cert,
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
+            {
+                LOGEXIT("Error configuring kafka:ssl.ca.location, error = %s\n", errstr);
+            }
+        }
+
+        kafkaSSLCertificateLocation = moloch_config_str(NULL, "kafkaSSLCertificateLocation", NULL);
+	    if kafkaSSLCertificateLocation
+	    {
+	        if (rd_kafka_conf_set(conf, "ssl.certificate.location", client_cert,
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
+            {
+                LOGEXIT("Error configuring kafka:ssl.certificate.location, error = %s\n", errstr);
+            }
+	    }
+
+        kafkaSSLKeyLocation = moloch_config_str(NULL, "kafkaSSLKeyLocation", NULL);
+        if kafkaSSLKeyLocation {
+            if (rd_kafka_conf_set(conf, "ssl.key.location", client_key,
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
+            {
+                LOGEXIT("Error configuring kafka:ssl.key.location, error = %s\n", errstr);
+            }
+        }
+
+        kafkaSSLKeyPassword = moloch_config_str(NULL, "kafkaSSLKeyPassword", NULL);
+        if kafkaSSLKeyPassword {
+             if (rd_kafka_conf_set(conf, "ssl.key.password", client_key_password,
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
+            {
+                LOGEXIT("Error configuring kafka:ss.key.password, error = %s\n", errstr);
+            }
+        }
+    }
 
     rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_cb);
 
