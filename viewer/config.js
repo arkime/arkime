@@ -572,8 +572,8 @@ if (exports.isHTTPS()) {
     loadCertData();
 
     // watch the cert and key files
-    fs.watch(exports.certFileLocation, watchFile);
-    fs.watch(exports.keyFileLocation, watchFile);
+    fs.watch(exports.certFileLocation, {persistent: false}, watchFile);
+    fs.watch(exports.keyFileLocation, {persistent: false}, watchFile);
   } catch (err) {
     console.log('ERROR loading cert or key files:', err.toString());
   }
