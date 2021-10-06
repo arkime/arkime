@@ -318,7 +318,12 @@ exports.getBool = function (key, defaultValue) {
 
 // Return an array split on separator, remove leading/trailing spaces, remove empty elements
 exports.getArray = function (key, separator, defaultValue) {
-  return exports.get(key, defaultValue).split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+  const value = exports.get(key, defaultValue);
+  if (typeof value === 'string') {
+    return value.split(separator).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+  } else {
+    return value;
+  }
 };
 
 exports.getObj = function (key, defaultValue) {

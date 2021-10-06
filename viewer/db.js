@@ -55,7 +55,7 @@ function checkURLs (nodes) {
         process.exit();
       }
     });
-  } else if (!nodes.startswith('http')) {
+  } else if (!nodes.startsWith('http')) {
     console.log(`ERROR - Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
     process.exit();
   }

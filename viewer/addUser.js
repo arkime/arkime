@@ -148,7 +148,7 @@ Db.initialize({
   esClientKeyPass: Config.get('esClientKeyPass', null),
   insecure: Config.insecure,
   ca: Config.getCaTrustCerts(Config.nodeName()),
-  usersHost: Config.get('usersElasticsearch'),
+  usersHost: Config.getArray('usersElasticsearch', ','),
   usersPrefix: Config.get('usersPrefix'),
   esApiKey: Config.get('elasticsearchAPIKey', null),
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
