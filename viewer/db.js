@@ -343,6 +343,8 @@ function fixSessionFields (fields, unflatten) {
   if (unflatten) {
     fields.source = { as: {}, geo: {} };
     fields.destination = { as: {}, geo: {} };
+    fields.client = {};
+    fields.server = {};
   }
   for (const f in fields) {
     const path = f.split('.');
