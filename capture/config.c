@@ -527,11 +527,11 @@ void moloch_config_load()
     config.maxPacketsInQueue     = moloch_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = moloch_config_int(keyfile, "dbBulkSize", 200000, MOLOCH_HTTP_BUFFER_SIZE*2, 10000000);
     config.dbFlushTimeout        = moloch_config_int(keyfile, "dbFlushTimeout", 5, 1, 60*30);
-    config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 1000);
-    config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 5000);
+    config.maxESConns            = moloch_config_int(keyfile, "maxESConns", 20, 5, 500);
+    config.maxESRequests         = moloch_config_int(keyfile, "maxESRequests", 500, 10, 2500);
     config.logEveryXPackets      = moloch_config_int(keyfile, "logEveryXPackets", 50000, 1000, 0xffffffff);
     config.pcapBufferSize        = moloch_config_int(keyfile, "pcapBufferSize", 300000000, 100000, 0xffffffff);
-    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x10000, 0x800000);
+    config.pcapWriteSize         = moloch_config_int(keyfile, "pcapWriteSize", 0x40000, 0x10000, 0x8000000);
     config.maxFreeOutputBuffers  = moloch_config_int(keyfile, "maxFreeOutputBuffers", 50, 0, 0xffff);
     config.fragsTimeout          = moloch_config_int(keyfile, "fragsTimeout", 60*8, 60, 0xffff);
     config.maxFrags              = moloch_config_int(keyfile, "maxFrags", 10000, 100, 0xffffff);

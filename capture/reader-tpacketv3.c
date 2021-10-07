@@ -193,7 +193,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 {
     int i;
     int blocksize = moloch_config_int(NULL, "tpacketv3BlockSize", 1<<21, 1<<16, 1U<<31);
-    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 6);
+    numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 12);
 
     if (blocksize % getpagesize() != 0) {
         LOGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
