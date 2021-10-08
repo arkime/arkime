@@ -219,9 +219,9 @@ dl
         strong.medium OUI
         +arrayPrint(session, "dstOui", "oui.dst", true)
 
-      if (session.vlan)
+      if (session.network.vlan)
         strong.medium.ml-4 VLan
-        +arrayPrint(session, "vlan", "vlan")
+        +arrayPrint(session.network.vlan, "id", "vlan")
 
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
