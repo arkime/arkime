@@ -34,6 +34,7 @@ class SplunkSource extends WISESource {
     this.port = api.getConfig(section, 'port', 8089);
     this.periodic = api.getConfig(section, 'periodic');
     this.query = api.getConfig(section, 'query');
+    this.mergeQuery = api.getConfig(section, 'mergeQuery');
     // this.arrayPath = api.getConfig(section, 'arrayPath');
     this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
 
@@ -59,7 +60,7 @@ class SplunkSource extends WISESource {
         return;
       }
       if (this.periodic) {
-        this.periodicRefresh();
+        this.periodicRefresh(true);
       }
 
       console.log(this.section, 'Login was successful: ' + success);
@@ -76,8 +77,14 @@ class SplunkSource extends WISESource {
   }
 
   // ----------------------------------------------------------------------------
-  periodicRefresh () {
-    this.service.oneshotSearch(this.query, { output_mode: 'json', count: 0 }, (err, results) => {
+  periodicRefresh (firstTime) {
+    let query = this.query;
+    let merging = false;
+    if (this.mergeQuery && !firstTime) {
+      query = this.mergeQuery;
+      merging = true;
+    }
+    this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
       if (err) {
         console.log(this.section, '- ERROR', err);
         return;
@@ -89,10 +96,14 @@ class SplunkSource extends WISESource {
       }
 
       let cache;
-      if (this.type === 'ip') {
-        cache = { items: new Map(), trie: new iptrie.IPTrie() };
+      if (merging) {
+        cache = this.cache;
       } else {
-        cache = new Map();
+        if (this.type === 'ip') {
+          cache = { items: new Map(), trie: new iptrie.IPTrie() };
+        } else {
+          cache = new Map();
+        }
       }
 
       for (const item of results.results) {
@@ -222,6 +233,7 @@ exports.initSource = function (api) {
       { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
       { name: 'port', required: true, help: 'The Splunk port' },
       { name: 'query', required: true, help: 'The query to run against Splunk. For non periodic queries the string %%SEARCHTERM%% will be replaced with the key' },
+      { name: 'mergeQuery', help: 'When in periodic mode, use this query after startup and merge the keyPath value into previous table' },
       { name: 'version', required: false, help: 'The Splunk api version to use (defaults to 5)' }
     ]
   });
