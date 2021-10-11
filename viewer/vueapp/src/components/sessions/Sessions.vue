@@ -1429,9 +1429,11 @@ export default {
       this.setupFields();
 
       // IMPORTANT: kicks off the initial search query
-      if (!this.user.settings.manualQuery ||
-        !JSON.parse(this.user.settings.manualQuery) ||
-        componentInitialized) {
+      const manualQuery = this.user.settings.manualQuery && JSON.parse(this.user.settings.manualQuery);
+      const hasExpression = this.query.expression && this.query.expression.length;
+      const issueQuery = componentInitialized || !manualQuery || (manualQuery && hasExpression);
+
+      if (issueQuery) {
         this.cancelAndLoad(true);
       } else {
         this.loading = false;

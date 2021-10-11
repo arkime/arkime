@@ -319,19 +319,23 @@
             <div class="col-sm-9">
               <b-form-group>
                 <b-form-radio-group
-                  size="sm"
                   buttons
+                  size="sm"
                   @change="updateQueryOnPageLoad"
                   v-model="settings.manualQuery">
-                  <b-radio value="false"
+                  <b-radio
+                    value="false"
+                    class="btn-radio"
                     v-b-tooltip.hover
-                    class="btn-radio">
+                    title="Always issue a query on page load">
                     Yes
                   </b-radio>
-                  <b-radio value="true"
+                  <b-radio
+                    value="true"
+                    class="btn-radio"
                     v-b-tooltip.hover
-                    class="btn-radio">
-                    No
+                    title="Only issue a query if there is a search expression">
+                    If Query
                   </b-radio>
                 </b-form-radio-group>
               </b-form-group>

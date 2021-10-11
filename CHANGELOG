@@ -28,6 +28,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - increase max of pcapWriteSize, tpacketv3NumThreads
   - capture - decrease max of maxESConns, maxESRequests
   - viewer - fix vlan display (broke in 3.0.0)
+  - viewer - Issue Query on Page Load "No" option changed to issue query if there is a search expression
 
 3.1.0 2021/10/04
   - all - support float field type
