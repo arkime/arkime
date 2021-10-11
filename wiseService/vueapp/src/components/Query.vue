@@ -281,14 +281,18 @@ export default {
 
       this.loading = true;
 
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchSource: this.chosenSource,
-          searchType: this.chosenType,
-          searchTerm: this.searchTerm
-        }
-      });
+      if (this.$route.query.searchSource !== this.chosenSource ||
+        this.$route.query.searchType !== this.chosenType ||
+        this.$route.query.searchTerm !== this.searchTerm) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            searchSource: this.chosenSource,
+            searchType: this.chosenType,
+            searchTerm: this.searchTerm
+          }
+        });
+      }
 
       // save chosen type and source in localstorage
       localStorage.setItem('search-type', this.chosenType);
