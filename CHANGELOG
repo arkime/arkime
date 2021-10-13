@@ -22,6 +22,8 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
+3.1.2 2021/11/xx
+
 3.1.1 2021/10/13
   - release - node 14.18.1
   - addUser.js - fix not exiting on complete when certs defined
