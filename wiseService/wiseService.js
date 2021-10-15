@@ -258,9 +258,9 @@ function setupAuth () {
       function (userid, done) {
         User.getUserCache(userid, (err, user) => {
           if (err) { return done(err); }
-          if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
+          if (!user._source.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
-          return done(null, user, { ha1: store2ha1(user.passStore) });
+          return done(null, user, { ha1: store2ha1(user._source.passStore) });
         });
       },
       function (options, done) {
@@ -281,8 +281,8 @@ function doAuth (req, res, next) {
     if (req.headers[internals.userNameHeader] !== undefined) {
       return User.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
         if (err) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
-        if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
-        req.user = user;
+        if (!user._source.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
+        req.user = user._source;
         return next();
       });
     } else if (internals.debug > 0) {

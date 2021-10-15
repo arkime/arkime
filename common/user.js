@@ -25,7 +25,7 @@ class User {
   static usersCache = {};
 
   static initialize (options) {
-    if (options.prefix === undefined) {
+    if (options.prefix === undefined || options.prefix === '') {
       User.prefix = '';
     } else if (options.prefix.endsWith('_')) {
       User.prefix = options.prefix;
