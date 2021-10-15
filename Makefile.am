@@ -1,7 +1,7 @@
 SUBDIRS = . capture db viewer parliament wiseService release tests
 install-exec-local:
 	npm ci
-	cp -pr notifiers @prefix@
+	cp -pr common @prefix@
 	cp -pr assets @prefix@
 	@INSTALL@ -D package.json @prefix@/package.json
 	@INSTALL@ -D package-lock.json @prefix@/package-lock.json

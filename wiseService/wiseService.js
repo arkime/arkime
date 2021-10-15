@@ -41,11 +41,11 @@ const jsonParser = bp.json();
 const axios = require('axios');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
-const { Client } = require('@elastic/elasticsearch');
 const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
+const User = require('../common/User');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -211,20 +211,6 @@ function noCacheJson (req, res, next) {
 }
 
 // ----------------------------------------------------------------------------
-// Authentication
-// ----------------------------------------------------------------------------
-function getUser (userId, cb) {
-  internals.usersElasticSearch.get({
-    index: internals.usersPrefix + 'users', type: '_doc', id: userId
-  }, (err, { body: result }) => {
-    if (err) {
-      console.log(err, result);
-      return cb(err);
-    }
-    return cb(null, result._source);
-  });
-}
-// ----------------------------------------------------------------------------
 // Decrypt the encrypted hashed password, it is still hashed
 function store2ha1 (passstore) {
   try {
@@ -259,33 +245,18 @@ function setupAuth () {
   }
 
   const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
-  internals.usersPrefix = getConfig('wiseService', 'usersPrefix', '');
 
-  if (internals.usersPrefix && internals.usersPrefix.charAt(internals.usersPrefix.length - 1) !== '_') {
-    internals.usersPrefix += '_';
-  } else {
-    internals.usersPrefix = internals.usersPrefix || '';
-  }
-
-  const esOptions = {
+  User.initialize({
     node: es,
-    maxRetries: 2,
-    requestTimeout: 300000
-  };
-
-  const usersElasticsearchAPIKey = getConfig('wiseService', 'usersElasticsearchAPIKey');
-  if (usersElasticsearchAPIKey) {
-    esOptions.auth = {
-      apiKey: usersElasticsearchAPIKey
-    };
-  }
-
-  internals.usersElasticSearch = new Client(esOptions);
+    prefix: getConfig('wiseService', 'usersPrefix', ''),
+    apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
+    basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
+  });
 
   if (internals.userNameHeader === 'digest') {
     passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },
       function (userid, done) {
-        getUser(userid, (err, user) => {
+        User.getUserCache(userid, (err, user) => {
           if (err) { return done(err); }
           if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
@@ -308,7 +279,7 @@ function doAuth (req, res, next) {
 
   if (internals.userNameHeader !== 'digest') {
     if (req.headers[internals.userNameHeader] !== undefined) {
-      return getUser(req.headers[internals.userNameHeader], (err, user) => {
+      return User.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
         if (err) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
         if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
         req.user = user;

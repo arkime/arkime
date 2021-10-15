@@ -22,6 +22,7 @@ const os = require('os');
 const fs = require('fs');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
+const User = require('../common/User');
 
 const internals = {
   fileId2File: {},
@@ -30,7 +31,6 @@ const internals = {
   healthCache: {},
   indicesCache: {},
   indicesSettingsCache: {},
-  usersCache: {},
   shortcutsCache: {},
   nodesStatsCache: {},
   nodesInfoCache: {},
@@ -132,31 +132,30 @@ exports.initialize = async (info, cb) => {
   internals.client7 = new Client(esClientOptions);
 
   if (info.usersHost) {
-    const esUsersClientOptions = {
-      node: internals.info.usersHost,
-      maxRetries: 2,
-      requestTimeout: (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    };
-    if (info.usersEsApiKey) {
-      esUsersClientOptions.auth = {
-        apiKey: info.usersEsApiKey
-      };
-    } else if (info.usersEsBasicAuth) {
-      let basicAuth = info.usersEsBasicAuth;
-      if (!basicAuth.includes(':')) {
-        basicAuth = Buffer.from(basicAuth, 'base64').toString();
-      }
-      basicAuth = basicAuth.split(':');
-      esUsersClientOptions.auth = {
-        username: basicAuth[0],
-        password: basicAuth[1]
-      };
-    }
-    internals.usersClient7 = new Client(esUsersClientOptions);
+    User.initialize({
+      node: info.usersHost,
+      clientKey: info.esClientKey,
+      clientCert: info.esClientCert,
+      clientKeyPass: info.esClientKeyPass,
+      apiKey: info.usersEsApiKey,
+      basicAuth: info.usersEsBasicAuth,
+      prefix: internals.usersPrefix,
+      debug: info.debug
+    });
   } else {
-    internals.usersClient7 = internals.client7;
+    User.initialize({
+      node: info.host,
+      clientKey: info.esClientKey,
+      clientCert: info.esClientCert,
+      clientKeyPass: info.esClientKeyPass,
+      apiKey: info.esApiKey,
+      basicAuth: info.esBasicAuth,
+      prefix: internals.prefix,
+      debug: info.debug
+    });
   }
+
+  internals.usersClient7 = User.getClient();
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -916,6 +915,8 @@ exports.reroute = async () => {
 
 exports.flush = async (index) => {
   if (index === 'users') {
+    return User.flush();
+  } else if (index === 'lookups') {
     return internals.usersClient7.indices.flush({ index: fixIndex(index) });
   } else {
     return internals.client7.indices.flush({ index: fixIndex(index) });
@@ -923,11 +924,13 @@ exports.flush = async (index) => {
 };
 
 exports.refresh = async (index) => {
-  if (index === 'users' || index === 'lookups') {
+  if (index === 'users') {
+    User.flush();
+  } else if (index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
+  } else {
+    return internals.client7.indices.refresh({ index: fixIndex(index) });
   }
-
-  return internals.client7.indices.refresh({ index: fixIndex(index) });
 };
 
 exports.addTagsToSession = function (index, id, tags, cluster, cb) {
@@ -1052,99 +1055,30 @@ exports.flushCache = function () {
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
-  internals.usersCache = {};
+  User.flushCache();
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
   exports.getAliasesCache();
 };
 
 // search against user index, promise only
-exports.searchUsers = async (query) => {
-  const { body: users } = await internals.usersClient7.search({
-    index: internals.usersPrefix + 'users',
-    body: query,
-    rest_total_hits_as_int: true
-  });
-  return users;
-};
+exports.searchUsers = User.searchUsers;
 
 // Return a user from DB, callback only
-exports.getUser = (userId, cb) => {
-  internals.usersClient7.get({ index: internals.usersPrefix + 'users', id: userId }, (err, result) => {
-    cb(err, result.body || { found: false });
-  });
-};
+exports.getUser = User.getUser;
 
 // Return a user from cache, callback only
-exports.getUserCache = (userId, cb) => {
-  if (internals.usersCache[userId] && internals.usersCache[userId]._timeStamp > Date.now() - 5000) {
-    return cb(null, internals.usersCache[userId]);
-  }
+exports.getUserCache = User.getUserCache;
 
-  exports.getUser(userId, (err, suser) => {
-    if (err) {
-      return cb(err, suser);
-    }
-
-    suser._timeStamp = Date.now();
-    internals.usersCache[userId] = suser;
-
-    cb(null, suser);
-  });
-};
-
-exports.numberOfUsers = async () => {
-  const { body: count } = await internals.usersClient7.count({
-    index: internals.usersPrefix + 'users',
-    ignoreUnavailable: true,
-    body: {
-      query: { // exclude the shared user from results
-        bool: { must_not: { term: { userId: '_moloch_shared' } } }
-      }
-    }
-  });
-  return count.count;
-};
+exports.numberOfUsers = User.numberOfUsers;
 
 // Delete user, promise only
-exports.deleteUser = async (userId) => {
-  delete internals.usersCache[userId];
-  await internals.usersClient7.delete({
-    index: internals.usersPrefix + 'users',
-    id: userId,
-    refresh: true
-  });
-  delete internals.usersCache[userId]; // Delete again after db says its done refreshing
-};
+exports.deleteUser = User.deleteUser;
 
 // Set user, callback only
-exports.setUser = (userId, doc, cb) => {
-  delete internals.usersCache[userId];
-  const createOnly = !!doc._createOnly;
-  delete doc._createOnly;
-  internals.usersClient7.index({
-    index: internals.usersPrefix + 'users',
-    body: doc,
-    id: userId,
-    refresh: true,
-    timeout: '10m',
-    op_type: createOnly ? 'create' : 'index'
-  }, (err) => {
-    delete internals.usersCache[userId]; // Delete again after db says its done refreshing
-    cb(err);
-  });
-};
+exports.setUser = User.setUser;
 
-exports.setLastUsed = async (userId, now) => {
-  const params = {
-    index: internals.usersPrefix + 'users',
-    body: { doc: { lastUsed: now } },
-    id: userId,
-    retry_on_conflict: 3
-  };
-
-  return internals.usersClient7.update(params);
-};
+exports.setLastUsed = User.setLastUsed;
 
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
