@@ -45,7 +45,7 @@ const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
-const User = require('../common/User');
+const User = require('../common/user');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
