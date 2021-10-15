@@ -91,14 +91,12 @@ class UserDB {
       body: query,
       rest_total_hits_as_int: true
     });
-    console.log('ALW searchUsers', users);
     return users;
   }
 
   // Return a user from DB, callback only
   static getUser (userId, cb) {
     UserDB.client.get({ index: UserDB.prefix + 'users', id: userId }, (err, result) => {
-      console.log('ALW getUser', result.body);
       cb(err, result.body || { found: false });
     });
   }
@@ -106,7 +104,6 @@ class UserDB {
   // Return a user from cache, callback only
   static getUserCache (userId, cb) {
     if (UserDB.usersCache[userId] && UserDB.usersCache[userId]._timeStamp > Date.now() - 5000) {
-      console.log('ALW getUserCache', UserDB.usersCache[userId]);
       return cb(null, UserDB.usersCache[userId]);
     }
 
@@ -132,7 +129,6 @@ class UserDB {
         }
       }
     });
-    console.log('ALW numberOfUsers', count.count);
     return count.count;
   };
 

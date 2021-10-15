@@ -924,7 +924,7 @@ exports.flush = async (index) => {
 };
 
 exports.refresh = async (index) => {
-  if (index === 'users') { 
+  if (index === 'users') {
     UserDB.flush();
   } else if (index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
