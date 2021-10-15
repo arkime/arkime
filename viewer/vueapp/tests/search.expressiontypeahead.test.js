@@ -14,6 +14,8 @@ import FieldService from '../src/components/search/FieldService';
 import countries from '../src/components/search/countries.json';
 const { fields, fieldsMap } = require('./consts');
 
+jest.setTimeout(30000);
+
 console.info = jest.fn(); // don't display console.info messages
 
 global.$ = global.jQuery = $;
