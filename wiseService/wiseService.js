@@ -45,7 +45,7 @@ const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
-const UserDB = require('../common/UserDB');
+const User = require('../common/User');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -246,7 +246,7 @@ function setupAuth () {
 
   const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
 
-  UserDB.initialize({
+  User.initialize({
     node: es,
     prefix: getConfig('wiseService', 'usersPrefix', ''),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
@@ -256,7 +256,7 @@ function setupAuth () {
   if (internals.userNameHeader === 'digest') {
     passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },
       function (userid, done) {
-        UserDB.getUserCache(userid, (err, user) => {
+        User.getUserCache(userid, (err, user) => {
           if (err) { return done(err); }
           if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
@@ -279,7 +279,7 @@ function doAuth (req, res, next) {
 
   if (internals.userNameHeader !== 'digest') {
     if (req.headers[internals.userNameHeader] !== undefined) {
-      return UserDB.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
+      return User.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
         if (err) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
         if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
         req.user = user;

@@ -272,7 +272,7 @@ function loadNotifiers () {
   };
 
   // look for all notifier providers and initialize them
-  const files = glob.sync(path.join(__dirname, '/../common/notifiers/provider.*.js'));
+  const files = glob.sync(path.join(__dirname, '/../common/notifier.*.js'));
   files.forEach((file) => {
     const plugin = require(file);
     plugin.init(api);

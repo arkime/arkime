@@ -19,18 +19,18 @@
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 
-class UserDB {
+class User {
   static prefix;
   static client;
   static usersCache = {};
 
   static initialize (options) {
     if (options.prefix === undefined) {
-      UserDB.prefix = '';
+      User.prefix = '';
     } else if (options.prefix.endsWith('_')) {
-      UserDB.prefix = options.prefix;
+      User.prefix = options.prefix;
     } else {
-      UserDB.prefix = options.prefix + '_';
+      User.prefix = options.prefix + '_';
     }
 
     const esSSLOptions = { rejectUnauthorized: !options.insecure, ca: options.ca };
@@ -65,29 +65,29 @@ class UserDB {
       };
     }
 
-    UserDB.client = new Client(esOptions);
+    User.client = new Client(esOptions);
   }
 
   static getClient () {
-    return UserDB.client;
+    return User.client;
   }
 
   static flushCache () {
-    UserDB.usersCache = {};
+    User.usersCache = {};
   }
 
   static async flush () {
-    UserDB.client.indices.flush({ index: UserDB.prefix + 'users' });
+    User.client.indices.flush({ index: User.prefix + 'users' });
   }
 
   static async refresh () {
-    UserDB.client.indices.refresh({ index: UserDB.prefix + 'users' });
+    User.client.indices.refresh({ index: User.prefix + 'users' });
   }
 
   // search against user index, promise only
   static async searchUsers (query) {
-    const { body: users } = await UserDB.client.search({
-      index: UserDB.prefix + 'users',
+    const { body: users } = await User.client.search({
+      index: User.prefix + 'users',
       body: query,
       rest_total_hits_as_int: true
     });
@@ -96,32 +96,32 @@ class UserDB {
 
   // Return a user from DB, callback only
   static getUser (userId, cb) {
-    UserDB.client.get({ index: UserDB.prefix + 'users', id: userId }, (err, result) => {
+    User.client.get({ index: User.prefix + 'users', id: userId }, (err, result) => {
       cb(err, result.body || { found: false });
     });
   }
 
   // Return a user from cache, callback only
   static getUserCache (userId, cb) {
-    if (UserDB.usersCache[userId] && UserDB.usersCache[userId]._timeStamp > Date.now() - 5000) {
-      return cb(null, UserDB.usersCache[userId]);
+    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - 5000) {
+      return cb(null, User.usersCache[userId]);
     }
 
-    UserDB.getUser(userId, (err, suser) => {
+    User.getUser(userId, (err, suser) => {
       if (err) {
         return cb(err, suser);
       }
 
       suser._timeStamp = Date.now();
-      UserDB.usersCache[userId] = suser;
+      User.usersCache[userId] = suser;
 
       cb(null, suser);
     });
   };
 
   static async numberOfUsers () {
-    const { body: count } = await UserDB.client.count({
-      index: UserDB.prefix + 'users',
+    const { body: count } = await User.client.count({
+      index: User.prefix + 'users',
       ignoreUnavailable: true,
       body: {
         query: { // exclude the shared user from results
@@ -134,43 +134,43 @@ class UserDB {
 
   // Delete user, promise only
   static async deleteUser (userId) {
-    delete UserDB.usersCache[userId];
-    await UserDB.client.delete({
-      index: UserDB.prefix + 'users',
+    delete User.usersCache[userId];
+    await User.client.delete({
+      index: User.prefix + 'users',
       id: userId,
       refresh: true
     });
-    delete UserDB.usersCache[userId]; // Delete again after db says its done refreshing
+    delete User.usersCache[userId]; // Delete again after db says its done refreshing
   };
 
   // Set user, callback only
   static setUser (userId, doc, cb) {
-    delete UserDB.usersCache[userId];
+    delete User.usersCache[userId];
     const createOnly = !!doc._createOnly;
     delete doc._createOnly;
-    UserDB.client.index({
-      index: UserDB.prefix + 'users',
+    User.client.index({
+      index: User.prefix + 'users',
       body: doc,
       id: userId,
       refresh: true,
       timeout: '10m',
       op_type: createOnly ? 'create' : 'index'
     }, (err) => {
-      delete UserDB.usersCache[userId]; // Delete again after db says its done refreshing
+      delete User.usersCache[userId]; // Delete again after db says its done refreshing
       cb(err);
     });
   };
 
   static setLastUsed (userId, now) {
     const params = {
-      index: UserDB.prefix + 'users',
+      index: User.prefix + 'users',
       body: { doc: { lastUsed: now } },
       id: userId,
       retry_on_conflict: 3
     };
 
-    return UserDB.client.update(params);
+    return User.client.update(params);
   };
 }
 
-module.exports = UserDB;
+module.exports = User;

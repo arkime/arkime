@@ -22,7 +22,7 @@ const os = require('os');
 const fs = require('fs');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
-const UserDB = require('../common/UserDB');
+const User = require('../common/User');
 
 const internals = {
   fileId2File: {},
@@ -132,7 +132,7 @@ exports.initialize = async (info, cb) => {
   internals.client7 = new Client(esClientOptions);
 
   if (info.usersHost) {
-    UserDB.initialize({
+    User.initialize({
       node: info.usersHost,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
@@ -143,7 +143,7 @@ exports.initialize = async (info, cb) => {
       debug: info.debug
     });
   } else {
-    UserDB.initialize({
+    User.initialize({
       node: info.host,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
@@ -155,7 +155,7 @@ exports.initialize = async (info, cb) => {
     });
   }
 
-  internals.usersClient7 = UserDB.getClient();
+  internals.usersClient7 = User.getClient();
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -915,7 +915,7 @@ exports.reroute = async () => {
 
 exports.flush = async (index) => {
   if (index === 'users') {
-    return UserDB.flush();
+    return User.flush();
   } else if (index === 'lookups') {
     return internals.usersClient7.indices.flush({ index: fixIndex(index) });
   } else {
@@ -925,7 +925,7 @@ exports.flush = async (index) => {
 
 exports.refresh = async (index) => {
   if (index === 'users') {
-    UserDB.flush();
+    User.flush();
   } else if (index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: fixIndex(index) });
   } else {
@@ -1055,30 +1055,30 @@ exports.flushCache = function () {
   internals.fileName2File = {};
   internals.molochNodeStatsCache = {};
   internals.healthCache = {};
-  UserDB.flushCache();
+  User.flushCache();
   internals.shortcutsCache = {};
   delete internals.aliasesCache;
   exports.getAliasesCache();
 };
 
 // search against user index, promise only
-exports.searchUsers = UserDB.searchUsers;
+exports.searchUsers = User.searchUsers;
 
 // Return a user from DB, callback only
-exports.getUser = UserDB.getUser;
+exports.getUser = User.getUser;
 
 // Return a user from cache, callback only
-exports.getUserCache = UserDB.getUserCache;
+exports.getUserCache = User.getUserCache;
 
-exports.numberOfUsers = UserDB.numberOfUsers;
+exports.numberOfUsers = User.numberOfUsers;
 
 // Delete user, promise only
-exports.deleteUser = UserDB.deleteUser;
+exports.deleteUser = User.deleteUser;
 
 // Set user, callback only
-exports.setUser = UserDB.setUser;
+exports.setUser = User.setUser;
 
-exports.setLastUsed = UserDB.setLastUsed;
+exports.setLastUsed = User.setLastUsed;
 
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
