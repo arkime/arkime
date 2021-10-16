@@ -257,8 +257,8 @@ function setupAuth () {
     passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },
       function (userid, done) {
         User.getUserCache(userid, (err, user) => {
-          if (err) { return done(err); }
-          if (!user._source.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
+          if (err || !user) { return done(err); }
+          if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
           return done(null, user, { ha1: store2ha1(user._source.passStore) });
         });
@@ -280,9 +280,9 @@ function doAuth (req, res, next) {
   if (internals.userNameHeader !== 'digest') {
     if (req.headers[internals.userNameHeader] !== undefined) {
       return User.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
-        if (err) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
-        if (!user._source.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
-        req.user = user._source;
+        if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
+        if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
+        req.user = user;
         return next();
       });
     } else if (internals.debug > 0) {

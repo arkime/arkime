@@ -12,7 +12,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   // --------------------------------------------------------------------------
   function saveSharedView (req, res, user, view, endpoint, successMessage, errorMessage) {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         // sharing for the first time
         sharedUser = {
           userId: '_moloch_shared',
@@ -26,8 +26,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           packetSearch: false,
           views: {}
         };
-      } else {
-        sharedUser = sharedUser._source;
       }
 
       sharedUser.views = sharedUser.views || {};
@@ -173,8 +171,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
 
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (sharedUser && sharedUser.found) {
-        sharedUser = sharedUser._source;
+      if (sharedUser) {
         for (const viewName in sharedUser.views) {
           // check for views with the same name as a shared view so user specific views don't get overwritten
           let sharedViewName = viewName;
@@ -339,7 +336,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     Db.getUser(req.body.userId, (err, user) => {
-      if (!user || user.found) {
+      if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
         return res.serverError(403, 'User already exists');
       }
@@ -429,12 +426,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     Db.getUser(userId, (err, user) => {
-      if (err || !user.found) {
+      if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
-
-      user = user._source;
 
       user.enabled = req.body.enabled === true;
 
@@ -633,25 +628,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       Db.numberOfUsers()
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
-      const results = { total: users.hits.total, results: [] };
-
-      for (const user of users.hits.hits) {
-        const fields = user._source || user.fields;
-        fields.id = user._id;
-        fields.expression = fields.expression || '';
-        fields.headerAuthEnabled = fields.headerAuthEnabled || false;
-        fields.emailSearch = fields.emailSearch || false;
-        fields.removeEnabled = fields.removeEnabled || false;
-        fields.userName = ViewerUtils.safeStr(fields.userName || '');
-        fields.packetSearch = fields.packetSearch || false;
-        fields.timeLimit = fields.timeLimit || undefined;
-        results.results.push(fields);
-      }
-
       res.send({
         recordsTotal: total,
-        recordsFiltered: results.total,
-        data: results.results
+        recordsFiltered: users.hits.total,
+        data: users.hits.hits
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
@@ -809,8 +789,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     if (req.body.shared) {
       Db.getUser('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser && sharedUser.found) {
-          sharedUser = sharedUser._source;
+        if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[viewName] === undefined) {
             return res.serverError(404, 'View not found');
@@ -881,7 +860,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         // the shared user has not been created yet so there is no chance of duplicate views
         if (share) { // add the view to the shared user
           return shareView(req, res, user, '/api/user/views/toggleshare', 'Shared view successfully', 'Sharing view failed');
@@ -890,7 +869,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         return res.serverError(404, 'Shared user not found. Cannot unshare a view without a shared user.');
       }
 
-      sharedUser = sharedUser._source;
       sharedUser.views = sharedUser.views || {};
 
       if (share) { // if sharing, make sure the view doesn't already exist
@@ -940,8 +918,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     if (req.body.shared) {
       Db.getUser('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser && sharedUser.found) {
-          sharedUser = sharedUser._source;
+        if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[key] === undefined) {
             return res.serverError(404, 'View not found');
@@ -1569,12 +1546,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     Db.getUser(req.params.userId, (err, user) => {
-      if (err || !user.found) {
+      if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
       }
-
-      user = user._source;
 
       user.welcomeMsgNum = parseInt(req.body.msgNum);
 
@@ -1612,12 +1587,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    */
   uModule.updateUserState = (req, res) => {
     Db.getUser(req.user.userId, (err, user) => {
-      if (err || !user.found) {
+      if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user');
       }
-
-      user = user._source;
 
       if (!user.tableStates) {
         user.tableStates = {};

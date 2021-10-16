@@ -4,6 +4,7 @@ const dns = require('dns');
 const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
   const mModule = {};
@@ -271,7 +272,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
         res.status(500);
         res.write('<b>Upload command failed:</b><br>');
       }
-      res.write(ViewerUtils.safeStr(cmd));
+      res.write(ArkimeUtil.safeStr(cmd));
       res.write('<br>');
       res.write('<pre>');
       res.write(stdout);

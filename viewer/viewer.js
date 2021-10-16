@@ -56,13 +56,13 @@ const app = express();
 passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'Moloch') },
   function (userid, done) {
     Db.getUserCache(userid, function (err, suser) {
-      if (err && !suser) { return done(err); }
-      if (!suser || !suser.found) { console.log('User', userid, "doesn't exist"); return done(null, false); }
-      if (!suser._source.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
+      if (err) { return done(err); }
+      if (!suser) { console.log('User', userid, "doesn't exist"); return done(null, false); }
+      if (!suser.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
-      userCleanup(suser._source);
+      userCleanup(suser);
 
-      return done(null, suser._source, { ha1: Config.store2ha1(suser._source.passStore) });
+      return done(null, suser, { ha1: Config.store2ha1(suser.passStore) });
     });
   },
   function (options, done) {
@@ -236,10 +236,10 @@ if (Config.get('passwordSecret')) {
 
       Db.getUserCache(obj.user, function (err, suser) {
         if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
-        if (!suser || !suser.found) { return res.send(obj.user + " doesn't exist"); }
-        if (!suser._source.enabled) { return res.send(obj.user + ' not enabled'); }
-        userCleanup(suser._source);
-        req.user = suser._source;
+        if (!suser) { return res.send(obj.user + " doesn't exist"); }
+        if (!suser.enabled) { return res.send(obj.user + ' not enabled'); }
+        userCleanup(suser);
+        req.user = suser;
         return next();
       });
       return;
@@ -251,12 +251,12 @@ if (Config.get('passwordSecret')) {
 
     function ucb (err, suser, userName) {
       if (err) { return res.send(`ERROR - getUser - user: ${userName} err: ${err}`); }
-      if (!suser || !suser.found) { return res.send(`${userName} doesn't exist`); }
-      if (!suser._source.enabled) { return res.send(`${userName} not enabled`); }
-      if (!suser._source.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
+      if (!suser) { return res.send(`${userName} doesn't exist`); }
+      if (!suser.enabled) { return res.send(`${userName} not enabled`); }
+      if (!suser.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
 
-      userCleanup(suser._source);
-      req.user = suser._source;
+      userCleanup(suser);
+      req.user = suser;
       return next();
     }
 
@@ -287,7 +287,7 @@ if (Config.get('passwordSecret')) {
           if (internals.userAutoCreateTmpl === undefined) {
             return ucb(err, suser, userName);
           } else if ((err && err.toString().includes('Not Found')) ||
-             (!suser || !suser.found)) { // Try dynamic creation
+             (!suser)) { // Try dynamic creation
             const nuser = JSON.parse(new Function('return `' +
                    internals.userAutoCreateTmpl + '`;').call(req.headers));
             if (nuser.passStore === undefined) {
@@ -325,9 +325,9 @@ if (Config.get('passwordSecret')) {
     const username = req.query.molochRegressionUser || 'anonymous';
     req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
     Db.getUserCache(username, function (err, suser) {
-      if (!err && suser && suser.found) {
-        userCleanup(suser._source);
-        req.user = suser._source;
+      if (suser) {
+        userCleanup(suser);
+        req.user = suser;
       }
       next();
     });
@@ -339,12 +339,12 @@ if (Config.get('passwordSecret')) {
   app.use(function (req, res, next) {
     req.user = internals.anonymousUser;
     Db.getUserCache('anonymous', (err, suser) => {
-      if (!err && suser && suser.found) {
-        req.user.settings = suser._source.settings || {};
-        req.user.views = suser._source.views;
-        req.user.columnConfigs = suser._source.columnConfigs;
-        req.user.spiviewFieldConfigs = suser._source.spiviewFieldConfigs;
-        req.user.tableStates = suser._source.tableStates;
+      if (suser) {
+        req.user.settings = suser.settings || {};
+        req.user.views = suser.views;
+        req.user.columnConfigs = suser.columnConfigs;
+        req.user.spiviewFieldConfigs = suser.spiviewFieldConfigs;
+        req.user.tableStates = suser.tableStates;
       }
       next();
     });
@@ -785,7 +785,7 @@ function getSettingUserCache (req, res, next) {
   if (!req.user.createEnabled) { return res.serverError(403, 'Need admin privileges'); }
 
   Db.getUserCache(req.query.userId, function (err, user) {
-    if (err || !user || !user.found) {
+    if (err || !user) {
       if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
@@ -794,7 +794,7 @@ function getSettingUserCache (req, res, next) {
       }
       return next();
     }
-    req.settingUser = user._source;
+    req.settingUser = user;
     return next();
   });
 }
@@ -819,7 +819,7 @@ function getSettingUserDb (req, res, next) {
   }
 
   Db.getUser(userId, function (err, user) {
-    if (err || !user || !user.found) {
+    if (err || !user) {
       if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
         delete req.settingUser.found;
@@ -828,7 +828,7 @@ function getSettingUserDb (req, res, next) {
       }
       return next();
     }
-    req.settingUser = user._source;
+    req.settingUser = user;
     return next();
   });
 }

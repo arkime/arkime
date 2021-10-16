@@ -18,6 +18,7 @@
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class User {
   static prefix;
@@ -91,31 +92,58 @@ class User {
       body: query,
       rest_total_hits_as_int: true
     });
+
+    if (users.error) {
+      return users;
+    }
+
+    const hits = [];
+    for (const user of users.hits.hits) {
+      const fields = user._source || user.fields;
+      fields.id = user._id;
+      fields.expression = fields.expression || '';
+      fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+      fields.emailSearch = fields.emailSearch || false;
+      fields.removeEnabled = fields.removeEnabled || false;
+      fields.userName = ArkimeUtil.safeStr(fields.userName || '');
+      fields.packetSearch = fields.packetSearch || false;
+      fields.timeLimit = fields.timeLimit || undefined;
+      hits.push(Object.assign(new User(), fields));
+    }
+    users.hits.hits = hits;
     return users;
   }
 
   // Return a user from DB, callback only
   static getUser (userId, cb) {
     User.client.get({ index: User.prefix + 'users', id: userId }, (err, result) => {
-      cb(err, result.body || { found: false });
+      if (result?.body?.found === false) {
+        return cb(null, null);
+      } else if (err) {
+        return cb(err, null);
+      } else {
+        result.body._source._id = result.body._id;
+        return cb(null, Object.assign(new User(), result.body._source));
+      }
     });
   }
 
   // Return a user from cache, callback only
   static getUserCache (userId, cb) {
     if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - 5000) {
-      return cb(null, User.usersCache[userId]);
+      return cb(null, User.usersCache[userId].user);
     }
 
-    User.getUser(userId, (err, suser) => {
+    User.getUser(userId, (err, user) => {
       if (err) {
-        return cb(err, suser);
+        return cb(err, user);
       }
 
-      suser._timeStamp = Date.now();
-      User.usersCache[userId] = suser;
-
-      cb(null, suser);
+      User.usersCache[userId] = {
+        _timeStamp: Date.now(),
+        user: user
+      };
+      cb(null, user);
     });
   };
 
@@ -145,6 +173,7 @@ class User {
 
   // Set user, callback only
   static setUser (userId, doc, cb) {
+    delete doc._id;
     delete User.usersCache[userId];
     const createOnly = !!doc._createOnly;
     delete doc._createOnly;

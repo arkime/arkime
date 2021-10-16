@@ -9,6 +9,7 @@ const PNG = require('pngjs').PNG;
 const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   const sModule = {};
@@ -172,9 +173,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     } else { // it's a shared view
-      Db.getUser('_moloch_shared', (err, sharedUser) => {
-        if (sharedUser && sharedUser.found) {
-          sharedUser = sharedUser._source;
+      Db.getUserCache('_moloch_shared', (err, sharedUser) => {
+        if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           for (const viewName in sharedUser.views) {
             if (viewName === reqQuery.view) {
@@ -515,7 +515,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cb(null);
     }, (err, session) => {
       if (err) {
-        return res.end('Problem loading packets for ' + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        return res.end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
       session.id = req.params.id;
       sortFields(session);
@@ -1455,7 +1455,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           return errCb(err);
         }
         console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
-        return res.send(`Can't find view url for '${ViewerUtils.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
+        return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
 
       const url = new URL(req.url, viewUrl);
@@ -1487,7 +1487,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           return errCb(e);
         }
         console.log("ERROR - Couldn't proxy request=", url, '\nerror=', util.inspect(e, false, 50), '\nYou might want to run viewer with two --debug for more info');
-        res.send(`Error talking to node '${ViewerUtils.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
+        res.send(`Error talking to node '${ArkimeUtil.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
       });
       preq.end();
     });
@@ -2319,7 +2319,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       if (spiDataMaxIndices !== -1) {
         if (req.query.date === '-1' ||
             (req.query.date !== undefined && +req.query.date > spiDataMaxIndices)) {
-          console.log(`INFO For autocomplete replacing date=${ViewerUtils.safeStr(req.query.date)} with ${spiDataMaxIndices}`);
+          console.log(`INFO For autocomplete replacing date=${ArkimeUtil.safeStr(req.query.date)} with ${spiDataMaxIndices}`);
           req.query.date = spiDataMaxIndices;
         }
       }
@@ -2528,8 +2528,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
-        console.log("Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ', err);
-        return res.serverError(500, "Couldn't look up detail data, error for session " + ViewerUtils.safeStr(req.params.id) + ' Error: ' + err);
+        console.log("Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ', err);
+        return res.serverError(500, "Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
 
       session = session.fields;

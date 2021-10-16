@@ -500,15 +500,6 @@ module.exports = (Config, Db, molochparser, internals) => {
     return values;
   };
 
-  vModule.safeStr = (str) => {
-    return str.replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/\//g, '&#47;');
-  };
-
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
   vModule.arrayToObject = (array, key) => {
     return array.reduce((obj, item) => {
@@ -622,20 +613,15 @@ module.exports = (Config, Db, molochparser, internals) => {
       Db.getUserCache('anonymous', (err, anonUser) => {
         const anon = internals.anonymousUser;
 
-        if (!err && anonUser && anonUser.found) {
-          anon.settings = anonUser._source.settings || {};
-          anon.views = anonUser._source.views;
+        if (anonUser) {
+          anon.settings = anonUser.settings || {};
+          anon.views = anonUser.views;
         }
 
         return cb(null, anon);
       });
     } else {
-      Db.getUserCache(userId, (err, user) => {
-        const found = user.found;
-        user = user._source;
-        if (user) { user.found = found; }
-        return cb(err, user);
-      });
+      Db.getUserCache(userId, cb);
     }
   };
 
