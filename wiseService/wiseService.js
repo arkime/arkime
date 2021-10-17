@@ -260,7 +260,7 @@ function setupAuth () {
           if (err || !user) { return done(err); }
           if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
-          return done(null, user, { ha1: store2ha1(user._source.passStore) });
+          return done(null, user, { ha1: store2ha1(user.passStore) });
         });
       },
       function (options, done) {
