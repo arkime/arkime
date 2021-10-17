@@ -41,6 +41,7 @@ const uuid = require('uuidv4').default;
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const cryptoLib = require('crypto');
+const User = require('../common/user');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -55,12 +56,10 @@ const app = express();
 // ============================================================================
 passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'Moloch') },
   function (userid, done) {
-    Db.getUserCache(userid, function (err, suser) {
+    Db.getUserCache(userid, (err, suser) => {
       if (err) { return done(err); }
       if (!suser) { console.log('User', userid, "doesn't exist"); return done(null, false); }
       if (!suser.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
-
-      userCleanup(suser);
 
       return done(null, suser, { ha1: Config.store2ha1(suser.passStore) });
     });
@@ -234,11 +233,10 @@ if (Config.get('passwordSecret')) {
         return next();
       }
 
-      Db.getUserCache(obj.user, function (err, suser) {
+      Db.getUserCache(obj.user, (err, suser) => {
         if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
         if (!suser) { return res.send(obj.user + " doesn't exist"); }
         if (!suser.enabled) { return res.send(obj.user + ' not enabled'); }
-        userCleanup(suser);
         req.user = suser;
         return next();
       });
@@ -255,7 +253,6 @@ if (Config.get('passwordSecret')) {
       if (!suser.enabled) { return res.send(`${userName} not enabled`); }
       if (!suser.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
 
-      userCleanup(suser);
       req.user = suser;
       return next();
     }
@@ -324,9 +321,8 @@ if (Config.get('passwordSecret')) {
   app.use(function (req, res, next) {
     const username = req.query.molochRegressionUser || 'anonymous';
     req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
-    Db.getUserCache(username, function (err, suser) {
+    Db.getUserCache(username, (err, suser) => {
       if (suser) {
-        userCleanup(suser);
         req.user = suser;
       }
       next();
@@ -784,7 +780,7 @@ function getSettingUserCache (req, res, next) {
   // user is trying to get another user's settings without admin privilege
   if (!req.user.createEnabled) { return res.serverError(403, 'Need admin privileges'); }
 
-  Db.getUserCache(req.query.userId, function (err, user) {
+  Db.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
       if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
@@ -888,30 +884,6 @@ function loadPlugins () {
       console.log("WARNING - Couldn't find plugin", plugin, 'in', dirs);
     }
   });
-}
-
-// user helpers ---------------------------------------------------------------
-function userCleanup (suser) {
-  suser.settings = suser.settings || {};
-  if (suser.emailSearch === undefined) { suser.emailSearch = false; }
-  if (suser.removeEnabled === undefined) { suser.removeEnabled = false; }
-  // if multies and not users elasticsearch, disable admin privelages
-  if (Config.get('multiES', false) && !Config.get('usersElasticsearch')) {
-    suser.createEnabled = false;
-  }
-  const now = Date.now();
-  const timespan = Config.get('regressionTests', false) ? 1 : 60000;
-  // update user lastUsed time if not mutiES and it hasn't been udpated in more than a minute
-  if (!Config.get('multiES', false) && (!suser.lastUsed || (now - suser.lastUsed) > timespan)) {
-    suser.lastUsed = now;
-    try {
-      Db.setLastUsed(suser.userId, now);
-    } catch (err) {
-      if (Config.debug) {
-        console.log('DEBUG - user lastUsed update error', err);
-      }
-    }
-  }
 }
 
 // session helpers ------------------------------------------------------------
@@ -2077,6 +2049,9 @@ app.use( // cyberchef UI endpoint
 // REGRESSION TEST CONFIGURATION
 // ============================================================================
 if (Config.get('regressionTests')) {
+  // Override default lastUsed min write internal for tests
+  User.lastUsedMinInterval = 1;
+
   app.post('/shutdown', function (req, res) {
     Db.close();
     process.exit(0);

@@ -21,11 +21,18 @@ const fs = require('fs');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 class User {
+  static debug;
+  static readOnly;
+  static lastUsedMinInterval = 60 * 1000;
+  static userCacheTimeout = 5 * 1000;
   static prefix;
   static client;
   static usersCache = {};
 
   static initialize (options) {
+    User.debug = options.debug ?? 0;
+    User.readOnly = options.readOnly ?? false;
+
     if (options.prefix === undefined || options.prefix === '') {
       User.prefix = '';
     } else if (options.prefix.endsWith('_')) {
@@ -121,16 +128,34 @@ class User {
         return cb(null, null);
       } else if (err) {
         return cb(err, null);
-      } else {
-        result.body._source._id = result.body._id;
-        return cb(null, Object.assign(new User(), result.body._source));
       }
+
+      const user = Object.assign(new User(), result.body._source);
+      user.settings = user.settings ?? {};
+      user.emailSearch = user.emailSearch ?? false;
+      user.removeEnabled = user.removeEnabled ?? false;
+      if (User.readOnly) {
+        user.createEnabled = false;
+      } else {
+        try {
+          const now = Date.now();
+          if (!user.lastUsed || (now - user.lastUsed) > User.lastUsedMinInterval) {
+            user.setLastUsed(now);
+          }
+        } catch (err) {
+          if (User.debug) {
+            console.log('DEBUG - user lastUsed update error', err);
+          }
+        }
+      }
+
+      return cb(null, user);
     });
   }
 
   // Return a user from cache, callback only
   static getUserCache (userId, cb) {
-    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - 5000) {
+    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - User.userCacheTimeout) {
       return cb(null, User.usersCache[userId].user);
     }
 
@@ -173,7 +198,6 @@ class User {
 
   // Set user, callback only
   static setUser (userId, doc, cb) {
-    delete doc._id;
     delete User.usersCache[userId];
     const createOnly = !!doc._createOnly;
     delete doc._createOnly;
@@ -190,11 +214,13 @@ class User {
     });
   };
 
-  static setLastUsed (userId, now) {
+  // set the lastUsed on ourself
+  setLastUsed (now) {
+    this.lastUsed = now;
     const params = {
       index: User.prefix + 'users',
       body: { doc: { lastUsed: now } },
-      id: userId,
+      id: this.userId,
       retry_on_conflict: 3
     };
 

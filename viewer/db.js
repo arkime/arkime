@@ -140,7 +140,7 @@ exports.initialize = async (info, cb) => {
       apiKey: info.usersEsApiKey,
       basicAuth: info.usersEsBasicAuth,
       prefix: internals.usersPrefix,
-      debug: info.debug
+      debug: internals.debug
     });
   } else {
     User.initialize({
@@ -151,7 +151,8 @@ exports.initialize = async (info, cb) => {
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
       prefix: internals.prefix,
-      debug: info.debug
+      debug: internals.debug,
+      readOnly: internals.multiES
     });
   }
 
@@ -1077,8 +1078,6 @@ exports.deleteUser = User.deleteUser;
 
 // Set user, callback only
 exports.setUser = User.setUser;
-
-exports.setLastUsed = User.setLastUsed;
 
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
