@@ -644,7 +644,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       const users = await Db.searchUsers(query);
       let usersList = [];
       usersList = users.hits.hits.map((user) => {
-        return user._source.userId;
+        return user.userId;
       });
 
       const validUsers = [];
@@ -655,6 +655,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
       return { validUsers, invalidUsers };
     } catch (err) {
+      console.log('ERROR -', err);
       throw new Error('Unable to validate userIds');
     }
   };
