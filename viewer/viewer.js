@@ -30,8 +30,6 @@ const async = require('async');
 const Pcap = require('./pcap.js');
 const Db = require('./db.js');
 const molochparser = require('./molochparser.js');
-const passport = require('passport');
-const DigestStrategy = require('passport-http').DigestStrategy;
 const version = require('./version');
 const http = require('http');
 const https = require('https');
@@ -42,6 +40,7 @@ const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const cryptoLib = require('crypto');
 const User = require('../common/user');
+const Auth = require('../common/auth');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -54,20 +53,6 @@ const app = express();
 // ============================================================================
 // CONFIG & APP SETUP
 // ============================================================================
-passport.use(new DigestStrategy({ qop: 'auth', realm: Config.get('httpRealm', 'Moloch') },
-  function (userid, done) {
-    Db.getUserCache(userid, (err, suser) => {
-      if (err) { return done(err); }
-      if (!suser) { console.log('User', userid, "doesn't exist"); return done(null, false); }
-      if (!suser.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
-
-      return done(null, suser, { ha1: Config.store2ha1(suser.passStore) });
-    });
-  },
-  function (options, done) {
-    return done(null, true);
-  }
-));
 
 // app.configure
 const logger = require('morgan');
@@ -90,6 +75,16 @@ const historyAPIs = require('./apiHistory')(Db);
 const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);
 const miscAPIs = require('./apiMisc')(Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils);
 
+Auth.initialize({
+  debug: internals.debug,
+  mode: 'digest',
+  basePath: Config.basePath(),
+  realm: Config.get('httpRealm', 'Moloch'),
+  passwordSecret: Config.getFull('default', 'passwordSecret', 'password'),
+  serverSecret: Config.getFull('default', 'serverSecret'),
+  userNameHeader: Config.get('userNameHeader')
+});
+
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
 app.deletepost = (route, mw, func) => { app.delete(route, mw, func); app.post(route, mw, func); };
@@ -97,7 +92,6 @@ app.enable('jsonp callback');
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
-app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
@@ -309,42 +303,17 @@ if (Config.get('passwordSecret')) {
     }
 
     // Browser auth
-    req.url = req.url.replace('/', Config.basePath());
-    passport.authenticate('digest', { session: false })(req, res, function (err) {
-      req.url = req.url.replace(Config.basePath(), '/');
-      if (err) { return res.serverError(200, err); } else { return next(); }
-    });
+    return Auth.digestAuth(req, res, next);
   });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
-  app.use(function (req, res, next) {
-    const username = req.query.molochRegressionUser || 'anonymous';
-    req.user = { userId: username, enabled: true, createEnabled: username === 'anonymous', webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true, settings: {}, welcomeMsgNum: 1 };
-    Db.getUserCache(username, (err, suser) => {
-      if (suser) {
-        req.user = suser;
-      }
-      next();
-    });
-  });
+  app.use(Auth.regressionTestsAuth);
 } else {
   /* Shared password isn't set, who cares about auth, db is only used for settings */
   console.log('WARNING - The setting "passwordSecret" is not set, all access is anonymous');
   internals.noPasswordSecret = true;
-  app.use(function (req, res, next) {
-    req.user = internals.anonymousUser;
-    Db.getUserCache('anonymous', (err, suser) => {
-      if (suser) {
-        req.user.settings = suser.settings || {};
-        req.user.views = suser.views;
-        req.user.columnConfigs = suser.columnConfigs;
-        req.user.spiviewFieldConfigs = suser.spiviewFieldConfigs;
-        req.user.tableStates = suser.tableStates;
-      }
-      next();
-    });
-  });
+  app.use(Auth.anonymousWithDBAuth);
 }
 
 // ============================================================================

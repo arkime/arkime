@@ -39,13 +39,12 @@ const helmet = require('helmet');
 const bp = require('body-parser');
 const jsonParser = bp.json();
 const axios = require('axios');
-const passport = require('passport');
-const DigestStrategy = require('passport-http').DigestStrategy;
 const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
+const Auth = require('../common/auth');
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -211,36 +210,24 @@ function noCacheJson (req, res, next) {
 }
 
 // ----------------------------------------------------------------------------
-// Decrypt the encrypted hashed password, it is still hashed
-function store2ha1 (passstore) {
-  try {
-    const parts = passstore.split('.');
-    if (parts.length === 2) {
-      // New style with IV: IV.E
-      const c = cryptoLib.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], 'hex', 'binary');
-      d += c.final('binary');
-      return d;
-    } else {
-      // Old style without IV: E
-      // eslint-disable-next-line node/no-deprecated-api
-      const c = cryptoLib.createDecipher('aes192', internals.passwordSecret);
-      let d = c.update(passstore, 'hex', 'binary');
-      d += c.final('binary');
-      return d;
-    }
-  } catch (e) {
-    console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
-    process.exit(1);
-  }
-};
-// ----------------------------------------------------------------------------
 function setupAuth () {
-  internals.userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
-  internals.passwordSecret = getConfig('wiseService', 'passwordSecret', 'password');
-  internals.passwordSecret256 = cryptoLib.createHash('sha256').update(internals.passwordSecret).digest();
+  let userNameHeader = getConfig('wiseService', 'userNameHeader', 'anonymous');
+  let mode;
+  if (userNameHeader === 'anonymous' || userNameHeader === 'digest') {
+    mode = userNameHeader;
+    userNameHeader = undefined;
+  } else {
+    mode = 'header';
+  }
 
-  if (internals.userNameHeader === 'anonymous') {
+  Auth.initialize({
+    debug: internals.debug,
+    mode: mode,
+    userNameHeader: userNameHeader,
+    passwordSecret: getConfig('wiseService', 'passwordSecret', 'password')
+  });
+
+  if (mode === 'anonymous') {
     return;
   }
 
@@ -251,54 +238,6 @@ function setupAuth () {
     prefix: getConfig('wiseService', 'usersPrefix', ''),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
-  });
-
-  if (internals.userNameHeader === 'digest') {
-    passport.use(new DigestStrategy({ qop: 'auth', realm: getConfig('wiseService', 'httpRealm', 'Moloch') },
-      function (userid, done) {
-        User.getUserCache(userid, (err, user) => {
-          if (err || !user) { return done(err); }
-          if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
-
-          return done(null, user, { ha1: store2ha1(user.passStore) });
-        });
-      },
-      function (options, done) {
-        // TODO:  Should check nonce here
-        return done(null, true);
-      }
-    ));
-  }
-}
-// ----------------------------------------------------------------------------
-function doAuth (req, res, next) {
-  if (internals.userNameHeader === 'anonymous') {
-    req.user = { userId: 'anonymous', enabled: true, createEnabled: true, webEnabled: true, headerAuthEnabled: false, emailSearch: true, removeEnabled: true, packetSearch: true };
-    return next();
-  }
-
-  if (internals.userNameHeader !== 'digest') {
-    if (req.headers[internals.userNameHeader] !== undefined) {
-      return User.getUserCache(req.headers[internals.userNameHeader], (err, user) => {
-        if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
-        if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
-        req.user = user;
-        return next();
-      });
-    } else if (internals.debug > 0) {
-      console.log(`AUTH: looking for header ${internals.userNameHeader} in the headers`, req.headers);
-      res.status(status || 403);
-      return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
-    }
-  }
-
-  passport.authenticate('digest', { session: false })(req, res, function (err) {
-    if (err) {
-      res.status(403);
-      return res.send(JSON.stringify({ success: false, text: err }));
-    } else {
-      return next();
-    }
   });
 }
 // ----------------------------------------------------------------------------
@@ -1171,7 +1110,7 @@ app.get('/sources', [noCacheJson], (req, res) => {
  * @param {string} :source - The source to get the raw data for
  * @returns {object} All the views
  */
-app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1197,7 +1136,7 @@ app.get('/source/:source/get', [isConfigWeb, doAuth, noCacheJson], (req, res) =>
  * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */
-app.put('/source/:source/put', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1234,7 +1173,7 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  * @name "/config/get"
  * @returns {object}
  */
-app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
+app.get('/config/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
     .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1267,7 +1206,7 @@ app.get('/config/get', [isConfigWeb, doAuth, noCacheJson], (req, res) => {
  *
  * @name "/config/save"
  */
-app.put('/config/save', [isConfigWeb, doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/config/save', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }
