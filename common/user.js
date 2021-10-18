@@ -18,13 +18,21 @@
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class User {
+  static debug;
+  static readOnly;
+  static lastUsedMinInterval = 60 * 1000;
+  static userCacheTimeout = 5 * 1000;
   static prefix;
   static client;
   static usersCache = {};
 
   static initialize (options) {
+    User.debug = options.debug ?? 0;
+    User.readOnly = options.readOnly ?? false;
+
     if (options.prefix === undefined || options.prefix === '') {
       User.prefix = '';
     } else if (options.prefix.endsWith('_')) {
@@ -91,31 +99,76 @@ class User {
       body: query,
       rest_total_hits_as_int: true
     });
+
+    if (users.error) {
+      return users;
+    }
+
+    const hits = [];
+    for (const user of users.hits.hits) {
+      const fields = user._source || user.fields;
+      fields.id = user._id;
+      fields.expression = fields.expression || '';
+      fields.headerAuthEnabled = fields.headerAuthEnabled || false;
+      fields.emailSearch = fields.emailSearch || false;
+      fields.removeEnabled = fields.removeEnabled || false;
+      fields.userName = ArkimeUtil.safeStr(fields.userName || '');
+      fields.packetSearch = fields.packetSearch || false;
+      fields.timeLimit = fields.timeLimit || undefined;
+      hits.push(Object.assign(new User(), fields));
+    }
+    users.hits.hits = hits;
     return users;
   }
 
   // Return a user from DB, callback only
   static getUser (userId, cb) {
     User.client.get({ index: User.prefix + 'users', id: userId }, (err, result) => {
-      cb(err, result.body || { found: false });
+      if (result?.body?.found === false) {
+        return cb(null, null);
+      } else if (err) {
+        return cb(err, null);
+      }
+
+      const user = Object.assign(new User(), result.body._source);
+      user.settings = user.settings ?? {};
+      user.emailSearch = user.emailSearch ?? false;
+      user.removeEnabled = user.removeEnabled ?? false;
+      if (User.readOnly) {
+        user.createEnabled = false;
+      } else {
+        try {
+          const now = Date.now();
+          if (!user.lastUsed || (now - user.lastUsed) > User.lastUsedMinInterval) {
+            user.setLastUsed(now);
+          }
+        } catch (err) {
+          if (User.debug) {
+            console.log('DEBUG - user lastUsed update error', err);
+          }
+        }
+      }
+
+      return cb(null, user);
     });
   }
 
   // Return a user from cache, callback only
   static getUserCache (userId, cb) {
-    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - 5000) {
-      return cb(null, User.usersCache[userId]);
+    if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - User.userCacheTimeout) {
+      return cb(null, User.usersCache[userId].user);
     }
 
-    User.getUser(userId, (err, suser) => {
+    User.getUser(userId, (err, user) => {
       if (err) {
-        return cb(err, suser);
+        return cb(err, user);
       }
 
-      suser._timeStamp = Date.now();
-      User.usersCache[userId] = suser;
-
-      cb(null, suser);
+      User.usersCache[userId] = {
+        _timeStamp: Date.now(),
+        user: user
+      };
+      cb(null, user);
     });
   };
 
@@ -161,11 +214,13 @@ class User {
     });
   };
 
-  static setLastUsed (userId, now) {
+  // set the lastUsed on ourself
+  setLastUsed (now) {
+    this.lastUsed = now;
     const params = {
       index: User.prefix + 'users',
       body: { doc: { lastUsed: now } },
-      id: userId,
+      id: this.userId,
       retry_on_conflict: 3
     };
 

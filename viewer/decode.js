@@ -30,6 +30,7 @@ const through = require('through2');
 const peek = require('peek-stream');
 const async = require('async');
 const cryptoLib = require('crypto');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const internals = {
   registry: {},
@@ -43,10 +44,6 @@ function mkname (stream, streamName) {
   if (!mkname.cnt[streamName]) { mkname.cnt[streamName] = 0; }
   mkname.cnt[streamName]++;
   stream.molochName = streamName + '-' + mkname.cnt[streamName];
-}
-/// /////////////////////////////////////////////////////////////////////////////
-function safeStr (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\//g, '&#47;');
 }
 /// /////////////////////////////////////////////////////////////////////////////
 function ItemTransform (options) {
@@ -670,7 +667,7 @@ ItemHexFormaterStream.prototype._transform = function (item, encoding, callback)
       if (line[i] <= 32 || line[i] > 128) {
         out += '.';
       } else {
-        out += safeStr(line.toString('ascii', i, i + 1));
+        out += ArkimeUtil.safeStr(line.toString('ascii', i, i + 1));
       }
     }
     out += '\n';
@@ -743,19 +740,19 @@ exports.register('ITEM-PRINTER', through.ctor({ objectMode: true }, function (it
 exports.register('ITEM-HEX', ItemHexFormaterStream);
 exports.register('ITEM-UTF8', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = '<pre>' + safeStr(item.data.toString('utf8')) + '</pre>';
+    item.html = '<pre>' + ArkimeUtil.safeStr(item.data.toString('utf8')) + '</pre>';
   }
   callback(null, item);
 }));
 exports.register('ITEM-ASCII', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = '<pre>' + safeStr(item.data.toString('binary')) + '</pre>';
+    item.html = '<pre>' + ArkimeUtil.safeStr(item.data.toString('binary')) + '</pre>';
   }
   callback(null, item);
 }));
 exports.register('ITEM-NATURAL', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = safeStr(item.data.toString()).replace(/\r?\n/g, '<br>');
+    item.html = ArkimeUtil.safeStr(item.data.toString()).replace(/\r?\n/g, '<br>');
   }
   callback(null, item);
 }));

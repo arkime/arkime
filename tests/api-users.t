@@ -118,10 +118,12 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #1");
+    delete $users->{data}->[1]->{lastUsed};
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #2");
+    delete $users->{data}->[1]->{lastUsed};
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": true, "userId": "test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Reverse settings
@@ -129,10 +131,12 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #1");
+    delete $users->{data}->[1]->{lastUsed};
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/user/list", "");
     is (@{$users->{data}}, 2, "Check second Update #2");
+    delete $users->{data}->[1]->{lastUsed};
     eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": true, "expression": "foo3", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Column

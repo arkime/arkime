@@ -36,14 +36,12 @@ module.exports = (Config, Db, internals) => {
 
     // find notifier
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         if (Config.debug) {
           console.log('Cannot find notifier, no alert can be issued');
         }
         return continueProcess('Cannot find notifier, no alert can be issued');
       }
-
-      sharedUser = sharedUser._source;
 
       sharedUser.notifiers = sharedUser.notifiers || {};
 
@@ -164,10 +162,8 @@ module.exports = (Config, Db, internals) => {
     }
 
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         return res.send([]);
-      } else {
-        sharedUser = sharedUser._source;
       }
 
       const notifiers = sharedUser.notifiers || [];
@@ -242,7 +238,7 @@ module.exports = (Config, Db, internals) => {
 
     // save the notifier on the shared user
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         // sharing for the first time
         sharedUser = {
           userId: '_moloch_shared',
@@ -257,8 +253,6 @@ module.exports = (Config, Db, internals) => {
           views: {},
           notifiers: {}
         };
-      } else {
-        sharedUser = sharedUser._source;
       }
 
       sharedUser.notifiers = sharedUser.notifiers || {};
@@ -300,10 +294,8 @@ module.exports = (Config, Db, internals) => {
    */
   nModule.updateNotifier = (req, res) => {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         return res.serverError(404, 'Cannot find notifer to udpate');
-      } else {
-        sharedUser = sharedUser._source;
       }
 
       sharedUser.notifiers = sharedUser.notifiers || {};
@@ -393,10 +385,8 @@ module.exports = (Config, Db, internals) => {
    */
   nModule.deleteNotifier = (req, res) => {
     Db.getUser('_moloch_shared', (err, sharedUser) => {
-      if (!sharedUser || !sharedUser.found) {
+      if (!sharedUser) {
         return res.serverError(404, 'Cannot find notifer to remove');
-      } else {
-        sharedUser = sharedUser._source;
       }
 
       sharedUser.notifiers = sharedUser.notifiers || {};
