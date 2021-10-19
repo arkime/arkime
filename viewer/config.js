@@ -25,8 +25,8 @@
 const ini = require('iniparser');
 const os = require('os');
 const fs = require('fs');
-const cryptoLib = require('crypto');
 const version = require('./version');
+const Auth = require('../common/auth');
 
 exports.debug = 0;
 exports.insecure = false;
@@ -83,160 +83,6 @@ function processArgs () {
   }
 }
 processArgs();
-
-/// ///////////////////////////////////////////////////////////////////////////////
-// Encryption stuff
-/// ///////////////////////////////////////////////////////////////////////////////
-exports.md5 = function (str, encoding) {
-  return cryptoLib
-    .createHash('md5')
-    .update(str)
-    .digest(encoding || 'hex');
-};
-
-// Hash (MD5) and encrypt the password before storing.
-// Encryption is used because ES is insecure by default and we don't want others adding accounts.
-exports.pass2store = function (userid, password) {
-  // md5 is required because of http digest
-  const m = exports.md5(userid + ':' + exports.getFull('default', 'httpRealm', 'Moloch') + ':' + password);
-
-  if (internals.aes256Encryption) {
-    // New style with IV: IV.E
-    const iv = cryptoLib.randomBytes(16);
-    const c = cryptoLib.createCipheriv('aes-256-cbc', internals.passwordSecret256, iv);
-    let e = c.update(m, 'binary', 'hex');
-    e += c.final('hex');
-    return iv.toString('hex') + '.' + e;
-  } else {
-    // Old style without IV: E
-    // eslint-disable-next-line node/no-deprecated-api
-    const c = cryptoLib.createCipher('aes192', internals.passwordSecret);
-    let e = c.update(m, 'binary', 'hex');
-    e += c.final('hex');
-    return e;
-  }
-};
-
-// Decrypt the encrypted hashed password, it is still hashed
-exports.store2ha1 = function (passstore) {
-  try {
-    const parts = passstore.split('.');
-    if (parts.length === 2) {
-      // New style with IV: IV.E
-      const c = cryptoLib.createDecipheriv('aes-256-cbc', internals.passwordSecret256, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], 'hex', 'binary');
-      d += c.final('binary');
-      return d;
-    } else {
-      // Old style without IV: E
-      // eslint-disable-next-line node/no-deprecated-api
-      const c = cryptoLib.createDecipher('aes192', internals.passwordSecret);
-      let d = c.update(passstore, 'hex', 'binary');
-      d += c.final('binary');
-      return d;
-    }
-  } catch (e) {
-    console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
-    process.exit(1);
-  }
-};
-
-// Encrypt an object into an auth string
-exports.obj2auth = function (obj, c2s, secret) {
-  if (internals.aes256Encryption) {
-    // New style with IV: IV.E.H
-    if (secret) {
-      secret = cryptoLib.createHash('sha256').update(secret).digest();
-    } else {
-      secret = internals.serverSecret256;
-    }
-
-    const iv = cryptoLib.randomBytes(16);
-    const c = cryptoLib.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
-    e += c.final('hex');
-    e = iv.toString('hex') + '.' + e;
-    const h = cryptoLib.createHmac('sha256', secret).update(e).digest('hex');
-    return e + '.' + h;
-  } else {
-    // Old style without IV: E or E.H
-    secret = secret || internals.serverSecret;
-
-    // eslint-disable-next-line node/no-deprecated-api
-    const c = cryptoLib.createCipher('aes192', secret);
-    let e = c.update(JSON.stringify(obj), 'binary', 'hex');
-    e += c.final('hex');
-
-    const h = cryptoLib.createHmac('sha256', secret).update(e, 'hex').digest('hex');
-
-    // include sig if c2s or s2sSignedAuth
-    if (c2s || internals.s2sSignedAuth) {
-      return e + '.' + h;
-    }
-
-    return e;
-  }
-};
-
-// Decrypt the auth string into an object
-exports.auth2obj = function (auth, c2s, secret) {
-  const parts = auth.split('.');
-
-  if (parts.length === 3) {
-    // New style with IV: IV.E.H
-    if (secret) {
-      secret = cryptoLib.createHash('sha256').update(secret).digest();
-    } else {
-      secret = internals.serverSecret256;
-    }
-
-    const signature = Buffer.from(parts[2], 'hex');
-    const h = cryptoLib.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
-
-    if (!cryptoLib.timingSafeEqual(signature, h)) {
-      throw new Error('Incorrect signature');
-    }
-
-    try {
-      const c = cryptoLib.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
-      let d = c.update(parts[1], 'hex', 'binary');
-      d += c.final('binary');
-      return JSON.parse(d);
-    } catch (error) {
-      console.log(error);
-      throw new Error('Incorrect auth supplied');
-    }
-  } else {
-    // Old style without IV: E or E.H
-
-    secret = secret || internals.serverSecret;
-
-    // if sig missing error if c2s or s2sSignedAuth
-    if (parts.length === 1 && (c2s || internals.s2sSignedAuth)) {
-      throw new Error('Missing signature');
-    }
-
-    if (parts.length > 1) {
-      const signature = Buffer.from(parts[1], 'hex');
-      const h = cryptoLib.createHmac('sha256', secret).update(parts[0], 'hex').digest();
-
-      if (!cryptoLib.timingSafeEqual(signature, h)) {
-        throw new Error('Incorrect signature');
-      }
-    }
-
-    try {
-      // eslint-disable-next-line node/no-deprecated-api
-      const c = cryptoLib.createDecipher('aes192', secret);
-      let d = c.update(parts[0], 'hex', 'binary');
-      d += c.final('binary');
-      return JSON.parse(d);
-    } catch (error) {
-      console.log(error);
-      throw new Error('Incorrect auth supplied');
-    }
-  }
-};
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // Config File & Dropping Privileges
@@ -652,19 +498,15 @@ exports.loadFields = function (data) {
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
-// Globals
+// Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
-internals.s2sSignedAuth = exports.getFull('default', 's2sSignedAuth', true);
-internals.aes256Encryption = exports.getFull('default', 'aes256Encryption', true);
 
-// If passwordSecret isn't set, viewer will treat accounts as anonymous
-internals.passwordSecret = exports.getFull('default', 'passwordSecret', 'password');
-internals.passwordSecret256 = cryptoLib.createHash('sha256').update(internals.passwordSecret).digest();
-
-if (exports.getFull('default', 'serverSecret')) {
-  internals.serverSecret = exports.getFull('default', 'serverSecret');
-  internals.serverSecret256 = cryptoLib.createHash('sha256').update(internals.serverSecret).digest();
-} else {
-  internals.serverSecret = internals.passwordSecret;
-  internals.serverSecret256 = internals.passwordSecret256;
-}
+Auth.initialize({
+  debug: internals.debug,
+  mode: 'digest',
+  basePath: exports.basePath(),
+  realm: exports.get('httpRealm', 'Moloch'),
+  passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
+  serverSecret: exports.getFull('default', 'serverSecret'),
+  userNameHeader: exports.get('userNameHeader')
+});

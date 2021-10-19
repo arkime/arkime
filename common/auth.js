@@ -17,7 +17,8 @@
  */
 'use strict';
 
-const cryptoLib = require('crypto');
+// eslint-disable-next-line no-shadow
+const crypto = require('crypto');
 const User = require('../common/user');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
@@ -33,15 +34,15 @@ class Auth {
   static initialize (options) {
     Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode ?? 'anonymous';
-    Auth.basePath = options.basePath || '/';
+    Auth.basePath = options.basePath ?? '/';
     Auth.userNameHeader = options.userNameHeader;
-    Auth.httpRealm = options.httpRealm || 'Moloch';
-    Auth.passwordSecret = options.passwordSecret || 'password';
-    Auth.passwordSecret256 = cryptoLib.createHash('sha256').update(Auth.passwordSecret).digest();
+    Auth.httpRealm = options.httpRealm ?? 'Moloch';
+    Auth.passwordSecret = options.passwordSecret ?? 'password';
+    Auth.passwordSecret256 = crypto.createHash('sha256').update(Auth.passwordSecret).digest();
     if (options.serverSecret) {
-      Auth.serverSecret256 = cryptoLib.createHash('sha256').update(options.serverSecret).digest();
+      Auth.serverSecret256 = crypto.createHash('sha256').update(options.serverSecret).digest();
     } else {
-      Auth.serverSecret256 = Auth.passwordSecret;
+      Auth.serverSecret256 = Auth.passwordSecret256;
     }
 
     if (Auth.mode === 'digest') {
@@ -119,7 +120,7 @@ class Auth {
   }
 
   static regressionTestsAuth (req, res, next) {
-    const userId = req.query.molochRegressionUser || 'anonymous';
+    const userId = req.query.molochRegressionUser ?? 'anonymous';
     User.getUserCache(userId, (err, user) => {
       if (user) {
         req.user = user;
@@ -168,7 +169,7 @@ class Auth {
       });
     } else if (Auth.debug > 0) {
       console.log(`AUTH: looking for header ${Auth.userNameHeader} in the headers`, req.headers);
-      res.status(status || 403);
+      res.status(403);
       return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
     }
   }
@@ -179,7 +180,7 @@ class Auth {
   }
 
   static md5 (str, encoding) {
-    return cryptoLib
+    return crypto
       .createHash('md5')
       .update(str)
       .digest(encoding || 'hex');
@@ -192,8 +193,8 @@ class Auth {
     const m = Auth.md5(userid + ':' + Auth.httpRealm + ':' + password);
 
     // New style with IV: IV.E
-    const iv = cryptoLib.randomBytes(16);
-    const c = cryptoLib.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
+    const iv = crypto.randomBytes(16);
+    const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
     let e = c.update(m, 'binary', 'hex');
     e += c.final('hex');
     return iv.toString('hex') + '.' + e;
@@ -205,14 +206,14 @@ class Auth {
       const parts = passstore.split('.');
       if (parts.length === 2) {
         // New style with IV: IV.E
-        const c = cryptoLib.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
+        const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
         let d = c.update(parts[1], 'hex', 'binary');
         d += c.final('binary');
         return d;
       } else {
         // Old style without IV: E
         // eslint-disable-next-line node/no-deprecated-api
-        const c = cryptoLib.createDecipher('aes192', Auth.passwordSecret);
+        const c = crypto.createDecipher('aes192', Auth.passwordSecret);
         let d = c.update(passstore, 'hex', 'binary');
         d += c.final('binary');
         return d;
@@ -227,17 +228,17 @@ class Auth {
   static obj2auth (obj, c2s, secret) {
     // New style with IV: IV.E.H
     if (secret) {
-      secret = cryptoLib.createHash('sha256').update(secret).digest();
+      secret = crypto.createHash('sha256').update(secret).digest();
     } else {
       secret = Auth.serverSecret256;
     }
 
-    const iv = cryptoLib.randomBytes(16);
-    const c = cryptoLib.createCipheriv('aes-256-cbc', secret, iv);
+    const iv = crypto.randomBytes(16);
+    const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
     let e = c.update(JSON.stringify(obj), 'binary', 'hex');
     e += c.final('hex');
     e = iv.toString('hex') + '.' + e;
-    const h = cryptoLib.createHmac('sha256', secret).update(e).digest('hex');
+    const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
     return e + '.' + h;
   };
 
@@ -248,20 +249,20 @@ class Auth {
     if (parts.length === 3) {
       // New style with IV: IV.E.H
       if (secret) {
-        secret = cryptoLib.createHash('sha256').update(secret).digest();
+        secret = crypto.createHash('sha256').update(secret).digest();
       } else {
         secret = Auth.serverSecret256;
       }
 
       const signature = Buffer.from(parts[2], 'hex');
-      const h = cryptoLib.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
+      const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-      if (!cryptoLib.timingSafeEqual(signature, h)) {
+      if (!crypto.timingSafeEqual(signature, h)) {
         throw new Error('Incorrect signature');
       }
 
       try {
-        const c = cryptoLib.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
+        const c = crypto.createDecipheriv('aes-256-cbc', secret, Buffer.from(parts[0], 'hex'));
         let d = c.update(parts[1], 'hex', 'binary');
         d += c.final('binary');
         return JSON.parse(d);
@@ -280,16 +281,16 @@ class Auth {
 
       if (parts.length > 1) {
         const signature = Buffer.from(parts[1], 'hex');
-        const h = cryptoLib.createHmac('sha256', secret).update(parts[0], 'hex').digest();
+        const h = crypto.createHmac('sha256', secret).update(parts[0], 'hex').digest();
 
-        if (!cryptoLib.timingSafeEqual(signature, h)) {
+        if (!crypto.timingSafeEqual(signature, h)) {
           throw new Error('Incorrect signature');
         }
       }
 
       try {
         // eslint-disable-next-line node/no-deprecated-api
-        const c = cryptoLib.createDecipher('aes192', secret);
+        const c = crypto.createDecipher('aes192', secret);
         let d = c.update(parts[0], 'hex', 'binary');
         d += c.final('binary');
         return JSON.parse(d);
@@ -299,6 +300,18 @@ class Auth {
       }
     }
   };
+
+  static addS2SAuth (options, user, node, path, secret) {
+    if (!options.headers) {
+      options.headers = {};
+    }
+    options.headers['x-moloch-auth'] = Auth.obj2auth({
+      date: Date.now(),
+      user: user.userId,
+      node: node,
+      path: path
+    }, false, secret);
+  }
 }
 
 module.exports = Auth;

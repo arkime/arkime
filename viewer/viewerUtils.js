@@ -3,21 +3,10 @@
 const async = require('async');
 const http = require('http');
 const https = require('https');
+const Auth = require('../common/auth');
 
 module.exports = (Config, Db, molochparser, internals) => {
   const vModule = {};
-
-  vModule.addAuth = (options, user, node, path, secret) => {
-    if (!options.headers) {
-      options.headers = {};
-    }
-    options.headers['x-moloch-auth'] = Config.obj2auth({
-      date: Date.now(),
-      user: user.userId,
-      node: node,
-      path: path
-    }, false, secret);
-  };
 
   vModule.addCaTrust = (options, node) => {
     if (!Config.isHTTPS(node)) {
@@ -570,7 +559,7 @@ module.exports = (Config, Db, molochparser, internals) => {
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      vModule.addAuth(options, user, node, nodePath);
+      Auth.addS2SAuth(options, user, node, nodePath);
       vModule.addCaTrust(options, node);
 
       function responseFunc (pres) {

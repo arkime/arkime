@@ -22,6 +22,7 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
+const Auth = require('../common/auth');
 
 const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
@@ -55,7 +56,7 @@ function main () {
   const nuser = {
     userId: process.argv[2],
     userName: process.argv[3],
-    passStore: Config.pass2store(process.argv[2], process.argv[4]),
+    passStore: Auth.pass2store(process.argv[2], process.argv[4]),
     enabled: true,
     webEnabled: true,
     headerAuthEnabled: false,
@@ -87,7 +88,7 @@ function main () {
 
     case '--webauthonly':
     case '-webauthonly':
-      nuser.passStore = Config.pass2store(process.argv[2], cryptoLib.randomBytes(48));
+      nuser.passStore = Auth.pass2store(process.argv[2], cryptoLib.randomBytes(48));
       break;
 
     case '--webauth':

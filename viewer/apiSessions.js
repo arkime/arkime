@@ -10,6 +10,7 @@ const pug = require('pug');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
+const Auth = require('../common/auth');
 
 module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   const sModule = {};
@@ -731,7 +732,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             agent: client === http ? internals.httpAgent : internals.httpsAgent
           };
 
-          ViewerUtils.addAuth(options, req.user, fields.node, sessionPath);
+          Auth.addS2SAuth(options, req.user, fields.node, sessionPath);
           ViewerUtils.addCaTrust(options, fields.node);
 
           const preq = client.request(url, options, (pres) => {
@@ -1464,7 +1465,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      ViewerUtils.addAuth(options, req.user, req.params.nodeName, req.url);
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, req.url);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
       const preq = client.request(url, options, (pres) => {

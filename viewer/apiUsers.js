@@ -3,6 +3,7 @@
 const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
+const Auth = require('../common/auth');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const uModule = {};
@@ -345,7 +346,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         userId: req.body.userId,
         userName: req.body.userName,
         expression: req.body.expression,
-        passStore: Config.pass2store(req.body.userId, req.body.password),
+        passStore: Auth.pass2store(req.body.userId, req.body.password),
         enabled: req.body.enabled === true,
         webEnabled: req.body.webEnabled === true,
         emailSearch: req.body.emailSearch === true,
@@ -497,14 +498,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
-    if (!req.user.createEnabled && (Config.store2ha1(req.user.passStore) !==
-      Config.store2ha1(Config.pass2store(req.token.userId, req.body.currentPassword)) ||
+    if (!req.user.createEnabled && (Auth.store2ha1(req.user.passStore) !==
+      Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
       req.token.userId !== req.user.userId)) {
       return res.serverError(403, 'New password mismatch');
     }
 
     const user = req.settingUser;
-    user.passStore = Config.pass2store(user.userId, req.body.newPassword);
+    user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
 
     Db.setUser(user.userId, user, (err, info) => {
       if (err) {
@@ -662,7 +663,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     res.cookie(
       'ARKIME-COOKIE',
-      Config.obj2auth({
+      Auth.obj2auth({
         date: Date.now(), pid: process.pid, userId: req.user.userId
       }, true),
       cookieOptions
