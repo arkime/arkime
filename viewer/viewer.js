@@ -290,6 +290,11 @@ if (Config.get('passwordSecret')) {
             if (nuser.passStore === undefined) {
               nuser.passStore = Config.pass2store(nuser.userId, cryptoLib.randomBytes(48));
             }
+            if (nuser.userId !== userName) {
+              console.log(`WARNING - the userNameHeader (${internals.userNameHeader}) said to use '${userName}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userName}'`);
+              nuser.userId = userName;
+            }
+
             Db.setUser(userName, nuser, (err, info) => {
               if (err) {
                 console.log('Elastic search error adding user: (' + userName + '):(' + JSON.stringify(nuser) + '):' + err);
