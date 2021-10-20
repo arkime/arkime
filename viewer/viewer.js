@@ -294,6 +294,10 @@ if (Config.get('passwordSecret')) {
               console.log(`WARNING - the userNameHeader (${internals.userNameHeader}) said to use '${userName}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userName}'`);
               nuser.userId = userName;
             }
+            if (nuser.userName === undefined) {
+              console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
+              nuser.userName = nuser.userId;
+            }
 
             Db.setUser(userName, nuser, (err, info) => {
               if (err) {
