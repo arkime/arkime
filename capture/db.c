@@ -1878,10 +1878,10 @@ LOCAL void moloch_db_mkpath(char *path)
                 LOG("mkdir(%s)", path);
             }
             if (errno != ENOENT || (mkdir(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP) && errno != EEXIST)) {
-                LOGEXIT("mkdir() error for '%s': %s\n", path, strerror(errno));
+                LOGEXIT("ERROR - mkdir() error for '%s': %s\n", path, strerror(errno));
             }
         } else if (!S_ISDIR(sb.st_mode)) {
-            LOGEXIT("Path '%s': %s ", path, strerror(ENOTDIR));
+            LOGEXIT("ERROR - Path '%s': %s ", path, strerror(ENOTDIR));
         }
 
         if (!done)
@@ -1935,7 +1935,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
         uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
         if (flen >= sizeof(filename)-1) {
-            LOGEXIT("pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
+            LOGEXIT("ERROR - pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
         }
 
         g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
@@ -1951,7 +1951,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
                 flen--;
 
             if ((tlen = strftime(filename+flen, sizeof(filename)-flen-1, config.pcapDirTemplate, &tmp)) == 0) {
-                LOGEXIT("Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
+                LOGEXIT("ERROR - Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
             }
             flen += tlen;
         }
@@ -2133,7 +2133,7 @@ LOCAL void moloch_db_load_geo_country(char *name)
     MMDB_s  *country = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, country);
     if (MMDB_SUCCESS != status) {
-        LOGEXIT("Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
+        LOGEXIT("ERROR - Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
 
     }
     if (geoCountry) {
@@ -2148,7 +2148,7 @@ LOCAL void moloch_db_load_geo_asn(char *name)
     MMDB_s  *asn = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, asn);
     if (MMDB_SUCCESS != status) {
-        LOGEXIT("Couldn't initialize ASN file %s error %s", name, MMDB_strerror(status));
+        LOGEXIT("ERROR - Couldn't initialize ASN file %s error %s", name, MMDB_strerror(status));
 
     }
     if (geoASN) {
@@ -2163,7 +2163,7 @@ LOCAL void moloch_db_load_rir(char *name)
     FILE *fp;
     char line[1000];
     if (!(fp = fopen(name, "r"))) {
-        printf("Couldn't open RIR from %s", name);
+        printf("ERROR - Couldn't open RIR from %s", name);
         exit(1);
     }
 
@@ -2639,9 +2639,9 @@ void moloch_db_init()
         }
     }
     if (config.ouiFile)
-        moloch_config_monitor_file_msg("oui file", config.ouiFile, moloch_db_load_oui, "Maybe try running /data/moloch/bin/moloch_update_geo.sh");
+        moloch_config_monitor_file_msg("oui file", config.ouiFile, moloch_db_load_oui, "ERROR - Maybe try running " CONFIG_PREFIX " /bin/moloch_update_geo.sh");
     if (config.rirFile)
-        moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "Maybe try running /data/moloch/bin/moloch_update_geo.sh");
+        moloch_config_monitor_file_msg("rir file", config.rirFile, moloch_db_load_rir, "ERROR - Maybe try running " CONFIG_PREFIX " /bin/moloch_update_geo.sh");
 
     if (!config.dryRun) {
         int t = 0;

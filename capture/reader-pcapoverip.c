@@ -181,7 +181,7 @@ LOCAL void pcapoverip_client_connect(int interface) {
     connectable = g_network_address_parse(config.interface[interface], port, &error);
 
     if (error) {
-        LOGEXIT("Couldn't parse connect string of %s", config.interface[interface]);
+        LOGEXIT("ERROR - Couldn't parse connect string of %s", config.interface[interface]);
     }
 
     enumerator = g_socket_connectable_enumerate (connectable);
@@ -263,7 +263,7 @@ gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), g
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOGEXIT("Error accepting pcap-over-ip: %s", error->message);
+        LOGEXIT("ERROR - Error accepting pcap-over-ip: %s", error->message);
     }
 
     POIClient_t *poic = MOLOCH_TYPE_ALLOC0(POIClient_t);
@@ -283,19 +283,19 @@ LOCAL void pcapoverip_server_start()
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
-        LOGEXIT("Error creating pcap-over-ip: %s", error->message);
+        LOGEXIT("ERROR - Error creating pcap-over-ip: %s", error->message);
     }
 
     g_socket_set_blocking (socket, FALSE);
     addr = g_inet_socket_address_new (g_inet_address_new_any (G_SOCKET_FAMILY_IPV4), port);
 
     if (!g_socket_bind (socket, addr, TRUE, &error)) {
-        LOGEXIT("Error binding pcap-over-ip: %s", error->message);
+        LOGEXIT("ERROR - Error binding pcap-over-ip: %s", error->message);
     }
     g_object_unref (addr);
 
     if (!g_socket_listen (socket, &error)) {
-        LOGEXIT("Error listening pcap-over-ip: %s", error->message);
+        LOGEXIT("ERROR - Error listening pcap-over-ip: %s", error->message);
     }
 
     int fd = g_socket_get_fd(socket);

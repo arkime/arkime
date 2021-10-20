@@ -103,7 +103,7 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
     if (rc == 0)
         return TRUE;
     if (rc == -1)
-        LOGEXIT("Monitor read failed - %s", strerror(errno));
+        LOGEXIT("ERROR - Monitor read failed - %s", strerror(errno));
     buf[rc] = 0;
 
     char *p;
@@ -135,7 +135,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
     GDir     *dir = g_dir_open(dirname, 0, &error);
 
     if (error)
-        LOGEXIT("ERROR: Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
+        LOGEXIT("ERROR - Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
 
     while (1) {
         const gchar *filename = g_dir_read_name(dir);
@@ -165,7 +165,7 @@ LOCAL void reader_libpcapfile_init_monitor()
     monitorFd = inotify_init1(IN_NONBLOCK);
 
     if (monitorFd < 0)
-        LOGEXIT("Couldn't init inotify %s", strerror(errno));
+        LOGEXIT("ERROR - Couldn't init inotify %s", strerror(errno));
 
     wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
     moloch_watch_fd(monitorFd, MOLOCH_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
@@ -177,7 +177,7 @@ LOCAL void reader_libpcapfile_init_monitor()
 #else
 LOCAL void reader_libpcapfile_init_monitor()
 {
-    LOGEXIT("Monitoring not supporting on this OS");
+    LOGEXIT("ERROR - Monitoring not supporting on this OS");
 }
 #endif
 /******************************************************************************/
@@ -369,7 +369,7 @@ fileListsDone:
         if (!pcapGDir[pcapGDirLevel]) {
             pcapGDir[pcapGDirLevel] = g_dir_open(pcapBase[pcapGDirLevel], 0, &error);
             if (error) {
-                LOGEXIT("ERROR: Couldn't open pcap directory: Receive Error: %s", error->message);
+                LOGEXIT("ERROR - Couldn't open pcap directory: Receive Error: %s", error->message);
             }
         }
         while (1) {
@@ -653,12 +653,12 @@ LOCAL void reader_libpcapfile_start() {
 
         char *equal = strchr(filenameOpsStr[i], '=');
         if (!equal) {
-            LOGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
+            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
         }
 
         char *percent = strchr(equal+1, '%');
         if (!percent) {
-            LOGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
+            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
         }
 
         *equal = 0;
@@ -666,23 +666,23 @@ LOCAL void reader_libpcapfile_start() {
 
         int elen = strlen(equal+1);
         if (!elen) {
-            LOGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
+            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
         }
 
         int vlen = strlen(percent+1);
         if (!vlen) {
-            LOGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
+            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
         }
 
         int fieldPos = moloch_field_by_exp(filenameOpsStr[i]);
         if (fieldPos == -1) {
-            LOGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
+            LOGEXIT("ERROR - Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
         }
 
         filenameOps[filenameOpsNum].regex = g_regex_new(equal+1, 0, 0, 0);
         filenameOps[filenameOpsNum].expand = g_strdup(percent+1);
         if (!filenameOps[filenameOpsNum].regex)
-            LOGEXIT("Couldn't compile regex '%s'", equal+1);
+            LOGEXIT("ERROR - Couldn't compile regex '%s'", equal+1);
         filenameOps[filenameOpsNum].field = fieldPos;
         filenameOpsNum++;
     }

@@ -29,7 +29,7 @@ extern MolochConfig_t        config;
 #ifndef __linux
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    LOGEXIT("tpacketv3 not supported");
+    LOGEXIT("ERROR - tpacketv3 not supported");
 }
 #else
 
@@ -46,7 +46,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 #ifndef TPACKET3_HDRLEN
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    LOGEXIT("tpacketv3 not supported");
+    LOGEXIT("ERROR - tpacketv3 not supported");
 }
 
 #else
@@ -196,11 +196,11 @@ void reader_tpacketv3_init(char *UNUSED(name))
     numThreads = moloch_config_int(NULL, "tpacketv3NumThreads", 2, 1, 12);
 
     if (blocksize % getpagesize() != 0) {
-        LOGEXIT("block size %d not divisible by pagesize %d", blocksize, getpagesize());
+        LOGEXIT("ERROR - block size %d not divisible by pagesize %d", blocksize, getpagesize());
     }
 
     if (blocksize % config.snapLen != 0) {
-        LOGEXIT("block size %d not divisible by %u", blocksize, config.snapLen);
+        LOGEXIT("ERROR - block size %d not divisible by %u", blocksize, config.snapLen);
     }
 
     moloch_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
@@ -224,7 +224,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
         int version = TPACKET_V3;
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
-            LOGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
+            LOGEXIT("ERROR - Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
 
 
         memset(&infos[i].req, 0, sizeof(infos[i].req));
@@ -235,21 +235,21 @@ void reader_tpacketv3_init(char *UNUSED(name))
         infos[i].req.tp_retire_blk_tov = 60;
         infos[i].req.tp_feature_req_word = 0;
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_RX_RING, &infos[i].req, sizeof(infos[i].req)) < 0)
-            LOGEXIT("Error setting PACKET_RX_RING: %s", strerror(errno));
+            LOGEXIT("ERROR - Error setting PACKET_RX_RING: %s", strerror(errno));
 
         struct packet_mreq      mreq;
         memset(&mreq, 0, sizeof(mreq));
         mreq.mr_ifindex = ifindex;
         mreq.mr_type    = PACKET_MR_PROMISC;
         if (setsockopt(infos[i].fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
-            LOGEXIT("Error setting PROMISC: %s", strerror(errno));
+            LOGEXIT("ERROR - Error setting PROMISC: %s", strerror(errno));
 
         if (config.bpf) {
             struct sock_fprog       fcode;
             fcode.len = bpf.bf_len;
             fcode.filter = (struct sock_filter *)bpf.bf_insns;
             if (setsockopt(infos[i].fd, SOL_SOCKET, SO_ATTACH_FILTER, &fcode, sizeof(fcode)) < 0)
-                LOGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
+                LOGEXIT("ERROR - Error setting SO_ATTACH_FILTER: %s", strerror(errno));
         }
 
         infos[i].map = mmap64(NULL, infos[i].req.tp_block_size * infos[i].req.tp_block_nr,
@@ -272,18 +272,18 @@ void reader_tpacketv3_init(char *UNUSED(name))
         ll.sll_ifindex = ifindex;
 
         if (bind(infos[i].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
-            LOGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
+            LOGEXIT("ERROR - Error binding %s: %s", config.interface[i], strerror(errno));
         
         if (fanout_group_id != 0) {
             int fanout_type = PACKET_FANOUT_HASH;
             int fanout_arg = ((fanout_group_id+i) | (fanout_type << 16));
             if(setsockopt(infos[i].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                LOGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
+                LOGEXIT("ERROR - Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }
     }
 
     if (i == MAX_INTERFACES) {
-        LOGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
+        LOGEXIT("ERROR - Only support up to %d interfaces", MAX_INTERFACES);
     }
 
     moloch_reader_start         = reader_tpacketv3_start;

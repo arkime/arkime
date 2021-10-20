@@ -493,7 +493,7 @@ void moloch_plugin_init()
     suricata_alerts_init();
 
     if (!suricataAlertFile)
-        LOGEXIT("No suricataAlertFile set");
+        LOGEXIT("ERROR - No suricataAlertFile set");
 
     moloch_plugins_register("suricata", FALSE);
 

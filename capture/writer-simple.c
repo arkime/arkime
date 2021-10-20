@@ -194,11 +194,11 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     uint8_t kekiv[EVP_MAX_IV_LENGTH];
 
     if (!kekId)
-        LOGEXIT("simpleKEKId must be set");
+        LOGEXIT("ERROR - simpleKEKId must be set");
 
    char *kekstr = moloch_config_section_str(NULL, "keks", kekId, NULL);
    if (!kekstr)
-       LOGEXIT("No kek with id '%s' found in keks config section", kekId);
+       LOGEXIT("ERROR - No kek with id '%s' found in keks config section", kekId);
 
     EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
     g_free(kekstr);
@@ -206,7 +206,7 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     EVP_EncryptInit_ex(ctx, EVP_aes_192_cbc(), NULL, kek, kekiv);
     if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
-        LOGEXIT("Encrypting key failed");
+        LOGEXIT("ERROR - Encrypting key failed");
     ciphertext_len = len;
     EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
     ciphertext_len += len;
@@ -362,7 +362,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             break;
         }
         default:
-            LOGEXIT("Unknown simpleMode %d", simpleMode);
+            LOGEXIT("ERROR - Unknown simpleMode %d", simpleMode);
         }
 
         /* If offline pcap honor umask, otherwise disable other RW */
@@ -444,9 +444,9 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         case MOLOCH_SIMPLE_AES256CTR: {
             int outl;
             if (!EVP_EncryptUpdate(info->file->cipher_ctx, (uint8_t *)info->buf, &outl, (uint8_t *)info->buf, total))
-                LOGEXIT("Encrypting data failed");
+                LOGEXIT("ERROR - Encrypting data failed");
             if ((int)total != outl)
-                LOGEXIT("Encryption in (%u) and out (%d) didn't match", total, outl);
+                LOGEXIT("ERROR - Encryption in (%u) and out (%d) didn't match", total, outl);
             break;
         }
         }
@@ -456,7 +456,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (len >= 0) {
                 pos += len;
             } else {
-                LOGEXIT("ERROR writing - %d %s", len, strerror(errno));
+                LOGEXIT("ERROR - writing %d %s", len, strerror(errno));
             }
         }
         if (info->closing) {
@@ -559,7 +559,7 @@ FILE *writer_simple_get_index(int thread, int64_t fileNum)
     snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, fileNum);
 
     if ((indexFiles[thread][p].fp = fopen(filename, "a")) == NULL) {
-        LOGEXIT("Couldn't open file %s", filename);
+        LOGEXIT("ERROR - Couldn't open file %s", filename);
     }
 
     if (!config.pcapReadOffline) {
@@ -671,7 +671,7 @@ void writer_simple_init(char *name)
         LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
-        LOGEXIT("Unknown simpleEncoding '%s'", mode);
+        LOGEXIT("ERROR - Unknown simpleEncoding '%s'", mode);
     }
 
     pageSize = getpagesize();

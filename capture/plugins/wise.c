@@ -182,11 +182,11 @@ LOCAL void wise_load_fields()
 
     if (ver < 0 || ver > 1) {
         if (wiseURL) {
-            LOGEXIT("Verify wiseURL value of `%s` version: %d - %s",
+            LOGEXIT("ERROR - Verify wiseURL value of `%s` version: %d - %s",
                     wiseURL, ver,
                     (ver == -1?"Couldn't connect to WISE":"Unsupported version"));
         } else {
-            LOGEXIT("Verify wiseHost:wisePort value of `%s:%d` version: %d - %s",
+            LOGEXIT("ERROR - Verify wiseHost:wisePort value of `%s:%d` version: %d - %s",
                     wiseHost, wisePort, ver,
                     (ver == -1?"Couldn't connect to WISE":"Unsupported version"));
         }
@@ -199,7 +199,7 @@ LOCAL void wise_load_fields()
     }
 
     if (cnt > MOLOCH_FIELDS_DB_MAX) {
-        LOGEXIT("Wise server is returning too many fields %d > %d", cnt, MOLOCH_FIELDS_DB_MAX);
+        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, MOLOCH_FIELDS_DB_MAX);
     }
 
     for (int i = 0; i < cnt; i++) {
@@ -292,7 +292,7 @@ LOCAL void wise_cb(int UNUSED(code), unsigned char *data, int data_len, gpointer
             LOG("WISE Response %32.32s cnt %d pos %d", hash, cnt, hashPos);
 
         if (hashPos == FIELDS_MAP_MAX)
-            LOGEXIT("Too many unique wise hashs");
+            LOGEXIT("ERROR - Too many unique wise hashs");
 
         if (hashPos == fieldsMapCnt) {
             fieldsMapHash[hashPos] = g_strndup((gchar*)hash, 32);
@@ -897,21 +897,21 @@ LOCAL void wise_load_config()
             type = INTEL_TYPE_JA3;
         else {
             if (numTypes == INTEL_TYPE_SIZE) {
-                LOGEXIT("Too many wise-types, can only have %d custom types", INTEL_TYPE_SIZE - INTEL_TYPE_NUM_PRE);
+                LOGEXIT("ERROR - Too many wise-types, can only have %d custom types", INTEL_TYPE_SIZE - INTEL_TYPE_NUM_PRE);
             }
             type = numTypes++;
             types[type].nameLen = strlen(keys[i]);
             types[type].name = g_ascii_strdown(keys[i], types[type].nameLen);
 
             if (types[type].nameLen > 12)
-                LOGEXIT("wise-types '%s' too long, max 12 chars", keys[i]);
+                LOGEXIT("ERROR - wise-types '%s' too long, max 12 chars", keys[i]);
         }
 
         types[type].fieldsLen = 0;
         int v;
         for (v = 0; values[v]; v++) {
             if (types[type].fieldsLen == INTEL_TYPE_MAX_FIELDS)
-                LOGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
+                LOGEXIT("ERROR - wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
             if (strncmp("db:", values[v], 3) == 0)
