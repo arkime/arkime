@@ -587,29 +587,29 @@ void moloch_config_load()
             } else if (strncmp(s, "ip:", 3) == 0) {
                 int n = atoi(s+3);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("Bad saveUnknownPackets ip value: %s", s);
+                    LOGEXIT("ERROR - Bad saveUnknownPackets ip value: %s", s);
                 BIT_SET(n, config.ipSavePcap);
             } else if (strncmp(s, "-ip:", 4) == 0) {
                 int n = atoi(s+4);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("Bad saveUnknownPackets -ip value: %s", s);
+                    LOGEXIT("ERROR - Bad saveUnknownPackets -ip value: %s", s);
                 BIT_CLR(n, config.ipSavePcap);
             } else if (strncmp(s, "ether:", 6) == 0) {
                 int n = atoi(s+6);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("Bad saveUnknownPackets ether value: %s", s);
+                    LOGEXIT("ERROR - Bad saveUnknownPackets ether value: %s", s);
                 BIT_SET(n, config.etherSavePcap);
             } else if (strncmp(s, "-ether:", 7) == 0) {
                 int n = atoi(s+7);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("Bad saveUnknownPackets -ether value: %s", s);
+                    LOGEXIT("ERROR - Bad saveUnknownPackets -ether value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
             } else if (strcmp(s, "corrupt") == 0) {
                 config.corruptSavePcap = 1;
             } else if (strcmp(s, "-corrupt") == 0) {
                 config.corruptSavePcap = 0;
             } else {
-                LOGEXIT("Not sure what saveUnknownPackets %s is", s);
+                LOGEXIT("ERROR - Not sure what saveUnknownPackets %s is", s);
             }
         }
         g_strfreev(saveUnknownPackets);
@@ -627,7 +627,7 @@ void moloch_config_load_local_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "override-ips", &keys_len, &error);
     if (error) {
-        LOGEXIT("Error with override-ips: %s", error->message);
+        LOGEXIT("ERROR - Error with override-ips: %s", error->message);
     }
 
     GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
@@ -643,7 +643,7 @@ void moloch_config_load_local_ips()
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
                 if (!g_regex_match(asnRegex, values[v]+4, 0, NULL)) {
-                    LOGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
+                    LOGEXIT("ERROR - Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
                 }
                 char *sp = strchr(values[v]+6, ' ');
                 *sp = 0;
@@ -678,7 +678,7 @@ void moloch_config_load_packet_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
-        LOGEXIT("Error with packet-drop-ips: %s", error->message);
+        LOGEXIT("ERROR - Error with packet-drop-ips: %s", error->message);
     }
 
     gsize k, v;
@@ -696,7 +696,7 @@ void moloch_config_load_packet_ips()
             } else if (strncmp(values[v], "allow", 4) == 0) {
                 mode = 1;
             } else {
-                LOGEXIT("Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);
+                LOGEXIT("ERROR - Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);
             }
         }
         moloch_packet_add_packet_ip(keys[k], mode);
@@ -727,7 +727,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, section, &keys_len, &error);
     if (error) {
-        LOGEXIT("Error with %s: %s", section, error->message);
+        LOGEXIT("ERROR - Error with %s: %s", section, error->message);
     }
 
     gsize k, v;
@@ -832,10 +832,10 @@ void moloch_config_monitor_file_msg(char *desc, char *name, MolochFileChange_cb 
     struct stat     sb;
 
     if (numFiles >= MOLOCH_CONFIG_FILES)
-        LOGEXIT("Couldn't monitor anymore files %s %s", desc, name);
+        LOGEXIT("ERROR - Couldn't monitor anymore files %s %s", desc, name);
 
     if (stat(name, &sb) != 0) {
-        LOGEXIT("Couldn't stat %s file %s error %s. %s", desc, name, strerror(errno), msg);
+        LOGEXIT("ERROR - Couldn't stat %s file %s error %s. %s", desc, name, strerror(errno), msg);
     }
 
     files[numFiles].name[0] = g_strdup(name);
@@ -860,11 +860,11 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
     int             i;
 
     if (numFiles >= MOLOCH_CONFIG_FILES)
-        LOGEXIT("Couldn't monitor anymore files %s %s", desc, names[0]);
+        LOGEXIT("ERROR - Couldn't monitor anymore files %s %s", desc, names[0]);
 
     for (i = 0; i < MOLOCH_CONFIG_FILES && names[i]; i++) {
         if (stat(names[i], &sb) != 0) {
-            LOGEXIT("Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
+            LOGEXIT("ERROR - Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
         }
 
         files[numFiles].name[i] = g_strdup(names[i]);

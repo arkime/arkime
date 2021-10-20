@@ -136,16 +136,16 @@ int moloch_plugins_register_internal(const char *            name,
     MolochPlugin_t *plugin;
 
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
+        LOGEXIT("ERROR - Plugin '%s' built with different version of moloch.h", name);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("Plugin '%s' built with different version of moloch.h", name);
+        LOGEXIT("ERROR - Plugin '%s' built with different version of moloch.h", name);
     }
 
     HASH_FIND(p_, plugins, name, plugin);
     if (plugin) {
-        LOGEXIT("Plugin %s is already registered", name);
+        LOGEXIT("ERROR - Plugin %s is already registered", name);
     }
 
     plugin = MOLOCH_TYPE_ALLOC0(MolochPlugin_t);

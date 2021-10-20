@@ -74,7 +74,7 @@ gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpo
 {
     char *equal = strchr(input, '=');
     if (!equal)
-        LOGEXIT("%s requires a '=' in value %s", option_name, input);
+        LOGEXIT("ERROR - %s requires a '=' in value %s", option_name, input);
 
     char *key = g_strndup(input, equal - input);
     char *value = g_strdup(equal + 1);
@@ -369,7 +369,7 @@ unsigned char *moloch_js0n_get(unsigned char *data, uint32_t len, char *key, uin
     *olen = 0;
     int rc;
     if ((rc = js0n(data, len, out, sizeof(out))) != 0) {
-        LOG("ERROR: Parse error %d for >%s< in >%.*s<\n", rc, key, len, data);
+        LOG("ERROR - Parse error %d for >%s< in >%.*s<\n", rc, key, len, data);
         fflush(stdout);
         return 0;
     }
@@ -555,11 +555,11 @@ void moloch_drop_privileges()
         struct group   *grp;
         grp = getgrnam(config.dropGroup);
         if (!grp) {
-            LOGEXIT("ERROR: Group '%s' not found", config.dropGroup);
+            LOGEXIT("ERROR - Group '%s' not found", config.dropGroup);
         }
 
         if (setgid(grp->gr_gid) != 0) {
-            LOGEXIT("ERROR: Couldn't change group - %s", strerror(errno));
+            LOGEXIT("ERROR - Couldn't change group - %s", strerror(errno));
         }
     }
 
@@ -567,11 +567,11 @@ void moloch_drop_privileges()
         struct passwd   *usr;
         usr = getpwnam(config.dropUser);
         if (!usr) {
-            LOGEXIT("ERROR: User '%s' not found", config.dropUser);
+            LOGEXIT("ERROR - User '%s' not found", config.dropUser);
         }
 
         if (setuid(usr->pw_uid) != 0) {
-            LOGEXIT("ERROR: Couldn't change user - %s", strerror(errno));
+            LOGEXIT("ERROR - Couldn't change user - %s", strerror(errno));
         }
     }
 
@@ -585,7 +585,7 @@ LOCAL  int                canQuitFuncsNum;
 void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
-        LOGEXIT("Can't add canQuitFunc");
+        LOGEXIT("ERROR - Can't add canQuitFunc");
         return;
     }
     canQuitFuncs[canQuitFuncsNum] = func;
@@ -682,7 +682,7 @@ gboolean moloch_ready_gfunc (gpointer UNUSED(user_data))
     }
     moloch_readers_start();
     if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
-        LOGEXIT("Reader didn't call moloch_packet_set_dltsnap");
+        LOGEXIT("ERROR - Reader didn't call moloch_packet_set_dltsnap");
     return FALSE;
 }
 /******************************************************************************/

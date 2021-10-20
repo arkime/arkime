@@ -277,7 +277,7 @@ void writer_s3_init_cb (int code, unsigned char *data, int len, gpointer uw)
         file->partNumber = 1;
         file->partNumberResponses = 1;
     } else {
-        LOGEXIT("Unknown s3 response: %.*s", len, data);
+        LOGEXIT("ERROR - Unknown s3 response: %.*s", len, data);
     }
     g_match_info_free(match_info);
 

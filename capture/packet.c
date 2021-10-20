@@ -461,7 +461,7 @@ LOCAL void moloch_packet_save_unknown_packet(int type, MolochPacket_t * const pa
 
 	// TODO-- should we also add logic to pick right pcapDir when there are multiple?
         if (unknownPacketFile[type] == NULL) {
-          LOGEXIT("Unable to open pcap file %s to store unknown type %s.  Error %s", str, names[type], strerror (errno));
+          LOGEXIT("ERROR - Unable to open pcap file %s to store unknown type %s.  Error %s", str, names[type], strerror (errno));
           MOLOCH_UNLOCK(lock);
           return;
         }
@@ -1402,7 +1402,7 @@ MolochPacketRC moloch_packet_run_ip_cb(MolochPacketBatch_t * batch, MolochPacket
 void moloch_packet_set_ip_cb(uint16_t type, MolochPacketEnqueue_cb enqueueCb)
 {
     if (type >= MOLOCH_IPPROTO_MAX) 
-      LOGEXIT ("type value too large %d", type);
+      LOGEXIT ("ERROR - type value too large %d", type);
 
     ipCbs[type] = enqueueCb;
 }
@@ -1730,11 +1730,11 @@ int moloch_mprotocol_register_internal(char                            *name,
                                        int                              apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     int num = ++mProtocolCnt; // Leave 0 empty so we know if not set in code

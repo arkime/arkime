@@ -185,14 +185,14 @@ void reader_libpcap_init(char *UNUSED(name))
 #endif
 
         if (!pcaps[i]) {
-            LOGEXIT("pcap open live failed! %s", errbuf);
+            LOGEXIT("ERROR - pcap open live failed! %s", errbuf);
         }
 
         pcap_setnonblock(pcaps[i], FALSE, errbuf);
     }
 
     if (i == MAX_INTERFACES && config.interface[MAX_INTERFACES]) {
-        LOGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
+        LOGEXIT("ERROR - Only support up to %d interfaces", MAX_INTERFACES);
     }
 
     moloch_reader_start         = reader_libpcap_start;
