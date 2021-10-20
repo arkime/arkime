@@ -42,9 +42,11 @@ const axios = require('axios');
 const chalk = require('chalk');
 const version = require('../viewer/version');
 const path = require('path');
-const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');
+
+const dayMs = 60000 * 60 * 24;
 
 require('console-stamp')(console, '[HH:MM:ss.l]');
 
@@ -198,16 +200,6 @@ function getConfig (section, sectionKey, d) {
 process.on('SIGINT', function () {
   process.exit();
 });
-
-// ----------------------------------------------------------------------------
-// Util
-// ----------------------------------------------------------------------------
-function noCacheJson (req, res, next) {
-  res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-  res.header('Content-Type', 'application/json');
-  res.header('X-Content-Type-Options', 'nosniff');
-  return next();
-}
 
 // ----------------------------------------------------------------------------
 function setupAuth () {
@@ -704,7 +696,7 @@ if (internals.regressionTests) {
  *
  * @name "/_ns_/nstest.html"
  */
-app.get('/_ns_/nstest.html', [noCacheJson], (req, res) => {
+app.get('/_ns_/nstest.html', [ArkimeUtil.noCacheJson], (req, res) => {
   res.end();
 });
 // ----------------------------------------------------------------------------
@@ -715,7 +707,7 @@ app.get('/_ns_/nstest.html', [noCacheJson], (req, res) => {
  * @param {integer} [ver=0] - Version of the encoded binary to return
  * @returns {binary}
  */
-app.get('/fields', [noCacheJson], (req, res) => {
+app.get('/fields', [ArkimeUtil.noCacheJson], (req, res) => {
   if (req.query.ver === undefined || req.query.ver === '0') {
     if (internals.fields.length < 256) {
       res.send(internals.fieldsBuf0);
@@ -734,7 +726,7 @@ app.get('/fields', [noCacheJson], (req, res) => {
  * @name "/views"
  * @returns {object} All the views
  */
-app.get('/views', [noCacheJson], function (req, res) {
+app.get('/views', [ArkimeUtil.noCacheJson], function (req, res) {
   res.send(internals.views);
 });
 // ----------------------------------------------------------------------------
@@ -744,7 +736,7 @@ app.get('/views', [noCacheJson], function (req, res) {
  * @name "/valueActions"
  * @returns {object|array} All the actions
  */
-app.get(['/rightClicks', '/valueActions'], [noCacheJson], function (req, res) {
+app.get(['/rightClicks', '/valueActions'], [ArkimeUtil.noCacheJson], function (req, res) {
   res.send(internals.valueActions);
 });
 
@@ -1098,7 +1090,7 @@ app.post('/get', function (req, res) {
  * @name "/sources"
  * @returns {string|array} All the sources
  */
-app.get('/sources', [noCacheJson], (req, res) => {
+app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
   return res.send(Object.keys(internals.sources).sort());
 });
 // ----------------------------------------------------------------------------
@@ -1110,7 +1102,7 @@ app.get('/sources', [noCacheJson], (req, res) => {
  * @param {string} :source - The source to get the raw data for
  * @returns {object} All the views
  */
-app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1136,7 +1128,7 @@ app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, re
  * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */
-app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1162,7 +1154,7 @@ app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmi
  * @name "/config/defs"
  * @returns {object}
  */
-app.get('/config/defs', [noCacheJson], function (req, res) {
+app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
 });
 // ----------------------------------------------------------------------------
@@ -1173,7 +1165,7 @@ app.get('/config/defs', [noCacheJson], function (req, res) {
  * @name "/config/get"
  * @returns {object}
  */
-app.get('/config/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, res) => {
+app.get('/config/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
     .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1206,7 +1198,7 @@ app.get('/config/get', [isConfigWeb, Auth.doAuth, noCacheJson], (req, res) => {
  *
  * @name "/config/save"
  */
-app.put('/config/save', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/config/save', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }
@@ -1279,7 +1271,7 @@ app.put('/config/save', [isConfigWeb, Auth.doAuth, noCacheJson, checkAdmin, json
  * @param {string} {:source} - the source to get the types for
  * @returns {string|array} - all the types for the source
  */
-app.get('/types/:source?', [noCacheJson], (req, res) => {
+app.get('/types/:source?', [ArkimeUtil.noCacheJson], (req, res) => {
   if (req.params.source) {
     if (internals.sources[req.params.source]) {
       return res.send(internals.sources[req.params.source].types.sort());
@@ -1300,7 +1292,7 @@ app.get('/types/:source?', [noCacheJson], (req, res) => {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
+app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.end('Unknown source ' + req.params.source);
@@ -1320,7 +1312,7 @@ app.get('/:source/:typeName/:value', [noCacheJson], function (req, res) {
   });
 });
 // ----------------------------------------------------------------------------
-app.get('/dump/:source', [noCacheJson], function (req, res) {
+app.get('/dump/:source', [ArkimeUtil.noCacheJson], function (req, res) {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.end('Unknown source ' + req.params.source);
@@ -1335,7 +1327,7 @@ app.get('/dump/:source', [noCacheJson], function (req, res) {
 // ----------------------------------------------------------------------------
 // ALW - Need to rewrite to use performQuery
 /*
-app.get("/bro/:type", [noCacheJson], function(req, res) {
+app.get("/bro/:type", [ArkimeUtil.noCacheJson], function(req, res) {
   let hashes = req.query.items.split(",");
   let needsep = false;
 
@@ -1401,7 +1393,7 @@ app.get("/bro/:type", [noCacheJson], function(req, res) {
  * @param {string} {:key} - The key to get the results for
  * @returns {object|array} - The results for the query
  */
-app.get('/:typeName/:value', [noCacheJson], function (req, res) {
+app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res) {
   const query = {
     typeName: req.params.typeName,
     value: req.params.value
@@ -1421,7 +1413,7 @@ app.get('/:typeName/:value', [noCacheJson], function (req, res) {
  * @name "/stats"
  * @returns {object} - Object with array of stats per type and array of stats per source
  */
-app.get('/stats', [noCacheJson], (req, res) => {
+app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   const types = Object.keys(internals.types).sort();
   const sections = Object.keys(internals.sources).sort();
 
