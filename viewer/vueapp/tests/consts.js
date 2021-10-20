@@ -74,6 +74,26 @@ export const histories = [{
   timestamp: 1625237794,
   uiPage: 'users',
   userId: 'admin'
+}, {
+  api: '/api/sessions',
+  body: {
+    date: '-1',
+    expression: 'ip.src == 10.0.0.1 && ip.dst == 224.0.0.1',
+    length: 50,
+    order: 'firstPacket:desc'
+  },
+  expression: 'ip.src == 10.0.0.1 && ip.dst == 224.0.0.1',
+  id: 'ynk4n3wBSELxSH6Oxrbz',
+  index: 'tests_history_v1-0w0',
+  method: 'POST',
+  query: 'length=50&expression=ip.src == 10.0.0.1 && ip.dst == 224.0.0.1&date=-1&order=firstPacket:desc',
+  queryTime: 5,
+  timestamp: 1625237794,
+  uiPage: 'sessions',
+  userId: 'admin',
+  recordsFiltered: 1,
+  recordsReturned: 1,
+  recordsTotal: 321
 }];
 
 export const files = [{

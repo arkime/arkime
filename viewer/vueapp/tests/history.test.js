@@ -23,6 +23,8 @@ Vue.directive('has-permission', HasPermission);
 jest.mock('../src/components/history/HistoryService');
 jest.mock('../src/components/users/UserService');
 
+const $router = { push: jest.fn() };
+
 UserService.hasPermission = jest.fn(() => true);
 
 const store = {
@@ -75,10 +77,10 @@ test('history page', async () => {
   });
 
   const {
-    getByText, getByPlaceholderText, getByTitle, queryByText
+    getByText, getByPlaceholderText, getByTitle, queryByText, getAllByTitle
   } = render(HistoryComponent, {
     store,
-    mocks: { $route }
+    mocks: { $route, $router }
   });
 
   // history exists in the table results ----------------------------------- */
@@ -96,12 +98,25 @@ test('history page', async () => {
   });
 
   // can open history item ------------------------------------------------- */
-  const openBtn = getByTitle('Open this query on the users page');
-  expect(openBtn.href).toBe('http://localhost/users?id=admin');
+  let openBtn = getByTitle('Open this query on the users page');
+  await fireEvent.click(openBtn);
+  expect($router.push).toHaveBeenCalledWith({ query: { id: 'admin' }, path: 'users' });
+
+  openBtn = getByTitle('Open this query on the sessions page');
+  await fireEvent.click(openBtn);
+  expect($router.push).toHaveBeenCalledWith({
+    query: {
+      length: '50',
+      expression: 'ip.src == 10.0.0.1 && ip.dst == 224.0.0.1',
+      date: '-1',
+      order: 'firstPacket:desc'
+    },
+    path: 'sessions'
+  });
 
   // can delete history ---------------------------------------------------- */
   const deletedHistory = histories[0];
-  const deleteBtn = getByTitle('Delete history');
+  const deleteBtn = getAllByTitle('Delete history')[0];
   await fireEvent.click(deleteBtn); // click the delete btn
 
   expect(HistoryService.delete).toHaveBeenCalled(); // delete was called
