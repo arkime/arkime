@@ -4,9 +4,10 @@ use Data::Dumper;
 use MolochTest;
 use strict;
 
+esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 my $token = getTokenCookie();
 
-# script exists successfully
+# script exits successfully
 my $result = system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin");
 eq_or_diff($result, "0", "script exited successfully");
 

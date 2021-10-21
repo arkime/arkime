@@ -25,6 +25,13 @@ class ArkimeUtil {
       .replace(/'/g, '&#39;')
       .replace(/\//g, '&#47;');
   };
+
+  static noCacheJson (req, res, next) {
+    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    res.header('Content-Type', 'application/json');
+    res.header('X-Content-Type-Options', 'nosniff');
+    return next();
+  }
 }
 
 module.exports = ArkimeUtil;
