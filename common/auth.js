@@ -195,7 +195,7 @@ class Auth {
     function headerAuthCheck (err, user) {
       if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
       if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
-      if (!user.headerAuthEnabeld) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
+      if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
 
       req.user = user;
       return next();

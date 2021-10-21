@@ -216,6 +216,7 @@ if (Config.get('passwordSecret')) {
         }
       } else {
         Auth.headerAuth(req, res, next);
+        return; // Don't try browser auth
       }
     }
 
