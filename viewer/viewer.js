@@ -38,7 +38,6 @@ const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const path = require('path');
 const dayMs = 60000 * 60 * 24;
-const cryptoLib = require('crypto');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -232,73 +231,14 @@ if (Config.get('passwordSecret')) {
       return res.send('receive session only allowed s2s');
     }
 
-    function ucb (err, suser, userName) {
-      if (err) { return res.send(`ERROR - getUser - user: ${userName} err: ${err}`); }
-      if (!suser) { return res.send(`${userName} doesn't exist`); }
-      if (!suser.enabled) { return res.send(`${userName} not enabled`); }
-      if (!suser.headerAuthEnabled) { return res.send(`${userName} header auth not enabled`); }
-
-      req.user = suser;
-      return next();
-    }
-
     // Header auth
     if (internals.userNameHeader !== undefined) {
-      if (req.headers[internals.userNameHeader] !== undefined) {
-        // Check if we require a certain header+value to be present
-        // as in the case of an apache plugin that sends AD groups
-        if (internals.requiredAuthHeader !== undefined && internals.requiredAuthHeaderVal !== undefined) {
-          const authHeader = req.headers[internals.requiredAuthHeader];
-          if (authHeader === undefined) {
-            return res.send('Missing authorization header');
-          }
-          let authorized = false;
-          authHeader.split(',').forEach(headerVal => {
-            if (headerVal.trim() === internals.requiredAuthHeaderVal) {
-              authorized = true;
-            }
-          });
-          if (!authorized) {
-            return res.send('Not authorized');
-          }
+      if (req.headers[Auth.userNameHeader] === undefined) {
+        if (Auth.debug > 0) {
+          console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
         }
-
-        const userName = req.headers[internals.userNameHeader];
-
-        Db.getUserCache(userName, (err, suser) => {
-          if (internals.userAutoCreateTmpl === undefined) {
-            return ucb(err, suser, userName);
-          } else if ((err && err.toString().includes('Not Found')) ||
-             (!suser)) { // Try dynamic creation
-            const nuser = JSON.parse(new Function('return `' +
-                   internals.userAutoCreateTmpl + '`;').call(req.headers));
-            if (nuser.passStore === undefined) {
-              nuser.passStore = Auth.pass2store(nuser.userId, cryptoLib.randomBytes(48));
-            }
-            if (nuser.userId !== userName) {
-              console.log(`WARNING - the userNameHeader (${internals.userNameHeader}) said to use '${userName}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userName}'`);
-              nuser.userId = userName;
-            }
-            if (nuser.userName === undefined) {
-              console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
-              nuser.userName = nuser.userId;
-            }
-
-            Db.setUser(userName, nuser, (err, info) => {
-              if (err) {
-                console.log('Elastic search error adding user: (' + userName + '):(' + JSON.stringify(nuser) + '):' + err);
-              } else {
-                console.log('Added user:' + userName + ':' + JSON.stringify(nuser));
-              }
-              return Db.getUserCache(userName, ucb);
-            });
-          } else {
-            return ucb(err, suser, userName);
-          }
-        });
-        return;
-      } else if (Config.debug) {
-        console.log('DEBUG - Couldn\'t find userNameHeader of', internals.userNameHeader, 'in', req.headers, 'for', req.url);
+      } else {
+        Auth.headerAuth(req, res, next);
       }
     }
 

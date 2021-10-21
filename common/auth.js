@@ -30,6 +30,9 @@ class Auth {
   static serverSecret256;
   static basePath;
   static authFunc;
+  static requiredAuthHeader;
+  static requiredAuthHeaderVal;
+  static userAutoCreateTmpl;
 
   static initialize (options) {
     Auth.debug = options.debug ?? 0;
@@ -44,6 +47,9 @@ class Auth {
     } else {
       Auth.serverSecret256 = Auth.passwordSecret256;
     }
+    Auth.requiredAuthHeader = options.requiredAuthHeader;
+    Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
+    Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
 
     if (Auth.mode === 'digest') {
       passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
@@ -160,18 +166,99 @@ class Auth {
   }
 
   static headerAuth (req, res, next) {
-    if (req.headers[Auth.userNameHeader] !== undefined) {
-      return User.getUserCache(req.headers[Auth.userNameHeader], (err, user) => {
-        if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'Username not found' })); }
-        if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'Username not enabled' })); }
-        req.user = user;
-        return next();
-      });
-    } else if (Auth.debug > 0) {
-      console.log(`AUTH: looking for header ${Auth.userNameHeader} in the headers`, req.headers);
+    if (req.headers[Auth.userNameHeader] === undefined) {
+      if (Auth.debug > 0) {
+        console.log(`AUTH: looking for header ${Auth.userNameHeader} in the headers`, req.headers);
+      }
       res.status(403);
       return res.send(JSON.stringify({ success: false, text: 'Username not found' }));
     }
+
+    if (Auth.requiredAuthHeader !== undefined && Auth.requiredAuthHeaderVal !== undefined) {
+      const authHeader = req.headers[Auth.requiredAuthHeader];
+      if (authHeader === undefined) {
+        return res.send('Missing authorization header');
+      }
+      let authorized = false;
+      authHeader.split(',').forEach(headerVal => {
+        if (headerVal.trim() === Auth.requiredAuthHeaderVal) {
+          authorized = true;
+        }
+      });
+      if (!authorized) {
+        return res.send('Not authorized');
+      }
+    }
+
+    const userId = req.headers[Auth.userNameHeader];
+
+    function headerAuthCheck (err, user) {
+      if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
+      if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
+      if (!user.headerAuthEnabeld) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
+
+      req.user = user;
+      return next();
+    }
+
+    User.getUserCache(userId, (err, user) => {
+      if (Auth.userAutoCreateTmpl === undefined) {
+        return headerAuthCheck(err, user);
+      } else if ((err && err.toString().includes('Not Found')) ||
+         (!user)) { // Try dynamic creation
+        const nuser = JSON.parse(new Function('return `' +
+               Auth.userAutoCreateTmpl + '`;').call(req.headers));
+        if (nuser.passStore === undefined) {
+          nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
+        }
+        if (nuser.userId !== userId) {
+          console.log(`WARNING - the userNameHeader (${Auth.userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+          nuser.userId = userId;
+        }
+        if (nuser.userName === undefined) {
+          console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
+          nuser.userName = nuser.userId;
+        }
+
+        Auth.setUser(userId, nuser, (err, info) => {
+          if (err) {
+            console.log('Elastic search error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
+          } else {
+            console.log('Added user:' + userId + ':' + JSON.stringify(nuser));
+          }
+          return Auth.getUserCache(userId, headerAuthCheck);
+        });
+      } else {
+        return headerAuthCheck(err, user);
+      }
+    });
+  }
+
+  static s2sAuth (req, res, next) {
+    const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth'], false);
+    obj.path = obj.path.replace(Auth.basePath, '/');
+    if (obj.path !== req.url) {
+      console.log('ERROR - mismatch url', obj.path, req.url);
+      return res.send('Unauthorized based on bad url');
+    }
+    if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+      console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
+      return res.send('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
+    }
+
+    // Don't look up user for receiveSession
+    if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+      return next();
+    }
+
+    User.getUserCache(obj.user, (err, user) => {
+      if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
+      if (!user) { return res.send(obj.user + " doesn't exist"); }
+      if (!user.enabled) { return res.send(obj.user + ' not enabled'); }
+      req.user = user;
+      return next();
+    });
+    return;
   }
 
   // Need this wrapper because app.use seems to save the value and not the array

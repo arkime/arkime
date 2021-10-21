@@ -508,5 +508,8 @@ Auth.initialize({
   realm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
   serverSecret: exports.getFull('default', 'serverSecret'),
-  userNameHeader: exports.get('userNameHeader')
+  userNameHeader: exports.get('userNameHeader'),
+  requiredAuthHeader: exports.get('requiredAuthHeader'),
+  requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
+  userAutoCreateTmpl: exports.get('userAutoCreateTmpl')
 });
