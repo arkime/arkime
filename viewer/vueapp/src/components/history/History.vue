@@ -180,7 +180,7 @@
                 tooltip-placement="right"
                 v-b-tooltip.hover
                 :title="`Open this query on the ${item.uiPage} page`"
-                :href="`${item.uiPage}?${item.query}`">
+                @click="openPage(item)">
                 <span class="fa fa-folder-open">
                 </span>
               </a>
@@ -332,6 +332,7 @@
 </template>
 
 <script>
+import qs from 'qs';
 import MolochPaging from '../utils/Pagination';
 import MolochLoading from '../utils/Loading';
 import MolochError from '../utils/Error';
@@ -479,6 +480,24 @@ export default {
           this.msg = error.text || 'Error deleting history item';
           this.msgType = 'danger';
         });
+    },
+    /* opens the page that this history item represents */
+    openPage (item) {
+      let query = item.query;
+      if (item.expression && item.query.includes(item.expression)) {
+        // need to remove expression because browsers can't handle the &&
+        const remove = `&expression=${item.expression}`;
+        const splitQuery = item.query.split(remove);
+        query = splitQuery.join('');
+      }
+
+      this.$router.push({
+        query: {
+          ...qs.parse(query),
+          expression: item.expression
+        },
+        path: item.uiPage
+      });
     },
     /* remove the message when user is done with it or duration ends */
     messageDone: function () {
