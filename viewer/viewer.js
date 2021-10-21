@@ -201,30 +201,7 @@ if (Config.get('passwordSecret')) {
 
     // S2S Auth
     if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
-      const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth'], false);
-      obj.path = obj.path.replace(Config.basePath(), '/');
-      if (obj.path !== req.url) {
-        console.log('ERROR - mismatch url', obj.path, req.url);
-        return res.send('Unauthorized based on bad url, check logs on ', Config.hostName());
-      }
-      if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
-        console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
-        return res.send('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
-      }
-
-      // Don't look up user for receiveSession
-      if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
-        return next();
-      }
-
-      Db.getUserCache(obj.user, (err, suser) => {
-        if (err) { return res.send('ERROR - x-arkime getUser - user: ' + obj.user + ' err:' + err); }
-        if (!suser) { return res.send(obj.user + " doesn't exist"); }
-        if (!suser.enabled) { return res.send(obj.user + ' not enabled'); }
-        req.user = suser;
-        return next();
-      });
-      return;
+      Auth.s2sAuth(req, res, next);
     }
 
     if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
