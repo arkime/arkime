@@ -191,6 +191,9 @@ class Auth {
     }
 
     const userId = req.headers[Auth.userNameHeader];
+    if (userId === '') {
+      return res.status(401).send(JSON.stringify({ success: false, text: 'User name header is empty' }));
+    }
 
     function headerAuthCheck (err, user) {
       if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
@@ -204,8 +207,7 @@ class Auth {
     User.getUserCache(userId, (err, user) => {
       if (Auth.userAutoCreateTmpl === undefined) {
         return headerAuthCheck(err, user);
-      } else if ((err && err.toString().includes('Not Found')) ||
-         (!user)) { // Try dynamic creation
+      } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         const nuser = JSON.parse(new Function('return `' +
                Auth.userAutoCreateTmpl + '`;').call(req.headers));
         if (nuser.passStore === undefined) {
@@ -215,18 +217,18 @@ class Auth {
           console.log(`WARNING - the userNameHeader (${Auth.userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
           nuser.userId = userId;
         }
-        if (nuser.userName === undefined) {
+        if (nuser.userName === undefined || nuser.userName === 'undefined') {
           console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
           nuser.userName = nuser.userId;
         }
 
-        Auth.setUser(userId, nuser, (err, info) => {
+        User.setUser(userId, nuser, (err, info) => {
           if (err) {
             console.log('Elastic search error adding user: (' + userId + '):(' + JSON.stringify(nuser) + '):' + err);
           } else {
             console.log('Added user:' + userId + ':' + JSON.stringify(nuser));
           }
-          return Auth.getUserCache(userId, headerAuthCheck);
+          return User.getUserCache(userId, headerAuthCheck);
         });
       } else {
         return headerAuthCheck(err, user);

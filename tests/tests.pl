@@ -276,6 +276,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
@@ -284,6 +285,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
@@ -348,6 +350,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
             system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
             system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
         } else {
@@ -355,6 +358,7 @@ my ($cmd) = @_;
             waitFor($MolochTest::host, 8200, 1);
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
             system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
         }
@@ -381,6 +385,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8123/shutdown");
         $main::userAgent->post("http://localhost:8124/shutdown");
         $main::userAgent->post("http://localhost:8125/shutdown");
+        $main::userAgent->post("http://localhost:8126/shutdown");
         $main::userAgent->post("http://localhost:8200/shutdown");
         $main::userAgent->post("http://localhost:8081/shutdown");
         $main::userAgent->post("http://localhost:8008/shutdown");

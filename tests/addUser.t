@@ -1,7 +1,9 @@
-use Test::More tests => 13;
+# Test addUser.js and general authentication
+use Test::More tests => 24;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
+use JSON;
 use strict;
 
 esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
@@ -50,6 +52,52 @@ system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser t
 $users = viewerPost("/api/users", "");
 ok($users->{data}->[1]->{emailSearch}, "Can update exiting user");
 
+
+#### Auth Header tests
+my $response;
+my $mresponse;
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->code, 401);
+is ($response->content, 'Unauthorized');
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => '');
+is ($response->code, 401);
+is ($response->content, '{"success":false,"text":"User name header is empty"}');
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest1');
+is ($response->code, 200);
+
+$response = esGet("/tests_users/_doc/authtest1");
+$mresponse = mesGet("/tests_users/_doc/authtest1");
+delete $mresponse->{_source}->{cluster};
+eq_or_diff($response->{_source}, $mresponse->{_source});
+
+delete $response->{_source}->{passStore};
+delete $response->{_source}->{lastUsed};
+eq_or_diff($response->{_source}, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"createEnabled":false}'));
+
+system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
+$response = esGet("/tests_users/_doc/authtest2");
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
+is ($response->code, 200);
+
+# Bad password
+$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest222' );
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->code, 401);
+
+# Bad password but username header
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
+is ($response->code, 200);
+
+# Good password
+$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authtest2', 'authtest2' );
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->code, 200);
+
+
 # cleanup
 viewerDeleteToken("/api/user/admin", $token);
 viewerDeleteToken("/api/user/test1", $token);
@@ -59,3 +107,5 @@ viewerDeleteToken("/api/user/test4", $token);
 viewerDeleteToken("/api/user/test5", $token);
 viewerDeleteToken("/api/user/test6", $token);
 viewerDeleteToken("/api/user/test7", $token);
+esDelete('/tests_users/_doc/authtest1');
+esDelete('/tests_users/_doc/authtest2');
