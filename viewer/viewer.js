@@ -194,8 +194,8 @@ if (Config.get('passwordSecret')) {
       return res.end();
     }
 
-    // No auth for eshealth.json or parliament.json
-    if (req.url.match(/^\/(parliament|eshealth).json/)) {
+    // No auth for eshealth.json, parliament.json, or shutdown
+    if (req.url.match(/^\/(parliament.json|eshealth.json|shutdown)/)) {
       return next();
     }
 
