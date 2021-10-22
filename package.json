@@ -43,9 +43,18 @@
     "vue-server-renderer": "^2.6.12"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common",
+    "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
     "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService",
+
     "common:lint": "eslint --ext .js,.vue common",
+
+    "cont3xt:build": "cd cont3xt && node vueapp/build/build.js",
+    "cont3xt:bundle": "webpack --progress --config cont3xt/vueapp/build/webpack.dev.conf.js",
+    "cont3xt:dev": "(cd cont3xt && NODE_ENV=development nodemon cont3xt.js -c ../tests/cont3xt.ini) & webpack --watch --progress --config cont3xt/vueapp/build/webpack.dev.conf.js",
+    "cont3xt:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files cont3xt/*.js > ../arkimeweb/_wiki/api_cont3xt.md",
+    "cont3xt:lint": "eslint --ext .js,.vue cont3xt common",
+    "cont3xt:testui": "cd cont3xt && jest",
+
     "viewer:addtestuser": "cd viewer && node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
     "viewer:build": "cd viewer && node vueapp/build/build.js",
     "viewer:bundle": "webpack --progress --config viewer/vueapp/build/webpack.dev.conf.js",
@@ -62,6 +71,7 @@
     "viewer:lint": "eslint --ext .js,.vue viewer capture/plugins",
     "viewer:lint-fix": "eslint --fix --ext .js,.vue viewer capture/plugins",
     "viewer:testui": "cd viewer && jest",
+
     "parliament:build": "cd parliament && node vueapp/build/build.js",
     "parliament:bundle": "webpack --progress --config parliament/vueapp/build/webpack.dev.conf.js",
     "parliament:start": "cd parliament && node parliament.js",
@@ -71,6 +81,7 @@
     "parliament:lint": "eslint --ext .js,.vue parliament",
     "parliament:lint-fix": "eslint --fix --ext .js,.vue parliament",
     "parliament:noauth": "(cd parliament && nodemon parliament.js --port 8008 -c ./parliament.dev.json) & webpack --watch --progress --config parliament/vueapp/build/webpack.dev.conf.js",
+
     "wise:build": "cd wiseService && node vueapp/build/build.js",
     "wise:bundle": "webpack --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
