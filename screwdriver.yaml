@@ -7,9 +7,9 @@ shared:
         screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/main"
-        MOLOCH_FILE_NAME: "master"
-        ARKIME_FILE_NAME: "main"
+        MOLOCH_COPY_BRANCH: "origin/cont3xt"
+        MOLOCH_FILE_NAME: "cont3xt"
+        ARKIME_FILE_NAME: "cont3xt"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
         RELEASE_ITERATION: 1
