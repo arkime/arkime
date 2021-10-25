@@ -2,14 +2,15 @@ const Integration = require('../integration.js');
 const axios = require('axios');
 
 class RDAPIntegration extends Integration {
+  name = 'RDAP';
+  itypes = {
+    ip: 'fetchIp'
+  };
+
   constructor () {
     super();
 
-    Integration.register('RDAP', this, {
-      itypes: {
-        ip: 'fetchIp'
-      }
-    });
+    Integration.register(this);
   }
 
   async fetchIp (ip) {

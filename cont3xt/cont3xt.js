@@ -66,7 +66,7 @@ app.put('/api/linkGroup/delete/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', [jsonParser], User.apiRoles);
 
-app.get('/api/integration/search', Integration.apiSearch);
+app.get('/api/integration/search/:query', Integration.apiSearch);
 
 app.get('/test', (req, res) => {
   for (let i = 0; i < 100; i++) {
@@ -158,6 +158,7 @@ function setupAuth () {
   });
 
   Integration.initialize({
+    debug: internals.debug
   });
 }
 
@@ -186,8 +187,8 @@ async function main () {
     })
     .listen(getConfig('cont3xt', 'port', 3218));
 
-  setTimeout(() => { Integration.search('ip', '10.10.10.10'); }, 1000);
-  setTimeout(() => { Integration.search('ip', '8.8.8.8'); }, 1000);
+  /* setTimeout(() => { Integration.search('ip', '10.10.10.10'); }, 1000);
+  setTimeout(() => { Integration.search('ip', '8.8.8.8'); }, 1000); */
 }
 
 main();

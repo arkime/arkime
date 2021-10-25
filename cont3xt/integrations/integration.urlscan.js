@@ -2,6 +2,11 @@ const Integration = require('../integration.js');
 const axios = require('axios');
 
 class URLScanIntegration extends Integration {
+  name = 'RDAP';
+  itypes = {
+    url: 'fetchUrl'
+  };
+
   key;
 
   constructor () {
@@ -9,11 +14,7 @@ class URLScanIntegration extends Integration {
 
     this.key = 'foo';
 
-    Integration.register('URLScan', this, {
-      itypes: {
-        url: 'fetchUrl'
-      }
-    });
+    Integration.register(this);
   }
 
   async fetchUrl (url) {
