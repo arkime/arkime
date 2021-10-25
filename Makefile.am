@@ -1,4 +1,4 @@
-SUBDIRS = . capture db viewer parliament wiseService release tests cont3xt
+SUBDIRS = . capture db viewer parliament wiseService cont3xt release tests
 install-exec-local:
 	npm ci
 	cp -pr common @prefix@
