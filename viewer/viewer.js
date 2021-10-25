@@ -247,7 +247,7 @@ if (Config.get('passwordSecret')) {
   app.use(function (req, res, next) {
     // S2S Auth
     if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
-      Auth.s2sAuth(req, res, next);
+      return Auth.s2sAuth(req, res, next);
     }
 
     if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
