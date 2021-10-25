@@ -69,7 +69,7 @@ function main () {
     settings: {}
   };
 
-  const roles = Set();
+  const roles = new Set();
   for (let i = 5; i < process.argv.length; i++) {
     switch (process.argv[i]) {
     case '--admin':
