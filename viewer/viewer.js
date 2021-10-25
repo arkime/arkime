@@ -186,19 +186,65 @@ app.use(['/assets', '/logos'], express.static(
   { maxAge: dayMs, fallthrough: false }
 ), missingResource);
 
+// regression test methods, before auth checks --------------------------------
+if (Config.get('regressionTests')) {
+  // Override default lastUsed min write internal for tests
+  User.lastUsedMinInterval = 1;
+
+  app.post('/shutdown', function (req, res) {
+    Db.close();
+    process.exit(0);
+  });
+  app.post('/flushCache', function (req, res) {
+    Db.flushCache();
+    res.send('{}');
+  });
+  app.get('/processCronQueries', function (req, res) {
+    internals.processCronQueries();
+    res.send('{}');
+  });
+  // Make sure all jobs have run and return
+  app.get('/processHuntJobs', function (req, res) {
+    huntAPIs.processHuntJobs();
+
+    setTimeout(function checkHuntFinished () {
+      if (internals.runningHuntJob) {
+        setTimeout(checkHuntFinished, 1000);
+      } else {
+        Db.search('hunts', 'hunt', { query: { term: { status: 'queued' } } }, function (err, result) {
+          if (result.hits.total > 0) {
+            huntAPIs.processHuntJobs();
+            setTimeout(checkHuntFinished, 1000);
+          } else {
+            res.send('{}');
+          }
+        });
+      }
+    }, 1000);
+  });
+}
+
+// load balancer test - no authj ----------------------------------------------
+app.use('/_ns_/nstest.html', function (req, res) {
+  res.end();
+});
+
+// parliament apis - no auth --------------------------------------------------
+app.get(
+  ['/api/parliament', '/parliament.json'],
+  [ArkimeUtil.noCacheJson],
+  statsAPIs.getParliament
+);
+
+// stats apis - no auth -------------------------------------------------------
+app.get( // es health endpoint
+  ['/api/eshealth', '/eshealth.json'],
+  statsAPIs.getESHealth
+);
+
 // password, testing, or anonymous mode setup ---------------------------------
 if (Config.get('passwordSecret')) {
   app.use(function (req, res, next) {
-    // 200 for NS
-    if (req.url === '/_ns_/nstest.html') {
-      return res.end();
-    }
-
-    // No auth for eshealth.json, parliament.json, or shutdown
-    if (req.url.match(/^\/(parliament.json|eshealth.json|shutdown)/)) {
-      return next();
-    }
-
     // S2S Auth
     if (req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']) {
       Auth.s2sAuth(req, res, next);
@@ -1403,10 +1449,6 @@ app.delete( // delete history endpoint
 );
 
 // stats apis -----------------------------------------------------------------
-app.get( // es health endpoint
-  ['/api/eshealth', '/eshealth.json'],
-  statsAPIs.getESHealth
-);
 
 app.get( // stats endpoint
   ['/api/stats', '/stats.json'],
@@ -1545,13 +1587,6 @@ app.get( // elasticsearch recovery endpoint
   ['/api/esrecovery', '/esrecovery/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkPermissions(['hideStats']), setCookie],
   statsAPIs.getESRecovery
-);
-
-// parliament apis ------------------------------------------------------------
-app.get( // parliament endpoint (no auth necessary)
-  ['/api/parliament', '/parliament.json'],
-  [ArkimeUtil.noCacheJson],
-  statsAPIs.getParliament
 );
 
 // session apis ---------------------------------------------------------------
@@ -1924,47 +1959,6 @@ app.use( // cyberchef UI endpoint
   cyberchefCspHeader,
   miscAPIs.getCyberChefUI
 );
-
-// ============================================================================
-// REGRESSION TEST CONFIGURATION
-// ============================================================================
-if (Config.get('regressionTests')) {
-  // Override default lastUsed min write internal for tests
-  User.lastUsedMinInterval = 1;
-
-  app.post('/shutdown', function (req, res) {
-    Db.close();
-    process.exit(0);
-  });
-  app.post('/flushCache', function (req, res) {
-    Db.flushCache();
-    res.send('{}');
-  });
-  app.get('/processCronQueries', function (req, res) {
-    internals.processCronQueries();
-    res.send('{}');
-  });
-
-  // Make sure all jobs have run and return
-  app.get('/processHuntJobs', function (req, res) {
-    huntAPIs.processHuntJobs();
-
-    setTimeout(function checkHuntFinished () {
-      if (internals.runningHuntJob) {
-        setTimeout(checkHuntFinished, 1000);
-      } else {
-        Db.search('hunts', 'hunt', { query: { term: { status: 'queued' } } }, function (err, result) {
-          if (result.hits.total > 0) {
-            huntAPIs.processHuntJobs();
-            setTimeout(checkHuntFinished, 1000);
-          } else {
-            res.send('{}');
-          }
-        });
-      }
-    }, 1000);
-  });
-}
 
 // ============================================================================
 // VUE APP

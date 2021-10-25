@@ -82,6 +82,9 @@ class Auth {
     case 'header':
       Auth.authFunc = Auth.headerAuth;
       break;
+    case 'regressionTests':
+      Auth.authFunc = Auth.regressionTestsAuth;
+      break;
     }
   }
 
@@ -98,6 +101,7 @@ class Auth {
       settings: {},
       welcomeMsgNum: 1
     });
+    return next();
   }
 
   static anonymousWithDBAuth (req, res, next) {
