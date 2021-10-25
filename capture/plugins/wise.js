@@ -18,6 +18,7 @@
 'use strict';
 
 const http = require('http');
+const https = require('https');
 
 exports.init = function (Config, emitter) {
   let baseURL = Config.get('wiseURL', undefined);
@@ -25,9 +26,11 @@ exports.init = function (Config, emitter) {
     baseURL = 'http://' + Config.get('wiseHost', '127.0.0.1') + ':' + Config.get('wisePort', 8081);
   }
 
+  const client = baseURL.startsWith('https') ? https : http;
+
   emitter.on('makeSessionDetail', function (cb) {
     const url = baseURL + '/views';
-    const req = http.request(url, function (res) {
+    const req = client.request(url, function (res) {
       let body = '';
       res.on('data', function (chunk) {
         body += chunk;
@@ -49,7 +52,7 @@ exports.init = function (Config, emitter) {
 
   emitter.on('makeRightClick', function (cb) {
     const url = baseURL + '/rightClicks';
-    const req = http.request(url, function (res) {
+    const req = client.request(url, function (res) {
       let body = '';
       res.on('data', function (chunk) {
         body += chunk;
