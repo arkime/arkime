@@ -12,8 +12,9 @@ check:
 	npm ci --production
 
 install:
-	@mkdir -p "$(CONT3XTDIR)" "$(CONT3XTDIR)/vueapp"
-	$(INSTALL) *.js integrations $(CONT3XTDIR)
+	@mkdir -p "$(CONT3XTDIR)" "$(CONT3XTDIR)/vueapp" "$(CONT3XTDIR)/integrations"
+	$(INSTALL) *.js $(CONT3XTDIR)
+	$(INSTALL) integrations/*.js $(CONT3XTDIR)/integrations
 	#npm ci
 	#npm run bundle:min
 	#$(CP) -pr favicon.ico $(CONT3XTDIR)
