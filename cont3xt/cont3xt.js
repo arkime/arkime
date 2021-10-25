@@ -1,27 +1,72 @@
+/******************************************************************************/
+/* cont3xt.js  -- The main cont3xt app
+ *
+ * Copyright Yahoo Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this Software except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+'use strict';
+
 const express = require('express');
 const ini = require('iniparser');
+const fs = require('fs');
 const app = express();
 const http = require('http');
+const https = require('https');
 const path = require('path');
 const version = require('../viewer/version');
 const User = require('../common/user');
 const Auth = require('../common/auth');
-const Links = require('./links');
+const LinkGroup = require('./linkGroup');
+const Integration = require('./integration');
 const Db = require('./db');
+const bp = require('body-parser');
+const jsonParser = bp.json();
+// eslint-disable-next-line no-shadow
+const crypto = require('crypto');
 
 const internals = {
   configFile: `${version.config_prefix}/etc/cont3xt.ini`,
   debug: 0,
-  insecure: false
+  insecure: false,
+  regressionTests: false
 };
 
 // ----------------------------------------------------------------------------
 // Routes
 // ----------------------------------------------------------------------------
 
+app.post('/shutdown', (req, res) => {
+  if (internals.regressionTests) {
+    console.log('Shutting down');
+    process.exit(0);
+  }
+});
+
+app.use(Auth.doAuth);
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '/index.html'));
 });
+
+app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
+app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
+app.put('/api/linkGroup/create', [jsonParser], LinkGroup.apiCreate);
+app.put('/api/linkGroup/update/:id', [jsonParser], LinkGroup.apiUpdate);
+app.put('/api/linkGroup/delete/:id', [jsonParser], LinkGroup.apiDelete);
+
+app.get('/api/roles', [jsonParser], User.apiRoles);
+
+app.get('/api/integration/search', Integration.apiSearch);
 
 app.get('/test', (req, res) => {
   for (let i = 0; i < 100; i++) {
@@ -76,7 +121,11 @@ function getConfig (section, sectionKey, d) {
 function setupAuth () {
   let userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
   let mode;
-  if (userNameHeader === 'anonymous' || userNameHeader === 'digest') {
+  if (internals.regressionTests) {
+    mode = 'regressionTests';
+  } else if (userNameHeader === 'anonymous') {
+    mode = 'anonymousWithDB';
+  } else if (userNameHeader === 'digest') {
     mode = userNameHeader;
     userNameHeader = undefined;
   } else {
@@ -98,10 +147,6 @@ function setupAuth () {
     basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
   });
 
-  if (mode === 'anonymous') {
-    return;
-  }
-
   const usersEs = getConfig('cont3xt', 'usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
@@ -111,18 +156,38 @@ function setupAuth () {
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
   });
+
+  Integration.initialize({
+  });
 }
 
-function main () {
+async function main () {
   processArgs(process.argv);
   internals.config = ini.parseSync(internals.configFile);
   setupAuth();
 
-  const server = http.createServer(app);
-  server.listen(3218);
+  let server;
+  if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {
+    const keyFileData = fs.readFileSync(getConfig('cont3xt', 'keyFile'));
+    const certFileData = fs.readFileSync(getConfig('cont3xt', 'certFile'));
 
-  const links = Links.get({size: 5});
-  console.log('LINKS', links);
+    server = https.createServer({ key: keyFileData, cert: certFileData, secureOptions: crypto.constants.SSL_OP_NO_TLSv1 }, app);
+  } else {
+    server = http.createServer(app);
+  }
+
+  server
+    .on('error', (e) => {
+      console.log("ERROR - couldn't listen on port", getConfig('cont3xt', 'port', 3218), 'is cont3xt already running?');
+      process.exit(1);
+    })
+    .on('listening', (e) => {
+      console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
+    })
+    .listen(getConfig('cont3xt', 'port', 3218));
+
+  setTimeout(() => { Integration.search('ip', '10.10.10.10'); }, 1000);
+  setTimeout(() => { Integration.search('ip', '8.8.8.8'); }, 1000);
 }
 
 main();

@@ -38,6 +38,7 @@ function help () {
   console.log('  --webauthonly         Can auth using the web auth header only, password ignored');
   console.log('  --packetSearch        Can create a packet search job (hunt)');
   console.log('  --createOnly          Only create the user if it doesn\'t exist');
+  console.log('  --roles               Comma seperated list of roles');
   console.log('');
   console.log('Config Options:');
   console.log('  -c <config file>      Config file to use');
@@ -68,11 +69,13 @@ function main () {
     settings: {}
   };
 
+  const roles = Set();
   for (let i = 5; i < process.argv.length; i++) {
     switch (process.argv[i]) {
     case '--admin':
     case '-admin':
       nuser.createEnabled = true;
+      roles.add('usersAdmin');
       break;
 
     case '--remove':
@@ -117,11 +120,19 @@ function main () {
       nuser._createOnly = true;
       break;
 
+    case '--roles':
+    case '-roles':
+      process.argv[i + 1].split(',').forEach(r => roles.add(r));
+      i++;
+      break;
+
     default:
       console.log('Unknown option', process.argv[i]);
       help();
     }
   }
+
+  nuser.roles = [...roles];
 
   Db.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {

@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* auth.js  -- common Auth apis
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright Yahoo Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -99,7 +99,8 @@ class Auth {
       removeEnabled: true,
       packetSearch: true,
       settings: {},
-      welcomeMsgNum: 1
+      welcomeMsgNum: 1,
+      roles: ['superAdmin']
     });
     return next();
   }
@@ -115,7 +116,8 @@ class Auth {
       removeEnabled: true,
       packetSearch: true,
       settings: {},
-      welcomeMsgNum: 1
+      welcomeMsgNum: 1,
+      roles: ['superAdmin']
     });
     User.getUserCache('anonymous', (err, user) => {
       if (user) {
@@ -146,7 +148,8 @@ class Auth {
         removeEnabled: true,
         packetSearch: true,
         settings: {},
-        welcomeMsgNum: 1
+        welcomeMsgNum: 1,
+        roles: ['superAdmin']
       });
       return next();
     });

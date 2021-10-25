@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* userDB.js  -- User Database interface
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright Yahoo Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
@@ -20,6 +20,19 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const ArkimeUtil = require('../common/arkimeUtil');
 
+const systemRolesMapping = {
+  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
+  usersAdmin: [],
+  arkimeAdmin: ['arkimeUser'],
+  arkimeUser: [],
+  parliamentAdmin: ['parliamentUser'],
+  parliamentUser: [],
+  wiseAdmin: ['wiseUser'],
+  wiseUser: [],
+  cont3xtAdmin: ['cont3xtUser'],
+  cont3xtUser: []
+};
+
 class User {
   static debug;
   static readOnly;
@@ -28,6 +41,7 @@ class User {
   static prefix;
   static client;
   static usersCache = {};
+  static rolesCache = { _timeStamp: 0 };
 
   static initialize (options) {
     User.debug = options.debug ?? 0;
@@ -201,6 +215,7 @@ class User {
     delete User.usersCache[userId];
     const createOnly = !!doc._createOnly;
     delete doc._createOnly;
+    delete doc._allRoles;
     User.client.index({
       index: User.prefix + 'users',
       body: doc,
@@ -226,6 +241,78 @@ class User {
 
     return User.client.update(params);
   };
+
+  /**
+   * Generate set of all the roles this user has
+   */
+  expandRoles () {
+    const roles = new Set(this.roles ?? []);
+    for (const r of this.roles ?? []) {
+      if (systemRolesMapping[r]) {
+        systemRolesMapping[r].forEach(roles.add, roles);
+      }
+    }
+    this._allRoles = roles;
+  }
+
+  /**
+   * Check if user has role. The check can be against a single role or array of roles.
+   */
+  hasRole (role) {
+    console.log('hasRole:', role);
+    if (this._allRoles === undefined) {
+      this.expandRoles();
+    }
+
+    if (!Array.isArray(role)) {
+      return this._allRoles.has(role);
+    }
+
+    for (const r of role) {
+      if (this._allRoles.has(r)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Return set of all roles
+   */
+  getRoles () {
+    if (this._allRoles === undefined) {
+      this.expandRoles();
+    }
+
+    return this._allRoles;
+  }
+
+  /**
+   * Api for listing available roles
+   */
+  static async allRoles () {
+    if (User.rolesCache._timeStamp > Date.now() - User.userCacheTimeout) {
+      return User.rolesCache.roles;
+    }
+
+    const response = await User.client.search({
+      index: User.prefix + 'users',
+      body: { query: { prefix: { userId: 'role:' } } },
+      rest_total_hits_as_int: true
+    });
+
+    User.rolesCache._timeStamp = Date.now();
+    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...response.body.hits.hits.map(h => h._source.userId)]);
+    return User.rolesCache.roles;
+  }
+
+  /**
+   * Api for listing available roles
+   */
+  static async apiRoles (req, res, next) {
+    const roles = await User.allRoles();
+    return res.send({ success: true, roles: [...roles].sort() });
+  }
 }
 
 module.exports = User;

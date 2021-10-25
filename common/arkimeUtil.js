@@ -1,6 +1,6 @@
 /* arkimeUtil.js  -- Shared util functions
  *
- * Copyright 2012-2016 AOL Inc. All rights reserved.
+ * Copyright Yahoo Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.

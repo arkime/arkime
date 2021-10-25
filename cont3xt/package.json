@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "bundle": "cd ../ && npm run cont3xt:bundle",
+    "bundle:min": "cd ../ && npm run cont3xt:build",
+    "addtestuser": "cd ../ && npm run cont3xt:addtestuser",
+    "dev": "cd ../ && npm run cont3xt:dev",
+    "doc": "cd ../ && npm run cont3xt:doc",
+    "lint": "cd ../ && npm run cont3xt:lint",
+    "test": "cd ../ && npm run cont3xt:testui"
+  }
+}
