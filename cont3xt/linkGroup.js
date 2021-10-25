@@ -54,6 +54,35 @@ class LinkGroup {
   }
 
   /**
+   * Verify the link group, returns error msg on failure
+   */
+  static verifyLinkGroup (lg) {
+    // TODO: Check roles
+
+    if (typeof (lg.name) !== 'string') {
+      return 'Missing name';
+    }
+
+    if (!Array.isArray(lg.links)) {
+      return 'Missing list of links';
+    }
+
+    for (const link of lg.links) {
+      if (typeof (link.name) !== 'string') {
+        return 'Link missing name';
+      }
+      if (typeof (link.url) !== 'string') {
+        return 'Link missing url';
+      }
+      if (!Array.isArray(link.itypes)) {
+        return 'Link missing itypes';
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Create new link group
    */
   static async apiCreate (req, res, next) {
@@ -64,7 +93,10 @@ class LinkGroup {
     const linkGroup = req.body;
     linkGroup.creator = req.user.userId;
 
-    // TODO: Check roles, validate links and required fields set
+    const msg = LinkGroup.verifyLinkGroup(linkGroup);
+    if (msg) {
+      return res.send({ success: false, text: msg });
+    }
 
     const results = await Db.putLinkGroup(null, linkGroup);
     if (!results) {
@@ -89,7 +121,10 @@ class LinkGroup {
     const linkGroup = req.body;
     linkGroup.creator = olinkGroup.creator; // Make sure the creator doesn't get changed
 
-    // TODO: Check roles, validate links and required fields set
+    const msg = LinkGroup.verifyLinkGroup(linkGroup);
+    if (msg) {
+      return res.send({ success: false, text: msg });
+    }
 
     const results = await Db.putLinkGroup(req.params.id, linkGroup);
     if (!results) {
