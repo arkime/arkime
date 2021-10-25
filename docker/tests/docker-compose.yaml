@@ -21,19 +21,19 @@ services:
       - ./config.test.ini:/src/tests/config.test.ini
     command: sleep 300000
     environment:
-      ELASTICSEARCH: "http://elasticsearch-1:9200"
+      ELASTICSEARCH: "http://elasticsearch:9200"
     networks:
       - elastic
     ports:
       - 8123:8123
 
-  elasticsearch-1:
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
-    container_name: elasticsearch-1
+    container_name: elasticsearch
     environment:
-      - node.name=elasticsearch-1
+      - node.name=elasticsearch
       - cluster.name=arkime-es
-      - cluster.initial_master_nodes=elasticsearch-1
+      - cluster.initial_master_nodes=elasticsearch
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -53,36 +53,12 @@ services:
       timeout: 30s
       retries: 3
 
-#  elasticsearch-2:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
-#    container_name: elasticsearch-2
-#    environment:
-#      - node.name=elasticsearch-2
-#      - cluster.name=arkime-es
-#      - discovery.seed_hosts=elasticsearch-1
-#      - bootstrap.memory_lock=true
-#      - xpack.security.enabled=false
-#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-#    ulimits:
-#      memlock:
-#        soft: -1
-#        hard: -1
-#    volumes:
-#      - data02:/usr/share/elasticsearch/data
-#    networks:
-#      - elastic
-#    healthcheck:
-#      test: "curl -fs http://localhost:9200/_cluster/health?wait_for_status=yellow"
-#      interval: 30s
-#      timeout: 30s
-#      retries: 3
-
   kibana:
     image: 'docker.elastic.co/kibana/kibana:7.11.2'
     container_name: kibana
     environment:
-      ELASTICSEARCH_URL: http://elasticsearch-1:9200
-      ELASTICSEARCH_HOSTS: '["http://elasticsearch-1:9200"]'
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
     ports:
       - '5601:5601'
     networks:
@@ -90,8 +66,6 @@ services:
 
 volumes:
   data01:
-    driver: local
-  data02:
     driver: local
 
 networks:
