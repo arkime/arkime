@@ -1,4 +1,5 @@
 {
+  "license": "Apache-2.0",
   "scripts": {
     "bundle": "cd ../ && npm run cont3xt:bundle",
     "bundle:min": "cd ../ && npm run cont3xt:build",
@@ -7,5 +8,20 @@
     "doc": "cd ../ && npm run cont3xt:doc",
     "lint": "cd ../ && npm run cont3xt:lint",
     "test": "cd ../ && npm run cont3xt:testui"
-  }
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules/*",
+      "vueapp/*"
+    ]
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
 }
