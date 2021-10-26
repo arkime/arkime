@@ -112,11 +112,11 @@ eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_viewable":t
 $json = cont3xtPut("/api/linkGroup/delete/$id", "{}");
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup/getViewable', 1);
+$json = cont3xtGet('/api/linkGroup/getViewable');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-$json = cont3xtGet('/api/linkGroup/getEditable', 1);
+$json = cont3xtGet('/api/linkGroup/getEditable');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-$json = cont3xtGet('/api/roles', 1);
+$json = cont3xtGet('/api/roles');
 eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
