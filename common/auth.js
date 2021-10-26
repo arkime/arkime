@@ -241,7 +241,7 @@ class Auth {
   }
 
   static s2sAuth (req, res, next) {
-    const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth'], false);
+    const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']);
     obj.path = obj.path.replace(Auth.basePath, '/');
     if (obj.path !== req.url) {
       console.log('ERROR - mismatch url', obj.path, req.url);
@@ -318,7 +318,7 @@ class Auth {
   };
 
   // Encrypt an object into an auth string
-  static obj2auth (obj, c2s, secret) {
+  static obj2auth (obj, secret) {
     // New style with IV: IV.E.H
     if (secret) {
       secret = crypto.createHash('sha256').update(secret).digest();
@@ -336,7 +336,7 @@ class Auth {
   };
 
   // Decrypt the auth string into an object
-  static auth2obj (auth, c2s, secret) {
+  static auth2obj (auth, secret) {
     const parts = auth.split('.');
 
     if (parts.length === 3) {
@@ -403,7 +403,7 @@ class Auth {
       user: user.userId,
       node: node,
       path: path
-    }, false, secret);
+    }, secret);
   }
 }
 

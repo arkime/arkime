@@ -448,7 +448,7 @@ function setCookie (req, res, next) {
       date: Date.now(),
       pid: process.pid,
       userId: req.user.userId
-    }, true),
+    }),
     cookieOptions
   );
 
@@ -461,7 +461,7 @@ function checkCookieToken (req, res, next) {
   }
 
   const cookie = req.headers['x-arkime-cookie'];
-  req.token = Auth.auth2obj(cookie, true);
+  req.token = Auth.auth2obj(cookie);
   const diff = Math.abs(Date.now() - req.token.date);
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {

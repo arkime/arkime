@@ -654,21 +654,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
       : JSON.parse(JSON.stringify(internals.settingDefaults));
 
-    const cookieOptions = {
-      path: Config.basePath(),
-      sameSite: 'Strict'
-    };
-
-    if (Config.isHTTPS()) { cookieOptions.secure = true; }
-
-    res.cookie(
-      'ARKIME-COOKIE',
-      Auth.obj2auth({
-        date: Date.now(), pid: process.pid, userId: req.user.userId
-      }, true),
-      cookieOptions
-    );
-
     return res.send(settings);
   };
 
