@@ -27,6 +27,7 @@ const path = require('path');
 const version = require('../viewer/version');
 const User = require('../common/user');
 const Auth = require('../common/auth');
+const ArkimeCache = require('../common/arkimeCache');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Db = require('./db');
@@ -157,8 +158,16 @@ function setupAuth () {
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
   });
 
+  const cache = ArkimeCache.createCache({
+    type: getConfig('cache', 'type', 'memory'),
+    cacheSize: getConfig('cache', 'cacheSize', '100000'),
+    cacheTimeout: getConfig('cache', 'cacheTimeout'),
+    getConfig: (key, value) => getConfig('cache', key, value)
+  });
+
   Integration.initialize({
-    debug: internals.debug
+    debug: internals.debug,
+    cache: cache
   });
 }
 

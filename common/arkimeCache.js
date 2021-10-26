@@ -35,6 +35,14 @@ class ArkimeCache {
   // ----------------------------------------------------------------------------
   get (query, cb) {
     const cache = this.cache[query.typeName];
+
+    // promise version
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        resolve(cache ? cache.get(query.value) : undefined);
+      });
+    }
+
     cb(null, cache ? cache.get(query.value) : undefined);
   }
 
@@ -80,6 +88,19 @@ class ArkimeRedisCache extends ArkimeCache {
 
   // ----------------------------------------------------------------------------
   get (query, cb) {
+    // Convert promise to cb by calling ourselves
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        this.get(query, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    }
+
     // Check memory cache first
     super.get(query, (err, result) => {
       if (err || result) {
@@ -140,6 +161,19 @@ class ArkimeMemcachedCache extends ArkimeCache {
 
   // ----------------------------------------------------------------------------
   get (query, cb) {
+    // Convert promise to cb by calling ourselves
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        this.get(query, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    }
+
     // Check memory cache first
     super.get(query, (err, result) => {
       if (err || result) {

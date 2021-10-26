@@ -22,6 +22,7 @@ const path = require('path');
 
 class Integration {
   static debug = 0;
+  static cache;
   static integrations = {
     all: [],
     ip: [],
@@ -35,6 +36,7 @@ class Integration {
 
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
+    Integration.cache = options.cache;
     options.integrationsPath = options.integrationsPath ?? path.join(__dirname, '/integrations/');
 
     glob(options.integrationsPath + 'integration.*.js', (err, files) => {
@@ -49,6 +51,10 @@ class Integration {
       console.log('REGISTER', integration.name);
     }
     integration.cacheable = integration.cacheable ?? true;
+    // Min 1 minute, default 60 minutes
+    integration.cacheTimeout = Math.max(60 * 1000, integration.cacheTimeout ?? 60 * 60 * 1000);
+
+    integration.cacheTimeout = 5000; // ALW
 
     if (integration.itypes === undefined || !Array.isArray(integration.itypes)) {
       console.log('Missing .itypes array', integration);
@@ -103,22 +109,43 @@ class Integration {
     if (!req.params.query) {
       return res.send({ success: false, text: 'Missing query' });
     }
+    const query = req.params.query.trim();
 
-    const itype = Integration.classify(req.params.query);
+    const itype = Integration.classify(query);
 
-    const items = Integration.integrations[itype];
+    const integrations = Integration.integrations[itype];
     let sent = 0;
-    const total = items.length;
+    const total = integrations.length;
     res.write(JSON.stringify({ success: true, itype: itype, sent: sent, total: total, text: 'more to follow' }));
     res.write('\n');
 
-    for (const item of items) {
-      item[item.itypes[itype]](req.params.query)
+    for (const integration of integrations) {
+      const cacheKey = `${integration.name}-${itype}-${query}`;
+
+      if (Integration.cache && integration.cacheable) {
+        const response = await Integration.cache.get(cacheKey);
+        // TODO - Fix dup sending code for cache and not cache
+        if (response && Date.now() - response._createTime < integration.cacheTimeout) {
+          sent++;
+          res.write(JSON.stringify({ sent: sent, total: total, response: response }));
+          res.write('\n');
+          if (sent === total) {
+            res.end(JSON.stringify({ finished: true }));
+          }
+          continue;
+        }
+      }
+
+      integration[integration.itypes[itype]](query)
         .then(response => {
           sent++;
           if (response) {
+            response._createTime = Date.now();
             res.write(JSON.stringify({ sent: sent, total: total, response: response }));
             res.write('\n');
+            if (Integration.cache && integration.cacheable) {
+              Integration.cache.set(cacheKey, response);
+            }
           }
           if (sent === total) {
             res.end(JSON.stringify({ finished: true }));
