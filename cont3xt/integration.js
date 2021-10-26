@@ -56,12 +56,14 @@ class Integration {
 
     integration.cacheTimeout = 5000; // ALW
 
-    if (integration.itypes === undefined || !Array.isArray(integration.itypes)) {
-      console.log('Missing .itypes array', integration);
+    if (typeof(integration.itypes) !== 'object') {
+      console.log('Missing .itypes object', integration);
+      return;
     }
 
-    if (integration.name === undefined || Array.isArray(integration.itypes)) {
+    if (typeof(integration.name) !== 'string') {
       console.log('Missing .name', integration);
+      return;
     }
 
     Integration.integrations.all.push(integration);
