@@ -18,6 +18,7 @@
 'use strict';
 
 const SimpleSource = require('./simpleSource.js');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class RedisFileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ class RedisFileSource extends SimpleSource {
       return;
     }
 
-    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
+    this.client = ArkimeUtil.createRedisClient(api.getConfig(section, 'redisURL'), section);
   }
 
   // ----------------------------------------------------------------------------

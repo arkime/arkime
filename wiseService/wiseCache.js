@@ -20,6 +20,7 @@
 const LRU = require('lru-cache');
 const Bson = require('bson');
 const BSON = new Bson();
+const ArkimeUtil = require('../common/arkimeUtil');
 
 /******************************************************************************/
 // Base Cache
@@ -58,7 +59,7 @@ class WISERedisCache extends WISECache {
     if (this.redisFormat !== 3) {
       this.redisFormat = 2;
     }
-    this.client = api.createRedisClient(api.getConfig('cache', 'redisURL'), 'cache');
+    this.client = ArkimeUtil.createRedisClient(api.getConfig('cache', 'redisURL'), 'cache');
   }
 
   // ----------------------------------------------------------------------------
@@ -118,7 +119,7 @@ class WISEMemcachedCache extends WISECache {
   constructor (api) {
     super(api);
 
-    this.client = api.createMemcachedClient(api.getConfig('cache', 'memcachedURL'), 'cache');
+    this.client = ArkimeUtil.createMemcachedClient(api.getConfig('cache', 'memcachedURL'), 'cache');
   }
 
   // ----------------------------------------------------------------------------

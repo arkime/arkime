@@ -21,6 +21,7 @@ const fs = require('fs');
 const WISESource = require('./wiseSource.js');
 const ini = require('iniparser');
 const axios = require('axios');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class ValueActionsSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -68,7 +69,7 @@ class ValueActionsSource extends WISESource {
         throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
       }
       this.key = redisParts.pop();
-      this.client = api.createRedisClient(redisParts.join('/'), section);
+      this.client = ArkimeUtil.createRedisClient(redisParts.join('/'), section);
     } else {
       console.log(this.section, '- ERROR not loading', this.section, 'don\'t know how to open', this.url);
       return;

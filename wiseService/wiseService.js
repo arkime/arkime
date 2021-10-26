@@ -31,8 +31,6 @@ const WISESource = require('./wiseSource.js');
 const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
-const Redis = require('ioredis');
-const memjs = require('memjs');
 const favicon = require('serve-favicon');
 const uuid = require('uuidv4').default;
 const helmet = require('helmet');
@@ -563,26 +561,6 @@ class WISESourceAPI {
 
       internals.configDefs[sourceName] = configDef;
     }
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Create a redis client from the provided url
-   * @params {string} url - The redis url to connect to.
-   * @params {string} section - The section this redis client is being created for
-   */
-  createRedisClient (url, section) {
-    return createRedisClient(url, section);
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Create a memcached client from the provided url
-   * @params {string} url - The memcached url to connect to.
-   * @params {string} section - The section this memcached client is being created for
-   */
-  createMemcachedClient (url, section) {
-    return createMemcachedClient(url, section);
   }
 
   // ----------------------------------------------------------------------------
@@ -1460,92 +1438,6 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
-function createRedisClient (url, section) {
-  // redis://[:pass]@host:port/db
-  if (url.startsWith('redis://') || url.startsWith('rediss://')) {
-    const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
-    if (!match) {
-      console.log(`${section} - ERROR - can't parse redis url '${url}' should be of form //[:pass@]redishost[:redisport]/redisDbNum`);
-      process.exit(1);
-    }
-
-    if (internals.debug > 0) {
-      console.log('REDIS:', url);
-    }
-    return new Redis(url);
-  }
-
-  // redis-sentinel://sentinelPassword:redisPassword@host:port[,hostN;portN]/name/db
-  if (url.startsWith('redis-sentinel://')) {
-    const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
-    if (!match) {
-      console.log(`${section} - ERROR - can't parse redis-sentinel url '${url}' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`);
-      process.exit(1);
-    }
-
-    const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
-    match[5].split(',').forEach((hp) => {
-      const hostport = hp.split(':');
-      options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
-    });
-
-    if (match[3] && match[3] !== '') {
-      options.sentinelPassword = match[3];
-    }
-    if (match[4] && match[4] !== '') {
-      options.password = match[4];
-    }
-
-    if (internals.debug > 0) {
-      console.log('REDIS-SENTINEL:', options);
-    }
-    return new Redis(options);
-  }
-
-  // redis-cluster://[:pass]@host:port/db
-  if (url.startsWith('redis-cluster://')) {
-    const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^/]+)\/([0-9]+)(\/.+)?/);
-    if (!match) {
-      console.log(`${section} - ERROR - can't parse redis-cluster url '${url}' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`);
-      process.exit(1);
-    }
-
-    const hosts = [];
-    match[4].split(',').forEach((hp) => {
-      const hostport = hp.split(':');
-      hosts.push({ host: hostport[0], port: hostport[1] || 6379 });
-    });
-
-    const options = { db: parseInt(match[5]) };
-    if (match[3] && match[3] !== '') {
-      options.password = match[3];
-    }
-
-    if (internals.debug > 0) {
-      console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
-    }
-    return new Redis.Cluster(hosts, { redisOptions: options });
-  }
-
-  console.log(`Unknown redis url '${url}'`);
-  process.exit(1);
-}
-
-// ----------------------------------------------------------------------------
-function createMemcachedClient (url, section) {
-  // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
-  if (url.startsWith('memcached://')) {
-    if (internals.debug > 0) {
-      console.log('MEMCACHED:', url);
-    }
-    return memjs.Client.create(url.substring(12));
-  }
-
-  console.log(`Unknown memcached url '${url}'`);
-  process.exit(1);
-}
-
-// ----------------------------------------------------------------------------
 function printStats () {
   const keys = Object.keys(internals.types).sort();
   const lines = [];
@@ -1608,7 +1500,7 @@ internals.configSchemes.redis = {
       throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
     }
     internals.configRedisKey = redisParts.pop();
-    internals.configRedis = createRedisClient(redisParts.join('/'), 'config');
+    internals.configRedis = ArkimeUtil.createRedisClient(redisParts.join('/'), 'config');
 
     internals.configRedis.get(internals.configRedisKey, function (err, result) {
       if (err) {
@@ -1642,7 +1534,7 @@ internals.configSchemes['redis-sentinel'] = {
       throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum`);
     }
     internals.configRedisKey = redisParts[5];
-    internals.configRedis = createRedisClient(internals.configFile, 'config');
+    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
 
     internals.configRedis.get(internals.configRedisKey, function (err, result) {
       if (err) {
@@ -1672,7 +1564,7 @@ internals.configSchemes['redis-cluster'] = {
       throw new Error(`Invalid redis-cluster url - ${redisParts[0]}//[:redisPassword@]redishost[:redisport]/redisDbNum/key`);
     }
     internals.configRedisKey = redisParts[4];
-    internals.configRedis = createRedisClient(internals.configFile, 'config');
+    internals.configRedis = ArkimeUtil.createRedisClient(internals.configFile, 'config');
 
     internals.configRedis.get(internals.configRedisKey, function (err, result) {
       if (err) {
@@ -1810,9 +1702,7 @@ app.use((req, res, next) => {
 // ----------------------------------------------------------------------------
 function main () {
   internals.cache = wiseCache.createCache({
-    getConfig: getConfig,
-    createRedisClient: createRedisClient,
-    createMemcachedClient: createMemcachedClient
+    getConfig: getConfig
   });
 
   internals.sourceApi = new WISESourceAPI();

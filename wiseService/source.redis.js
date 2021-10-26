@@ -18,6 +18,7 @@
 'use strict';
 
 const WISESource = require('./wiseSource.js');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class RedisSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -32,7 +33,7 @@ class RedisSource extends WISESource {
     this.column = +api.getConfig(section, 'column', 0);
     this.template = api.getConfig(section, 'template', undefined);
 
-    this.client = api.createRedisClient(api.getConfig(section, 'redisURL'), section);
+    this.client = ArkimeUtil.createRedisClient(api.getConfig(section, 'redisURL'), section);
 
     if (this.type === 'domain') {
       this[this.typeFunc] = RedisSource.prototype.fetchDomain;
