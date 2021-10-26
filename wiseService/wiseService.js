@@ -28,7 +28,6 @@ const async = require('async');
 const sprintf = require('./sprintf.js').sprintf;
 const iptrie = require('iptrie');
 const WISESource = require('./wiseSource.js');
-const wiseCache = require('./wiseCache.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
 const favicon = require('serve-favicon');
@@ -43,6 +42,7 @@ const path = require('path');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeCache = require('../common/arkimeCache');
 
 const dayMs = 60000 * 60 * 24;
 
@@ -1701,8 +1701,11 @@ app.use((req, res, next) => {
 // Main
 // ----------------------------------------------------------------------------
 function main () {
-  internals.cache = wiseCache.createCache({
-    getConfig: getConfig
+  internals.cache = ArkimeCache.createCache({
+    type: getConfig('cache', 'type', 'memory'),
+    cacheSize: getConfig('cache', 'cacheSize', '100000'),
+    cacheTimeout: getConfig('cache', 'cacheTimeout'),
+    getConfig: (key, value) => getConfig('cache', key, value)
   });
 
   internals.sourceApi = new WISESourceAPI();
