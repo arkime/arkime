@@ -172,7 +172,7 @@ function setupAuth () {
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password')
   });
 
-  const es = getConfig('cont3xt', 'elasticsearch', 'http://localhost:9200');
+  const es = getConfig('cont3xt', 'elasticsearch', 'http://localhost:9200').split(',');
   Db.initialize({
     debug: internals.debug,
     node: es,
@@ -180,7 +180,12 @@ function setupAuth () {
     basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
   });
 
-  const usersEs = getConfig('cont3xt', 'usersElasticsearch', 'http://localhost:9200');
+  let usersEs = getConfig('cont3xt', 'usersElasticsearch');
+  if (usersEs) {
+    usersEs = usersEs.split(',');
+  } else {
+    usersEs = es;
+  }
 
   User.initialize({
     debug: internals.debug,
@@ -205,7 +210,12 @@ function setupAuth () {
 
 async function main () {
   processArgs(process.argv);
-  internals.config = ini.parseSync(internals.configFile);
+  try {
+    internals.config = ini.parseSync(internals.configFile);
+  } catch (err) {
+    console.log(err);
+    process.exit();
+  }
   setupAuth();
 
   let server;

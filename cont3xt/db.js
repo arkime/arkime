@@ -77,8 +77,8 @@ class Db {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body.error.type !== 'resource_already_exists_exception') {
-        console.log(JSON.stringify(err, false, 2));
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
         process.exit(0);
       }
     }
