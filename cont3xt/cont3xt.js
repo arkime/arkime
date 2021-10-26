@@ -64,7 +64,7 @@ app.put('/api/linkGroup/create', [jsonParser], LinkGroup.apiCreate);
 app.put('/api/linkGroup/update/:id', [jsonParser], LinkGroup.apiUpdate);
 app.put('/api/linkGroup/delete/:id', [jsonParser], LinkGroup.apiDelete);
 
-app.get('/api/roles', [jsonParser], User.apiRoles);
+app.get('/api/roles', User.apiRoles);
 
 app.get('/api/integration/search/:query', Integration.apiSearch);
 
