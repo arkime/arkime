@@ -35,6 +35,7 @@ const bp = require('body-parser');
 const jsonParser = bp.json();
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
+const dayMs = 60000 * 60 * 24;
 
 const internals = {
   configFile: `${version.config_prefix}/etc/cont3xt.ini`,
@@ -55,9 +56,6 @@ app.post('/shutdown', (req, res) => {
 });
 
 app.use(Auth.doAuth);
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/index.html'));
-});
 
 app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
 app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
@@ -75,6 +73,40 @@ app.get('/test', (req, res) => {
   }
   setTimeout(() => { res.end(); }, 100 * 100);
   console.log('/test');
+});
+
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/cont3xt/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: dayMs, fallthrough: false }
+));
+app.use('/cont3xt/assets', express.static(
+  path.join(__dirname, '/../assets'),
+  { maxAge: dayMs, fallthrough: false }
+));
+
+/* LISTEN! ----------------------------------------------------------------- */
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+// expose vue bundles (prod)
+app.use(['/static', '/cont3xt/static'], express.static(
+  path.join(__dirname, '/vueapp/dist/static'),
+  { maxAge: dayMs, fallthrough: false }
+));
+// expose vue bundle (dev)
+app.use(['/app.js', '/cont3xt/app.js'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js'),
+  { fallthrough: false }
+));
+app.use(['/app.js.map', '/cont3xt/app.js.map'], express.static(
+  path.join(__dirname, '/vueapp/dist/app.js.map'),
+  { fallthrough: false }
+));
+
+// vue index page
+app.use((req, res, next) => {
+  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
 });
 
 // ----------------------------------------------------------------------------

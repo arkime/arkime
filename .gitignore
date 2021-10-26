@@ -47,6 +47,9 @@ parliament/vueapp/dist
 # wiseservice
 wiseService/vueapp/dist
 
+# cont3xt
+cont3xt/vueapp/dist
+
 # Makefiles
 Makefile
 Makefile.in
