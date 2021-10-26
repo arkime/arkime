@@ -16,7 +16,7 @@ install:
 	$(INSTALL) *.js $(CONT3XTDIR)
 	$(INSTALL) integrations/*.js $(CONT3XTDIR)/integrations
 	#npm ci
-	#npm run bundle:min
+	npm run bundle:min
 	#$(CP) -pr favicon.ico $(CONT3XTDIR)
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
 	#(cd $(CONT3XTDIR) ; npm ci --production)
