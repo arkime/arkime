@@ -61,9 +61,9 @@ app.get('/', (req, res) => {
 
 app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
 app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
-app.put('/api/linkGroup/create', [jsonParser], LinkGroup.apiCreate);
-app.put('/api/linkGroup/update/:id', [jsonParser], LinkGroup.apiUpdate);
-app.put('/api/linkGroup/delete/:id', [jsonParser], LinkGroup.apiDelete);
+app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
+app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
+app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', User.apiRoles);
 
