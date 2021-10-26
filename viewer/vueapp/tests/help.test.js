@@ -24,9 +24,10 @@ test('help page field list', async () => {
     mocks: { $route }
   });
 
-  expect(queryByText('Database Field')).toBeNull();
-
-  await fireEvent.click(getByText('Display Database Fields'));
-
   getByText('Database Field');
+
+  await fireEvent.click(getByText('Hide Database Fields'));
+
+  getByText('Display Database Fields');
+  expect(queryByText('Database Field')).toBeNull();
 });

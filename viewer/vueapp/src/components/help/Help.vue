@@ -1232,10 +1232,9 @@
           />
         </div>
         <button type="button"
-          class="btn btn-secondary btn-checkbox btn-sm pull-right mr-1"
-          :class="{'active':showDBFields}"
+          class="btn btn-primary btn-sm pull-right mr-1"
           @click="toggleDBFields">
-          Display Database Fields
+          {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
         </button>
       </h3>
 
@@ -1340,7 +1339,7 @@ export default {
       error: '',
       fields: [],
       searchFields: '',
-      showDBFields: false,
+      showDBFields: true,
       filteredFields: [],
       fieldQuery: {
         sortField: 'exp',
