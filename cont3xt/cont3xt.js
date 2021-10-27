@@ -215,7 +215,8 @@ function setupAuth () {
 
   Integration.initialize({
     debug: internals.debug,
-    cache: cache
+    cache: cache,
+    getConfig: getConfig
   });
 }
 

@@ -2,7 +2,7 @@ const Integration = require('../integration.js');
 const axios = require('axios');
 
 class URLScanIntegration extends Integration {
-  name = 'RDAP';
+  name = 'URLScan';
   itypes = {
     url: 'fetchUrl'
   };
@@ -12,24 +12,28 @@ class URLScanIntegration extends Integration {
   constructor () {
     super();
 
-    this.key = 'foo';
-
     Integration.register(this);
   }
 
-  async fetchUrl (url) {
+  async fetchUrl (user, url) {
     try {
+      const key = this.getUserConfig(user, 'URLScanKey');
+      if (!key) {
+        return undefined;
+      }
+
       const urlScanRes = await axios.get('https://urlscan.io/api/v1/search/', {
         params: {
           q: url
         },
         headers: {
-          'API-Key': this.key
+          'API-Key': key,
+          'User-Agent': this.userAgent()
         }
       });
       return urlScanRes.data;
     } catch (err) {
-      console.log(err);
+      console.log('URLSCAN', url, err);
       return null;
     }
   }

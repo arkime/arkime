@@ -23,6 +23,7 @@ const path = require('path');
 class Integration {
   static debug = 0;
   static cache;
+  static getConfig;
   static integrations = {
     all: [],
     ip: [],
@@ -37,6 +38,7 @@ class Integration {
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
     Integration.cache = options.cache;
+    Integration.getConfig = options.getConfig;
     options.integrationsPath = options.integrationsPath ?? path.join(__dirname, '/integrations/');
 
     glob(options.integrationsPath + 'integration.*.js', (err, files) => {
@@ -52,7 +54,8 @@ class Integration {
     }
     integration.cacheable = integration.cacheable ?? true;
     // Min 1 minute, default 60 minutes
-    integration.cacheTimeout = Math.max(60 * 1000, integration.cacheTimeout ?? 60 * 60 * 1000);
+    integration.cacheTimeout = Math.max(60 * 1000, (integration.cacheTimeout ?? (60 * 60 * 1000)));
+    integration.cacheTimeout = 10 * 1000;
 
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
@@ -127,7 +130,7 @@ class Integration {
         // TODO - Fix dup sending code for cache and not cache
         if (response && Date.now() - response._createTime < integration.cacheTimeout) {
           sent++;
-          res.write(JSON.stringify({ sent: sent, total: total, response: response }));
+          res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, response: response }));
           res.write('\n');
           if (sent === total) {
             res.end(JSON.stringify({ finished: true }));
@@ -136,14 +139,14 @@ class Integration {
         }
       }
 
-      integration[integration.itypes[itype]](query)
+      integration[integration.itypes[itype]](req.user, query)
         .then(response => {
           sent++;
           if (response) {
             response._createTime = Date.now();
-            res.write(JSON.stringify({ sent: sent, total: total, response: response }));
+            res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, response: response }));
             res.write('\n');
-            if (Integration.cache && integration.cacheable) {
+            if (response && Integration.cache && integration.cacheable) {
               Integration.cache.set(cacheKey, response);
             }
           }
@@ -152,6 +155,34 @@ class Integration {
           }
         });
     }
+  }
+
+  getConfig (k, d) {
+    Integration.getConfig(this.name, k, d);
+  }
+
+  /**
+   * Return a config value by first check the user, then the section, and then the cont3xt section.
+   * If the start of the k matches this.name, it is removed before checking the section.
+   */
+  getUserConfig (user, k, d) {
+    if (user.cont3xt && user.cont3xt[k]) {
+      return user.cont3xt[k];
+    }
+
+    if (k.startsWith(this.name)) {
+      const v = this.getConfig(this.name, k.substring(this.name.length));
+      if (v) { return v; }
+    } else {
+      const v = this.getConfig(this.name, k);
+      if (v) { return v; }
+    }
+
+    return Integration.getConfig('cont3xt', k, d);
+  }
+
+  userAgent () {
+    Integration.getConfig('cont3xt', 'userAgent', 'cont3xt');
   }
 }
 
