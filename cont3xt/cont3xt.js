@@ -88,11 +88,11 @@ app.get('/test', (req, res) => {
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/cont3xt/font-awesome', express.static(
+app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ));
-app.use('/cont3xt/assets', express.static(
+app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
 ));
