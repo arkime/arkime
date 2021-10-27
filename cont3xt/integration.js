@@ -176,10 +176,10 @@ class Integration {
     }
 
     if (k.startsWith(this.name)) {
-      const v = this.getConfig(this.name, k.substring(this.name.length));
+      const v = Integration.getConfig(this.name, k.substring(this.name.length));
       if (v) { return v; }
     } else {
-      const v = this.getConfig(this.name, k);
+      const v = Integration.getConfig(this.name, k);
       if (v) { return v; }
     }
 
