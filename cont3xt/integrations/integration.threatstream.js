@@ -16,13 +16,15 @@
 const Integration = require('../integration.js');
 const axios = require('axios');
 
-class URLScanIntegration extends Integration {
-  name = 'URLScan';
+class ThreatstreamIntegration extends Integration {
+  name = 'Threatstream';
   itypes = {
-    url: 'fetchUrl'
+    domain: 'fetch',
+    ip: 'fetch',
+    email: 'fetch',
+    url: 'fetch',
+    hash: 'fetch'
   };
-
-  key;
 
   constructor () {
     super();
@@ -30,29 +32,31 @@ class URLScanIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetchUrl (user, url) {
+  async fetch (user, query) {
     try {
-      const key = this.getUserConfig(user, 'URLScanKey');
-      if (!key) {
+      const host = this.getUserConfig(user, 'ThreatstreamHost', 'api.threatstream.com');
+      const tuser = this.getUserConfig(user, 'ThreatstreamApiUser');
+      const tkey = this.getUserConfig(user, 'ThreatstreamApiKey');
+      if (!tkey || !tuser) {
         return undefined;
       }
-
-      const urlScanRes = await axios.get('https://urlscan.io/api/v1/search/', {
+      const threatstreamRes = await axios.get(`https://${host}/api/v2/intelligence`, {
         params: {
-          q: url
+          value__exact: query
         },
         headers: {
-          'API-Key': key,
+          Authorization: `apikey ${tuser}:${tkey}`,
           'User-Agent': this.userAgent()
         }
       });
-      return urlScanRes.data;
+
+      return threatstreamRes.data;
     } catch (err) {
-      console.log('URLSCAN', url, err);
+      console.log('Threatstream', query, err);
       return null;
     }
   }
 }
 
 // eslint-disable-next-line no-new
-new URLScanIntegration();
+new ThreatstreamIntegration();

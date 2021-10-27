@@ -155,7 +155,7 @@ function getConfig (section, sectionKey, d) {
   if (!internals.config[section]) {
     return d;
   }
-  return internals.config[section][sectionKey] || d;
+  return internals.config[section][sectionKey] ?? d;
 }
 
 // ----------------------------------------------------------------------------

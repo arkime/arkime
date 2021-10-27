@@ -53,9 +53,14 @@ class Integration {
       console.log('REGISTER', integration.name);
     }
     integration.cacheable = integration.cacheable ?? true;
-    // Min 1 minute, default 60 minutes
-    integration.cacheTimeout = Math.max(60 * 1000, (integration.cacheTimeout ?? (60 * 60 * 1000)));
-    integration.cacheTimeout = 10 * 1000;
+
+    // cacheTime order we check:
+    //   cacheTimeout in integration section
+    //   cacheTimeout in cont3xt section
+    //   cacheTimeout in integration code
+    //   60 minutes
+    integration.cacheTimeout = parseInt(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? 60 * 60 * 1000)));
+    console.log('cacheTimeout', integration.name, integration.cacheTimeout);
 
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
@@ -158,7 +163,7 @@ class Integration {
   }
 
   getConfig (k, d) {
-    Integration.getConfig(this.name, k, d);
+    return Integration.getConfig(this.name, k, d);
   }
 
   /**
