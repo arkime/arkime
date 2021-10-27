@@ -54,8 +54,6 @@ class Integration {
     // Min 1 minute, default 60 minutes
     integration.cacheTimeout = Math.max(60 * 1000, integration.cacheTimeout ?? 60 * 60 * 1000);
 
-    integration.cacheTimeout = 5000; // ALW
-
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
       return;

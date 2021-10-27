@@ -35,6 +35,7 @@ const bp = require('body-parser');
 const jsonParser = bp.json();
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
+const logger = require('morgan');
 const dayMs = 60000 * 60 * 24;
 
 const internals = {
@@ -45,6 +46,15 @@ const internals = {
 };
 
 // ----------------------------------------------------------------------------
+// Logging
+// ----------------------------------------------------------------------------
+app.use(logger(':date :username \x1b[1m:method\x1b[0m \x1b[33m:url\x1b[0m :res[content-length] bytes :response-time ms'));
+
+logger.token('username', (req, res) => {
+  return req.user ? req.user.userId : '-';
+});
+
+// ----------------------------------------------------------------------------
 // Routes
 // ----------------------------------------------------------------------------
 
@@ -53,6 +63,7 @@ app.post('/shutdown', (req, res) => {
     console.log('Shutting down');
     process.exit(0);
   }
+  res.send('NO!');
 });
 
 app.use(Auth.doAuth);

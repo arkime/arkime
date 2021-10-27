@@ -63,8 +63,10 @@ class ArkimeCache {
       return new ArkimeRedisCache(options);
     case 'memcached':
       return new ArkimeMemcachedCache(options);
+    case 'lmdb':
+      return new ArkimeLMDBCache(options);
     default:
-      console.log('Unknown cache type', options.type);
+      console.log('ERROR - Unknown cache type', options.type);
       process.exit(1);
     }
   };
@@ -198,5 +200,52 @@ class ArkimeMemcachedCache extends ArkimeCache {
 
     const data = BSON.serialize(result, false, true, false);
     this.client.set(query.typeName + '-' + query.value, data, { expires: this.cacheTimeout }, () => {});
+  };
+};
+
+/******************************************************************************/
+// LMDB Cache
+/******************************************************************************/
+class ArkimeLMDBCache extends ArkimeCache {
+  constructor (options) {
+    super(options);
+
+    // eslint-disable-next-line no-shadow
+    const { open } = require('lmdb-store');
+
+    const path = options.getConfig('lmdbDir');
+
+    if (typeof (path) !== 'string') {
+      console.log('ERROR - lmdbDir must be set');
+      process.exit(1);
+    }
+
+    try {
+      this.store = open({
+        path: path,
+        compression: true
+      });
+    } catch (err) {
+      console.log ('ERROR -', err);
+      process.exit(1);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  get (query, cb) {
+    if (!cb) {
+      return this.store.get(query);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.store.get(query)
+        .then(data => cb(null, data))
+        .catch(err => cb(err, null));
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  set (query, result) {
+    this.store.put(query, result);
   };
 };
