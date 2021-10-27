@@ -55,23 +55,30 @@ logger.token('username', (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
+// Middleware
+// ----------------------------------------------------------------------------
+// missing resource error handler for static file endpoints
+function missingResource (err, req, res, next) {
+  res.status(404);
+  const msg = `Cannot locate resource requsted from ${req.path}`;
+  console.log(msg);
+  return res.send(msg);
+}
+
+// ----------------------------------------------------------------------------
 // Routes
 // ----------------------------------------------------------------------------
 // assets and fonts
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use(['font-awesome', '/cont3xt/font-awesome'], express.static(
+app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
-));
-app.use(['/assets', '/cont3xt/assets'], express.static(
+), missingResource);
+app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
-));
-
-// api router (base = /cont3xt/api)
-const apiRouter = express.Router();
-app.use('/cont3xt/api', apiRouter);
+), missingResource);
 
 app.post('/shutdown', (req, res) => {
   if (internals.regressionTests) {
@@ -83,15 +90,15 @@ app.post('/shutdown', (req, res) => {
 
 app.use(Auth.doAuth);
 
-apiRouter.get('/linkGroup/getViewable', LinkGroup.apiGetViewable);
-apiRouter.get('/linkGroup/getEditable', LinkGroup.apiGetEditable);
-apiRouter.put('/linkGroup', [jsonParser], LinkGroup.apiCreate);
-apiRouter.put('/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
-apiRouter.delete('/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
+app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
+app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
+app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
+app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
+app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
-apiRouter.get('/roles', User.apiRoles);
+app.get('/api/roles', User.apiRoles);
 
-apiRouter.get('/integration/search/:query', Integration.apiSearch);
+app.get('/api/integration/search/:query', Integration.apiSearch);
 
 app.get('/test', (req, res) => {
   for (let i = 0; i < 100; i++) {
@@ -101,26 +108,62 @@ app.get('/test', (req, res) => {
   console.log('/test');
 });
 
-// vue app resources
+// ----------------------------------------------------------------------------
+// VUE APP
+// ----------------------------------------------------------------------------
+const Vue = require('vue');
+const vueServerRenderer = require('vue-server-renderer');
+
+// Factory function to create fresh Vue apps
+function createApp () {
+  return new Vue({
+    template: '<div id="app"></div>'
+  });
+}
+
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles (prod)
-app.use(['/static', '/cont3xt/static'], express.static(
+app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
-));
+), missingResource);
 // expose vue bundle (dev)
-app.use(['/app.js', '/cont3xt/app.js'], express.static(
+app.use('/app.js', express.static(
   path.join(__dirname, '/vueapp/dist/app.js'),
   { fallthrough: false }
-));
-app.use(['/app.js.map', '/cont3xt/app.js.map'], express.static(
+), missingResource);
+app.use('/app.js.map', express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
-));
+), missingResource);
 // vue index page
 app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
+  const renderer = vueServerRenderer.createRenderer({
+    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
+  });
+
+  const appContext = {
+    path: getConfig('cont3xt', 'webBasePath', '/')
+  };
+
+  // Create a fresh Vue app instance
+  const vueApp = createApp();
+
+  // Render the Vue instance to HTML
+  renderer.renderToString(vueApp, appContext, (err, html) => {
+    if (err) {
+      console.log('ERROR - fetching vue index page:', err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
 });
 
 // ----------------------------------------------------------------------------
