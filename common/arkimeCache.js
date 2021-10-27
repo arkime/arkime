@@ -226,7 +226,7 @@ class ArkimeLMDBCache extends ArkimeCache {
         compression: true
       });
     } catch (err) {
-      console.log ('ERROR -', err);
+      console.log('ERROR -', err);
       process.exit(1);
     }
   }
