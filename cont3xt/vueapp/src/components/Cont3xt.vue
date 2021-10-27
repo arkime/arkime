@@ -23,14 +23,15 @@
     </b-input-group> <!-- /search -->
 
     <!-- page error -->
-    <div v-if="error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
+    <div
+      v-if="error"
+      class="mt-2 alert alert-danger">
+      <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
-      <button type="button"
-        class="close cursor-pointer"
-        @click="error = false">
+      <button
+        type="button"
+        @click="error = false"
+        class="close cursor-pointer">
         <span>&times;</span>
       </button>
     </div> <!-- /page error -->

@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view />
+    <!-- TODO implement progress bar -->
     <b-overlay
       fixed
       no-wrap
