@@ -11,7 +11,7 @@ export default {
 
       if (!searchTerm) { return resolve({}); } // TODO resolve something else?
 
-      Vue.axios.get(`/api/integration/search/${searchTerm}`).then((response) => {
+      Vue.axios.get(`api/integration/search/${searchTerm}`).then((response) => {
         return resolve(response.data);
       }).catch((error) => {
         return reject(error);

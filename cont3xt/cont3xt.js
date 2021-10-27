@@ -57,6 +57,21 @@ logger.token('username', (req, res) => {
 // ----------------------------------------------------------------------------
 // Routes
 // ----------------------------------------------------------------------------
+// assets and fonts
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use(['font-awesome', '/cont3xt/font-awesome'], express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: dayMs, fallthrough: false }
+));
+app.use(['/assets', '/cont3xt/assets'], express.static(
+  path.join(__dirname, '/../assets'),
+  { maxAge: dayMs, fallthrough: false }
+));
+
+// api router (base = /cont3xt/api)
+const apiRouter = express.Router();
+app.use('/cont3xt/api', apiRouter);
 
 app.post('/shutdown', (req, res) => {
   if (internals.regressionTests) {
@@ -68,15 +83,15 @@ app.post('/shutdown', (req, res) => {
 
 app.use(Auth.doAuth);
 
-app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
-app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
-app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
-app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
-app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
+apiRouter.get('/linkGroup/getViewable', LinkGroup.apiGetViewable);
+apiRouter.get('/linkGroup/getEditable', LinkGroup.apiGetEditable);
+apiRouter.put('/linkGroup', [jsonParser], LinkGroup.apiCreate);
+apiRouter.put('/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
+apiRouter.delete('/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
-app.get('/api/roles', User.apiRoles);
+apiRouter.get('/roles', User.apiRoles);
 
-app.get('/api/integration/search/:query', Integration.apiSearch);
+apiRouter.get('/integration/search/:query', Integration.apiSearch);
 
 app.get('/test', (req, res) => {
   for (let i = 0; i < 100; i++) {
@@ -86,18 +101,7 @@ app.get('/test', (req, res) => {
   console.log('/test');
 });
 
-// using fallthrough: false because there is no 404 endpoint (client router
-// handles 404s) and sending index.html is confusing
-app.use('/cont3xt/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
-  { maxAge: dayMs, fallthrough: false }
-));
-app.use(['/assets', '/cont3xt/assets'], express.static(
-  path.join(__dirname, '/../assets'),
-  { maxAge: dayMs, fallthrough: false }
-));
-
-/* LISTEN! ----------------------------------------------------------------- */
+// vue app resources
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles (prod)
@@ -114,7 +118,6 @@ app.use(['/app.js.map', '/cont3xt/app.js.map'], express.static(
   path.join(__dirname, '/vueapp/dist/app.js.map'),
   { fallthrough: false }
 ));
-
 // vue index page
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, '/vueapp/dist/index.html'));
