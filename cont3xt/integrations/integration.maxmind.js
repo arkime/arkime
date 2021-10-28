@@ -59,15 +59,20 @@ class MaxmindIntegration extends Integration {
   }
 
   async fetchIp (user, ip) {
-    const result = {};
-    if (this.asnLookup) {
-      result.asn = this.asnLookup.get(ip);
-    }
-    if (this.countryLookup) {
-      result.country = this.countryLookup.get(ip);
-    }
+    try {
+      const result = {};
+      if (this.asnLookup) {
+        result.asn = this.asnLookup.get(ip);
+      }
+      if (this.countryLookup) {
+        result.country = this.countryLookup.get(ip);
+      }
 
-    return result;
+      return result;
+    } catch (err) {
+      console.log(err);
+      return undefined;
+    }
   }
 }
 

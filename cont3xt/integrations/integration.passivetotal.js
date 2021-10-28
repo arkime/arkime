@@ -48,6 +48,9 @@ class PassiveTotalIntegration extends Integration {
         auth: {
           username: puser,
           password: pkey
+        },
+        headers: {
+          'User-Agent': this.userAgent()
         }
       });
 
@@ -58,6 +61,9 @@ class PassiveTotalIntegration extends Integration {
         auth: {
           username: puser,
           password: pkey
+        },
+        headers: {
+          'User-Agent': this.userAgent()
         }
       });
 
@@ -84,6 +90,9 @@ class PassiveTotalIntegration extends Integration {
         auth: {
           username: puser,
           password: pkey
+        },
+        headers: {
+          'User-Agent': this.userAgent()
         }
       });
 
