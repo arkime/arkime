@@ -102,11 +102,16 @@ class Integration {
     // https://urlregex.com/
     // eslint-disable-next-line no-useless-escape
     if (str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
-      return 'domain';
+      return 'url';
     }
 
     if (str.match(/^[A-Fa-f0-9]{32}$/) || str.match(/^[A-Fa-f0-9]{40}$/) || str.match(/^[A-Fa-f0-9]{64}$/)) {
       return 'hash';
+    }
+
+    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
+    if (str.match(/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/)) {
+      return 'domain';
     }
 
     // Not sure
@@ -135,7 +140,7 @@ class Integration {
         // TODO - Fix dup sending code for cache and not cache
         if (response && Date.now() - response._createTime < integration.cacheTimeout) {
           sent++;
-          res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, response: response }));
+          res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
           res.write('\n');
           if (sent === total) {
             res.end(JSON.stringify({ finished: true }));
@@ -149,7 +154,7 @@ class Integration {
           sent++;
           if (response) {
             response._createTime = Date.now();
-            res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, response: response }));
+            res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
             res.write('\n');
             if (response && Integration.cache && integration.cacheable) {
               Integration.cache.set(cacheKey, response);
@@ -171,7 +176,7 @@ class Integration {
    * If the start of the k matches this.name, it is removed before checking the section.
    */
   getUserConfig (user, k, d) {
-    if (user.cont3xt && user.cont3xt[k]) {
+    if (user?.cont3xt?.[k]) {
       return user.cont3xt[k];
     }
 
