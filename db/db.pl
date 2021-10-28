@@ -64,6 +64,7 @@
 # 67 - remove hunt info from matched sessions
 # 68 - cron query enhancements
 # 70 - reindex everything, ecs, sessions3
+# 71 - user.roles, user.cont3xt
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -75,7 +76,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 70;
+my $VERSION = 71;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5549,6 +5550,14 @@ sub usersUpdate
     },
     "timeLimit": {
       "type": "integer"
+    },
+    "cont3xt": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "roles": {
+      "type": "keyword"
     }
   }
 }';
@@ -7287,10 +7296,14 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         ecsFieldsUpdate();
         esDelete("/_template/${OLDPREFIX}sessions2_template", 1);
         esDelete("/_template/${OLDPREFIX}history_v1_template", 1);
-    } elsif ($main::versionNumber <= 70) {
+    } elsif ($main::versionNumber < 71) {
+        usersUpdate();
         sessions3Update();
         historyUpdate();
         ecsFieldsUpdate();
+    } elsif ($main::versionNumber <= 71) {
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
