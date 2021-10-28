@@ -30,6 +30,7 @@ capture/capture
 # tests
 tests/GeoLite2*
 tests/oui.txt
+tests/lmdbCache
 
 # viewer
 viewer/public/CyberChef*.zip

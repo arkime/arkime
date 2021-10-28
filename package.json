@@ -37,6 +37,7 @@
     "pug": "^3.0.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
+    "serve-favicon": "^2.5.0",
     "splunk-sdk": "^1.9.0",
     "sqlite3": "^5.0.2",
     "stylus": "^0.54.8",

@@ -36,6 +36,7 @@ const jsonParser = bp.json();
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
 const logger = require('morgan');
+const favicon = require('serve-favicon');
 const dayMs = 60000 * 60 * 24;
 
 const internals = {
@@ -79,6 +80,8 @@ app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), missingResource);
+
+app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 app.post('/shutdown', (req, res) => {
   if (internals.regressionTests) {

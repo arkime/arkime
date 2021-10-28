@@ -7,8 +7,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
-    "serve-favicon": "^2.5.0"
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12"
   },
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",

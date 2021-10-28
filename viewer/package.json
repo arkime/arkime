@@ -14,7 +14,6 @@
     "pngjs": "^3.3.3",
     "re2": "^1.15.8",
     "save-svg-as-png": "^1.4.5",
-    "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"
   },
   "devDependencies": {

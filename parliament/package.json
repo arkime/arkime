@@ -7,8 +7,7 @@
   },
   "dependencies": {
     "bcrypt": "^5.0.0",
-    "jsonwebtoken": "^8.3.0",
-    "serve-favicon": "^2.5.0"
+    "jsonwebtoken": "^8.3.0"
   },
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
