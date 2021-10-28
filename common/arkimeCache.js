@@ -29,32 +29,27 @@ class ArkimeCache {
   constructor (options) {
     this.cacheSize = parseInt(options.cacheSize ?? 100000);
     this.cacheTimeout = parseInt(options.cacheTimeout ?? 24 * 60 * 60);
-    this.cache = {};
+    this.cache = LRU({ max: this.cacheSize });
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
-    const cache = this.cache[query.typeName];
-
+  get (key, cb) {
     // promise version
     if (!cb) {
       return new Promise((resolve, reject) => {
-        resolve(cache ? cache.get(query.value) : undefined);
+        resolve(this.cache.get(key));
       });
     }
 
-    cb(null, cache ? cache.get(query.value) : undefined);
+    cb(null, this.cache.get(key));
   }
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    let cache = this.cache[query.typeName];
-    if (!cache) {
-      cache = this.cache[query.typeName] = LRU({ max: this.cacheSize });
-    }
-    cache.set(query.value, result);
+  set (key, result) {
+    this.cache.set(key, result);
   }
 
+  // ----------------------------------------------------------------------------
   static createCache (options) {
     switch (options.type) {
     case 'memory':
@@ -89,11 +84,11 @@ class ArkimeRedisCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
+  get (key, cb) {
     // Convert promise to cb by calling ourselves
     if (!cb) {
       return new Promise((resolve, reject) => {
-        this.get(query, (err, data) => {
+        this.get(key, (err, data) => {
           if (err) {
             reject(err);
           } else {
@@ -104,13 +99,13 @@ class ArkimeRedisCache extends ArkimeCache {
     }
 
     // Check memory cache first
-    super.get(query, (err, result) => {
+    super.get(key, (err, result) => {
       if (err || result) {
         return cb(err, result);
       }
 
       // Check redis
-      this.client.getBuffer(query.typeName + '-' + query.value, (err, reply) => {
+      this.client.getBuffer(key, (err, reply) => {
         if (err || reply === null) {
           return cb(null, undefined);
         }
@@ -125,15 +120,15 @@ class ArkimeRedisCache extends ArkimeCache {
             bsonResult[source].result = newResult;
           }
         }
-        super.set(query.value, bsonResult); // Set memory cache
+        super.set(key, bsonResult); // Set memory cache
         cb(null, bsonResult);
       });
     });
   };
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    super.set(query, result);
+  set (key, result) {
+    super.set(key, result);
 
     let newResult;
     if (this.redisFormat === 3) {
@@ -147,7 +142,7 @@ class ArkimeRedisCache extends ArkimeCache {
     }
 
     const data = BSON.serialize(newResult, false, true, false);
-    this.client.setex(query.typeName + '-' + query.value, this.cacheTimeout, data);
+    this.client.setex(key, this.cacheTimeout, data);
   };
 };
 
@@ -162,11 +157,11 @@ class ArkimeMemcachedCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
+  get (key, cb) {
     // Convert promise to cb by calling ourselves
     if (!cb) {
       return new Promise((resolve, reject) => {
-        this.get(query, (err, data) => {
+        this.get(key, (err, data) => {
           if (err) {
             reject(err);
           } else {
@@ -177,29 +172,29 @@ class ArkimeMemcachedCache extends ArkimeCache {
     }
 
     // Check memory cache first
-    super.get(query, (err, result) => {
+    super.get(key, (err, result) => {
       if (err || result) {
         return cb(err, result);
       }
 
       // Check memcache
-      this.client.get(query.typeName + '-' + query.value, (err, reply) => {
+      this.client.get(key, (err, reply) => {
         if (err || reply === null) {
           return cb(err, undefined);
         }
         const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
-        super.set(query.value, bsonResult); // Set memory cache
+        super.set(key, bsonResult); // Set memory cache
         cb(null, bsonResult);
       });
     });
   };
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    super.set(query, result);
+  set (key, result) {
+    super.set(key, result);
 
     const data = BSON.serialize(result, false, true, false);
-    this.client.set(query.typeName + '-' + query.value, data, { expires: this.cacheTimeout }, () => {});
+    this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
   };
 };
 
@@ -232,20 +227,20 @@ class ArkimeLMDBCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (query, cb) {
+  get (key, cb) {
     if (!cb) {
-      return this.store.get(query);
+      return this.store.get(key);
     }
 
     return new Promise((resolve, reject) => {
-      this.store.get(query)
+      this.store.get(key)
         .then(data => cb(null, data))
         .catch(err => cb(err, null));
     });
   }
 
   // ----------------------------------------------------------------------------
-  set (query, result) {
-    this.store.put(query, result);
+  set (key, result) {
+    this.store.put(key, result);
   };
 };

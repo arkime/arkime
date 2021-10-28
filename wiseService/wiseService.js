@@ -865,7 +865,7 @@ function processQuery (req, query, cb) {
   }
 
   // Fetch the cache for this query
-  internals.cache.get(query, (err, cacheResult) => {
+  internals.cache.get(query.typeName + '-' + query.value, (err, cacheResult) => {
     if (req.timedout) {
       return cb('Timed out ' + query.typeName + ' ' + query.value);
     }
@@ -953,7 +953,7 @@ function processQuery (req, query, cb) {
 
       // Need to update the cache
       if (cacheChanged) {
-        internals.cache.set(query, cacheResult);
+        internals.cache.set(query.typeName + '-' + query.value, cacheResult);
       }
     });
   });
