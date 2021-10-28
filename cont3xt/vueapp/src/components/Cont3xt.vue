@@ -1,5 +1,5 @@
 <template>
-  <div class="m-3">
+  <div class="mr-2 ml-2">
 
     <!-- search -->
     <b-input-group>
@@ -17,7 +17,7 @@
         <b-button
           @click="search"
           variant="success">
-          Search
+          Get Cont3xt
         </b-button>
       </b-input-group-append>
     </b-input-group> <!-- /search -->

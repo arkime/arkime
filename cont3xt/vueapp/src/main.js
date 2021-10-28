@@ -25,5 +25,12 @@ new Vue({
   store,
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  created: function () {
+    // define app constants
+    /* eslint-disable no-undef */
+    Vue.prototype.$constants = {
+      WEB_PATH: WEB_PATH
+    };
+  }
 });
