@@ -123,6 +123,7 @@ class Integration {
       return res.send({ success: false, text: 'Missing query' });
     }
     const query = req.params.query.trim();
+    const skipCache = req.query.skipCache === 'true';
 
     const itype = Integration.classify(query);
 
@@ -135,7 +136,7 @@ class Integration {
     for (const integration of integrations) {
       const cacheKey = `${integration.name}-${itype}-${query}`;
 
-      if (Integration.cache && integration.cacheable) {
+      if (!skipCache && Integration.cache && integration.cacheable) {
         const response = await Integration.cache.get(cacheKey);
         // TODO - Fix dup sending code for cache and not cache
         if (response && Date.now() - response._createTime < integration.cacheTimeout) {
