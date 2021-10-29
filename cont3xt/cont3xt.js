@@ -105,11 +105,19 @@ app.get('/api/integration', Integration.apiList);
 app.get('/api/integration/search/:query', Integration.apiSearch);
 app.get('/api/integration/userSettings', Integration.apiUserSettings);
 
-app.get('/test', (req, res) => {
-  for (let i = 0; i < 100; i++) {
-    setTimeout(() => { res.write(JSON.stringify({ num: i }) + '\n'); }, 100 * i);
+app.get('/test/:len', (req, res) => {
+  const len = req.params.len || 100;
+
+  for (let i = 0; i < len; i++) {
+    setTimeout(() => {
+      let jsonStr = JSON.stringify({ num: i });
+      if (i % 2) { jsonStr += '\n'; }
+      res.write(jsonStr);
+    }, 100 * i);
   }
-  setTimeout(() => { res.end(); }, 100 * 100);
+
+  setTimeout(() => { res.end(); }, 100 * len);
+
   console.log('/test');
 });
 

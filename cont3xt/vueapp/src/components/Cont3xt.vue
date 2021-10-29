@@ -38,7 +38,7 @@
 
     <!-- results -->
     <div v-if="results">
-      {{ results }}
+      <pre>{{ results }}</pre>
     </div> <!-- /results -->
 
   </div>
@@ -52,7 +52,7 @@ export default {
   data () {
     return {
       error: '',
-      results: null,
+      results: [], // TODO object
       searchTerm: ''
     };
   },
@@ -64,13 +64,26 @@ export default {
   },
   methods: {
     search () {
-      console.log('SEARCHING FOR:', this.searchTerm); // TODO remove
-      Cont3xtService.search(this.searchTerm).then((response) => {
-        console.log('SUCCESS!', response); // TODO remove
-        this.results = response;
-      }).catch((error) => {
-        console.log('FAILURE!', error); // TODO remove
-        this.error = error;
+      const self = this;
+      self.results = [];
+      // TODO how to make it like this: .subscribe().next(() => ...).error(() => ...).complete(() => ...)
+      Cont3xtService.search(this.searchTerm).subscribe({
+        next (data) {
+          // TODO - check for finish: true - good finish
+          console.log('GOT DATA IN CHUNK', data);
+          self.results.push(data);
+          // if (data.name) {
+          //   self.results[data.name] = data.data;
+          // }
+          // TODO UPDATE PROGRESS BAR
+        },
+        error (e) {
+          self.error = e;
+        },
+        complete () {
+          console.log('request complete');
+          // TODO UPDATE PROGRESS BAR
+        }
       });
     }
   }
