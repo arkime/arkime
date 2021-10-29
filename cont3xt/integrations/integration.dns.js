@@ -49,7 +49,7 @@ class DNSIntegration extends Integration {
       // Wait for them to finish
       for (const query in queries) {
         const data = (await queries[query]).data;
-        result[query] = {Status: data.Status};
+        result[query] = { Status: data.Status };
         if (data.Answer) {
           result[query].Answer = data.Answer;
         }
