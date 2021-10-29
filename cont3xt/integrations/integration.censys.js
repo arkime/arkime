@@ -71,7 +71,7 @@ class CensysIntegration extends Integration {
 
       return censysData;
     } catch (err) {
-      console.log(err);
+      console.log(this.name, ip, err);
       return undefined;
     }
   }

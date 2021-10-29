@@ -41,7 +41,7 @@ class RDAPIntegration extends Integration {
       const data = await res.data;
       return (res.status === 200) ? { status: res.status, name: data.name, link: data.links[0].value } : { status: res.status, error: res.status };
     } catch (err) {
-      console.log(err);
+      console.log(this.name, ip, err);
       return undefined;
     }
   }

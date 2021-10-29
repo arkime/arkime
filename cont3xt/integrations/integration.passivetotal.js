@@ -40,7 +40,7 @@ class PassiveTotalIntegration extends Integration {
         return undefined;
       }
 
-      const passiveTotalWhois = await axios.get('https://api.passivetotal.org/v2/whois', {
+      const passiveTotalWhois = axios.get('https://api.passivetotal.org/v2/whois', {
         params: {
           query: domain,
           history: false
@@ -54,7 +54,7 @@ class PassiveTotalIntegration extends Integration {
         }
       });
 
-      const passiveTotalSubDomainsResult = await axios.get('https://api.passivetotal.org/v2/enrichment/subdomains', {
+      const passiveTotalSubDomainsResult = axios.get('https://api.passivetotal.org/v2/enrichment/subdomains', {
         params: {
           query: domain
         },
@@ -67,10 +67,9 @@ class PassiveTotalIntegration extends Integration {
         }
       });
 
-      // TODO - The above we should do promise all instead
-      return { whois: passiveTotalWhois, subDomains: passiveTotalSubDomainsResult };
+      return { whois: (await passiveTotalWhois).data, subDomains: (await passiveTotalSubDomainsResult).data };
     } catch (err) {
-      console.log('PassiveTotal', domain, err);
+      console.log(this.name, domain, err);
       return null;
     }
   }
@@ -96,9 +95,9 @@ class PassiveTotalIntegration extends Integration {
         }
       });
 
-      return passiveTotalPassiveDNS;
+      return passiveTotalPassiveDNS.data;
     } catch (err) {
-      console.log('PassiveTotal', ip, err);
+      console.log(this.name, ip, err);
       return null;
     }
   }

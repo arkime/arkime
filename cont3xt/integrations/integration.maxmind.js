@@ -70,7 +70,7 @@ class MaxmindIntegration extends Integration {
 
       return result;
     } catch (err) {
-      console.log(err);
+      console.log(this.name, ip, err);
       return undefined;
     }
   }

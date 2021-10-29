@@ -16,14 +16,10 @@
 const Integration = require('../integration.js');
 const axios = require('axios');
 
-class ThreatstreamIntegration extends Integration {
-  name = 'Threatstream';
+class ShodanIntegration extends Integration {
+  name = 'Shodan';
   itypes = {
-    domain: 'fetch',
-    ip: 'fetch',
-    email: 'fetch',
-    url: 'fetch',
-    hash: 'fetch'
+    ip: 'fetchIp'
   };
 
   constructor () {
@@ -32,31 +28,26 @@ class ThreatstreamIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetch (user, query) {
+  async fetchIp (user, ip) {
     try {
-      const host = this.getUserConfig(user, 'ThreatstreamHost', 'api.threatstream.com');
-      const tuser = this.getUserConfig(user, 'ThreatstreamApiUser');
-      const tkey = this.getUserConfig(user, 'ThreatstreamApiKey');
-      if (!tkey || !tuser) {
+      const key = this.getUserConfig(user, 'ShodanKey');
+      if (!key) {
         return undefined;
       }
-      const threatstreamRes = await axios.get(`https://${host}/api/v2/intelligence`, {
-        params: {
-          value__exact: query
-        },
+
+      const response = await axios.get(`https://api.shodan.io/shodan/host/${ip}?key=${key}`, {
         headers: {
-          Authorization: `apikey ${tuser}:${tkey}`,
           'User-Agent': this.userAgent()
         }
       });
 
-      return threatstreamRes.data;
+      return response.data;
     } catch (err) {
-      console.log(this.name, query, err);
+      console.log(this.name, ip, err);
       return null;
     }
   }
 }
 
 // eslint-disable-next-line no-new
-new ThreatstreamIntegration();
+new ShodanIntegration();

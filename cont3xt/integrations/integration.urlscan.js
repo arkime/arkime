@@ -48,7 +48,7 @@ class URLScanIntegration extends Integration {
       });
       return urlScanRes.data;
     } catch (err) {
-      console.log('URLSCAN', url, err);
+      console.log(this.name, url, err);
       return null;
     }
   }

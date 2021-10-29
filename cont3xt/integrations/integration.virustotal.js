@@ -52,7 +52,7 @@ class VirusTotalIntegration extends Integration {
 
       return virusTotalRes.data;
     } catch (err) {
-      console.log('VirusTotal', domain, err);
+      console.log(this.name, domain, err);
       return null;
     }
   }
@@ -76,7 +76,7 @@ class VirusTotalIntegration extends Integration {
 
       return virusTotalRes.data;
     } catch (err) {
-      console.log('VirusTotal', ip, err);
+      console.log(this.name, ip, err);
       return null;
     }
   }
@@ -100,7 +100,7 @@ class VirusTotalIntegration extends Integration {
 
       return virusTotalRes.data;
     } catch (err) {
-      console.log('VirusTotal', hash, err);
+      console.log(this.name, hash, err);
       return null;
     }
   }
