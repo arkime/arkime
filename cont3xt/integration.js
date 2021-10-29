@@ -118,6 +118,34 @@ class Integration {
     return 'text';
   }
 
+  /**
+   * List out all the integrations, if we can do them. Maybe card info goes here?
+   */
+  static async apiList (req, res, next) {
+    const results = {};
+    const integrations = Integration.integrations.all;
+    for (const integration of integrations) {
+      let doable = true;
+      if (integration.userSettings) {
+        for (const setting in integration.userSettings) {
+          if (!integration.getUserConfig(req.user, setting)) {
+            doable = false;
+            break;
+          }
+        }
+      }
+      results[integration.name] = {
+        doable: doable,
+        cacheTimeout: integration.cacheTimeout
+      };
+    }
+
+    return res.send({ success: true, results: results });
+  }
+
+  /**
+   * The search api to go against integrations
+   */
   static async apiSearch (req, res, next) {
     if (!req.params.query) {
       return res.send({ success: false, text: 'Missing query' });

@@ -101,6 +101,7 @@ app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', User.apiRoles);
 
+app.get('/api/integration', Integration.apiList);
 app.get('/api/integration/search/:query', Integration.apiSearch);
 app.get('/api/integration/userSettings', Integration.apiUserSettings);
 
