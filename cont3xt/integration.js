@@ -192,7 +192,7 @@ class Integration {
         });
       }
     }
-    res.send({success: true, settings: result});
+    res.send({ success: true, settings: result });
   }
 
   getConfig (k, d) {

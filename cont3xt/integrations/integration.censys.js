@@ -21,12 +21,13 @@ class CensysIntegration extends Integration {
   itypes = {
     ip: 'fetchIp'
   };
+
   userSettings = {
     CensysID: {
-      help: "Your censys api id"
+      help: 'Your censys api id'
     },
     CensysSecret: {
-      help: "Your censys api secret",
+      help: 'Your censys api secret',
       password: true
     }
   }

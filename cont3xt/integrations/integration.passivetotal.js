@@ -25,10 +25,10 @@ class PassiveTotalIntegration extends Integration {
 
   userSettings = {
     PassiveTotalUser: {
-      help: "Your Passive Total api user"
+      help: 'Your Passive Total api user'
     },
     PassiveTotalKey: {
-      help: "Your Passive Total api key",
+      help: 'Your Passive Total api key',
       password: true
     }
   };
