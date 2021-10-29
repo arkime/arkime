@@ -16,14 +16,11 @@
 const Integration = require('../integration.js');
 const axios = require('axios');
 
-class URLScanIntegration extends Integration {
-  name = 'URLScan';
+class SpurIntegration extends Integration {
+  name = 'Spur';
   itypes = {
-    url: 'fetch',
-    ip: 'fetch'
+    ip: 'fetchIp'
   };
-
-  key;
 
   constructor () {
     super();
@@ -31,29 +28,26 @@ class URLScanIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetch (user, query) {
+  async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'URLScanKey');
+      const key = this.getUserConfig(user, 'PassiveTotalKey');
       if (!key) {
         return undefined;
       }
 
-      const urlScanRes = await axios.get('https://urlscan.io/api/v1/search/', {
-        params: {
-          q: query
-        },
+      const response = await axios.get(`https://api.spur.us/v1/context/${ip}`, {
         headers: {
-          'API-Key': key,
+          Token: key,
           'User-Agent': this.userAgent()
         }
       });
-      return urlScanRes.data;
+      return response.data;
     } catch (err) {
-      console.log(this.name, query, err);
-      return null;
+      console.log(this.name, ip, err);
+      return undefined;
     }
   }
 }
 
 // eslint-disable-next-line no-new
-new URLScanIntegration();
+new SpurIntegration();

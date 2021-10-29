@@ -30,8 +30,7 @@ class RDAPIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const query = 'https://rdap.db.ripe.net/ip/' + ip;
-      const res = await axios.get(query, {
+      const res = await axios.get(`https://rdap.db.ripe.net/ip/${ip}`, {
         validateStatus: false,
         headers: {
           Accept: 'application/json',
