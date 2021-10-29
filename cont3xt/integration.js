@@ -168,6 +168,33 @@ class Integration {
     }
   }
 
+  /**
+   * Return all the settings and current values that a user can set about
+   * Intergrations so a Setting UI can be built on the fly.
+   */
+  static async apiUserSettings (req, res, next) {
+    // ALW: Should this be an array or obj?
+    const result = [];
+    const integrations = Integration.integrations.all;
+    for (const integration of integrations) {
+      if (integration.userSettings) {
+        const values = {};
+        for (const setting in integration.userSettings) {
+          const v = req.user.getCont3xtConfig(setting);
+          if (v) {
+            values[setting] = v;
+          }
+        }
+        result.push({
+          name: integration.name,
+          settings: integration.userSettings,
+          values: values
+        });
+      }
+    }
+    res.send({success: true, settings: result});
+  }
+
   getConfig (k, d) {
     return Integration.getConfig(this.name, k, d);
   }
@@ -177,16 +204,17 @@ class Integration {
    * If the start of the k matches this.name, it is removed before checking the section.
    */
   getUserConfig (user, k, d) {
-    if (user?.cont3xt?.[k]) {
-      return user.cont3xt[k];
+    if (user.cont3xt) {
+      const v = user.getCont3xtConfig(k);
+      if (v !== undefined) { return v; }
     }
 
     if (k.startsWith(this.name)) {
       const v = Integration.getConfig(this.name, k.substring(this.name.length));
-      if (v) { return v; }
+      if (v !== undefined) { return v; }
     } else {
       const v = Integration.getConfig(this.name, k);
-      if (v) { return v; }
+      if (v !== undefined) { return v; }
     }
 
     return Integration.getConfig('cont3xt', k, d);

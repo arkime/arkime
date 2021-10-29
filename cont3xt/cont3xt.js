@@ -102,6 +102,7 @@ app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 app.get('/api/roles', User.apiRoles);
 
 app.get('/api/integration/search/:query', Integration.apiSearch);
+app.get('/api/integration/userSettings', Integration.apiUserSettings);
 
 app.get('/test', (req, res) => {
   for (let i = 0; i < 100; i++) {
@@ -199,6 +200,23 @@ function processArgs (argv) {
 // ----------------------------------------------------------------------------
 // Config - temporary
 // ----------------------------------------------------------------------------
+
+User.prototype.getCont3xtConfig = function (k, d) {
+  const v = this.cont3xt?.[k];
+
+  if (!v) {
+    return d;
+  }
+
+  return Auth.auth2obj(v, Auth.passwordSecret256);
+};
+
+User.prototype.setCont3xtConfig = function (k, v) {
+  if (!this.cont3xt) {
+    this.cont3xt = {};
+  }
+  this.cont3xt[k] = Auth.obj2auth(v, Auth.passwordSecret256);
+};
 
 function getConfig (section, sectionKey, d) {
   if (!internals.config[section]) {

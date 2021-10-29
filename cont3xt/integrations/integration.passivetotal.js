@@ -23,6 +23,16 @@ class PassiveTotalIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  userSettings = {
+    PassiveTotalUser: {
+      help: "Your Passive Total api user"
+    },
+    PassiveTotalKey: {
+      help: "Your Passive Total api key",
+      password: true
+    }
+  };
+
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
 
