@@ -80,6 +80,11 @@ export default {
               received: data.sent, failed: data.failed, total: data.total
             };
           }
+          if (data.finished) { // we finished receiving results
+            self.loading = { // set received to total so progress bar completes
+              received: self.$store.state.loading.total
+            };
+          }
         },
         error (e) {
           self.error = e;
