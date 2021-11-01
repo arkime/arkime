@@ -17,7 +17,6 @@ export default {
     } catch (err) {
       subscriber.error(`ERROR: ${err}`);
       console.log(`Error parsing this chunk:\n${chunk}`);
-      return subscriber.complete();
     }
   },
 
@@ -50,6 +49,9 @@ export default {
             function read () { // handle each data chunk
               reader.read().then(({ done, value }) => {
                 if (done) { // stream is done
+                  if (remaining) {
+                    sendChunk(subscriber, remaining);
+                  }
                   return subscriber.complete();
                 }
 
@@ -60,10 +62,6 @@ export default {
                   sendChunk(subscriber, remaining.slice(0, pos));
                   // keep the rest because it may not be complete
                   remaining = remaining.slice(pos + 1, remaining.length);
-                }
-
-                if (remaining) {
-                  sendChunk(subscriber, remaining);
                 }
 
                 read(); // keep reading until done
