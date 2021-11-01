@@ -5,11 +5,28 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    loading: false // TODO should be a number?
+    loading: {
+      total: 0,
+      failed: 0,
+      received: 0,
+      done: false
+    }
   },
   mutations: {
     SET_LOADING (state, data) {
-      state.loading = data;
+      const { total, failed, received, done } = data;
+      state.loading.done = done || state.loading.done;
+      state.loading.total = total || state.loading.total;
+      state.loading.failed = failed || state.loading.failed;
+      state.loading.received = received || state.loading.received;
+    },
+    RESET_LOADING (state) {
+      state.loading = {
+        total: 0,
+        failed: 0,
+        received: 0,
+        done: false
+      };
     }
   },
   getters: {

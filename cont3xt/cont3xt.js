@@ -128,7 +128,13 @@ app.get('/test/:len', (req, res) => {
         res.write(`{"before":${i}}\n{"num":`);
         res.write(`${i}}\n{"after":${i}}\n`);
       } else {
-        res.write(JSON.stringify({ num: i }) + '\n');
+        const json = {
+          sent: i + 1,
+          data: { num: i },
+          name: `${i}-name`,
+          total: parseInt(len)
+        };
+        res.write(JSON.stringify(json) + '\n');
       }
 
       if (induceErr) {
@@ -137,7 +143,7 @@ app.get('/test/:len', (req, res) => {
     }, 100 * i);
   }
 
-  setTimeout(() => { res.end(); }, 100 * len);
+  setTimeout(() => { res.end(JSON.stringify({ finished: true })); }, 100 * len);
 });
 
 // ----------------------------------------------------------------------------

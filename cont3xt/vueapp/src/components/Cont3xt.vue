@@ -66,24 +66,26 @@ export default {
     search () {
       this.error = '';
       this.results = {};
+      this.$store.commit('RESET_LOADING');
 
       const self = this;
       // TODO how to make it like this: .subscribe().next(() => ...).error(() => ...).complete(() => ...)
       Cont3xtService.search(this.searchTerm).subscribe({
         next (data) {
-          // TODO - check for finish: true - good finish
-          console.log('GOT DATA IN CHUNK', data);
           if (data.name) {
             self.$set(self.results, data.name, data.data);
           }
-          // TODO UPDATE PROGRESS BAR
+          if (data.sent && data.total) {
+            self.loading = {
+              received: data.sent, failed: data.failed, total: data.total
+            };
+          }
         },
         error (e) {
           self.error = e;
         },
         complete () {
-          console.log('request complete');
-          // TODO UPDATE PROGRESS BAR
+          self.loading = { done: true };
         }
       });
     }

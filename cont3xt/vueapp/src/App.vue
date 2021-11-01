@@ -2,14 +2,7 @@
   <div id="app">
     <div v-if="compatibleBrowser">
       <cont3xt-navbar />
-      <router-view class="margin-for-nav" />
-      <!-- TODO implement progress bar -->
-      <b-overlay
-        fixed
-        no-wrap
-        :opacity="0.4"
-        :show="getLoading"
-      />
+      <router-view class="margin-for-nav-and-progress" />
     </div>
     <div v-else>
       <cont3xt-upgrade-browser />
@@ -18,8 +11,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
 import Cont3xtNavbar from './components/Navbar';
 import Cont3xtUpgradeBrowser from './components/UpgradeBrowser';
 
@@ -34,9 +25,6 @@ export default {
       compatibleBrowser: true
     };
   },
-  computed: {
-    ...mapGetters(['getLoading'])
-  },
   mounted: function () {
     this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
       !!String.prototype.includes;
@@ -47,3 +35,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.margin-for-nav-and-progress {
+  margin-top: 80px !important;
+}
+</style>

@@ -1,7 +1,5 @@
 <template>
-
   <div>
-
     <!-- cont3xt navbar -->
     <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
       <router-link to="help"
@@ -53,12 +51,28 @@
         </button> <!-- /dark/light mode -->
       </div>
     </nav> <!-- /cont3xt nav -->
-
+    <b-progress
+      height="8px"
+      class="mt-2 cursor-help"
+      :max="getLoading.total"
+      :animated="getLoading.total != getLoading.received">
+      <b-progress-bar
+        variant="success"
+        :value="getLoading.received"
+        v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
+      />
+      <b-progress-bar
+        variant="danger"
+        :value="getLoading.failed"
+        v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed`"
+      />
+    </b-progress>
   </div>
-
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'Cont3xtNavbar',
   data: function () {
@@ -66,6 +80,9 @@ export default {
       // default theme is dark
       theme: 'dark'
     };
+  },
+  computed: {
+    ...mapGetters(['getLoading'])
   },
   mounted: function () {
     if (localStorage.getItem('cont3xtTheme')) {
@@ -106,5 +123,16 @@ nav.navbar > .navbar-brand > img {
   position: absolute;
   height: 52px;
   top: 2px;
+}
+
+div.progress {
+  top: 48px;
+  width: 100%;
+  z-index: 1030;
+  position: fixed;
+  border-radius: 0;
+}
+body.dark div.progress {
+  background-color: #404040;
 }
 </style>
