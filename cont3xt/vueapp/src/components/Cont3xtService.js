@@ -9,6 +9,17 @@ export default {
     return dec.decode(arr);
   },
 
+  /** TODO document */
+  sendChunk (subscriber, chunk) {
+    try { // try to parse and send the chunk
+      const json = JSON.parse(chunk);
+      subscriber.next(json);
+    } catch (err) {
+      subscriber.error(`ERROR: ${err} - ${chunk}`);
+      return subscriber.complete();
+    }
+  },
+
   /**
    * Gets stuff
    * TODO document
@@ -23,12 +34,12 @@ export default {
 
       fetch(`api/integration/search/${searchTerm}`).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
-          subscriber.error(response.statusText);
-          return;
+          throw new Error(response.statusText);
         }
         return response.body;
       }).then((rStream) => {
         const reader = rStream.getReader();
+        const sendChunk = this.sendChunk;
         const decoder = this.decoder;
 
         return new ReadableStream({
@@ -45,16 +56,13 @@ export default {
 
                 let pos = 0;
                 while ((pos = remaining.indexOf('\n')) > -1) {
-                  try { // try to parse and send the chunk
-                    const json = JSON.parse(remaining.slice(0, pos));
-                    subscriber.next(json);
-                  } catch (err) {
-                    subscriber.error(`ERROR: ${err}`);
-                    return subscriber.complete();
-                  }
-
+                  sendChunk(subscriber, remaining.slice(0, pos));
                   // keep the rest because it may not be complete
                   remaining = remaining.slice(pos + 1, remaining.length);
+                }
+
+                if (remaining) {
+                  sendChunk(subscriber, remaining);
                 }
 
                 read(); // keep reading until done
@@ -65,7 +73,8 @@ export default {
           }
         });
       }).catch((err) => { // this catches an issue with in the ^ .then
-        subscriber.error(`ERROR: ${err}`);
+        subscriber.error(err);
+        return subscriber.complete();
       });
     });
   }

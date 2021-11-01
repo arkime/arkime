@@ -113,6 +113,14 @@ app.get('/test/:len', (req, res) => {
   const len = req.params.len || 100;
   const multiRead = req.query.multiRead === 'true';
   const induceErr = req.query.induceErr === 'true';
+  const serverErr = req.query.serverErr === 'true';
+
+  console.log('/test');
+
+  if (serverErr) {
+    res.status(500);
+    return res.end();
+  }
 
   for (let i = 0; i < len; i++) {
     setTimeout(() => {
@@ -124,14 +132,12 @@ app.get('/test/:len', (req, res) => {
       }
 
       if (induceErr) {
-        if (i % 2 === 1) { res.write('\n'); }
+        if (i % 2 === 1) { res.write('{bad:json}{here}\n'); }
       }
     }, 100 * i);
   }
 
   setTimeout(() => { res.end(); }, 100 * len);
-
-  console.log('/test');
 });
 
 // ----------------------------------------------------------------------------
