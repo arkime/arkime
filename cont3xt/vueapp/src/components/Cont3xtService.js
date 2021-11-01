@@ -15,7 +15,8 @@ export default {
       const json = JSON.parse(chunk);
       subscriber.next(json);
     } catch (err) {
-      subscriber.error(`ERROR: ${err} - ${chunk}`);
+      subscriber.error(`ERROR: ${err}`);
+      console.log(`Error parsing this chunk:\n${chunk}`);
       return subscriber.complete();
     }
   },
