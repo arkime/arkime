@@ -36,7 +36,7 @@ export default {
         return subscriber.complete();
       }
 
-      fetch(`/api/integration/search/${searchTerm}`).then((response) => {
+      fetch(`api/integration/search/${searchTerm}`).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
           subscriber.error(response.statusText);
           return;
