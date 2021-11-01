@@ -68,29 +68,29 @@ export default {
       this.results = {};
       this.$store.commit('RESET_LOADING');
 
-      const self = this;
-      // TODO how to make it like this: .subscribe().next(() => ...).error(() => ...).complete(() => ...)
       Cont3xtService.search(this.searchTerm).subscribe({
-        next (data) {
-          if (data.name) {
-            self.$set(self.results, data.name, data.data);
+        next: (data) => {
+          if (data.name) { // add the data to the page
+            this.$set(this.results, data.name, data.data);
           }
           if (data.sent && data.total) {
-            self.loading = {
-              received: data.sent, failed: data.failed, total: data.total
+            this.loading = { // update the progress bar
+              total: data.total,
+              failed: data.failed,
+              received: data.sent
             };
           }
           if (data.finished) { // we finished receiving results
-            self.loading = { // set received to total so progress bar completes
-              received: self.$store.state.loading.total
+            this.loading = { // set received to total so progress bar completes
+              received: this.$store.state.loading.total
             };
           }
         },
-        error (e) {
-          self.error = e;
+        error: (e) => {
+          this.error = e;
         },
-        complete () {
-          self.loading = { done: true };
+        complete: () => {
+          this.loading = { done: true };
         }
       });
     }

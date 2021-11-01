@@ -149,10 +149,10 @@ class Integration {
    * The search api to go against integrations
    */
   static async apiSearch (req, res, next) {
-    if (!req.params.query) {
+    if (!req.body.query) {
       return res.send({ success: false, text: 'Missing query' });
     }
-    const query = req.params.query.trim();
+    const query = req.body.query.trim();
     const skipCache = req.query.skipCache === 'true';
 
     const itype = Integration.classify(query);
