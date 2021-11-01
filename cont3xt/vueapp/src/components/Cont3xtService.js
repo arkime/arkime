@@ -10,21 +10,6 @@ export default {
   },
 
   /**
-   * Sends a list of chunks to the subscriber
-   * TODO document */
-  sendChunks (subscriber, chunks) {
-    for (const chunk of chunks) {
-      try {
-        const json = JSON.parse(chunk);
-        subscriber.next(json);
-      } catch (err) {
-        subscriber.error(`ERROR: ${err}`);
-        break;
-      }
-    }
-  },
-
-  /**
    * Gets stuff
    * TODO document
    */
@@ -45,19 +30,14 @@ export default {
       }).then((rStream) => {
         const reader = rStream.getReader();
         const decoder = this.decoder;
-        const sendChunks = this.sendChunks;
 
         return new ReadableStream({
           start () {
-            let chunks = [];
             let remaining = '';
 
             function read () { // handle each data chunk
               reader.read().then(({ done, value }) => {
                 if (done) { // stream is done
-                  if (chunks.length) {
-                    sendChunks(subscriber, chunks);
-                  }
                   return subscriber.complete();
                 }
 
@@ -65,14 +45,16 @@ export default {
 
                 let pos = 0;
                 while ((pos = remaining.indexOf('\n')) > -1) {
-                  chunks.push(remaining.slice(0, pos)); // process chunk
+                  try { // try to parse and send the chunk
+                    const json = JSON.parse(remaining.slice(0, pos));
+                    subscriber.next(json);
+                  } catch (err) {
+                    subscriber.error(`ERROR: ${err}`);
+                    return subscriber.complete();
+                  }
+
                   // keep the rest because it may not be complete
                   remaining = remaining.slice(pos + 1, remaining.length);
-                }
-
-                if (chunks.length) {
-                  sendChunks(subscriber, chunks);
-                  chunks = [];
                 }
 
                 read(); // keep reading until done
