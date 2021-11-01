@@ -52,7 +52,7 @@ export default {
             function read () { // handle each data chunk
               reader.read().then(({ done, value }) => {
                 if (done) { // stream is done
-                  if (remaining) {
+                  if (remaining.length) {
                     sendChunk(subscriber, remaining);
                   }
                   return subscriber.complete();
