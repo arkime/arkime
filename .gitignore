@@ -32,6 +32,11 @@ tests/GeoLite2*
 tests/oui.txt
 tests/lmdbCache
 
+# Require force update
+tests/cont3xt.ini
+tests/test.config.ini
+tests/test.config.json
+
 # viewer
 viewer/public/CyberChef*.zip
 viewer/vueapp/dist

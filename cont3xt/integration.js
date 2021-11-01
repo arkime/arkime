@@ -160,8 +160,9 @@ class Integration {
     const integrations = Integration.integrations[itype];
     let sent = 0;
     const total = integrations.length;
+    res.write('[\n');
     res.write(JSON.stringify({ success: true, itype: itype, sent: sent, total: total, text: 'more to follow' }));
-    res.write('\n');
+    res.write(',\n');
 
     for (const integration of integrations) {
       const cacheKey = `${integration.name}-${itype}-${query}`;
@@ -172,9 +173,10 @@ class Integration {
         if (response && Date.now() - response._createTime < integration.cacheTimeout) {
           sent++;
           res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
-          res.write('\n');
+          res.write(',\n');
           if (sent === total) {
-            res.end(JSON.stringify({ finished: true }));
+            res.write(JSON.stringify({ finished: true }));
+            res.end(']\n');
           }
           continue;
         }
@@ -186,13 +188,14 @@ class Integration {
           if (response) {
             response._createTime = Date.now();
             res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
-            res.write('\n');
+            res.write(',\n');
             if (response && Integration.cache && integration.cacheable) {
               Integration.cache.set(cacheKey, response);
             }
           }
           if (sent === total) {
-            res.end(JSON.stringify({ finished: true }));
+            res.write(JSON.stringify({ finished: true }));
+            res.end(']\n');
           }
         });
     }

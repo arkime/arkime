@@ -11,6 +11,9 @@ export default {
 
   /** TODO document */
   sendChunk (subscriber, chunk) {
+    // Skip the chunk that is just [
+    if (chunk.length < 2) { return; }
+
     try { // try to parse and send the chunk
       const json = JSON.parse(chunk);
       subscriber.next(json);
@@ -59,7 +62,8 @@ export default {
 
                 let pos = 0;
                 while ((pos = remaining.indexOf('\n')) > -1) {
-                  sendChunk(subscriber, remaining.slice(0, pos));
+                  // - 1 = remove the trailing , or ]
+                  sendChunk(subscriber, remaining.slice(0, pos - 1));
                   // keep the rest because it may not be complete
                   remaining = remaining.slice(pos + 1, remaining.length);
                 }
