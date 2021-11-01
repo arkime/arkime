@@ -32,48 +32,48 @@ class URLScanIntegration extends Integration {
   }
 
   card = {
-    name: "URL Scan for ${query}",
+    name: 'URL Scan for %{query}',
     fields: [
-      "total",
+      'total',
       {
-        field: "took",
-        type: "ms",
+        field: 'took',
+        type: 'ms'
       },
-      "has_more",
+      'has_more',
       {
-        name: "results",
-        type: "table",
-        field: "results",
+        name: 'results',
+        type: 'table',
+        field: 'results',
         fields: [
           {
-            name: "visibility",
-            field: "task.visibility"
+            name: 'visibility',
+            field: 'task.visibility'
           },
           {
-            name: "method",
-            field: "task.method"
+            name: 'method',
+            field: 'task.method'
           },
           {
-            name: "url",
-            field: "task.url",
+            name: 'url',
+            field: 'task.url',
             defang: true // Maybe should be on server side?
           },
           {
-            name: "country",
-            field: "page.country"
+            name: 'country',
+            field: 'page.country'
           },
           {
-            name: "server",
-            field: "page.server"
+            name: 'server',
+            field: 'page.server'
           },
           {
-            name: "status",
-            field: "page.status"
+            name: 'status',
+            field: 'page.status'
           },
           {
-            name: "screenshot",
-            field: "screenshot",
-            type: "url"
+            name: 'screenshot',
+            field: 'screenshot',
+            type: 'url'
           }
         ]
       }
