@@ -80,6 +80,10 @@ app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), missingResource);
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
+  { maxAge: dayMs, fallthrough: false }
+), missingResource);
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 

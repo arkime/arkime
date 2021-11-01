@@ -19,6 +19,7 @@ const fs = require('fs');
 
 class MaxmindIntegration extends Integration {
   name = 'Maxmind';
+  cacheable = false;
   itypes = {
     ip: 'fetchIp'
   };

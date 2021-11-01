@@ -18,9 +18,16 @@ const axios = require('axios');
 
 class SpurIntegration extends Integration {
   name = 'Spur';
+  icon = 'public/spurIcon.png'
   itypes = {
     ip: 'fetchIp'
   };
+
+  userSettings = {
+    SpurKey: {
+      help: 'Your spur api key'
+    }
+  }
 
   constructor () {
     super();

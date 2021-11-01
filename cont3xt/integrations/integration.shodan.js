@@ -18,9 +18,17 @@ const axios = require('axios');
 
 class ShodanIntegration extends Integration {
   name = 'Shodan';
+  icon = 'public/shodanIcon.png';
   itypes = {
     ip: 'fetchIp'
   };
+
+  userSettings = {
+    ShodanKey: {
+      help: 'Your Shodan api key',
+      password: true
+    }
+  }
 
   constructor () {
     super();

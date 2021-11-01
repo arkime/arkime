@@ -136,11 +136,13 @@ class Integration {
       }
       results[integration.name] = {
         doable: doable,
-        cacheTimeout: integration.cacheTimeout
+        cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
+        icon: integration.icon,
+        card: integration.card
       };
     }
 
-    return res.send({ success: true, results: results });
+    return res.send({ success: true, integrations: results });
   }
 
   /**

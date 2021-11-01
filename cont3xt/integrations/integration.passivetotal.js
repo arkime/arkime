@@ -18,6 +18,7 @@ const axios = require('axios');
 
 class PassiveTotalIntegration extends Integration {
   name = 'PassiveTotal';
+  icon = 'public/passiveTotalIcon.png';
   itypes = {
     domain: 'fetchDomain',
     ip: 'fetchIp'

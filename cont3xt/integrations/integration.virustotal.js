@@ -18,11 +18,19 @@ const axios = require('axios');
 
 class VirusTotalIntegration extends Integration {
   name = 'VirusTotal';
+  icon = 'public/virusTotalIcon.svg';
   itypes = {
     domain: 'fetchDomain',
     ip: 'fetchIp',
     hash: 'fetchHash'
   };
+
+  userSettings = {
+    VirusTotalKey: {
+      help: 'Your virustotal api key',
+      password: true
+    }
+  }
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;

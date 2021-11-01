@@ -18,6 +18,7 @@ const axios = require('axios');
 
 class ThreatstreamIntegration extends Integration {
   name = 'Threatstream';
+  icon = 'public/threatstreamIcon.webp';
   itypes = {
     domain: 'fetch',
     ip: 'fetch',
@@ -25,6 +26,19 @@ class ThreatstreamIntegration extends Integration {
     url: 'fetch',
     hash: 'fetch'
   };
+
+  userSettings = {
+    ThreatstreamHost: {
+      help: 'The threatstream host to send queries'
+    },
+    ThreatstreamApiUser: {
+      help: 'Your threatstream api user'
+    },
+    ThreatstreamApiKey: {
+      help: 'Your threatstream api key',
+      password: true
+    }
+  }
 
   constructor () {
     super();

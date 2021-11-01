@@ -18,6 +18,7 @@ const { SearchClient } = require('@censys/node');
 
 class CensysIntegration extends Integration {
   name = 'Censys';
+  icon = 'public/censysIcon.png';
   itypes = {
     ip: 'fetchIp'
   };
@@ -30,7 +31,7 @@ class CensysIntegration extends Integration {
       help: 'Your censys api secret',
       password: true
     }
-  }
+  };
 
   constructor () {
     super();
