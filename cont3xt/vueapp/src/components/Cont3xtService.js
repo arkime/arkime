@@ -12,9 +12,15 @@ export default {
   /**
    * Sends a list of chunks to the subscriber
    * TODO document */
-  sendChunks (subscriber, values) {
-    for (const val of values) {
-      subscriber.next(JSON.parse(val));
+  sendChunks (subscriber, chunks) {
+    for (const chunk of chunks) {
+      try {
+        const json = JSON.parse(chunk);
+        subscriber.next(json);
+      } catch (err) {
+        subscriber.error(`ERROR: ${err}`);
+        break;
+      }
     }
   },
 
@@ -40,35 +46,33 @@ export default {
         const reader = rStream.getReader();
         const decoder = this.decoder;
         const sendChunks = this.sendChunks;
-        let values = [];
 
         return new ReadableStream({
           start () {
+            let chunks = [];
+            let remaining = '';
+
             function read () { // handle each data chunk
               reader.read().then(({ done, value }) => {
                 if (done) { // stream is done
-                  if (values.length) {
-                    sendChunks(subscriber, values);
+                  if (chunks.length) {
+                    sendChunks(subscriber, chunks);
                   }
                   return subscriber.complete();
                 }
 
-                value = decoder(value);
+                remaining += decoder(value);
 
-                const regex = /\n/g;
-                let startIndex = 0;
-                let hasNewline = false;
-                while (regex.exec(value) !== null) {
-                  values.push(value.slice(startIndex, regex.lastIndex));
-                  startIndex = regex.lastIndex;
-                  hasNewline = true;
+                let pos = 0;
+                while ((pos = remaining.indexOf('\n')) > -1) {
+                  chunks.push(remaining.slice(0, pos)); // process chunk
+                  // keep the rest because it may not be complete
+                  remaining = remaining.slice(pos + 1, remaining.length);
                 }
 
-                if (hasNewline || values.length) {
-                  sendChunks(subscriber, values);
-                  values = [];
-                } else {
-                  values.push(value);
+                if (chunks.length) {
+                  sendChunks(subscriber, chunks);
+                  chunks = [];
                 }
 
                 read(); // keep reading until done

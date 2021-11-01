@@ -52,7 +52,7 @@ export default {
   data () {
     return {
       error: '',
-      results: [], // TODO object
+      results: {},
       searchTerm: ''
     };
   },
@@ -64,17 +64,18 @@ export default {
   },
   methods: {
     search () {
+      this.error = '';
+      this.results = {};
+
       const self = this;
-      self.results = [];
       // TODO how to make it like this: .subscribe().next(() => ...).error(() => ...).complete(() => ...)
       Cont3xtService.search(this.searchTerm).subscribe({
         next (data) {
           // TODO - check for finish: true - good finish
           console.log('GOT DATA IN CHUNK', data);
-          self.results.push(data);
-          // if (data.name) {
-          //   self.results[data.name] = data.data;
-          // }
+          if (data.name) {
+            self.$set(self.results, data.name, data.data);
+          }
           // TODO UPDATE PROGRESS BAR
         },
         error (e) {

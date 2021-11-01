@@ -111,12 +111,16 @@ app.get('/api/integration/userSettings', Integration.apiUserSettings);
 
 app.get('/test/:len', (req, res) => {
   const len = req.params.len || 100;
+  const multiRead = req.query.multiRead === 'true';
 
   for (let i = 0; i < len; i++) {
     setTimeout(() => {
-      let jsonStr = JSON.stringify({ num: i });
-      if (i % 2) { jsonStr += '\n'; }
-      res.write(jsonStr);
+      if (!multiRead) {
+        res.write(JSON.stringify({ num: i }) + '\n');
+      } else {
+        res.write(`{"before":${i}}\n{"num":`);
+        res.write(`${i}}\n{"after":${i}}\n`);
+      }
     }, 100 * i);
   }
 
