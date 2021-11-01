@@ -35,6 +35,8 @@ export default {
         return subscriber.complete();
       }
 
+      searchTerm = encodeURIComponent(searchTerm);
+
       fetch(`api/integration/search/${searchTerm}`).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
           throw new Error(response.statusText);
