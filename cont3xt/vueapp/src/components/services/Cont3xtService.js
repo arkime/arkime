@@ -1,15 +1,23 @@
-import Observable from './Observable';
+import Observable from '@/utils/Observable';
 
 export default {
   /**
    * Decodes an array of 8-bit unsigned integers into text
-   * TODO document */
+   * @param {Array} arr - Uint8Array
+   * @returns {String} - The text represented by the Uint8Array array
+   */
   decoder (arr) {
     const dec = new TextDecoder('utf-8');
     return dec.decode(arr);
   },
 
-  /** TODO document */
+  /**
+   * Parses JSON and sends the chunk to the subscriber.
+   * Also sends any errors to the subscriber.
+   * Logs JSON parsing errors to the console with the offending JSON.
+   * @param {Object} subscriber - The subscriber to send chunks
+   * @param {String} chunk - The stringified JSON to parse and send to the subscriber
+   */
   sendChunk (subscriber, chunk) {
     // Skip the chunk that is just [
     if (chunk.length < 2) { return; }
@@ -24,8 +32,11 @@ export default {
   },
 
   /**
-   * Gets stuff
-   * TODO document
+   * Fetches integration data from the server given a search term.
+   * Watches for a stream of data then reads and parses each chunk.
+   * Sends chunks back to the subscriber of the search.
+   * @param {String} searchTerm - The query to search the integrations for
+   * @returns {Observable} - The observable object to subscribe to updates
    */
   search (searchTerm) {
     return new Observable((subscriber) => {

@@ -22,7 +22,6 @@
     "qs": "^6.9.4",
     "sanitize-html": "^2.3.2",
     "vue-clickaway": "^2.2.2",
-    "vue-clipboard2": "^0.3.0",
     "vue-color": "^2.4.6"
   },
   "scripts": {

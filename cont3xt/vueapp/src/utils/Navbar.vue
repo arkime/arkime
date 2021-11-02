@@ -55,7 +55,7 @@
       height="8px"
       class="mt-2 cursor-help"
       :max="getLoading.total"
-      :animated="getLoading.total != getLoading.received">
+      :animated="getLoading.total != getLoading.received + getLoading.failed">
       <b-progress-bar
         variant="success"
         :value="getLoading.received"
@@ -77,8 +77,7 @@ export default {
   name: 'Cont3xtNavbar',
   data: function () {
     return {
-      // default theme is dark
-      theme: 'dark'
+      theme: 'dark' // default theme is dark
     };
   },
   computed: {

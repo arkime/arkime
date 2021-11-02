@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Cont3xt from '@/components/Cont3xt';
-import Cont3xtSettings from '@/components/Settings';
-import Cont3xtHelp from '@/components/Help';
-import Cont3xt404 from '@/components/404';
+import Cont3xt from '@/components/pages/Cont3xt';
+import Cont3xtSettings from '@/components/pages/Settings';
+import Cont3xtHelp from '@/components/pages/Help';
+import Cont3xt404 from '@/components/pages/404';
 
 Vue.use(Router);
 

@@ -11,8 +11,8 @@
 </template>
 
 <script>
-import Cont3xtNavbar from './components/Navbar';
-import Cont3xtUpgradeBrowser from './components/UpgradeBrowser';
+import Cont3xtNavbar from '@/utils/Navbar';
+import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser';
 
 export default {
   name: 'App',
@@ -37,7 +37,43 @@ export default {
 </script>
 
 <style>
+body {
+  --color-accent: #00B785;
+  --color-orange: #E39300;
+  --color-white: #EEEEEE;
+  --color-black: #131313;
+  --color-gray: #777777;
+}
+body.dark {
+  --color-white: #131313;
+  --color-black: #EEEEEE;
+}
+
+.text-orange {
+  color: var(--color-orange);
+}
+
 .margin-for-nav-and-progress {
   margin-top: 80px !important;
+}
+
+/* description list styles */
+dl.dl-horizontal {
+  margin-bottom: 0.2rem;
+}
+dl.dl-horizontal dt {
+  float: left;
+  width: 40px;
+  overflow: hidden;
+  clear: left;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0;
+  color: var(--color-accent);
+}
+dl.dl-horizontal dd {
+  margin-left: 50px;
+  margin-bottom: 0;
 }
 </style>
