@@ -63,7 +63,7 @@ class Integration {
       directLookup: 0,
       directFound: 0,
       directGood: 0,
-      directRecentAvgMS: 0.0,
+      directRecentAvgMS: 0.0
     };
 
     // cacheTime order we check:
@@ -184,7 +184,7 @@ class Integration {
         shared.res.write(JSON.stringify({ finished: true }));
         shared.res.end(']\n');
       }
-    }
+    };
 
     for (const integration of integrations) {
       const cacheKey = `${integration.name}-${itype}-${query}`;
@@ -203,13 +203,13 @@ class Integration {
         const lookup = Math.min(stats[prefix + 'Lookup'], 100);
         console.log('LOOKUP', lookup);
         stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
-      }
+      };
 
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
         stats.cacheLookup++;
-        const startTime = Date.now();
+        const cStartTime = Date.now();
         const response = await Integration.cache.get(cacheKey);
-        updateTime(Date.now() - startTime, 'cache');
+        updateTime(Date.now() - cStartTime, 'cache');
         if (response) {
           stats.cacheFound++;
           if (Date.now() - response._createTime < integration.cacheTimeout) {
@@ -223,10 +223,10 @@ class Integration {
       }
 
       stats.directLookup++;
-      const startTime = Date.now();
+      const dStartTime = Date.now();
       integration[integration.itypes[itype]](shared.user, query)
         .then(response => {
-          updateTime(Date.now() - startTime, 'direct');
+          updateTime(Date.now() - dStartTime, 'direct');
           stats.directFound++;
           shared.sent++;
           if (response) {
