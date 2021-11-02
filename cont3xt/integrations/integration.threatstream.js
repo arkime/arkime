@@ -54,7 +54,7 @@ class ThreatstreamIntegration extends Integration {
       if (!tkey || !tuser) {
         return undefined;
       }
-      const threatstreamRes = await axios.get(`https://${host}/api/v2/intelligence`, {
+      const result = await axios.get(`https://${host}/api/v2/intelligence`, {
         params: {
           value__exact: query
         },
@@ -64,8 +64,12 @@ class ThreatstreamIntegration extends Integration {
         }
       });
 
-      return threatstreamRes.data;
+      if (result.data.meta.total_count === 0) { return; }
+      result.data._count = result.data.meta.total_count;
+
+      return result.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, query, err);
       return null;
     }

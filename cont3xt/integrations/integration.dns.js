@@ -70,6 +70,8 @@ class DNSIntegration extends Integration {
       }
       return result;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
+      console.log(this.name, domain, err);
       return null;
     }
   }

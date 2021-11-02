@@ -49,8 +49,10 @@ class ShodanIntegration extends Integration {
         }
       });
 
+      response.data._count = 1;
       return response.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, ip, err);
       return null;
     }

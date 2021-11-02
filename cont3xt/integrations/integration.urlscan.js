@@ -93,7 +93,7 @@ class URLScanIntegration extends Integration {
         return undefined;
       }
 
-      const urlScanRes = await axios.get('https://urlscan.io/api/v1/search/', {
+      const result = await axios.get('https://urlscan.io/api/v1/search/', {
         params: {
           q: query
         },
@@ -102,8 +102,12 @@ class URLScanIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
-      return urlScanRes.data;
+
+      if (result.data.total === 0) { return; }
+      result.data._count = result.data.total;
+      return result.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, query, err);
       return null;
     }

@@ -48,8 +48,10 @@ class SpurIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+      response.data._count = 1;
       return response.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, ip, err);
       return undefined;
     }

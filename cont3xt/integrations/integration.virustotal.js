@@ -48,7 +48,7 @@ class VirusTotalIntegration extends Integration {
         return undefined;
       }
 
-      const virusTotalRes = await axios.get('https://www.virustotal.com/vtapi/v2/domain/report', {
+      const response = await axios.get('https://www.virustotal.com/vtapi/v2/domain/report', {
         params: {
           apikey: key,
           domain: domain
@@ -58,7 +58,8 @@ class VirusTotalIntegration extends Integration {
         }
       });
 
-      return virusTotalRes.data;
+      response.data._count = 1;
+      return response.data;
     } catch (err) {
       console.log(this.name, domain, err);
       return null;
@@ -72,7 +73,7 @@ class VirusTotalIntegration extends Integration {
         return undefined;
       }
 
-      const virusTotalRes = await axios.get('https://www.virustotal.com/vtapi/v2/ip-address/report', {
+      const response = await axios.get('https://www.virustotal.com/vtapi/v2/ip-address/report', {
         params: {
           apikey: key,
           ip: ip
@@ -82,7 +83,8 @@ class VirusTotalIntegration extends Integration {
         }
       });
 
-      return virusTotalRes.data;
+      response.data._count = 1;
+      return response.data;
     } catch (err) {
       console.log(this.name, ip, err);
       return null;
@@ -96,7 +98,7 @@ class VirusTotalIntegration extends Integration {
         return undefined;
       }
 
-      const virusTotalRes = await axios.get('https://www.virustotal.com/vtapi/v2/file/report', {
+      const response = await axios.get('https://www.virustotal.com/vtapi/v2/file/report', {
         params: {
           apikey: key,
           resource: hash
@@ -106,8 +108,10 @@ class VirusTotalIntegration extends Integration {
         }
       });
 
-      return virusTotalRes.data;
+      response.data._count = 1;
+      return response.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, hash, err);
       return null;
     }

@@ -81,8 +81,11 @@ class PassiveTotalWhoisIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+
+      result.data._count = 1;
       return result.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, domain, err);
       return null;
     }
@@ -127,8 +130,11 @@ class PassiveTotalDomainsIntegration extends Integration {
         }
       });
 
+      result.data._count = result.data.subdomains.length;
+      if (result.data.subdomains.length === 0) { return undefined; }
       return result.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, domain, err);
       return null;
     }
@@ -173,8 +179,10 @@ class PassiveTotalDNSIntegration extends Integration {
         }
       });
 
+      result.data._count = parseInt(result.data.totalRecords);
       return result.data;
     } catch (err) {
+      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, ip, err);
       return null;
     }

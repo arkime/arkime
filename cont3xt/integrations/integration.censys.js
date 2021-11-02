@@ -80,6 +80,7 @@ class CensysIntegration extends Integration {
           });
       } */
 
+      censysData._count = 1;
       return censysData;
     } catch (err) {
       console.log(this.name, ip, err);
