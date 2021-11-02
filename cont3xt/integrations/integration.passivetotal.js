@@ -46,6 +46,7 @@ class PassiveTotalIntegration extends Integration {
 class PassiveTotalWhoisIntegration extends Integration {
   name = 'PassiveTotalWhois';
   icon = 'public/passiveTotalIcon.png';
+  configName = 'PassiveTotal';
   itypes = {
     domain: 'fetchDomain'
   };
@@ -61,8 +62,8 @@ class PassiveTotalWhoisIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
-      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotalUser');
+      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -91,6 +92,7 @@ class PassiveTotalWhoisIntegration extends Integration {
 class PassiveTotalDomainsIntegration extends Integration {
   name = 'PassiveTotalDomains';
   icon = 'public/passiveTotalIcon.png';
+  configName = 'PassiveTotal';
   itypes = {
     domain: 'fetchDomain'
   };
@@ -106,8 +108,8 @@ class PassiveTotalDomainsIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
-      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotalUser');
+      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -136,6 +138,7 @@ class PassiveTotalDomainsIntegration extends Integration {
 class PassiveTotalDNSIntegration extends Integration {
   name = 'PassiveTotalDNS';
   icon = 'public/passiveTotalIcon.png';
+  configName = 'PassiveTotal';
   itypes = {
     ip: 'fetchIp'
   };
@@ -151,8 +154,8 @@ class PassiveTotalDNSIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
-      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotalUser');
+      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
       if (!puser || !pkey) {
         return undefined;
       }

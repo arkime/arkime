@@ -136,7 +136,7 @@ class Integration {
   }
 
   /**
-   * List out all the integrations
+   * List out all the integrations. Integrations without any itypes are skipped.
    * doable - as a user will this integration execute
    * cacheTimeout - how long results will be cached, -1 not cached
    * icon - relative url to icon
@@ -146,6 +146,8 @@ class Integration {
     const results = {};
     const integrations = Integration.integrations.all;
     for (const integration of integrations) {
+      if (Object.keys(integration.itypes).length === 0) { continue; }
+
       let doable = true;
       if (integration.userSettings) {
         for (const setting in integration.userSettings) {
@@ -362,7 +364,7 @@ class Integration {
    * If the start of the k matches this.name, it is removed before checking the section.
    */
   getUserConfig (user, k, d) {
-    return this.getUserConfigFull(user, this.name, k, d);
+    return this.getUserConfigFull(user, this.configName ?? this.name, k, d);
   }
 
   userAgent () {
