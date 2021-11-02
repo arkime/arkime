@@ -70,7 +70,7 @@ export default {
       results: {},
       searchItype: '',
       integrationView: {},
-      searchTerm: this.$route.query.q || '',
+      searchTerm: this.$route.query.q || ''
     };
   },
   computed: {
