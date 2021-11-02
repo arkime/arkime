@@ -37,6 +37,7 @@ export default {
 </script>
 
 <style>
+/* TODO apply theme colors to bootstrap elements */
 body {
   --color-accent: #00B785;
   --color-orange: #E39300;
@@ -50,7 +51,10 @@ body.dark {
 }
 
 .text-orange {
-  color: var(--color-orange);
+  color: var(--color-orange) !important;
+}
+.text-accent {
+  color: var(--color-accent) !important;
 }
 
 .margin-for-nav-and-progress {

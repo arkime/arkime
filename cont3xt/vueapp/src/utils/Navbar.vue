@@ -64,7 +64,7 @@
       <b-progress-bar
         variant="danger"
         :value="getLoading.failed"
-        v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed`"
+        v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
       />
     </b-progress>
   </div>

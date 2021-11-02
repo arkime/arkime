@@ -65,7 +65,9 @@
         />
       </div>
       <div class="col-6">
-        <pre v-if="Object.keys(integrationView).length">{{ integrationView }}</pre>
+        <pre class="text-accent"
+          v-if="Object.keys(integrationView).length"
+        >{{ integrationView }}</pre>
       </div>
     </div> <!-- /results -->
 
@@ -132,11 +134,11 @@ export default {
 
           if (data.sent && data.total) { // update the progress bar
             failed = data.failed ? ++failed : failed;
-            // TODO show which ones failed in the progress bar
             this.loading = {
               failed: failed,
               total: data.total,
-              received: data.sent
+              received: data.sent,
+              failure: data.failed && data.name ? data.name : null
             };
           }
 

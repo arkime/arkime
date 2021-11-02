@@ -212,7 +212,7 @@ body.dark .info-area > div {
 }
 
 /* darken pre */
-body.dark pre {
+body.dark pre:not(.text-*) {
   color: white !important;
 }
 

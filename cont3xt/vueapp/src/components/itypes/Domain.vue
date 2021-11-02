@@ -3,35 +3,48 @@
     <div class="card-body">
       <div class="row">
         <div class="col" v-if="data">
-          <strong class="text-orange">
+          <!-- TODO vertical align -->
+          <h4 class="text-orange display-inline mt-1">
             DOMAIN
-          </strong>
+          </h4>
           <cont3xt-field
             :value="data._query"
           />
-          <!-- TODO better way? use whois -->
-          <span v-if="data && data.PassiveTotalWhois && data.PassiveTotalWhois.data">
-            {{ data.PassiveTotalWhois.data.registered | removeTime }}
-            {{ data.PassiveTotalWhois.data.registrar }}
+          <span v-if="data && data.Whois && data.Whois.data">
+            <h5 class="display-inline">
+              <label class="badge badge-dark"
+                v-b-tooltip="data.Whois.data.creationDate">
+                {{ data.Whois.data.creationDate | removeTime }}
+              </label>
+            </h5>
+            <h5 class="display-inline"><label class="badge badge-dark">
+              {{ data.Whois.data.registrar }}
+            </label></h5>
           </span>
-          <span v-for="(value, key) in getIntegrations"
-            :key="key">
-            <template v-if="data[key] && value.icon">
+          <template v-for="(value, key) in getIntegrations">
+            <b-button
+              :key="key"
+              variant="outline-dark pull-right ml-1"
+              v-if="data[key] && value.icon"
+              v-b-tooltip.hover="key"
+              @click="$emit('integration', { itype: 'domain', source: key })">
               <img
                 :alt="key"
                 :src="value.icon"
-                v-b-tooltip.hover="key"
                 class="integration-img cursor-pointer"
-                @click="$emit('integration', { itype: 'domain', source: key })"
               />
-            </template>
-          </span>
+              <b-badge
+                :variant="getLoading.failures.indexOf(key) < 0 ? 'success' : 'secondary'"
+                v-if="data[key].data._count">
+                {{ data[key].data._count }}
+              </b-badge>
+            </b-button>
+          </template>
         </div>
       </div>
       <template v-if="data.DNS">
         <hr>
         <!-- TODO for A and AAAA show one per line and display ip itype underneath -->
-        <!-- TODO display _count -->
         <div class="row medium"
           v-for="(value, key) in data.DNS.data"
           :key="key">
@@ -67,7 +80,7 @@ export default {
     data: Object
   },
   computed: {
-    ...mapGetters(['getIntegrations'])
+    ...mapGetters(['getIntegrations', 'getLoading'])
   },
   mounted () { // TODO remove
     console.log('DATA!', this.data);
