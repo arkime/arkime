@@ -19,9 +19,8 @@ const axios = require('axios');
 class PassiveTotalIntegration extends Integration {
   name = 'PassiveTotal';
   icon = 'public/passiveTotalIcon.png';
+  noStats = true;
   itypes = {
-    domain: 'fetchDomain',
-    ip: 'fetchIp'
   };
 
   userSettings = {
@@ -42,16 +41,33 @@ class PassiveTotalIntegration extends Integration {
 
     Integration.register(this);
   }
+}
+
+class PassiveTotalWhoisIntegration extends Integration {
+  name = 'PassiveTotalWhois';
+  icon = 'public/passiveTotalIcon.png';
+  itypes = {
+    domain: 'fetchDomain'
+  };
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
+  }
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotalUser');
-      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
+      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
+      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
       if (!puser || !pkey) {
         return undefined;
       }
 
-      const passiveTotalWhois = axios.get('https://api.passivetotal.org/v2/whois', {
+      const result = await axios.get('https://api.passivetotal.org/v2/whois', {
         params: {
           query: domain,
           history: false
@@ -64,8 +80,39 @@ class PassiveTotalIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+      return result.data;
+    } catch (err) {
+      console.log(this.name, domain, err);
+      return null;
+    }
+  }
+}
 
-      const passiveTotalSubDomainsResult = axios.get('https://api.passivetotal.org/v2/enrichment/subdomains', {
+class PassiveTotalDomainsIntegration extends Integration {
+  name = 'PassiveTotalDomains';
+  icon = 'public/passiveTotalIcon.png';
+  itypes = {
+    domain: 'fetchDomain'
+  };
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
+  }
+
+  async fetchDomain (user, domain) {
+    try {
+      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
+      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
+      if (!puser || !pkey) {
+        return undefined;
+      }
+
+      const result = await axios.get('https://api.passivetotal.org/v2/enrichment/subdomains', {
         params: {
           query: domain
         },
@@ -78,22 +125,39 @@ class PassiveTotalIntegration extends Integration {
         }
       });
 
-      return { whois: (await passiveTotalWhois).data, subDomains: (await passiveTotalSubDomainsResult).data };
+      return result.data;
     } catch (err) {
       console.log(this.name, domain, err);
       return null;
     }
   }
+}
+
+class PassiveTotalDNSIntegration extends Integration {
+  name = 'PassiveTotalDNS';
+  icon = 'public/passiveTotalIcon.png';
+  itypes = {
+    ip: 'fetchIp'
+  };
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
+  }
 
   async fetchIp (user, ip) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotalUser');
-      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
+      const puser = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalUser');
+      const pkey = this.getUserConfigFull(user, 'PassiveTotal', 'PassiveTotalKey');
       if (!puser || !pkey) {
         return undefined;
       }
 
-      const passiveTotalPassiveDNS = await axios.get('https://api.passivetotal.org/v2/dns/passive', {
+      const result = await axios.get('https://api.passivetotal.org/v2/dns/passive', {
         params: {
           query: ip
         },
@@ -106,7 +170,7 @@ class PassiveTotalIntegration extends Integration {
         }
       });
 
-      return passiveTotalPassiveDNS.data;
+      return result.data;
     } catch (err) {
       console.log(this.name, ip, err);
       return null;
@@ -114,5 +178,8 @@ class PassiveTotalIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
+/* eslint-disable no-new */
 new PassiveTotalIntegration();
+new PassiveTotalWhoisIntegration();
+new PassiveTotalDomainsIntegration();
+new PassiveTotalDNSIntegration();

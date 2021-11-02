@@ -24,6 +24,7 @@ class Integration {
   static debug = 0;
   static cache;
   static getConfig;
+  static cont3xtStartTime = Date.now();
   static integrations = {
     all: [],
     ip: [],
@@ -34,7 +35,6 @@ class Integration {
     url: [],
     text: []
   };
-  static cont3xtStartTime = Date.now();
 
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
@@ -54,6 +54,7 @@ class Integration {
       console.log('REGISTER', integration.name);
     }
     integration.cacheable = integration.cacheable ?? true;
+    integration.noStats = integration.noStats ?? false;
 
     integration.stats = {
       total: 0,
@@ -202,7 +203,6 @@ class Integration {
       // Calculate rolling average over at most 100 items
       const updateTime = (diff, prefix) => {
         const lookup = Math.min(stats[prefix + 'Lookup'], 100);
-        console.log('LOOKUP', lookup);
         stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
       };
 
@@ -316,6 +316,7 @@ class Integration {
   static async apiStats (req, res, next) {
     const result = {};
     for (const integration of Integration.integrations.all) {
+      if (integration.noStats) { continue; }
       result[integration.name] = integration.stats;
     }
     res.send({ success: true, startTime: Integration.cont3xtStartTime, settings: result });
@@ -327,23 +328,33 @@ class Integration {
 
   /**
    * Return a config value by first check the user, then the section, and then the cont3xt section.
-   * If the start of the k matches this.name, it is removed before checking the section.
+   * If the start of the k matches section, it is removed before checking the section.
+   *
+   * ALW TODO - This probably should be in cont3xt.js?
    */
-  getUserConfig (user, k, d) {
+  getUserConfigFull (user, section, k, d) {
     if (user.cont3xt) {
       const v = user.getCont3xtConfig(k);
       if (v !== undefined) { return v; }
     }
 
-    if (k.startsWith(this.name)) {
-      const v = Integration.getConfig(this.name, k.substring(this.name.length));
+    if (k.startsWith(section)) {
+      const v = Integration.getConfig(section, k.substring(section.length));
       if (v !== undefined) { return v; }
     } else {
-      const v = Integration.getConfig(this.name, k);
+      const v = Integration.getConfig(section, k);
       if (v !== undefined) { return v; }
     }
 
     return Integration.getConfig('cont3xt', k, d);
+  }
+
+  /**
+   * Return a config value by first check the user, then the interation name section, and then the cont3xt section.
+   * If the start of the k matches this.name, it is removed before checking the section.
+   */
+  getUserConfig (user, k, d) {
+    return this.getUserConfigFull(user, this.name, k, d);
   }
 
   userAgent () {
