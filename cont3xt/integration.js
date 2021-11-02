@@ -60,7 +60,9 @@ class Integration {
     //   cacheTimeout in integration code
     //   60 minutes
     integration.cacheTimeout = parseInt(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? 60 * 60 * 1000)));
-    console.log('cacheTimeout', integration.name, integration.cacheTimeout);
+    if (Integration.debug > 0) {
+      console.log('cacheTimeout', integration.name, integration.cacheTimeout);
+    }
 
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
@@ -145,6 +147,56 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
+  static async runIntegrationsList (shared, query, itype, integrations) {
+    shared.total += integrations.length;
+    console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
+
+    const writeOne = (integration, response) => {
+      // ALW HACK TODO: maybe callback into integration
+      if (itype === 'domain' && integration.name === 'DNS' && response?.A?.Status === 0 && Array.isArray(response?.A?.Answer)) {
+        for (const answer of response.A.Answer) {
+          Integration.runIntegrationsList(shared, answer.data, 'ip', Integration.integrations.ip);
+        }
+      }
+
+      shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));
+      shared.res.write(',\n');
+    };
+
+    for (const integration of integrations) {
+      const cacheKey = `${integration.name}-${itype}-${query}`;
+
+      if (!shared.skipCache && Integration.cache && integration.cacheable) {
+        const response = await Integration.cache.get(cacheKey);
+        if (response && Date.now() - response._createTime < integration.cacheTimeout) {
+          shared.sent++;
+          writeOne(integration, response);
+          if (shared.sent === shared.total) {
+            shared.res.write(JSON.stringify({ finished: true }));
+            shared.res.end(']\n');
+          }
+          continue;
+        }
+      }
+
+      integration[integration.itypes[itype]](shared.user, query)
+        .then(response => {
+          shared.sent++;
+          if (response) {
+            response._createTime = Date.now();
+            writeOne(integration, response);
+            if (response && Integration.cache && integration.cacheable) {
+              Integration.cache.set(cacheKey, response);
+            }
+          }
+          if (shared.sent === shared.total) {
+            shared.res.write(JSON.stringify({ finished: true }));
+            shared.res.end(']\n');
+          }
+        });
+    }
+  }
+
   /**
    * The search api to go against integrations
    */
@@ -153,51 +205,29 @@ class Integration {
       return res.send({ success: false, text: 'Missing query' });
     }
     const query = req.body.query.trim();
-    const skipCache = req.query.skipCache === 'true';
 
     const itype = Integration.classify(query);
 
     const integrations = Integration.integrations[itype];
-    let sent = 0;
-    const total = integrations.length;
+    const shared = {
+      skipCache: req.query.skipCache === 'true',
+      user: req.user,
+      res: res,
+      sent: 0,
+      total: 0 // runIntegrationsList will fix
+    };
     res.write('[\n');
-    res.write(JSON.stringify({ success: true, itype: itype, sent: sent, total: total, text: 'more to follow' }));
+    res.write(JSON.stringify({ success: true, itype: itype, sent: shared.sent, total: integrations.length, text: 'more to follow' }));
     res.write(',\n');
 
-    for (const integration of integrations) {
-      const cacheKey = `${integration.name}-${itype}-${query}`;
-
-      if (!skipCache && Integration.cache && integration.cacheable) {
-        const response = await Integration.cache.get(cacheKey);
-        // TODO - Fix dup sending code for cache and not cache
-        if (response && Date.now() - response._createTime < integration.cacheTimeout) {
-          sent++;
-          res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
-          res.write(',\n');
-          if (sent === total) {
-            res.write(JSON.stringify({ finished: true }));
-            res.end(']\n');
-          }
-          continue;
-        }
-      }
-
-      integration[integration.itypes[itype]](req.user, query)
-        .then(response => {
-          sent++;
-          if (response) {
-            response._createTime = Date.now();
-            res.write(JSON.stringify({ sent: sent, total: total, name: integration.name, data: response }));
-            res.write(',\n');
-            if (response && Integration.cache && integration.cacheable) {
-              Integration.cache.set(cacheKey, response);
-            }
-          }
-          if (sent === total) {
-            res.write(JSON.stringify({ finished: true }));
-            res.end(']\n');
-          }
-        });
+    Integration.runIntegrationsList(shared, query, itype, integrations);
+    if (itype === 'email') {
+      const dquery = query.slice(query.indexOf('@') + 1);
+      Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain);
+    } else if (itype === 'url') {
+      const url = new URL(query);
+      // url.hostname does NOT include port
+      Integration.runIntegrationsList(shared, url.hostname, 'domain', Integration.integrations.domain);
     }
   }
 
