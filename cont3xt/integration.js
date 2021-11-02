@@ -54,6 +54,18 @@ class Integration {
     }
     integration.cacheable = integration.cacheable ?? true;
 
+    integration.stats = {
+      total: 0,
+      cacheLookup: 0,
+      cacheFound: 0,
+      cacheGood: 0,
+      cacheRecentAvgMS: 0.0,
+      directLookup: 0,
+      directFound: 0,
+      directGood: 0,
+      directRecentAvgMS: 0.0,
+    };
+
     // cacheTime order we check:
     //   cacheTimeout in integration section
     //   cacheTimeout in cont3xt section
@@ -121,7 +133,11 @@ class Integration {
   }
 
   /**
-   * List out all the integrations, if we can do them. Maybe card info goes here?
+   * List out all the integrations
+   * doable - as a user will this integration execute
+   * cacheTimeout - how long results will be cached, -1 not cached
+   * icon - relative url to icon
+   * card - information on how to display the card
    */
   static async apiList (req, res, next) {
     const results = {};
@@ -163,36 +179,65 @@ class Integration {
       shared.res.write(',\n');
     };
 
+    const writeDone = () => {
+      if (shared.sent === shared.total) {
+        shared.res.write(JSON.stringify({ finished: true }));
+        shared.res.end(']\n');
+      }
+    }
+
     for (const integration of integrations) {
       const cacheKey = `${integration.name}-${itype}-${query}`;
+      const stats = integration.stats;
+
+      if (shared.skipIntegrations.includes(integration.name)) {
+        shared.sent++;
+        writeDone();
+        return;
+      }
+
+      stats.total++;
+
+      // Calculate rolling average over at most 100 items
+      const updateTime = (diff, prefix) => {
+        const lookup = Math.min(stats[prefix + 'Lookup'], 100);
+        console.log('LOOKUP', lookup);
+        stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
+      }
 
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
+        stats.cacheLookup++;
+        const startTime = Date.now();
         const response = await Integration.cache.get(cacheKey);
-        if (response && Date.now() - response._createTime < integration.cacheTimeout) {
-          shared.sent++;
-          writeOne(integration, response);
-          if (shared.sent === shared.total) {
-            shared.res.write(JSON.stringify({ finished: true }));
-            shared.res.end(']\n');
+        updateTime(Date.now() - startTime, 'cache');
+        if (response) {
+          stats.cacheFound++;
+          if (Date.now() - response._createTime < integration.cacheTimeout) {
+            stats.cacheGood++;
+            shared.sent++;
+            writeOne(integration, response);
+            writeDone();
+            continue;
           }
-          continue;
         }
       }
 
+      stats.directLookup++;
+      const startTime = Date.now();
       integration[integration.itypes[itype]](shared.user, query)
         .then(response => {
+          updateTime(Date.now() - startTime, 'direct');
+          stats.directFound++;
           shared.sent++;
           if (response) {
+            stats.directGood++;
             response._createTime = Date.now();
             writeOne(integration, response);
             if (response && Integration.cache && integration.cacheable) {
               Integration.cache.set(cacheKey, response);
             }
           }
-          if (shared.sent === shared.total) {
-            shared.res.write(JSON.stringify({ finished: true }));
-            shared.res.end(']\n');
-          }
+          writeDone();
         });
     }
   }
@@ -204,13 +249,19 @@ class Integration {
     if (!req.body.query) {
       return res.send({ success: false, text: 'Missing query' });
     }
+
+    if (req.body.skipIntegrations && !Array.isArray(req.body.skipIntegrations)) {
+      return res.send({ success: false, text: 'skipIntegrations bad format' });
+    }
+
     const query = req.body.query.trim();
 
     const itype = Integration.classify(query);
 
     const integrations = Integration.integrations[itype];
     const shared = {
-      skipCache: req.query.skipCache === 'true',
+      skipCache: !!req.body.skipCache,
+      skipIntegrations: req.body.skipIntegrations ?? [],
       user: req.user,
       res: res,
       sent: 0,
@@ -254,6 +305,17 @@ class Integration {
           values: values
         });
       }
+    }
+    res.send({ success: true, settings: result });
+  }
+
+  /**
+   * Get stats about integrations
+   */
+  static async apiStats (req, res, next) {
+    const result = {};
+    for (const integration of Integration.integrations.all) {
+      result[integration.name] = integration.stats;
     }
     res.send({ success: true, settings: result });
   }

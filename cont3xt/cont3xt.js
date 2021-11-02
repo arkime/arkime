@@ -108,6 +108,7 @@ app.get('/api/roles', User.apiRoles);
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.get('/api/integration/userSettings', Integration.apiUserSettings);
+app.get('/api/integration/stats', Integration.apiStats);
 
 app.get('/test/:len', (req, res) => {
   const len = req.params.len || 100;
