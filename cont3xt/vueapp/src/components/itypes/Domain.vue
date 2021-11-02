@@ -9,18 +9,18 @@
           <cont3xt-field
             :value="data._query"
           />
-          <!-- TODO better way? -->
+          <!-- TODO better way? use whois -->
           <span v-if="data && data.PassiveTotalWhois && data.PassiveTotalWhois.data">
             {{ data.PassiveTotalWhois.data.registered | removeTime }}
             {{ data.PassiveTotalWhois.data.registrar }}
           </span>
-          <span v-for="(value, key) in data"
+          <span v-for="(value, key) in getIntegrations"
             :key="key">
-            <template v-if="key !== 'DNS' && key[0] !== '_'">
+            <template v-if="data[key] && value.icon">
               <img
                 :alt="key"
+                :src="value.icon"
                 v-b-tooltip.hover="key"
-                :src="`public/${key}.png`"
                 class="integration-img cursor-pointer"
                 @click="$emit('integration', { itype: 'domain', source: key })"
               />
@@ -29,6 +29,9 @@
         </div>
       </div>
       <template v-if="data.DNS">
+        <hr>
+        <!-- TODO for A and AAAA show one per line and display ip itype underneath -->
+        <!-- TODO display _count -->
         <div class="row medium"
           v-for="(value, key) in data.DNS.data"
           :key="key">
@@ -53,6 +56,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import Cont3xtField from '@/utils/Field';
 
 export default {
@@ -60,6 +65,9 @@ export default {
   components: { Cont3xtField },
   props: {
     data: Object
+  },
+  computed: {
+    ...mapGetters(['getIntegrations'])
   },
   mounted () { // TODO remove
     console.log('DATA!', this.data);

@@ -10,7 +10,8 @@ const store = new Vuex.Store({
       failed: 0,
       received: 0,
       done: false
-    }
+    },
+    integrations: {}
   },
   mutations: {
     SET_LOADING (state, data) {
@@ -27,11 +28,17 @@ const store = new Vuex.Store({
         received: 0,
         done: false
       };
+    },
+    SET_INTEGRATIONS (state, data) {
+      state.integrations = data;
     }
   },
   getters: {
     getLoading (state) {
       return state.loading;
+    },
+    getIntegrations (state) {
+      return state.integrations;
     }
   }
 });

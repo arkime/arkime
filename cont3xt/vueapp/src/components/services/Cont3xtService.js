@@ -1,4 +1,5 @@
 import Observable from '@/utils/Observable';
+import store from '@/store';
 
 export default {
   /**
@@ -90,9 +91,29 @@ export default {
             read();
           }
         });
-      }).catch((err) => { // this catches an issue with in the ^ .then
+      }).catch((err) => { // this catches an issue within the ^ .then
         subscriber.error(err);
         return subscriber.complete();
+      });
+    });
+  },
+
+  /**
+   * Fetches the list of integrations that are configured.
+   * @returns {Promise} - The promise that either resovles the or rejects in error
+   */
+  getIntegrations () {
+    return new Promise((resolve, reject) => {
+      fetch('api/integration').then((response) => {
+        if (!response.ok) { // test for bad response code (only on first chunk)
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      }).then((response) => {
+        store.commit('SET_INTEGRATIONS', response.integrations);
+        return resolve(response.integrations);
+      }).catch((err) => { // this catches an issue within the ^ .then
+        return reject(err);
       });
     });
   }

@@ -63,7 +63,7 @@ dl.dl-horizontal {
 }
 dl.dl-horizontal dt {
   float: left;
-  width: 40px;
+  width: 80px;
   overflow: hidden;
   clear: left;
   text-align: right;
@@ -73,7 +73,7 @@ dl.dl-horizontal dt {
   color: var(--color-accent);
 }
 dl.dl-horizontal dd {
-  margin-left: 50px;
+  margin-left: 90px;
   margin-bottom: 0;
 }
 </style>

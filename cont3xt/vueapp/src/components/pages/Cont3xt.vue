@@ -1,6 +1,7 @@
 <template>
   <div class="mr-2 ml-2">
 
+    <!-- TODO display integrations toggle their state -->
     <!-- search -->
     <b-input-group>
       <template #prepend>
@@ -22,19 +23,35 @@
       </b-input-group-append>
     </b-input-group> <!-- /search -->
 
-    <!-- page error -->
+    <!-- search error -->
     <div
-      v-if="error"
-      class="mt-2 alert alert-danger">
+      v-if="error.length"
+      class="mt-2 alert alert-warning">
       <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
       <button
         type="button"
-        @click="error = false"
+        @click="error = ''"
         class="close cursor-pointer">
         <span>&times;</span>
       </button>
-    </div> <!-- /page error -->
+    </div> <!-- /search error -->
+
+    <!-- integration error -->
+    <div
+      v-if="integrationError.length"
+      class="mt-2 alert alert-danger">
+      <span class="fa fa-exclamation-triangle" />&nbsp;
+      Error fetching integrations. Viewing data for integrations will not work!
+      <br>
+      {{ integrationError }}
+      <button
+        type="button"
+        @click="integrationError = ''"
+        class="close cursor-pointer">
+        <span>&times;</span>
+      </button>
+    </div> <!-- /integration error -->
 
     <!-- results -->
     <div
@@ -70,6 +87,7 @@ export default {
       results: {},
       searchItype: '',
       integrationView: {},
+      integrationError: '',
       searchTerm: this.$route.query.q || ''
     };
   },
@@ -80,11 +98,13 @@ export default {
     }
   },
   mounted () {
+    this.getIntegrations();
     if (this.searchTerm) {
       this.search();
     }
   },
   methods: {
+    /* page functions ------------------------------------------------------ */
     displayIntegration ({ itype, source }) {
       this.integrationView = this.results[itype][source].data;
     },
@@ -112,6 +132,7 @@ export default {
 
           if (data.sent && data.total) { // update the progress bar
             failed = data.failed ? ++failed : failed;
+            // TODO show which ones failed in the progress bar
             this.loading = {
               failed: failed,
               total: data.total,
@@ -138,6 +159,13 @@ export default {
             }
           }, 2000);
         }
+      });
+    },
+    /* helpers ------------------------------------------------------------- */
+    getIntegrations () {
+      // NOTE: don't need to do anything with the data (the store does it)
+      Cont3xtService.getIntegrations().catch((err) => {
+        this.integrationError = err;
       });
     }
   }
