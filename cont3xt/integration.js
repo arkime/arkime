@@ -34,6 +34,7 @@ class Integration {
     url: [],
     text: []
   };
+  static cont3xtStartTime = Date.now();
 
   static initialize (options) {
     Integration.debug = options.debug ?? 0;
@@ -317,7 +318,7 @@ class Integration {
     for (const integration of Integration.integrations.all) {
       result[integration.name] = integration.stats;
     }
-    res.send({ success: true, settings: result });
+    res.send({ success: true, startTime: Integration.cont3xtStartTime, settings: result });
   }
 
   getConfig (k, d) {
