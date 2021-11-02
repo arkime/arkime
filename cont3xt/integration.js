@@ -65,6 +65,7 @@ class Integration {
       directLookup: 0,
       directFound: 0,
       directGood: 0,
+      directError: 0,
       directRecentAvgMS: 0.0
     };
 
@@ -239,6 +240,13 @@ class Integration {
             }
           }
           writeDone();
+        })
+        .catch(err => {
+          console.log(integration.name, itype, query, err);
+          shared.sent++;
+          stats.directError++;
+          shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, failed: true }));
+          shared.res.write(',\n');
         });
     }
   }
