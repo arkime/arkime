@@ -173,11 +173,10 @@ class Integration {
     console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
 
     const writeOne = (integration, response) => {
-      // ALW HACK TODO: maybe callback into integration
-      if (itype === 'domain' && integration.name === 'DNS' && response?.A?.Status === 0 && Array.isArray(response?.A?.Answer)) {
-        for (const answer of response.A.Answer) {
-          Integration.runIntegrationsList(shared, answer.data, 'ip', Integration.integrations.ip);
-        }
+      if (integration.addMoreIntegrations) {
+        integration.addMoreIntegrations(itype, response, (moreQuery, moreIType) => {
+          Integration.runIntegrationsList(shared, moreQuery, moreIType, Integration.integrations[moreIType]);
+        });
       }
 
       shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));

@@ -31,6 +31,19 @@ class DNSIntegration extends Integration {
     Integration.register(this);
   }
 
+  addMoreIntegrations (itype, response, addMore) {
+    if (itype === 'domain' && this.name === 'DNS' && response?.A?.Status === 0 && Array.isArray(response?.A?.Answer)) {
+      for (const answer of response.A.Answer) {
+        addMore(answer.data, 'ip');
+      }
+    }
+    if (itype === 'domain' && this.name === 'DNS' && response?.AAAA?.Status === 0 && Array.isArray(response?.AAAA?.Answer)) {
+      for (const answer of response.AAAA.Answer) {
+        addMore(answer.data, 'ip');
+      }
+    }
+  }
+
   async fetchDomain (user, domain) {
     try {
       const instance = axios.create({
@@ -44,6 +57,7 @@ class DNSIntegration extends Integration {
         queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`);
       }
       queries.dmarcTXT = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`);
+      queries.bimiTXT = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`);
 
       const result = {};
       // Wait for them to finish
