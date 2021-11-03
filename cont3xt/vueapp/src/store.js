@@ -12,7 +12,9 @@ const store = new Vuex.Store({
       done: false,
       failures: []
     },
-    integrations: {}
+    integrations: {},
+    displayIntegration: { source: undefined, itype: undefined },
+    integrationData: {}
   },
   mutations: {
     SET_LOADING (state, data) {
@@ -36,6 +38,12 @@ const store = new Vuex.Store({
     },
     SET_INTEGRATIONS (state, data) {
       state.integrations = data;
+    },
+    SET_DISPLAY_INTEGRATION (state, data) {
+      state.displayIntegration = data;
+    },
+    SET_INTEGRATION_DATA (state, data) {
+      state.integrationData = data;
     }
   },
   getters: {
@@ -44,6 +52,9 @@ const store = new Vuex.Store({
     },
     getIntegrations (state) {
       return state.integrations;
+    },
+    getIntegrationData (state) {
+      return state.integrationData;
     }
   }
 });

@@ -371,7 +371,7 @@ class Integration {
     Integration.getConfig('cont3xt', 'userAgent', 'cont3xt');
   }
 
-  normalizeCardFields(inFields) {
+  normalizeCardFields (inFields) {
     const outFields = [];
     for (const f of inFields) {
       if (typeof f === 'string') {
@@ -398,7 +398,7 @@ class Integration {
     return outFields;
   }
 
-  normalizeCard() {
+  normalizeCard () {
     const card = this.card;
     if (!card) { return; }
 

@@ -59,15 +59,20 @@
       class="row mt-2">
       <div class="col-6">
         <cont3xt-domain
-          :data="results.domain"
-          @integration="displayIntegration"
-          v-if="searchItype === 'domain' && results.domain"
+          itype="domain"
+          :data="results"
+          v-if="searchItype === 'domain'"
+        />
+        <cont3xt-ip
+          itype="ip"
+          :data="results"
+          v-else-if="searchItype === 'ip'"
         />
       </div>
       <div class="col-6">
         <pre class="text-accent"
-          v-if="Object.keys(integrationView).length"
-        >{{ integrationView }}</pre>
+          v-if="Object.keys(getIntegrationData).length"
+        >{{ getIntegrationData }}</pre>
       </div>
     </div> <!-- /results -->
 
@@ -75,28 +80,41 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtDomain from '@/components/itypes/Domain';
+import Cont3xtIp from '@/components/itypes/IP';
 
 export default {
   name: 'Cont3xt',
   components: {
-    Cont3xtDomain
+    Cont3xtDomain,
+    Cont3xtIp
   },
   data () {
     return {
       error: '',
       results: {},
       searchItype: '',
-      integrationView: {},
       integrationError: '',
       searchTerm: this.$route.query.q || ''
     };
   },
   computed: {
+    ...mapGetters(['getIntegrationData']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
+    },
+    displayIntegration (newVal, oldVal) {
+      return this.$store.state.displayIntegration;
+    }
+  },
+  watch: {
+    displayIntegration (newIntegration) {
+      const { itype, source } = newIntegration;
+      this.$store.commit('SET_INTEGRATION_DATA', this.results[itype][source].data);
     }
   },
   mounted () {
@@ -107,9 +125,6 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    displayIntegration ({ itype, source }) {
-      this.integrationView = this.results[itype][source].data;
-    },
     search () {
       this.error = '';
       this.results = {};
