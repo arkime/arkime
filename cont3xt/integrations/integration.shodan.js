@@ -23,6 +23,100 @@ class ShodanIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  card = {
+    title: 'Shodan for %{query}',
+    fields: [
+      {
+        name: 'tags',
+        type: 'array',
+        join: ', '
+      },
+      {
+        name: 'ports',
+        type: 'array',
+        join: ', '
+      },
+      {
+        name: 'Service/Port info',
+        type: 'table',
+        field: 'data',
+        fields: [
+          {
+            name: 'product'
+          },
+          {
+            name: 'port'
+          },
+          {
+            name: 'title',
+            field: 'http.title'
+          },
+          {
+            name: 'server',
+            field: 'http.server'
+          },
+          {
+            name: 'module',
+            field: '_shodan.module'
+          },
+          {
+            name: 'data'
+          },
+          {
+            name: 'html',
+            field: 'http.html'
+          }
+        ]
+      },
+      {
+        name: 'Certificates',
+        type: 'table',
+        field: 'data',
+        fields: [
+          {
+            name: 'issued',
+            field: 'ssl.cert.issued'
+          },
+          {
+            name: 'expires',
+            field: 'ssl.cert.expires'
+          },
+          {
+            name: 'sha1',
+            field: 'ssl.cert.fingerprint.sha1'
+          },
+          {
+            name: 'issuer',
+            field: 'ssl.cert.issuer',
+            type: 'json'
+          }
+        ]
+      },
+      'region_code',
+      {
+        name: 'domains',
+        type: 'array',
+        join: ', '
+      },
+      {
+        name: 'hostnames',
+        type: 'array',
+        join: ', '
+      },
+      'country_name',
+      'country_code',
+      'org',
+      'asn',
+      'city',
+      'isp',
+      'latitude',
+      'longitude',
+      'ip',
+      'ip_str',
+      'last_update'
+    ]
+  }
+
   userSettings = {
     ShodanKey: {
       help: 'Your Shodan api key',

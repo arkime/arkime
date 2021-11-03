@@ -37,8 +37,11 @@ class RDAPIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
-      const data = await res.data;
-      return (res.status === 200) ? { status: res.status, name: data.name, link: data.links[0].value } : { status: res.status, error: res.status };
+      if (res.status === 200) {
+        return { name: res.data.name, link: res.data.links[0].value };
+      } else {
+        return null;
+      }
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, ip, err);
