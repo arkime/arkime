@@ -157,6 +157,9 @@ class Integration {
           }
         }
       }
+
+      integration.normalizeCard();
+
       results[integration.name] = {
         doable: doable,
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
@@ -297,8 +300,7 @@ class Integration {
    * Intergrations so a Setting UI can be built on the fly.
    */
   static async apiUserSettings (req, res, next) {
-    // ALW: Should this be an array or obj?
-    const result = [];
+    const result = {};
     const integrations = Integration.integrations.all;
     for (const integration of integrations) {
       if (integration.userSettings) {
@@ -309,11 +311,10 @@ class Integration {
             values[setting] = v;
           }
         }
-        result.push({
-          name: integration.name,
+        result[integration.name] = {
           settings: integration.userSettings,
           values: values
-        });
+        };
       }
     }
     res.send({ success: true, settings: result });
@@ -368,6 +369,44 @@ class Integration {
 
   userAgent () {
     Integration.getConfig('cont3xt', 'userAgent', 'cont3xt');
+  }
+
+  normalizeCardFields(inFields) {
+    const outFields = [];
+    for (const f of inFields) {
+      if (typeof f === 'string') {
+        outFields.push({
+          label: f,
+          path: [f],
+          type: 'string'
+        });
+        continue;
+      }
+      if (f.field === undefined) { f.field = f.label; }
+      if (typeof f.field === 'string') { f.path = f.field.split('.'); }
+      delete f.field;
+
+      if (f.type === undefined) { f.type = 'string'; }
+
+      if (f.type === 'table') {
+        f.fields = this.normalizeCardFields(f.fields);
+      }
+
+      outFields.push(f);
+    }
+
+    return outFields;
+  }
+
+  normalizeCard() {
+    const card = this.card;
+    if (!card) { return; }
+
+    if (!card.title) {
+      this.card.title = `${this.name} for %{query}`;
+    }
+    if (card.fields === undefined) { card.fields = []; }
+    card.fields = this.normalizeCardFields(card.fields);
   }
 }
 

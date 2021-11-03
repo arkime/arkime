@@ -60,12 +60,12 @@ class PassiveTotalWhoisIntegration extends Integration {
       'expiresAt',
       'lastLoadedAt',
       {
-        name: 'nameServers',
+        label: 'nameServers',
         type: 'array',
         join: ', '
       },
       {
-        name: 'registrant',
+        label: 'registrant',
         type: 'json'
       },
       'whoisServer',
@@ -130,7 +130,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
     title: 'PassiveTotal Subdomains for %{query}',
     fields: [
       {
-        name: 'subdomains',
+        label: 'subdomains',
         type: 'array',
         field: 'subdomains'
       }
@@ -193,29 +193,29 @@ class PassiveTotalDNSIntegration extends Integration {
       'lastSeen',
       'totalRecords',
       {
-        name: 'results',
+        label: 'results',
         type: 'table',
         field: 'results',
         fields: [
           {
-            name: 'DNS Type',
+            label: 'DNS Type',
             field: 'recordType'
           },
           {
-            name: 'Type',
+            label: 'Type',
             field: 'resolveType'
           },
           {
-            name: 'Value',
+            label: 'Value',
             field: 'resolve',
             pivot: true
           },
           {
-            name: 'First Seen',
+            label: 'First Seen',
             field: 'firstSeen'
           },
           {
-            name: 'Last Seen',
+            label: 'Last Seen',
             field: 'lastSeen'
           }
         ]

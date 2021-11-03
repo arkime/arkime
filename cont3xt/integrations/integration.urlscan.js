@@ -41,37 +41,37 @@ class URLScanIntegration extends Integration {
       },
       'has_more',
       {
-        name: 'results',
+        label: 'results',
         type: 'table',
         field: 'results',
         fields: [
           {
-            name: 'visibility',
+            label: 'visibility',
             field: 'task.visibility'
           },
           {
-            name: 'method',
+            label: 'method',
             field: 'task.method'
           },
           {
-            name: 'url',
+            label: 'url',
             field: 'task.url',
             defang: true // Maybe should be on server side?
           },
           {
-            name: 'country',
+            label: 'country',
             field: 'page.country'
           },
           {
-            name: 'server',
+            label: 'server',
             field: 'page.server'
           },
           {
-            name: 'status',
+            label: 'status',
             field: 'page.status'
           },
           {
-            name: 'screenshot',
+            label: 'screenshot',
             field: 'screenshot',
             type: 'url'
           }

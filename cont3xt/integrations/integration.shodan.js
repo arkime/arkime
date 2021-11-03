@@ -27,66 +27,66 @@ class ShodanIntegration extends Integration {
     title: 'Shodan for %{query}',
     fields: [
       {
-        name: 'tags',
+        label: 'tags',
         type: 'array',
         join: ', '
       },
       {
-        name: 'ports',
+        label: 'ports',
         type: 'array',
         join: ', '
       },
       {
-        name: 'Service/Port info',
+        label: 'Service/Port info',
         type: 'table',
         field: 'data',
         fields: [
           {
-            name: 'product'
+            label: 'product'
           },
           {
-            name: 'port'
+            label: 'port'
           },
           {
-            name: 'title',
+            label: 'title',
             field: 'http.title'
           },
           {
-            name: 'server',
+            label: 'server',
             field: 'http.server'
           },
           {
-            name: 'module',
+            label: 'module',
             field: '_shodan.module'
           },
           {
-            name: 'data'
+            label: 'data'
           },
           {
-            name: 'html',
+            label: 'html',
             field: 'http.html'
           }
         ]
       },
       {
-        name: 'Certificates',
+        label: 'Certificates',
         type: 'table',
         field: 'data',
         fields: [
           {
-            name: 'issued',
+            label: 'issued',
             field: 'ssl.cert.issued'
           },
           {
-            name: 'expires',
+            label: 'expires',
             field: 'ssl.cert.expires'
           },
           {
-            name: 'sha1',
+            label: 'sha1',
             field: 'ssl.cert.fingerprint.sha1'
           },
           {
-            name: 'issuer',
+            label: 'issuer',
             field: 'ssl.cert.issuer',
             type: 'json'
           }
@@ -94,12 +94,12 @@ class ShodanIntegration extends Integration {
       },
       'region_code',
       {
-        name: 'domains',
+        label: 'domains',
         type: 'array',
         join: ', '
       },
       {
-        name: 'hostnames',
+        label: 'hostnames',
         type: 'array',
         join: ', '
       },

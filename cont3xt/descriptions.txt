@@ -1,7 +1,7 @@
 User Settings Description - an object with each sub object a setting.
   * sub objects can have
     * help - some help text
-    * password - if true the server should send **** instead of the value
+    * password - if true then its a password
 
 Card Description - an object of the following
   * title - title of the card
@@ -10,7 +10,7 @@ Card Description - an object of the following
       * both "name" and "field" are that string
       * type is string
     * otherwise it can be an object with
-      * name - the field name to show the user
+      * label - the field label to show the user
       * field - the path (it can have dots) to the data for field, if not set the field is the same as name. For table type this will be the path to the array.
       * fields - for tables, the list of fields, same format as this
       * type - if not set it is string
@@ -19,7 +19,7 @@ Card Description - an object of the following
         * table - there will be a fields element
         * array - the field var will point to an array, display 1 per line unless join set
         * ms - a ms time value
-        * json - just display raw json
+        * json - just display raw json, call in JSON.stringify(blah, false, 2)
       * defang - when true defang the string, change http to hXXp and change . to [.]
       * pivot - when set this field should be added to action menu for table entry that you can replace query with
       * join - with array, display with value as the separator on one line (example single: ', ')
