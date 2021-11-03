@@ -23,6 +23,17 @@ class WhoisIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
+  card = {
+    title: 'Whois for %{query}',
+    fields: [
+      'updatedDate',
+      'creationDate',
+      'registrar',
+      'registrantOrganization',
+      'adminCountry'
+    ]
+  }
+
   constructor () {
     super();
 

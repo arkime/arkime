@@ -51,6 +51,32 @@ class PassiveTotalWhoisIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
+  card = {
+    title: 'PassiveTotal Whois for %{query}',
+    fields: [
+      'registrar',
+      'organization',
+      'registered',
+      'expiresAt',
+      'lastLoadedAt',
+      {
+        name: 'nameServers',
+        type: 'array',
+        join: ', '
+      },
+      {
+        name: 'registrant',
+        type: 'json'
+      },
+      'whoisServer',
+      'name',
+      'telephone',
+      'domainStatus',
+      'contactEmail',
+      'registryUpdatedAt'
+    ]
+  }
+
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
 
@@ -100,6 +126,17 @@ class PassiveTotalDomainsIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
+  card = {
+    title: 'PassiveTotal Subdomains for %{query}',
+    fields: [
+      {
+        name: 'subdomains',
+        type: 'array',
+        field: 'subdomains'
+      }
+    ]
+  }
+
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
 
@@ -148,6 +185,43 @@ class PassiveTotalDNSIntegration extends Integration {
   itypes = {
     ip: 'fetchIp'
   };
+
+  card = {
+    title: 'PassiveTotal Domain Passive DNS for %{query}',
+    fields: [
+      'firstSeen',
+      'lastSeen',
+      'totalRecords',
+      {
+        name: 'results',
+        type: 'table',
+        field: 'results',
+        fields: [
+          {
+            name: 'DNS Type',
+            field: 'recordType'
+          },
+          {
+            name: 'Type',
+            field: 'resolveType'
+          },
+          {
+            name: 'Value',
+            field: 'resolve',
+            pivot: true
+          },
+          {
+            name: 'First Seen',
+            field: 'firstSeen'
+          },
+          {
+            name: 'Last Seen',
+            field: 'lastSeen'
+          }
+        ]
+      }
+    ]
+  }
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;

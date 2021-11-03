@@ -32,7 +32,7 @@ class URLScanIntegration extends Integration {
   }
 
   card = {
-    name: 'URL Scan for %{query}',
+    title: 'URL Scan for %{query}',
     fields: [
       'total',
       {
