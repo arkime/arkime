@@ -118,8 +118,8 @@ class PassiveTotalWhoisIntegration extends Integration {
   }
 }
 
-class PassiveTotalDomainsIntegration extends Integration {
-  name = 'PassiveTotalDomains';
+class PassiveTotalSubdomainsIntegration extends Integration {
+  name = 'PassiveTotalSubdomains';
   icon = 'public/passiveTotalIcon.png';
   configName = 'PassiveTotal';
   itypes = {
@@ -266,5 +266,5 @@ class PassiveTotalDNSIntegration extends Integration {
 /* eslint-disable no-new */
 new PassiveTotalIntegration();
 new PassiveTotalWhoisIntegration();
-new PassiveTotalDomainsIntegration();
+new PassiveTotalSubdomainsIntegration();
 new PassiveTotalDNSIntegration();
