@@ -54,9 +54,7 @@
     </div> <!-- /integration error -->
 
     <!-- results -->
-    <div
-      v-if="results"
-      class="row mt-2">
+    <div class="row mt-2">
       <div class="col-6">
         <cont3xt-domain
           itype="domain"
@@ -113,8 +111,12 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
-      const { itype, source } = newIntegration;
-      this.$store.commit('SET_INTEGRATION_DATA', this.results[itype][source].data);
+      const { itype, source, value } = newIntegration;
+      for (const data of this.results[itype][source]) {
+        if (data._query === value) {
+          this.$store.commit('SET_INTEGRATION_DATA', data);
+        }
+      }
     }
   },
   mounted () {
@@ -126,6 +128,7 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     search () {
+      // TODO second search doesn't clear results?
       this.error = '';
       this.results = {};
       this.searchItype = '';
@@ -142,9 +145,18 @@ export default {
 
           if (data.itype && data.name) { // add the data to the page per itype
             if (!this.results[data.itype]) {
-              this.$set(this.results, data.itype, { _query: data.query });
+              this.$set(this.results, data.itype, {});
             }
-            this.$set(this.results[data.itype], data.name, data);
+            if (!this.results[data.itype][data.name]) {
+              this.$set(this.results[data.itype], data.name, []);
+            }
+            if (!this.results[data.itype]._query) {
+              this.$set(this.results[data.itype], '_query', data.query);
+            }
+            this.results[data.itype][data.name].push({
+              data: data.data,
+              _query: data.query
+            });
           }
 
           if (data.sent && data.total) { // update the progress bar

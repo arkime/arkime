@@ -11,50 +11,67 @@
           <cont3xt-field
             :value="data[itype]._query"
           />
-          <span v-if="data[itype].Whois && data[itype].Whois.data">
-            <h5 class="display-inline">
-              <label class="badge badge-dark"
-                v-b-tooltip="data[itype].Whois.data.creationDate">
-                {{ data[itype].Whois.data.creationDate | removeTime }}
-              </label>
-            </h5>
-            <h5 class="display-inline"><label class="badge badge-dark">
-              {{ data[itype].Whois.data.registrar }}
-            </label></h5>
-          </span>
+          <template v-if="data[itype].Whois">
+            <template v-for="whois in data[itype].Whois">
+              <span v-if="whois.data"
+                :key="`whois-${whois._query}`">
+                <h5 class="display-inline">
+                  <label class="badge badge-dark"
+                    v-b-tooltip="whois.data.creationDate">
+                    {{ whois.data.creationDate | removeTime }}
+                  </label>
+                </h5>
+                <h5 class="display-inline"><label class="badge badge-dark">
+                  {{ whois.data.registrar }}
+                </label></h5>
+              </span>
+            </template>
+          </template>
           <integration-btns
             :data="data"
             :itype="itype"
+            :value="data[itype]._query"
           />
         </div>
       </div>
       <template v-if="data[itype].DNS">
         <hr>
-        <div class="row medium"
-          v-for="(value, key) in data[itype].DNS.data"
-          :key="key">
-          <div class="col ml-3"
-            v-if="value.Answer && value.Answer.length">
-            <template v-if="key === 'A' || key === 'AAAA'">
-              <cont3xt-ip
-                itype="ip"
-                :data="data"
-              />
-            </template>
-            <dl v-else
-              class="dl-horizontal">
-              <dt>{{ key }}</dt>
-              <dd>
-                <template v-for="(item, index) in value.Answer">
-                  <cont3xt-field
-                    :key="key+index"
-                    :value="item.data"
-                  />
+        <span
+          :key="`dns-${dns._query}`"
+          v-for="dns in data[itype].DNS">
+          <div
+            :key="key"
+            class="row medium"
+            v-for="(value, key) in dns.data">
+            <div
+              class="col ml-3"
+              v-if="value.Answer && value.Answer.length">
+              <template v-if="key === 'A' || key === 'AAAA'">
+                <template v-for="item in value.Answer">
+                  <span :key="item.data">
+                    <cont3xt-ip
+                      itype="ip"
+                      :data="data"
+                      :value="item.data"
+                    />
+                  </span>
                 </template>
-              </dd>
-            </dl>
+              </template>
+              <dl v-else
+                class="dl-horizontal">
+                <dt>{{ key }}</dt>
+                <dd>
+                  <template v-for="(item, index) in value.Answer">
+                    <cont3xt-field
+                      :key="key+index"
+                      :value="item.data"
+                    />
+                  </template>
+                </dd>
+              </dl>
+            </div>
           </div>
-        </div>
+        </span>
       </template>
     </div>
   </div>

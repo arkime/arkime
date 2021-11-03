@@ -9,43 +9,59 @@
             {{ itype.toUpperCase() }}
           </h4>
           <cont3xt-field
-            :value="data[itype]._query"
+            :value="value || data[itype]._query"
           />
-          <span v-if="data[itype].Maxmind && data[itype].Maxmind.data">
-            <h5 class="display-inline">
-              <label class="badge badge-dark"
-                v-b-tooltip="data[itype].Maxmind.data.creationDate">
-                {{ data[itype].Maxmind.data.asn.autonomous_system_organization }}
-              </label>
-            </h5>
-            <h5 class="display-inline"><label class="badge badge-dark">
-              {{ data[itype].Maxmind.data.country.country.names.en }}
-              ({{ data[itype].Maxmind.data.country.country.iso_code }})
-            </label></h5>
-          </span>
+          <template v-if="data[itype].Maxmind">
+            <template v-for="(mm, index) in data[itype].Maxmind">
+              <template v-if="value && value === mm._query || !value">
+                <span :key="`maxmind-${value}-${index}`">
+                  <h5 class="display-inline">
+                    <label class="badge badge-dark"
+                      v-b-tooltip="mm.data.creationDate">
+                      {{ mm.data.asn.autonomous_system_organization }}
+                    </label>
+                  </h5>
+                  <!-- TODO country flag? -->
+                  <h5 class="display-inline"><label class="badge badge-dark">
+                    {{ mm.data.country.country.names.en }}
+                    ({{ mm.data.country.country.iso_code }})
+                  </label></h5>
+                </span>
+              </template>
+            </template>
+          </template>
           <integration-btns
             :data="data"
             :itype="itype"
+            :value="value || data[itype]._query"
           />
         </div>
       </div>
       <template v-if="data[itype].RDAP">
         <hr>
-        <template class="row medium"
-          v-for="(value, key) in data[itype].RDAP.data">
-          <div
-            v-if="key[0] !== '_'"
-            class="col ml-3"
-            :key="key">
-            <dl class="dl-horizontal">
-              <dt>{{ key }}</dt>
-              <dd>
-                <cont3xt-field
-                  :value="value"
-                />
-              </dd>
-            </dl>
-          </div>
+        <template v-if="data[itype].RDAP">
+          <template v-for="(rdap, index) in data[itype].RDAP">
+            <template v-if="value && value === rdap._query || !value">
+              <span :key="`rdap-${value}-${index}`">
+                <template class="row medium"
+                  v-for="(val, key) in rdap.data">
+                  <div
+                    v-if="key[0] !== '_'"
+                    class="col ml-3"
+                    :key="key">
+                    <dl class="dl-horizontal">
+                      <dt>{{ key }}</dt>
+                      <dd>
+                        <cont3xt-field
+                          :value="val"
+                        />
+                      </dd>
+                    </dl>
+                  </div>
+                </template>
+              </span>
+            </template>
+          </template>
         </template>
       </template>
     </div>
@@ -64,7 +80,8 @@ export default {
   },
   props: {
     data: Object,
-    itype: String
+    itype: String,
+    value: String
   }
 };
 </script>

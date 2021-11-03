@@ -13,7 +13,7 @@ const store = new Vuex.Store({
       failures: []
     },
     integrations: {},
-    displayIntegration: { source: undefined, itype: undefined },
+    displayIntegration: {},
     integrationData: {}
   },
   mutations: {
