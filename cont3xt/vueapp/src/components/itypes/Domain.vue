@@ -80,7 +80,7 @@
 <script>
 import Cont3xtField from '@/utils/Field';
 import Cont3xtIp from '@/components/itypes/IP';
-import IntegrationBtns from '@/components/itypes/IntegrationBtns';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtDomain',

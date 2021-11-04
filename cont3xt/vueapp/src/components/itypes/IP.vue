@@ -55,7 +55,7 @@
 
 <script>
 import Cont3xtField from '@/utils/Field';
-import IntegrationBtns from '@/components/itypes/IntegrationBtns';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtIp',

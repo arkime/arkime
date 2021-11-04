@@ -8,14 +8,15 @@
     <div v-if="isOpen"
       class="field-dropdown"
       :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
+      <!-- TODO make these options configurable - rir doesn't need pivot -->
       <b-dropdown-item
         @click="doCopy(value)">
         copy
       </b-dropdown-item>
       <b-dropdown-item
-        :href="`?q=${value}`"
-        target="_blank">
-        new tab
+        target="_blank"
+        :href="`?q=${value}`">
+        pivot
       </b-dropdown-item>
     </div>
   </span>
@@ -94,7 +95,7 @@ export default {
   position: absolute;
   visibility: hidden;
   max-width: 700px;
-  min-width: 160px;
+  min-width: 80px;
   max-height: 300px;
   overflow-y: auto;
   position: absolute;

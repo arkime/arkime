@@ -10,6 +10,7 @@ import Vue from 'vue';
  * @returns {String} - Date string without time
  */
 export const removeTime = function (dateString) {
+  if (!dateString) { return ''; }
   return dateString.split('T')[0];
 };
 Vue.filter('removeTime', removeTime);

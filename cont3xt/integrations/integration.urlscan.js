@@ -37,6 +37,7 @@ class URLScanIntegration extends Integration {
       'total',
       {
         field: 'took',
+        label: 'took', // TODO fix this in normalize?
         type: 'ms'
       },
       'has_more',

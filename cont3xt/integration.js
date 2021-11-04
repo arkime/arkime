@@ -388,7 +388,7 @@ class Integration {
 
       if (f.type === undefined) { f.type = 'string'; }
 
-      if (f.type === 'table') {
+      if (f.type === 'table') { // TODO sometimes this splitting the table field paths?! see urlscan results for example
         f.fields = this.normalizeCardFields(f.fields);
       }
 

@@ -68,9 +68,7 @@
         />
       </div>
       <div class="col-6">
-        <pre class="text-accent"
-          v-if="Object.keys(getIntegrationData).length"
-        >{{ getIntegrationData }}</pre>
+        <integration-card />
       </div>
     </div> <!-- /results -->
 
@@ -78,17 +76,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtDomain from '@/components/itypes/Domain';
 import Cont3xtIp from '@/components/itypes/IP';
+import IntegrationCard from '@/components/integrations/IntegrationCard';
 
 export default {
   name: 'Cont3xt',
   components: {
     Cont3xtDomain,
-    Cont3xtIp
+    Cont3xtIp,
+    IntegrationCard
   },
   data () {
     return {
@@ -100,12 +98,11 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getIntegrationData']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
     },
-    displayIntegration (newVal, oldVal) {
+    displayIntegration () {
       return this.$store.state.displayIntegration;
     }
   },
