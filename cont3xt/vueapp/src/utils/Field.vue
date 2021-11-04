@@ -1,7 +1,7 @@
 <template>
   <span class="field">
     <a @click="toggleDropdown">
-      {{ value }}
+      {{ display || value }}
       <span class="fa fa-caret-down" />
     </a>
     <!-- clickable field menu -->
@@ -25,7 +25,8 @@
 export default {
   name: 'Cont3xtField',
   props: {
-    value: String, // the value to display
+    value: String, // the value to be used in copy and display is no display value
+    display: String, // the value to display
     pullLeft: Boolean // whether the dropdown should drop down from the left
   },
   data () {

@@ -13,3 +13,25 @@ export const removeTime = function (dateString) {
   return dateString.split('T')[0];
 };
 Vue.filter('removeTime', removeTime);
+
+/**
+ * Determines the RIR based on a link.
+ * @example
+ * '{{ "https://rdap.arin.net/registry/ip/74.6.136.150" | rirLink }}'
+ * this.$options.filters.rirLink('https://rdap.arin.net/registry/ip/74.6.136.150');
+ *
+ * @param {String} rirLink - The link that contains the RIR
+ * @returns {String} - RIR string (ARIN|RIPE|APNIC|LACNIC|AFRINIC)
+ */
+export const baseRIR = function (rirLink) {
+  const RIRs = ['arin', 'ripe', 'apnic', 'lacnic', 'afrinic'];
+
+  for (const rir of RIRs) {
+    if (rirLink.includes(rir)) {
+      return rir.toUpperCase();
+    }
+  };
+
+  return 'unknown rir';
+};
+Vue.filter('baseRIR', baseRIR);

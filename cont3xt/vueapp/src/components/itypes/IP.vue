@@ -11,6 +11,18 @@
           <cont3xt-field
             :value="value || data[itype]._query"
           />
+          <template v-if="data[itype].RDAP">
+            <template v-for="(rdap, index) in data[itype].RDAP">
+              <template v-if="value && value === rdap._query || !value">
+                <span :key="`rdap-${value}-${index}`">
+                  <cont3xt-field
+                    :value="rdap.data.link"
+                    :display="rdap.data.link | baseRIR"
+                  />
+                </span>
+              </template>
+            </template>
+          </template>
           <template v-if="data[itype].Maxmind">
             <template v-for="(mm, index) in data[itype].Maxmind">
               <template v-if="value && value === mm._query || !value">
@@ -37,33 +49,6 @@
           />
         </div>
       </div>
-      <template v-if="data[itype].RDAP">
-        <hr>
-        <template v-if="data[itype].RDAP">
-          <template v-for="(rdap, index) in data[itype].RDAP">
-            <template v-if="value && value === rdap._query || !value">
-              <span :key="`rdap-${value}-${index}`">
-                <template class="row medium"
-                  v-for="(val, key) in rdap.data">
-                  <div
-                    v-if="key[0] !== '_'"
-                    class="col ml-3"
-                    :key="key">
-                    <dl class="dl-horizontal">
-                      <dt>{{ key }}</dt>
-                      <dd>
-                        <cont3xt-field
-                          :value="val"
-                        />
-                      </dd>
-                    </dl>
-                  </div>
-                </template>
-              </span>
-            </template>
-          </template>
-        </template>
-      </template>
     </div>
   </div>
 </template>
