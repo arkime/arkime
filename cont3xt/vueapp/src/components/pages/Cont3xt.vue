@@ -77,7 +77,19 @@
         />
       </div>
       <div class="col-6">
-        <integration-card />
+        <b-overlay
+          no-center
+          rounded="sm"
+          variant="dark"
+          :show="getRendering">
+          <integration-card />
+          <template #overlay>
+            <div class="text-center mt-4 mb-4">
+              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+              <p>Rendering data...</p>
+            </div>
+          </template>
+        </b-overlay>
       </div>
     </div> <!-- /results -->
 
@@ -85,6 +97,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtDomain from '@/components/itypes/Domain';
 import Cont3xtIp from '@/components/itypes/IP';
@@ -108,6 +122,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(['getRendering']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -118,13 +133,15 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
-      this.loadingItegrationData = true;
-      const { itype, source, value } = newIntegration;
-      for (const data of this.results[itype][source]) {
-        if (data._query === value) {
-          this.$store.commit('SET_INTEGRATION_DATA', data);
+      this.$store.commit('SET_RENDERING', true);
+      setTimeout(() => { // need settimeout for SET_RENDERING to take effect
+        const { itype, source, value } = newIntegration;
+        for (const data of this.results[itype][source]) {
+          if (data._query === value) {
+            this.$store.commit('SET_INTEGRATION_DATA', data);
+          }
         }
-      }
+      }, 100);
     }
   },
   mounted () {

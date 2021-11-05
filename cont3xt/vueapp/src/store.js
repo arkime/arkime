@@ -12,6 +12,7 @@ const store = new Vuex.Store({
       done: false,
       failures: []
     },
+    rendering: false,
     integrations: {},
     displayIntegration: {},
     integrationData: {}
@@ -36,6 +37,9 @@ const store = new Vuex.Store({
         failures: []
       };
     },
+    SET_RENDERING (state, data) {
+      state.rendering = data;
+    },
     SET_INTEGRATIONS (state, data) {
       state.integrations = data;
     },
@@ -43,12 +47,15 @@ const store = new Vuex.Store({
       state.displayIntegration = data;
     },
     SET_INTEGRATION_DATA (state, data) {
-      state.integrationData = data;
+      state.integrationData = Object.freeze(data);
     }
   },
   getters: {
     getLoading (state) {
       return state.loading;
+    },
+    getRendering (state) {
+      return state.rendering;
     },
     getIntegrations (state) {
       return state.integrations;

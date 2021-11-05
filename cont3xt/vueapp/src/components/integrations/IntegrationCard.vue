@@ -60,6 +60,11 @@ export default {
       if (!this.getIntegrations[source]) { return {}; }
       return this.getIntegrations[source].card;
     }
+  },
+  updated () { // data is rendered
+    this.$nextTick(() => {
+      this.$store.commit('SET_RENDERING', false);
+    });
   }
 };
 </script>
