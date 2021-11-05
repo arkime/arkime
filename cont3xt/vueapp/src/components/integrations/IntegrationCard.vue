@@ -9,48 +9,10 @@
       <div
         v-for="field in card.fields"
         :key="field.label">
-        <span class="text-orange pr-2">
-          {{ field.label }}
-        </span>
-        <!-- TODO defrag -->
-        <!-- TODO pivot -->
-        <!-- table field -->
-        <span v-if="field.type === 'table'">
-          <integration-card-table
-            :fields="field.fields"
-            :table-data="getFieldValue(field)"
-          />
-        </span> <!-- /table field -->
-        <!-- array field -->
-        <span v-else-if="field.type === 'array'">
-          <span v-if="field.join"> <!-- TODO test -->
-              {{ getFieldValue(field).join(field.join || ', ') }}
-          </span>
-          <!-- TODO better style -->
-          <!-- TODO better display a max? -->
-          <div v-else
-            :key="val"
-            v-for="val in getFieldValue(field)">
-            {{ val }}
-          </div>
-        </span> <!-- /array field -->
-        <!-- url field -->
-        <span v-else-if="field.type === 'url'">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            :href="getFieldValue(field)">
-            {{ getFieldValue(field) }}
-          </a>
-        </span> <!-- /url field -->
-        <!-- json field -->
-        <span v-else-if="field.type === 'json'">
-          {{ JSON.stringify(getFieldValue(field)) }}
-        </span> <!-- /json field -->
-        <!-- default string field -->
-        <span v-else>
-          {{ getFieldValue(field) }}
-        </span> <!-- /default string field -->
+        <integration-value
+          :field="field"
+          :data="getIntegrationData.data"
+        />
       </div>
     </template>
     <template v-else-if="!card">
@@ -75,11 +37,15 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import IntegrationCardTable from '@/components/integrations/IntegrationCardTable';
+import IntegrationValue from '@/components/integrations/IntegrationValue';
 
+// NOTE: IntegrationCard displays IntegrationValues AND IntegrationTables
+// IntegrationTables can ALSO display IntegrationValues, so:
+// IntegrationCard -> IntegrationValue
+// IntegrationCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'IntegrationCard',
-  components: { IntegrationCardTable },
+  components: { IntegrationValue },
   computed: {
     ...mapGetters(['getIntegrationData', 'getIntegrations']),
     card () {
@@ -88,17 +54,6 @@ export default {
       console.log('CARD', this.getIntegrations[source].card); // TODO remove
       console.log('DATA', this.getIntegrationData); // TODO remove
       return this.getIntegrations[source].card;
-    }
-  },
-  methods: {
-    getFieldValue (field) {
-      let value = this.getIntegrationData.data;
-
-      for (const p of field.path) {
-        value = value[p];
-      }
-
-      return value;
     }
   }
 };

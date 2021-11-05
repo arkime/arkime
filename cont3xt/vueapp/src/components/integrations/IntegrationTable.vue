@@ -11,9 +11,14 @@
       :key="index"
       v-for="(data, index) in tableData">
       <td
+        class="break-word"
         v-for="field in fields"
         :key="`${field.label}-${index}-cell`">
-        {{ getFieldValue(field, data) }}
+        <integration-value
+          :data="data"
+          :field="field"
+          :hide-label="true"
+        />
       </td>
     </tr>
   </table>
@@ -26,16 +31,11 @@ export default {
     fields: Array,
     tableData: Array
   },
-  methods: {
-    getFieldValue (field, row) { // TODO combine this with parent function?
-      let value = row;
-
-      for (const p of field.path) {
-        value = value[p];
-      }
-
-      return value;
-    }
+  components: {
+    // NOTE: need async import here because there's a circular dependency
+    // between IntegrationValue and IntegrationTable
+    // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
+    IntegrationValue: () => import('@/components/integrations/IntegrationValue')
   }
 };
 </script>
