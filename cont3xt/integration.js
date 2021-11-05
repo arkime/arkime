@@ -89,6 +89,8 @@ class Integration {
       return;
     }
 
+    integration.normalizeCard();
+
     Integration.integrations.all.push(integration);
     for (const itype in integration.itypes) {
       Integration.integrations[itype].push(integration);
@@ -158,8 +160,6 @@ class Integration {
         }
       }
 
-      integration.normalizeCard();
-
       results[integration.name] = {
         doable: doable,
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
@@ -205,17 +205,11 @@ class Integration {
 
       stats.total++;
 
-      // Calculate rolling average over at most 100 items
-      const updateTime = (diff, prefix) => {
-        const lookup = Math.min(stats[prefix + 'Lookup'], 100);
-        stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
-      };
-
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
         stats.cacheLookup++;
         const cStartTime = Date.now();
         const response = await Integration.cache.get(cacheKey);
-        updateTime(Date.now() - cStartTime, 'cache');
+        updateTime(stats, Date.now() - cStartTime, 'cache');
         if (response) {
           stats.cacheFound++;
           if (Date.now() - response._createTime < integration.cacheTimeout) {
@@ -232,7 +226,7 @@ class Integration {
       const dStartTime = Date.now();
       integration[integration.itypes[itype]](shared.user, query)
         .then(response => {
-          updateTime(Date.now() - dStartTime, 'direct');
+          updateTime(stats, Date.now() - dStartTime, 'direct');
           stats.directFound++;
           shared.sent++;
           if (response) {
@@ -293,6 +287,61 @@ class Integration {
       // url.hostname does NOT include port
       Integration.runIntegrationsList(shared, url.hostname, 'domain', Integration.integrations.domain);
     }
+  }
+
+  /**
+   * The search api to go against single itype/integration
+   */
+  static async apiSingleSearch (req, res, next) {
+    if (!req.body.query) {
+      return res.send({ success: false, text: 'Missing query' });
+    }
+
+    const itype = req.params.itype;
+    const query = req.body.query.trim();
+
+    const integrations = Integration.integrations[itype];
+
+    if (integrations === undefined) {
+      res.send({ success: false, text: `Itype ${itype} not found` });
+    }
+
+    let integration;
+
+    for (const i of integrations) {
+      if (i.name === req.params.integration) {
+        integration = i;
+      }
+    }
+
+    if (integrations === undefined) {
+      res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
+    }
+
+    const stats = integration.stats;
+    stats.total++;
+
+    stats.directLookup++;
+    const dStartTime = Date.now();
+    integration[integration.itypes[itype]](req.user, query)
+      .then(response => {
+        updateTime(stats, Date.now() - dStartTime, 'direct');
+        stats.directFound++;
+        if (response) {
+          stats.directGood++;
+          response._createTime = Date.now();
+          res.send({ success: true, data: response });
+          if (response && Integration.cache && integration.cacheable) {
+            const cacheKey = `${integration.name}-${itype}-${query}`;
+            Integration.cache.set(cacheKey, response);
+          }
+        }
+      })
+      .catch(err => {
+        console.log(integration.name, itype, query, err);
+        stats.directError++;
+        res.send({ success: false });
+      });
   }
 
   /**
@@ -409,6 +458,12 @@ class Integration {
     card.fields = this.normalizeCardFields(card.fields);
   }
 }
+
+// Calculate rolling average over at most 100 items
+function updateTime (stats, diff, prefix) {
+  const lookup = Math.min(stats[prefix + 'Lookup'], 100);
+  stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
+};
 
 module.exports = Integration;
 

@@ -107,6 +107,7 @@ app.get('/api/roles', User.apiRoles);
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
+app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
 app.get('/api/integration/userSettings', Integration.apiUserSettings);
 app.get('/api/integration/stats', Integration.apiStats);
 
