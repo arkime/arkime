@@ -1,6 +1,5 @@
 <template>
-  <div>
-    {{ getIntegrationData.query }}
+  <div v-if="Object.keys(getIntegrationData).length">
     <h5 class="text-orange"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
@@ -15,12 +14,20 @@
         />
       </div>
     </template>
-    <template v-else-if="!card">
-      WHOOPS! <!-- TODO display error -->
-    </template>
+    <b-alert
+      :show="!card"
+      variant="warning">
+      <span class="pr-2">
+        <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
+      </span>
+      <div class="display-inline-block">
+        Missing information to render the data.
+        <br>
+        Please make sure your integration has a "card" attribute.
+      </div>
+    </b-alert>
     <!-- raw -->
-    <b-card
-      v-if="Object.keys(getIntegrationData).length">
+    <b-card>
       <small>
         <h5 class="card-title"
           v-b-toggle.collapse-raw>
@@ -51,8 +58,6 @@ export default {
     card () {
       const { source } = this.$store.state.displayIntegration;
       if (!this.getIntegrations[source]) { return {}; }
-      console.log('CARD', this.getIntegrations[source].card); // TODO remove
-      console.log('DATA', this.getIntegrationData); // TODO remove
       return this.getIntegrations[source].card;
     }
   }

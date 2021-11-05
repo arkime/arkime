@@ -8,15 +8,16 @@
     <div v-if="isOpen"
       class="field-dropdown"
       :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
-      <!-- TODO make these options configurable - rir doesn't need pivot -->
       <b-dropdown-item
+        v-if="options.copy"
         @click="doCopy(value)">
-        copy
+        {{ options.copy }}
       </b-dropdown-item>
       <b-dropdown-item
         target="_blank"
+        v-if="options.pivot"
         :href="`?q=${value}`">
-        pivot
+        {{ options.pivot }}
       </b-dropdown-item>
     </div>
   </span>
@@ -26,9 +27,21 @@
 export default {
   name: 'Cont3xtField',
   props: {
-    value: String, // the value to be used in copy and display is no display value
-    display: String, // the value to display
-    pullLeft: Boolean // whether the dropdown should drop down from the left
+    value: { // the value to be used in copy and display is no display value
+      type: String,
+      required: true
+    },
+    display: { // the value to display (uses value is this is mssing)
+      type: String
+    },
+    pullLeft: { // whether the dropdown should drop down from the left
+      type: Boolean,
+      default: false
+    },
+    options: { // which options to display in the dropdown
+      type: Object,
+      default: () => { return { copy: 'copy', pivot: 'pivot' }; }
+    }
   },
   data () {
     return {

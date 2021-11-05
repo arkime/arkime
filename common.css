@@ -55,6 +55,7 @@ body {
 
 /* display */
 .display-inline { display: inline; }
+.display-inline-block { display: inline-block; }
 
 /* remove underline for anchor tag hover */
 .no-decoration { text-decoration: none !important; }
@@ -212,7 +213,7 @@ body.dark .info-area > div {
 }
 
 /* darken pre */
-body.dark pre:not(.text-*) {
+body.dark pre:not([class*="text-"]) {
   color: white !important;
 }
 

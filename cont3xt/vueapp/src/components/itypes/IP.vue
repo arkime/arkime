@@ -4,7 +4,6 @@
        v-if="data && data[itype]">
       <div class="row">
         <div class="col">
-          <!-- TODO vertical align -->
           <h4 class="text-orange display-inline mt-1">
             {{ itype.toUpperCase() }}
           </h4>
@@ -17,6 +16,7 @@
                 <span :key="`rdap-${value}-${index}`">
                   <cont3xt-field
                     :value="rdap.data.link"
+                    :options="{ copy: 'copy link' }"
                     :display="rdap.data.link | baseRIR"
                   />
                 </span>
@@ -33,11 +33,12 @@
                       {{ mm.data.asn.autonomous_system_organization }}
                     </label>
                   </h5>
-                  <!-- TODO country flag? -->
-                  <h5 class="display-inline"><label class="badge badge-dark">
-                    {{ mm.data.country.country.names.en }}
-                    ({{ mm.data.country.country.iso_code }})
-                  </label></h5>
+                  <h5 class="display-inline"
+                    v-b-tooltip="`${mm.data.country.country.names.en} (${mm.data.country.country.iso_code})`">
+                    <label class="badge badge-dark cursor-help">
+                      {{ countryEmoji(mm.data.country.country.iso_code) }}&nbsp;
+                    </label>
+                  </h5>
                 </span>
               </template>
             </template>
@@ -54,6 +55,8 @@
 </template>
 
 <script>
+import { countryCodeEmoji } from 'country-code-emoji';
+
 import Cont3xtField from '@/utils/Field';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
@@ -64,9 +67,23 @@ export default {
     IntegrationBtns
   },
   props: {
-    data: Object,
-    itype: String,
-    value: String
+    data: { // the data returned from cont3xt search
+      type: Object,
+      require: true
+    },
+    value: { // the value to display as the IP (used if there are multiple ip
+      type: String // results - like in a domain search)
+    }
+  },
+  data () {
+    return {
+      itype: 'ip'
+    };
+  },
+  methods: {
+    countryEmoji (code) {
+      return countryCodeEmoji(code);
+    }
   }
 };
 </script>

@@ -4,8 +4,6 @@
       class="text-orange pr-2">
       {{ field.label }}
     </label>
-    <!-- TODO defrag -->
-    <!-- TODO pivot -->
     <!-- table field -->
     <template v-if="field.type === 'table'">
       <integration-table
@@ -15,11 +13,9 @@
     </template> <!-- /table field -->
     <!-- array field -->
     <template v-else-if="field.type === 'array'">
-      <template v-if="field.join"> <!-- TODO test -->
+      <template v-if="field.join">
         {{ getFieldValue(field, data).join(field.join || ', ') }}
       </template>
-      <!-- TODO better style -->
-      <!-- TODO better display a max? -->
       <div v-else
         :key="val"
         v-for="val in getFieldValue(field, data)">
@@ -37,35 +33,65 @@
     </template> <!-- /url field -->
     <!-- json field -->
     <template v-else-if="field.type === 'json'">
-      <code>{{ JSON.stringify(getFieldValue(field, data)) }}</code>
+      <pre><code>{{ JSON.stringify(getFieldValue(field, data), null, 2) }}</code></pre>
     </template> <!-- /json field -->
     <!-- default string field -->
     <template v-else>
-      {{ getFieldValue(field, data) }}
+      <template v-if="field.pivot">
+        <cont3xt-field
+          :value="getFieldValue(field, data)"
+        />
+      </template>
+      <template v-else>
+        {{ getFieldValue(field, data) }}
+      </template>
     </template> <!-- /default string field -->
   </span>
 </template>
 
 <script>
+import dr from 'defang-refang';
+
+import Cont3xtField from '@/utils/Field';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 
 export default {
   name: 'IntegrationValue',
   props: {
-    data: Object,
-    field: Object,
-    hideLabel: Boolean
+    data: { // the data to search for values within
+      type: Object,
+      required: true
+    },
+    field: { // the field to determine where the value is within the data
+      type: Object,
+      required: true
+    },
+    hideLabel: { // whether to hide the field label (used for table values)
+      type: Boolean,
+      default: false
+    }
   },
-  components: { IntegrationTable },
+  components: {
+    Cont3xtField,
+    IntegrationTable
+  },
   methods: {
     getFieldValue (field, data) {
       let value = data;
 
       for (const p of field.path) {
+        if (!value) {
+          console.warn(`Can't resolve path: ${field.path.join('.')}`);
+          return '';
+        }
         value = value[p];
       }
 
-      return value;
+      if (field.defang) {
+        value = dr.defang(value);
+      }
+
+      return value || '';
     }
   }
 };

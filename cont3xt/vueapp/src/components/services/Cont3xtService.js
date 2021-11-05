@@ -1,3 +1,5 @@
+import dr from 'defang-refang';
+
 import Observable from '@/utils/Observable';
 import store from '@/store';
 
@@ -41,7 +43,7 @@ export default {
    */
   search (searchTerm) {
     return new Observable((subscriber) => {
-      searchTerm = searchTerm.trim();
+      searchTerm = dr.refang(searchTerm.trim());
 
       if (!searchTerm) { // nothing to do
         return subscriber.complete();

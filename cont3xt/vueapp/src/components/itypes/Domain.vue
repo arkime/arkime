@@ -4,7 +4,6 @@
       v-if="data && data[itype]">
       <div class="row">
         <div class="col">
-          <!-- TODO vertical align -->
           <h4 class="text-orange display-inline mt-1">
             {{ itype.toUpperCase() }}
           </h4>
@@ -90,8 +89,15 @@ export default {
     IntegrationBtns
   },
   props: {
-    data: Object,
-    itype: String
+    data: { // the data returned from cont3xt search
+      type: Object,
+      require: true
+    }
+  },
+  data () {
+    return {
+      itype: 'domain'
+    };
   }
 };
 </script>

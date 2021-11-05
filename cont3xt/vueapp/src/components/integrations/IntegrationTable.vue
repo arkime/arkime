@@ -1,5 +1,5 @@
 <template>
-  <table class="table table-sm table-striped table-bordered">
+  <table class="table table-sm table-striped table-bordered small">
     <tr>
       <th
         v-for="field in fields"
@@ -28,8 +28,14 @@
 export default {
   name: 'IntegrationCardTable',
   props: {
-    fields: Array,
-    tableData: Array
+    fields: { // the list of fields to display in the table (populates the
+      type: Array, // column headers and determines how to access the data)
+      required: true
+    },
+    tableData: { // the data to display in the table
+      type: Array,
+      required: true
+    }
   },
   components: {
     // NOTE: need async import here because there's a circular dependency

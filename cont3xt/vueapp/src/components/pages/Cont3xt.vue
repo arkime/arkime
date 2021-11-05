@@ -1,7 +1,6 @@
 <template>
   <div class="mr-2 ml-2">
 
-    <!-- TODO display integrations toggle their state -->
     <!-- search -->
     <b-input-group>
       <template #prepend>
@@ -22,6 +21,18 @@
         </b-button>
       </b-input-group-append>
     </b-input-group> <!-- /search -->
+
+    <!-- welcome -->
+    <div
+      class="whole-page-info container"
+      v-if="!initialized && !error.length && !integrationError.length">
+      <div class="center-area">
+        <h1 class="text-orange">Welcome to Cont3xt!</h1>
+        <h4 class="text-accent">
+          Search for IPs, domains, URLs, emails, phone numbers, or hashes.
+        </h4>
+      </div>
+    </div> <!-- /welcome -->
 
     <!-- search error -->
     <div
@@ -57,12 +68,10 @@
     <div class="row mt-2">
       <div class="col-6">
         <cont3xt-domain
-          itype="domain"
           :data="results"
           v-if="searchItype === 'domain'"
         />
         <cont3xt-ip
-          itype="ip"
           :data="results"
           v-else-if="searchItype === 'ip'"
         />
@@ -84,8 +93,8 @@ import IntegrationCard from '@/components/integrations/IntegrationCard';
 export default {
   name: 'Cont3xt',
   components: {
-    Cont3xtDomain,
     Cont3xtIp,
+    Cont3xtDomain,
     IntegrationCard
   },
   data () {
@@ -93,6 +102,7 @@ export default {
       error: '',
       results: {},
       searchItype: '',
+      initialized: false,
       integrationError: '',
       searchTerm: this.$route.query.q || ''
     };
@@ -108,6 +118,7 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
+      this.loadingItegrationData = true;
       const { itype, source, value } = newIntegration;
       for (const data of this.results[itype][source]) {
         if (data._query === value) {
@@ -125,11 +136,13 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     search () {
-      // TODO second search doesn't clear results?
       this.error = '';
       this.results = {};
       this.searchItype = '';
+      this.initialized = true;
       this.$store.commit('RESET_LOADING');
+      this.$store.commit('SET_INTEGRATION_DATA', {});
+
       let failed = 0;
 
       Cont3xtService.search(this.searchTerm).subscribe({
