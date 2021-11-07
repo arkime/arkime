@@ -19,10 +19,8 @@ const axios = require('axios');
 class VirusTotalIntegration extends Integration {
   name = 'VirusTotal';
   icon = 'public/virusTotalIcon.svg';
+  noStats = true;
   itypes = {
-    domain: 'fetchDomain',
-    ip: 'fetchIp',
-    hash: 'fetchHash'
   };
 
   userSettings = {
@@ -31,6 +29,79 @@ class VirusTotalIntegration extends Integration {
       password: true
     }
   }
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
+  }
+}
+
+class VirusTotalDomainIntegration extends Integration {
+  name = 'VirusTotalDomain';
+  icon = 'public/virusTotalIcon.svg';
+  itypes = {
+    domain: 'fetchDomain'
+  };
+
+  card = {
+    title: 'VirusTotal Domain for %{query}',
+    fields: [
+      'asn',
+      'as_owner',
+      'country',
+      'verbose_msg',
+      'Alexa category',
+      'Alexa rank',
+      'Alexa domain info',
+      'Webutation domain info',
+      'BitDefender category',
+      'Forcepoint ThreatSeeker category',
+      'BitDefender domain info',
+      {
+        label: 'detected_urls',
+        type: 'table',
+        fields: [
+          'positives',
+          'total',
+          {
+            label: 'url',
+            defang: true
+          },
+          'scan_date'
+        ]
+      },
+      {
+        label: 'undetected_urls',
+        type: 'table',
+        fields: [
+          'positives',
+          'total',
+          {
+            label: 'url',
+            defang: true
+          },
+          'sha256',
+          'scan_date'
+        ]
+      },
+      makeSamples('detected_downloaded_samples'),
+      makeSamples('undetected_downloaded_samples'),
+      makeSamples('detected_referrer_samples'),
+      makeSamples('undetected_referrer_samples'),
+      {
+        label: 'resolutions',
+        type: 'table',
+        fields: [
+          'ip_address',
+          'last_resolved'
+        ]
+      }
+    ]
+  };
 
   // Default cacheTimeout 24 hours
   cacheTimeout = 24 * 60 * 60 * 1000;
@@ -58,12 +129,100 @@ class VirusTotalIntegration extends Integration {
         }
       });
 
+      // Fix undetected_urls
+      if (response.data.undetected_urls !== undefined && Array.isArray(response.data.undetected_urls[0])) {
+        const uus = [];
+        for (const uu of response.data.undetected_urls) {
+          uus.push({
+            url: uu[0],
+            sha256: uu[1],
+            positives: uu[2],
+            total: uu[3],
+            scan_date: uu[4]
+          });
+        }
+        response.data.undetected_urls = uus;
+      }
+
       response.data._count = 1;
       return response.data;
     } catch (err) {
       console.log(this.name, domain, err);
       return null;
     }
+  }
+}
+
+class VirusTotalIPIntegration extends Integration {
+  name = 'VirusTotalIP';
+  icon = 'public/virusTotalIcon.svg';
+  itypes = {
+    ip: 'fetchIp'
+  };
+
+  card = {
+    title: 'VirusTotal IP for %{query}',
+    fields: [
+      'asn',
+      'as_owner',
+      'country',
+      'verbose_msg',
+      'Alexa category',
+      'Alexa rank',
+      'Alexa domain info',
+      'Webutation domain info',
+      'BitDefender category',
+      'Forcepoint ThreatSeeker category',
+      'BitDefender domain info',
+      {
+        label: 'detected_urls',
+        type: 'table',
+        fields: [
+          'positives',
+          'total',
+          {
+            label: 'url',
+            defang: true
+          },
+          'scan_date'
+        ]
+      },
+      {
+        label: 'undetected_urls',
+        type: 'table',
+        fields: [
+          'positives',
+          'total',
+          {
+            label: 'url',
+            defang: true
+          },
+          'sha256',
+          'scan_date'
+        ]
+      },
+      makeSamples('detected_downloaded_samples'),
+      makeSamples('undetected_downloaded_samples'),
+      makeSamples('detected_referrer_samples'),
+      makeSamples('undetected_referrer_samples'),
+      {
+        label: 'resolutions',
+        type: 'table',
+        fields: [
+          'hostname',
+          'last_resolved'
+        ]
+      }
+    ]
+  };
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
   }
 
   async fetchIp (user, ip) {
@@ -83,12 +242,71 @@ class VirusTotalIntegration extends Integration {
         }
       });
 
+      // Fix undetected_urls
+      if (response.data.undetected_urls !== undefined && Array.isArray(response.data.undetected_urls[0])) {
+        const uus = [];
+        for (const uu of response.data.undetected_urls) {
+          uus.push({
+            url: uu[0],
+            sha256: uu[1],
+            positives: uu[2],
+            total: uu[3],
+            scan_date: uu[4]
+          });
+        }
+        response.data.undetected_urls = uus;
+      }
+
       response.data._count = 1;
       return response.data;
     } catch (err) {
       console.log(this.name, ip, err);
       return null;
     }
+  }
+}
+
+class VirusTotalHashIntegration extends Integration {
+  name = 'VirusTotalHash';
+  icon = 'public/virusTotalIcon.svg';
+  itypes = {
+    hash: 'fetchHash'
+  };
+
+  card = {
+    title: 'VirusTotal Hash for %{query}',
+    fields: [
+      'scan_date',
+      'total',
+      'positives',
+      'md5',
+      'sha1',
+      'sha256',
+      'permalink',
+      'scan_id',
+      'resource',
+      'verbose_msg',
+      {
+        label: 'scans',
+        fields: [
+          'scan type',
+          'detected',
+          'result',
+          'update',
+          'version'
+        ]
+      },
+      'response_code'
+    ]
+  };
+
+  // Default cacheTimeout 24 hours
+  cacheTimeout = 24 * 60 * 60 * 1000;
+
+  constructor () {
+    super();
+
+    Integration.register(this);
   }
 
   async fetchHash (user, hash) {
@@ -118,5 +336,22 @@ class VirusTotalIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
+function makeSamples (field) {
+  return {
+    label: field,
+    field: field,
+    type: 'table',
+    fields: [
+      'positives',
+      'total',
+      'sha256',
+      'date'
+    ]
+  };
+}
+
+/* eslint-disable no-new */
 new VirusTotalIntegration();
+new VirusTotalDomainIntegration();
+new VirusTotalIPIntegration();
+new VirusTotalHashIntegration();

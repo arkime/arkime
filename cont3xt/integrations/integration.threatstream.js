@@ -27,6 +27,26 @@ class ThreatstreamIntegration extends Integration {
     hash: 'fetch'
   };
 
+  card = {
+    title: 'Threatstream for %{query}',
+    fields: [
+      {
+        label: 'Objects',
+        field: 'objects',
+        type: 'table',
+        fields: [
+          'status',
+          'tlp',
+          'itype',
+          'source',
+          'confidence',
+          'import_session_id',
+          'created_ts'
+        ]
+      }
+    ]
+  };
+
   userSettings = {
     ThreatstreamHost: {
       help: 'The threatstream host to send queries'
