@@ -6,10 +6,22 @@
     </label>
     <!-- table field -->
     <template v-if="field.type === 'table'">
-      <integration-table
-        :fields="field.fields"
-        :table-data="getFieldValue(field, data)"
-      />
+      <b-overlay
+        no-center
+        rounded="sm"
+        variant="dark"
+        :show="getRenderingTable">
+        <integration-table
+          :fields="field.fields"
+          :table-data="getFieldValue(field, data)"
+        />
+        <template #overlay>
+          <div class="overlay-loading">
+            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+            <p>Rendering table data...</p>
+          </div>
+        </template>
+      </b-overlay>
     </template> <!-- /table field -->
     <!-- array field -->
     <template v-else-if="field.type === 'array'">
@@ -51,12 +63,26 @@
 
 <script>
 import dr from 'defang-refang';
+import { mapGetters } from 'vuex';
 
 import Cont3xtField from '@/utils/Field';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 
+const defaults = {
+  ms: 0,
+  url: '',
+  json: {},
+  table: [],
+  array: [],
+  string: ''
+};
+
 export default {
   name: 'IntegrationValue',
+  components: {
+    Cont3xtField,
+    IntegrationTable
+  },
   props: {
     data: { // the data to search for values within
       type: Object,
@@ -71,9 +97,8 @@ export default {
       default: false
     }
   },
-  components: {
-    Cont3xtField,
-    IntegrationTable
+  computed: {
+    ...mapGetters(['getRenderingTable'])
   },
   methods: {
     getFieldValue (field, data) {
@@ -91,7 +116,7 @@ export default {
         value = dr.defang(value);
       }
 
-      return value || '';
+      return value || defaults[field.type];
     }
   }
 };

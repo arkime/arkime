@@ -9,7 +9,7 @@
     </tr>
     <tr
       :key="index"
-      v-for="index in (tableLen - 1)">
+      v-for="index in (Math.max(tableLen - 1, 0))">
       <td
         class="break-word"
         v-for="field in fields"
@@ -21,7 +21,7 @@
         />
       </td>
     </tr>
-    <tr>
+    <tr v-if="tableData.length > tableLen">
       <td :colspan="fields.length">
         <div class="d-flex justify-content-between">
           <a
@@ -80,8 +80,16 @@ export default {
       this.tableLen = Math.max(this.tableLen - 100, 100);
     },
     showAll () {
-      this.tableLen = this.tableData.length;
+      this.$store.commit('SET_RENDERING_TABLE', true);
+      setTimeout(() => { // need settimeout for renderingMore to take effect
+        this.tableLen = this.tableData.length;
+      }, 100);
     }
+  },
+  updated () { // data is rendered
+    this.$nextTick(() => {
+      this.$store.commit('SET_RENDERING_TABLE', false);
+    });
   }
 };
 </script>

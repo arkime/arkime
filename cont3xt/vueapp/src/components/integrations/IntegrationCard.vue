@@ -1,5 +1,5 @@
 <template>
-  <div v-if="Object.keys(getIntegrationData).length">
+  <div v-if="!waitRendering && Object.keys(getIntegrationData).length">
     <h5 class="text-orange"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
@@ -54,16 +54,16 @@ export default {
   name: 'IntegrationCard',
   components: { IntegrationValue },
   computed: {
-    ...mapGetters(['getIntegrationData', 'getIntegrations']),
+    ...mapGetters(['getIntegrationData', 'getIntegrations', 'waitRendering']),
     card () {
       const { source } = this.$store.state.displayIntegration;
       if (!this.getIntegrations[source]) { return {}; }
       return this.getIntegrations[source].card;
     }
   },
-  updated () { // data is rendered
+  updated () { // card data is rendered
     this.$nextTick(() => {
-      this.$store.commit('SET_RENDERING', false);
+      this.$store.commit('SET_RENDERING_CARD', false);
     });
   }
 };

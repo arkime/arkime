@@ -66,6 +66,7 @@
 
     <!-- results -->
     <div class="row mt-2">
+      <!-- itype results summary -->
       <div class="col-6">
         <cont3xt-domain
           :data="results"
@@ -75,22 +76,23 @@
           :data="results"
           v-else-if="searchItype === 'ip'"
         />
-      </div>
+      </div> <!-- /itype results summary -->
+      <!-- integration results -->
       <div class="col-6">
         <b-overlay
           no-center
           rounded="sm"
           variant="dark"
-          :show="getRendering">
+          :show="waitRendering || getRendering">
           <integration-card />
           <template #overlay>
-            <div class="text-center mt-4 mb-4">
+            <div class="overlay-loading">
               <span class="fa fa-circle-o-notch fa-spin fa-2x" />
               <p>Rendering data...</p>
             </div>
           </template>
         </b-overlay>
-      </div>
+      </div> <!-- /integration results -->
     </div> <!-- /results -->
 
   </div>
@@ -122,7 +124,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRendering']),
+    ...mapGetters(['getRendering', 'waitRendering']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -133,14 +135,18 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
-      this.$store.commit('SET_RENDERING', true);
-      setTimeout(() => { // need settimeout for SET_RENDERING to take effect
+      this.$store.commit('SET_RENDERING_CARD', true);
+      // need wait rendering to tell the card that we aren't rendering yet
+      // or else the data will be stale when it updates the integration type
+      this.$store.commit('WAIT_RENDERING', true);
+      setTimeout(() => { // need timeout for SET_RENDERING_CARD to take effect
         const { itype, source, value } = newIntegration;
         for (const data of this.results[itype][source]) {
           if (data._query === value) {
             this.$store.commit('SET_INTEGRATION_DATA', data);
           }
         }
+        this.$store.commit('WAIT_RENDERING', false);
       }, 100);
     }
   },

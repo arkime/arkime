@@ -12,7 +12,9 @@ const store = new Vuex.Store({
       done: false,
       failures: []
     },
-    rendering: false,
+    renderingCard: false,
+    waitRendering: false,
+    renderingTable: false,
     integrations: {},
     displayIntegration: {},
     integrationData: {}
@@ -37,8 +39,14 @@ const store = new Vuex.Store({
         failures: []
       };
     },
-    SET_RENDERING (state, data) {
-      state.rendering = data;
+    SET_RENDERING_CARD (state, data) {
+      state.renderingCard = data;
+    },
+    WAIT_RENDERING (state, data) {
+      state.waitRendering = data;
+    },
+    SET_RENDERING_TABLE (state, data) {
+      state.renderingTable = data;
     },
     SET_INTEGRATIONS (state, data) {
       state.integrations = data;
@@ -55,7 +63,13 @@ const store = new Vuex.Store({
       return state.loading;
     },
     getRendering (state) {
-      return state.rendering;
+      return state.renderingCard;
+    },
+    waitRendering (state) {
+      return state.waitRendering;
+    },
+    getRenderingTable (state) {
+      return state.renderingTable;
     },
     getIntegrations (state) {
       return state.integrations;

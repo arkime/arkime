@@ -79,4 +79,14 @@ dl.dl-horizontal dd {
   margin-left: 90px;
   margin-bottom: 0;
 }
+
+/* loading styles - uses b-overlay slot */
+.overlay-loading {
+  top: 50%;
+  left: 75%;
+  z-index: 10002;
+  position: fixed;
+  text-align: center;
+  margin-left: -40px;
+}
 </style>
