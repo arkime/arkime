@@ -1,5 +1,8 @@
 <template>
-  <span v-if="value !== undefined">
+  <span
+    v-b-tooltip.hover="value.full"
+    v-if="value.value !== undefined"
+    :class="{'cursor-help':value.full}">
     <label v-if="!hideLabel"
       class="text-orange pr-2">
       {{ field.label }}
@@ -13,7 +16,7 @@
         :show="getRenderingTable">
         <integration-table
           :fields="field.fields"
-          :table-data="value"
+          :table-data="value.value"
         />
         <template #overlay>
           <div class="overlay-loading">
@@ -26,11 +29,11 @@
     <!-- array field -->
     <template v-else-if="field.type === 'array'">
       <template v-if="field.join">
-        {{ value.join(field.join || ', ') }}
+        {{ value.value.join(field.join || ', ') }}
       </template>
       <div v-else
         :key="val"
-        v-for="val in value">
+        v-for="val in value.value">
         {{ val }}
       </div>
     </template> <!-- /array field -->
@@ -38,24 +41,24 @@
     <template v-else-if="field.type === 'url'">
       <a
         target="_blank"
-        rel="noopener noreferrer"
-        :href="value">
-        {{ value }}
+        :href="value.value"
+        rel="noopener noreferrer">
+        {{ value.value }}
       </a>
     </template> <!-- /url field -->
     <!-- json field -->
     <template v-else-if="field.type === 'json'">
-      <pre><code>{{ JSON.stringify(value, null, 2) }}</code></pre>
+      <pre><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
     </template> <!-- /json field -->
     <!-- default string field -->
     <template v-else>
       <template v-if="field.pivot">
         <cont3xt-field
-          :value="value"
+          :value="value.value"
         />
       </template>
       <template v-else>
-        {{ value }}
+        {{ value.value }}
       </template>
     </template> <!-- /default string field -->
   </span>
@@ -83,7 +86,11 @@ export default {
       type: Object,
       required: true
     },
-    hideLabel: { // whether to hide the field label (used for table values)
+    hideLabel: { // whether to hide the field label (used for tables)
+      type: Boolean,
+      default: false
+    },
+    truncate: { // whether to truncate the value if it is long (used for tables)
       type: Boolean,
       default: false
     }
@@ -92,6 +99,7 @@ export default {
     ...mapGetters(['getRenderingTable']),
     value () {
       let value = JSON.parse(JSON.stringify(this.data));
+      let full;
 
       for (const p of this.field.path) {
         if (!value) {
@@ -111,7 +119,13 @@ export default {
         value = undefined;
       }
 
-      return value;
+      // truncate long values
+      if (this.truncate && value.length > (this.field.len || 100)) {
+        full = value;
+        value = `${value.substring(0, this.field.len || 100)}...`;
+      }
+
+      return { value, full };
     }
   }
 };

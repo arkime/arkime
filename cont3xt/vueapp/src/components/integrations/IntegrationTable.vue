@@ -10,12 +10,12 @@
     <tr
       :key="index"
       v-for="index in (Math.max(tableLen, 0))">
-      <td
-        class="break-word"
+      <td class="break-all"
         v-for="field in fields"
         :key="`${field.label}-${index}-cell`">
         <integration-value
           :field="field"
+          :truncate="true"
           :hide-label="true"
           :data="tableData[index - 1]"
         />

@@ -52,6 +52,8 @@ body {
 .no-overflow-y  { overflow-y: hidden; }
 .break-word     { word-break: break-word; }
 .word-break     { word-break: break-word; }
+.break-all      { word-break: break-all; }
+.all-break      { word-break: break-all; }
 
 /* display */
 .display-inline { display: inline; }
