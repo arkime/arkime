@@ -79,6 +79,31 @@
             :data="results"
             v-else-if="searchItype === 'ip'"
           />
+          <cont3xt-url
+            :data="results"
+            :query="searchTerm"
+            v-else-if="searchItype === 'url'"
+          />
+          <cont3xt-email
+            :data="results"
+            :query="searchTerm"
+            v-else-if="searchItype === 'email'"
+          />
+          <cont3xt-hash
+            :data="results"
+            v-else-if="searchItype === 'hash'"
+          />
+          <cont3xt-phone
+            :data="results"
+            :query="searchTerm"
+            v-else-if="searchItype === 'phone'"
+          />
+          <div v-else>
+            <h3 class="text-orange">
+              No display for {{ searchItype }}
+            </h3>
+            <pre><code>{{ results }}</code></pre>
+          </div>
         </div> <!-- /itype results summary -->
         <!-- integration results -->
         <div class="col-6 results-integration">
@@ -105,15 +130,23 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import Cont3xtService from '@/components/services/Cont3xtService';
-import Cont3xtDomain from '@/components/itypes/Domain';
 import Cont3xtIp from '@/components/itypes/IP';
+import Cont3xtUrl from '@/components/itypes/URL';
+import Cont3xtHash from '@/components/itypes/Hash';
+import Cont3xtEmail from '@/components/itypes/Email';
+import Cont3xtPhone from '@/components/itypes/Phone';
+import Cont3xtDomain from '@/components/itypes/Domain';
+import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 
 export default {
   name: 'Cont3xt',
   components: {
     Cont3xtIp,
+    Cont3xtUrl,
+    Cont3xtHash,
+    Cont3xtEmail,
+    Cont3xtPhone,
     Cont3xtDomain,
     IntegrationCard
   },
