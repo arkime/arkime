@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!waitRendering && Object.keys(getIntegrationData).length">
+  <b-card v-if="!waitRendering && Object.keys(getIntegrationData).length">
     <h5 class="text-orange"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
@@ -38,7 +38,7 @@
         </b-collapse>
       </small>
     </b-card> <!-- /raw -->
-  </div>
+  </b-card>
 </template>
 
 <script>

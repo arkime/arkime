@@ -2,99 +2,103 @@
   <div class="mr-2 ml-2">
 
     <!-- search -->
-    <b-input-group>
-      <template #prepend>
-        <b-input-group-text>
-          <span class="fa fa-search" />
-        </b-input-group-text>
-      </template>
-      <b-form-input
-        v-model="searchTerm"
-        placeholder="Search"
-        @keydown.enter="search"
-      />
-      <b-input-group-append>
-        <b-button
-          @click="search"
-          variant="success">
-          Get Cont3xt
-        </b-button>
-      </b-input-group-append>
-    </b-input-group> <!-- /search -->
-
-    <!-- welcome -->
-    <div
-      class="whole-page-info container"
-      v-if="!initialized && !error.length && !integrationError.length">
-      <div class="center-area">
-        <h1 class="text-orange">Welcome to Cont3xt!</h1>
-        <h4 class="text-accent">
-          Search for IPs, domains, URLs, emails, phone numbers, or hashes.
-        </h4>
-      </div>
-    </div> <!-- /welcome -->
-
-    <!-- search error -->
-    <div
-      v-if="error.length"
-      class="mt-2 alert alert-warning">
-      <span class="fa fa-exclamation-triangle" />&nbsp;
-      {{ error }}
-      <button
-        type="button"
-        @click="error = ''"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /search error -->
-
-    <!-- integration error -->
-    <div
-      v-if="integrationError.length"
-      class="mt-2 alert alert-danger">
-      <span class="fa fa-exclamation-triangle" />&nbsp;
-      Error fetching integrations. Viewing data for integrations will not work!
-      <br>
-      {{ integrationError }}
-      <button
-        type="button"
-        @click="integrationError = ''"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /integration error -->
-
-    <!-- results -->
-    <div class="row mt-2">
-      <!-- itype results summary -->
-      <div class="col-6">
-        <cont3xt-domain
-          :data="results"
-          v-if="searchItype === 'domain'"
+    <div class="fixed-top pl-2 pr-2 search-nav">
+      <b-input-group>
+        <template #prepend>
+          <b-input-group-text>
+            <span class="fa fa-search" />
+          </b-input-group-text>
+        </template>
+        <b-form-input
+          v-model="searchTerm"
+          placeholder="Search"
+          @keydown.enter="search"
         />
-        <cont3xt-ip
-          :data="results"
-          v-else-if="searchItype === 'ip'"
-        />
-      </div> <!-- /itype results summary -->
-      <!-- integration results -->
-      <div class="col-6">
-        <b-overlay
-          no-center
-          rounded="sm"
-          variant="dark"
-          :show="waitRendering || getRendering">
-          <integration-card />
-          <template #overlay>
-            <div class="overlay-loading">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Rendering data...</p>
-            </div>
-          </template>
-        </b-overlay>
-      </div> <!-- /integration results -->
-    </div> <!-- /results -->
+        <b-input-group-append>
+          <b-button
+            @click="search"
+            variant="success">
+            Get Cont3xt
+          </b-button>
+        </b-input-group-append>
+      </b-input-group>
+    </div> <!-- /search -->
 
+    <!-- page content -->
+    <div class="margin-for-search">
+      <!-- welcome -->
+      <div class="whole-page-info container"
+        v-if="!initialized && !error.length && !integrationError.length">
+        <div class="center-area">
+          <h1 class="text-orange">Welcome to Cont3xt!</h1>
+          <h4 class="text-accent">
+            Search for IPs, domains, URLs, emails, phone numbers, or hashes.
+          </h4>
+        </div>
+      </div> <!-- /welcome -->
+
+      <!-- search error -->
+      <div
+        v-if="error.length"
+        class="mt-2 alert alert-warning">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        {{ error }}
+        <button
+          type="button"
+          @click="error = ''"
+          class="close cursor-pointer">
+          <span>&times;</span>
+        </button>
+      </div> <!-- /search error -->
+
+      <!-- integration error -->
+      <div
+        v-if="integrationError.length"
+        class="mt-2 alert alert-danger">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        Error fetching integrations. Viewing data for integrations will not work!
+        <br>
+        {{ integrationError }}
+        <button
+          type="button"
+          @click="integrationError = ''"
+          class="close cursor-pointer">
+          <span>&times;</span>
+        </button>
+      </div> <!-- /integration error -->
+
+      <!-- results -->
+      <div class="row mt-2 results-container">
+        <!-- itype results summary -->
+        <div class="col-6 results-summary">
+          <cont3xt-domain
+            :data="results"
+            v-if="searchItype === 'domain'"
+          />
+          <cont3xt-ip
+            :data="results"
+            v-else-if="searchItype === 'ip'"
+          />
+        </div> <!-- /itype results summary -->
+        <!-- integration results -->
+        <div class="col-6 results-integration">
+          <b-overlay
+            no-center
+            rounded="sm"
+            variant="dark"
+            :show="waitRendering || getRendering">
+            <integration-card />
+            <template #overlay>
+              <div class="overlay-loading">
+                <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                <p>Rendering data...</p>
+              </div>
+            </template>
+          </b-overlay>
+        </div> <!-- /integration results -->
+      </div> <!-- /results -->
+
+    </div> <!-- /page content -->
   </div>
 </template>
 
@@ -233,3 +237,32 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.search-nav {
+  margin-top: 64px !important;
+  padding-top: 16px;
+  background-color: #FFF;
+}
+body.dark .search-nav {
+  background-color: #222;
+}
+
+.margin-for-search {
+  margin-top: 136px;
+}
+
+/* side by side scrolling results containers */
+.results-container {
+  height: 100%;
+  overflow: hidden;
+}
+.results-summary {
+  height: calc(100vh - 136px);
+  overflow: scroll;
+}
+.results-integration {
+  height: calc(100vh - 136px);
+  overflow: scroll;
+}
+</style>
