@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span v-if="value !== undefined">
     <label v-if="!hideLabel"
       class="text-orange pr-2">
       {{ field.label }}
@@ -13,7 +13,7 @@
         :show="getRenderingTable">
         <integration-table
           :fields="field.fields"
-          :table-data="getFieldValue(field, data)"
+          :table-data="value"
         />
         <template #overlay>
           <div class="overlay-loading">
@@ -26,11 +26,11 @@
     <!-- array field -->
     <template v-else-if="field.type === 'array'">
       <template v-if="field.join">
-        {{ getFieldValue(field, data).join(field.join || ', ') }}
+        {{ value.join(field.join || ', ') }}
       </template>
       <div v-else
         :key="val"
-        v-for="val in getFieldValue(field, data)">
+        v-for="val in value">
         {{ val }}
       </div>
     </template> <!-- /array field -->
@@ -39,23 +39,23 @@
       <a
         target="_blank"
         rel="noopener noreferrer"
-        :href="getFieldValue(field, data)">
-        {{ getFieldValue(field, data) }}
+        :href="value">
+        {{ value }}
       </a>
     </template> <!-- /url field -->
     <!-- json field -->
     <template v-else-if="field.type === 'json'">
-      <pre><code>{{ JSON.stringify(getFieldValue(field, data), null, 2) }}</code></pre>
+      <pre><code>{{ JSON.stringify(value, null, 2) }}</code></pre>
     </template> <!-- /json field -->
     <!-- default string field -->
     <template v-else>
       <template v-if="field.pivot">
         <cont3xt-field
-          :value="getFieldValue(field, data)"
+          :value="value"
         />
       </template>
       <template v-else>
-        {{ getFieldValue(field, data) }}
+        {{ value }}
       </template>
     </template> <!-- /default string field -->
   </span>
@@ -67,15 +67,6 @@ import { mapGetters } from 'vuex';
 
 import Cont3xtField from '@/utils/Field';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
-
-const defaults = {
-  ms: 0,
-  url: '',
-  json: {},
-  table: [],
-  array: [],
-  string: ''
-};
 
 export default {
   name: 'IntegrationValue',
@@ -98,25 +89,29 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getRenderingTable'])
-  },
-  methods: {
-    getFieldValue (field, data) {
-      let value = data;
+    ...mapGetters(['getRenderingTable']),
+    value () {
+      let value = JSON.parse(JSON.stringify(this.data));
 
-      for (const p of field.path) {
+      for (const p of this.field.path) {
         if (!value) {
-          console.warn(`Can't resolve path: ${field.path.join('.')}`);
+          console.warn(`Can't resolve path: ${this.field.path.join('.')}`);
           return '';
         }
         value = value[p];
       }
 
-      if (field.defang) {
+      if (this.field.defang) {
         value = dr.defang(value);
       }
 
-      return value || defaults[field.type];
+      // don't show empty tables, lists, or strings
+      if (this.field.type !== 'json' && value && value.length === 0) {
+        // ignores ms because it's a number and value.length is undefined
+        value = undefined;
+      }
+
+      return value;
     }
   }
 };

@@ -9,7 +9,7 @@
     </tr>
     <tr
       :key="index"
-      v-for="index in (Math.max(tableLen - 1, 0))">
+      v-for="index in (Math.max(tableLen, 0))">
       <td
         class="break-word"
         v-for="field in fields"
@@ -17,7 +17,7 @@
         <integration-value
           :field="field"
           :hide-label="true"
-          :data="tableData[index]"
+          :data="tableData[index - 1]"
         />
       </td>
     </tr>

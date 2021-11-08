@@ -14,15 +14,19 @@
             <template v-for="whois in data[itype].Whois">
               <span v-if="whois.data"
                 :key="`whois-${whois._query}`">
-                <h5 class="display-inline">
+                <h5 class="display-inline"
+                  v-if="whois.data.creationDate">
                   <label class="badge badge-dark"
                     v-b-tooltip="whois.data.creationDate">
                     {{ whois.data.creationDate | removeTime }}
                   </label>
                 </h5>
-                <h5 class="display-inline"><label class="badge badge-dark">
-                  {{ whois.data.registrar }}
-                </label></h5>
+                <h5 class="display-inline"
+                  v-if="whois.data.registrar">
+                  <label class="badge badge-dark">
+                    {{ whois.data.registrar }}
+                  </label>
+                </h5>
               </span>
             </template>
           </template>
