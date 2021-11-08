@@ -132,13 +132,13 @@ void reader_pfring_init(char *UNUSED(name))
             int err = pfring_set_bpf_filter(rings[i], config.bpf);
 
             if (err < 0) {
-                LOGEXIT("pfring set filter error %d  for  %s", err, config.bpf);
+                CONFIGEXIT("pfring set filter error %d  for  %s", err, config.bpf);
             }
         }
 
 
         if (!rings[i]) {
-            LOGEXIT("pfring open failed! - %s", config.interface[i]);
+            CONFIGEXIT("pfring open failed! - %s", config.interface[i]);
         }
 
         pfring_set_cluster(rings[i], clusterId, cluster_per_flow_5_tuple);

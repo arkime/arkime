@@ -1730,11 +1730,11 @@ int moloch_mprotocol_register_internal(char                            *name,
                                        int                              apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     int num = ++mProtocolCnt; // Leave 0 empty so we know if not set in code

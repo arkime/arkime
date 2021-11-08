@@ -125,11 +125,11 @@ void moloch_plugin_init()
             luaopen_molochdata(L);
 
             if (luaL_loadfile(L, names[i])) {
-                LOGEXIT("Error loading %s: %s", names[i], lua_tostring(L, -1));
+                CONFIGEXIT("Error loading %s: %s", names[i], lua_tostring(L, -1));
             }
 
             if (lua_pcall(L, 0, 0, 0)) {
-                LOGEXIT("Error initing %s: %s", names[i], lua_tostring(L, -1));
+                CONFIGEXIT("Error initing %s: %s", names[i], lua_tostring(L, -1));
             }
         }
     }

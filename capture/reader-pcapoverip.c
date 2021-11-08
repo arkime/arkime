@@ -283,19 +283,19 @@ LOCAL void pcapoverip_server_start()
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
-        LOGEXIT("ERROR - Error creating pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error creating pcap-over-ip: %s", error->message);
     }
 
     g_socket_set_blocking (socket, FALSE);
     addr = g_inet_socket_address_new (g_inet_address_new_any (G_SOCKET_FAMILY_IPV4), port);
 
     if (!g_socket_bind (socket, addr, TRUE, &error)) {
-        LOGEXIT("ERROR - Error binding pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error binding pcap-over-ip: %s", error->message);
     }
     g_object_unref (addr);
 
     if (!g_socket_listen (socket, &error)) {
-        LOGEXIT("ERROR - Error listening pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error listening pcap-over-ip: %s", error->message);
     }
 
     int fd = g_socket_get_fd(socket);
@@ -325,7 +325,7 @@ void reader_pcapoverip_init(char *name)
     deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
     if (config.bpf) {
         if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            LOGEXIT("ERROR - Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
+            CONFIGEXIT("Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
         }
     }
 }

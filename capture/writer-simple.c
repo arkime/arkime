@@ -194,11 +194,11 @@ LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char
     uint8_t kekiv[EVP_MAX_IV_LENGTH];
 
     if (!kekId)
-        LOGEXIT("ERROR - simpleKEKId must be set");
+        CONFIGEXIT("simpleKEKId must be set");
 
    char *kekstr = moloch_config_section_str(NULL, "keks", kekId, NULL);
    if (!kekstr)
-       LOGEXIT("ERROR - No kek with id '%s' found in keks config section", kekId);
+       CONFIGEXIT("No kek with id '%s' found in keks config section", kekId);
 
     EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
     g_free(kekstr);
@@ -362,7 +362,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             break;
         }
         default:
-            LOGEXIT("ERROR - Unknown simpleMode %d", simpleMode);
+            CONFIGEXIT("Unknown simpleMode %d", simpleMode);
         }
 
         /* If offline pcap honor umask, otherwise disable other RW */
@@ -671,7 +671,7 @@ void writer_simple_init(char *name)
         LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
-        LOGEXIT("ERROR - Unknown simpleEncoding '%s'", mode);
+        CONFIGEXIT("Unknown simpleEncoding '%s'", mode);
     }
 
     pageSize = getpagesize();

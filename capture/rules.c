@@ -155,7 +155,7 @@ YamlNode_t *moloch_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, y
         yaml_event_t event;
 
         if (!yaml_parser_parse(parser, &event))
-            LOGEXIT("ERROR - %s:%zu - Parse error '%s'", filename, parser->problem_mark.line, parser->problem);
+            CONFIGEXIT("%s:%zu - Parse error '%s'", filename, parser->problem_mark.line, parser->problem);
 
 #ifdef RULES_DEBUG
         LOG("%s %d", yaml_names[event.type], event.type);
@@ -367,7 +367,7 @@ void moloch_rules_load_add_field_match(MolochRule_t *rule, int pos, int type, ch
     int              len = strlen(key);
 
     if (len > 255)
-        LOGEXIT("ERROR - Match %s is to too large", key);
+        CONFIGEXIT("Match %s is to too large", key);
 
     uint8_t *nkey = g_malloc(len+3);
     nkey[0] = type;
@@ -391,28 +391,28 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 {
     char *name = moloch_rules_parser_get_value(parent, "name");
     if (!name)
-        LOGEXIT("ERROR - %s: name required for rule", filename);
+        CONFIGEXIT("%s: name required for rule", filename);
 
     char *when = moloch_rules_parser_get_value(parent, "when");
     if (!when)
-        LOGEXIT("ERROR - %s: when required for rule '%s'", filename, name);
+        CONFIGEXIT("%s: when required for rule '%s'", filename, name);
 
     char *bpf = moloch_rules_parser_get_value(parent, "bpf");
     GPtrArray *fields = moloch_rules_parser_get_values(parent, "fields");
     char *expression = moloch_rules_parser_get_value(parent, "expression");
 
     if (!bpf && !fields && !expression)
-        LOGEXIT("ERROR - %s: bpf, fields, or expressions required for rule '%s'", filename, name);
+        CONFIGEXIT("%s: bpf, fields, or expressions required for rule '%s'", filename, name);
 
     if ((bpf && fields) || (bpf && expression) || (fields && expression))
-        LOGEXIT("ERROR - %s: Only one of bpf, fields, or expressions can be set for rule '%s'", filename, name);
+        CONFIGEXIT("%s: Only one of bpf, fields, or expressions can be set for rule '%s'", filename, name);
 
     GPtrArray  *ops = moloch_rules_parser_get_values(parent, "ops");
     if (!ops)
-        LOGEXIT("ERROR - %s: ops required for rule '%s'", filename, name);
+        CONFIGEXIT("%s: ops required for rule '%s'", filename, name);
 
     if (expression) {
-        LOGEXIT("ERROR - Currently don't support expression, hopefully soon!");
+        CONFIGEXIT("Currently don't support expression, hopefully soon!");
     }
 
     char *log = moloch_rules_parser_get_value(parent, "log");
@@ -422,38 +422,38 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if (strcmp(when, "everyPacket") == 0) {
         type = MOLOCH_RULE_TYPE_EVERY_PACKET;
         if (!bpf)
-            LOGEXIT("ERROR - %s: everyPacket only supports bpf", filename);
+            CONFIGEXIT("%s: everyPacket only supports bpf", filename);
     } else if (strcmp(when, "sessionSetup") == 0) {
         type = MOLOCH_RULE_TYPE_SESSION_SETUP;
     } else if (strcmp(when, "afterClassify") == 0) {
         type = MOLOCH_RULE_TYPE_AFTER_CLASSIFY;
         if (bpf)
-            LOGEXIT("ERROR - %s: %s doesn't support bpf", filename, when);
+            CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "fieldSet") == 0) {
         type = MOLOCH_RULE_TYPE_FIELD_SET;
         if (bpf)
-            LOGEXIT("ERROR - %s: %s doesn't support bpf", filename, when);
+            CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeMiddleSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
         saveFlags = MOLOCH_SAVE_FLAG_MIDDLE;
         if (bpf)
-            LOGEXIT("ERROR - %s: %s doesn't support bpf", filename, when);
+            CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeFinalSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
         saveFlags = MOLOCH_SAVE_FLAG_FINAL;
         if (bpf)
-            LOGEXIT("ERROR - %s: %s doesn't support bpf", filename, when);
+            CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else if (strcmp(when, "beforeBothSave") == 0) {
         type = MOLOCH_RULE_TYPE_BEFORE_SAVE;
         saveFlags = MOLOCH_SAVE_FLAG_BOTH;
         if (bpf)
-            LOGEXIT("ERROR - %s: %s doesn't support bpf", filename, when);
+            CONFIGEXIT("%s: %s doesn't support bpf", filename, when);
     } else {
-        LOGEXIT("ERROR - %s: Unknown when '%s'", filename, when);
+        CONFIGEXIT("%s: Unknown when '%s'", filename, when);
     }
 
     if (loading.rulesLen[type] >= MOLOCH_RULES_MAX)
-        LOGEXIT("ERROR - Too many %s rules", when);
+        CONFIGEXIT("Too many %s rules", when);
 
     int n = loading.rulesLen[type]++;
     MolochRule_t *rule = loading.rules[type][n] = MOLOCH_TYPE_ALLOC0(MolochRule_t);
@@ -482,13 +482,13 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 } else if (strcmp(comma, "contains") == 0) {
                     mtype = MOLOCH_RULES_STR_MATCH_CONTAINS;
                 } else {
-                    LOGEXIT("ERROR - Rule field %s doesn't support modifier %s", node->key, comma);
+                    CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
                 }
             }
 
             int pos = moloch_field_by_exp(node->key);
             if (pos == -1)
-                LOGEXIT("ERROR - %s Couldn't find field '%s'", filename, node->key);
+                CONFIGEXIT("%s Couldn't find field '%s'", filename, node->key);
 
             // Add this fieldPos to the list if not already there
             if (!(rule->hash[pos] || rule->tree4[pos] || rule->match[pos]))
@@ -500,7 +500,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_INT_HASH:
             case MOLOCH_FIELD_TYPE_INT_GHASH:
                 if (mtype != 0)
-                    LOGEXIT("ERROR - Rule field %s doesn't support modifier %s", node->key, comma);
+                    CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
                 if (!rule->hash[pos])
                     rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
@@ -510,7 +510,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_FLOAT_ARRAY:
             case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
                 if (mtype != 0)
-                    LOGEXIT("ERROR - Rule field %s doesn't support modifier %s", node->key, comma);
+                    CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
                 if (!rule->hash[pos])
                     rule->hash[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
@@ -519,7 +519,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             case MOLOCH_FIELD_TYPE_IP:
             case MOLOCH_FIELD_TYPE_IP_GHASH:
                 if (mtype != 0)
-                    LOGEXIT("ERROR - Rule field %s doesn't support modifier %s", node->key, comma);
+                    CONFIGEXIT("Rule field %s doesn't support modifier %s", node->key, comma);
 
                 if (!rule->tree4[pos]) {
                     rule->tree4[pos] = New_Patricia(32);
@@ -541,7 +541,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 break;
 
             case MOLOCH_FIELD_TYPE_CERTSINFO:
-                LOGEXIT("ERROR - %s: Currently don't support any certs fields", filename);
+                CONFIGEXIT("%s: Currently don't support any certs fields", filename);
             }
 
             if (node->value) {
@@ -568,7 +568,7 @@ void moloch_rules_parser_load_rule(char *filename, YamlNode_t *parent)
         YamlNode_t *node = g_ptr_array_index(ops, i);
         int pos = moloch_field_by_exp(node->key);
         if (pos == -1)
-            LOGEXIT("ERROR - %s Couldn't find field '%s'", filename, node->key);
+            CONFIGEXIT("%s Couldn't find field '%s'", filename, node->key);
         moloch_field_ops_add(&rule->ops, pos, node->value, strlen(node->value));
     }
 }
@@ -580,12 +580,12 @@ void moloch_rules_parser_load_file(char *filename, YamlNode_t *parent)
 
     str = moloch_rules_parser_get_value(parent, "version");
     if (!str || strcmp(str, "1") != 0) {
-        LOGEXIT("ERROR - %s: Missing version: 1", filename);
+        CONFIGEXIT("%s: Missing version: 1", filename);
     }
 
     rules = moloch_rules_parser_get_values(parent, "rules");
     if (!rules) {
-        LOGEXIT("ERROR - %s: Missing rules", filename);
+        CONFIGEXIT("%s: Missing rules", filename);
     }
 
     int i;
@@ -719,7 +719,7 @@ void moloch_rules_load(char **names)
         yaml_parser_initialize(&parser);
         FILE *input = fopen(names[i], "rb");
         if (!input)
-            LOGEXIT("ERROR - can not open rules file %s", names[i]);
+            CONFIGEXIT("can not open rules file %s", names[i]);
 
         yaml_parser_set_input_file(&parser, input);
         YamlNode_t *parent = moloch_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
@@ -761,7 +761,7 @@ void moloch_rules_recompile()
             pcap_freecode(&rule->bpfp);
             if (pcapFileHeader.dlt != DLT_NFLOG) {
                 if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1 && !config.ignoreErrors) {
-                    LOGEXIT("ERROR - Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
+                    CONFIGEXIT("Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
             } else {
                 rule->bpfp.bf_len = 0;

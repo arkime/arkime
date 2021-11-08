@@ -2133,8 +2133,7 @@ LOCAL void moloch_db_load_geo_country(char *name)
     MMDB_s  *country = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, country);
     if (MMDB_SUCCESS != status) {
-        LOGEXIT("ERROR - Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
-
+        CONFIGEXIT("Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
     }
     if (geoCountry) {
         LOG("Loading new version of country file");
@@ -2148,8 +2147,7 @@ LOCAL void moloch_db_load_geo_asn(char *name)
     MMDB_s  *asn = malloc(sizeof(MMDB_s));
     int status = MMDB_open(name, MMDB_MODE_MMAP, asn);
     if (MMDB_SUCCESS != status) {
-        LOGEXIT("ERROR - Couldn't initialize ASN file %s error %s", name, MMDB_strerror(status));
-
+        CONFIGEXIT("Couldn't initialize ASN file %s error %s", name, MMDB_strerror(status));
     }
     if (geoASN) {
         LOG("Loading new version of asn file");
@@ -2163,8 +2161,7 @@ LOCAL void moloch_db_load_rir(char *name)
     FILE *fp;
     char line[1000];
     if (!(fp = fopen(name, "r"))) {
-        printf("ERROR - Couldn't open RIR from %s", name);
-        exit(1);
+        CONFIGEXIT("Couldn't open RIR from %s", name);
     }
 
     while(fgets(line, sizeof(line), fp)) {
@@ -2239,7 +2236,7 @@ LOCAL void moloch_db_load_oui(char *name)
         // Break into pieces
         gchar **parts = g_strsplit(line, "\t", 0);
         if (!parts[0] || !parts[1]) {
-            LOGEXIT("ERROR - OUI file %s bad line '%s'", name, line);
+            CONFIGEXIT("OUI file %s bad line '%s'", name, line);
         }
 
         char *str = NULL;

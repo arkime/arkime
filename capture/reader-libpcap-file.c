@@ -653,12 +653,12 @@ LOCAL void reader_libpcapfile_start() {
 
         char *equal = strchr(filenameOpsStr[i], '=');
         if (!equal) {
-            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex%%value, missing equal '%s'", filenameOpsStr[i]);
         }
 
         char *percent = strchr(equal+1, '%');
         if (!percent) {
-            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex%%value, missing percent '%s'", filenameOpsStr[i]);
         }
 
         *equal = 0;
@@ -666,23 +666,23 @@ LOCAL void reader_libpcapfile_start() {
 
         int elen = strlen(equal+1);
         if (!elen) {
-            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex%%value, empty regex for '%s'", filenameOpsStr[i]);
         }
 
         int vlen = strlen(percent+1);
         if (!vlen) {
-            LOGEXIT("ERROR - Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex%%value, empty value for '%s'", filenameOpsStr[i]);
         }
 
         int fieldPos = moloch_field_by_exp(filenameOpsStr[i]);
         if (fieldPos == -1) {
-            LOGEXIT("ERROR - Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
         }
 
         filenameOps[filenameOpsNum].regex = g_regex_new(equal+1, 0, 0, 0);
         filenameOps[filenameOpsNum].expand = g_strdup(percent+1);
         if (!filenameOps[filenameOpsNum].regex)
-            LOGEXIT("ERROR - Couldn't compile regex '%s'", equal+1);
+            CONFIGEXIT("Couldn't compile regex '%s'", equal+1);
         filenameOps[filenameOpsNum].field = fieldPos;
         filenameOpsNum++;
     }

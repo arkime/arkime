@@ -897,21 +897,21 @@ LOCAL void wise_load_config()
             type = INTEL_TYPE_JA3;
         else {
             if (numTypes == INTEL_TYPE_SIZE) {
-                LOGEXIT("ERROR - Too many wise-types, can only have %d custom types", INTEL_TYPE_SIZE - INTEL_TYPE_NUM_PRE);
+                CONFIGEXIT("Too many wise-types, can only have %d custom types", INTEL_TYPE_SIZE - INTEL_TYPE_NUM_PRE);
             }
             type = numTypes++;
             types[type].nameLen = strlen(keys[i]);
             types[type].name = g_ascii_strdown(keys[i], types[type].nameLen);
 
             if (types[type].nameLen > 12)
-                LOGEXIT("ERROR - wise-types '%s' too long, max 12 chars", keys[i]);
+                CONFIGEXIT("wise-types '%s' too long, max 12 chars", keys[i]);
         }
 
         types[type].fieldsLen = 0;
         int v;
         for (v = 0; values[v]; v++) {
             if (types[type].fieldsLen == INTEL_TYPE_MAX_FIELDS)
-                LOGEXIT("ERROR - wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
+                CONFIGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
             if (strncmp("db:", values[v], 3) == 0)

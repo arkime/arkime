@@ -74,7 +74,7 @@ gboolean moloch_cmdline_option(const gchar *option_name, const gchar *input, gpo
 {
     char *equal = strchr(input, '=');
     if (!equal)
-        LOGEXIT("ERROR - %s requires a '=' in value %s", option_name, input);
+        CONFIGEXIT("The option %s requires a '=' in value '%s'", option_name, input);
 
     char *key = g_strndup(input, equal - input);
     char *value = g_strdup(equal + 1);
@@ -555,11 +555,11 @@ void moloch_drop_privileges()
         struct group   *grp;
         grp = getgrnam(config.dropGroup);
         if (!grp) {
-            LOGEXIT("ERROR - Group '%s' not found", config.dropGroup);
+            CONFIGEXIT("Group '%s' not found", config.dropGroup);
         }
 
         if (setgid(grp->gr_gid) != 0) {
-            LOGEXIT("ERROR - Couldn't change group - %s", strerror(errno));
+            CONFIGEXIT("Couldn't change group - %s", strerror(errno));
         }
     }
 
@@ -567,11 +567,11 @@ void moloch_drop_privileges()
         struct passwd   *usr;
         usr = getpwnam(config.dropUser);
         if (!usr) {
-            LOGEXIT("ERROR - User '%s' not found", config.dropUser);
+            CONFIGEXIT("User '%s' not found", config.dropUser);
         }
 
         if (setuid(usr->pw_uid) != 0) {
-            LOGEXIT("ERROR - Couldn't change user - %s", strerror(errno));
+            CONFIGEXIT("Couldn't change user - %s", strerror(errno));
         }
     }
 
@@ -586,7 +586,6 @@ void moloch_add_can_quit (MolochCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
         LOGEXIT("ERROR - Can't add canQuitFunc");
-        return;
     }
     canQuitFuncs[canQuitFuncsNum] = func;
     canQuitNames[canQuitFuncsNum] = name;

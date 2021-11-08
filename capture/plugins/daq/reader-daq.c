@@ -99,7 +99,7 @@ void reader_daq_start() {
             err = daq_set_filter(module, handles[i], config.bpf);
 
             if (err) {
-                LOGEXIT("DAQ set filter error %d %s for  %s", err, daq_get_error(module, handles[i]), config.bpf);
+                LOGEXIT("ERROR - DAQ set filter error %d %s for  %s", err, daq_get_error(module, handles[i]), config.bpf);
             }
         }
 

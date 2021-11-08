@@ -100,11 +100,11 @@ void reader_libpcap_start() {
             struct bpf_program   bpf;
 
             if (pcap_compile(pcaps[i], &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                LOGEXIT("ERROR - Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
+                CONFIGEXIT("Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
 
             if (pcap_setfilter(pcaps[i], &bpf) == -1) {
-                LOGEXIT("ERROR - Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
+                CONFIGEXIT("Couldn't set bpf filter: '%s' with %s", config.bpf, pcap_geterr(pcaps[i]));
             }
             pcap_freecode(&bpf);
         }
@@ -185,14 +185,14 @@ void reader_libpcap_init(char *UNUSED(name))
 #endif
 
         if (!pcaps[i]) {
-            LOGEXIT("ERROR - pcap open live failed! %s", errbuf);
+            CONFIGEXIT("pcap open live failed! %s", errbuf);
         }
 
         pcap_setnonblock(pcaps[i], FALSE, errbuf);
     }
 
     if (i == MAX_INTERFACES && config.interface[MAX_INTERFACES]) {
-        LOGEXIT("ERROR - Only support up to %d interfaces", MAX_INTERFACES);
+        CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }
 
     moloch_reader_start         = reader_libpcap_start;

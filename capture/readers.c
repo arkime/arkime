@@ -47,7 +47,7 @@ void moloch_readers_set(char *name) {
 
     HASH_FIND(s_, readersHash, name, str);
     if (!str) {
-        LOGEXIT("ERROR - Couldn't find pcapReadMethod '%s' implementation", name);
+        CONFIGEXIT("Couldn't find pcapReadMethod '%s' implementation", name);
     }
     MolochReaderInit func = str->uw;
     func(name);
@@ -90,16 +90,16 @@ void moloch_readers_start()
         for (j = 0; opsstr[j]; j++) {
             char *equal = strchr(opsstr[j], '=');
             if (!equal) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, missing equal '%s'", opsstr[j]);
+                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", opsstr[j]);
             }
             int len = strlen(equal+1);
             if (!len) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, empty value for '%s'", opsstr[j]);
+                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", opsstr[j]);
             }
             *equal = 0;
             int fieldPos = moloch_field_by_exp(opsstr[j]);
             if (fieldPos == -1) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, Unknown field expression '%s'", opsstr[j]);
+                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", opsstr[j]);
             }
             moloch_field_ops_add(&readerFieldOps[i], fieldPos, equal+1, len);
         }

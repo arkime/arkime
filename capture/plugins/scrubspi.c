@@ -113,12 +113,12 @@ LOCAL void scrubspi_add_entry(char *key, char *value)
     char **values = g_strsplit(value+1, spliton, 0); // Don't free
 
     if (!values[0] || !values[1])
-        LOGEXIT("ERROR - '%s' bad format, should be '/search pcre/replace literal/', where the '/' can be any char in all three places", value);
+        CONFIGEXIT("'%s' bad format, should be '/search pcre/replace literal/', where the '/' can be any char in all three places", value);
 
     GError *error = NULL;
     GRegex *search = g_regex_new(values[0], G_REGEX_OPTIMIZE, 0, &error);
     if (!search || error)
-        LOGEXIT("ERROR - Couldn't compile %s %s", values[0], error->message);
+        CONFIGEXIT("Couldn't compile %s %s", values[0], error->message);
 
     char **keys = g_strsplit(key, ",", 0);
 
@@ -126,15 +126,15 @@ LOCAL void scrubspi_add_entry(char *key, char *value)
     for (j = 0; keys[j]; j++) {
         int pos = moloch_field_by_exp(keys[j]);
         if (pos == -1)
-            LOGEXIT("ERROR - Field %s in section [scrubspi] not found", keys[j]);
+            CONFIGEXIT("Field %s in section [scrubspi] not found", keys[j]);
         if (ssLen >= MAX_SS)
-            LOGEXIT("ERROR - Too many [scrubspi] items, max is %d", MAX_SS);
+            CONFIGEXIT("Too many [scrubspi] items, max is %d", MAX_SS);
         MolochFieldInfo_t *field = config.fields[pos];
         if (field->type != MOLOCH_FIELD_TYPE_STR &&
             field->type != MOLOCH_FIELD_TYPE_STR_ARRAY &&
             field->type != MOLOCH_FIELD_TYPE_STR_HASH &&
             field->type != MOLOCH_FIELD_TYPE_STR_GHASH) {
-            LOGEXIT("ERROR - Field %s in [scrubspi] is not of type string", keys[j]);
+            CONFIGEXIT("Field %s in [scrubspi] is not of type string", keys[j]);
         }
         ss[ssLen].pos     = pos;
         ss[ssLen].search  = search;
@@ -160,11 +160,10 @@ void moloch_plugin_init()
       NULL
     );
 
-#if MOLOCH_API_VERSION >= 17
     gsize keys_len;
     gchar **keys = moloch_config_section_keys(NULL, "scrubspi", &keys_len);
     if (!keys)
-        LOGEXIT("ERROR - Missing [scrubspi] section in config file");
+        CONFIGEXIT("Missing [scrubspi] section in config file");
 
     if (keys_len == 0)
         LOG("WARNING - [scrubspi] section is empty");
@@ -173,21 +172,10 @@ void moloch_plugin_init()
     for (i = 0; i < keys_len; i++) {
         char *value = moloch_config_section_str(NULL, "scrubspi", keys[i], NULL);
         if (value == NULL)
-            LOGEXIT("ERROR - No value for %s in section [scrubspi]", keys[i]);
+            CONFIGEXIT("No value for %s in section [scrubspi]", keys[i]);
 
         scrubspi_add_entry(keys[i], value);
         g_free(value);
     }
     g_strfreev(keys);
-#else
-    gchar *key = moloch_config_str(NULL, "scrubspi", NULL);
-    if (!key)
-        LOGEXIT("ERROR - Must set scrubspi variable in config");
-    gchar *equal = strchr(key, '=');
-    if (!equal)
-        LOGEXIT("ERROR - scrubspi variable missing value");
-    *equal = 0;
-    scrubspi_add_entry(key, equal+1);
-    g_free(key);
-#endif
 }

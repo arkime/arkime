@@ -148,7 +148,7 @@ void reader_snf_init(char *UNUSED(name))
 
     // Quick config sanity check for clustered processes
     if (snfNumProcs > 1 && snfProcNum == 0) {
-       LOGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
+       CONFIGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
     } else {
        snfProcNum = 1;
     }
@@ -158,11 +158,11 @@ void reader_snf_init(char *UNUSED(name))
 
     int err;
     if ( (err = snf_init(SNF_VERSION_API)) != 0) {
-        LOGEXIT("Myricom: failed in snf_init(%d) = %d", SNF_VERSION_API, err);
+        CONFIGEXIT("Myricom: failed in snf_init(%d) = %d", SNF_VERSION_API, err);
     }
 
     if ((err = snf_getifaddrs(&ifaddrs)) || ifaddrs == NULL) {
-        LOGEXIT("Myricom: failed in snf_getifaddrs %d", err);
+        CONFIGEXIT("Myricom: failed in snf_getifaddrs %d", err);
     }
 
     int ringStartOffset = (snfProcNum-1)*snfNumRings;
@@ -180,18 +180,18 @@ void reader_snf_init(char *UNUSED(name))
         }
 
         if (portnums[i] == -1 && sscanf(config.interface[i], "snf%d", &portnums[i]) != 1) {
-            LOGEXIT("Myricom: Couldn't find interface '%s'", config.interface[i]);
+            CONFIGEXIT("Myricom: Couldn't find interface '%s'", config.interface[i]);
         }
 
         err  = snf_open(portnums[i], snfNumRings * snfNumProcs, NULL, snfDataRingSize, snfFlags, &handles[i]);
         if (err != 0) {
-            LOGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
+            CONFIGEXIT("Myricom: Couldn't open interface '%s' %d", config.interface[i], err);
         }
 
         for (r = ringStartOffset; r < (ringStartOffset+snfNumRings); r++) {
             err = snf_ring_open(handles[i], &rings[i][r]);
             if (err != 0) {
-                LOGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);
+                CONFIGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);
             }
         }
 

@@ -348,8 +348,7 @@ void moloch_config_load_includes(char **includes)
         GError *error = 0;
         gboolean status = g_key_file_load_from_file(keyFile, includes[i], G_KEY_FILE_NONE, &error);
         if (!status || error) {
-            printf("Couldn't load config includes file (%s) %s\n", includes[i], (error?error->message:""));
-            exit(1);
+            CONFIGEXIT("Couldn't load config includes file (%s) %s\n", includes[i], (error?error->message:""));
         }
 
         gchar **groups = g_key_file_get_groups (keyFile, NULL);
@@ -381,8 +380,7 @@ void moloch_config_load()
 
     status = g_key_file_load_from_file(keyfile, config.configFile, G_KEY_FILE_NONE, &error);
     if (!status || error) {
-        printf("FATAL ERROR: Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
-        exit(1);
+        CONFIGEXIT("Couldn't load config file (%s) %s\n", config.configFile, (error?error->message:""));
     }
 
     if (config.debug == 0) {
@@ -399,8 +397,7 @@ void moloch_config_load()
     char *rotateIndex       = moloch_config_str(keyfile, "rotateIndex", "daily");
 
     if (!rotateIndex) {
-        printf("FATAL ERROR: The rotateIndex= can't be empty in config file (%s)\n", config.configFile);
-        exit(1);
+        CONFIGEXIT("The rotateIndex= can't be empty in config file (%s)\n", config.configFile);
     } else if (strcmp(rotateIndex, "hourly") == 0)
         config.rotate = MOLOCH_ROTATE_HOURLY;
     else if (strcmp(rotateIndex, "hourly2") == 0)
@@ -422,8 +419,7 @@ void moloch_config_load()
     else if (strcmp(rotateIndex, "monthly") == 0)
         config.rotate = MOLOCH_ROTATE_MONTHLY;
     else {
-        printf("FATAL ERROR: Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex\n", rotateIndex, config.configFile);
-        exit(1);
+        CONFIGEXIT("Unknown rotateIndex '%s' in config file (%s), see https://arkime.com/settings#rotateindex\n", rotateIndex, config.configFile);
     }
     g_free(rotateIndex);
 
@@ -493,23 +489,20 @@ void moloch_config_load()
 
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
-        printf("FATAL ERROR: Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
-        exit(1);
+        CONFIGEXIT("Couldn't parse offlineRegex (%s) %s\n", offlineRegex, (error?error->message:""));
     }
     g_free(offlineRegex);
 
     config.pcapDirTemplate  = moloch_config_str(keyfile, "pcapDirTemplate", NULL);
     if (config.pcapDirTemplate && config.pcapDirTemplate[0] != '/') {
-        printf("FATAL ERROR: pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
-        exit(1);
+        CONFIGEXIT("pcapDirTemplate MUST start with a / '%s'\n", config.pcapDirTemplate);
     }
 
     config.pcapDirAlgorithm = moloch_config_str(keyfile, "pcapDirAlgorithm", "round-robin");
     if (strcmp(config.pcapDirAlgorithm, "round-robin") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-percent") != 0
             && strcmp(config.pcapDirAlgorithm, "max-free-bytes") != 0) {
-        printf("FATAL ERROR: '%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
-        exit(1);
+        CONFIGEXIT("'%s' is not a valid value for pcapDirAlgorithm.  Supported algorithms are round-robin, max-free-percent, and max-free-bytes.\n", config.pcapDirAlgorithm);
     }
 
     config.maxFileSizeG          = moloch_config_double(keyfile, "maxFileSizeG", 4, 0.01, 1024);
@@ -587,29 +580,29 @@ void moloch_config_load()
             } else if (strncmp(s, "ip:", 3) == 0) {
                 int n = atoi(s+3);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("ERROR - Bad saveUnknownPackets ip value: %s", s);
+                    CONFIGEXIT("Bad saveUnknownPackets ip value: %s", s);
                 BIT_SET(n, config.ipSavePcap);
             } else if (strncmp(s, "-ip:", 4) == 0) {
                 int n = atoi(s+4);
                 if (n < 0 || n > 0xff)
-                    LOGEXIT("ERROR - Bad saveUnknownPackets -ip value: %s", s);
+                    CONFIGEXIT("Bad saveUnknownPackets -ip value: %s", s);
                 BIT_CLR(n, config.ipSavePcap);
             } else if (strncmp(s, "ether:", 6) == 0) {
                 int n = atoi(s+6);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("ERROR - Bad saveUnknownPackets ether value: %s", s);
+                    CONFIGEXIT("Bad saveUnknownPackets ether value: %s", s);
                 BIT_SET(n, config.etherSavePcap);
             } else if (strncmp(s, "-ether:", 7) == 0) {
                 int n = atoi(s+7);
                 if (n < 0 || n > 0xffff)
-                    LOGEXIT("ERROR - Bad saveUnknownPackets -ether value: %s", s);
+                    CONFIGEXIT("Bad saveUnknownPackets -ether value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
             } else if (strcmp(s, "corrupt") == 0) {
                 config.corruptSavePcap = 1;
             } else if (strcmp(s, "-corrupt") == 0) {
                 config.corruptSavePcap = 0;
             } else {
-                LOGEXIT("ERROR - Not sure what saveUnknownPackets %s is", s);
+                CONFIGEXIT("Not sure what saveUnknownPackets %s is", s);
             }
         }
         g_strfreev(saveUnknownPackets);
@@ -627,7 +620,7 @@ void moloch_config_load_local_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "override-ips", &keys_len, &error);
     if (error) {
-        LOGEXIT("ERROR - Error with override-ips: %s", error->message);
+        CONFIGEXIT("Error with override-ips: %s", error->message);
     }
 
     GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
@@ -643,7 +636,7 @@ void moloch_config_load_local_ips()
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
                 if (!g_regex_match(asnRegex, values[v]+4, 0, NULL)) {
-                    LOGEXIT("ERROR - Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
+                    CONFIGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v]+4);
                 }
                 char *sp = strchr(values[v]+6, ' ');
                 *sp = 0;
@@ -678,7 +671,7 @@ void moloch_config_load_packet_ips()
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
-        LOGEXIT("ERROR - Error with packet-drop-ips: %s", error->message);
+        CONFIGEXIT("Error with packet-drop-ips: %s", error->message);
     }
 
     gsize k, v;
@@ -696,7 +689,7 @@ void moloch_config_load_packet_ips()
             } else if (strncmp(values[v], "allow", 4) == 0) {
                 mode = 1;
             } else {
-                LOGEXIT("ERROR - Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);
+                CONFIGEXIT("Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);
             }
         }
         moloch_packet_add_packet_ip(keys[k], mode);
@@ -727,7 +720,7 @@ void moloch_config_load_header(char *section, char *group, char *helpBase, char 
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (molochKeyFile, section, &keys_len, &error);
     if (error) {
-        LOGEXIT("ERROR - Error with %s: %s", section, error->message);
+        CONFIGEXIT("Error with %s: %s", section, error->message);
     }
 
     gsize k, v;
@@ -832,10 +825,10 @@ void moloch_config_monitor_file_msg(char *desc, char *name, MolochFileChange_cb 
     struct stat     sb;
 
     if (numFiles >= MOLOCH_CONFIG_FILES)
-        LOGEXIT("ERROR - Couldn't monitor anymore files %s %s", desc, name);
+        CONFIGEXIT("Couldn't monitor anymore files %s %s", desc, name);
 
     if (stat(name, &sb) != 0) {
-        LOGEXIT("ERROR - Couldn't stat %s file %s error %s. %s", desc, name, strerror(errno), msg);
+        CONFIGEXIT("Couldn't stat %s file %s error %s. %s", desc, name, strerror(errno), msg);
     }
 
     files[numFiles].name[0] = g_strdup(name);
@@ -860,11 +853,11 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
     int             i;
 
     if (numFiles >= MOLOCH_CONFIG_FILES)
-        LOGEXIT("ERROR - Couldn't monitor anymore files %s %s", desc, names[0]);
+        CONFIGEXIT("Couldn't monitor anymore files %s %s", desc, names[0]);
 
     for (i = 0; i < MOLOCH_CONFIG_FILES && names[i]; i++) {
         if (stat(names[i], &sb) != 0) {
-            LOGEXIT("ERROR - Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
+            CONFIGEXIT("Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
         }
 
         files[numFiles].name[i] = g_strdup(names[i]);
@@ -938,18 +931,15 @@ void moloch_config_init()
     }
 
     if (config.interface && !config.interface[0]) {
-        printf("\nFATAL ERROR: The interface= is set in the config file (%s), but it is empty. :( You need to fix this before Arkime can continue.\n", config.configFile);
-        exit (1);
+        CONFIGEXIT("The interface= is set in the config file (%s), but it is empty. :( You need to fix this before Arkime can continue.\n", config.configFile);
     }
 
     if (!config.interface && !config.pcapReadOffline) {
-        printf("\nFATAL ERROR: Please set interface= in the [default] or [%s] section of the config file (%s) OR on the capture command line use either a pcap file (-r) or pcap directory (-R) switch. You need to fix this before Arkime can continue.\n", config.nodeName, config.configFile);
-        exit (1);
+        CONFIGEXIT("Please set interface= in the [default] or [%s] section of the config file (%s) OR on the capture command line use either a pcap file (-r) or pcap directory (-R) switch. You need to fix this before Arkime can continue.\n", config.nodeName, config.configFile);
     }
 
     if (!config.pcapDir || !config.pcapDir[0]) {
-        printf("\nFATAL ERROR: You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.\n", config.configFile);
-        exit(1);
+        CONFIGEXIT("You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.\n", config.configFile);
     }
 
     if (!config.dryRun) {

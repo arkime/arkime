@@ -630,7 +630,7 @@ void moloch_parsers_init()
     } else if (strcmp(strMagicMode, "none") == 0) {
         magicMode = MOLOCH_MAGICMODE_NONE;
     } else {
-        LOGEXIT("ERROR - Unknown magicMode '%s'", strMagicMode);
+        CONFIGEXIT("Unknown magicMode '%s'", strMagicMode);
     }
 
     g_free(strMagicMode);
@@ -810,16 +810,16 @@ void moloch_parsers_init()
         for (i = 0; config.extraOps[i]; i++) {
             char *equal = strchr(config.extraOps[i], '=');
             if (!equal) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
+                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
             }
             int len = strlen(equal+1);
             if (!len) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
+                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
             }
             *equal = 0;
             int fieldPos = moloch_field_by_exp(config.extraOps[i]);
             if (fieldPos == -1) {
-                LOGEXIT("ERROR - Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
+                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
             }
             moloch_field_ops_add(&config.ops, fieldPos, equal+1, len);
         }
@@ -959,15 +959,15 @@ void moloch_parsers_classifier_add(MolochClassifyHead_t *ch, MolochClassify_t *c
 void moloch_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     if ((type & (MOLOCH_PARSERS_PORT_UDP | MOLOCH_PARSERS_PORT_TCP)) == 0) {
-        LOGEXIT("ERROR - Parser '%s' has empty type", name);
+        CONFIGEXIT("Parser '%s' has empty type", name);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
@@ -992,15 +992,15 @@ void moloch_parsers_classifier_register_port_internal(const char *name, void *uw
 void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %u != %u", name, (unsigned int)sizeof(MolochSession_t),  (unsigned int)sessionsize);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h\n %d %d", name, MOLOCH_API_VERSION, apiversion);
     }
 
     if (!match && matchlen != 0)
-        LOGEXIT("ERROR - Can't have a null match for %s", name);
+        CONFIGEXIT("Can't have a null match for %s", name);
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);
     c->name     = name;
@@ -1030,11 +1030,11 @@ void moloch_parsers_classifier_register_tcp_internal(const char *name, void *uw,
 void moloch_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const unsigned char *match, int matchlen, MolochClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(MolochSession_t) != sessionsize) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h", name);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h", name);
     }
 
     if (MOLOCH_API_VERSION != apiversion) {
-        LOGEXIT("ERROR - Parser '%s' built with different version of moloch.h", name);
+        CONFIGEXIT("Parser '%s' built with different version of moloch.h", name);
     }
 
     MolochClassify_t *c = MOLOCH_TYPE_ALLOC0(MolochClassify_t);

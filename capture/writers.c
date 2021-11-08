@@ -38,7 +38,7 @@ void moloch_writers_start(char *name) {
 
     HASH_FIND(s_, writersHash, name, str);
     if (!str) {
-        LOGEXIT("ERROR - Couldn't find pcapWriteMethod %s implementation", name);
+        CONFIGEXIT("Couldn't find pcapWriteMethod %s implementation", name);
     }
     MolochWriterInit func = str->uw;
     func(name);

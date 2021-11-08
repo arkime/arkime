@@ -78,8 +78,7 @@ void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            printf("yara could not open file: %s\n", filename);
-            exit(1);
+            CONFIGEXIT("yara could not open file: %s\n", filename);
         }
     }
 }
@@ -219,8 +218,7 @@ void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            printf("yara could not open file: %s\n", filename);
-            exit(1);
+            CONFIGEXIT("yara could not open file: %s\n", filename);
         }
     }
 }
@@ -357,8 +355,7 @@ void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            printf("yara could not open file: %s\n", filename);
-            exit(1);
+            CONFIGEXIT("yara could not open file: %s\n", filename);
         }
     }
 }
@@ -451,8 +448,7 @@ void moloch_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
-            printf("yara could not open file: %s\n", filename);
-            exit(1);
+            CONFIGEXIT("yara could not open file: %s\n", filename);
         }
     }
 }
