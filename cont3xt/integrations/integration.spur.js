@@ -23,6 +23,49 @@ class SpurIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  card = {
+    title: 'Spur for %{query}',
+    fields: [
+      {
+        label: 'as',
+        type: 'json'
+      },
+      {
+        label: 'assignment',
+        type: 'json'
+      },
+      {
+        label: 'deviceBehaviors',
+        type: 'json'
+      },
+      {
+        label: 'geoLite',
+        type: 'json'
+      },
+      {
+        label: 'geoPrecision',
+        type: 'json'
+      },
+      'infrastructure',
+      {
+        label: 'proxiedTraffic',
+        type: 'json'
+      },
+      {
+        label: 'similarIPs',
+        type: 'json'
+      },
+      {
+        label: 'vpnOperators',
+        type: 'json'
+      },
+      {
+        label: 'wifi',
+        type: 'json'
+      }
+    ]
+  }
+
   userSettings = {
     SpurKey: {
       help: 'Your spur api key'
@@ -48,6 +91,13 @@ class SpurIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+
+      for (const rkey in response.data) {
+        if (typeof (response.data) === 'object' && response.data[rkey].exists === false) {
+          delete response.data[rkey];
+        }
+      }
+
       response.data._count = 1;
       return response.data;
     } catch (err) {

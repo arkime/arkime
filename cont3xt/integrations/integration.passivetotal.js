@@ -253,6 +253,7 @@ class PassiveTotalDNSIntegration extends Integration {
         }
       });
 
+      if (result.data.totalRecords === 0 || result.data.results.length === 0) { return undefined; }
       result.data._count = parseInt(result.data.totalRecords);
       return result.data;
     } catch (err) {
