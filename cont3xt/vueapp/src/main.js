@@ -13,6 +13,7 @@ import store from '@/store';
 import '@/utils/filters.js';
 
 import '@/../../../common.css';
+import '@/overrides.css';
 
 Vue.config.productionTip = false;
 

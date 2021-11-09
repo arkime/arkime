@@ -4,7 +4,7 @@
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
     <label v-if="!hideLabel"
-      class="text-orange pr-2">
+      class="color-primary pr-2">
       {{ field.label }}
     </label>
     <!-- table field -->
@@ -12,7 +12,9 @@
       <b-overlay
         no-center
         rounded="sm"
-        variant="dark"
+        blur="0.2rem"
+        opacity="0.9"
+        variant="transparent"
         :show="getRenderingTable">
         <integration-table
           :fields="field.fields"
@@ -120,7 +122,7 @@ export default {
       }
 
       // truncate long values
-      if (this.truncate && value.length > (this.field.len || 100)) {
+      if (this.truncate && value && value.length > (this.field.len || 100)) {
         full = value;
         value = `${value.substring(0, this.field.len || 100)}...`;
       }

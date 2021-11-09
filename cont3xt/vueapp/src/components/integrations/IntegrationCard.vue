@@ -1,6 +1,6 @@
 <template>
-  <b-card v-if="!waitRendering && Object.keys(getIntegrationData).length">
-    <h5 class="text-orange"
+  <b-card v-if="Object.keys(getIntegrationData).length">
+    <h5 class="color-primary"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
     </h5>
@@ -34,7 +34,7 @@
           raw
         </h5>
         <b-collapse id="collapse-raw">
-          <pre class="text-accent">{{ getIntegrationData.data }}</pre>
+          <pre class="color-secondary">{{ getIntegrationData.data }}</pre>
         </b-collapse>
       </small>
     </b-card> <!-- /raw -->
@@ -54,7 +54,7 @@ export default {
   name: 'IntegrationCard',
   components: { IntegrationValue },
   computed: {
-    ...mapGetters(['getIntegrationData', 'getIntegrations', 'waitRendering']),
+    ...mapGetters(['getIntegrationData', 'getIntegrations']),
     card () {
       const { source } = this.$store.state.displayIntegration;
       if (!this.getIntegrations[source]) { return {}; }

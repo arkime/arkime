@@ -1,8 +1,9 @@
 <template>
-  <b-card v-if="data && data[itype]">
+  <b-card class="mb-1"
+    v-if="data && data[itype]">
     <div class="row">
       <div class="col">
-        <h4 class="text-orange display-inline mt-1">
+        <h4 class="color-primary display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -54,7 +55,7 @@
     <div class="row ml-4"
       v-if="data[itype].RDAP">
       <div class="col">
-        <label class="text-orange">
+        <label class="color-primary">
           Name
         </label>
         <template v-for="rdap in data[itype].RDAP">

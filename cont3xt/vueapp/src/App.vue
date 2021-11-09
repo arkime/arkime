@@ -37,25 +37,6 @@ export default {
 </script>
 
 <style>
-body {
-  --color-accent: #00B785;
-  --color-orange: #E39300;
-  --color-white: #EEEEEE;
-  --color-black: #131313;
-  --color-gray: #777777;
-}
-body.dark {
-  --color-white: #131313;
-  --color-black: #EEEEEE;
-}
-
-.text-orange {
-  color: var(--color-orange) !important;
-}
-.text-accent {
-  color: var(--color-accent) !important;
-}
-
 .margin-for-nav-and-progress {
   margin-top: 80px !important;
 }
@@ -73,7 +54,7 @@ dl.dl-horizontal dt {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 0;
-  color: var(--color-accent);
+  color: var(--color-secondary);
 }
 dl.dl-horizontal dd {
   margin-left: 90px;
@@ -82,11 +63,24 @@ dl.dl-horizontal dd {
 
 /* loading styles - uses b-overlay slot */
 .overlay-loading {
-  top: 50%;
+  top: 160px;
   left: 75%;
   z-index: 10002;
   position: fixed;
   text-align: center;
   margin-left: -40px;
+}
+
+/* card styles */
+body:not(.dark) .card {
+  border-color: #FFF;
+  background-color: #E9ECEF;
+}
+.card-body {
+  padding: 0.25rem 0.5rem;
+}
+.results-summary > .card > .card-body,
+.results-integration > .b-overlay-wrap > .card > .card-body {
+  padding: 0.75rem;
 }
 </style>

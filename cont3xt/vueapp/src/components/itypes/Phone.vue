@@ -2,7 +2,7 @@
   <b-card v-if="data">
     <div class="row">
       <div class="col">
-        <h4 class="text-orange display-inline mt-1">
+        <h4 class="color-primary display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field

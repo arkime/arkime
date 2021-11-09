@@ -30,8 +30,8 @@
       <div class="whole-page-info container"
         v-if="!initialized && !error.length && !integrationError.length">
         <div class="center-area">
-          <h1 class="text-orange">Welcome to Cont3xt!</h1>
-          <h4 class="text-accent">
+          <h1 class="color-primary">Welcome to Cont3xt!</h1>
+          <h4 class="color-secondary">
             Search for IPs, domains, URLs, emails, phone numbers, or hashes.
           </h4>
         </div>
@@ -68,7 +68,7 @@
       </div> <!-- /integration error -->
 
       <!-- results -->
-      <div class="row mt-2 results-container">
+      <div class="row mt-2 mb-2 results-container">
         <!-- itype results summary -->
         <div class="col-6 results-summary">
           <cont3xt-domain
@@ -98,19 +98,24 @@
             :query="searchTerm"
             v-else-if="searchItype === 'phone'"
           />
-          <div v-else>
-            <h3 class="text-orange">
+          <div v-else-if="searchItype">
+            <h3 class="color-primary">
               No display for {{ searchItype }}
             </h3>
             <pre><code>{{ results }}</code></pre>
           </div>
         </div> <!-- /itype results summary -->
         <!-- integration results -->
-        <div class="col-6 results-integration">
+        <div
+          @scroll="handleScroll"
+          ref="resultsIntegration"
+          class="col-6 results-integration">
           <b-overlay
             no-center
             rounded="sm"
-            variant="dark"
+            blur="0.2rem"
+            opacity="0.9"
+            variant="transparent"
             :show="waitRendering || getRendering">
             <integration-card />
             <template #overlay>
@@ -120,6 +125,15 @@
               </div>
             </template>
           </b-overlay>
+          <b-button
+            size="sm"
+            @click="toTop"
+            title="Go to top"
+            class="to-top-btn"
+            variant="btn-link"
+            v-show="scrollPx > 100">
+            <span class="fa fa-lg fa-arrow-up" />
+          </b-button>
         </div> <!-- /integration results -->
       </div> <!-- /results -->
 
@@ -154,6 +168,7 @@ export default {
     return {
       error: '',
       results: {},
+      scrollPx: 0,
       searchItype: '',
       initialized: false,
       integrationError: '',
@@ -161,7 +176,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRendering', 'waitRendering']),
+    ...mapGetters(['getRendering', 'waitRendering', 'getIntegrationData']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -195,6 +210,15 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    handleScroll (e) {
+      this.scrollPx = e.target.scrollTop;
+    },
+    toTop () {
+      this.$refs.resultsIntegration.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    },
     search () {
       this.error = '';
       this.results = {};
@@ -276,6 +300,10 @@ export default {
         this.integrationError = err;
       });
     }
+  },
+  beforeDestroy () {
+    this.$store.commit('RESET_LOADING');
+    this.$store.commit('SET_INTEGRATION_DATA', {});
   }
 };
 </script>
@@ -306,5 +334,14 @@ body.dark .search-nav {
 .results-integration {
   height: calc(100vh - 136px);
   overflow: scroll;
+}
+
+/* scroll to top btn for integration results */
+.to-top-btn {
+  z-index: 99;
+  right: 20px;
+  bottom: 10px;
+  position: fixed;
+  color: var(--color-accent);
 }
 </style>

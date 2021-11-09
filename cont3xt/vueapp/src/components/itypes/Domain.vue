@@ -1,8 +1,8 @@
 <template>
   <b-card v-if="data && data[itype]">
-    <div class="row">
+    <div class="row mb-2">
       <div class="col">
-        <h4 class="text-orange display-inline mt-1">
+        <h4 class="color-primary display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -36,7 +36,6 @@
       </div>
     </div>
     <template v-if="data[itype].DNS">
-      <hr>
       <span
         :key="`dns-${dns._query}`"
         v-for="dns in data[itype].DNS">

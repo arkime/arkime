@@ -1,0 +1,23 @@
+/* overrides for themeing bootstrap */
+body {
+  --color-primary: #E39300;
+  --color-secondary: #00B785;
+  --color-tertiary: #BD72FF;
+  --color-white: #EEEEEE;
+  --color-black: #131313;
+  --color-gray: #777777;
+}
+body.dark {
+  --color-white: #131313;
+  --color-black: #EEEEEE;
+}
+
+.color-primary {
+  color: var(--color-primary) !important;
+}
+.color-secondary {
+  color: var(--color-secondary) !important;
+}
+.color-tertiary {
+  color: var(--color-tertiary) !important;
+}
