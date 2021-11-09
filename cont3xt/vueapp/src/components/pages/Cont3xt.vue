@@ -205,6 +205,15 @@ export default {
 
       let failed = 0;
 
+      if (this.$route.query.q !== this.searchTerm) {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            q: this.searchTerm
+          }
+        });
+      }
+
       Cont3xtService.search(this.searchTerm).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {

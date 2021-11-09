@@ -23,15 +23,17 @@
         </template>
         <template v-if="data[itype].Maxmind">
           <template v-for="(mm, index) in data[itype].Maxmind">
-            <template v-if="value && value === mm._query || !value">
+            <template v-if="(value && value === mm._query) || !value">
               <span :key="`maxmind-${value}-${index}`">
-                <h5 class="display-inline">
+                <h5 class="display-inline"
+                  v-if="mm.data && mm.data.asn">
                   <label class="badge badge-dark"
                     v-b-tooltip="mm.data.creationDate">
                     {{ mm.data.asn.autonomous_system_organization }}
                   </label>
                 </h5>
                 <h5 class="display-inline"
+                  v-if="mm.data && mm.data.country"
                   v-b-tooltip="`${mm.data.country.country.names.en} (${mm.data.country.country.iso_code})`">
                   <label class="badge badge-dark cursor-help">
                     {{ countryEmoji(mm.data.country.country.iso_code) }}&nbsp;
