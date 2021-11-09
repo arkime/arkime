@@ -27,9 +27,10 @@
               <span :key="`maxmind-${value}-${index}`">
                 <h5 class="display-inline"
                   v-if="mm.data && mm.data.asn">
-                  <label class="badge badge-dark"
-                    v-b-tooltip="mm.data.creationDate">
-                    {{ mm.data.asn.autonomous_system_organization }}
+                  <label class="badge badge-dark cursor-help"
+                    v-b-tooltip="mm.data.asn.autonomous_system_organization">
+                    AS{{ mm.data.asn.autonomous_system_number }}
+                    <!-- {{ mm.data.asn.autonomous_system_organization }} -->
                   </label>
                 </h5>
                 <h5 class="display-inline"
@@ -48,6 +49,24 @@
           :itype="itype"
           :value="value || data[itype]._query"
         />
+      </div>
+    </div>
+    <div class="row ml-4"
+      v-if="data[itype].RDAP">
+      <div class="col">
+        <label class="text-orange">
+          Name
+        </label>
+        <template v-for="rdap in data[itype].RDAP">
+          <template>
+            <span :key="rdap.data.name"
+              v-if="rdap._query === (value || data[itype]._query)">
+              <cont3xt-field
+                :value="rdap.data.name"
+              />
+            </span>
+          </template>
+        </template>
       </div>
     </div>
   </b-card>

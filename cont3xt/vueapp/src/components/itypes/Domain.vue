@@ -14,7 +14,7 @@
               :key="`whois-${whois._query}`">
               <h5 class="display-inline"
                 v-if="whois.data.creationDate">
-                <label class="badge badge-dark"
+                <label class="badge badge-dark cursor-help"
                   v-b-tooltip="whois.data.creationDate">
                   {{ whois.data.creationDate | removeTime }}
                 </label>
