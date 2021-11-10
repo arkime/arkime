@@ -12,6 +12,7 @@
         :key="field.label">
         <integration-value
           :field="field"
+          v-if="getIntegrationData.data"
           :data="getIntegrationData.data"
         />
       </div>
@@ -29,7 +30,7 @@
       </div>
     </b-alert>
     <!-- raw -->
-    <b-card>
+    <b-card class="mt-2">
       <h6 v-b-toggle.collapse-raw
         class="card-title mb-1 text-warning">
         raw

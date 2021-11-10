@@ -42,7 +42,7 @@ const store = new Vuex.Store({
     SET_RENDERING_CARD (state, data) {
       state.renderingCard = data;
     },
-    WAIT_RENDERING (state, data) {
+    SET_WAIT_RENDERING (state, data) {
       state.waitRendering = data;
     },
     SET_RENDERING_TABLE (state, data) {
@@ -65,8 +65,8 @@ const store = new Vuex.Store({
     getRendering (state) {
       return state.renderingCard;
     },
-    waitRendering (state) {
-      return state.waitRendering;
+    getWaitRendering (state) {
+      return state.getWaitRendering;
     },
     getRenderingTable (state) {
       return state.renderingTable;

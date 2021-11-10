@@ -17,6 +17,7 @@
         variant="transparent"
         :show="getRenderingTable">
         <integration-table
+          v-if="value.value"
           :fields="field.fields"
           :table-data="value.value"
         />

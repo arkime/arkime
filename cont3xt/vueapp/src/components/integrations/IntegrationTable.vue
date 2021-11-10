@@ -17,6 +17,7 @@
           :field="field"
           :truncate="true"
           :hide-label="true"
+          v-if="tableData[index - 1]"
           :data="tableData[index - 1]"
         />
       </td>
@@ -67,10 +68,10 @@ export default {
       required: true
     }
   },
-  data () {
-    return {
-      tableLen: Math.min(this.tableData.length, 100)
-    };
+  computed: {
+    tableLen () {
+      return Math.min(this.tableData.length, 100);
+    }
   },
   methods: {
     showMore () {

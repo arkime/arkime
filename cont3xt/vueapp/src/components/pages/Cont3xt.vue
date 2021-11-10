@@ -122,7 +122,7 @@
             blur="0.2rem"
             opacity="0.9"
             variant="transparent"
-            :show="waitRendering || getRendering">
+            :show="getWaitRendering || getRendering">
             <integration-card />
             <template #overlay>
               <div class="overlay-loading">
@@ -182,7 +182,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRendering', 'waitRendering', 'getIntegrationData']),
+    ...mapGetters(['getRendering', 'getWaitRendering', 'getIntegrationData']),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -196,7 +196,7 @@ export default {
       this.$store.commit('SET_RENDERING_CARD', true);
       // need wait rendering to tell the card that we aren't rendering yet
       // or else the data will be stale when it updates the integration type
-      this.$store.commit('WAIT_RENDERING', true);
+      this.$store.commit('SET_WAIT_RENDERING', true);
       setTimeout(() => { // need timeout for SET_RENDERING_CARD to take effect
         const { itype, source, value } = newIntegration;
         for (const data of this.results[itype][source]) {
@@ -204,7 +204,7 @@ export default {
             this.$store.commit('SET_INTEGRATION_DATA', data);
           }
         }
-        this.$store.commit('WAIT_RENDERING', false);
+        this.$store.commit('SET_WAIT_RENDERING', false);
       }, 100);
     }
   },
