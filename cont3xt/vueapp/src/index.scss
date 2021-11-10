@@ -45,6 +45,9 @@ body {
   color: var(--color-dark);
   background-color: var(--color-light);
 }
+.btn-xs .badge {
+  line-height: 1.2;
+}
 
 /* vue bootstrap collapse styles
    add these elements in the toggle target:

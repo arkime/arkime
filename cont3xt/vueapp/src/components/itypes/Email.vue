@@ -13,7 +13,7 @@
         <integration-btns
           :data="data"
           :itype="itype"
-          :value="data[itype]._query"
+          :value="initialQuery"
         />
       </div>
     </div>
