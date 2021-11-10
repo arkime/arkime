@@ -1,6 +1,8 @@
 <template>
-  <b-card v-if="Object.keys(getIntegrationData).length">
-    <h5 class="color-primary"
+  <b-card
+    class="mb-2"
+    v-if="Object.keys(getIntegrationData).length">
+    <h5 class="text-warning"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
     </h5>
@@ -28,15 +30,19 @@
     </b-alert>
     <!-- raw -->
     <b-card>
-      <small>
-        <h5 class="card-title"
-          v-b-toggle.collapse-raw>
-          raw
-        </h5>
-        <b-collapse id="collapse-raw">
-          <pre class="color-secondary">{{ getIntegrationData.data }}</pre>
-        </b-collapse>
-      </small>
+      <h6 v-b-toggle.collapse-raw
+        class="card-title mb-1 text-warning">
+        raw
+        <span class="pull-right">
+          <span class="when-open fa fa-caret-up" />
+          <span class="when-closed fa fa-caret-down" />
+        </span>
+      </h6>
+      <b-collapse
+        class="mt-2"
+        id="collapse-raw">
+        <pre class="text-info">{{ getIntegrationData.data }}</pre>
+      </b-collapse>
     </b-card> <!-- /raw -->
   </b-card>
 </template>

@@ -16,8 +16,8 @@
             class="integration-img cursor-pointer"
           />
           <b-badge
-            :variant="getLoading.failures.indexOf(source) < 0 ? 'success' : 'secondary'"
-            v-if="data[itype][source][0].data._count">
+            v-if="data[itype][source][0].data._count"
+            :variant="getLoading.failures.indexOf(source) < 0 ? 'success' : 'secondary'">
             {{ data[itype][source][0].data._count }}
           </b-badge>
         </b-button>

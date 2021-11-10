@@ -4,7 +4,7 @@
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
     <label v-if="!hideLabel"
-      class="color-primary pr-2">
+      class="text-warning pr-2">
       {{ field.label }}
     </label>
     <!-- table field -->
@@ -50,7 +50,7 @@
     </template> <!-- /url field -->
     <!-- json field -->
     <template v-else-if="field.type === 'json'">
-      <pre><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
+      <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
     </template> <!-- /json field -->
     <!-- default string field -->
     <template v-else>

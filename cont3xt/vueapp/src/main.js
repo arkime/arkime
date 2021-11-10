@@ -2,8 +2,6 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import VueClipboard from 'vue-clipboard2';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
@@ -12,8 +10,9 @@ import router from '@/router';
 import store from '@/store';
 import '@/utils/filters.js';
 
+import '@/index.scss'; // includes boostrap(vue) scss
+// common css needs to be after ^ because it overrides some bootstrap styles
 import '@/../../../common.css';
-import '@/overrides.css';
 
 Vue.config.productionTip = false;
 

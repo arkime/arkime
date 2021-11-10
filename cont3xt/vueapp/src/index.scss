@@ -1,0 +1,107 @@
+/* bootstrap theming --------------- */
+$theme-colors: (
+  "danger": #FF0080,
+  "warning": #E39300,
+  "success": #00AF68,
+  "primary": #00AAC5,
+  "info": #AB4CFF
+);
+
+
+/* bootstrap(vue) imports ----------
+   (must be after theming) --------- */
+@import 'bootstrap/scss/bootstrap.scss';
+@import 'bootstrap-vue/src/index.scss';
+
+
+/* theme colors -------------------- */
+body {
+  --color-light: #F3F3F3;
+  --color-gray-light: #BBBBBB;
+  --color-gray: #777777;
+  --color-gray-dark: #555555;
+  --color-dark: #131313;
+}
+body.dark {
+  --color-dark: #F3F3F3;
+  --color-gray-dark: #BBBBBB;
+  --color-gray: #777777;
+  --color-gray-light: #555555;
+  --color-light: #131313;
+}
+
+
+/* app styles ---------------------- */
+body {
+  font-size: 0.9rem; // decrease font size slightly
+}
+
+.margin-for-nav-and-progress {
+  margin-top: 76px !important;
+}
+
+/* badge styles */
+.badge.badge-light {
+  color: var(--color-dark);
+  background-color: var(--color-light);
+}
+
+/* vue bootstrap collapse styles
+   add these elements in the toggle target:
+    <span class="when-open">
+      Close
+    </span>
+    <span class="when-closed">
+      Open
+    </span> */
+.collapsed .when-open,
+.not-collapsed .when-closed {
+  display: none;
+}
+
+/* description list styles */
+dl.dl-horizontal {
+  margin-bottom: 0.2rem;
+}
+dl.dl-horizontal dt {
+  float: left;
+  width: 80px;
+  overflow: hidden;
+  clear: left;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0;
+  color: var(--success);
+}
+dl.dl-horizontal dd {
+  margin-left: 90px;
+  margin-bottom: 0;
+}
+
+/* loading styles - uses b-overlay slot */
+.overlay-loading {
+  top: 160px;
+  left: 75%;
+  z-index: 10002;
+  position: fixed;
+  text-align: center;
+  margin-left: -40px;
+}
+
+/* card styles */
+.card {
+  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 60%);
+}
+body:not(.dark) .card {
+  border-color: #FFF;
+  background-color: #E9ECEF;
+  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 30%);
+}
+.card-body {
+  padding: 0.25rem 0.5rem;
+}
+.results-summary > .card > .card-body,
+.results-integration > .b-overlay-wrap > .card > .card-body {
+  padding: 0.75rem;
+}

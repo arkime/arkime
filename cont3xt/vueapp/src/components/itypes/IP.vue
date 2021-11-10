@@ -1,9 +1,10 @@
 <template>
-  <b-card class="mb-1"
+  <b-card
+    class="mb-2"
     v-if="data && data[itype]">
     <div class="row">
       <div class="col">
-        <h4 class="color-primary display-inline mt-1">
+        <h4 class="text-warning display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -28,18 +29,22 @@
               <span :key="`maxmind-${value}-${index}`">
                 <h5 class="display-inline"
                   v-if="mm.data && mm.data.asn">
-                  <label class="badge badge-dark cursor-help"
+                  <b-badge
+                    variant="light"
+                    class="cursor-help"
                     v-b-tooltip="mm.data.asn.autonomous_system_organization">
                     AS{{ mm.data.asn.autonomous_system_number }}
                     <!-- {{ mm.data.asn.autonomous_system_organization }} -->
-                  </label>
+                  </b-badge>
                 </h5>
                 <h5 class="display-inline"
                   v-if="mm.data && mm.data.country"
                   v-b-tooltip="`${mm.data.country.country.names.en} (${mm.data.country.country.iso_code})`">
-                  <label class="badge badge-dark cursor-help">
+                  <b-badge
+                    variant="light"
+                    class="cursor-help">
                     {{ countryEmoji(mm.data.country.country.iso_code) }}&nbsp;
-                  </label>
+                  </b-badge>
                 </h5>
               </span>
             </template>
@@ -55,7 +60,7 @@
     <div class="row ml-4"
       v-if="data[itype].RDAP">
       <div class="col">
-        <label class="color-primary">
+        <label class="text-warning">
           Name
         </label>
         <template v-for="rdap in data[itype].RDAP">

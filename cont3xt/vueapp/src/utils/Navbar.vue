@@ -2,18 +2,18 @@
   <div>
     <!-- cont3xt navbar -->
     <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
-      <router-link to="help"
-        active-class="active"
-        class="navbar-brand"
-        exact>
-        <img src="assets/Arkime_Icon_White.png"
-          alt="hoot"
+      <router-link
+        exact
+        to="help"
+        active-class="active">
+        <span
           v-b-tooltip.hover
-          title="HOOT! Can I help you? Click me to see the help page"
+          class="fa fa-rocket fa-2x text-light"
+          title="Can I help you? Click me to see the help page"
         />
       </router-link>
       <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-5">
+      <ul class="navbar-nav mr-auto ml-3">
         <li class="nav-item mr-2">
           <router-link
             to="/"
@@ -38,10 +38,11 @@
         @keyup.esc="clearLogin">
         <!-- dark/light mode -->
         <button type="button"
-          class="btn btn-outline-secondary cursor-pointer mr-2"
           @click="toggleTheme"
           v-b-tooltip.hover.left
-          title="Toggle light/dark theme">
+          class="btn cursor-pointer mr-2"
+          title="Toggle light/dark theme"
+          :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
           <span v-if="theme === 'light'"
             class="fa fa-sun-o">
           </span>
@@ -118,14 +119,8 @@ export default {
 </script>
 
 <style scoped>
-nav.navbar > .navbar-brand > img {
-  position: absolute;
-  height: 52px;
-  top: 2px;
-}
-
 div.progress {
-  top: 48px;
+  top: 46px;
   width: 100%;
   z-index: 1030;
   position: fixed;

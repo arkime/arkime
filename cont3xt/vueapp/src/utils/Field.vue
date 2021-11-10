@@ -80,18 +80,18 @@ export default {
   line-height: 1.3;
 }
 
-.field a {
-  color: var(--color-orange);
+/* .field a {
+  color: var(--primary) !important;
   text-decoration: none;
-}
+} */
 
 .field:hover {
   z-index: 4;
-  background-color: var(--color-white);
+  background-color: var(--color-light);
 }
 
 .field:hover a {
-  color: var(--color-black);
+  color: var(--primary) !important;
 }
 
 .field:hover ul.field-dropdown {
@@ -118,7 +118,7 @@ export default {
   text-align: left;
   list-style: none;
   border-radius: 4px;
-  background-color: var(--color-white);
+  background-color: var(--color-light);
   border: 1px solid var(--color-gray);
   margin-top: 0;
   margin-left: -2px;
@@ -153,11 +153,12 @@ export default {
   font-weight: normal;
   line-height: 1.42857143;
   white-space: nowrap;
+  color: var(--color-dark) !important;
 }
 
 .field-dropdown a.dropdown-item:hover {
   text-decoration: none;
-  color: var(--color-black);
-  background-color: var(--color-gray);
+  color: var(--primary) !important;
+  background-color: var(--color-gray-light);
 }
 </style>

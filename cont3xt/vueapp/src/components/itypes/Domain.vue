@@ -1,8 +1,10 @@
 <template>
-  <b-card v-if="data && data[itype]">
+  <b-card
+    class="mb-2"
+    v-if="data && data[itype]">
     <div class="row mb-2">
       <div class="col">
-        <h4 class="color-primary display-inline mt-1">
+        <h4 class="text-warning display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
@@ -14,16 +16,18 @@
               :key="`whois-${whois._query}`">
               <h5 class="display-inline"
                 v-if="whois.data.creationDate">
-                <label class="badge badge-dark cursor-help"
+                <b-badge
+                  variant="light"
+                  class="cursor-help"
                   v-b-tooltip="whois.data.creationDate">
                   {{ whois.data.creationDate | removeTime }}
-                </label>
+                </b-badge>
               </h5>
               <h5 class="display-inline"
                 v-if="whois.data.registrar">
-                <label class="badge badge-dark">
+                <b-badge variant="light">
                   {{ whois.data.registrar }}
-                </label>
+                </b-badge>
               </h5>
             </span>
           </template>

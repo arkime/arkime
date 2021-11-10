@@ -29,9 +29,14 @@
       <!-- welcome -->
       <div class="whole-page-info container"
         v-if="!initialized && !error.length && !integrationError.length">
-        <div class="center-area">
-          <h1 class="color-primary">Welcome to Cont3xt!</h1>
-          <h4 class="color-secondary">
+        <div class="well center-area">
+          <h1 class="text-muted">
+            <span class="fa fa-fw fa-rocket fa-2x" />
+          </h1>
+          <h1 class="text-warning display-4">
+            Welcome to Cont3xt!
+          </h1>
+          <h4 class="text-success lead">
             Search for IPs, domains, URLs, emails, phone numbers, or hashes.
           </h4>
         </div>
@@ -68,7 +73,8 @@
       </div> <!-- /integration error -->
 
       <!-- results -->
-      <div class="row mt-2 mb-2 results-container">
+      <div v-if="searchTerm"
+        class="row mt-2 results-container">
         <!-- itype results summary -->
         <div class="col-6 results-summary">
           <cont3xt-domain
@@ -99,10 +105,10 @@
             v-else-if="searchItype === 'phone'"
           />
           <div v-else-if="searchItype">
-            <h3 class="color-primary">
+            <h3 class="text-warning">
               No display for {{ searchItype }}
             </h3>
-            <pre><code>{{ results }}</code></pre>
+            <pre class="text-info"><code>{{ results }}</code></pre>
           </div>
         </div> <!-- /itype results summary -->
         <!-- integration results -->
@@ -132,7 +138,7 @@
             class="to-top-btn"
             variant="btn-link"
             v-show="scrollPx > 100">
-            <span class="fa fa-lg fa-arrow-up" />
+            <span class="fa fa-lg fa-arrow-circle-up" />
           </b-button>
         </div> <!-- /integration results -->
       </div> <!-- /results -->
@@ -310,7 +316,7 @@ export default {
 
 <style scoped>
 .search-nav {
-  margin-top: 64px !important;
+  margin-top: 60px !important;
   padding-top: 16px;
   background-color: #FFF;
 }
@@ -337,11 +343,11 @@ body.dark .search-nav {
 }
 
 /* scroll to top btn for integration results */
-.to-top-btn {
+.to-top-btn, .to-top-btn:hover {
   z-index: 99;
-  right: 20px;
-  bottom: 10px;
+  right: -2px;
+  bottom: 0px;
   position: fixed;
-  color: var(--color-accent);
+  color: var(--info);
 }
 </style>

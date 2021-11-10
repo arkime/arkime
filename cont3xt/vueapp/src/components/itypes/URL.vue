@@ -1,8 +1,10 @@
 <template>
-  <b-card v-if="data">
+  <b-card
+    class="mb-2"
+    v-if="data">
     <div class="row mb-2">
       <div class="col">
-        <h4 class="color-primary display-inline mt-1">
+        <h4 class="text-warning display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
