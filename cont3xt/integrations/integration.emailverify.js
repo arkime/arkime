@@ -34,7 +34,7 @@ class EmailVerifyIntegration extends Integration {
       const result = await emailValidator.verify(email);
       return result;
     } catch (err) {
-      console.log(this.name, domain, err);
+      console.log(this.name, email, err);
       return undefined;
     }
   }
