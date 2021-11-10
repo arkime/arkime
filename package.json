@@ -16,6 +16,7 @@
     "connect-timeout": "^1.7.0",
     "console-stamp": "^3.0.2",
     "csv": "^5.3.2",
+    "email-deep-validator": "^3.3.0",
     "express": "^4.17.1",
     "font-awesome": "^4.7.0",
     "glob": "^7.1.6",
