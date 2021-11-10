@@ -88,8 +88,8 @@ import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 export default {
   name: 'Cont3xtDomain',
   components: {
-    Cont3xtField,
     Cont3xtIp,
+    Cont3xtField,
     IntegrationBtns
   },
   props: {

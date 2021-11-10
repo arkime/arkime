@@ -2,13 +2,18 @@
   <b-card
     v-if="data"
     class="mb-2">
-    <div class="row">
+    <div class="row mb-2">
       <div class="col">
         <h4 class="text-warning display-inline mt-1">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
           :value="initialQuery"
+        />
+        <integration-btns
+          :data="data"
+          :itype="itype"
+          :value="data[itype]._query"
         />
       </div>
     </div>
@@ -21,12 +26,14 @@
 <script>
 import Cont3xtField from '@/utils/Field';
 import Cont3xtDomain from '@/components/itypes/Domain';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtEmail',
   components: {
     Cont3xtField,
-    Cont3xtDomain
+    Cont3xtDomain,
+    IntegrationBtns
   },
   props: {
     data: { // the data returned from cont3xt search
