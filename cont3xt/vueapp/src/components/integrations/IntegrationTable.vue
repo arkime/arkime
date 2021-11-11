@@ -36,6 +36,9 @@
             class="btn btn-link btn-xs"
             :class="{'disabled':tableLen >= tableData.length}">
             show ALL
+            <span v-if="tableData.length > 2000">
+              (careful)
+            </span>
           </a>
           <a
             @click="showMore"
@@ -68,10 +71,10 @@ export default {
       required: true
     }
   },
-  computed: {
-    tableLen () {
-      return Math.min(this.tableData.length, 100);
-    }
+  data () {
+    return {
+      tableLen: Math.min(this.tableData.length, 100)
+    };
   },
   methods: {
     showMore () {

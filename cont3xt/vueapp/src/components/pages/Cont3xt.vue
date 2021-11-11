@@ -1,5 +1,5 @@
 <template>
-  <div class="mr-2 ml-2">
+  <div class="container-fluid">
 
     <!-- search -->
     <div class="fixed-top pl-2 pr-2 search-nav">
@@ -193,6 +193,7 @@ export default {
   },
   watch: {
     displayIntegration (newIntegration) {
+      this.$store.commit('SET_INTEGRATION_DATA', {});
       this.$store.commit('SET_RENDERING_CARD', true);
       // need wait rendering to tell the card that we aren't rendering yet
       // or else the data will be stale when it updates the integration type
@@ -345,7 +346,7 @@ body.dark .search-nav {
 /* scroll to top btn for integration results */
 .to-top-btn, .to-top-btn:hover {
   z-index: 99;
-  right: -2px;
+  right: 2px;
   bottom: 0px;
   position: fixed;
   color: var(--info);
