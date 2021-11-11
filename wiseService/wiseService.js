@@ -271,17 +271,6 @@ function newFieldsTS () {
   }
 }
 // ----------------------------------------------------------------------------
-// https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-function splitRemain (str, separator, limit) {
-  str = str.split(separator);
-  if (str.length <= limit) { return str; }
-
-  const ret = str.splice(0, limit);
-  ret.push(str.join(separator));
-
-  return ret;
-}
-// ----------------------------------------------------------------------------
 /**
  * When sources are created they get an api object to interact with the wise service.
  */
@@ -437,7 +426,20 @@ class WISESourceAPI {
         viewName = match[1];
       }
 
-      let output = `if (session.${req})\n  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
+      const parts = req.split('.');
+      let output = '  if (';
+      for (let i = 0; i < parts.length; i++) {
+        if (i > 0) {
+          output += ' && ';
+        }
+        output += 'session';
+        for (let j = 0; j <= i; j++) {
+          output += `.${parts[j]}`;
+        }
+      }
+      output += ')\n';
+      output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+
       for (const field of fields.split(',')) {
         const info = WISESource.field2Info[field];
         if (!info) {
@@ -447,13 +449,14 @@ class WISESourceAPI {
           console.log(`ERROR - missing db information for ${field}`);
           return;
         }
-        const parts = splitRemain(info.db, '.', 1);
-        if (parts.length === 1) {
-          output += `    +arrayList(session, '${parts[0]}', '${info.friendly}', '${field}')\n`;
+        const pos = info.db.lastIndexOf('.');
+        if (pos === -1) {
+          output += `      +arrayList(session, '${info.db}', '${info.friendlyName}', '${field}')\n`;
         } else {
-          output += `    +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendly}', '${field}')\n`;
+          output += `      +arrayList(session.${info.db.slice(0, pos)}, '${info.db.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
         }
       }
+
       internals.views[viewName] = output;
     } else {
       internals.views[viewName] = view;

@@ -303,18 +303,30 @@ function parseCustomView (key, input) {
   }
   const fields = match[1];
 
-  let output = `  if (session.${req})\n    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+  const parts = req.split('.');
+  let output = '  if (';
+  for (let i = 0; i < parts.length; i++) {
+    if (i > 0) {
+      output += ' && ';
+    }
+    output += 'session';
+    for (let j = 0; j <= i; j++) {
+      output += `.${parts[j]}`;
+    }
+  }
+  output += ')\n';
+  output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
 
   for (const field of fields.split(',')) {
     const info = fieldsMap[field];
     if (!info) {
       continue;
     }
-    const parts = ViewerUtils.splitRemain(info.dbField, '.', 1);
-    if (parts.length === 1) {
-      output += `      +arrayList(session, '${parts[0]}', '${info.friendlyName}', '${field}')\n`;
+    const pos = info.dbField.lastIndexOf('.');
+    if (pos === -1) {
+      output += `      +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
     } else {
-      output += `      +arrayList(session.${parts[0]}, '${parts[1]}', '${info.friendlyName}', '${field}')\n`;
+      output += `      +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
     }
   }
 
