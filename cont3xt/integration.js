@@ -19,6 +19,7 @@
 
 const glob = require('glob');
 const path = require('path');
+const extractDomain = require('extract-domain');
 
 class Integration {
   static debug = 0;
@@ -283,9 +284,8 @@ class Integration {
       const dquery = query.slice(query.indexOf('@') + 1);
       Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain);
     } else if (itype === 'url') {
-      const url = new URL(query);
-      // url.hostname does NOT include port
-      Integration.runIntegrationsList(shared, url.hostname, 'domain', Integration.integrations.domain);
+      const equery = extractDomain(query);
+      Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain);
     }
   }
 
