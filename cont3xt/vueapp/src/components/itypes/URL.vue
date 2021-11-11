@@ -10,6 +10,11 @@
         <cont3xt-field
           :value="initialQuery"
         />
+        <integration-btns
+          :data="data"
+          :itype="itype"
+          :value="initialQuery"
+        />
       </div>
     </div>
     <cont3xt-domain
@@ -21,12 +26,14 @@
 <script>
 import Cont3xtField from '@/utils/Field';
 import Cont3xtDomain from '@/components/itypes/Domain';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtUrl',
   components: {
     Cont3xtField,
-    Cont3xtDomain
+    Cont3xtDomain,
+    IntegrationBtns
   },
   props: {
     data: { // the data returned from cont3xt search

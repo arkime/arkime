@@ -22,13 +22,13 @@
         />
       </td>
     </tr>
-    <tr v-if="tableData.length > tableLen">
+    <tr v-if="tableData.length > tableLen || tableLen > size">
       <td :colspan="fields.length">
         <div class="d-flex justify-content-between">
           <a
             @click="showLess"
             class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen <= 100}">
+            :class="{'disabled':tableLen <= size}">
             show less...
           </a>
           <a
@@ -69,23 +69,27 @@ export default {
     tableData: { // the data to display in the table
       type: Array,
       required: true
+    },
+    size: { // the rows of data to display initially and increment or
+      type: Number, // decrement thereafter (by clicking more/less)
+      default: 50
     }
   },
   data () {
     return {
-      tableLen: Math.min(this.tableData.length, 100)
+      tableLen: Math.min(this.tableData.length, this.size)
     };
   },
   methods: {
     showMore () {
-      this.tableLen = Math.min(this.tableLen + 100, this.tableData.length);
+      this.tableLen = Math.min(this.tableLen + this.size, this.tableData.length);
     },
     showLess () {
-      this.tableLen = Math.max(this.tableLen - 100, 100);
+      this.tableLen = Math.max(this.tableLen - this.size, this.size);
     },
     showAll () {
       this.$store.commit('SET_RENDERING_TABLE', true);
-      setTimeout(() => { // need settimeout for renderingMore to take effect
+      setTimeout(() => { // need settimeout for rendering to take effect
         this.tableLen = this.tableData.length;
       }, 100);
     }

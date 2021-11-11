@@ -31,14 +31,25 @@
     </template> <!-- /table field -->
     <!-- array field -->
     <template v-else-if="field.type === 'array'">
-      <template v-if="field.join">
-        {{ value.value.join(field.join || ', ') }}
-      </template>
-      <div v-else
-        :key="val"
-        v-for="val in value.value">
-        {{ val }}
-      </div>
+      <b-overlay
+        no-center
+        rounded="sm"
+        blur="0.2rem"
+        opacity="0.9"
+        variant="transparent"
+        :show="getRenderingArray">
+        <integration-array
+          :field="field"
+          v-if="value.value"
+          :array-data="value.value"
+        />
+        <template #overlay>
+          <div class="overlay-loading">
+            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+            <p>Rendering array data...</p>
+          </div>
+        </template>
+      </b-overlay>
     </template> <!-- /array field -->
     <!-- url field -->
     <template v-else-if="field.type === 'url'">
@@ -72,12 +83,14 @@ import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import Cont3xtField from '@/utils/Field';
+import IntegrationArray from '@/components/integrations/IntegrationArray';
 import IntegrationTable from '@/components/integrations/IntegrationTable';
 
 export default {
   name: 'IntegrationValue',
   components: {
     Cont3xtField,
+    IntegrationArray,
     IntegrationTable
   },
   props: {
@@ -99,7 +112,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getRenderingTable']),
+    ...mapGetters(['getRenderingTable', 'getRenderingArray']),
     value () {
       let value = JSON.parse(JSON.stringify(this.data));
       let full;

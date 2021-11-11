@@ -15,6 +15,7 @@ const store = new Vuex.Store({
     renderingCard: false,
     waitRendering: false,
     renderingTable: false,
+    renderingArray: false,
     integrations: {},
     displayIntegration: {},
     integrationData: {}
@@ -48,6 +49,9 @@ const store = new Vuex.Store({
     SET_RENDERING_TABLE (state, data) {
       state.renderingTable = data;
     },
+    SET_RENDERING_ARRAY (state, data) {
+      state.renderingArray = data;
+    },
     SET_INTEGRATIONS (state, data) {
       state.integrations = data;
     },
@@ -70,6 +74,9 @@ const store = new Vuex.Store({
     },
     getRenderingTable (state) {
       return state.renderingTable;
+    },
+    getRenderingArray (state) {
+      return state.renderingArray;
     },
     getIntegrations (state) {
       return state.integrations;
