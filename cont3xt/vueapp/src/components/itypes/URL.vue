@@ -1,15 +1,18 @@
 <template>
   <b-card
-    class="mb-2"
-    v-if="data">
-    <div class="row mb-2">
-      <div class="col">
-        <h4 class="text-warning display-inline mt-1">
+    v-if="data"
+    class="mb-2">
+    <div class="d-flex mb-2">
+      <div class="d-flex flex-grow-1 flex-wrap mt-1">
+        <h4 class="text-warning">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
           :value="initialQuery"
+          class="align-self-center mr-1"
         />
+      </div>
+      <div class="d-flex align-self-center justify-content-end">
         <integration-btns
           :data="data"
           :itype="itype"

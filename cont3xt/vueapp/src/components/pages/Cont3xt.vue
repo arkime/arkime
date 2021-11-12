@@ -10,6 +10,7 @@
           </b-input-group-text>
         </template>
         <b-form-input
+          v-focus="true"
           v-model="searchTerm"
           placeholder="Search"
           @keydown.enter="search"
@@ -104,6 +105,11 @@
             :query="searchTerm"
             v-else-if="searchItype === 'phone'"
           />
+          <cont3xt-text
+            :data="results"
+            :query="searchTerm"
+            v-else-if="searchItype === 'text'"
+          />
           <div v-else-if="searchItype">
             <h3 class="text-warning">
               No display for {{ searchItype }}
@@ -150,9 +156,11 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import Focus from '@/utils/Focus';
 import Cont3xtIp from '@/components/itypes/IP';
 import Cont3xtUrl from '@/components/itypes/URL';
 import Cont3xtHash from '@/components/itypes/Hash';
+import Cont3xtText from '@/components/itypes/Text';
 import Cont3xtEmail from '@/components/itypes/Email';
 import Cont3xtPhone from '@/components/itypes/Phone';
 import Cont3xtDomain from '@/components/itypes/Domain';
@@ -165,11 +173,13 @@ export default {
     Cont3xtIp,
     Cont3xtUrl,
     Cont3xtHash,
+    Cont3xtText,
     Cont3xtEmail,
     Cont3xtPhone,
     Cont3xtDomain,
     IntegrationCard
   },
+  directives: { Focus },
   data () {
     return {
       error: '',

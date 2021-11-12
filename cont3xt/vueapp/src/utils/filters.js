@@ -36,3 +36,32 @@ export const baseRIR = function (rirLink) {
   return 'unknown rir';
 };
 Vue.filter('baseRIR', baseRIR);
+
+/**
+ * Modifies a number to display the <=4 char human readable version of bytes
+ * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
+ *
+ * @example
+ * '{{ 1524680821 | humanReadableNumber }}'
+ * this.$options.filters.humanReadableNumber(1524680821);
+ *
+ * @param {int} num   The number to make human readable
+ * @returns {string}  The <=4 char human readable number
+ */
+export const humanReadableNumber = function (num) {
+  if (isNaN(num)) { return '0 '; }
+
+  let i = 0;
+  const units = [' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  while (num >= 1000) {
+    num = num / 1000;
+    i++;
+  }
+
+  if (i === 0 || num >= 10) {
+    return num.toFixed(0) + units[i];
+  } else {
+    return num.toFixed(1) + units[i];
+  }
+};
+Vue.filter('humanReadableNumber', humanReadableNumber);

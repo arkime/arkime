@@ -1,6 +1,5 @@
 <template>
   <b-card
-    v-if="data"
     class="mb-2">
     <div class="d-flex mb-2">
       <div class="d-flex flex-grow-1 flex-wrap mt-1">
@@ -25,10 +24,6 @@ export default {
     Cont3xtField
   },
   props: {
-    data: { // the data returned from cont3xt search
-      type: Object,
-      required: true
-    },
     query: { // the query string to display (needed because phones don't get
       // searched so there is no data.phone)
       type: String,
@@ -37,7 +32,7 @@ export default {
   },
   data () {
     return {
-      itype: 'phone',
+      itype: 'text',
       initialQuery: this.query
     };
   }

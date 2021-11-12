@@ -2,19 +2,20 @@
   <b-card
     class="mb-2"
     v-if="data && data[itype]">
-    <div class="row mb-2">
-      <div class="col">
-        <h4 class="text-warning display-inline mt-1">
+    <div class="d-flex mb-2">
+      <div class="d-flex flex-grow-1 flex-wrap mt-1">
+        <h4 class="text-warning">
           {{ itype.toUpperCase() }}
         </h4>
         <cont3xt-field
           :value="data[itype]._query"
+           class="align-self-center mr-1"
         />
         <template v-if="data[itype].Whois">
           <template v-for="whois in data[itype].Whois">
-            <span v-if="whois.data"
-              :key="`whois-${whois._query}`">
-              <h5 class="display-inline"
+            <template v-if="whois.data">
+              <h5 class="align-self-end mr-1"
+                :key="`whois-${whois._query}-date`"
                 v-if="whois.data.creationDate">
                 <b-badge
                   variant="light"
@@ -23,15 +24,18 @@
                   {{ whois.data.creationDate | removeTime }}
                 </b-badge>
               </h5>
-              <h5 class="display-inline"
+              <h5 class="align-self-end"
+                :key="`whois-${whois._query}-reg`"
                 v-if="whois.data.registrar">
                 <b-badge variant="light">
                   {{ whois.data.registrar }}
                 </b-badge>
               </h5>
-            </span>
+            </template>
           </template>
         </template>
+      </div>
+      <div class="d-flex align-self-center justify-content-end">
         <integration-btns
           :data="data"
           :itype="itype"

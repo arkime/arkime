@@ -6,7 +6,8 @@
         v-if="data[itype] && data[itype][source]">
         <b-button
           size="xs"
-          variant="outline-dark pull-right ml-1"
+          variant="outline-dark"
+          class="ml-1 mt-1 float-right"
           v-if="data[itype][source][0] && integration.icon"
           @click="$store.commit('SET_DISPLAY_INTEGRATION', { source, itype, value })">
           <img
@@ -19,7 +20,7 @@
             class="btn-badge"
             v-if="data[itype][source][0].data._count"
             :variant="getLoading.failures.indexOf(source) < 0 ? 'success' : 'secondary'">
-            {{ data[itype][source][0].data._count }}
+            {{ data[itype][source][0].data._count | humanReadableNumber }}
           </b-badge>
         </b-button>
       </span>

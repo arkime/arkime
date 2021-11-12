@@ -102,9 +102,5 @@ body:not(.dark) .card {
   box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 30%);
 }
 .card-body {
-  padding: 0.25rem 0.5rem;
-}
-.results-summary > .card > .card-body,
-.results-integration > .b-overlay-wrap > .card > .card-body {
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
