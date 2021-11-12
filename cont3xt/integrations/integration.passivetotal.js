@@ -45,7 +45,7 @@ class PassiveTotalIntegration extends Integration {
 
 class PassiveTotalWhoisIntegration extends Integration {
   name = 'PT Whois';
-  icon = 'public/passiveTotalIcon.png';
+  icon = 'public/passiveTotalWhoisIcon.png';
   order = 120;
   configName = 'PassiveTotal';
   itypes = {
@@ -121,7 +121,7 @@ class PassiveTotalWhoisIntegration extends Integration {
 
 class PassiveTotalSubdomainsIntegration extends Integration {
   name = 'PT Subdomains';
-  icon = 'public/passiveTotalIcon.png';
+  icon = 'public/passiveTotalSubDomainsIcon.png';
   order = 280;
   configName = 'PassiveTotal';
   itypes = {
