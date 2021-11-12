@@ -87,6 +87,7 @@ class ThreatstreamIntegration extends Integration {
 
       if (result.data.meta.total_count === 0) { return; }
       result.data._count = result.data.meta.total_count;
+      result.data._severity = 'high';
 
       return result.data;
     } catch (err) {
