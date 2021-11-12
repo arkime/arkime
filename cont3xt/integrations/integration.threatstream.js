@@ -18,7 +18,7 @@ const axios = require('axios');
 
 class ThreatstreamIntegration extends Integration {
   name = 'Threatstream';
-  icon = 'public/threatstreamIcon.webp';
+  icon = 'public/threatstreamIcon.png';
   itypes = {
     domain: 'fetch',
     ip: 'fetch',

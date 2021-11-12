@@ -16,6 +16,7 @@
             class="integration-img cursor-pointer"
           />
           <b-badge
+            class="btn-badge"
             v-if="data[itype][source][0].data._count"
             :variant="getLoading.failures.indexOf(source) < 0 ? 'success' : 'secondary'">
             {{ data[itype][source][0].data._count }}
@@ -59,5 +60,9 @@ export default {
 .integration-img {
   height: 25px;
   margin: 0 6px;
+}
+
+.btn-badge {
+  margin-right: 0.25rem;
 }
 </style>

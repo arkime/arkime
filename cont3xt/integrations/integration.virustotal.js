@@ -18,7 +18,7 @@ const axios = require('axios');
 
 class VirusTotalIntegration extends Integration {
   name = 'VirusTotal';
-  icon = 'public/virusTotalIcon.svg';
+  icon = 'public/virusTotalIcon.png';
   noStats = true;
   itypes = {
   };
@@ -42,7 +42,7 @@ class VirusTotalIntegration extends Integration {
 
 class VirusTotalDomainIntegration extends Integration {
   name = 'VirusTotalDomain';
-  icon = 'public/virusTotalIcon.svg';
+  icon = 'public/virusTotalIcon.png';
   itypes = {
     domain: 'fetchDomain'
   };
@@ -155,7 +155,7 @@ class VirusTotalDomainIntegration extends Integration {
 
 class VirusTotalIPIntegration extends Integration {
   name = 'VirusTotalIP';
-  icon = 'public/virusTotalIcon.svg';
+  icon = 'public/virusTotalIcon.png';
   itypes = {
     ip: 'fetchIp'
   };
@@ -268,7 +268,7 @@ class VirusTotalIPIntegration extends Integration {
 
 class VirusTotalHashIntegration extends Integration {
   name = 'VirusTotalHash';
-  icon = 'public/virusTotalIcon.svg';
+  icon = 'public/virusTotalIcon.png';
   itypes = {
     hash: 'fetchHash'
   };
