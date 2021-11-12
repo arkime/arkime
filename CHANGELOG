@@ -23,6 +23,15 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 3.1.2 2021/11/xx
+  - all - refactor some shared code into common directory
+  - capture - fix memory leak with ip4 frags and packet q overflowing
+  - capture - standardize on config error process exiting
+  - tests - add some auth tests to test suite
+  - viewer - jquery upgrade
+  - viewer - help fields display improvements
+  - viewer - support https urls in wise plugin (issue #1777)
+  - viewer - fix history links with && not working
+  - viewer - userAuthCreateTmpl improvements
 
 3.1.1 2021/10/13
   - release - node 14.18.1

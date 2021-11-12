@@ -1269,7 +1269,6 @@ void moloch_packet_batch(MolochPacketBatch_t * batch, MolochPacket_t * const pac
         if ((overloadDrops[thread] % 10000) == 1) {
             LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
-        packet->pkt = 0;
         MOLOCH_COND_SIGNAL(packetQ[thread].lock);
         MOLOCH_UNLOCK(packetQ[thread].lock);
         MOLOCH_THREAD_INCR(packetStats[rc]);
