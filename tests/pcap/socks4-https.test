@@ -46,7 +46,7 @@
                   "notAfter" : 1636329599000,
                   "notBefore" : 1162944000000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 0,
+                  "remainingDays" : -1,
                   "serial" : "35973187f3873a07327ece580c9b7eda",
                   "subjectCN" : [
                      "verisign class 3 public primary certification authority - g5"
