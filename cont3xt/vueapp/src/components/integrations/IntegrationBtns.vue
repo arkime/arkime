@@ -6,13 +6,13 @@
         v-if="data[itype] && data[itype][source]">
         <b-button
           size="xs"
-          v-b-tooltip.hover="source"
           variant="outline-dark pull-right ml-1"
           v-if="data[itype][source][0] && integration.icon"
           @click="$store.commit('SET_DISPLAY_INTEGRATION', { source, itype, value })">
           <img
             :alt="source"
             :src="integration.icon"
+            v-b-tooltip.hover.d300="source"
             class="integration-img cursor-pointer"
           />
           <b-badge
