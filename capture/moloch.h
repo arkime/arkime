@@ -1004,6 +1004,7 @@ gboolean moloch_http_is_moloch(uint32_t hash, uint8_t *sessionId);
 void     moloch_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
 void     moloch_session_id6 (uint8_t *sessionId, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
 char    *moloch_session_id_string (uint8_t *sessionId, char *buf);
+char    *moloch_session_pretty_string (MolochSession_t *session, char *buf, int len);
 
 uint32_t moloch_session_hash(const void *key);
 
