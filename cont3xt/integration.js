@@ -80,6 +80,23 @@ class Integration {
       console.log('cacheTimeout', integration.name, integration.cacheTimeout);
     }
 
+    // cachePolicy
+    integration.cachePolicy = integration.getConfig('cachePolicy', Integration.getConfig('cont3xt', 'cachePolicy', integration.cachePolicy ?? 'shared'));
+    switch (integration.cachePolicy) {
+    case 'none':
+      integration.cacheable = false;
+      break;
+    case 'user':
+      integration.sharedCache = 0;
+      break;
+    case 'shared':
+      integration.sharedCache = 1;
+      break;
+    default:
+      console.log('Unknown cache policy', integration);
+      return;
+    }
+
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
       return;
@@ -164,6 +181,7 @@ class Integration {
       results[integration.name] = {
         doable: doable,
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
+        cachePolicy: integration.cachePolicy,
         icon: integration.icon,
         card: integration.card
       };
@@ -195,7 +213,7 @@ class Integration {
     };
 
     for (const integration of integrations) {
-      const cacheKey = `${integration.name}-${itype}-${query}`;
+      const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${query}`;
       const stats = integration.stats;
 
       if (shared.skipIntegrations.includes(integration.name)) {
@@ -332,7 +350,7 @@ class Integration {
           response._createTime = Date.now();
           res.send({ success: true, data: response });
           if (response && Integration.cache && integration.cacheable) {
-            const cacheKey = `${integration.name}-${itype}-${query}`;
+            const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
             Integration.cache.set(cacheKey, response);
           }
         }
