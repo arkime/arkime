@@ -41,7 +41,7 @@
                   {{ mm.data.asn.autonomous_system_organization }}
                 </b-badge>
               </h5>
-              <h5 class="align-self-end"
+              <h5 class="align-self-end mr-1"
                 v-if="mm.data && mm.data.country"
                 :key="`maxmind-${value}-${index}-country`"
                 v-b-tooltip="`${mm.data.country.country.names.en} (${mm.data.country.country.iso_code})`">
@@ -63,7 +63,7 @@
         />
       </div>
     </div>
-    <div class="row ml-4"
+    <div class="row ml-3"
       v-if="data[itype].RDAP">
       <div class="col">
         <label class="text-warning">

@@ -51,8 +51,7 @@
           :key="key"
           class="row medium"
           v-for="(value, key) in dns.data">
-          <div
-            class="col ml-3"
+          <div class="col"
             v-if="value.Answer && value.Answer.length">
             <template v-if="key === 'A' || key === 'AAAA'">
               <template v-for="item in value.Answer">
