@@ -44,7 +44,7 @@ class PassiveTotalIntegration extends Integration {
 }
 
 class PassiveTotalWhoisIntegration extends Integration {
-  name = 'PassiveTotalWhois';
+  name = 'PT Whois';
   icon = 'public/passiveTotalIcon.png';
   configName = 'PassiveTotal';
   itypes = {
@@ -119,7 +119,7 @@ class PassiveTotalWhoisIntegration extends Integration {
 }
 
 class PassiveTotalSubdomainsIntegration extends Integration {
-  name = 'PassiveTotalSubdomains';
+  name = 'PT Subdomains';
   icon = 'public/passiveTotalIcon.png';
   configName = 'PassiveTotal';
   itypes = {
@@ -179,11 +179,12 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 }
 
 class PassiveTotalDNSIntegration extends Integration {
-  name = 'PassiveTotalDNS';
+  name = 'PT DNS';
   icon = 'public/passiveTotalIcon.png';
   configName = 'PassiveTotal';
   itypes = {
-    ip: 'fetchIp'
+    ip: 'fetch',
+    domain: 'fetch'
   };
 
   card = {
@@ -232,7 +233,7 @@ class PassiveTotalDNSIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetchIp (user, ip) {
+  async fetch (user, query) {
     try {
       const puser = this.getUserConfig(user, 'PassiveTotalUser');
       const pkey = this.getUserConfig(user, 'PassiveTotalKey');
@@ -242,7 +243,7 @@ class PassiveTotalDNSIntegration extends Integration {
 
       const result = await axios.get('https://api.passivetotal.org/v2/dns/passive', {
         params: {
-          query: ip
+          query: query
         },
         auth: {
           username: puser,
@@ -258,7 +259,7 @@ class PassiveTotalDNSIntegration extends Integration {
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
-      console.log(this.name, ip, err);
+      console.log(this.name, query, err);
       return null;
     }
   }
