@@ -1,31 +1,28 @@
 <template>
-  <span>
-    <template v-for="(integration, source) in getIntegrations">
-      <span
-        :key="itype + source"
-        v-if="data[itype] && data[itype][source]">
-        <b-button
-          size="xs"
-          variant="outline-dark"
-          class="ml-1 mt-1 float-right"
-          v-if="data[itype][source][0] && integration.icon"
-          @click="$store.commit('SET_DISPLAY_INTEGRATION', { source, itype, value })">
-          <img
-            :alt="source"
-            :src="integration.icon"
-            v-b-tooltip.hover.d300="source"
-            class="integration-img cursor-pointer"
-          />
-          <b-badge
-            class="btn-badge"
-            v-if="data[itype][source][0].data._count"
-            :variant="getLoading.failures.indexOf(source) < 0 ? 'success' : 'secondary'">
-            {{ data[itype][source][0].data._count | humanReadableNumber }}
-          </b-badge>
-        </b-button>
-      </span>
+  <div class="wrap-btns">
+    <template v-for="integration in integrations">
+      <b-button
+        size="xs"
+        variant="outline-dark"
+        class="ml-1 mt-1 float-right"
+        :key="itype + integration.name"
+        v-if="data[itype] && data[itype][integration.name] && data[itype][integration.name][0] && integration.icon"
+        @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
+        <img
+          :alt="integration.name"
+          :src="integration.icon"
+          v-b-tooltip.hover.d300="integration.name"
+          class="integration-img cursor-pointer"
+        />
+        <b-badge
+          class="btn-badge"
+          v-if="data[itype][integration.name][0].data._count !== undefined"
+          :variant="countBadgeColor(data[itype][integration.name][0].data)">
+          {{ data[itype][integration.name][0].data._count | humanReadableNumber }}
+        </b-badge>
+      </b-button>
     </template>
-  </span>
+  </div>
 </template>
 
 <script>
@@ -52,12 +49,36 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getIntegrations', 'getLoading'])
+    ...mapGetters(['getIntegrationsArray', 'getLoading']),
+    integrations () {
+      return this.getIntegrationsArray.slice().sort((a, b) => {
+        return a.order - b.order;
+      });
+    }
+  },
+  methods: {
+    countBadgeColor (data) {
+      if (data._count === 0) {
+        return 'secondary';
+      } else if (data._severity === 'high') {
+        return 'danger';
+      } else {
+        return 'success';
+      }
+    }
   }
 };
 </script>
 
 <style scoped>
+.wrap-btns {
+  display: flex;
+  flex-wrap: wrap;
+}
+.wrap-btns  .btn {
+  flex: 1 1 auto;
+}
+
 .integration-img {
   height: 25px;
   margin: 0 6px;

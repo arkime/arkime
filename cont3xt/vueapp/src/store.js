@@ -17,6 +17,7 @@ const store = new Vuex.Store({
     renderingTable: false,
     renderingArray: false,
     integrations: {},
+    integrationsArray: [],
     displayIntegration: {},
     integrationData: {}
   },
@@ -54,6 +55,14 @@ const store = new Vuex.Store({
     },
     SET_INTEGRATIONS (state, data) {
       state.integrations = data;
+      const integrationsArray = [];
+      for (const key in data) {
+        integrationsArray.push({
+          name: key,
+          ...data[key]
+        });
+      }
+      state.integrationsArray = integrationsArray;
     },
     SET_DISPLAY_INTEGRATION (state, data) {
       state.displayIntegration = data;
@@ -80,6 +89,9 @@ const store = new Vuex.Store({
     },
     getIntegrations (state) {
       return state.integrations;
+    },
+    getIntegrationsArray (state) {
+      return state.integrationsArray;
     },
     getIntegrationData (state) {
       return state.integrationData;

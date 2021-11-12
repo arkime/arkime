@@ -30,24 +30,19 @@
               <h5 class="align-self-end mr-1"
                 v-if="mm.data && mm.data.asn"
                 :key="`maxmind-${value}-${index}-asn`">
-                <b-badge
-                  variant="light"
-                  class="cursor-help">
+                <b-badge variant="light">
                   AS{{ mm.data.asn.autonomous_system_number }}
                 </b-badge>
-                <b-badge
-                  variant="light"
-                  class="cursor-help">
+                <b-badge variant="light">
                   {{ mm.data.asn.autonomous_system_organization }}
                 </b-badge>
               </h5>
-              <h5 class="align-self-end mr-1"
+              <h5
                 v-if="mm.data && mm.data.country"
+                class="align-self-end mr-1 cursor-help"
                 :key="`maxmind-${value}-${index}-country`"
                 v-b-tooltip="`${mm.data.country.country.names.en} (${mm.data.country.country.iso_code})`">
-                <b-badge
-                  variant="light"
-                  class="cursor-help">
+                <b-badge variant="light">
                   {{ countryEmoji(mm.data.country.country.iso_code) }}&nbsp;
                 </b-badge>
               </h5>
