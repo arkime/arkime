@@ -32,14 +32,6 @@ class SpurIntegration extends Integration {
         type: 'json'
       },
       {
-        label: 'assignment',
-        type: 'json'
-      },
-      {
-        label: 'deviceBehaviors',
-        type: 'json'
-      },
-      {
         label: 'geoLite',
         type: 'json'
       },
@@ -48,6 +40,14 @@ class SpurIntegration extends Integration {
         type: 'json'
       },
       'infrastructure',
+      {
+        label: 'assignment',
+        type: 'json'
+      },
+      {
+        label: 'deviceBehaviors',
+        type: 'json'
+      },
       {
         label: 'proxiedTraffic',
         type: 'json'
@@ -94,8 +94,12 @@ class SpurIntegration extends Integration {
       });
 
       for (const rkey in response.data) {
-        if (typeof (response.data) === 'object' && response.data[rkey].exists === false) {
-          delete response.data[rkey];
+        if (typeof (response.data) === 'object') {
+          if (response.data[rkey].exists === false) {
+            delete response.data[rkey];
+          } else {
+            delete response.data[rkey].exists;
+          }
         }
       }
 
