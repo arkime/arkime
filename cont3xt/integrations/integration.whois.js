@@ -19,6 +19,7 @@ const whois = require('whois-json');
 class WhoisIntegration extends Integration {
   name = 'Whois';
   icon = 'public/whoisIcon.png'
+  order = 100;
   itypes = {
     domain: 'fetchDomain'
   };

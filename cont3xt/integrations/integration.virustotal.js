@@ -43,6 +43,7 @@ class VirusTotalIntegration extends Integration {
 class VirusTotalDomainIntegration extends Integration {
   name = 'VT Domain';
   icon = 'public/virusTotalIcon.png';
+  order = 320;
   itypes = {
     domain: 'fetchDomain'
   };
@@ -156,6 +157,7 @@ class VirusTotalDomainIntegration extends Integration {
 class VirusTotalIPIntegration extends Integration {
   name = 'VT IP';
   icon = 'public/virusTotalIcon.png';
+  order = 340;
   itypes = {
     ip: 'fetchIp'
   };

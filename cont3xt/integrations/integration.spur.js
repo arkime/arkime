@@ -18,7 +18,8 @@ const axios = require('axios');
 
 class SpurIntegration extends Integration {
   name = 'Spur';
-  icon = 'public/spurIcon.png'
+  icon = 'public/spurIcon.png';
+  order = 200;
   itypes = {
     ip: 'fetchIp'
   };

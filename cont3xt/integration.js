@@ -56,6 +56,7 @@ class Integration {
     }
     integration.cacheable = integration.cacheable ?? true;
     integration.noStats = integration.noStats ?? false;
+    integration.order = integration.order ?? 10000;
 
     integration.stats = {
       total: 0,
@@ -183,7 +184,8 @@ class Integration {
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
-        card: integration.card
+        card: integration.card,
+        order: integration.order
       };
     }
 

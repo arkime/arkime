@@ -19,6 +19,7 @@ const { SearchClient } = require('@censys/node');
 class CensysIntegration extends Integration {
   name = 'Censys';
   icon = 'public/censysIcon.png';
+  order = 220;
   itypes = {
     ip: 'fetchIp'
   };
