@@ -282,6 +282,8 @@ void reader_tpacketv3_init(char *UNUSED(name))
         }
     }
 
+    pcap_close(dpcap);
+
     if (i == MAX_INTERFACES) {
         CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
     }

@@ -32,8 +32,10 @@ LOCAL  MolochStringHashStd_t writersHash;
 /******************************************************************************/
 void moloch_writers_start(char *name) {
     MolochString_t *str;
+    char *freeIt = NULL;
+
     if (!name)
-        name = moloch_config_str(NULL, "pcapWriteMethod", "simple");
+        name = freeIt = moloch_config_str(NULL, "pcapWriteMethod", "simple");
 
 
     HASH_FIND(s_, writersHash, name, str);
@@ -43,6 +45,7 @@ void moloch_writers_start(char *name) {
     MolochWriterInit func = str->uw;
     func(name);
     moloch_add_can_quit((MolochCanQuitFunc)moloch_writer_queue_length, "writer queue length");
+    g_free(freeIt);
 }
 /******************************************************************************/
 void moloch_writers_add(char *name, MolochWriterInit func) {

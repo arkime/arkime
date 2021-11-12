@@ -41,8 +41,9 @@ uint32_t           readerOutputIds[256];
 /******************************************************************************/
 void moloch_readers_set(char *name) {
     MolochString_t *str;
+    char *freeIt = NULL;
     if (!name)
-        name = moloch_config_str(NULL, "pcapReadMethod", "libpcap");
+        name = freeIt = moloch_config_str(NULL, "pcapReadMethod", "libpcap");
 
 
     HASH_FIND(s_, readersHash, name, str);
@@ -51,6 +52,7 @@ void moloch_readers_set(char *name) {
     }
     MolochReaderInit func = str->uw;
     func(name);
+    g_free(freeIt);
 }
 /******************************************************************************/
 void moloch_readers_add(char *name, MolochReaderInit func) {
