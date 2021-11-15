@@ -101,7 +101,7 @@
                   "notAfter" : 1636685477000,
                   "notBefore" : 1321026040000,
                   "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 0,
+                  "remainingDays" : -1,
                   "serial" : "4c0e8c39",
                   "subjectCN" : [
                      "entrust certification authority - l1c"
