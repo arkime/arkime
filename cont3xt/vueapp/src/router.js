@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Cont3xt from '@/components/pages/Cont3xt';
+import Cont3xtStats from '@/components/pages/Stats';
 import Cont3xtSettings from '@/components/pages/Settings';
 import Cont3xtHelp from '@/components/pages/Help';
 import Cont3xt404 from '@/components/pages/404';
@@ -16,6 +17,11 @@ export default new Router({
       path: '/',
       name: 'Cont3xt',
       component: Cont3xt
+    },
+    {
+      path: '/stats',
+      name: 'Stats',
+      component: Cont3xtStats
     },
     {
       path: '/settings',

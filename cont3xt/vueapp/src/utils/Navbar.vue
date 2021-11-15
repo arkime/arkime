@@ -25,6 +25,15 @@
         </li>
         <li class="nav-item mr-2">
           <router-link
+            exact
+            to="stats"
+            class="nav-link"
+            active-class="active">
+            Stats
+          </router-link>
+        </li>
+        <li class="nav-item mr-2">
+          <router-link
             to="settings"
             active-class="active"
             class="nav-link"

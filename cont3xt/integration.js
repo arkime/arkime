@@ -393,12 +393,12 @@ class Integration {
    * Get stats about integrations
    */
   static async apiStats (req, res, next) {
-    const result = {};
+    const result = [];
     for (const integration of Integration.integrations.all) {
       if (integration.noStats) { continue; }
-      result[integration.name] = integration.stats;
+      result.push({ ...integration.stats, name: integration.name });
     }
-    res.send({ success: true, startTime: Integration.cont3xtStartTime, settings: result });
+    res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result });
   }
 
   getConfig (k, d) {

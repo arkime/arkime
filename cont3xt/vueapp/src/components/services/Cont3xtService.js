@@ -144,5 +144,24 @@ export default {
         return reject(err);
       });
     });
+  },
+
+  /**
+   * Retrieves integration stats
+   * @returns {Promise} - The promise that either resovles the or rejects in error
+   */
+  getStats () {
+    return new Promise((resolve, reject) => {
+      fetch('api/integration/stats').then((response) => {
+        if (!response.ok) { // test for bad response code
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
+      }).catch((err) => { // this catches an issue within the ^ .then
+        return reject(err);
+      });
+    });
   }
 };
