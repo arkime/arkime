@@ -1840,11 +1840,11 @@ export default {
 }
 .col-config-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 .col-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 .col-vis-menu .dropdown-menu {
   max-height: 300px;

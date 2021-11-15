@@ -1186,7 +1186,7 @@ export default {
   right: 0;
   z-index: 3;
   overflow: hidden;
-  padding: 2px 8px 3px 8px;;
+  padding: 2px 8px 3px 8px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: var(--color-primary);
@@ -1301,7 +1301,7 @@ export default {
   right: 0;
   z-index: 4;
   overflow: hidden;
-  padding: 2px 8px 3px 8px;;
+  padding: 2px 8px 3px 8px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: var(--color-secondary);

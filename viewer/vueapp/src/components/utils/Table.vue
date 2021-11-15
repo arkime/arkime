@@ -778,7 +778,7 @@ export default {
 /* force border radius on col vis menu btn */
 .col-vis-menu > button.btn {
   border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;;
+  border-bottom-right-radius: 4px !important;
 }
 
 /* don't let col vis menu overflow the page */
