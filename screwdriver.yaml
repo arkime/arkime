@@ -237,7 +237,7 @@ jobs:
             - sleep 30
             - cat /tmp/es
             - test-viewer-ui: npm run viewer:testui
-            - test-viewer: (cd tests ; echo "[default]" > cont3xt.ini ; ls ; G_SLICE=always-malloc ./tests.pl --viewer)
+            - test-viewer: (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
             - build-package: |
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 mv /data/moloch/bin/arkime_update_geo.sh /data/moloch/bin/moloch_update_geo.sh
