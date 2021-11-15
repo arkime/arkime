@@ -703,7 +703,7 @@ export default {
 
 .field:hover .session-field-dropdown {
   opacity: 1;
-  visibility: visible;;
+  visibility: visible;
 }
 
 .session-field-dropdown.pull-right {
