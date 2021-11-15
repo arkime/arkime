@@ -9,11 +9,27 @@ import Vue from 'vue';
  * @param {String} dateString - The time using ISO 8601
  * @returns {String} - Date string without time
  */
-export const removeTime = function (dateString) {
-  if (!dateString) { return ''; }
-  return dateString.split('T')[0];
+export const removeTime = function (dateStringWTime) {
+  if (!dateStringWTime) { return ''; }
+  return dateStringWTime.split('T')[0];
 };
 Vue.filter('removeTime', removeTime);
+
+/**
+ * Parses ms date to string
+ *
+ * @example
+ * '{{ 1524680821 | dateString }}'
+ * this.$options.filters.dateString(1524680821);
+ *
+ * @returns {string} - Readable string without time
+ */
+export const dateString = function (ms) {
+  if (isNaN(ms)) { return 'Invalid date'; }
+  const date = new Date(ms);
+  return date.toString();
+};
+Vue.filter('dateString', dateString);
 
 /**
  * Determines the RIR based on a link.

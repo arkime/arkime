@@ -350,7 +350,7 @@ class Integration {
         if (response) {
           stats.directGood++;
           response._createTime = Date.now();
-          res.send({ success: true, data: response });
+          res.send({ success: true, data: response, _query: query });
           if (response && Integration.cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
             Integration.cache.set(cacheKey, response);
@@ -360,7 +360,7 @@ class Integration {
       .catch(err => {
         console.log(integration.name, itype, query, err);
         stats.directError++;
-        res.send({ success: false });
+        res.status(500).send({ success: false, _query: query });
       });
   }
 

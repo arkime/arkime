@@ -129,7 +129,9 @@
             opacity="0.9"
             variant="transparent"
             :show="getWaitRendering || getRendering">
-            <integration-card />
+            <integration-card
+              @update-results="updateData"
+            />
             <template #overlay>
               <div class="overlay-loading">
                 <span class="fa fa-circle-o-notch fa-spin fa-2x" />
@@ -316,6 +318,15 @@ export default {
       Cont3xtService.getIntegrations().catch((err) => {
         this.integrationError = err;
       });
+    },
+    updateData ({ itype, source, value, data }) {
+      if (this.results[itype] && this.results[itype][source]) {
+        for (const item of this.results[itype][source]) {
+          if (item._query === value) {
+            item.data = data.data;
+          }
+        }
+      }
     }
   },
   beforeDestroy () {

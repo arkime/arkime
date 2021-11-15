@@ -107,13 +107,39 @@ export default {
   getIntegrations () {
     return new Promise((resolve, reject) => {
       fetch('api/integration').then((response) => {
-        if (!response.ok) { // test for bad response code (only on first chunk)
+        if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
         return response.json();
       }).then((response) => {
         store.commit('SET_INTEGRATIONS', response.integrations);
         return resolve(response.integrations);
+      }).catch((err) => { // this catches an issue within the ^ .then
+        return reject(err);
+      });
+    });
+  },
+
+  /**
+   * Refreshes data for an integration card
+   * @param {String} itype - The itype of the integration card
+   * @param {String} source - The integration that was displayed in the card
+   * @param {String} value - The value of the query that was presented in the card
+   * @returns {Promise} - The promise that either resovles the or rejects in error
+   */
+  refresh ({ itype, source, value }) {
+    return new Promise((resolve, reject) => {
+      fetch(`api/integration/${itype}/${source}/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: value })
+      }).then((response) => {
+        if (!response.ok) { // test for bad response code
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((err) => { // this catches an issue within the ^ .then
         return reject(err);
       });
