@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 17;
+use Test::More tests => 16;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -118,5 +118,5 @@ eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 $json = cont3xtGet('/api/linkGroup/getEditable', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-$json = cont3xtGet('/api/roles', 1);
-eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
+#$json = cont3xtGet('/api/roles', 1);
+#eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));

@@ -50,19 +50,19 @@ export default {
         key: 'name',
         sortable: true
       }, {
+        key: 'cacheLookup',
+        sortable: true
+      }, {
         key: 'cacheFound',
         sortable: true
       }, {
         key: 'cacheGood',
         sortable: true
       }, {
-        key: 'cacheLookup',
-        sortable: true
-      }, {
         key: 'cacheRecentAvgMS',
         sortable: true
       }, {
-        key: 'directError',
+        key: 'directLookup',
         sortable: true
       }, {
         key: 'directFound',
@@ -71,7 +71,7 @@ export default {
         key: 'directGood',
         sortable: true
       }, {
-        key: 'directLookup',
+        key: 'directError',
         sortable: true
       }, {
         key: 'directRecentAvgMS',
