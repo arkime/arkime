@@ -395,6 +395,15 @@ body.dark .pagination .page-item.active > button:focus {
   background-color: #111;
 }
 
+/* dark modal */
+body.dark .modal-content {
+  color: #EEE;
+  background-color: #222;
+}
+body.dark .modal-content .modal-header,
+body.dark .modal-content .modal-footer {
+  background-color: #333;
+}
 
 /* ANIMATIONS -------------------------------- */
 /* for transition groups (any block element)
