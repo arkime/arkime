@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const stylus = require('stylus');
 const Auth = require('../common/auth');
+const User = require('../common/user');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const uModule = {};
@@ -12,7 +13,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
   // HELPERS
   // --------------------------------------------------------------------------
   function saveSharedView (req, res, user, view, endpoint, successMessage, errorMessage) {
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         // sharing for the first time
         sharedUser = {
@@ -38,7 +39,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       sharedUser.views[req.body.name] = view;
 
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      User.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
           console.log('ERROR - saveSharedView -', endpoint, util.inspect(err, false, 50), info);
           return res.serverError(500, errorMessage);
@@ -61,7 +62,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     delete user.views[req.body.name]; // remove the view from the
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log('ERROR - shareView -', endpoint, util.inspect(err, false, 50), info);
         return res.serverError(500, errorMessage);
@@ -74,7 +75,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   // removes a view from the shared user and adds it to the user that created the view
   function unshareView (req, res, user, sharedUser, endpoint, successMessage, errorMessage) {
-    Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+    User.setUser('_moloch_shared', sharedUser, (err, info) => {
       if (err) {
         console.log('ERROR - unshareView - setUser (_moloch_shared) -', endpoint, util.inspect(err, false, 50), info);
         return res.serverError(500, errorMessage);
@@ -91,7 +92,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         sessionsColConfig: req.body.sessionsColConfig
       };
 
-      Db.setUser(user.userId, user, (err, subInfo) => {
+      User.setUser(user.userId, user, (err, subInfo) => {
         if (err) {
           console.log(`ERROR - saveSharedView - setUser (${user.userId}) -`, endpoint, util.inspect(err, false, 50), subInfo);
           return res.serverError(500, errorMessage);
@@ -171,7 +172,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     // Clone the views so we don't modify that cached user
     const views = JSON.parse(JSON.stringify(req.settingUser.views || {}));
 
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (sharedUser) {
         for (const viewName in sharedUser.views) {
           // check for views with the same name as a shared view so user specific views don't get overwritten
@@ -336,7 +337,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
     }
 
-    Db.getUser(req.body.userId, (err, user) => {
+    User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
         return res.serverError(403, 'User already exists');
@@ -366,7 +367,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         console.log('Creating new user', nuser);
       }
 
-      Db.setUser(req.body.userId, nuser, (err, info) => {
+      User.setUser(req.body.userId, nuser, (err, info) => {
         if (!err) {
           return res.send(JSON.stringify({
             success: true,
@@ -395,7 +396,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
 
     try {
-      await Db.deleteUser(userId);
+      await User.deleteUser(userId);
       res.send(JSON.stringify({
         success: true, text: 'User deleted successfully'
       }));
@@ -426,7 +427,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
     }
 
-    Db.getUser(userId, (err, user) => {
+    User.getUser(userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
@@ -467,7 +468,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         user.createEnabled = req.body.createEnabled === true;
       }
 
-      Db.setUser(userId, user, (err, info) => {
+      User.setUser(userId, user, (err, info) => {
         if (Config.debug) {
           console.log('setUser', user, err, info);
         }
@@ -507,7 +508,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     const user = req.settingUser;
     user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Password update failed');
@@ -596,43 +597,27 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
   uModule.getUsers = (req, res) => {
-    const columns = [
-      'userId', 'userName', 'expression', 'enabled', 'createEnabled',
-      'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-      'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
-      'lastUsed', 'timeLimit'
-    ];
-
     const query = {
-      _source: columns,
-      sort: {},
       from: +req.body.start || 0,
-      size: +req.body.length || 10000,
-      query: { // exclude the shared user from results
-        bool: { must_not: { term: { userId: '_moloch_shared' } } }
-      }
+      size: +req.body.length || 10000
     };
 
     if (req.body.filter) {
-      query.query.bool.should = [
-        { wildcard: { userName: '*' + req.body.filter + '*' } },
-        { wildcard: { userId: '*' + req.body.filter + '*' } }
-      ];
+      query.filter = req.body.filter;
     }
 
-    req.body.sortField = req.body.sortField || 'userId';
-    query.sort[req.body.sortField] = { order: req.body.desc === true ? 'desc' : 'asc' };
-    query.sort[req.body.sortField].missing = internals.usersMissing[req.body.sortField];
+    query.sortField = req.body.sortField || 'userId';
+    query.sortDescending = req.body.desc === true;
 
     Promise.all([
-      Db.searchUsers(query),
-      Db.numberOfUsers()
+      User.searchUsers(query),
+      User.numberOfUsers()
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
       res.send({
         recordsTotal: total,
-        recordsFiltered: users.hits.total,
-        data: users.hits.hits
+        recordsFiltered: users.total,
+        data: users.users
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
@@ -669,7 +654,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     req.settingUser.settings = req.body;
     delete req.settingUser.settings.token;
 
-    Db.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
+    User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/settings update error`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'User settings update failed');
@@ -740,7 +725,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         user.views[req.body.name].sessionsColConfig = undefined;
       }
 
-      Db.setUser(user.userId, user, (err, info) => {
+      User.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/view`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Create view failed');
@@ -774,7 +759,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     user.views = user.views || {};
 
     if (req.body.shared) {
-      Db.getUser('_moloch_shared', (err, sharedUser) => {
+      User.getUser('_moloch_shared', (err, sharedUser) => {
         if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[viewName] === undefined) {
@@ -787,7 +772,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           delete sharedUser.views[viewName];
         }
 
-        Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+        User.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
             console.log(`ERROR - ${req.method} /api/user/view (setUser _moloch_shared)`, util.inspect(err, false, 50), info);
             return res.serverError(500, 'Delete shared view failed');
@@ -805,7 +790,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
       delete user.views[viewName];
 
-      Db.setUser(user.userId, user, (err, info) => {
+      User.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/view (setUser ${user.userId})`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Delete view failed');
@@ -845,7 +830,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(404, 'View not found');
     }
 
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         // the shared user has not been created yet so there is no chance of duplicate views
         if (share) { // add the view to the shared user
@@ -903,7 +888,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     user.views = user.views || {};
 
     if (req.body.shared) {
-      Db.getUser('_moloch_shared', (err, sharedUser) => {
+      User.getUser('_moloch_shared', (err, sharedUser) => {
         if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           if (sharedUser.views[key] === undefined) {
@@ -926,7 +911,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }
         }
 
-        Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+        User.setUser('_moloch_shared', sharedUser, (err, info) => {
           if (err) {
             console.log(`ERROR - ${req.method} /api/user/view/${key} (setUser _moloch_shared)`, util.inspect(err, false, 50), info);
             return res.serverError(500, 'Update shared view failed');
@@ -957,7 +942,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         delete user.views[key];
       }
 
-      Db.setUser(user.userId, user, (err, info) => {
+      User.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/view/${key} (setUser ${user.userId})`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Updating view failed');
@@ -1250,7 +1235,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       order: req.body.order
     });
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/column`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Create custom column configuration failed');
@@ -1302,7 +1287,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(200, 'Custom column configuration not found');
     }
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update custom column configuration failed');
@@ -1346,7 +1331,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(200, 'Custom column configuration not found');
     }
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/column/${colName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom column configuration failed');
@@ -1408,7 +1393,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       fields: req.body.fields
     });
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/spiview`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Create custom SPI View fields configuration failed');
@@ -1457,7 +1442,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(200, 'Custom SPI View fields configuration not found');
     }
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update SPI View fields configuration failed');
@@ -1501,7 +1486,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(200, 'SPI View fields not found');
     }
 
-    Db.setUser(user.userId, user, (err, info) => {
+    User.setUser(user.userId, user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/spiview/${spiName}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete custom SPI View fields configuration failed');
@@ -1531,7 +1516,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Can not change other users msg');
     }
 
-    Db.getUser(req.params.userId, (err, user) => {
+    User.getUser(req.params.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
@@ -1539,7 +1524,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       user.welcomeMsgNum = parseInt(req.body.msgNum);
 
-      Db.setUser(req.params.userId, user, (err, info) => {
+      User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
           console.log(`ERROR - ${req.method} /api/user/${req.params.userId}/acknowledge (setUser)`, util.inspect(err, false, 50), user, info);
         }
@@ -1572,7 +1557,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   uModule.updateUserState = (req, res) => {
-    Db.getUser(req.user.userId, (err, user) => {
+    User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user');
@@ -1584,7 +1569,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
       user.tableStates[req.params.name] = req.body;
 
-      Db.setUser(user.userId, user, (err, info) => {
+      User.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (setUser)`, util.inspect(err, false, 50), info);
           return res.serverError(403, 'state update failed');

@@ -95,7 +95,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
-  viewerGet("/processHuntJobs");
+  viewerGet("/regressionTests/processHuntJobs");
 
   $hunts = viewerGet("/api/hunts?molochRegressionUser=user2&history=true");
   is (@{$hunts->{data}}, 1, "Add hunt 1");
@@ -117,7 +117,7 @@ my $hToken = getTokenCookie('huntuser');
 
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
 
-  viewerGet("/processHuntJobs");
+  viewerGet("/regressionTests/processHuntJobs");
 
   $hunts = viewerGet("/hunt/list?history=true");
   is (@{$hunts->{data}}, 2, "Add hunt 2");
@@ -176,7 +176,7 @@ my $hToken = getTokenCookie('huntuser');
   esGet("/_flush");
   esGet("/_refresh");
 
-  viewerGet("/processHuntJobs");
+  viewerGet("/regressionTests/processHuntJobs");
 
   esGet("/_flush");
   esGet("/_refresh");
@@ -240,7 +240,7 @@ my $hToken = getTokenCookie('huntuser');
   is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id8 = $json->{hunt}->{id};
-  viewerGet("/processHuntJobs");
+  viewerGet("/regressionTests/processHuntJobs");
   $json = viewerPutToken("/api/hunt/$id8/removefromsessions?molochRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 1, "can remove hunt name and id from sessions");
 
@@ -308,7 +308,7 @@ my $hToken = getTokenCookie('huntuser');
   $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}', $hToken);
 
   # Actually process the hunts
-  viewerGet("/processHuntJobs");
+  viewerGet("/regressionTests/processHuntJobs");
 
   esGet("/_flush");
   esGet("/_refresh");

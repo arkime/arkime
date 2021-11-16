@@ -15,7 +15,7 @@ use strict;
     esGet("/_flush");
 
 # Make sure no items
-    viewerPost2("/flushCache");
+    viewerPost2("/regressionTests/flushCache");
     countTest2(0, "date=-1");
 
 # Now test the APIs, basically making sure viewer dosn't crash

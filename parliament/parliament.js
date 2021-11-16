@@ -145,7 +145,7 @@ const invalidTokens = {};
 }());
 
 if (app.get('regressionTests')) {
-  app.post('/shutdown', function (req, res) {
+  app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
 }

@@ -12,7 +12,7 @@ my $otherToken = getTokenCookie('user2');
 
 esPost("/tests_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 esPost("/tests2_lookups/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
-multiPost("/flushCache");
+multiPost("/regressionTests/flushCache");
 
 # empty shortcuts
 my $shortcuts = viewerGet("/lookups");

@@ -133,6 +133,33 @@ class ArkimeUtil {
     console.log(`${section} - Unknown memcached url '${url}'`);
     process.exit(1);
   }
+
+  /**
+   * Create a LMDB store from the provided url
+   * @params {string} url - The LMDB url to connect to.
+   * @params {string} section - The section this LMDB client is being created for
+   */
+  static createLMDBStore (url, section) {
+    // eslint-disable-next-line no-shadow
+    const { open } = require('lmdb-store');
+
+    try {
+      const store = open({
+        path: url.slice(7),
+        compression: true
+      });
+      return store;
+    } catch (err) {
+      console.log('ERROR -', err);
+      process.exit(1);
+    }
+  }
+
+  static wildcardToRegexp (wildcard) {
+    // https://stackoverflow.com/revisions/57527468/5
+    wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
+  }
 }
 
 module.exports = ArkimeUtil;
