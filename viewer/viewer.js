@@ -508,7 +508,6 @@ function checkPermissions (permissions) {
   };
 
   return (req, res, next) => {
-    console.log('ALW', req.user);
     for (const permission of permissions) {
       if ((!req.user[permission] && !inversePermissions[permission]) ||
         (req.user[permission] && inversePermissions[permission])) {

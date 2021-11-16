@@ -558,10 +558,6 @@ class UserLMDBImplementation {
     this.store = ArkimeUtil.createLMDBStore(options.url, 'User');
   }
 
-  getClient () {
-    return null;
-  }
-
   // search against user index, promise only
   async searchUsers (query) {
     let hits = [];
@@ -670,10 +666,6 @@ class UserRedisImplementation {
 
   constructor (options) {
     this.client = ArkimeUtil.createRedisClient(options.url, 'User');
-  }
-
-  getClient () {
-    return null;
   }
 
   // search against user index, promise only
