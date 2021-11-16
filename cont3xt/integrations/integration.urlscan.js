@@ -97,7 +97,7 @@ class URLScanIntegration extends Integration {
 
       const result = await axios.get('https://urlscan.io/api/v1/search/', {
         params: {
-          q: query
+          q: encodeURIComponent(query)
         },
         headers: {
           'API-Key': key,

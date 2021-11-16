@@ -20,6 +20,7 @@
 const glob = require('glob');
 const path = require('path');
 const extractDomain = require('extract-domain');
+const ipaddr = require('ipaddr.js');
 
 class Integration {
   static debug = 0;
@@ -214,8 +215,14 @@ class Integration {
       }
     };
 
+    let normalizedQuery = query;
+    if (itype === 'ip') {
+      normalizedQuery = ipaddr.parse(query).toNormalizedString();
+      console.log('normalized', query, '->', normalizedQuery);
+    }
+
     for (const integration of integrations) {
-      const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${query}`;
+      const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
       const stats = integration.stats;
 
       if (shared.skipIntegrations.includes(integration.name)) {
@@ -245,7 +252,7 @@ class Integration {
 
       stats.directLookup++;
       const dStartTime = Date.now();
-      integration[integration.itypes[itype]](shared.user, query)
+      integration[integration.itypes[itype]](shared.user, normalizedQuery)
         .then(response => {
           updateTime(stats, Date.now() - dStartTime, 'direct');
           stats.directFound++;
