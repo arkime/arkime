@@ -51,12 +51,10 @@ export default {
         sortable: true
       }, {
         key: 'cacheFound',
-        sortable: true,
-        formatter: this.toBool
+        sortable: true
       }, {
         key: 'cacheGood',
-        sortable: true,
-        formatter: this.toBool
+        sortable: true
       }, {
         key: 'cacheLookup',
         sortable: true
@@ -65,16 +63,13 @@ export default {
         sortable: true
       }, {
         key: 'directError',
-        sortable: true,
-        formatter: this.toBool
+        sortable: true
       }, {
         key: 'directFound',
-        sortable: true,
-        formatter: this.toBool
+        sortable: true
       }, {
         key: 'directGood',
-        sortable: true,
-        formatter: this.toBool
+        sortable: true
       }, {
         key: 'directLookup',
         sortable: true

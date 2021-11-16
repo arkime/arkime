@@ -115,8 +115,8 @@ eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 $json = cont3xtGet('/api/linkGroup/getViewable');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-$json = cont3xtGet('/api/linkGroup/getEditable');
+$json = cont3xtGet('/api/linkGroup/getEditable', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-$json = cont3xtGet('/api/roles');
+$json = cont3xtGet('/api/roles', 1);
 eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
