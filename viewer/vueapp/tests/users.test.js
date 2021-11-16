@@ -8,6 +8,7 @@ import Users from '../src/components/users/Users.vue';
 import UserService from '../src/components/users/UserService';
 import FocusInput from '../src/components/utils/FocusInput.vue';
 import '../src/filters.js';
+import '../../../common/vueFilters';
 const { users, userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // don't display console.info messages

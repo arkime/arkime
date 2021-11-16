@@ -1,30 +1,31 @@
 'use strict';
 
 const filters = require('../src/filters');
+const commonFilters = require('../../../common/vueFilters');
 const { fields } = require('./consts');
 
 test('round', () => {
-  expect(filters.round('asdf')).toBe(0); // default
-  expect(filters.round(123456)).toBe(123456);
-  expect(filters.round(123456.123)).toBe(123456);
-  expect(filters.round(123456.789)).toBe(123457);
-  expect(filters.round(123456.789, 1)).toBe(123456.8);
-  expect(filters.round(123456.789, 2)).toBe(123456.79);
+  expect(commonFilters.round('asdf')).toBe(0); // default
+  expect(commonFilters.round(123456)).toBe(123456);
+  expect(commonFilters.round(123456.123)).toBe(123456);
+  expect(commonFilters.round(123456.789)).toBe(123457);
+  expect(commonFilters.round(123456.789, 1)).toBe(123456.8);
+  expect(commonFilters.round(123456.789, 2)).toBe(123456.79);
 });
 
 test('commaString', () => {
-  expect(filters.commaString('asdf')).toBe(0); // default
-  expect(filters.commaString(123456)).toBe('123,456');
-  expect(filters.commaString(123456789)).toBe('123,456,789');
-  expect(filters.commaString(1234567890)).toBe('1,234,567,890');
+  expect(commonFilters.commaString('asdf')).toBe(0); // default
+  expect(commonFilters.commaString(123456)).toBe('123,456');
+  expect(commonFilters.commaString(123456789)).toBe('123,456,789');
+  expect(commonFilters.commaString(1234567890)).toBe('1,234,567,890');
 });
 
 test('roundCommaString', () => {
-  expect(filters.roundCommaString('asdf')).toBe(0); // default
-  expect(filters.roundCommaString(123456.654321)).toBe('123,457');
-  expect(filters.roundCommaString(123456.654321, 2)).toBe('123,456.65');
-  expect(filters.roundCommaString(123456.654321, 3)).toBe('123,456.654');
-  expect(filters.roundCommaString(123456789.98765, 4)).toBe('123,456,789.9877');
+  expect(commonFilters.roundCommaString('asdf')).toBe(0); // default
+  expect(commonFilters.roundCommaString(123456.654321)).toBe('123,457');
+  expect(commonFilters.roundCommaString(123456.654321, 2)).toBe('123,456.65');
+  expect(commonFilters.roundCommaString(123456.654321, 3)).toBe('123,456.654');
+  expect(commonFilters.roundCommaString(123456789.98765, 4)).toBe('123,456,789.9877');
 });
 
 test('extractIPv6String', () => {
@@ -33,7 +34,7 @@ test('extractIPv6String', () => {
   expect(filters.extractIPv6String('1111:2222:3333:4444:5555:7777::')).toBe('1111::222:2:33:33:4:444::5555::777:7::');
 });
 
-test('round', () => {
+test('protocol', () => {
   expect(filters.protocol(0)).toBe(0); // default
   expect(filters.protocol(1)).toBe('icmp');
   expect(filters.protocol(2)).toBe('igmp');
@@ -74,18 +75,18 @@ test('humanReadableBytes', () => {
 });
 
 test('humanReadableNumber', () => {
-  expect(filters.humanReadableNumber('a')).toBe('0 ');
-  expect(filters.humanReadableNumber(1)).toBe('1 ');
-  expect(filters.humanReadableNumber(1000)).toBe('1.0k');
-  expect(filters.humanReadableNumber(10000)).toBe('10k');
-  expect(filters.humanReadableNumber(1000000)).toBe('1.0M');
-  expect(filters.humanReadableNumber(20000000)).toBe('20M');
-  expect(filters.humanReadableNumber(1000000000)).toBe('1.0G');
-  expect(filters.humanReadableNumber(321000000000)).toBe('321G');
-  expect(filters.humanReadableNumber(4000000000000)).toBe('4.0T');
-  expect(filters.humanReadableNumber(80000000000000)).toBe('80T');
-  expect(filters.humanReadableNumber(9000000000000000)).toBe('9.0P');
-  expect(filters.humanReadableNumber(987600000000000000)).toBe('988P');
+  expect(commonFilters.humanReadableNumber('a')).toBe('0 ');
+  expect(commonFilters.humanReadableNumber(1)).toBe('1 ');
+  expect(commonFilters.humanReadableNumber(1000)).toBe('1.0k');
+  expect(commonFilters.humanReadableNumber(10000)).toBe('10k');
+  expect(commonFilters.humanReadableNumber(1000000)).toBe('1.0M');
+  expect(commonFilters.humanReadableNumber(20000000)).toBe('20M');
+  expect(commonFilters.humanReadableNumber(1000000000)).toBe('1.0G');
+  expect(commonFilters.humanReadableNumber(321000000000)).toBe('321G');
+  expect(commonFilters.humanReadableNumber(4000000000000)).toBe('4.0T');
+  expect(commonFilters.humanReadableNumber(80000000000000)).toBe('80T');
+  expect(commonFilters.humanReadableNumber(9000000000000000)).toBe('9.0P');
+  expect(commonFilters.humanReadableNumber(987600000000000000)).toBe('988P');
 });
 
 test('timezoneDateString', () => {
