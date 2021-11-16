@@ -1,4 +1,4 @@
-use Test::More tests => 113;
+use Test::More tests => 112;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -13,6 +13,9 @@ my $pwd = "*/pcap";
     my $token2 = getTokenCookie2();
     my $token3 = getTokenCookie('test1');
 
+# clean old crons
+    esPost("/tests_queries/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
 # users
     my $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 0, "Empty users table");
@@ -25,8 +28,7 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 1, "Check add #1");
-    is (!exists $users->{data}->[0]->{lastUsed}, 1, "last used doesn't exist #1");
-    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[0], from_json('{"createEnabled": false, "userId": "test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "lastUsed": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 
     # This will set a lastUsed time, make sure DB is updated with sleep
@@ -75,11 +77,11 @@ my $pwd = "*/pcap";
 
     $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #1");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "lastUsed": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
     $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 2, "Check second add #2");
-    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[1], from_json('{"createEnabled": false, "userId": "test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "lastUsed": 0}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 # Filter
     $users = viewerPost("/user/list", "filter=test");
@@ -108,7 +110,7 @@ my $pwd = "*/pcap";
     is ($users->{recordsTotal}, 2);
     is ($users->{recordsFiltered}, 2);
 
-    $users = viewerPost("/user/list", "start=0&length=100000");
+    $users = viewerPost("/user/list", "start=666&length=100000");
     is (@{$users->{data}}, 0, "start=0&length=100000");
     is ($users->{recordsTotal}, 0);
     is ($users->{recordsFiltered}, 0);

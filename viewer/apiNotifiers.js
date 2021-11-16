@@ -3,6 +3,7 @@
 const glob = require('glob');
 const path = require('path');
 const util = require('util');
+const User = require('../common/user');
 
 module.exports = (Config, Db, internals) => {
   const nModule = {};
@@ -35,7 +36,7 @@ module.exports = (Config, Db, internals) => {
     if (!internals.notifiers) { buildNotifiers(); }
 
     // find notifier
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         if (Config.debug) {
           console.log('Cannot find notifier, no alert can be issued');
@@ -161,7 +162,7 @@ module.exports = (Config, Db, internals) => {
       return notifierArray;
     }
 
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         return res.send([]);
       }
@@ -237,7 +238,7 @@ module.exports = (Config, Db, internals) => {
     req.body.created = Math.floor(Date.now() / 1000);
 
     // save the notifier on the shared user
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         // sharing for the first time
         sharedUser = {
@@ -266,7 +267,7 @@ module.exports = (Config, Db, internals) => {
 
       sharedUser.notifiers[req.body.name] = req.body;
 
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      User.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/notifier`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Creating notifier failed');
@@ -293,7 +294,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {Notifier} notifier - If successful, the updated notifier with name sanitized and updated field added/updated.
    */
   nModule.updateNotifier = (req, res) => {
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         return res.serverError(404, 'Cannot find notifer to udpate');
       }
@@ -360,7 +361,7 @@ module.exports = (Config, Db, internals) => {
         delete sharedUser.notifiers[req.params.name];
       }
 
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      User.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Updating notifier failed');
@@ -384,7 +385,7 @@ module.exports = (Config, Db, internals) => {
    * @returns {string} name - If successful, the name of the deleted notifier.
    */
   nModule.deleteNotifier = (req, res) => {
-    Db.getUser('_moloch_shared', (err, sharedUser) => {
+    User.getUser('_moloch_shared', (err, sharedUser) => {
       if (!sharedUser) {
         return res.serverError(404, 'Cannot find notifer to remove');
       }
@@ -397,7 +398,7 @@ module.exports = (Config, Db, internals) => {
 
       sharedUser.notifiers[req.params.name] = undefined;
 
-      Db.setUser('_moloch_shared', sharedUser, (err, info) => {
+      User.setUser('_moloch_shared', sharedUser, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/notifier/${req.params.name}`, util.inspect(err, false, 50), info);
           return res.serverError(500, 'Deleting notifier failed');

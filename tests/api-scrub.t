@@ -13,7 +13,7 @@ my $token = getTokenCookie();
 countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
 system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
-viewerPost("/flushCache");
+viewerPost("/regressionTests/flushCache");
 system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
 system("../capture/capture -c config.test.ini -n test -r copytest.pcap");
 esGet("/_flush");
@@ -79,6 +79,6 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # cleanup
     unlink("copytest.pcap");
     system("../db/db.pl --prefix tests $MolochTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
-    viewerPost("/flushCache");
+    viewerPost("/regressionTests/flushCache");
     esGet("/_flush");
     esGet("/_refresh");

@@ -11,6 +11,7 @@ const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
+const User = require('../common/user');
 
 module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
   const sModule = {};
@@ -174,7 +175,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     } else { // it's a shared view
-      Db.getUserCache('_moloch_shared', (err, sharedUser) => {
+      User.getUserCache('_moloch_shared', (err, sharedUser) => {
         if (sharedUser) {
           sharedUser.views = sharedUser.views || {};
           for (const viewName in sharedUser.views) {

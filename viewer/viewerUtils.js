@@ -4,6 +4,7 @@ const async = require('async');
 const http = require('http');
 const https = require('https');
 const Auth = require('../common/auth');
+const User = require('../common/user');
 
 module.exports = (Config, Db, molochparser, internals) => {
   const vModule = {};
@@ -599,7 +600,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   // user or the user requested by the userId
   vModule.getUserCacheIncAnon = (userId, cb) => {
     if (internals.noPasswordSecret) { // user is anonymous
-      Db.getUserCache('anonymous', (err, anonUser) => {
+      User.getUserCache('anonymous', (err, anonUser) => {
         const anon = internals.anonymousUser;
 
         if (anonUser) {
@@ -610,29 +611,20 @@ module.exports = (Config, Db, molochparser, internals) => {
         return cb(null, anon);
       });
     } else {
-      Db.getUserCache(userId, cb);
+      User.getUserCache(userId, cb);
     }
   };
 
   vModule.validateUserIds = async (userIdList) => {
-    const query = {
-      _source: ['userId'],
-      from: 0,
-      size: 10000,
-      query: { // exclude the shared user from results
-        bool: { must_not: { term: { userId: '_moloch_shared' } } }
-      }
-    };
-
     // don't even bother searching for users if in anonymous mode
     if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
       return { validUsers: [], invalidUsers: [] };
     }
 
     try {
-      const users = await Db.searchUsers(query);
+      const users = await User.searchUsers({});
       let usersList = [];
-      usersList = users.hits.hits.map((user) => {
+      usersList = users.users.map((user) => {
         return user.userId;
       });
 

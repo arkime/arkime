@@ -667,7 +667,7 @@ app.use(['/app.js.map', '/vueapp/app.js.map'], express.static(
 
 // ----------------------------------------------------------------------------
 if (internals.regressionTests) {
-  app.post('/shutdown', (req, res) => {
+  app.post('/regressionTests/shutdown', (req, res) => {
     process.exit(0);
   });
 }
