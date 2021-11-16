@@ -23,6 +23,7 @@ const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const Auth = require('../common/auth');
+const User = require('../common/user');
 
 const escInfo = Config.getArray('elasticsearch', ',', 'http://localhost:9200');
 function help () {
@@ -123,7 +124,7 @@ function main () {
     }
   }
 
-  Db.setUser(process.argv[2], nuser, (err, info) => {
+  User.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
       if (err.meta.body.error.type === 'version_conflict_engine_exception') {
         console.log('User already exists');
