@@ -6,19 +6,39 @@
       opacity="0.9"
       :show="loading"
       variant="transparent">
+      <!-- search -->
+      <b-input-group class="mb-3">
+        <template #prepend>
+          <b-input-group-text>
+            <span class="fa fa-search" />
+          </b-input-group-text>
+        </template>
+        <b-form-input
+          debounce="400"
+          v-model="filter"
+          placeholder="Search by name"
+        />
+      </b-input-group> <!-- /search -->
+      <!-- table -->
       <b-table
         small
         hover
         striped
+        show-empty
         :items="data"
-        :fields="fields">
-      </b-table>
+        :filter="filter"
+        :fields="fields"
+        :filter-included-fields="filterOn"
+        empty-text="There are no integrations to show stats for"
+        :empty-filtered-text="`There are no integrations that match the name: ${filter}`">
+      </b-table> <!-- /table -->
+      <!-- loading overlay template -->
       <template #overlay>
         <div class="text-center margin-for-nav-and-progress">
           <span class="fa fa-circle-o-notch fa-spin fa-2x" />
           <p>Loading stats...</p>
         </div>
-      </template>
+      </template> <!-- /loading overlay template -->
       <!-- stats error -->
       <div
         v-if="error.length"
@@ -46,39 +66,51 @@ export default {
       data: [],
       error: '',
       loading: true,
+      filter: '',
+      filterOn: ['name'],
       fields: [{
         key: 'name',
         sortable: true
       }, {
         key: 'cacheLookup',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'cacheFound',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'cacheGood',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'cacheRecentAvgMS',
-        sortable: true
+        sortable: true,
+        formatter: this.commaStringRound
       }, {
         key: 'directLookup',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'directFound',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'directGood',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'directError',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }, {
         key: 'directRecentAvgMS',
-        sortable: true
+        sortable: true,
+        formatter: this.commaStringRound
       }, {
         key: 'total',
-        sortable: true
+        sortable: true,
+        formatter: this.commaString
       }]
     };
   },
@@ -92,8 +124,11 @@ export default {
     });
   },
   methods: {
-    toBool (val) {
-      return Boolean(val);
+    commaString (val) {
+      return this.$options.filters.commaString(val);
+    },
+    commaStringRound (val) {
+      return this.$options.filters.roundCommaString(val, 2);
     }
   }
 };

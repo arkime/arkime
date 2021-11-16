@@ -11,6 +11,7 @@ import HistoryService from '../src/components/history/HistoryService';
 import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import '../src/filters.js';
+import '../../../common/vueFilters';
 const { histories, userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // ignore tooltip warnings
