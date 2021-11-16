@@ -74,43 +74,63 @@ export default {
       }, {
         key: 'cacheLookup',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'cacheFound',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'cacheGood',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'cacheRecentAvgMS',
         sortable: true,
-        formatter: this.commaStringRound
+        formatter: this.commaStringRound,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'directLookup',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'directFound',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'directGood',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'directError',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'directRecentAvgMS',
         sortable: true,
-        formatter: this.commaStringRound
+        formatter: this.commaStringRound,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }, {
         key: 'total',
         sortable: true,
-        formatter: this.commaString
+        formatter: this.commaString,
+        tdClass: 'text-right',
+        thClass: 'text-right'
       }]
     };
   },
