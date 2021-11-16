@@ -513,7 +513,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         pauseHuntJobWithError(huntId, hunt, { value: err });
         return;
       }
-      if (!user || !user.found) {
+      if (!user) {
         pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
         return;
       }

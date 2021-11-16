@@ -189,22 +189,22 @@ app.use(['/assets', '/logos'], express.static(
 // regression test methods, before auth checks --------------------------------
 if (Config.get('regressionTests')) {
   // Override default lastUsed min write internal for tests
-  User.lastUsedMinInterval = 1;
+  User.lastUsedMinInterval = 1000;
 
-  app.post('/shutdown', function (req, res) {
+  app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
   });
-  app.post('/flushCache', function (req, res) {
+  app.post('/regressionTests/flushCache', function (req, res) {
     Db.flushCache();
     res.send('{}');
   });
-  app.get('/processCronQueries', function (req, res) {
+  app.get('/regressionTests/processCronQueries', function (req, res) {
     internals.processCronQueries();
     res.send('{}');
   });
   // Make sure all jobs have run and return
-  app.get('/processHuntJobs', function (req, res) {
+  app.get('/regressionTests/processHuntJobs', function (req, res) {
     huntAPIs.processHuntJobs();
 
     setTimeout(function checkHuntFinished () {
@@ -221,6 +221,12 @@ if (Config.get('regressionTests')) {
         });
       }
     }, 1000);
+  });
+  app.get('/regressionTests/deleteAllUsers', User.apiDeleteAllUsers);
+  app.get('/regressionTests/getUser/:user', (req, res) => {
+    User.getUser(req.params.user, (err, user) => {
+      res.send(user);
+    });
   });
 }
 
@@ -718,7 +724,7 @@ function getSettingUserCache (req, res, next) {
   // user is trying to get another user's settings without admin privilege
   if (!req.user.createEnabled) { return res.serverError(403, 'Need admin privileges'); }
 
-  Db.getUserCache(req.query.userId, (err, user) => {
+  User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
       if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
@@ -752,7 +758,7 @@ function getSettingUserDb (req, res, next) {
     userId = req.query.userId;
   }
 
-  Db.getUser(userId, function (err, user) {
+  User.getUser(userId, function (err, user) {
     if (err || !user) {
       if (internals.noPasswordSecret) {
         req.settingUser = JSON.parse(JSON.stringify(req.user));
@@ -2010,7 +2016,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });
 
-  let theme = req.user.settings.theme || 'default-theme';
+  let theme = req.user?.settings?.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
   const titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
@@ -2206,7 +2212,7 @@ internals.processCronQueries = () => {
           if (err && !user) {
             return forQueriesCb();
           }
-          if (!user || !user.found) {
+          if (!user) {
             console.log(`User ${cq.creator} doesn't exist`);
             return forQueriesCb(null);
           }

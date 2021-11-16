@@ -484,7 +484,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), unsigned char *data, int data_l
 
         parts[0] = file->elements[i];
         parts[1] = 0;
-        while (*str) {
+        while (*str && p < 100) {
             if (*str == ';' || *str == '=') {
                 if (!str[1])
                     break;

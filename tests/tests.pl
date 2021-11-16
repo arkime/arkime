@@ -265,10 +265,10 @@ my ($cmd) = @_;
 
     if ($cmd eq "--viewernostart") {
         print "Skipping ES Init and PCAP load\n";
-        $main::userAgent->post("http://localhost:8123/flushCache");
+        $main::userAgent->post("http://localhost:8123/regressionTests/flushCache");
     } elsif ($cmd eq "--viewerstart" || $cmd eq "--viewerhang") {
         print "Skipping ES Init and PCAP load\n";
-        $main::userAgent->post("http://localhost:8123/flushCache");
+        $main::userAgent->post("http://localhost:8123/regressionTests/flushCache");
         print ("Starting viewer\n");
         if ($main::debug) {
             system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
@@ -386,14 +386,14 @@ my ($cmd) = @_;
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
-        $main::userAgent->post("http://localhost:8123/shutdown");
-        $main::userAgent->post("http://localhost:8124/shutdown");
-        $main::userAgent->post("http://localhost:8125/shutdown");
-        $main::userAgent->post("http://localhost:8126/shutdown");
-        $main::userAgent->post("http://localhost:8200/shutdown");
-        $main::userAgent->post("http://localhost:8081/shutdown");
-        $main::userAgent->post("http://localhost:8008/shutdown");
-        $main::userAgent->post("http://localhost:3218/shutdown");
+        $main::userAgent->post("http://localhost:8123/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8124/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8125/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8126/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
     }
 
     exit(1) if ( $parser->has_errors );

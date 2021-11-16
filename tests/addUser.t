@@ -1,12 +1,12 @@
 # Test addUser.js and general authentication
-use Test::More tests => 24;
+use Test::More tests => 25;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
 use JSON;
 use strict;
 
-esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+viewerGet("/regressionTests/deleteAllUsers");
 my $token = getTokenCookie();
 
 # script exits successfully
@@ -37,8 +37,8 @@ ok($users->{data}->[6]->{headerAuthEnabled}, "Web auth");
 ok($users->{data}->[7]->{packetSearch}, "Packet search");
 
 # user should have password
-my $esUsers = esGet("/tests_users/_search")->{hits}->{hits};
-ok(exists $esUsers->[0]->{_source}->{passStore}, "Users has password");
+my $response = viewerGet("/regressionTests/getUser/test1");
+ok(exists $response->{passStore}, "Users has password");
 
 # --createOnly flag should not overwrite the user if it already exists
 my $user7 = $users->{data}->[7];
@@ -54,7 +54,6 @@ ok($users->{data}->[1]->{emailSearch}, "Can update exiting user");
 
 
 #### Auth Header tests
-my $response;
 my $mresponse;
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
@@ -68,17 +67,17 @@ is ($response->content, '{"success":false,"text":"User name header is empty"}');
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest1');
 is ($response->code, 200);
 
-$response = esGet("/tests_users/_doc/authtest1");
-$mresponse = mesGet("/tests_users/_doc/authtest1");
-delete $mresponse->{_source}->{cluster};
-eq_or_diff($response->{_source}, $mresponse->{_source});
+$response = viewerGet("/regressionTests/getUser/authtest1");
+delete $response->{lastUsed};
+$mresponse = multiGet("/regressionTests/getUser/authtest1");
+delete $mresponse->{lastUsed};
+eq_or_diff($response, $mresponse);
 
-delete $response->{_source}->{passStore};
-delete $response->{_source}->{lastUsed};
-eq_or_diff($response->{_source}, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"createEnabled":false}'));
+delete $response->{passStore};
+eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"createEnabled":false,"expression":"","settings":{}}'));
 
 system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
-$response = esGet("/tests_users/_doc/authtest2");
+$response = viewerGet("/regressionTests/getUser/authtest2");
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
 is ($response->code, 200);
@@ -107,5 +106,8 @@ viewerDeleteToken("/api/user/test4", $token);
 viewerDeleteToken("/api/user/test5", $token);
 viewerDeleteToken("/api/user/test6", $token);
 viewerDeleteToken("/api/user/test7", $token);
-esDelete('/tests_users/_doc/authtest1');
-esDelete('/tests_users/_doc/authtest2');
+viewerDeleteToken("/api/user/authtest1", $token);
+viewerDeleteToken("/api/user/authtest2", $token);
+
+my $users = viewerPost("/user/list", "");
+is (@{$users->{data}}, 0, "Empty users table");

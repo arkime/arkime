@@ -87,7 +87,7 @@ app.use('/public', express.static(
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
-app.post('/shutdown', (req, res) => {
+app.post('/regressionTests/shutdown', (req, res) => {
   if (internals.regressionTests) {
     console.log('Shutting down');
     process.exit(0);

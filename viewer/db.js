@@ -903,6 +903,7 @@ exports.updateSession = async (index, id, doc, cb) => {
 };
 
 exports.close = async () => {
+  User.close();
   return internals.client7.close();
 };
 
@@ -1061,23 +1062,6 @@ exports.flushCache = function () {
   delete internals.aliasesCache;
   exports.getAliasesCache();
 };
-
-// search against user index, promise only
-exports.searchUsers = User.searchUsers;
-
-// Return a user from DB, callback only
-exports.getUser = User.getUser;
-
-// Return a user from cache, callback only
-exports.getUserCache = User.getUserCache;
-
-exports.numberOfUsers = User.numberOfUsers;
-
-// Delete user, promise only
-exports.deleteUser = User.deleteUser;
-
-// Set user, callback only
-exports.setUser = User.setUser;
 
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
@@ -1735,7 +1719,7 @@ exports.checkVersion = async function (minVersion, checkUsers) {
   }
 
   if (checkUsers) {
-    const count = await exports.numberOfUsers();
+    const count = await User.numberOfUsers();
     if (count === 0) {
       console.log('WARNING - No users are defined, use node viewer/addUser.js to add one, or turn off auth by unsetting passwordSecret');
     }
