@@ -15,13 +15,25 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*"
+      "node_modules",
+      "vueapp"
+    ],
+    "watch": [
+      ".",
+      "../common",
+      "../tests/cont3xt.ini"
     ]
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ]
+  ],
+  "dependencies": {
+    "@censys/node": "^2.0.2",
+    "email-deep-validator": "^3.3.0",
+    "extract-domain": "^2.3.4",
+    "maxmind": "^4.3.2",
+    "whois-json": "^2.0.4"
+  }
 }

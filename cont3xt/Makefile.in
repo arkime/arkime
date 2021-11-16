@@ -4,6 +4,7 @@ INSTALL = @INSTALL@
 CONT3XTDIR = @prefix@/cont3xt
 BINDIR = @prefix@/bin
 CP = /bin/cp
+INSTALL_BUNDLE ?= "bundle:min"
 
 all:
 	echo "CONT3XT!"
@@ -13,14 +14,14 @@ check:
 
 install:
 	@mkdir -p "$(CONT3XTDIR)" "$(CONT3XTDIR)/vueapp" "$(CONT3XTDIR)/integrations"
-	$(INSTALL) *.js $(CONT3XTDIR)
+	$(INSTALL) *.js package.json package-lock.json $(CONT3XTDIR)
 	$(INSTALL) integrations/*.js $(CONT3XTDIR)/integrations
-	#npm ci
-	npm run bundle:min
+	npm ci
+	npm run $(INSTALL_BUNDLE)
 	$(CP) -pr favicon.ico public $(CONT3XTDIR)
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
-	#(cd $(CONT3XTDIR) ; npm ci --production)
-	#rm -f $(CONT3XTDIR)/package-lock.json
+	(cd $(CONT3XTDIR) ; npm ci --production)
 
 distclean realclean clean:
+	rm -rf node_modules
 	rm -f *.o *.so

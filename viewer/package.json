@@ -39,8 +39,13 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*"
+      "node_modules",
+      "vueapp"
+    ],
+    "watch": [
+      ".",
+      "../common",
+      "../tests/config.test.ini"
     ]
   },
   "browserslist": [

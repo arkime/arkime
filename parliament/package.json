@@ -20,8 +20,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "node_modules/*",
-      "vueapp/*",
+      "node_modules",
+      "vueapp",
       "*.json"
     ]
   },
