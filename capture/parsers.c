@@ -705,7 +705,7 @@ void moloch_parsers_init()
         gchar *filenames[100];
         int    flen = 0;
 
-        while ((filename = g_dir_read_name(dir))) {
+        while ((filename = g_dir_read_name(dir)) && flen < 100) {
             // Skip hidden files/directories
             if (filename[0] == '.')
                 continue;
