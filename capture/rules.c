@@ -366,6 +366,8 @@ void moloch_rules_load_add_field_match(MolochRule_t *rule, int pos, int type, ch
     GPtrArray       *rules;
     int              len = strlen(key);
 
+    config.fields[pos]->ruleEnabled = 1;
+
     if (len > 255)
         CONFIGEXIT("Match %s is to too large", key);
 
@@ -1223,7 +1225,7 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
             moloch_rules_run_field_set_rules(session, pos, nodes[i]->data);
         }
     } else {
-        // See if this value is in the hash table of matches we are watching for
+        // See if this value matches anything in our matching list
         if (current.fieldsMatch[pos]) {
             GHashTableIter         iter;
             uint8_t               *akey;
