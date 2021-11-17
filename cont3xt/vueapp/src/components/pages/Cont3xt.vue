@@ -12,8 +12,8 @@
         <b-form-input
           v-focus="true"
           v-model="searchTerm"
-          placeholder="Search"
           @keydown.enter="search"
+          placeholder="Indicators"
         />
         <b-input-group-append>
           <b-button
@@ -29,7 +29,7 @@
     <div class="margin-for-search">
       <!-- welcome -->
       <div class="whole-page-info container"
-        v-if="!initialized && !error.length && !integrationError.length">
+        v-if="!initialized && !error.length && !getIntegrationsError.length">
         <div class="well center-area">
           <h1 class="text-muted">
             <span class="fa fa-fw fa-rocket fa-2x" />
@@ -59,18 +59,12 @@
 
       <!-- integration error -->
       <div
-        v-if="integrationError.length"
+        v-if="getIntegrationsError.length"
         class="mt-2 alert alert-danger">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         Error fetching integrations. Viewing data for integrations will not work!
         <br>
-        {{ integrationError }}
-        <button
-          type="button"
-          @click="integrationError = ''"
-          class="close cursor-pointer">
-          <span>&times;</span>
-        </button>
+        {{ getIntegrationsError }}
       </div> <!-- /integration error -->
 
       <!-- results -->
@@ -116,6 +110,92 @@
             </h3>
             <pre class="text-info"><code>{{ results }}</code></pre>
           </div>
+          <hr>
+          <!-- link groups -->
+          <b-alert
+            variant="danger"
+            :show="!!getLinkGroupsError.length">
+            {{ getLinkGroupsError }}
+          </b-alert>
+          <b-form inline>
+            <b-input-group
+              size="sm"
+              class="mr-2 mb-1">
+              <template #prepend>
+                <b-input-group-text>
+                  Num Days
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                type="number"
+                debounce="400"
+                :value="numDays"
+                style="width:60px"
+                placeholder="Number of Days"
+                @input="updateVars('numDays', $event)"
+              />
+            </b-input-group>
+            <b-input-group
+              size="sm"
+              class="mr-2 mb-1">
+              <template #prepend>
+                <b-input-group-text>
+                  Num Hours
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                type="number"
+                debounce="400"
+                :value="numHours"
+                style="width:80px"
+                placeholder="Number of Hours"
+                @input="updateVars('numHours', $event)"
+              />
+            </b-input-group>
+            <b-input-group
+              size="sm"
+              class="mr-2 mb-1">
+              <template #prepend>
+                <b-input-group-text>
+                  Start Date
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                type="text"
+                debounce="400"
+                :value="startDate"
+                style="width:190px"
+                placeholder="Start Date"
+                @input="updateVars('startDate', $event)"
+              />
+            </b-input-group>
+            <b-input-group
+              size="sm"
+              class="mr-2 mb-1">
+              <template #prepend>
+                <b-input-group-text>
+                  Stop Date
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                type="text"
+                debounce="400"
+                :value="stopDate"
+                style="width:190px"
+                placeholder="Stop Date"
+                @input="updateVars('stopDate', $event)"
+              />
+            </b-input-group>
+          </b-form>
+          <link-group-cards
+            v-if="searchItype"
+            :numDays="numDays"
+            :query="searchTerm"
+            :itype="searchItype"
+            :numHours="numHours"
+            :stopDate="stopDate"
+            :startDate="startDate"
+          /> <!-- /link groups -->
         </div> <!-- /itype results summary -->
         <!-- integration results -->
         <div
@@ -166,6 +246,7 @@ import Cont3xtText from '@/components/itypes/Text';
 import Cont3xtEmail from '@/components/itypes/Email';
 import Cont3xtPhone from '@/components/itypes/Phone';
 import Cont3xtDomain from '@/components/itypes/Domain';
+import LinkGroupCards from '@/components/links/LinkGroupCards';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 
@@ -179,22 +260,29 @@ export default {
     Cont3xtEmail,
     Cont3xtPhone,
     Cont3xtDomain,
+    LinkGroupCards,
     IntegrationCard
   },
   directives: { Focus },
   data () {
     return {
       error: '',
+      numDays: 7, // 1 week
+      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString(), // 7 days ago
+      stopDate: new Date().toISOString(), // now
+      numHours: 7 * 24, // 1 week
       results: {},
       scrollPx: 0,
       searchItype: '',
       initialized: false,
-      integrationError: '',
       searchTerm: this.$route.query.q || ''
     };
   },
   computed: {
-    ...mapGetters(['getRendering', 'getWaitRendering', 'getIntegrationData']),
+    ...mapGetters([
+      'getRendering', 'getWaitRendering', 'getIntegrationData',
+      'getIntegrationsError', 'getLinkGroupsError'
+    ]),
     loading: {
       get () { return this.$store.state.loading; },
       set (val) { this.$store.commit('SET_LOADING', val); }
@@ -222,7 +310,6 @@ export default {
     }
   },
   mounted () {
-    this.getIntegrations();
     if (this.searchTerm) {
       this.search();
     }
@@ -312,13 +399,39 @@ export default {
         }
       });
     },
-    /* helpers ------------------------------------------------------------- */
-    getIntegrations () {
-      // NOTE: don't need to do anything with the data (the store does it)
-      Cont3xtService.getIntegrations().catch((err) => {
-        this.integrationError = err;
-      });
+    updateVars (updated, newVal) {
+      this[updated] = newVal;
+
+      const stopMs = new Date(this.stopDate).getTime();
+      const startMs = new Date(this.startDate).getTime();
+
+      if (isNaN(stopMs) || isNaN(stopMs)) {
+        return;
+      }
+
+      switch (updated) {
+      case 'numDays':
+        this.numHours = this.numDays * 24;
+        this.stopDate = new Date().toISOString();
+        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        break;
+      case 'numHours':
+        this.numDays = this.numHours / 24;
+        this.stopDate = new Date().toISOString();
+        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        break;
+      case 'stopDate':
+        this.numDays = (stopMs - startMs) / (3600000 * 24);
+        this.numHours = this.numDays * 24;
+        this.startDate = new Date(new Date(this.stopDate).getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        break;
+      case 'startDate':
+        this.numDays = Math.floor((stopMs - startMs) / (3600000 * 24));
+        this.numHours = this.numDays * 24;
+        break;
+      }
     },
+    /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {
       if (this.results[itype] && this.results[itype][source]) {
         for (const item of this.results[itype][source]) {

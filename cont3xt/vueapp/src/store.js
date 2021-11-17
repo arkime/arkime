@@ -17,9 +17,12 @@ const store = new Vuex.Store({
     renderingTable: false,
     renderingArray: false,
     integrations: {},
+    integrationsError: '',
     integrationsArray: [],
     displayIntegration: {},
-    integrationData: {}
+    integrationData: {},
+    linkGroups: [],
+    linkGroupsError: ''
   },
   mutations: {
     SET_LOADING (state, data) {
@@ -64,11 +67,23 @@ const store = new Vuex.Store({
       }
       state.integrationsArray = integrationsArray;
     },
+    SET_INTEGRATIONS_ERROR (state, data) {
+      state.integrationsError = data;
+    },
     SET_DISPLAY_INTEGRATION (state, data) {
       state.displayIntegration = data;
     },
     SET_INTEGRATION_DATA (state, data) {
       state.integrationData = Object.freeze(data);
+    },
+    SET_LINK_GROUPS (state, data) {
+      state.linkGroups = data;
+    },
+    SET_LINK_GROUPS_ERROR (state, data) {
+      state.linkGroupsError = data;
+    },
+    REMOVE_LINK_GROUP (state, index) {
+      state.linkGroups.splice(index, 1);
     }
   },
   getters: {
@@ -90,11 +105,20 @@ const store = new Vuex.Store({
     getIntegrations (state) {
       return state.integrations;
     },
+    getIntegrationsError (state) {
+      return state.integrationsError;
+    },
     getIntegrationsArray (state) {
       return state.integrationsArray;
     },
     getIntegrationData (state) {
       return state.integrationData;
+    },
+    getLinkGroups (state) {
+      return state.linkGroups;
+    },
+    getLinkGroupsError (state) {
+      return state.linkGroupsError;
     }
   }
 });

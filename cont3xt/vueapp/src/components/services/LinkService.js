@@ -1,3 +1,5 @@
+import store from '@/store';
+
 export default {
   /**
    * Fetches the list of link groups that a user can view.
@@ -11,8 +13,10 @@ export default {
         }
         return response.json();
       }).then((response) => {
+        store.commit('SET_LINK_GROUPS', response.linkGroups);
         return resolve(response.linkGroups);
       }).catch((err) => { // this catches an issue within the ^ .then
+        store.commit('SET_LINK_GROUPS_ERROR', err);
         return reject(err);
       });
     });
@@ -33,8 +37,10 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
-          return resolve(response.linkGroups);
+          this.getLinkGroups();
+          return resolve(response);
         } else {
+          store.commit('SET_LINK_GROUPS_ERROR', response.text);
           return reject(response.text);
         }
       });
@@ -44,9 +50,10 @@ export default {
   /**
    * Deletes a link group.
    * @param {String} id - The id of the link group to delete
+   * @param {Number} index - The index of the link group within the array to delete
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
-  deleteLinkGroup (id) {
+  deleteLinkGroup (id, index) {
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${id}`, {
         method: 'DELETE'
@@ -54,8 +61,10 @@ export default {
         return response.json();
       }).then((response) => {
         if (response.success) {
-          return resolve(response.linkGroups);
+          store.commit('REMOVE_LINK_GROUP', index);
+          return resolve(response);
         } else {
+          store.commit('SET_LINK_GROUPS_ERROR', response.text);
           return reject(response.text);
         }
       });

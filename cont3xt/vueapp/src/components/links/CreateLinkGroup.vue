@@ -64,6 +64,13 @@
             v-model="link.url"
             :state="link.url.length > 0"
           />
+          <template #append>
+            <b-input-group-text
+              class="cursor-help"
+              v-b-tooltip.hover="'These values within links will be filled in \'${indicator}\' (your search query), \'${startDate}\', \'${stopDate}\', \'${numDays}\', \'${numHours}\', \'${type}\''">
+              <span class="fa fa-info-circle" />
+            </b-input-group-text>
+          </template>
         </b-input-group>
         <b-button
           variant="danger"
@@ -223,7 +230,6 @@ export default {
       }
 
       LinkService.createLinkGroup(linkGroup).then((response) => {
-        this.$emit('update-link-groups');
         this.close();
       }).catch((err) => {
         this.error = err;

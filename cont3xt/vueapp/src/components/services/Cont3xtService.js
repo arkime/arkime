@@ -115,6 +115,7 @@ export default {
         store.commit('SET_INTEGRATIONS', response.integrations);
         return resolve(response.integrations);
       }).catch((err) => { // this catches an issue within the ^ .then
+        store.commit('SET_INTEGRATIONS_ERROR', err);
         return reject(err);
       });
     });
