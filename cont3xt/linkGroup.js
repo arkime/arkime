@@ -86,9 +86,9 @@ class LinkGroup {
    * Create new link group
    */
   static async apiCreate (req, res, next) {
-    if (!req.user.hasRole('cont3xtUser')) {
+    /* if (!req.user.hasRole('cont3xtUser')) {
       return res.send({ success: false, text: 'Permission denied' });
-    }
+    } */
 
     const linkGroup = req.body;
     linkGroup.creator = req.user.userId;
