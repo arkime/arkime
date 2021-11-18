@@ -126,11 +126,15 @@ class LinkGroup {
       return res.send({ success: false, text: msg });
     }
 
-    const results = await Db.putLinkGroup(req.params.id, linkGroup);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.putLinkGroup(req.params.id, linkGroup);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      return res.send({ success: false, text: err.toString() });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 
   /**

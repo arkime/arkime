@@ -84,6 +84,14 @@ const store = new Vuex.Store({
     },
     REMOVE_LINK_GROUP (state, index) {
       state.linkGroups.splice(index, 1);
+    },
+    UPDATE_LINK_GROUP (state, data) {
+      for (let i = 0; i < state.linkGroups.length; i++) {
+        if (state.linkGroups[i]._id === data._id) {
+          Vue.set(state.linkGroups, i, data);
+          return;
+        }
+      }
     }
   },
   getters: {

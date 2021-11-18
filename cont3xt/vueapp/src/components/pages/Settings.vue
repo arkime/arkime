@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <!-- link group create form -->
-    <create-link-group />
+    <create-link-group-modal />
     <!-- link groups -->
     <h1>
       Link Groups
@@ -40,13 +40,13 @@
 import { mapGetters } from 'vuex';
 
 import LinkGroupCards from '@/components/links/LinkGroupCards';
-import CreateLinkGroup from '@/components/links/CreateLinkGroup';
+import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
 export default {
   name: 'Cont3xtSettings',
   components: {
     LinkGroupCards,
-    CreateLinkGroup
+    CreateLinkGroupModal
   },
   computed: {
     ...mapGetters(['getLinkGroups', 'getLinkGroupsError'])

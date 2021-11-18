@@ -4,7 +4,9 @@
       :key="linkGroup._id"
       class="w-25 p-2"
       v-for="(linkGroup, index) in getLinkGroups">
-      <b-card class="h-100 align-self-stretch">
+      <!-- view -->
+      <b-card v-if="itype"
+        class="h-100 align-self-stretch">
         <template #header>
           <h6 class="mb-0">
             {{ linkGroup.name }}
@@ -13,30 +15,9 @@
         <b-card-body>
           <template
             v-for="(link, i) in linkGroup.links">
-            <!-- display link data -->
-            <div
-              v-if="!itype"
-              :key="link.url + i">
-              <hr v-if="i > 0" class="hr-small">
-              <div>
-                <strong class="text-info">Name</strong>
-                {{ link.name }}
-              <div>
-              </div>
-                <strong class="text-info">URL</strong>
-                <span v-b-tooltip.hover="link.url">
-                  {{ link.url.length > 80 ? `${link.url.substring(0, 100)}...` : link.url }}
-                </span>
-              </div>
-              <div>
-                <strong class="text-info">Types</strong>
-                {{ link.itypes.join(', ') }}
-              </div>
-            </div> <!-- /display link data -->
             <!-- display link -->
-            <div
-              :key="link.url + i"
-              v-else-if="itype && link.itypes.indexOf(itype) > -1">
+            <div :key="link.url + i"
+              v-if="itype && link.itypes.indexOf(itype) > -1">
               <a target="_blank"
                 :href="getUrl(link.url)">
                 {{ link.name }}
@@ -44,30 +25,7 @@
             </div> <!-- /display link -->
           </template>
         </b-card-body>
-        <template
-          #footer
-          v-if="!itype">
-          <div class="w-100 d-flex justify-content-between align-items-start">
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover="'Delete this link group'"
-              @click="deleteLinkGroup(linkGroup._id, index)">
-              <span class="fa fa-trash" />
-            </b-button>
-            <b-button
-              size="sm"
-              class="disabled"
-              variant="warning"
-              @click="updateLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Edit this link group'">
-              <span class="fa fa-pencil" />
-            </b-button>
-          </div>
-        </template>
-        <template
-          v-else
-          #footer>
+        <template #footer>
           <b-button
             block
             size="sm"
@@ -77,7 +35,42 @@
             Open All
           </b-button>
         </template>
-      </b-card>
+      </b-card> <!-- /view -->
+      <!-- edit -->
+      <b-card v-else
+        class="h-100 align-self-stretch">
+        <b-card-body>
+          <link-group-form
+            :link-group="linkGroup"
+            @update-link-group="updateLinkGroup"
+          />
+        </b-card-body>
+        <template #footer>
+          <div class="w-100 d-flex justify-content-between align-items-start">
+            <b-button
+              size="sm"
+              variant="danger"
+              v-b-tooltip.hover="'Delete this link group'"
+              @click="deleteLinkGroup(linkGroup._id, index)">
+              <span class="fa fa-trash" />
+            </b-button>
+            <b-alert
+              variant="success"
+              :show="linkGroup.success"
+              class="mb-0 mt-0 alert-sm mr-1 ml-1">
+              <span class="fa fa-check mr-2" />
+              Saved!
+            </b-alert>
+            <b-button
+              size="sm"
+              variant="success"
+              @click="saveLinkGroup(linkGroup)"
+              v-b-tooltip.hover="'Save this link group'">
+              <span class="fa fa-save" />
+            </b-button>
+          </div>
+        </template>
+      </b-card> <!-- /edit -->
     </div>
   </div>
 </template>
@@ -86,9 +79,11 @@
 import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
+import LinkGroupForm from '@/components/links/LinkGroupForm';
 
 export default {
   name: 'LinkGroupCards',
+  components: { LinkGroupForm },
   props: {
     itype: String, // the itype of the search to display links for
     query: String, // the query in the search bar to apply to urls
@@ -102,11 +97,21 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    updateLinkGroup (linkGroup) {
+      this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+    },
     deleteLinkGroup (id, index) {
       LinkService.deleteLinkGroup(id, index);
     },
-    updateLinkGroup (linkGroup) { // TODO
-      console.log('coming soon!');
+    saveLinkGroup (linkGroup) {
+      LinkService.updateLinkGroup(linkGroup).then((response) => {
+        linkGroup.success = true;
+        this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+        setTimeout(() => {
+          linkGroup.success = false;
+          this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
+        }, 4000);
+      }); // store deals with failure
     },
     getUrl (url) {
       return url.replace(/\${indicator}/g, this.query)
@@ -131,5 +136,10 @@ export default {
 .link-group-cards-wrapper {
   margin-left: -0.5rem !important;
   margin-right: -0.5rem !important;
+}
+
+/* small alerts */
+.alert.alert-sm {
+  padding: 0.2rem 0.8rem;
 }
 </style>

@@ -69,5 +69,30 @@ export default {
         }
       });
     });
+  },
+
+  /**
+   * Updates a link group.
+   * @param {Object} linkGroup - The new link group data
+   * @returns {Promise} - The promise that either resovles the or rejects in error
+   */
+  updateLinkGroup (linkGroup) {
+    return new Promise((resolve, reject) => {
+      fetch(`api/linkGroup/${linkGroup._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(linkGroup)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          store.commit('UPDATE_LINK_GROUP', linkGroup);
+          return resolve(response);
+        } else {
+          store.commit('SET_LINK_GROUPS_ERROR', response.text);
+          return reject(response.text);
+        }
+      });
+    });
   }
 };
