@@ -17,7 +17,7 @@ install:
 	$(INSTALL) *.js package.json package-lock.json $(CONT3XTDIR)
 	npm ci
 	npm run $(INSTALL_BUNDLE)
-	$(CP) -pr favicon.ico public $(CONT3XTDIR)
+	$(CP) -pr favicon.ico $(CONT3XTDIR)
 	$(CP) -pr integrations "$(CONT3XTDIR)/"
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
 	(cd $(CONT3XTDIR) ; npm ci --production)
