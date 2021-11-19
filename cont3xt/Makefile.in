@@ -15,10 +15,10 @@ check:
 install:
 	@mkdir -p "$(CONT3XTDIR)" "$(CONT3XTDIR)/vueapp" "$(CONT3XTDIR)/integrations"
 	$(INSTALL) *.js package.json package-lock.json $(CONT3XTDIR)
-	$(INSTALL) integrations/*.js $(CONT3XTDIR)/integrations
 	npm ci
 	npm run $(INSTALL_BUNDLE)
 	$(CP) -pr favicon.ico public $(CONT3XTDIR)
+	$(CP) -pr integrations "$(CONT3XTDIR)/"
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
 	(cd $(CONT3XTDIR) ; npm ci --production)
 
