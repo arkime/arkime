@@ -152,10 +152,10 @@ class Db {
   static async putLinkGroup (id, linkGroup) {
     if (linkGroup._id) { delete linkGroup._id; }
 
-    const results = await Db.client.update({
+    const results = await Db.client.index({
       id: id,
       index: 'cont3xt_links',
-      body: { doc: linkGroup },
+      body: linkGroup,
       refresh: true
     });
 
