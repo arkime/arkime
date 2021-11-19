@@ -95,7 +95,6 @@ app.use('/integrations', (req, res, next) => {
   return missingResource('Not png', req, res);
 });
 
-
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 app.post('/regressionTests/shutdown', (req, res) => {
