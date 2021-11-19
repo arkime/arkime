@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class URLScanIntegration extends Integration {
   name = 'URLScan';
-  icon = 'public/urlscanIcon.png';
+  icon = 'integrations/urlscan/icon.png';
   order = 300;
   itypes = {
     domain: 'fetch',
@@ -37,15 +37,13 @@ class URLScanIntegration extends Integration {
     fields: [
       'total',
       {
-        field: 'took',
-        label: 'took', // TODO fix this in normalize?
+        label: 'took',
         type: 'ms'
       },
       'has_more',
       {
         label: 'results',
         type: 'table',
-        field: 'results',
         fields: [
           {
             label: 'visibility',

@@ -13,14 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
-const axios = require('axios');
+const Integration = require('../../integration.js');
+const whois = require('whois-json');
 
-class RDAPIntegration extends Integration {
-  name = 'RDAP';
+class WhoisIntegration extends Integration {
+  name = 'Whois';
+  icon = 'integrations/whois/icon.png'
+  order = 100;
   itypes = {
-    ip: 'fetchIp'
+    domain: 'fetchDomain'
   };
+
+  card = {
+    title: 'Whois for %{query}',
+    fields: [
+      'updatedDate',
+      'creationDate',
+      'registrar',
+      'registrantOrganization',
+      'adminCountry'
+    ]
+  }
 
   constructor () {
     super();
@@ -28,28 +41,17 @@ class RDAPIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetchIp (user, ip) {
+  async fetchDomain (user, domain) {
     try {
-      const res = await axios.get(`https://rdap.db.ripe.net/ip/${ip}`, {
-        maxRedirects: 5,
-        validateStatus: false,
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': this.userAgent()
-        }
-      });
-      if (res.status === 200) {
-        return { name: res.data.name, link: res.data.links[0].value };
-      } else {
-        return null;
-      }
+      const data = await whois(domain);
+      data._count = 1;
+      return data;
     } catch (err) {
-      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
-      console.log(this.name, ip, err);
+      console.log(this.name, domain, err);
       return undefined;
     }
   }
 }
 
 // eslint-disable-next-line no-new
-new RDAPIntegration();
+new WhoisIntegration();

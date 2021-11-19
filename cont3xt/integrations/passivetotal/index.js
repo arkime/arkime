@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class PassiveTotalIntegration extends Integration {
   name = 'PassiveTotal';
-  icon = 'public/passiveTotalIcon.png';
+  icon = 'integrations/passivetotal/icon.png';
   noStats = true;
   itypes = {
   };
@@ -45,7 +45,7 @@ class PassiveTotalIntegration extends Integration {
 
 class PassiveTotalWhoisIntegration extends Integration {
   name = 'PT Whois';
-  icon = 'public/passiveTotalWhoisIcon.png';
+  icon = 'integrations/passivetotal/iconWhois.png';
   order = 120;
   configName = 'PassiveTotal';
   itypes = {
@@ -121,7 +121,7 @@ class PassiveTotalWhoisIntegration extends Integration {
 
 class PassiveTotalSubdomainsIntegration extends Integration {
   name = 'PT Subdomains';
-  icon = 'public/passiveTotalSubDomainsIcon.png';
+  icon = 'integrations/passivetotal/iconSubDomains.png';
   order = 280;
   configName = 'PassiveTotal';
   itypes = {
@@ -182,7 +182,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 
 class PassiveTotalDNSIntegration extends Integration {
   name = 'PT DNS';
-  icon = 'public/passiveTotalIcon.png';
+  icon = 'integrations/passivetotal/icon.png';
   order = 260;
   configName = 'PassiveTotal';
   itypes = {

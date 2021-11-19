@@ -84,6 +84,17 @@ app.use('/public', express.static(
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
 ), missingResource);
+const integrationsStatic = express.static(
+  path.join(__dirname, '/integrations'),
+  { maxAge: dayMs, fallthrough: false }
+);
+app.use('/integrations', (req, res, next) => {
+  if (req.url.endsWith('png')) {
+    return integrationsStatic(req, res, (err) => { missingResource(err, req, res); });
+  }
+  return missingResource('Not png', req, res);
+});
+
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 

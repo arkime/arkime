@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class VirusTotalIntegration extends Integration {
   name = 'VirusTotal';
-  icon = 'public/virusTotalIcon.png';
+  icon = 'integrations/virustotal/icon.png';
   noStats = true;
   itypes = {
   };
@@ -42,7 +42,7 @@ class VirusTotalIntegration extends Integration {
 
 class VirusTotalDomainIntegration extends Integration {
   name = 'VT Domain';
-  icon = 'public/virusTotalIcon.png';
+  icon = 'integrations/virustotal/icon.png';
   order = 320;
   itypes = {
     domain: 'fetchDomain'
@@ -156,7 +156,7 @@ class VirusTotalDomainIntegration extends Integration {
 
 class VirusTotalIPIntegration extends Integration {
   name = 'VT IP';
-  icon = 'public/virusTotalIcon.png';
+  icon = 'integrations/virustotal/icon.png';
   order = 340;
   itypes = {
     ip: 'fetchIp'
@@ -270,7 +270,7 @@ class VirusTotalIPIntegration extends Integration {
 
 class VirusTotalHashIntegration extends Integration {
   name = 'VT Hash';
-  icon = 'public/virusTotalIcon.png';
+  icon = 'integrations/virustotal/icon.png';
   itypes = {
     hash: 'fetchHash'
   };

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class ThreatstreamIntegration extends Integration {
   name = 'Threatstream';
-  icon = 'public/threatstreamIcon.png';
+  icon = 'integrations/threatstream/icon.png';
   order = 500;
   itypes = {
     domain: 'fetch',

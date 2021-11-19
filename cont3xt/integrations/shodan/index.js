@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class ShodanIntegration extends Integration {
   name = 'Shodan';
-  icon = 'public/shodanIcon.png';
+  icon = 'integrations/shodan/icon.png';
   order = 240;
   itypes = {
     ip: 'fetchIp'

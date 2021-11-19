@@ -44,7 +44,7 @@ class Integration {
     Integration.getConfig = options.getConfig;
     options.integrationsPath = options.integrationsPath ?? path.join(__dirname, '/integrations/');
 
-    glob(options.integrationsPath + 'integration.*.js', (err, files) => {
+    glob(options.integrationsPath + '*/index.js', (err, files) => {
       files.forEach((file) => {
         require(file);
       });

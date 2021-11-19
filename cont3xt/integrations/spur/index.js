@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const Integration = require('../integration.js');
+const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class SpurIntegration extends Integration {
   name = 'Spur';
-  icon = 'public/spurIcon.png';
+  icon = 'integrations/spur/icon.png';
   order = 200;
   itypes = {
     ip: 'fetchIp'
