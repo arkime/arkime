@@ -56,8 +56,8 @@ class DNSIntegration extends Integration {
       for (const query of ['A', 'AAAA', 'NS', 'MX', 'TXT', 'CAA', 'SOA']) {
         queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`);
       }
-      queries.dmarcTXT = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`);
-      queries.bimiTXT = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`);
+      queries.DMARC = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`);
+      queries.BIMI = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`);
 
       const result = {};
       // Wait for them to finish
@@ -67,6 +67,14 @@ class DNSIntegration extends Integration {
         if (data.Answer) {
           result[query].Answer = data.Answer;
         }
+      }
+
+      if (result?.CAA?.Answer) {
+        result.CAA.Answer.forEach(item => {
+          const data = item.data.replace(/ /g, '');
+          const len = parseInt(`0x${data.slice(6,8)}`);
+          item.data = `${parseInt(data.slice(4,6))} ${Buffer.from(data.slice(8, 8+len*2), 'hex').toString()} ${Buffer.from(data.slice(8+len*2), 'hex').toString()}`;
+        });
       }
       return result;
     } catch (err) {
