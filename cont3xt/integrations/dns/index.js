@@ -72,8 +72,8 @@ class DNSIntegration extends Integration {
       if (result?.CAA?.Answer) {
         result.CAA.Answer.forEach(item => {
           const data = item.data.replace(/ /g, '');
-          const len = parseInt(`0x${data.slice(6,8)}`);
-          item.data = `${parseInt(data.slice(4,6))} ${Buffer.from(data.slice(8, 8+len*2), 'hex').toString()} ${Buffer.from(data.slice(8+len*2), 'hex').toString()}`;
+          const len = parseInt(`0x${data.slice(6, 8)}`);
+          item.data = `${parseInt(data.slice(4, 6))} ${Buffer.from(data.slice(8, 8 + len * 2), 'hex').toString()} ${Buffer.from(data.slice(8 + len * 2), 'hex').toString()}`;
         });
       }
       return result;
