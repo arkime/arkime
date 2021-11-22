@@ -160,6 +160,27 @@ class ArkimeUtil {
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
   }
+
+  static parseTimeStr (time) {
+    if (typeof time !== 'string') {
+      return time;
+    }
+
+    switch (time[time.length - 1]) {
+    case 'w':
+      return parseInt(time.slice(0, -1)) * 60 * 60 * 24 * 7;
+    case 'd':
+      return parseInt(time.slice(0, -1)) * 60 * 60 * 24;
+    case 'h':
+      return parseInt(time.slice(0, -1)) * 60 * 60;
+    case 'm':
+      return parseInt(time.slice(0, -1)) * 60;
+    case 's':
+      return parseInt(time.slice(0, -1));
+    default:
+      return parseInt(time);
+    }
+  }
 }
 
 module.exports = ArkimeUtil;

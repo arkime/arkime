@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
 const glob = require('glob');
 const path = require('path');
 const extractDomain = require('extract-domain');
@@ -77,7 +78,7 @@ class Integration {
     //   cacheTimeout in cont3xt section
     //   cacheTimeout in integration code
     //   60 minutes
-    integration.cacheTimeout = parseInt(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? 60 * 60 * 1000)));
+    integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
     if (Integration.debug > 0) {
       console.log('cacheTimeout', integration.name, integration.cacheTimeout);
     }

@@ -28,7 +28,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 class ArkimeCache {
   constructor (options) {
     this.cacheSize = parseInt(options.cacheSize ?? 100000);
-    this.cacheTimeout = parseInt(options.cacheTimeout ?? 24 * 60 * 60);
+    this.cacheTimeout = ArkimeUtil.parseTimeStr(options.cacheTimeout ?? 24 * 60 * 60);
     this.cache = LRU({ max: this.cacheSize });
   }
 
