@@ -10,7 +10,7 @@
         @click="refresh"
         variant="outline-info"
         class="ml-1 mt-1 float-right"
-        v-b-tooltip.hover="`Data created at ${$options.filters.dateString(getIntegrationData.data._createTime)}`">
+        v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._createTime)}`">
         <span class="fa fa-refresh fa-fw" />
       </b-button>
     </h5>

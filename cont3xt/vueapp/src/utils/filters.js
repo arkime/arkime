@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import moment from 'moment-timezone';
 
 /**
  * Removes time component of an ISO 8601 date string
@@ -26,8 +27,8 @@ Vue.filter('removeTime', removeTime);
  */
 export const dateString = function (ms) {
   if (isNaN(ms)) { return 'Invalid date'; }
-  const date = new Date(ms);
-  return date.toString();
+  const format = /* showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : */ 'YYYY/MM/DD HH:mm:ss z';
+  return moment.tz(ms, 'utc').format(format);
 };
 Vue.filter('dateString', dateString);
 

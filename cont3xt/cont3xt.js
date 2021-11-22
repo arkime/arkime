@@ -337,6 +337,12 @@ async function main () {
   processArgs(process.argv);
   try {
     internals.config = ini.parseSync(internals.configFile);
+    if (internals.debug === 0) {
+      internals.debug = parseInt(getConfig('cont3xt', 'debug', 0));
+    }
+    if (internals.debug) {
+      console.log('Debug Level', internals.debug);
+    }
   } catch (err) {
     console.log(err);
     process.exit();

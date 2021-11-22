@@ -123,7 +123,7 @@
               class="mr-2 mb-1">
               <template #prepend>
                 <b-input-group-text>
-                  Num Days
+                  Days
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -140,14 +140,14 @@
               class="mr-2 mb-1">
               <template #prepend>
                 <b-input-group-text>
-                  Num Hours
+                  Hours
                 </b-input-group-text>
               </template>
               <b-form-input
                 type="number"
                 debounce="400"
                 :value="numHours"
-                style="width:80px"
+                style="width:70px"
                 placeholder="Number of Hours"
                 @input="updateVars('numHours', $event)"
               />
@@ -164,7 +164,7 @@
                 type="text"
                 debounce="400"
                 :value="startDate"
-                style="width:190px"
+                style="width:165px"
                 placeholder="Start Date"
                 @input="updateVars('startDate', $event)"
               />
@@ -181,7 +181,7 @@
                 type="text"
                 debounce="400"
                 :value="stopDate"
-                style="width:190px"
+                style="width:165px"
                 placeholder="Stop Date"
                 @input="updateVars('stopDate', $event)"
               />
@@ -268,8 +268,8 @@ export default {
     return {
       error: '',
       numDays: 7, // 1 week
-      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString(), // 7 days ago
-      stopDate: new Date().toISOString(), // now
+      startDate: new Date(new Date().getTime() - (3600000 * 24 * 7)).toISOString().slice(0, -5) + 'Z', // 7 days ago
+      stopDate: new Date().toISOString().slice(0, -5) + 'Z', // now
       numHours: 7 * 24, // 1 week
       results: {},
       scrollPx: 0,
@@ -412,18 +412,18 @@ export default {
       switch (updated) {
       case 'numDays':
         this.numHours = this.numDays * 24;
-        this.stopDate = new Date().toISOString();
-        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        this.stopDate = new Date().toISOString().slice(0, -5) + 'Z';
+        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
         break;
       case 'numHours':
         this.numDays = this.numHours / 24;
         this.stopDate = new Date().toISOString();
-        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        this.startDate = new Date(new Date().getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
         break;
       case 'stopDate':
         this.numDays = (stopMs - startMs) / (3600000 * 24);
         this.numHours = this.numDays * 24;
-        this.startDate = new Date(new Date(this.stopDate).getTime() - (3600000 * 24 * this.numDays)).toISOString();
+        this.startDate = new Date(new Date(this.stopDate).getTime() - (3600000 * 24 * this.numDays)).toISOString().slice(0, -5) + 'Z';
         break;
       case 'startDate':
         this.numDays = Math.floor((stopMs - startMs) / (3600000 * 24));

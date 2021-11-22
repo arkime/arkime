@@ -2,6 +2,8 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import VueClipboard from 'vue-clipboard2';
+import VueMoment from 'vue-moment';
+import moment from 'moment-timezone';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
@@ -19,6 +21,7 @@ Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
 Vue.use(VueClipboard);
+Vue.use(VueMoment, { moment });
 
 /* eslint-disable no-new */
 new Vue({
