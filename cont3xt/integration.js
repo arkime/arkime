@@ -106,7 +106,7 @@ class Integration {
     }
 
     if (Integration.debug > 0) {
-      console.log(`REGISTER ${integration.name} cacheTimeout:${integration.cacheTimeout/1000}s cacheable:${integration.cacheable} sharedCache:${integration.sharedCache} order:${integration.order} itypes:${Object.keys(integration.itypes)}`);
+      console.log(`REGISTER ${integration.name} cacheTimeout:${integration.cacheTimeout / 1000}s cacheable:${integration.cacheable} sharedCache:${integration.sharedCache} order:${integration.order} itypes:${Object.keys(integration.itypes)}`);
     }
 
     integration.normalizeCard();

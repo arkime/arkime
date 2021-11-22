@@ -39,11 +39,11 @@ class TwilioIntegration extends Integration {
     title: 'Twilio for %{query}',
     fields: [
       'phone_number',
-      { 
+      {
         label: 'caller_name',
         type: 'json'
       },
-      { 
+      {
         label: 'carrier',
         type: 'json'
       }
