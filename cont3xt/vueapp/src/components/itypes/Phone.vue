@@ -12,17 +12,26 @@
           class="align-self-center mr-1"
         />
       </div>
+      <div class="d-flex align-self-center justify-content-end">
+        <integration-btns
+          :data="data"
+          :itype="itype"
+          :value="initialQuery"
+        />
+      </div>
     </div>
   </b-card>
 </template>
 
 <script>
 import Cont3xtField from '@/utils/Field';
+import IntegrationBtns from '@/components/integrations/IntegrationBtns';
 
 export default {
   name: 'Cont3xtPhone',
   components: {
-    Cont3xtField
+    Cont3xtField,
+    IntegrationBtns
   },
   props: {
     data: { // the data returned from cont3xt search

@@ -53,9 +53,16 @@ class Integration {
   }
 
   static register (integration) {
-    if (Integration.debug > 0) {
-      console.log('REGISTER', integration.name);
+    if (typeof (integration.name) !== 'string') {
+      console.log('Missing .name', integration);
+      return;
     }
+
+    if (typeof (integration.itypes) !== 'object') {
+      console.log('Missing .itypes object', integration);
+      return;
+    }
+
     integration.cacheable = integration.cacheable ?? true;
     integration.noStats = integration.noStats ?? false;
     integration.order = integration.order ?? 10000;
@@ -79,35 +86,27 @@ class Integration {
     //   cacheTimeout in integration code
     //   60 minutes
     integration.cacheTimeout = ArkimeUtil.parseTimeStr(integration.getConfig('cacheTimeout', Integration.getConfig('cont3xt', 'cacheTimeout', integration.cacheTimeout ?? '1h'))) * 1000;
-    if (Integration.debug > 0) {
-      console.log('cacheTimeout', integration.name, integration.cacheTimeout);
-    }
 
     // cachePolicy
     integration.cachePolicy = integration.getConfig('cachePolicy', Integration.getConfig('cont3xt', 'cachePolicy', integration.cachePolicy ?? 'shared'));
     switch (integration.cachePolicy) {
     case 'none':
       integration.cacheable = false;
+      integration.sharedCache = false;
       break;
     case 'user':
-      integration.sharedCache = 0;
+      integration.sharedCache = false;
       break;
     case 'shared':
-      integration.sharedCache = 1;
+      integration.sharedCache = true;
       break;
     default:
       console.log('Unknown cache policy', integration);
       return;
     }
 
-    if (typeof (integration.itypes) !== 'object') {
-      console.log('Missing .itypes object', integration);
-      return;
-    }
-
-    if (typeof (integration.name) !== 'string') {
-      console.log('Missing .name', integration);
-      return;
+    if (Integration.debug > 0) {
+      console.log(`REGISTER ${integration.name} cacheTimeout:${integration.cacheTimeout/1000}s cacheable:${integration.cacheable} sharedCache:${integration.sharedCache} order:${integration.order} itypes:${Object.keys(integration.itypes)}`);
     }
 
     integration.normalizeCard();
@@ -196,7 +195,9 @@ class Integration {
 
   static async runIntegrationsList (shared, query, itype, integrations) {
     shared.total += integrations.length;
-    console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
+    if (Integration.debug > 0) {
+      console.log('RUNNING', itype, query, integrations.map(integration => integration.name));
+    }
 
     const writeOne = (integration, response) => {
       if (integration.addMoreIntegrations) {
@@ -219,7 +220,6 @@ class Integration {
     let normalizedQuery = query;
     if (itype === 'ip') {
       normalizedQuery = ipaddr.parse(query).toNormalizedString();
-      console.log('normalized', query, '->', normalizedQuery);
     }
 
     for (const integration of integrations) {
@@ -280,6 +280,10 @@ class Integration {
 
   /**
    * The search api to go against integrations
+   *
+   * body.query String to actually query
+   * body.skipIntegrations Array of integration names to skip
+   * body.skipCache Don't use the cache
    */
   static async apiSearch (req, res, next) {
     if (!req.body.query) {
