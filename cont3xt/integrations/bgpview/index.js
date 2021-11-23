@@ -16,49 +16,21 @@
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
-class BuiltWithIntegration extends Integration {
-  name = 'BuiltWith';
-  icon = 'integrations/builtwith/icon.png';
+class BGPViewIntegration extends Integration {
+  name = 'BGPView';
+  icon = 'integrations/bgpview/icon.png';
   order = 300;
   cacheTimeout = '1w';
   itypes = {
-    domain: 'fetchDomain'
+    ip: 'fetch'
   };
 
-  userSettings = {
-    BuiltWithKey: {
-      help: 'Your BuiltWith Key'
-    }
-  }
-
   card = {
-    title: 'BuiltWith for %{query}',
+    title: 'BGPView for %{query}',
     fields: [
-      'domain',
       {
-        label: 'first',
-        type: 'seconds'
-      },
-      {
-        label: 'last',
-        type: 'seconds'
-      },
-      {
-        label: 'groups',
-        type: 'table',
-        fields: [
-          'name',
-          'live',
-          'dead',
-          {
-            label: 'latest',
-            type: 'seconds'
-          },
-          {
-            label: 'oldest',
-            type: 'seconds'
-          }
-        ]
+        label: 'data',
+        type: 'json'
       }
     ]
   }
@@ -69,26 +41,21 @@ class BuiltWithIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetchDomain (user, query) {
+  async fetch (user, query) {
     try {
-      const key = this.getUserConfig(user, 'BuiltWithKey');
-      if (!key) {
-        return undefined;
-      }
-
-      const result = await axios.get(`https://api.builtwith.com/free1/api.json?KEY=${key}&LOOKUP=${query}`, {
+      const result = await axios.get(`https://api.bgpview.io/ip/${query}`, {
         headers: {
           'User-Agent': this.userAgent()
         }
       });
-      result.data._count = result.data.groups?.length ?? 0;
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
+      console.log(this.name, query, err);
       return null;
     }
   }
 }
 
 // eslint-disable-next-line no-new
-new BuiltWithIntegration();
+new BGPViewIntegration();

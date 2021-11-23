@@ -74,7 +74,12 @@ class AlienVaultOTXIntegration extends Integration {
         })).data;
       }
 
-      result._count = 1;
+      result._count = 0;
+      result._count += result.general?.pulse_info?.count ?? 0;
+      result._count += result.malware?.count ?? 0;
+      if (result._count > 0) {
+        result._severity = 'high';
+      }
       return result;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
