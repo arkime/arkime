@@ -19,6 +19,7 @@ Card Description - an object of the following
         * table - there will be a fields element
         * array - the field var will point to an array, display 1 per line unless join set
         * ms - a ms time value
+        * seconds - a second time value
         * json - just display raw json, call in JSON.stringify(blah, false, 2)
       * defang - when true defang the string, change http to hXXp and change . to [.]
       * pivot - when set this field should be added to action menu for table entry that you can replace query with

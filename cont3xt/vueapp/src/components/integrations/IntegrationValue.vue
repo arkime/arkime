@@ -64,6 +64,14 @@
     <template v-else-if="field.type === 'json'">
       <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
     </template> <!-- /json field -->
+    <!-- ms field -->
+    <template v-else-if="field.type === 'ms'">
+      {{ this.$options.filters.dateString(value.value) }}
+    </template> <!-- /ms field -->
+    <!-- seconds field -->
+    <template v-else-if="field.type === 'seconds'">
+      {{ this.$options.filters.dateString(value.value * 1000) }}
+    </template> <!-- /seconds field -->
     <!-- default string field -->
     <template v-else>
       <template v-if="field.pivot">
