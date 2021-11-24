@@ -16,17 +16,18 @@
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
-class MalwareBazaarIntegration extends Integration {
-  name = 'MalwareBazaar';
-  icon = 'integrations/malwarebazaar/icon.png';
+class URLHausIntegration extends Integration {
+  name = 'URLHaus';
+  icon = 'integrations/urlhaus/icon.png';
   order = 300;
   cacheTimeout = '1w';
   itypes = {
-    hash: 'fetch'
+    domain: 'fetch',
+    ip: 'fetch'
   };
 
   card = {
-    title: 'MalwareBazaar for %{query}',
+    title: 'URLHaus for %{query}',
     fields: [
     ]
   }
@@ -39,7 +40,7 @@ class MalwareBazaarIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const result = await axios.post('https://mb-api.abuse.ch/api/v1/', `query=get_info&hash=${query}`, {
+      const result = await axios.post('https://urlhaus-api.abuse.ch/v1/host/', `host=${query}`, {
         headers: {
           'User-Agent': this.userAgent()
         }
@@ -59,4 +60,4 @@ class MalwareBazaarIntegration extends Integration {
 }
 
 // eslint-disable-next-line no-new
-new MalwareBazaarIntegration();
+new URLHausIntegration();
