@@ -97,7 +97,7 @@ class AlienVaultOTXIntegration extends Integration {
   }
 
   fetchHash (user, hash) {
-    return this.fetch(user, 'hash', hash);
+    return this.fetch(user, 'file', hash);
   }
 
   fetchUrl (user, url) {
