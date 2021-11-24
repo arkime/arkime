@@ -180,13 +180,23 @@ class Integration {
         }
       }
 
+      // User can override card display
+      let card = integration.card;
+      const cardstr = integration.getUserConfig(req.user, integration.configName ?? integration.name + 'Card');
+      if (cardstr) {
+        card = JSON.parse(cardstr);
+      }
+
+      // User can override order
+      const order = integration.getUserConfig(req.user, integration.configName ?? integration.name + 'Order', integration.order);
+
       results[integration.name] = {
         doable: doable,
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
-        card: integration.card,
-        order: integration.order
+        card: card,
+        order: order
       };
     }
 
