@@ -18,6 +18,7 @@ Card Description - an object of the following
         * url - a url that should be made clickable
         * table - there will be a fields element
         * array - the field var will point to an array, display 1 per line unless join set
+        * date - a date value
         * ms - a ms time value
         * seconds - a second time value
         * json - just display raw json, call in JSON.stringify(blah, false, 2)

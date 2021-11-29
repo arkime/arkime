@@ -43,7 +43,10 @@ class AbuseIPDBIntegration extends Integration {
       },
       'totalReports',
       'numDistinctUsers',
-      'lastReportedAt'
+      {
+        label: 'lastReportedAt',
+        type: 'date'
+      }
     ]
   }
 

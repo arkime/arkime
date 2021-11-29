@@ -37,8 +37,7 @@ class URLScanIntegration extends Integration {
     fields: [
       'total',
       {
-        label: 'took',
-        type: 'ms'
+        label: 'took'
       },
       'has_more',
       {

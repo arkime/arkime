@@ -459,7 +459,7 @@ class Integration {
     }
     const iresult = [];
     for (const itype of Object.keys(itypeStats)) {
-      iresult.push({ ...itypeStats[itype], name: itype});
+      iresult.push({ ...itypeStats[itype], name: itype });
     }
     res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result, itypeStats: iresult });
   }

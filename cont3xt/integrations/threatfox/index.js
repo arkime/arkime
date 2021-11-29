@@ -40,7 +40,7 @@ class ThreatFoxIntegration extends Integration {
 
   async fetch (user, body) {
     try {
-      const result = await axios.post(`https://threatfox-api.abuse.ch/api/v1/`, body, {
+      const result = await axios.post('https://threatfox-api.abuse.ch/api/v1/', body, {
         headers: {
           'User-Agent': this.userAgent()
         }
@@ -50,7 +50,7 @@ class ThreatFoxIntegration extends Integration {
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
-      console.log(this.name, query, err);
+      console.log(this.name, body, err);
       return null;
     }
   }
