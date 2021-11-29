@@ -26,6 +26,8 @@ const ipaddr = require('ipaddr.js');
 const itypeStats = {};
 
 class Integration {
+  static NoResult = Symbol('NoResult');
+
   static debug = 0;
   static cache;
   static getConfig;
@@ -224,7 +226,11 @@ class Integration {
         });
       }
 
-      shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));
+      if (response === Integration.NoResult) {
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: { _createTime: Date.now() } }));
+      } else {
+        shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));
+      }
       shared.res.write(',\n');
     };
 
@@ -244,18 +250,7 @@ class Integration {
       const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
       const stats = integration.stats;
       if (itypeStats[itype] === undefined) {
-        itypeStats[itype] = {
-          total: 0,
-          cacheLookup: 0,
-          cacheFound: 0,
-          cacheGood: 0,
-          cacheRecentAvgMS: 0.0,
-          directLookup: 0,
-          directFound: 0,
-          directGood: 0,
-          directError: 0,
-          directRecentAvgMS: 0.0
-        };
+        makeITypeStats(itype);
       }
       const istats = itypeStats[itype];
 
@@ -297,14 +292,18 @@ class Integration {
           stats.directFound++;
           istats.directFound++;
           shared.sent++;
-          if (response) {
+          if (response === Integration.NoResult) {
+            writeOne(integration, response);
+          } else if (response) {
             stats.directGood++;
             istats.directGood++;
             response._createTime = Date.now();
             writeOne(integration, response);
-            if (response && Integration.cache && integration.cacheable) {
+            if (Integration.cache && integration.cacheable) {
               Integration.cache.set(cacheKey, response);
             }
+          } else {
+            // console.log('ALW null', integration.name, cacheKey);
           }
           writeDone();
         })
@@ -392,6 +391,9 @@ class Integration {
     }
 
     const stats = integration.stats;
+    if (itypeStats[itype] === undefined) {
+      makeITypeStats(itype);
+    }
     const istats = itypeStats[itype];
     stats.total++;
     istats.total++;
@@ -404,7 +406,9 @@ class Integration {
         updateTime(stats, istats, Date.now() - dStartTime, 'direct');
         stats.directFound++;
         istats.directFound++;
-        if (response) {
+        if (response === Integration.NoResult) {
+          res.send({ success: true, data: { _createTime: Date.now() }, _query: query });
+        } else if (response) {
           stats.directGood++;
           istats.directGood++;
           response._createTime = Date.now();
@@ -549,6 +553,21 @@ function updateTime (stats, istats, diff, prefix) {
 
   const ilookup = Math.min(stats[prefix + 'Lookup'], 100);
   istats[prefix + 'RecentAvgMS'] = (istats[prefix + 'RecentAvgMS'] * (ilookup - 1) + diff) / ilookup;
+};
+
+function makeITypeStats (itype) {
+  itypeStats[itype] = {
+    total: 0,
+    cacheLookup: 0,
+    cacheFound: 0,
+    cacheGood: 0,
+    cacheRecentAvgMS: 0.0,
+    directLookup: 0,
+    directFound: 0,
+    directGood: 0,
+    directError: 0,
+    directRecentAvgMS: 0.0
+  };
 };
 
 module.exports = Integration;

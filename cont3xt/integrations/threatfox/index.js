@@ -45,8 +45,16 @@ class ThreatFoxIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
-      console.log('ALW', result.data);
-      result.data._count = result.data.data.length;
+
+      if (result.data.query_status.startsWith('no_result')) {
+        return Integration.NoResult;
+      }
+
+      if (result.data.query_status === 'ok') {
+        result.data._count = result.data.data.length;
+      } else {
+        result.data._count = 0;
+      }
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

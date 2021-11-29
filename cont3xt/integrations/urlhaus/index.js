@@ -45,8 +45,13 @@ class URLHausIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+
+      if (result.data.query_status.startsWith('no_result')) {
+        return Integration.NoResult;
+      }
+
       if (result.data.query_status === 'ok') {
-        result.data._count = 1;
+        result.data._count = result.data.data.length;
       } else {
         result.data._count = 0;
       }

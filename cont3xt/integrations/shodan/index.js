@@ -149,7 +149,7 @@ class ShodanIntegration extends Integration {
       response.data._count = response.data.data.length;
       return response.data;
     } catch (err) {
-      if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
+      if (err?.response?.status === 404) { return Integration.NoResult; }
       console.log(this.name, ip, err);
       return null;
     }

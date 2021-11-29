@@ -82,6 +82,8 @@ class AlienVaultOTXIntegration extends Integration {
       }
       return result;
     } catch (err) {
+      if (err?.response?.status === 400) { return Integration.NoResult; }
+
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
       console.log(this.name, type, query, err);
       return null;
