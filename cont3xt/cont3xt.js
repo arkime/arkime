@@ -296,15 +296,19 @@ function setupAuth () {
     passwordSecret: getConfig('cont3xt', 'passwordSecret', 'password')
   });
 
+  const dbUrl = getConfig('cont3xt', 'dbUrl');
   const es = getConfig('cont3xt', 'elasticsearch', 'http://localhost:9200').split(',');
+  const usersUrl = getConfig('cont3xt', 'usersUrl');
+  let usersEs = getConfig('cont3xt', 'usersElasticsearch');
+
   Db.initialize({
     debug: internals.debug,
+    url: dbUrl,
     node: es,
     apiKey: getConfig('cont3xt', 'elasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'elasticsearchBasicAuth')
   });
 
-  let usersEs = getConfig('cont3xt', 'usersElasticsearch');
   if (usersEs) {
     usersEs = usersEs.split(',');
   } else {
@@ -313,6 +317,7 @@ function setupAuth () {
 
   User.initialize({
     debug: internals.debug,
+    url: usersUrl,
     node: usersEs,
     prefix: getConfig('cont3xt', 'usersPrefix', ''),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
@@ -368,9 +373,6 @@ async function main () {
       console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
     })
     .listen(getConfig('cont3xt', 'port', 3218));
-
-  /* setTimeout(() => { Integration.search('ip', '10.10.10.10'); }, 1000);
-  setTimeout(() => { Integration.search('ip', '8.8.8.8'); }, 1000); */
 }
 
 main();

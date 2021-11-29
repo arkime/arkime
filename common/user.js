@@ -69,11 +69,12 @@ class User {
    * Initialize the User subsystem
    */
   static initialize (options) {
+    if (options.debug > 1) {
+      console.log('User.initialize', options);
+    }
     User.debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
 
-    // options.url = 'lmdb://./lmdb-users';
-    // options.url = 'redis://localhost:6379/1';
     if (!options.url) {
       User.implementation = new UserESImplementation(options);
     } else if (options.url.startsWith('lmdb')) {
