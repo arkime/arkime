@@ -23,6 +23,8 @@ const path = require('path');
 const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 
+const itypeStats = {};
+
 class Integration {
   static debug = 0;
   static cache;
@@ -60,6 +62,12 @@ class Integration {
 
     if (typeof (integration.itypes) !== 'object') {
       console.log('Missing .itypes object', integration);
+      return;
+    }
+
+    // Can disable a integration globally
+    if (integration.getConfig('disabled', false) === 'true') {
+      console.log(integration.name, 'disabled');
       return;
     }
 
@@ -182,13 +190,13 @@ class Integration {
 
       // User can override card display
       let card = integration.card;
-      const cardstr = integration.getUserConfig(req.user, integration.configName ?? integration.name + 'Card');
+      const cardstr = integration.getUserConfig(req.user, integration.name + 'Card');
       if (cardstr) {
         card = JSON.parse(cardstr);
       }
 
       // User can override order
-      const order = integration.getUserConfig(req.user, integration.configName ?? integration.name + 'Order', integration.order);
+      const order = integration.getUserConfig(req.user, integration.name + 'Order', integration.order);
 
       results[integration.name] = {
         doable: doable,
@@ -235,6 +243,21 @@ class Integration {
     for (const integration of integrations) {
       const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
       const stats = integration.stats;
+      if (itypeStats[itype] === undefined) {
+        itypeStats[itype] = {
+          total: 0,
+          cacheLookup: 0,
+          cacheFound: 0,
+          cacheGood: 0,
+          cacheRecentAvgMS: 0.0,
+          directLookup: 0,
+          directFound: 0,
+          directGood: 0,
+          directError: 0,
+          directRecentAvgMS: 0.0
+        };
+      }
+      const istats = itypeStats[itype];
 
       if (shared.skipIntegrations.includes(integration.name)) {
         shared.sent++;
@@ -243,16 +266,20 @@ class Integration {
       }
 
       stats.total++;
+      istats.total++;
 
       if (!shared.skipCache && Integration.cache && integration.cacheable) {
         stats.cacheLookup++;
+        istats.cacheLookup++;
         const cStartTime = Date.now();
         const response = await Integration.cache.get(cacheKey);
-        updateTime(stats, Date.now() - cStartTime, 'cache');
+        updateTime(stats, istats, Date.now() - cStartTime, 'cache');
         if (response) {
           stats.cacheFound++;
+          istats.cacheFound++;
           if (Date.now() - response._createTime < integration.cacheTimeout) {
             stats.cacheGood++;
+            istats.cacheGood++;
             shared.sent++;
             writeOne(integration, response);
             writeDone();
@@ -262,14 +289,17 @@ class Integration {
       }
 
       stats.directLookup++;
+      istats.directLookup++;
       const dStartTime = Date.now();
       integration[integration.itypes[itype]](shared.user, normalizedQuery)
         .then(response => {
-          updateTime(stats, Date.now() - dStartTime, 'direct');
+          updateTime(stats, istats, Date.now() - dStartTime, 'direct');
           stats.directFound++;
+          istats.directFound++;
           shared.sent++;
           if (response) {
             stats.directGood++;
+            istats.directGood++;
             response._createTime = Date.now();
             writeOne(integration, response);
             if (response && Integration.cache && integration.cacheable) {
@@ -282,6 +312,7 @@ class Integration {
           console.log(integration.name, itype, query, err);
           shared.sent++;
           stats.directError++;
+          istats.directError++;
           shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, failed: true }));
           shared.res.write(',\n');
         });
@@ -361,16 +392,21 @@ class Integration {
     }
 
     const stats = integration.stats;
+    const istats = itypeStats[itype];
     stats.total++;
+    istats.total++;
 
     stats.directLookup++;
+    istats.directLookup++;
     const dStartTime = Date.now();
     integration[integration.itypes[itype]](req.user, query)
       .then(response => {
-        updateTime(stats, Date.now() - dStartTime, 'direct');
+        updateTime(stats, istats, Date.now() - dStartTime, 'direct');
         stats.directFound++;
+        istats.directFound++;
         if (response) {
           stats.directGood++;
+          istats.directGood++;
           response._createTime = Date.now();
           res.send({ success: true, data: response, _query: query });
           if (response && Integration.cache && integration.cacheable) {
@@ -382,6 +418,7 @@ class Integration {
       .catch(err => {
         console.log(integration.name, itype, query, err);
         stats.directError++;
+        istats.directError++;
         res.status(500).send({ success: false, _query: query });
       });
   }
@@ -420,7 +457,11 @@ class Integration {
       if (integration.noStats) { continue; }
       result.push({ ...integration.stats, name: integration.name });
     }
-    res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result });
+    const iresult = [];
+    for (const itype of Object.keys(itypeStats)) {
+      iresult.push({ ...itypeStats[itype], name: itype});
+    }
+    res.send({ success: true, startTime: Integration.cont3xtStartTime, stats: result, itypeStats: iresult });
   }
 
   getConfig (k, d) {
@@ -502,9 +543,12 @@ class Integration {
 }
 
 // Calculate rolling average over at most 100 items
-function updateTime (stats, diff, prefix) {
+function updateTime (stats, istats, diff, prefix) {
   const lookup = Math.min(stats[prefix + 'Lookup'], 100);
   stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
+
+  const ilookup = Math.min(stats[prefix + 'Lookup'], 100);
+  istats[prefix + 'RecentAvgMS'] = (istats[prefix + 'RecentAvgMS'] * (ilookup - 1) + diff) / ilookup;
 };
 
 module.exports = Integration;

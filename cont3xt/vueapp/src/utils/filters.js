@@ -23,7 +23,7 @@ Vue.filter('removeTime', removeTime);
  * '{{ 1524680821 | dateString }}'
  * this.$options.filters.dateString(1524680821);
  *
- * @returns {string} - Readable string without time
+ * @returns {string} - Our common date string display
  */
 export const dateString = function (ms) {
   if (isNaN(ms)) { return 'Invalid date'; }
@@ -31,6 +31,22 @@ export const dateString = function (ms) {
   return moment.tz(ms, 'utc').format(format);
 };
 Vue.filter('dateString', dateString);
+
+/**
+ * Parsing various date strings and converts to our common format
+ *
+ * @example
+ * '{{ 1524680821 | dateString }}'
+ * this.$options.filters.dateString(1524680821);
+ *
+ * @returns {string} - Our common date string display
+ */
+export const reDateString = function (str) {
+  if (str === undefined) { return 'Invalid date'; }
+  const format = /* showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : */ 'YYYY/MM/DD HH:mm:ss z';
+  return moment(str).format(format);
+};
+Vue.filter('reDateString', reDateString);
 
 /**
  * Determines the RIR based on a link.

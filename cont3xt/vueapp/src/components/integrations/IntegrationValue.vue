@@ -72,6 +72,10 @@
     <template v-else-if="field.type === 'seconds'">
       {{ this.$options.filters.dateString(value.value * 1000) }}
     </template> <!-- /seconds field -->
+    <!-- date field -->
+    <template v-else-if="field.type === 'date'">
+      {{ this.$options.filters.reDateString(value.value) }}
+    </template> <!-- /seconds field -->
     <!-- default string field -->
     <template v-else>
       <template v-if="field.pivot">

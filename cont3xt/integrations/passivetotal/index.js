@@ -216,11 +216,13 @@ class PassiveTotalDNSIntegration extends Integration {
           },
           {
             label: 'First Seen',
-            field: 'firstSeen'
+            field: 'firstSeen',
+            type: 'date'
           },
           {
             label: 'Last Seen',
-            field: 'lastSeen'
+            field: 'lastSeen',
+            type: 'date'
           }
         ]
       }
