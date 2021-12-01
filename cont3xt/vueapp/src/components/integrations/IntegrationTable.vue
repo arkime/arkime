@@ -17,12 +17,12 @@
           :field="field"
           :truncate="true"
           :hide-label="true"
-          v-if="tableData[index - 1]"
-          :data="tableData[index - 1]"
+          v-if="data[index - 1]"
+          :data="data[index - 1]"
         />
       </td>
     </tr>
-    <tr v-if="tableData.length > tableLen || tableLen > size">
+    <tr v-if="data.length > tableLen || tableLen > size">
       <td :colspan="fields.length">
         <div class="d-flex justify-content-between">
           <a
@@ -34,16 +34,16 @@
           <a
             @click="showAll"
             class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen >= tableData.length}">
+            :class="{'disabled':tableLen >= data.length}">
             show ALL
-            <span v-if="tableData.length > 2000">
+            <span v-if="data.length > 2000">
               (careful)
             </span>
           </a>
           <a
             @click="showMore"
             class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen >= tableData.length}">
+            :class="{'disabled':tableLen >= data.length}">
             show more...
           </a>
         </div>
@@ -67,7 +67,7 @@ export default {
       required: true
     },
     tableData: { // the data to display in the table
-      type: Array,
+      type: [Array, Object], // if object, turns the object into an array of length 1
       required: true
     },
     size: { // the rows of data to display initially and increment or
@@ -77,12 +77,13 @@ export default {
   },
   data () {
     return {
-      tableLen: Math.min(this.tableData.length, this.size)
+      data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
+      tableLen: Math.min(this.tableData.length || 1, this.size)
     };
   },
   methods: {
     showMore () {
-      this.tableLen = Math.min(this.tableLen + this.size, this.tableData.length);
+      this.tableLen = Math.min(this.tableLen + this.size, this.data.length);
     },
     showLess () {
       this.tableLen = Math.max(this.tableLen - this.size, this.size);
@@ -90,7 +91,7 @@ export default {
     showAll () {
       this.$store.commit('SET_RENDERING_TABLE', true);
       setTimeout(() => { // need settimeout for rendering to take effect
-        this.tableLen = this.tableData.length;
+        this.tableLen = this.data.length;
       }, 100);
     }
   },

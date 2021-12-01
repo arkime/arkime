@@ -6,6 +6,15 @@
       opacity="0.9"
       :show="loading"
       variant="transparent">
+
+      <!-- loading overlay template -->
+      <template #overlay>
+        <div class="text-center margin-for-nav-and-progress">
+          <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+          <p>Loading stats...</p>
+        </div>
+      </template> <!-- /loading overlay template -->
+
       <!-- search -->
       <b-input-group class="mb-3">
         <template #prepend>
@@ -19,26 +28,47 @@
           placeholder="Search by name"
         />
       </b-input-group> <!-- /search -->
-      <!-- table -->
-      <b-table
-        small
-        hover
-        striped
-        show-empty
-        :items="data"
-        :filter="filter"
-        :fields="fields"
-        :filter-included-fields="filterOn"
-        empty-text="There are no integrations to show stats for"
-        :empty-filtered-text="`There are no integrations that match the name: ${filter}`">
-      </b-table> <!-- /table -->
-      <!-- loading overlay template -->
-      <template #overlay>
-        <div class="text-center margin-for-nav-and-progress">
-          <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-          <p>Loading stats...</p>
-        </div>
-      </template> <!-- /loading overlay template -->
+
+      <b-tabs content-class="mt-3">
+        <!-- general stats table -->
+        <b-tab title="Integrations" active>
+          <b-table
+            small
+            hover
+            striped
+            show-empty
+            :filter="filter"
+            :fields="fields"
+            :items="data.stats"
+            :filter-included-fields="filterOn"
+            empty-text="There are no integrations to show stats for"
+            :empty-filtered-text="`There are no integrations that match the name: ${filter}`">
+          </b-table>
+        </b-tab> <!-- /general stats table -->
+        <!-- itype stats table -->
+        <b-tab title="ITypes">
+          <b-table
+            small
+            hover
+            striped
+            show-empty
+            :filter="filter"
+            :fields="fields"
+            :items="data.itypeStats"
+            :filter-included-fields="filterOn"
+            empty-text="There are no itypes to show stats for"
+            :empty-filtered-text="`There are no itypes that match the name: ${filter}`">
+          </b-table>
+        </b-tab>  <!-- /itype stats table -->
+        <template #tabs-end>
+          <li role="presentation"
+            class="nav-item align-self-center startup-time">
+            Started at
+            <strong>{{ data.startTime | dateString }}</strong>
+          </li>
+        </template>
+      </b-tabs>
+
       <!-- stats error -->
       <div
         v-if="error.length"
@@ -52,6 +82,7 @@
           <span>&times;</span>
         </button>
       </div> <!-- /stats error -->
+
     </b-overlay>
   </div>
 </template>
@@ -63,7 +94,7 @@ export default {
   name: 'Cont3xtStats',
   data () {
     return {
-      data: [],
+      data: {},
       error: '',
       loading: true,
       filter: '',
@@ -137,7 +168,7 @@ export default {
   mounted () {
     Cont3xtService.getStats().then((response) => {
       this.loading = false;
-      this.data = response.stats;
+      this.data = response;
     }).catch((err) => {
       this.error = err;
       this.loading = false;
@@ -153,3 +184,10 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.startup-time {
+  right: 15px;
+  position: absolute;
+}
+</style>

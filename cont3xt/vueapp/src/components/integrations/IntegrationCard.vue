@@ -27,17 +27,6 @@
         {{ error }}
       </div>
     </b-alert> <!-- error with data -->
-    <template v-if="card && card.fields">
-      <div
-        v-for="field in card.fields"
-        :key="field.label">
-        <integration-value
-          :field="field"
-          v-if="getIntegrationData.data"
-          :data="getIntegrationData.data"
-        />
-      </div>
-    </template>
     <!-- no template -->
     <b-alert
       :show="!card"
@@ -51,22 +40,44 @@
         Please make sure your integration has a "card" attribute.
       </div>
     </b-alert> <!-- no template -->
-    <!-- raw -->
-    <b-card class="mt-2">
-      <h6 v-b-toggle.collapse-raw
-        class="card-title mb-1 text-warning">
-        raw
-        <span class="pull-right">
-          <span class="when-open fa fa-caret-up" />
-          <span class="when-closed fa fa-caret-down" />
-        </span>
-      </h6>
-      <b-collapse
-        class="mt-2"
-        id="collapse-raw">
-        <pre class="text-info">{{ getIntegrationData.data }}</pre>
-      </b-collapse>
-    </b-card> <!-- /raw -->
+    <!-- no data -->
+    <template v-if="Object.keys(getIntegrationData.data).length === 1 && getIntegrationData.data._createTime">
+      <h5 class="display-4 text-center mt-4 mb-4 text-muted">
+        <span class="fa fa-folder-open" />
+        <br>
+        No data
+      </h5>
+    </template> <!-- /no data -->
+    <template v-else> <!-- data -->
+      <!-- card template -->
+      <template v-if="card && card.fields">
+        <div
+          v-for="field in card.fields"
+          :key="field.label">
+          <integration-value
+            :field="field"
+            v-if="getIntegrationData.data"
+            :data="getIntegrationData.data"
+          />
+        </div>
+      </template> <!-- /card template -->
+      <!-- raw -->
+      <b-card class="mt-2">
+        <h6 v-b-toggle.collapse-raw
+          class="card-title mb-1 text-warning">
+          raw
+          <span class="pull-right">
+            <span class="when-open fa fa-caret-up" />
+            <span class="when-closed fa fa-caret-down" />
+          </span>
+        </h6>
+        <b-collapse
+          class="mt-2"
+          id="collapse-raw">
+          <pre class="text-info">{{ getIntegrationData.data }}</pre>
+        </b-collapse>
+      </b-card> <!-- /raw -->
+    </template> <!-- /data -->
   </b-card>
 </template>
 
