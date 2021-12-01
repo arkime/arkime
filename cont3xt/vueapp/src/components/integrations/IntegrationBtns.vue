@@ -5,8 +5,8 @@
         size="xs"
         variant="outline-dark"
         class="ml-1 mt-1 float-right"
+        :id="itype + integration.name"
         :key="itype + integration.name"
-        v-b-tooltip.hover.bottom.d300="integration.name"
         v-if="data[itype] && data[itype][integration.name] && data[itype][integration.name][0] && integration.icon"
         @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
         <img
@@ -20,6 +20,10 @@
           :variant="countBadgeColor(data[itype][integration.name][0].data)">
           {{ data[itype][integration.name][0].data._count | humanReadableNumber }}
         </b-badge>
+        <b-tooltip
+          :target="itype + integration.name">
+          {{ integration.name }}
+        </b-tooltip>
       </b-button>
     </template>
   </div>
