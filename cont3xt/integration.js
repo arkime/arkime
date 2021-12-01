@@ -120,6 +120,7 @@ class Integration {
     }
 
     integration.normalizeCard();
+    // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
     Integration.integrations.all.push(integration);
     for (const itype in integration.itypes) {
@@ -195,6 +196,7 @@ class Integration {
       const cardstr = integration.getUserConfig(req.user, integration.name + 'Card');
       if (cardstr) {
         card = JSON.parse(cardstr);
+        // Should normalize here
       }
 
       // User can override order
@@ -513,7 +515,7 @@ class Integration {
       if (typeof f === 'string') {
         outFields.push({
           label: f,
-          path: [f],
+          path: f.split('.'),
           type: 'string'
         });
         continue;
