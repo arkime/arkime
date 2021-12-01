@@ -1,8 +1,8 @@
 <template>
   <div class="d-flex flex-wrap link-group-cards-wrapper">
     <div
-      :key="linkGroup._id"
       class="w-25 p-2"
+      :key="linkGroup._id"
       v-for="(linkGroup, index) in getLinkGroups">
       <!-- view -->
       <b-card v-if="itype"
@@ -40,7 +40,16 @@
       <b-card v-else
         class="h-100 align-self-stretch">
         <b-card-body>
+          <textarea
+            rows="20"
+            size="sm"
+            v-if="linkGroup.rawEdit"
+            @input="e => debounceRawEdit(e, linkGroup)"
+            class="form-control form-control-sm"
+            :value="JSON.stringify(linkGroup.rawEdit, null, 2)"
+          />
           <link-group-form
+            v-else
             :link-group="linkGroup"
             @update-link-group="updateLinkGroup"
           />
@@ -61,13 +70,22 @@
               <span class="fa fa-check mr-2" />
               Saved!
             </b-alert>
-            <b-button
-              size="sm"
-              variant="success"
-              @click="saveLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Save this link group'">
-              <span class="fa fa-save" />
-            </b-button>
+            <div>
+              <b-button
+                size="sm"
+                variant="warning"
+                @click="rawConfigLinkGroup(linkGroup)"
+                v-b-tooltip.hover="'Edit the raw config for this link group'">
+                <span class="fa fa-pencil-square-o" />
+              </b-button>
+              <b-button
+                size="sm"
+                variant="success"
+                @click="saveLinkGroup(linkGroup)"
+                v-b-tooltip.hover="'Save this link group'">
+                <span class="fa fa-save" />
+              </b-button>
+            </div>
           </div>
         </template>
       </b-card> <!-- /edit -->
@@ -80,6 +98,8 @@ import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
+
+let timeout;
 
 export default {
   name: 'LinkGroupCards',
@@ -104,6 +124,8 @@ export default {
       LinkService.deleteLinkGroup(id, index);
     },
     saveLinkGroup (linkGroup) {
+      this.$set(linkGroup, 'rawEdit', undefined);
+
       LinkService.updateLinkGroup(linkGroup).then((response) => {
         linkGroup.success = true;
         this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
@@ -112,6 +134,35 @@ export default {
           this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
         }, 4000);
       }); // store deals with failure
+    },
+    rawConfigLinkGroup (linkGroup) {
+      if (linkGroup.rawEdit) {
+        this.$set(linkGroup, 'rawEdit', undefined);
+        return;
+      }
+
+      // remove uneditable fields
+      const clone = JSON.parse(JSON.stringify(linkGroup));
+      delete clone._id;
+      delete clone.success;
+      delete clone.creator;
+      delete clone.rawEdit;
+      delete clone._editable;
+
+      this.$set(linkGroup, 'rawEdit', clone);
+    },
+    debounceRawEdit (e, linkGroup) {
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the textarea so it only updates the link group after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.updateRawLinkGroup(e, linkGroup);
+      }, 400);
+    },
+    updateRawLinkGroup (e, linkGroup) {
+      const updatedLinkGroup = JSON.parse(e.target.value);
+      this.$set(linkGroup, 'name', updatedLinkGroup.name);
+      this.$set(linkGroup, 'links', updatedLinkGroup.links || []);
     },
     getUrl (url) {
       return url.replace(/\${indicator}/g, this.query)
