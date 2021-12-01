@@ -1273,7 +1273,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
         break;
       case 'database':
-        query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
+        query.query.bool.filter.push({ range: { '@timestamp': { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
         break;
       }
     } else {
@@ -1291,7 +1291,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
         break;
       case 'database':
-        query.query.bool.filter.push({ range: { timestamp: { gte: reqQuery.startTime * 1000 } } });
+        query.query.bool.filter.push({ range: { '@timestamp': { gte: reqQuery.startTime * 1000 } } });
         break;
       }
     }
@@ -1339,7 +1339,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
         break;
       case 'database':
-        query.aggregations.dbHisto.histogram = { field: 'timestamp', interval: interval * 1000, min_doc_count: 1 };
+        query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
         break;
       default:
         query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };

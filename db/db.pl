@@ -6455,6 +6455,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "update-fields") {
     fieldsUpdate();
+    ecsFieldsUpdate();
     exit 0;
 } elsif ($ARGV[1] =~ /^es-adduser$/) {
     my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password for $ARGV[2]:");

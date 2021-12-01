@@ -1040,7 +1040,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let minTimestamp;
     try {
-      const { body: data } = await Db.getMinValue(['sessions2-*', 'sessions3-*'], 'timestamp');
+      const { body: data } = await Db.getMinValue(['sessions2-*', 'sessions3-*'], '@timestamp');
       minTimestamp = Math.floor(data.aggregations.min.value / 1000);
     } catch (err) {
       minTimestamp = Math.floor(Date.now() / 1000);
