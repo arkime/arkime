@@ -2081,7 +2081,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
   async.doWhilst((whilstCb) => {
     // Process at most 24 hours
     singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
-    query.query.bool.filter[0] = { range: { timestamp: { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
+    query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
 
     if (Config.debug > 2) {
       console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
