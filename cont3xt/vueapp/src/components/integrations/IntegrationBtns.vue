@@ -6,12 +6,12 @@
         variant="outline-dark"
         class="ml-1 mt-1 float-right"
         :key="itype + integration.name"
+        v-b-tooltip.hover.d300="integration.name"
         v-if="data[itype] && data[itype][integration.name] && data[itype][integration.name][0] && integration.icon"
         @click="$store.commit('SET_DISPLAY_INTEGRATION', { source: integration.name, itype, value })">
         <img
           :alt="integration.name"
           :src="integration.icon"
-          v-b-tooltip.hover.d300="integration.name"
           class="integration-img cursor-pointer"
         />
         <b-badge
