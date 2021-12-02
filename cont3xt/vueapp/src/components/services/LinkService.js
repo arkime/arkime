@@ -6,6 +6,8 @@ export default {
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
   getLinkGroups () {
+    store.commit('SET_LINK_GROUPS_ERROR', '');
+
     return new Promise((resolve, reject) => {
       fetch('api/linkGroup/getViewable').then((response) => {
         if (!response.ok) { // test for bad response code
@@ -40,7 +42,6 @@ export default {
           this.getLinkGroups();
           return resolve(response);
         } else {
-          store.commit('SET_LINK_GROUPS_ERROR', response.text);
           return reject(response.text);
         }
       });
@@ -54,6 +55,8 @@ export default {
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
   deleteLinkGroup (id, index) {
+    store.commit('SET_LINK_GROUPS_ERROR', '');
+
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${id}`, {
         method: 'DELETE'
@@ -77,6 +80,8 @@ export default {
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
   updateLinkGroup (linkGroup) {
+    store.commit('SET_LINK_GROUPS_ERROR', '');
+
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${linkGroup._id}`, {
         method: 'PUT',

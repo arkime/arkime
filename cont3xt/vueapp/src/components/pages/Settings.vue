@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid mb-4">
     <!-- link group create form -->
     <create-link-group-modal />
     <!-- link groups -->
@@ -15,8 +15,11 @@
     </h1>
     <!-- link group error -->
     <b-alert
+      dismissible
       variant="danger"
-      :show="!!getLinkGroupsError.length">
+      style="z-index: 2000;"
+      v-model="linkGroupsError"
+      class="position-fixed fixed-bottom m-0 rounded-0">
       {{ getLinkGroupsError }}
     </b-alert> <!-- /link group error -->
     <link-group-cards /> <!-- /link groups -->
@@ -49,7 +52,15 @@ export default {
     CreateLinkGroupModal
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError'])
+    ...mapGetters(['getLinkGroups', 'getLinkGroupsError']),
+    linkGroupsError: {
+      get () {
+        return !!this.$store.state.linkGroupsError;
+      },
+      set (value) {
+        this.$store.commit('SET_LINK_GROUPS_ERROR', '');
+      }
+    }
   }
 };
 </script>
