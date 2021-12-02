@@ -219,13 +219,14 @@ class User {
   /**
    * Return all available roles using cache
    */
-  static allRolesCache () {
+  static async allRolesCache () {
     if (User.rolesCache._timeStamp > Date.now() - User.userCacheTimeout) {
       return User.rolesCache.roles;
     }
 
     User.rolesCache._timeStamp = Date.now();
-    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...User.implementation.allRoles()]);
+    const userAllRoles = await User.implementation.allRoles();
+    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...userAllRoles]);
     return User.rolesCache.roles;
   }
 
