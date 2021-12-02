@@ -57,9 +57,18 @@ class PassiveTotalWhoisIntegration extends Integration {
     fields: [
       'registrar',
       'organization',
-      'registered',
-      'expiresAt',
-      'lastLoadedAt',
+      {
+        label: 'registered',
+        type: 'date'
+      },
+      {
+        label: 'expiresAt',
+        type: 'date'
+      },
+      {
+        label: 'lastLoadedAt',
+        type: 'date'
+      },
       {
         label: 'nameServers',
         type: 'array',
@@ -74,7 +83,10 @@ class PassiveTotalWhoisIntegration extends Integration {
       'telephone',
       'domainStatus',
       'contactEmail',
-      'registryUpdatedAt'
+      {
+        label: 'registryUpdatedAt',
+        type: 'date'
+      }
     ]
   }
 

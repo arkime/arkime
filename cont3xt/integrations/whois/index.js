@@ -27,8 +27,14 @@ class WhoisIntegration extends Integration {
   card = {
     title: 'Whois for %{query}',
     fields: [
-      'updatedDate',
-      'creationDate',
+      {
+        label: 'updatedDate',
+        type: 'date'
+      },
+      {
+        label: 'creationDate',
+        type: 'date'
+      },
       'registrar',
       'registrantOrganization',
       'adminCountry'
