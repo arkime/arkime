@@ -172,18 +172,6 @@ class User {
       user.settings = user.settings ?? {};
       if (readOnly) {
         user.createEnabled = false;
-      } else {
-        try {
-          const now = Date.now();
-          if (!user.lastUsed || (now - user.lastUsed) > User.lastUsedMinInterval) {
-            user.lastUsed = now;
-            await User.implementation.setLastUsed(user.userId, now);
-          }
-        } catch (err) {
-          if (User.debug) {
-            console.log('DEBUG - user lastUsed update error', err);
-          }
-        }
       }
       return cb(null, user);
     });
@@ -295,6 +283,23 @@ class User {
     }
 
     return this._allRoles;
+  }
+
+  // Set last used info for user, should only be used by Auth
+  async setLastUsed () {
+      if (!readOnly) {
+        try {
+          const now = Date.now();
+          if (!this.lastUsed || (now - this.lastUsed) > User.lastUsedMinInterval) {
+            this.lastUsed = now;
+            await User.implementation.setLastUsed(this.userId, now);
+          }
+        } catch (err) {
+          if (User.debug) {
+            console.log('DEBUG - user lastUsed update error', err);
+          }
+        }
+      }
   }
 }
 
