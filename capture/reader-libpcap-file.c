@@ -197,7 +197,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
     }
 
     if (!realpath(filename, offlinePcapFilename)) {
-        LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %d", filename, errno);
+        LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %s (%d)", filename, strerror(errno), errno);
         return 1;
     }
 

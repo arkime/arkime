@@ -1428,7 +1428,7 @@
 
           <!-- custom theme -->
           <p v-if="!creatingCustom">
-            Want to more control
+            Want more control
             <small>(to make the UI completely unusable)</small>?
             <a href="javascript:void(0)"
               class="cursor-pointer"
