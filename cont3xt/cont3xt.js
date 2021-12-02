@@ -107,6 +107,8 @@ app.post('/regressionTests/shutdown', (req, res) => {
 
 app.use(Auth.doAuth);
 
+app.get('/api/user', User.apiGetUser);
+
 app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
 app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
 app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);

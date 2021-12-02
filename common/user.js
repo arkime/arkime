@@ -230,12 +230,56 @@ class User {
   }
 
   /**
-   * Api for listing available roles
+   * Web Api for listing available roles
    */
   static async apiRoles (req, res, next) {
     const roles = await User.allRolesCache();
     return res.send({ success: true, roles: [...roles].sort() });
   }
+
+  /**
+   * Web Api for getting current user
+   */
+  static apiGetUser (req, res, next) {
+    const userProps = [
+      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
+      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
+      'roles'
+    ];
+
+    const clone = {};
+
+    for (const prop of userProps) {
+      if (req.user[prop]) {
+        clone[prop] = req.user[prop];
+      }
+    }
+
+    /* ALW - FIX LATER FOR internals
+    clone.canUpload = internals.allowUploads;
+
+    // If esAdminUser is set use that, other wise use createEnable privilege
+    if (internals.esAdminUsersSet) {
+      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+    } else {
+      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+    }
+
+    // If no settings, use defaults
+    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
+
+    // Use settingsDefaults for any settings that are missing
+    for (const item in internals.settingDefaults) {
+      if (clone.settings[item] === undefined) {
+        clone.settings[item] = internals.settingDefaults[item];
+      }
+    }
+    */
+
+    return res.send(clone);
+  };
 
   /******************************************************************************/
   // Regression Tests APIs
