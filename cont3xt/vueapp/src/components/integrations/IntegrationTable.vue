@@ -2,9 +2,25 @@
   <table class="table table-sm table-striped table-bordered small">
     <tr>
       <th
+        @click="sortBy(field)"
         v-for="field in fields"
-        :key="`${field.label}-header`">
+        :key="`${field.label}-header`"
+        :class="{'cursor-pointer':field.type==='string'}">
         {{ field.label }}
+        <template v-if="field.type === 'string'">
+          <span
+            class="fa fa-sort"
+            v-if="sortField !== field.label"
+          />
+          <span
+            class="fa fa-sort-desc"
+            v-else-if="sortField === field.label && desc"
+          />
+          <span
+            class="fa fa-sort-asc"
+            v-else-if="sortField === field.label && !desc"
+          />
+        </template>
       </th>
     </tr>
     <tr
@@ -77,6 +93,8 @@ export default {
   },
   data () {
     return {
+      desc: false,
+      sortField: undefined,
       data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
       tableLen: Math.min(this.tableData.length || 1, this.size)
     };
@@ -93,6 +111,38 @@ export default {
       setTimeout(() => { // need settimeout for rendering to take effect
         this.tableLen = this.data.length;
       }, 100);
+    },
+    sortBy (field) {
+      if (field.type !== 'string') {
+        return;
+      }
+
+      if (this.sortField === field.label) {
+        this.desc = !this.desc;
+      } else {
+        this.desc = true;
+      }
+
+      this.sortField = field.label;
+
+      this.data.sort((a, b) => {
+        let valueA = JSON.parse(JSON.stringify(a));
+        let valueB = JSON.parse(JSON.stringify(b));
+
+        for (const p of field.path) {
+          valueA = valueA[p];
+          valueB = valueB[p];
+        }
+
+        if (!valueA) { valueA = ''; }
+        if (!valueB) { valueB = ''; }
+
+        if (this.desc) {
+          return valueA.localeCompare(valueB);
+        } else {
+          return valueB.localeCompare(valueA);
+        }
+      });
     }
   },
   updated () { // data is rendered
