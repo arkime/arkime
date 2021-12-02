@@ -121,6 +121,7 @@ class Auth {
     });
     User.getUserCache('anonymous', (err, user) => {
       if (user) {
+        req.user.setLastUsed();
         req.user.settings = user.settings;
         req.user.views = user.views;
         req.user.columnConfigs = user.columnConfigs;
@@ -136,6 +137,7 @@ class Auth {
     User.getUserCache(userId, (err, user) => {
       if (user) {
         req.user = user;
+        req.user.setLastUsed();
         return next();
       }
       req.user = Object.assign(new User(), {
@@ -208,6 +210,7 @@ class Auth {
       if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
 
       req.user = user;
+      req.user.setLastUsed();
       return next();
     }
 
@@ -265,6 +268,7 @@ class Auth {
       if (!user) { return res.send(obj.user + " doesn't exist"); }
       if (!user.enabled) { return res.send(obj.user + ' not enabled'); }
       req.user = user;
+      req.user.setLastUsed();
       return next();
     });
     return;
