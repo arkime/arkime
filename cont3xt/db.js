@@ -261,13 +261,13 @@ class DbLMDBImplementation {
         }
         return true;
       }).forEach(({ key, value }) => {
+        value._id = key;
         hits.push(value);
       });
 
     const linkGroups = [];
     for (let i = 0; i < hits.length; i++) {
-      const linkGroup = new LinkGroup(hits[i]._source);
-      linkGroup._id = hits[i]._id;
+      const linkGroup = new LinkGroup(hits[i]);
       linkGroups.push(linkGroup);
     }
 
