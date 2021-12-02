@@ -8,7 +8,7 @@ all:
 
 install:
 	@mkdir -p "$(DBDIR)"
-	$(INSTALL) daily.sh db.pl $(DBDIR)
+	$(INSTALL) db.pl $(DBDIR)
 
 check:
 
