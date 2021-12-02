@@ -21,8 +21,7 @@
     "jquery": "^3.6.0",
     "qs": "^6.9.4",
     "sanitize-html": "^2.3.2",
-    "vue-clickaway": "^2.2.2",
-    "vue-color": "^2.4.6"
+    "vue-clickaway": "^2.2.2"
   },
   "scripts": {
     "bundle": "cd ../ && npm run viewer:bundle",

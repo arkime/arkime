@@ -20,7 +20,8 @@
             <div :key="link.url + i + 'click'"
               v-if="itype && link.itypes.indexOf(itype) > -1">
               <a target="_blank"
-                :href="getUrl(link.url)">
+                :href="getUrl(link.url)"
+                :style="link.color ? `color:${link.color}` : ''">
                 {{ link.name }}
               </a>
             </div> <!-- /display link to click -->
@@ -30,7 +31,10 @@
               <strong class="text-warning">
                 {{ link.name }}
               </strong>
-              {{ link.url }}
+              <a href="javascript:void(0)"
+                :style="link.color ? `color:${link.color}` : ''">
+                {{ link.url }}
+              </a>
             </div> <!-- /display link to view -->
           </template>
         </b-card-body>

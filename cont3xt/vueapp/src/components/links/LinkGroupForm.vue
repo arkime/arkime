@@ -68,6 +68,13 @@
           :state="link.name.length > 0"
           @change="$emit('update-link-group', lg)"
         />
+        <template #append>
+          <color-picker
+            :color="link.color"
+            :link-name="link.name"
+            @colorSelected="changeColor"
+          />
+        </template>
       </b-input-group>
       <b-input-group
         size="sm"
@@ -121,6 +128,8 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import ColorPicker from '@/utils/ColorPicker';
+
 const defaultLink = {
   url: '',
   name: '',
@@ -129,6 +138,9 @@ const defaultLink = {
 
 export default {
   name: 'CreateLinkGroup',
+  components: {
+    ColorPicker
+  },
   props: {
     linkGroup: {
       type: Object
@@ -165,6 +177,15 @@ export default {
     removeLink (index) {
       this.lg.links.splice(index, 1);
       this.$emit('update-link-group', this.lg);
+    },
+    changeColor ({ linkName, color }) {
+      for (const link of this.lg.links) {
+        if (link.name === linkName) {
+          this.$set(link, 'color', color);
+          this.$emit('update-link-group', this.lg);
+          return;
+        }
+      }
     }
   }
 };
