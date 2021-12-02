@@ -114,7 +114,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && req.user.hasRole(olinkGroup.editRoles)) {
+    if (olinkGroup.creator !== req.user.userId && !req.user.hasRole(olinkGroup.editRoles)) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
@@ -146,9 +146,10 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (linkGroup.creator !== req.user.userId && req.user.hasRole(linkGroup.editRoles)) {
+    if (linkGroup.creator !== req.user.userId && !req.user.hasRole(linkGroup.editRoles)) {
       return res.send({ success: false, text: 'Permission denied' });
     }
+
     const results = await Db.deleteLinkGroup(req.params.id, req.body);
     if (!results) {
       return res.send({ success: false, text: 'ES Error' });

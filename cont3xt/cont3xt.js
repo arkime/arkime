@@ -116,6 +116,7 @@ app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
 app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', User.apiRoles);
+app.get('/api/user', User.apiGetUser);
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);

@@ -69,3 +69,20 @@ export const baseRIR = function (rirLink) {
   return 'unknown rir';
 };
 Vue.filter('baseRIR', baseRIR);
+
+/**
+ * Determines whether a user has a role in a list of roles.
+ * @example
+ * '{{ ["role1", "role2"] | hasRole(["role2"]) }}'
+ * this.$options.filters.hasRole(["role1", "role2"], ["role2"]);
+ *
+ * @param {Array} roles - The list of roles to check
+ * @param {Array} userRoles - The list of user roles
+ * @returns {Boolean} - True if the user has the role, false if
+ */
+export const hasRole = function (roles, userRoles) {
+  return roles.some((role) => {
+    return userRoles.indexOf(role) > -1;
+  });
+};
+Vue.filter('hasRole', hasRole);

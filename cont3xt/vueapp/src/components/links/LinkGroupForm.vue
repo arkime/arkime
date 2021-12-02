@@ -19,6 +19,35 @@
         @change="$emit('update-link-group', lg)"
       />
     </b-input-group> <!-- /group name -->
+    <!-- group roles -->
+    <b-dropdown
+      size="sm"
+      class="mb-2"
+      text="Who Can View">
+      <b-dropdown-form>
+        <b-form-checkbox-group
+          :options="getRoles"
+          v-model="lg.viewRoles"
+          @change="$emit('update-link-group', lg)"
+        />
+      </b-dropdown-form>
+    </b-dropdown>
+    <b-dropdown
+      size="sm"
+      class="mb-2"
+      text="Who Can Edit">
+      <b-dropdown-form>
+        <b-form-checkbox-group
+          :options="getRoles"
+          v-model="lg.editRoles"
+          @change="$emit('update-link-group', lg)"
+        />
+      </b-dropdown-form>
+    </b-dropdown>
+    <span
+      class="fa fa-info-circle fa-lg cursor-help ml-2"
+      v-b-tooltip.hover="'You will always be able to view and edit this link group regardless of the roles you select here.'"
+    /> <!-- /group roles -->
     <!-- group links -->
     <b-card
       :key="i"
@@ -90,6 +119,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 const defaultLink = {
   url: '',
   name: '',
@@ -117,9 +148,12 @@ export default {
       ]
     };
   },
+  computed: {
+    ...mapGetters(['getRoles'])
+  },
   created () {
     if (!this.lg) { // creating new link group
-      this.lg = { name: '', links: [] };
+      this.lg = { name: '', links: [], viewRoles: [], editRoles: [] };
       this.addLink();
     }
   },

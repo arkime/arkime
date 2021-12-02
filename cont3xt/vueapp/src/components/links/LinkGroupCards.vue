@@ -4,8 +4,9 @@
       class="w-25 p-2"
       :key="linkGroup._id"
       v-for="(linkGroup, index) in getLinkGroups">
-      <!-- view -->
-      <b-card v-if="itype"
+      <!-- view (for con3xt page and users who can view but not edit) -->
+      <b-card
+        v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || hasRole(linkGroup.editRoles, getUser.roles)))"
         class="h-100 align-self-stretch">
         <template #header>
           <h6 class="mb-0">
@@ -15,14 +16,22 @@
         <b-card-body>
           <template
             v-for="(link, i) in linkGroup.links">
-            <!-- display link -->
-            <div :key="link.url + i"
+            <!-- display link to click -->
+            <div :key="link.url + i + 'click'"
               v-if="itype && link.itypes.indexOf(itype) > -1">
               <a target="_blank"
                 :href="getUrl(link.url)">
                 {{ link.name }}
               </a>
-            </div> <!-- /display link -->
+            </div> <!-- /display link to click -->
+            <!-- display link to view -->
+            <div v-else-if="!itype"
+              :key="link.url + i + 'view'">
+              <strong class="text-warning">
+                {{ link.name }}
+              </strong>
+              {{ link.url }}
+            </div> <!-- /display link to view -->
           </template>
         </b-card-body>
         <template #footer>
@@ -113,7 +122,7 @@ export default {
     startDate: String // the start date to apply to urls
   },
   computed: {
-    ...mapGetters(['getLinkGroups'])
+    ...mapGetters(['getLinkGroups', 'getUser'])
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -178,6 +187,9 @@ export default {
           window.open(this.getUrl(link.url), '_blank');
         }
       }
+    },
+    hasRole (roles, userRoles) {
+      return this.$options.filters.hasRole(roles, userRoles);
     }
   }
 };

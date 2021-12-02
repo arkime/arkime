@@ -65,13 +65,8 @@ export default {
         return;
       }
 
-      const linkGroup = {
-        name: this.linkGroup.name,
-        links: []
-      };
-
-      const links = JSON.parse(JSON.stringify(this.linkGroup.links));
-      for (const link of links) {
+      // validate the links
+      for (const link of this.linkGroup.links) {
         if (!link.name.length) {
           this.error = 'Link Names are required';
           return;
@@ -85,12 +80,9 @@ export default {
           this.error = 'Must have at least one type per link';
           return;
         }
-
-        // link.itypes = itypes;
-        linkGroup.links.push(link);
       }
 
-      LinkService.createLinkGroup(linkGroup).then((response) => {
+      LinkService.createLinkGroup(this.linkGroup).then((response) => {
         this.close();
       }).catch((err) => {
         this.error = err;

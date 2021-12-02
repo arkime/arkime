@@ -12,6 +12,7 @@
 
 <script>
 import Cont3xtNavbar from '@/utils/Navbar';
+import UserService from '@/components/services/UserService';
 import LinkService from '@/components/services/LinkService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser';
@@ -38,6 +39,8 @@ export default {
     // NOTE: don't need to do anything with the data (the store does it)
     Cont3xtService.getIntegrations();
     LinkService.getLinkGroups();
+    UserService.getUser();
+    UserService.getRoles();
   }
 };
 </script>

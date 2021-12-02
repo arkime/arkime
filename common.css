@@ -241,7 +241,8 @@ body.dark .dropdown-menu {
   background-color: #222;
   border: 1px solid #333;
 }
-body.dark .dropdown-menu .dropdown-item {
+body.dark .dropdown-menu .dropdown-item,
+body.dark .dropdown-menu .b-dropdown-form {
   color: #EEE;
 }
 body.dark .dropdown-menu .dropdown-item:hover,

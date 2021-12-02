@@ -5,6 +5,8 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    user: undefined,
+    roles: [],
     loading: {
       total: 0,
       failed: 0,
@@ -25,6 +27,12 @@ const store = new Vuex.Store({
     linkGroupsError: ''
   },
   mutations: {
+    SET_USER (state, data) {
+      state.user = data;
+    },
+    SET_ROLES (state, data) {
+      state.roles = data || [];
+    },
     SET_LOADING (state, data) {
       const { total, failed, received, done, failure } = data;
       state.loading.done = done || state.loading.done;
@@ -95,6 +103,12 @@ const store = new Vuex.Store({
     }
   },
   getters: {
+    getUser (state) {
+      return state.user;
+    },
+    getRoles (state) {
+      return state.roles;
+    },
     getLoading (state) {
       return state.loading;
     },
