@@ -27,15 +27,12 @@ class AbuseIPDBIntegration extends Integration {
   card = {
     title: 'AbuseIPDB for %{query}',
     fields: [
-      'ipAddress',
-      'isPublic',
-      'ipVersion',
-      'isWhitelisted',
-      'abuseConfidenceScore',
-      'countryCode',
-      'countryName',
       'usageType',
       'isp',
+      'abuseConfidenceScore',
+      'isWhitelisted',
+      'countryCode',
+      'countryName',
       'domain',
       {
         label: 'hostnames',
@@ -46,6 +43,34 @@ class AbuseIPDBIntegration extends Integration {
       {
         label: 'lastReportedAt',
         type: 'date'
+      },
+      {
+        label: 'Reports:',
+        field: 'reports',
+        type: 'table',
+        fields: [
+          {
+            label: 'Report Date',
+            field: 'reportedAt',
+            type: 'date'
+          },
+          {
+            label: 'Comment',
+            field: 'comment'
+          },
+          {
+            label: 'Category',
+            field: 'categories'
+          },
+          {
+            label: 'Reported From',
+            field: 'reporterCountryName'
+          },
+          {
+            label: 'ReporterID',
+            field: 'reporterId'
+          }
+        ]
       }
     ]
   }
