@@ -51,13 +51,21 @@
             <span class="fa fa-check mr-2" />
             {{ saveIntegrationSettingsSuccess }}
           </b-alert>
-          <b-button
-            class="mt-2 mr-3"
-            variant="outline-success"
-            @click="saveIntegrationSettings">
-            <span class="fa fa-save mr-2" />
-            Save
-          </b-button>
+          <div class="mt-2 mr-3">
+            <b-button
+              class="mr-2"
+              variant="outline-warning"
+              @click="toggleRawIntegrationSettings">
+              <span class="fa fa-pencil mr-2" />
+              Raw Edit
+            </b-button>
+            <b-button
+              variant="outline-success"
+              @click="saveIntegrationSettings">
+              <span class="fa fa-save mr-2" />
+              Save
+            </b-button>
+          </div>
         </h1>
         <div class="d-flex flex-wrap">
           <!-- integration settings error -->
@@ -69,39 +77,49 @@
             class="position-fixed fixed-bottom m-0 rounded-0">
             {{ integrationSettingsErr }}
           </b-alert> <!-- /integration settings error -->
-          <div
-            :key="key"
-            class="w-25 p-2"
-            v-for="(setting, key) in integrationSettings">
-            <b-card :title="key">
-              <b-input-group
-                size="sm"
-                :key="name"
-                class="mb-1 mt-1"
-                v-for="(field, name) in setting.settings">
-                <b-input-group-prepend
-                  class="cursor-help"
-                  v-b-tooltip.hover="field.help">
-                  <b-input-group-text>
-                    {{ name }}
-                  </b-input-group-text>
-                </b-input-group-prepend>
-                <b-form-input
-                  v-model="setting.values[name]"
-                  :type="field.password && !field.showValue ? 'password' : 'text'"
-                />
-                <b-input-group-append
-                  v-if="field.password"
-                  @click="toggleVisiblePasswordField(field)">
-                  <b-input-group-text>
-                    <span class="fa"
-                      :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
-                    </span>
-                  </b-input-group-text>
-                </b-input-group-append>
-              </b-input-group>
-            </b-card>
-          </div>
+          <template v-if="!rawIntegrationSettings">
+            <div
+              :key="key"
+              class="w-25 p-2"
+              v-for="(setting, key) in integrationSettings">
+              <b-card :title="key">
+                <b-input-group
+                  size="sm"
+                  :key="name"
+                  class="mb-1 mt-1"
+                  v-for="(field, name) in setting.settings">
+                  <b-input-group-prepend
+                    class="cursor-help"
+                    v-b-tooltip.hover="field.help">
+                    <b-input-group-text>
+                      {{ name }}
+                    </b-input-group-text>
+                  </b-input-group-prepend>
+                  <b-form-input
+                    v-model="setting.values[name]"
+                    :type="field.password && !field.showValue ? 'password' : 'text'"
+                  />
+                  <b-input-group-append
+                    v-if="field.password"
+                    @click="toggleVisiblePasswordField(field)">
+                    <b-input-group-text>
+                      <span class="fa"
+                        :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
+                      </span>
+                    </b-input-group-text>
+                  </b-input-group-append>
+                </b-input-group>
+              </b-card>
+            </div>
+          </template>
+          <textarea
+            v-else
+            rows="20"
+            size="sm"
+            @input="e => debounceRawEdit(e)"
+            class="form-control form-control-sm"
+            :value="JSON.stringify(rawIntegrationSettings, null, 2)"
+          />
         </div>
       </div> <!-- /keys settings -->
 
@@ -156,6 +174,8 @@ import UserService from '@/components/services/UserService';
 import LinkGroupCards from '@/components/links/LinkGroupCards';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
+let timeout;
+
 export default {
   name: 'Cont3xtSettings',
   components: {
@@ -167,7 +187,8 @@ export default {
       visibleTab: 'linkgroups',
       integrationSettings: {},
       integrationSettingsErr: '',
-      saveIntegrationSettingsSuccess: ''
+      saveIntegrationSettingsSuccess: '',
+      rawIntegrationSettings: undefined
     };
   },
   created () {
@@ -197,6 +218,7 @@ export default {
     }
   },
   methods: {
+    /* page functions ------------------------------------------------------ */
     /* opens a specific settings tab */
     openView (tabName) {
       this.visibleTab = tabName;
@@ -209,17 +231,47 @@ export default {
       this.$set(field, 'showValue', !field.showValue);
     },
     saveIntegrationSettings () {
-      const settings = {};
-      for (const setting in this.integrationSettings) {
-        settings[setting] = this.integrationSettings[setting].values;
-      }
+      const settings = this.getIntegrationSettingValues();
 
       UserService.setIntegrationSettings({ settings }).then((response) => {
-        // TODO ECR success
         this.saveIntegrationSettingsSuccess = 'Saved!';
       }).catch((err) => {
         this.integrationSettingsErr = err;
       });
+    },
+    toggleRawIntegrationSettings () {
+      if (this.rawIntegrationSettings) {
+        this.rawIntegrationSettings = undefined;
+        return;
+      }
+      // TODO - add each field that can have a value to the raw settings?
+      const settings = this.getIntegrationSettingValues();
+      this.rawIntegrationSettings = settings;
+    },
+    debounceRawEdit (e) {
+      if (timeout) { clearTimeout(timeout); }
+      // debounce the textarea so it only updates the integration settings after keyups cease for 400ms
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.updateRawIntegrationSettings(e);
+      }, 400);
+    },
+    updateRawIntegrationSettings (e) {
+      const rawIntegrationSettings = JSON.parse(e.target.value);
+
+      for (const s in this.integrationSettings) {
+        if (rawIntegrationSettings[s] && this.integrationSettings[s]) {
+          this.$set(this.integrationSettings[s], 'values', rawIntegrationSettings[s]);
+        }
+      }
+    },
+    /* helpers ------------------------------------------------------------- */
+    getIntegrationSettingValues () {
+      const settings = {};
+      for (const setting in this.integrationSettings) {
+        settings[setting] = this.integrationSettings[setting].values;
+      }
+      return settings;
     }
   }
 };
