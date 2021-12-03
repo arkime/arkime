@@ -46,7 +46,7 @@
     </b-dropdown>
     <span
       class="fa fa-info-circle fa-lg cursor-help ml-2"
-      v-b-tooltip.hover="'You will always be able to view and edit this link group regardless of the roles you select here.'"
+      v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
     /> <!-- /group roles -->
     <!-- group links -->
     <b-card
@@ -122,6 +122,14 @@
       <span class="fa fa-link mr-2" />
       Add another
     </b-button>
+    <div
+      class="mt-2"
+      v-if="lg.creator">
+      Created by
+      <span class="text-info">
+        {{ lg.creator }}
+      </span>
+    </div>
   </b-form> <!-- /form -->
 </template>
 

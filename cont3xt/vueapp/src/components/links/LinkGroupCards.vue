@@ -19,6 +19,12 @@
             <!-- display link to click -->
             <div :key="link.url + i + 'click'"
               v-if="itype && link.itypes.indexOf(itype) > -1">
+              <b-form-checkbox
+                inline
+                class="link-checkbox"
+                @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
+                :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
+              />
               <a target="_blank"
                 :href="getUrl(link.url)"
                 :style="link.color ? `color:${link.color}` : ''">
@@ -38,15 +44,24 @@
             </div> <!-- /display link to view -->
           </template>
         </b-card-body>
-        <template #footer>
-          <b-button
-            block
-            size="sm"
-            variant="secondary"
-            @click="openAllLinks(linkGroup)"
-            v-b-tooltip.hover="'Open all links in this group'">
-            Open All
-          </b-button>
+        <template #footer v-if="itype">
+          <div class="w-100 d-flex justify-content-between align-items-start">
+            <b-form-checkbox
+              role="checkbox"
+              class="mr-2 mt-1"
+              v-b-tooltip.hover="'Select All'"
+              :checked="allLinksChecked(linkGroup)"
+              @change="e => toggleAllLinks(linkGroup, e)">
+            </b-form-checkbox>
+            <b-button
+              block
+              size="sm"
+              variant="secondary"
+              @click="openAllLinks(linkGroup)"
+              v-b-tooltip.hover="'Open all links in this group'">
+              Open All
+            </b-button>
+          </div>
         </template>
       </b-card> <!-- /view -->
       <!-- edit -->
@@ -126,7 +141,7 @@ export default {
     startDate: String // the start date to apply to urls
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getUser'])
+    ...mapGetters(['getLinkGroups', 'getUser', 'getCheckedLinks'])
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -187,10 +202,27 @@ export default {
     },
     openAllLinks (linkGroup) {
       for (const link of linkGroup.links) {
-        if (link.url) {
+        if (link.url && this.getCheckedLinks[linkGroup._id] && this.getCheckedLinks[linkGroup._id][link.name]) {
           window.open(this.getUrl(link.url), '_blank');
         }
       }
+    },
+    toggleAllLinks (linkGroup, checked) {
+      this.$store.commit('TOGGLE_CHECK_ALL_LINKS', { lgId: linkGroup._id, checked });
+    },
+    allLinksChecked (linkGroup) {
+      if (!this.getCheckedLinks[linkGroup._id]) {
+        return false;
+      }
+
+      let count = 0;
+      for (const link in this.getCheckedLinks[linkGroup._id]) {
+        if (this.getCheckedLinks[linkGroup._id][link]) {
+          count++;
+        }
+      }
+
+      return count === linkGroup.links.length;
     },
     hasRole (roles, userRoles) {
       return this.$options.filters.hasRole(roles, userRoles);
@@ -208,5 +240,10 @@ export default {
 /* small alerts */
 .alert.alert-sm {
   padding: 0.2rem 0.8rem;
+}
+
+.link-checkbox {
+  margin-right: 0;
+  min-height: 1rem;
 }
 </style>

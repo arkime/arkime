@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import createPersistedState from 'vuex-persistedstate';
 
 Vue.use(Vuex);
 
@@ -24,7 +25,8 @@ const store = new Vuex.Store({
     displayIntegration: {},
     integrationData: {},
     linkGroups: [],
-    linkGroupsError: ''
+    linkGroupsError: '',
+    checkedLinks: {}
   },
   mutations: {
     SET_USER (state, data) {
@@ -100,6 +102,39 @@ const store = new Vuex.Store({
           return;
         }
       }
+    },
+    TOGGLE_CHECK_LINK (state, { lgId, lname }) {
+      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
+
+      if (!state.checkedLinks[lgId]) {
+        clone[lgId] = {};
+      }
+
+      if (state.checkedLinks[lgId][lname]) {
+        clone[lgId][lname] = false;
+      } else {
+        clone[lgId][lname] = true;
+      }
+
+      Vue.set(state, 'checkedLinks', clone);
+    },
+    TOGGLE_CHECK_ALL_LINKS (state, { lgId, checked }) {
+      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
+
+      for (const lg of state.linkGroups) {
+        if (lg._id === lgId) {
+          if (!state.checkedLinks[lgId]) {
+            clone[lgId] = {};
+          }
+
+          for (const link of lg.links) {
+            clone[lgId][link.name] = checked;
+          }
+
+          Vue.set(state, 'checkedLinks', clone);
+          return;
+        }
+      }
     }
   },
   getters: {
@@ -141,8 +176,16 @@ const store = new Vuex.Store({
     },
     getLinkGroupsError (state) {
       return state.linkGroupsError;
+    },
+    getCheckedLinks (state) {
+      return state.checkedLinks;
     }
-  }
+  },
+  plugins: [createPersistedState({
+    paths: [ // only these state variables are persisted to localstorage
+      'checkedLinks'
+    ]
+  })]
 });
 
 export default store;

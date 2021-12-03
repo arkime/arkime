@@ -66,7 +66,10 @@
             </template>
             <dl v-else
               class="dl-horizontal">
-              <dt>{{ key }}</dt>
+              <dt>
+                {{ key }}
+                ({{ value.Answer.length }})
+              </dt>
               <dd>
                 <template v-for="(item, index) in value.Answer">
                   <cont3xt-field
