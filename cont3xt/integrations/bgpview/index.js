@@ -28,12 +28,77 @@ class BGPViewIntegration extends Integration {
   card = {
     title: 'BGPView for %{query}',
     fields: [
-      {
-        label: 'data',
-        type: 'json'
-      }
-    ]
-  }
+        {
+          field: 'data', 
+          type: 'table',
+            fields: [
+                      {
+                        label: 'IP',
+                        field: 'ip'
+                      },
+                      {
+                        label: 'PTR',
+                        field: 'ptr_record'
+                      }
+                    ]
+        },
+          {
+            label: 'RIR Allocation',
+            field: 'data.rir_allocation',
+            type: 'table',
+            fields: [
+              {
+                label: 'RIR Name',
+                field: 'rir_name'
+              },
+              {
+                label: 'Prefix',
+                field: 'prefix'
+              },
+              {
+                label: 'Date Allocated',
+                field: 'date_allocated',
+                type: 'date'
+              },
+              {
+                label: 'Allocation Status',
+                field: 'allocation_status'
+              }
+                    ]
+          },
+          {
+            label: 'Prefixes',
+            field: 'data.prefixes',
+            type: 'table',
+            fields: [
+              {
+                label: 'AS#',
+                field: 'asn.asn'
+              },
+              {
+                label: 'Prefix',
+                field: 'prefix'
+              },
+              {
+                label: 'ASName',
+                field: 'asn.name'
+              },
+              {
+                label: 'ASName description',
+                field: 'asn.description'
+              },
+              {
+                label: 'Name',
+                field: 'name'
+              },
+              {
+                label: 'Description',
+                field: 'description'
+              }
+		    ]
+          }
+            ]
+        }
 
   constructor () {
     super();
