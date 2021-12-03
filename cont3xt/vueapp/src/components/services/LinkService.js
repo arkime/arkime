@@ -9,7 +9,7 @@ export default {
     store.commit('SET_LINK_GROUPS_ERROR', '');
 
     return new Promise((resolve, reject) => {
-      fetch('api/linkGroup/getViewable').then((response) => {
+      fetch('api/linkGroup').then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
