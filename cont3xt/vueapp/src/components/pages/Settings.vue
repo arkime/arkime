@@ -43,8 +43,8 @@
 
       <!-- keys settings -->
       <div v-if="visibleTab === 'keys'">
-        <h1 class="mr-2 ml-2 w-100 d-flex justify-content-between align-items-start">
-          Link Groups
+        <h1 class="ml-2 w-100 d-flex justify-content-between align-items-start">
+          Keys
           <b-alert
             variant="success"
             :show="!!saveIntegrationSettingsSuccess.length">
@@ -52,7 +52,7 @@
             {{ saveIntegrationSettingsSuccess }}
           </b-alert>
           <b-button
-            class="mt-2"
+            class="mt-2 mr-3"
             variant="outline-success"
             @click="saveIntegrationSettings">
             <span class="fa fa-save mr-2" />
@@ -73,7 +73,7 @@
             :key="key"
             class="w-25 p-2"
             v-for="(setting, key) in integrationSettings">
-            <b-card>
+            <b-card :title="key">
               <b-input-group
                 size="sm"
                 :key="name"
