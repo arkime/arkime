@@ -28,25 +28,12 @@ class LinkGroup {
   /**
    * Return LinkGroups user can see
    */
-  static async apiGetViewable (req, res, next) {
-    const linkGroups = await Db.getMatchingLinkGroups(req.user.userId, 'viewRoles', [...req.user.getRoles()]);
+  static async apiGet (req, res, next) {
+    const linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...req.user.getRoles()]);
 
     // Set editable on any linkGroups that the user is allowed to edit
     for (const lg of linkGroups) {
       lg._editable = lg.creator === req.user.userId || req.user.hasRole(lg.editRoles);
-    }
-
-    res.send({ success: true, linkGroups: linkGroups });
-  }
-
-  /**
-   * Return LinkGroups user can edit
-   */
-  static async apiGetEditable (req, res, next) {
-    const linkGroups = await Db.getMatchingLinkGroups(req.user.userId, 'editRoles', [...req.user.getRoles()]);
-
-    // Set viewable on any linkGroups that the user is allowed to view
-    for (const lg of linkGroups) {
       lg._viewable = lg.creator === req.user.userId || req.user.hasRole(lg.viewRoles);
     }
 

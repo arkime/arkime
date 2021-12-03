@@ -109,8 +109,7 @@ app.use(Auth.doAuth);
 
 app.get('/api/user', User.apiGetUser);
 
-app.get('/api/linkGroup/getViewable', LinkGroup.apiGetViewable);
-app.get('/api/linkGroup/getEditable', LinkGroup.apiGetEditable);
+app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
 app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);

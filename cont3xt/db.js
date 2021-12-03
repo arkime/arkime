@@ -48,8 +48,8 @@ class Db {
   /**
    * Get all the links that match the creator and set of roles
    */
-  static async getMatchingLinkGroups (creator, rolesField, roles) {
-    return Db.implementation.getMatchingLinkGroups(creator, rolesField, roles);
+  static async getMatchingLinkGroups (creator, roles) {
+    return Db.implementation.getMatchingLinkGroups(creator, roles);
   }
 
   /**
@@ -158,7 +158,7 @@ class DbESImplementation {
     });
   }
 
-  async getMatchingLinkGroups (creator, rolesField, roles) {
+  async getMatchingLinkGroups (creator, roles) {
     const query = {
       size: 1000,
       query: {
@@ -176,10 +176,16 @@ class DbESImplementation {
       });
     }
     if (roles) {
-      const obj = {};
-      obj[rolesField] = roles;
       query.query.bool.should.push({
-        terms: obj
+        terms: {
+          editRoles: roles
+        }
+      });
+
+      query.query.bool.should.push({
+        terms: {
+          viewRoles: roles
+        }
       });
     }
 
@@ -249,17 +255,16 @@ class DbLMDBImplementation {
   /**
    * Get all the links that match the creator and set of roles
    */
-  async getMatchingLinkGroups (creator, rolesField, roles) {
+  async getMatchingLinkGroups (creator, roles) {
     const hits = [];
     this.store.getRange({})
       .filter(({ key, value }) => {
         if (creator !== undefined && creator === value.creator) { return true; }
         if (roles !== undefined) {
-          if (value[rolesField] === undefined) { return false; }
-          const match = roles.some(x => value[rolesField].includes(x));
-          if (!match) { return false; }
+          if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
+          if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
         }
-        return true;
+        return false;
       }).forEach(({ key, value }) => {
         value._id = key;
         hits.push(value);

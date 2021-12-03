@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 16;
+use Test::More tests => 12;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -10,10 +10,7 @@ esPost("/cont3xt_links/_delete_by_query?conflicts=proceed&refresh", '{ "query": 
 
 my $json;
 
-$json = cont3xtGet('/api/linkGroup/getViewable');
-eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
-
-$json = cont3xtGet('/api/linkGroup/getEditable');
+$json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
 $json = cont3xtPut('/api/linkGroup', to_json({
@@ -79,14 +76,10 @@ $json = cont3xtPut('/api/linkGroup', to_json({
 }));
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup/getViewable');
+$json = cont3xtGet('/api/linkGroup');
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
-eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"viewRoles":["superAdmin"],"links":[{"url":"http://www.foo.com","itypes":["ip", "domain"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
-
-$json = cont3xtGet('/api/linkGroup/getEditable');
-delete $json->{linkGroups}->[0]->{_id};
-eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_viewable":true,"viewRoles":["superAdmin"],"links":[{"url":"http://www.foo.com","itypes":["ip","domain"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
+eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["superAdmin"],"links":[{"url":"http://www.foo.com","itypes":["ip", "domain"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
 
 $json = cont3xtPut("/api/linkGroup/$id", to_json({
   name => "Links1",
@@ -100,22 +93,15 @@ $json = cont3xtPut("/api/linkGroup/$id", to_json({
 }));
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup/getViewable');
+$json = cont3xtGet('/api/linkGroup');
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
-eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
-
-$json = cont3xtGet('/api/linkGroup/getEditable');
-delete $json->{linkGroups}->[0]->{_id};
-eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
+eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
 
 $json = cont3xtDelete("/api/linkGroup/$id", "{}");
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup/getViewable');
-eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
-
-$json = cont3xtGet('/api/linkGroup/getEditable', 1);
+$json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
 #$json = cont3xtGet('/api/roles', 1);
