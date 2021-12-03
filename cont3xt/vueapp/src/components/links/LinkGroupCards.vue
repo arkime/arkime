@@ -6,7 +6,7 @@
       v-for="(linkGroup, index) in getLinkGroups">
       <!-- view (for con3xt page and users who can view but not edit) -->
       <b-card
-        v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || hasRole(linkGroup.editRoles, getUser.roles)))"
+        v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable))"
         class="h-100 align-self-stretch">
         <template #header>
           <h6 class="mb-0">
@@ -202,7 +202,10 @@ export default {
     },
     openAllLinks (linkGroup) {
       for (const link of linkGroup.links) {
-        if (link.url && this.getCheckedLinks[linkGroup._id] && this.getCheckedLinks[linkGroup._id][link.name]) {
+        if (link.url &&
+          link.itypes.includes(this.itype) &&
+          this.getCheckedLinks[linkGroup._id] &&
+          this.getCheckedLinks[linkGroup._id][link.name]) {
           window.open(this.getUrl(link.url), '_blank');
         }
       }
@@ -223,9 +226,6 @@ export default {
       }
 
       return count === linkGroup.links.length;
-    },
-    hasRole (roles, userRoles) {
-      return this.$options.filters.hasRole(roles, userRoles);
     }
   }
 };
