@@ -31,7 +31,10 @@
 
       <b-tabs content-class="mt-3">
         <!-- general stats table -->
-        <b-tab title="Integrations" active>
+        <b-tab
+          title="Integrations"
+          @click="clickTab('integrations')"
+          :active="activeTab === 'integrations'">
           <b-table
             small
             hover
@@ -40,13 +43,18 @@
             :filter="filter"
             :fields="fields"
             :items="data.stats"
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="sortDesc"
             :filter-included-fields="filterOn"
             empty-text="There are no integrations to show stats for"
             :empty-filtered-text="`There are no integrations that match the name: ${filter}`">
           </b-table>
         </b-tab> <!-- /general stats table -->
         <!-- itype stats table -->
-        <b-tab title="ITypes">
+        <b-tab
+          title="ITypes"
+          @click="clickTab('itypes')"
+          :active="activeTab === 'itypes'">
           <b-table
             small
             hover
@@ -54,7 +62,9 @@
             show-empty
             :filter="filter"
             :fields="fields"
+            :sort-by.sync="sortBy"
             :items="data.itypeStats"
+            :sort-desc.sync="sortDesc"
             :filter-included-fields="filterOn"
             empty-text="There are no itypes to show stats for"
             :empty-filtered-text="`There are no itypes that match the name: ${filter}`">
@@ -97,8 +107,11 @@ export default {
       data: {},
       error: '',
       loading: true,
+      sortBy: 'name',
+      sortDesc: false,
       filter: '',
       filterOn: ['name'],
+      activeTab: 'integrations',
       fields: [{
         key: 'name',
         sortable: true
@@ -166,6 +179,12 @@ export default {
     };
   },
   mounted () {
+    // set active tab
+    const hash = location.hash.substring(1, location.hash.length);
+    if (hash === 'itypes') {
+      this.activeTab = 'itypes';
+    }
+
     Cont3xtService.getStats().then((response) => {
       this.loading = false;
       this.data = response;
@@ -180,6 +199,10 @@ export default {
     },
     commaStringRound (val) {
       return this.$options.filters.roundCommaString(val, 2);
+    },
+    clickTab (tab) {
+      location.hash = tab;
+      this.activeTab = tab;
     }
   }
 };

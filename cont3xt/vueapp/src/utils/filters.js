@@ -81,6 +81,9 @@ Vue.filter('baseRIR', baseRIR);
  * @returns {Boolean} - True if the user has the role, false if
  */
 export const hasRole = function (roles, userRoles) {
+  if (!roles) { return false; }
+  if (!userRoles) { return false; }
+
   return roles.some((role) => {
     return userRoles.indexOf(role) > -1;
   });
