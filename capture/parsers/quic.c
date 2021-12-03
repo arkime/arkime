@@ -380,7 +380,7 @@ LOCAL void hkdfExpandLabel(uint8_t *secret, int secretLen, char *label, uint8_t 
     g_hmac_unref(hmac);
 }
 /******************************************************************************/
-LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int which, void *UNUSED(uw))
+LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
 // This is the most obfuscate protocol ever
 // Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
@@ -395,7 +395,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     }
 
     // Min length for quic packets because of padding
-    if (len < 1200 || len > 3000 || which != 0)
+    if (len < 1200 || len > 3000)
         return;
 
     // Only look for long form initial
@@ -420,6 +420,8 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     // Source
     int slen = 0;
     BSB_IMPORT_u08(bsb, slen);
+    if (slen != 0)
+        return;
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
@@ -549,18 +551,22 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
 
     BSB_INIT(bsb, out, outLen);
 
-    // We are going to assume CRYPTO is first, ALW fix
-    if (BSB_PEEK(bsb) != 0x06)
-        return;
+    while (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) > 1) {
+        uint8_t type = 0;
+        BSB_IMPORT_u08(bsb, type);
+        if (type == 0 || type == 1) // PADDING or PING
+            continue;
 
-    BSB_IMPORT_skip(bsb, 1);
-    quic_get_number(&bsb); // offset, ALW fix
-    int length = quic_get_number(&bsb);
-
-    if (process_client_hello_data)
-        process_client_hello_data(session, BSB_WORK_PTR(bsb), MIN(BSB_REMAINING(bsb), length));
-
-    moloch_session_add_protocol(session, "quic");
+        if (type == 6) { // CRYPTO
+            moloch_session_add_protocol(session, "quic");
+            quic_get_number(&bsb); // offset, ALW fix
+            int length = quic_get_number(&bsb);
+            if (process_client_hello_data)
+                process_client_hello_data(session, BSB_WORK_PTR(bsb), MIN(BSB_REMAINING(bsb), length));
+            continue;
+        }
+        return; // UNKNOWN
+    }
 }
 /******************************************************************************/
 void moloch_parser_init()
