@@ -1254,9 +1254,11 @@ void moloch_rules_run_field_set(MolochSession_t *session, int pos, const gpointe
         }
 
         // See if this value is in the hash table of values we are watching for
-        rules = g_hash_table_lookup(current.fieldsHash[pos], value);
-        if (rules)
-            moloch_rules_run_field_set_rules(session, pos, rules);
+        if (current.fieldsHash[pos]) {
+            rules = g_hash_table_lookup(current.fieldsHash[pos], value);
+            if (rules)
+                moloch_rules_run_field_set_rules(session, pos, rules);
+        }
     }
 }
 /******************************************************************************/
