@@ -43,10 +43,65 @@
 
       <!-- keys settings -->
       <div v-if="visibleTab === 'keys'">
-        <div class="text-center">
-          <b-card>
-            <h1>Coming soon!</h1>
-          </b-card>
+        <h1 class="mr-2 ml-2 w-100 d-flex justify-content-between align-items-start">
+          Link Groups
+          <b-alert
+            variant="success"
+            :show="!!saveIntegrationSettingsSuccess.length">
+            <span class="fa fa-check mr-2" />
+            {{ saveIntegrationSettingsSuccess }}
+          </b-alert>
+          <b-button
+            class="mt-2"
+            variant="outline-success"
+            @click="saveIntegrationSettings">
+            <span class="fa fa-save mr-2" />
+            Save
+          </b-button>
+        </h1>
+        <div class="d-flex flex-wrap">
+          <!-- integration settings error -->
+          <b-alert
+            dismissible
+            variant="danger"
+            style="z-index: 2000;"
+            :show="!!integrationSettingsErr"
+            class="position-fixed fixed-bottom m-0 rounded-0">
+            {{ integrationSettingsErr }}
+          </b-alert> <!-- /integration settings error -->
+          <div
+            :key="key"
+            class="w-25 p-2"
+            v-for="(setting, key) in integrationSettings">
+            <b-card>
+              <b-input-group
+                size="sm"
+                :key="name"
+                class="mb-1 mt-1"
+                v-for="(field, name) in setting.settings">
+                <b-input-group-prepend
+                  class="cursor-help"
+                  v-b-tooltip.hover="field.help">
+                  <b-input-group-text>
+                    {{ name }}
+                  </b-input-group-text>
+                </b-input-group-prepend>
+                <b-form-input
+                  v-model="setting.values[name]"
+                  :type="field.password && !field.showValue ? 'password' : 'text'"
+                />
+                <b-input-group-append
+                  v-if="field.password"
+                  @click="toggleVisiblePasswordField(field)">
+                  <b-input-group-text>
+                    <span class="fa"
+                      :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
+                    </span>
+                  </b-input-group-text>
+                </b-input-group-append>
+              </b-input-group>
+            </b-card>
+          </div>
         </div>
       </div> <!-- /keys settings -->
 
@@ -97,6 +152,7 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import UserService from '@/components/services/UserService';
 import LinkGroupCards from '@/components/links/LinkGroupCards';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
@@ -108,7 +164,10 @@ export default {
   },
   data () {
     return {
-      visibleTab: 'linkgroups'
+      visibleTab: 'linkgroups',
+      integrationSettings: {},
+      integrationSettingsErr: '',
+      saveIntegrationSettingsSuccess: ''
     };
   },
   created () {
@@ -119,6 +178,12 @@ export default {
         this.visibleTab = tab;
       }
     }
+
+    UserService.getIntegrationSettings().then((response) => {
+      this.integrationSettings = response;
+    }).catch((err) => {
+      this.integrationSettingsErr = err;
+    });
   },
   computed: {
     ...mapGetters(['getLinkGroups', 'getLinkGroupsError']),
@@ -137,6 +202,23 @@ export default {
       this.visibleTab = tabName;
       this.$router.push({
         hash: tabName
+      });
+    },
+    /* toggles the visibility of the value of password fields */
+    toggleVisiblePasswordField (field) {
+      this.$set(field, 'showValue', !field.showValue);
+    },
+    saveIntegrationSettings () {
+      const settings = {};
+      for (const setting in this.integrationSettings) {
+        settings[setting] = this.integrationSettings[setting].values;
+      }
+
+      UserService.setIntegrationSettings({ settings }).then((response) => {
+        // TODO ECR success
+        this.saveIntegrationSettingsSuccess = 'Saved!';
+      }).catch((err) => {
+        this.integrationSettingsErr = err;
       });
     }
   }
