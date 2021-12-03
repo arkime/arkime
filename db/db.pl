@@ -712,7 +712,6 @@ sub fieldsCreate
     esPut("/${PREFIX}fields_v30?master_timeout=${ESTIMEOUT}s", $settings);
     esAlias("add", "fields_v30", "fields");
     fieldsUpdate();
-    ecsFieldsUpdate();
 }
 ################################################################################
 sub newField
@@ -1108,6 +1107,7 @@ sub fieldsUpdate
       "type": "termfield",
       "dbField2": "huntName"
     }');
+    ecsFieldsUpdate();
 }
 
 ################################################################################
@@ -6455,7 +6455,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "update-fields") {
     fieldsUpdate();
-    ecsFieldsUpdate();
     exit 0;
 } elsif ($ARGV[1] =~ /^es-adduser$/) {
     my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character password for $ARGV[2]:");
@@ -7305,7 +7304,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions3Update();
         historyUpdate();
         fieldsUpdate();
-        ecsFieldsUpdate();
     } elsif ($main::versionNumber <= 71) {
         sessions3Update();
         historyUpdate();
