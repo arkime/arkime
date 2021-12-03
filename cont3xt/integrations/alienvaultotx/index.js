@@ -35,8 +35,79 @@ class AlienVaultOTXIntegration extends Integration {
   }
 
   card = {
-    title: 'Alien Vault OTX for %{query}',
+    title: 'AlienVault OTX for %{query}',
     fields: [
+      {
+        label: 'Validation',
+        field: 'general.validation',
+        type: 'table',
+        fields: [
+          { label: 'Name', field: 'name' }, { label: 'Source', field: 'source' }, { label: 'Message', field: 'message' }
+        ]
+      },
+      {
+        label: 'Pulse count:',
+        field: 'general.pulse_info.count',
+        type: 'string'
+      },
+      {
+        label: 'Malware count:',
+        field: 'malware.count',
+        type: 'string'
+      },
+      {
+        label: 'Reputation:',
+        field: 'general.reputation',
+        type: 'string'
+      },
+      {
+        label: 'Other Reputation:',
+        field: 'reputation.reputation.activities',
+        type: 'table',
+        fields: [
+          { label: 'Type', field: 'name' }, { label: 'Data', field: 'data_key' }, { label: 'Earliest Observation', field: 'first_date', type: 'date' }, { label: 'Latest Observation', field: 'last_date', type: 'date' }, { label: 'Alt Data', field: 'data' }
+        ]
+      },
+      {
+        label: 'Pulses:',
+        field: 'general.pulse_info.pulses',
+        type: 'table',
+        fields: [
+          { label: 'Description', field: 'description' }, { label: 'Created', field: 'created', type: 'date' }, { label: 'Modified', field: 'modified', type: 'date' }, { label: 'Tags', field: 'tags' }, { label: 'Targeted Countries', field: 'targeted_countries' }, { label: 'ID', field: 'id' }
+        ]
+      },
+      {
+        label: 'Malware:',
+        field: 'malware.data',
+        type: 'table',
+        fields: [
+          { label: 'Hash', field: 'hash', pivot: 'true' }, { label: 'Detections', field: 'detections' }, { label: 'Date', field: 'date', type: 'date' }
+        ]
+      },
+      {
+        label: 'URL List',
+        field: 'url_list.url_list',
+        type: 'table',
+        fields: [
+          { label: 'URL', field: 'url', pivot: 'true' }, { label: 'Status', field: 'httpcode' }, { label: 'GSB', field: 'gsb' }, { label: 'Date', field: 'date', type: 'date' }
+        ]
+      },
+      {
+        label: 'PDNS',
+        field: 'passive_dns.passive_dns',
+        type: 'table',
+        fields: [
+          { label: 'Type', field: 'record_type' }, { label: 'Hostname', field: 'hostname', pivot: 'true' }, { label: 'first_seen', field: 'first', type: 'date' }, { label: 'last_seen', field: 'last', type: 'date' }
+        ]
+      },
+      {
+        label: 'Whois - Related Domains',
+        field: 'whois.related',
+        type: 'table',
+        fields: [
+          { label: 'Domain', field: 'domain' }, { label: 'Related by', field: 'related' }, { label: 'Related type', field: 'related_type' }
+        ]
+      }
     ]
   }
 
