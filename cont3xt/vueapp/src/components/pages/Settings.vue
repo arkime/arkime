@@ -82,41 +82,62 @@
               :key="key"
               class="w-25 p-2"
               v-for="(setting, key) in integrationSettings">
-              <b-card :title="key ">
-                <a v-if="!!setting.homePage" :href="setting.homePage">home page</a> <!-- ELYSE FIX -->
-                <span v-if="setting.globalConfiged" > Globally configured</span> <!-- ELYSE IS OUR ONLY HOPE -->
-                <b-input-group
-                  size="sm"
-                  :key="name"
-                  class="mb-1 mt-1"
-                  v-for="(field, name) in setting.settings">
-                  <b-input-group-prepend
-                    class="cursor-help"
-                    v-b-tooltip.hover="field.help">
-                    <b-input-group-text>
-                      {{ name }}
-                    </b-input-group-text>
-                  </b-input-group-prepend>
+              <b-card>
+                <template #header>
+                  <h4 class="mb-0 d-inline">
+                    {{ key }}
+                  </h4>
+                  <div class="pull-right mt-1">
+                    <span
+                      v-if="setting.globalConfiged"
+                      class="fa fa-globe fa-lg mr-2 cursor-help"
+                      v-b-tooltip.hover="'This setting is globally configured'"
+                    />
+                    <a target="_blank"
+                      :href="setting.homePage"
+                      v-if="!!setting.homePage"
+                      v-b-tooltip.hover="`${key} home page`">
+                      <span class="fa fa-home fa-lg" />
+                    </a>
+                  </div>
+                </template>
+                <template v-for="(field, name) in setting.settings">
                   <b-form-checkbox
-                    v-if="field.type == 'boolean'"
-                    v-model="setting.values[name]"
-                    value="true"
-                  />
-                  <b-form-input
+                    :key="name"
+                    v-if="field.type === 'boolean'"
+                    v-model="setting.values[name]">
+                    {{ name }}
+                  </b-form-checkbox>
+                  <b-input-group
                     v-else
-                    v-model="setting.values[name]"
-                    :type="field.password && !field.showValue ? 'password' : 'text'"
-                  />
-                  <b-input-group-append
-                    v-if="field.password"
-                    @click="toggleVisiblePasswordField(field)">
-                    <b-input-group-text>
-                      <span class="fa"
-                        :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
-                      </span>
-                    </b-input-group-text>
-                  </b-input-group-append>
-                </b-input-group>
+                    size="sm"
+                    :key="name"
+                    class="mb-1 mt-1">
+                    <b-input-group-prepend
+                      class="cursor-help"
+                      v-b-tooltip.hover="field.help">
+                      <b-input-group-text>
+                        {{ name }}
+                        <span class="text-info"
+                          v-if="field.required">*</span>
+                      </b-input-group-text>
+                    </b-input-group-prepend>
+                    <b-form-input
+                      v-model="setting.values[name]"
+                      :state="getState(field, setting, name)"
+                      :type="field.password && !field.showValue ? 'password' : 'text'"
+                    />
+                    <b-input-group-append
+                      v-if="field.password"
+                      @click="toggleVisiblePasswordField(field)">
+                      <b-input-group-text>
+                        <span class="fa"
+                          :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
+                        </span>
+                      </b-input-group-text>
+                    </b-input-group-append>
+                  </b-input-group>
+                </template>
               </b-card>
             </div>
           </template>
@@ -252,7 +273,6 @@ export default {
         this.rawIntegrationSettings = undefined;
         return;
       }
-      // TODO - add each field that can have a value to the raw settings?
       const settings = this.getIntegrationSettingValues();
       this.rawIntegrationSettings = settings;
     },
@@ -272,6 +292,13 @@ export default {
           this.$set(this.integrationSettings[s], 'values', rawIntegrationSettings[s]);
         }
       }
+    },
+    getState (field, setting, sname) {
+      if (!field.required) {
+        return false;
+      }
+
+      return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
     /* helpers ------------------------------------------------------------- */
     getIntegrationSettingValues () {
