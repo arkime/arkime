@@ -38,8 +38,15 @@ class LinkGroup {
     }
 
     const reordered = [];
+    const unordered = [];
     const settings = req.user.cont3xt ?? {};
     if (settings.linkGroup && settings.linkGroup.order) {
+      for (const group of linkGroups) {
+        if (settings.linkGroup.order.indexOf(group._id) === -1) {
+          unordered.push(group);
+        }
+      }
+
       for (const id of settings.linkGroup.order) {
         for (const group of linkGroups) {
           if (group._id === id) {
@@ -50,7 +57,7 @@ class LinkGroup {
     }
 
     if (reordered.length) {
-      linkGroups = reordered;
+      linkGroups = reordered.concat(unordered);
     }
 
     res.send({ success: true, linkGroups: linkGroups });
