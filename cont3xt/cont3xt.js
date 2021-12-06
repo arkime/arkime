@@ -152,13 +152,15 @@ function apiPutSettings (req, res, next) {
       return res.send({ success: false, text: 'Fetching user issue' });
     }
 
+    if (user.cont3xt === undefined) { user.cont3xt = {}; }
+
     if (!req.body?.settings) {
       user.cont3xt.settings = req.body.settings;
       save = true;
     }
 
     if (!req.body?.linkGroup) {
-      user.cont3xt.settings = req.body.linkGroup;
+      user.cont3xt.linkGroup = req.body.linkGroup;
       save = true;
     }
     if (!save) {
