@@ -120,46 +120,54 @@ app.get('/api/user', User.apiGetUser);
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
+app.get('/api/settings', apiGetSettings);
+app.put('/api/settings', [jsonParser], apiPutSettings);
 app.get('/api/integration/settings', Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser], Integration.apiPutSettings);
 app.get('/api/integration/stats', Integration.apiStats);
 
-app.get('/test/:len', (req, res) => {
-  const len = req.params.len || 100;
-  const multiRead = req.query.multiRead === 'true';
-  const induceErr = req.query.induceErr === 'true';
-  const serverErr = req.query.serverErr === 'true';
+// ----------------------------------------------------------------------------
+// Cont3xt Web APIs
+// ----------------------------------------------------------------------------
 
-  console.log('/test');
+/**
+ * Return all the cont3xt settings
+ */
+function apiGetSettings (req, res, next) {
+  const cont3xt = req.user.cont3xt ?? {};
+  res.send({
+    success: true,
+    settings: cont3xt.settings ?? {},
+    linkGroup: cont3xt.linkGroup ?? {}
+  });
+}
 
-  if (serverErr) {
-    res.status(500);
-    return res.end();
-  }
+/**
+ * Save all the cont3xt settings
+ */
+function apiPutSettings (req, res, next) {
+  let save = false;
+  User.getUser(req.user.userId, (err, user) => {
+    if (err || !user) {
+      return res.send({ success: false, text: 'Fetching user issue' });
+    }
 
-  for (let i = 0; i < len; i++) {
-    setTimeout(() => {
-      if (multiRead) {
-        res.write(`{"before":${i}}\n{"num":`);
-        res.write(`${i}}\n{"after":${i}}\n`);
-      } else {
-        const json = {
-          sent: i + 1,
-          data: { num: i },
-          name: `${i}-name`,
-          total: parseInt(len)
-        };
-        res.write(JSON.stringify(json) + '\n');
-      }
+    if (!req.body?.settings) {
+      user.cont3xt.settings = req.body.settings;
+      save = true;
+    }
 
-      if (induceErr) {
-        if (i % 2 === 1) { res.write('{bad:json}{here}\n'); }
-      }
-    }, 100 * i);
-  }
-
-  setTimeout(() => { res.end(JSON.stringify({ finished: true })); }, 100 * len);
-});
+    if (!req.body?.linkGroup) {
+      user.cont3xt.settings = req.body.linkGroup;
+      save = true;
+    }
+    if (!save) {
+      return res.send({ success: false, text: 'Nothing sent to change' });
+    }
+    user.save();
+    res.send({ success: true, text: 'Saved' });
+  });
+}
 
 // ----------------------------------------------------------------------------
 // VUE APP
