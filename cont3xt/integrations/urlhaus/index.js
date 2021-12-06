@@ -26,6 +26,13 @@ class URLHausIntegration extends Integration {
     ip: 'fetch'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   card = {
     title: 'URLHaus for %{query}',
     fields: [

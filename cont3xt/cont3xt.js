@@ -120,7 +120,8 @@ app.get('/api/user', User.apiGetUser);
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
-app.get('/api/integration/userSettings', Integration.apiUserSettings);
+app.get('/api/integration/settings', Integration.apiGetSettings);
+app.put('/api/integration/settings', [jsonParser], Integration.apiPutSettings);
 app.get('/api/integration/stats', Integration.apiStats);
 
 app.get('/test/:len', (req, res) => {
@@ -249,21 +250,22 @@ function processArgs (argv) {
 // Config - temporary
 // ----------------------------------------------------------------------------
 
-User.prototype.getCont3xtConfig = function (k, d) {
-  const v = this.cont3xt?.[k];
+User.prototype.getCont3xtKeys = function () {
+  const v = this.cont3xt?.keys;
 
   if (!v) {
-    return d;
+    return undefined;
   }
 
   return Auth.auth2obj(v, Auth.passwordSecret256);
 };
 
-User.prototype.setCont3xtConfig = function (k, v) {
+User.prototype.setCont3xtKeys = function (v) {
   if (!this.cont3xt) {
     this.cont3xt = {};
   }
-  this.cont3xt[k] = Auth.obj2auth(v, Auth.passwordSecret256);
+  this.cont3xt.keys = Auth.obj2auth(v, Auth.passwordSecret256);
+  this.save(() => { console.log('SAVED'); });
 };
 
 function getConfig (section, sectionKey, d) {

@@ -23,13 +23,15 @@ class PassiveTotalIntegration extends Integration {
   itypes = {
   };
 
-  userSettings = {
-    PassiveTotalUser: {
-      help: 'Your Passive Total api user'
+  settings = {
+    user: {
+      help: 'Your Passive Total api user',
+      required: true
     },
-    PassiveTotalKey: {
+    key: {
       help: 'Your Passive Total api key',
-      password: true
+      password: true,
+      required: true
     }
   };
 
@@ -51,6 +53,13 @@ class PassiveTotalWhoisIntegration extends Integration {
   itypes = {
     domain: 'fetchDomain'
   };
+
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
 
   card = {
     title: 'PassiveTotal Whois for %{query}',
@@ -101,8 +110,8 @@ class PassiveTotalWhoisIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotalUser');
-      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
+      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -140,6 +149,13 @@ class PassiveTotalSubdomainsIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   card = {
     title: 'PassiveTotal Subdomains for %{query}',
     fields: [
@@ -162,8 +178,8 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotalUser');
-      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
+      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
       if (!puser || !pkey) {
         return undefined;
       }
@@ -201,6 +217,13 @@ class PassiveTotalDNSIntegration extends Integration {
     ip: 'fetch',
     domain: 'fetch'
   };
+
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
 
   card = {
     title: 'PassiveTotal Domain Passive DNS for %{query}',
@@ -252,8 +275,8 @@ class PassiveTotalDNSIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const puser = this.getUserConfig(user, 'PassiveTotalUser');
-      const pkey = this.getUserConfig(user, 'PassiveTotalKey');
+      const puser = this.getUserConfig(user, 'PassiveTotal', 'user');
+      const pkey = this.getUserConfig(user, 'PassiveTotal', 'key');
       if (!puser || !pkey) {
         return undefined;
       }

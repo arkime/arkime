@@ -286,6 +286,12 @@ class User {
   /******************************************************************************/
   // Per User Methods
   /******************************************************************************/
+  /**
+   * Save user, callback only
+   */
+  save (cb) {
+    User.setUser(this.userId, this, cb);
+  }
 
   /**
    * Generate set of all the roles this user has

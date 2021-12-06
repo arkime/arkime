@@ -67,9 +67,15 @@ class SpurIntegration extends Integration {
     ]
   }
 
-  userSettings = {
-    SpurKey: {
-      help: 'Your spur api key'
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
+      help: 'Your spur api key',
+      password: true,
+      required: true
     }
   }
 
@@ -81,7 +87,7 @@ class SpurIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'SpurKey');
+      const key = this.getUserConfig(user, 'Spur', 'key');
       if (!key) {
         return undefined;
       }

@@ -25,10 +25,15 @@ class URLScanIntegration extends Integration {
     ip: 'fetch'
   };
 
-  userSettings = {
-    URLScanKey: {
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
       help: 'Your URLScan api key',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -87,7 +92,7 @@ class URLScanIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const key = this.getUserConfig(user, 'URLScanKey');
+      const key = this.getUserConfig(user, 'URLScan', 'key');
       if (!key) {
         return undefined;
       }

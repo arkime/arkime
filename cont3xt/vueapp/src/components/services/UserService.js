@@ -47,7 +47,7 @@ export default {
    */
   getIntegrationSettings () {
     return new Promise((resolve, reject) => {
-      fetch('api/integration/userSettings').then((response) => {
+      fetch('api/integration/settings').then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
@@ -67,7 +67,7 @@ export default {
    */
   setIntegrationSettings (settings) {
     return new Promise((resolve, reject) => {
-      fetch('api/integration/userSettings', {
+      fetch('api/integration/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)

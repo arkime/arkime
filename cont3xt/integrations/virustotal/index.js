@@ -23,10 +23,11 @@ class VirusTotalIntegration extends Integration {
   itypes = {
   };
 
-  userSettings = {
-    VirusTotalKey: {
+  settings = {
+    key: {
       help: 'Your virustotal api key',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -48,6 +49,13 @@ class VirusTotalDomainIntegration extends Integration {
   itypes = {
     domain: 'fetchDomain'
   };
+
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
 
   card = {
     title: 'VirusTotal Domain for %{query}',
@@ -116,7 +124,7 @@ class VirusTotalDomainIntegration extends Integration {
 
   async fetchDomain (user, domain) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotalKey');
+      const key = this.getUserConfig(user, 'VirusTotal', 'key');
       if (!key) {
         return undefined;
       }
@@ -163,6 +171,13 @@ class VirusTotalIPIntegration extends Integration {
   itypes = {
     ip: 'fetchIp'
   };
+
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
 
   card = {
     title: 'VirusTotal IP for %{query}',
@@ -231,7 +246,7 @@ class VirusTotalIPIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotalKey');
+      const key = this.getUserConfig(user, 'VirusTotal', 'key');
       if (!key) {
         return undefined;
       }
@@ -279,6 +294,13 @@ class VirusTotalHashIntegration extends Integration {
     hash: 'fetchHash'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   card = {
     title: 'VirusTotal Hash for %{query}',
     fields: [
@@ -317,7 +339,7 @@ class VirusTotalHashIntegration extends Integration {
 
   async fetchHash (user, hash) {
     try {
-      const key = this.getUserConfig(user, 'VirusTotalKey');
+      const key = this.getUserConfig(user, 'VirusTotal', 'key');
       if (!key) {
         return undefined;
       }

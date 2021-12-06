@@ -25,13 +25,19 @@ class TwilioIntegration extends Integration {
     phone: 'fetch'
   };
 
-  userSettings = {
-    TwilioSID: {
-      help: 'Your Twilio SID'
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
     },
-    TwilioToken: {
+    sid: {
+      help: 'Your Twilio SID',
+      required: true
+    },
+    token: {
       help: 'Your Twilio Token',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -58,12 +64,12 @@ class TwilioIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const sid = this.getUserConfig(user, 'TwilioSID');
+      const sid = this.getUserConfig(user, 'Twilio', 'sid');
       if (!sid) {
         return undefined;
       }
 
-      const token = this.getUserConfig(user, 'TwilioToken');
+      const token = this.getUserConfig(user, 'Twilio', 'token');
       if (!token) {
         return undefined;
       }

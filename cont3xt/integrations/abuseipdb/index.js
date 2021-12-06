@@ -75,10 +75,15 @@ class AbuseIPDBIntegration extends Integration {
     ]
   }
 
-  userSettings = {
-    AbuseIPDBKey: {
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
       help: 'Your AbuseIPDB api key',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -90,7 +95,7 @@ class AbuseIPDBIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'AbuseIPDBKey');
+      const key = this.getUserConfig(user, this.name, 'key');
       if (!key) {
         return undefined;
       }

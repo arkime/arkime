@@ -28,9 +28,15 @@ class AlienVaultOTXIntegration extends Integration {
     url: 'fetchHash'
   };
 
-  userSettings = {
-    AlienVaultOTXKey: {
-      help: 'Your Alien Vault OTX Key'
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
+      help: 'Your Alien Vault OTX Key',
+      password: true,
+      required: true
     }
   }
 
@@ -119,7 +125,7 @@ class AlienVaultOTXIntegration extends Integration {
 
   async fetch (user, type, query) {
     try {
-      const key = this.getUserConfig(user, 'AlienVaultOTXKey');
+      const key = this.getUserConfig(user, this.name, 'key');
       if (!key) {
         return undefined;
       }

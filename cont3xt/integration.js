@@ -32,6 +32,7 @@ class Integration {
   static cache;
   static getConfig;
   static cont3xtStartTime = Date.now();
+  static integrationsByName = {};
   static integrations = {
     all: [],
     ip: [],
@@ -122,6 +123,7 @@ class Integration {
     integration.normalizeCard();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
+    Integration.integrationsByName[integration.name] = integration;
     Integration.integrations.all.push(integration);
     for (const itype in integration.itypes) {
       Integration.integrations[itype].push(integration);
@@ -182,9 +184,9 @@ class Integration {
       if (Object.keys(integration.itypes).length === 0) { continue; }
 
       let doable = true;
-      if (integration.userSettings) {
-        for (const setting in integration.userSettings) {
-          if (!integration.getUserConfig(req.user, setting)) {
+      if (integration.settings) {
+        for (const setting in integration.settings) {
+          if (integration.settings[setting].required && !integration.getUserConfig(req.user, integration.name, setting)) {
             doable = false;
             break;
           }
@@ -193,14 +195,14 @@ class Integration {
 
       // User can override card display
       let card = integration.card;
-      const cardstr = integration.getUserConfig(req.user, integration.name + 'Card');
+      const cardstr = integration.getUserConfig(req.user, integration.name, 'card');
       if (cardstr) {
         card = JSON.parse(cardstr);
         // Should normalize here
       }
 
       // User can override order
-      const order = integration.getUserConfig(req.user, integration.name + 'Order', integration.order);
+      const order = integration.getUserConfig(req.user, integration.name, 'order', integration.order);
 
       results[integration.name] = {
         doable: doable,
@@ -243,12 +245,23 @@ class Integration {
       }
     };
 
+    const keys = shared.user.getCont3xtKeys();
+
     let normalizedQuery = query;
     if (itype === 'ip') {
       normalizedQuery = ipaddr.parse(query).toNormalizedString();
     }
 
     for (const integration of integrations) {
+      // Can disable a integration per user
+      if (keys?.[integration.name]?.disabled === 'true') {
+        shared.total--;
+        if (Integration.debug > 1) {
+          console.log('DISABLED', integration.name);
+        }
+        continue;
+      }
+
       const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
       const stats = integration.stats;
       if (itypeStats[itype] === undefined) {
@@ -374,22 +387,15 @@ class Integration {
     const itype = req.params.itype;
     const query = req.body.query.trim();
 
-    const integrations = Integration.integrations[itype];
+    const integration = Integration.integrationsByName[req.params.integration];
 
-    if (integrations === undefined) {
-      res.send({ success: false, text: `Itype ${itype} not found` });
-    }
-
-    let integration;
-
-    for (const i of integrations) {
-      if (i.name === req.params.integration) {
-        integration = i;
-      }
-    }
-
-    if (integrations === undefined) {
+    if (integration === undefined || integration.itypes[itype] === undefined) {
       res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
+    }
+
+    const keys = req.user.getCont3xtKeys();
+    if (keys?.[integration.name]?.disabled === 'true') {
+      res.send({ success: false, text: `integration ${itype} ${req.params.integration} disabled` });
     }
 
     const stats = integration.stats;
@@ -433,25 +439,59 @@ class Integration {
    * Return all the settings and current values that a user can set about
    * Intergrations so a Setting UI can be built on the fly.
    */
-  static async apiUserSettings (req, res, next) {
+  static async apiGetSettings (req, res, next) {
     const result = {};
     const integrations = Integration.integrations.all;
+    const keys = req.user.getCont3xtKeys();
     for (const integration of integrations) {
-      if (integration.userSettings) {
-        const values = {};
-        for (const setting in integration.userSettings) {
-          const v = req.user.getCont3xtConfig(setting);
-          if (v) {
-            values[setting] = v;
+      if (!integration.settings) { continue; }
+
+      // Any values saved for this user, we don't send global values
+      const values = {};
+      if (keys?.[integration.name]) {
+        const ivalues = keys[integration.name];
+        for (const setting in integration.settings) {
+          if (ivalues[setting]) {
+            values[setting] = ivalues[setting];
           }
         }
-        result[integration.name] = {
-          settings: integration.userSettings,
-          values: values
-        };
       }
+
+      // All the required items are filled out in global config?
+      let globalConfiged = true;
+      let cnt = 0;
+      for (const setting in integration.settings) {
+        if (integration.settings[setting].required) {
+          cnt++;
+          if (Integration.getConfig(integration.name, setting) === undefined) {
+            globalConfiged = false;
+            break;
+          }
+        }
+      }
+
+      // If there are no required fields then don't say it is global configured
+      if (cnt === 0) { globalConfiged = false; }
+
+      result[integration.name] = {
+        settings: integration.settings,
+        values: values,
+        globalConfiged: globalConfiged
+      };
     }
     res.send({ success: true, settings: result });
+  }
+
+  /**
+   * Return all the settings and current values that a user can set about
+   * Intergrations so a Setting UI can be built on the fly.
+   */
+  static async apiPutSettings (req, res, next) {
+    if (!req.body?.settings) {
+      res.send({ success: false, text: 'Missing settings' });
+    }
+    req.user.setCont3xtKeys(req.body.settings);
+    res.send({ success: true, text: 'Saved' });
   }
 
   /**
@@ -475,34 +515,15 @@ class Integration {
   }
 
   /**
-   * Return a config value by first check the user, then the section, and then the cont3xt section.
-   * If the start of the k matches section, it is removed before checking the section.
-   *
-   * ALW TODO - This probably should be in cont3xt.js?
+   * Return a config value by first check the user, then the interation name section.
    */
-  getUserConfigFull (user, section, k, d) {
-    if (user.cont3xt) {
-      const v = user.getCont3xtConfig(k);
-      if (v !== undefined) { return v; }
+  getUserConfig (user, section, key, d) {
+    if (user.cont3xt?.keys) {
+      const keys = user.getCont3xtKeys();
+      if (keys[section]?.[key]) { return keys[section]?.[key]; }
     }
 
-    if (k.startsWith(section)) {
-      const v = Integration.getConfig(section, k.substring(section.length));
-      if (v !== undefined) { return v; }
-    } else {
-      const v = Integration.getConfig(section, k);
-      if (v !== undefined) { return v; }
-    }
-
-    return Integration.getConfig('cont3xt', k, d);
-  }
-
-  /**
-   * Return a config value by first check the user, then the interation name section, and then the cont3xt section.
-   * If the start of the k matches this.name, it is removed before checking the section.
-   */
-  getUserConfig (user, k, d) {
-    return this.getUserConfigFull(user, this.configName ?? this.name, k, d);
+    return Integration.getConfig(section, key, d);
   }
 
   userAgent () {

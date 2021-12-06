@@ -23,6 +23,13 @@ class EmailVerifyIntegration extends Integration {
     email: 'fetchEmail'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   constructor () {
     super();
 

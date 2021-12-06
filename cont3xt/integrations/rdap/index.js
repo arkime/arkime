@@ -22,6 +22,13 @@ class RDAPIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   constructor () {
     super();
 

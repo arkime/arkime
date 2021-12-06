@@ -25,6 +25,13 @@ class BGPViewIntegration extends Integration {
     ip: 'fetch'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  };
+
   card = {
     title: 'BGPView for %{query}',
     fields: [

@@ -24,13 +24,19 @@ class CensysIntegration extends Integration {
     ip: 'fetchIp'
   };
 
-  userSettings = {
-    CensysID: {
-      help: 'Your censys api id'
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
     },
-    CensysSecret: {
+    id: {
+      help: 'Your censys api id',
+      required: true
+    },
+    secret: {
       help: 'Your censys api secret',
-      password: true
+      password: true,
+      required: true
     }
   };
 
@@ -41,8 +47,8 @@ class CensysIntegration extends Integration {
   }
 
   async fetchIp (user, ip) {
-    const id = this.getUserConfig(user, 'CensysID');
-    const secret = this.getUserConfig(user, 'CensysSecret');
+    const id = this.getUserConfig(user, this.name, 'id');
+    const secret = this.getUserConfig(user, this.name, 'secret');
     if (!id || !secret) {
       return undefined;
     }

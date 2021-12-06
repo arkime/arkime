@@ -83,6 +83,7 @@
               class="w-25 p-2"
               v-for="(setting, key) in integrationSettings">
               <b-card :title="key">
+                <span v-if="setting.globalConfiged" > Also globally configured, need better UI </span>
                 <b-input-group
                   size="sm"
                   :key="name"
@@ -95,7 +96,13 @@
                       {{ name }}
                     </b-input-group-text>
                   </b-input-group-prepend>
+                  <b-form-checkbox
+                    v-if="field.type == 'boolean'"
+                    v-model="setting.values[name]"
+                    value="true"
+                  />
                   <b-form-input
+                    v-else
                     v-model="setting.values[name]"
                     :type="field.password && !field.showValue ? 'password' : 'text'"
                   />

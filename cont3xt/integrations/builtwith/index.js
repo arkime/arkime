@@ -25,9 +25,15 @@ class BuiltWithIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
-  userSettings = {
-    BuiltWithKey: {
-      help: 'Your BuiltWith Key'
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
+      help: 'Your BuiltWith Key',
+      password: true,
+      required: true
     }
   }
 
@@ -71,7 +77,7 @@ class BuiltWithIntegration extends Integration {
 
   async fetchDomain (user, query) {
     try {
-      const key = this.getUserConfig(user, 'BuiltWithKey');
+      const key = this.getUserConfig(user, this.name, 'key');
       if (!key) {
         return undefined;
       }

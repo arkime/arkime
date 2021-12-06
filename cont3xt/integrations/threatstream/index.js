@@ -51,16 +51,18 @@ class ThreatstreamIntegration extends Integration {
     ]
   };
 
-  userSettings = {
-    ThreatstreamHost: {
+  settings = {
+    host: {
       help: 'The threatstream host to send queries'
     },
-    ThreatstreamUser: {
-      help: 'Your threatstream api user'
+    user: {
+      help: 'Your threatstream api user',
+      required: true
     },
-    ThreatstreamKey: {
+    key: {
       help: 'Your threatstream api key',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -72,9 +74,9 @@ class ThreatstreamIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const host = this.getUserConfig(user, 'ThreatstreamHost', 'api.threatstream.com');
-      const tuser = this.getUserConfig(user, 'ThreatstreamUser');
-      const tkey = this.getUserConfig(user, 'ThreatstreamKey');
+      const host = this.getUserConfig(user, 'Threatstream', 'host', 'api.threatstream.com');
+      const tuser = this.getUserConfig(user, 'Threatstream', 'user');
+      const tkey = this.getUserConfig(user, 'Threatstream', 'key');
       if (!tkey || !tuser) {
         return undefined;
       }

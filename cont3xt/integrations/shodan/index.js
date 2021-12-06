@@ -120,10 +120,15 @@ class ShodanIntegration extends Integration {
     ]
   }
 
-  userSettings = {
-    ShodanKey: {
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
+    key: {
       help: 'Your Shodan api key',
-      password: true
+      password: true,
+      required: true
     }
   }
 
@@ -135,7 +140,7 @@ class ShodanIntegration extends Integration {
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'ShodanKey');
+      const key = this.getUserConfig(user, 'Shodan', 'key');
       if (!key) {
         return undefined;
       }

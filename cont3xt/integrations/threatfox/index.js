@@ -26,6 +26,13 @@ class ThreatFoxIntegration extends Integration {
     hash: 'fetchHash'
   };
 
+  settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    }
+  }
+
   card = {
     title: 'ThreatFox for %{query}',
     fields: [
