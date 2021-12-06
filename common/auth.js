@@ -127,6 +127,7 @@ class Auth {
         req.user.columnConfigs = user.columnConfigs;
         req.user.spiviewFieldConfigs = user.spiviewFieldConfigs;
         req.user.tableStates = user.tableStates;
+        req.user.cont3xt = user.cont3xt;
       }
       return next();
     });

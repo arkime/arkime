@@ -265,7 +265,7 @@ User.prototype.setCont3xtKeys = function (v) {
     this.cont3xt = {};
   }
   this.cont3xt.keys = Auth.obj2auth(v, Auth.passwordSecret256);
-  this.save(() => { console.log('SAVED'); });
+  this.save((err) => { console.log('SAVED', err); });
 };
 
 function getConfig (section, sectionKey, d) {
