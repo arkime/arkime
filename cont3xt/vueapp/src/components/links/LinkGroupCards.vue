@@ -1,8 +1,12 @@
 <template>
   <div class="d-flex flex-wrap link-group-cards-wrapper">
     <div
+      draggable
       class="w-25 p-2"
       :key="linkGroup._id"
+      @drop="drop($event)"
+      @drag="drag($event, index)"
+      @dragover.prevent="dragOver($event, index)"
       v-for="(linkGroup, index) in getLinkGroups">
       <!-- view (for con3xt page and users who can view but not edit) -->
       <b-card
@@ -125,6 +129,7 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import UserService from '@/components/services/UserService';
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm';
 
@@ -140,6 +145,12 @@ export default {
     numHours: [Number, String], // the number of hours to apply to urls
     stopDate: String, // the stop date to apply to urls
     startDate: String // the start date to apply to urls
+  },
+  data () {
+    return {
+      dragging: -1,
+      draggedOver: undefined
+    };
   },
   computed: {
     ...mapGetters(['getLinkGroups', 'getUser', 'getCheckedLinks'])
@@ -227,6 +238,32 @@ export default {
       }
 
       return count === linkGroup.links.length;
+    },
+    drag (e, index) {
+      this.dragging = index; // index of the field being dragged
+    },
+    dragOver (e, index) {
+      this.draggedOver = index; // index of the field that is being dragged over
+    },
+    drop (e) {
+      const listClone = [...this.getLinkGroups];
+      // remove the dragged field from the list
+      const draggedField = listClone.splice(this.dragging, 1)[0];
+      // and replace it in the new position
+      listClone.splice(this.draggedOver, 0, draggedField);
+
+      const ids = [];
+      for (const group of listClone) {
+        ids.push(group._id);
+      }
+
+      this.dragging = -1;
+
+      UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
+        this.$store.commit('SET_LINK_GROUPS', listClone); // update list order
+      }).catch((err) => {
+        this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+      });
     }
   }
 };

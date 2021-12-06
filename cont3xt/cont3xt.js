@@ -154,18 +154,20 @@ function apiPutSettings (req, res, next) {
 
     if (user.cont3xt === undefined) { user.cont3xt = {}; }
 
-    if (!req.body?.settings) {
+    if (req.body?.settings) {
       user.cont3xt.settings = req.body.settings;
       save = true;
     }
 
-    if (!req.body?.linkGroup) {
+    if (req.body?.linkGroup) {
       user.cont3xt.linkGroup = req.body.linkGroup;
       save = true;
     }
+
     if (!save) {
       return res.send({ success: false, text: 'Nothing sent to change' });
     }
+
     user.save((err) => {
       res.send({ success: true, text: 'Saved' });
     });

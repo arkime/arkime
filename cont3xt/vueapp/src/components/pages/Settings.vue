@@ -14,12 +14,12 @@
           </span>&nbsp;
           General
         </a>
-        <a @click="openView('keys')"
+        <a @click="openView('integrations')"
           class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'keys'}">
+          :class="{'active':visibleTab === 'integrations'}">
           <span class="fa fa-fw fa-key">
           </span>&nbsp;
-          Keys
+          Integrations
         </a>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer"
@@ -41,10 +41,10 @@
         </div>
       </div> <!-- /general settings -->
 
-      <!-- keys settings -->
-      <div v-if="visibleTab === 'keys'">
+      <!-- integrations settings -->
+      <div v-if="visibleTab === 'integrations'">
         <h1 class="ml-2 w-100 d-flex justify-content-between align-items-start">
-          Keys
+          Integrations
           <b-alert
             variant="success"
             :show="!!saveIntegrationSettingsSuccess.length">
@@ -150,7 +150,7 @@
             :value="createINI(rawIntegrationSettings)"
           />
         </div>
-      </div> <!-- /keys settings -->
+      </div> <!-- /integrations settings -->
 
       <!-- link group settings -->
       <div v-if="visibleTab === 'linkgroups'">
@@ -213,6 +213,7 @@ export default {
   },
   data () {
     return {
+      settins: {},
       visibleTab: 'linkgroups',
       integrationSettings: {},
       integrationSettingsErr: '',
@@ -224,7 +225,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'keys' || tab === 'linkgroups') {
+      if (tab === 'general' || tab === 'integrations' || tab === 'linkgroups') {
         this.visibleTab = tab;
       }
     }
