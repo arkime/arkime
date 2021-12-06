@@ -3860,7 +3860,10 @@ export default {
     setupColumns: function (colIdArray) {
       this.columns = [];
       for (let i = 0, len = colIdArray.length; i < len; ++i) {
-        this.columns.push(FieldService.getField(colIdArray[i], this.fieldsMap, true));
+        const field = FieldService.getField(colIdArray[i], this.fieldsMap, true);
+        if (field !== undefined) {
+          this.columns.push(FieldService.getField(colIdArray[i], this.fieldsMap, true));
+        }
       }
     }
   },

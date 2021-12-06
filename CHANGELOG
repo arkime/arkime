@@ -35,6 +35,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fix history links with && not working
   - viewer - userAuthCreateTmpl improvements
   - viewer - fix cron and database bounding queries
+  - viewer - fix settings page not loading on pre 3.x config
 
 3.1.1 2021/10/13
   - release - node 14.18.1
