@@ -34,6 +34,8 @@
       }
     }
 
+    let interval;
+
     // fetch the data to populate the input
     fetch(`${node}/session/${session}?type=${type}`)
       .then((response) => {
@@ -44,8 +46,13 @@
         }
       })
       .then((result) => {
-        app.manager.recipe.addOperation('From Hex');
-        app.setInput(result.data);
+        interval = setInterval(() => {
+          if (app) {
+            app.manager.recipe.addOperation('From Hex');
+            app.setInput(result.data);
+            clearInterval(interval);
+          }
+        }, 100);
       })
       .catch((error) => {
         console.log('error', error);
