@@ -125,7 +125,7 @@
             size="sm"
             @input="e => debounceRawEdit(e)"
             class="form-control form-control-sm"
-            :value="JSON.stringify(rawIntegrationSettings, null, 2)"
+            :value="createINI(rawIntegrationSettings)"
           />
         </div>
       </div> <!-- /keys settings -->
@@ -264,7 +264,7 @@ export default {
       }, 400);
     },
     updateRawIntegrationSettings (e) {
-      const rawIntegrationSettings = JSON.parse(e.target.value);
+      const rawIntegrationSettings = this.parseINI(e.target.value);
 
       for (const s in this.integrationSettings) {
         if (rawIntegrationSettings[s] && this.integrationSettings[s]) {
@@ -279,6 +279,46 @@ export default {
         settings[setting] = this.integrationSettings[setting].values;
       }
       return settings;
+    },
+    parseINI: function (data) {
+      // This code is from node-iniparser, MIT license
+      const regex = {
+        section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+        param: /^\s*([\w.\-_]+)\s*=\s*(.*?)\s*$/,
+        comment: /^\s*[;#].*$/
+      };
+      const json = {};
+      const lines = data.split(/\r\n|\r|\n/);
+      let section = null;
+      lines.forEach(function (line) {
+        if (regex.comment.test(line)) {
+          return;
+        } else if (regex.param.test(line)) {
+          const match = line.match(regex.param);
+          if (section) {
+            json[section][match[1]] = match[2];
+          } else {
+            json[match[1]] = match[2];
+          }
+        } else if (regex.section.test(line)) {
+          const match = line.match(regex.section);
+          json[match[1]] = {};
+          section = match[1];
+        };
+      });
+      return json;
+    },
+    createINI: function (json) {
+      let data = '';
+      for (const section in json) {
+        if (Object.keys(json[section]).length === 0) { continue; }
+        data += `[${section}]\n`;
+        for (const setting in json[section]) {
+          data += `${setting}=${json[section][setting]}\n`;
+        }
+        data += '\n';
+      }
+      return data;
     }
   }
 };
