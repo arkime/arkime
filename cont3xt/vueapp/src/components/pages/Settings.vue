@@ -295,7 +295,7 @@ export default {
     },
     getState (field, setting, sname) {
       if (!field.required) {
-        return false;
+        return undefined;
       }
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
