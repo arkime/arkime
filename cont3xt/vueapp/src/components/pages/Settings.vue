@@ -91,7 +91,7 @@
                     <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This setting is globally configured'"
+                      v-b-tooltip.hover="'This intergration has been globally configured by the admin with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
