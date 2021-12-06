@@ -79,6 +79,7 @@
           <link-group-form
             v-else
             :link-group="linkGroup"
+            @save-link-group="saveLinkGroup"
             @update-link-group="updateLinkGroup"
           />
         </b-card-body>

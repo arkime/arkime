@@ -50,8 +50,12 @@
     /> <!-- /group roles -->
     <!-- group links -->
     <b-card
+      draggable
       :key="i"
       class="mb-2"
+      @drag="drag($event, i)"
+      @drop="drop($event, lg)"
+      @dragover.prevent="dragOver($event, i)"
       v-for="(link, i) in lg.links">
       <b-input-group
         size="sm"
@@ -165,7 +169,9 @@ export default {
         { text: 'Hash', value: 'hash' },
         { text: 'Phone', value: 'phone' },
         { text: 'Text', value: 'text' }
-      ]
+      ],
+      dragging: -1,
+      draggedOver: undefined
     };
   },
   computed: {
@@ -194,6 +200,24 @@ export default {
           return;
         }
       }
+    },
+    drag (e, index) {
+      this.dragging = index; // index of the field being dragged
+    },
+    dragOver (e, index) {
+      this.draggedOver = index; // index of the field that is being dragged over
+    },
+    drop (e, lg) {
+      const linksClone = [...lg.links];
+      // remove the dragged field from the list
+      const draggedField = linksClone.splice(this.dragging, 1)[0];
+      // and replace it in the new position
+      linksClone.splice(this.draggedOver, 0, draggedField);
+
+      this.dragging = -1;
+      this.$set(lg, 'links', linksClone);
+      this.$emit('update-link-group', lg);
+      this.$emit('save-link-group', lg);
     }
   }
 };
