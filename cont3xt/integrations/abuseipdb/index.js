@@ -75,6 +75,7 @@ class AbuseIPDBIntegration extends Integration {
     ]
   }
 
+  homePage = 'https://www.abuseipdb.com/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

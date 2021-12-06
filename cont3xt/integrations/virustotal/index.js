@@ -294,6 +294,7 @@ class VirusTotalHashIntegration extends Integration {
     hash: 'fetchHash'
   };
 
+  homePage = 'https://www.virustotal.com/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

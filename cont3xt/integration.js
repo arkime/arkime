@@ -476,7 +476,8 @@ class Integration {
       result[integration.name] = {
         settings: integration.settings,
         values: values,
-        globalConfiged: globalConfiged
+        globalConfiged: globalConfiged,
+        homePage: integration.homePage
       };
     }
     res.send({ success: true, settings: result });

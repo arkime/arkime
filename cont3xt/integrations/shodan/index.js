@@ -120,6 +120,7 @@ class ShodanIntegration extends Integration {
     ]
   }
 
+  homePage = 'https://www.shodan.io/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

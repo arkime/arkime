@@ -67,6 +67,7 @@ class SpurIntegration extends Integration {
     ]
   }
 
+  homePage = 'https://spur.us/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

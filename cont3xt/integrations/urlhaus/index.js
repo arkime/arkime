@@ -26,6 +26,7 @@ class URLHausIntegration extends Integration {
     ip: 'fetch'
   };
 
+  homePage = 'https://urlhaus.abuse.ch/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

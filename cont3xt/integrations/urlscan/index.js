@@ -25,6 +25,7 @@ class URLScanIntegration extends Integration {
     ip: 'fetch'
   };
 
+  homePage = 'https://urlscan.io/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

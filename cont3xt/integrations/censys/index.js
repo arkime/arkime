@@ -24,6 +24,7 @@ class CensysIntegration extends Integration {
     ip: 'fetchIp'
   };
 
+  homePage = 'https://www.censys.io/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

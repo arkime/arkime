@@ -23,6 +23,7 @@ class PassiveTotalIntegration extends Integration {
   itypes = {
   };
 
+  homePage = 'https://community.riskiq.com/registration/signupforfree'
   settings = {
     user: {
       help: 'Your Passive Total api user',
@@ -218,6 +219,7 @@ class PassiveTotalDNSIntegration extends Integration {
     domain: 'fetch'
   };
 
+  homePage = ''
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

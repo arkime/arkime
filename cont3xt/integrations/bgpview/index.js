@@ -25,6 +25,7 @@ class BGPViewIntegration extends Integration {
     ip: 'fetch'
   };
 
+  homePage = 'https://bgpview.io/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

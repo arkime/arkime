@@ -25,6 +25,7 @@ class TwilioIntegration extends Integration {
     phone: 'fetch'
   };
 
+  homePage = 'https://www.twilio.com/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

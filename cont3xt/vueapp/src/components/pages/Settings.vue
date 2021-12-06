@@ -82,8 +82,9 @@
               :key="key"
               class="w-25 p-2"
               v-for="(setting, key) in integrationSettings">
-              <b-card :title="key">
-                <span v-if="setting.globalConfiged" > Also globally configured, need better UI </span>
+              <b-card :title="key ">
+                <a v-if="!!setting.homePage" :href="setting.homePage">home page</a> <!-- ELYSE FIX -->
+                <span v-if="setting.globalConfiged" > Globally configured</span> <!-- ELYSE IS OUR ONLY HOPE -->
                 <b-input-group
                   size="sm"
                   :key="name"

@@ -51,6 +51,7 @@ class ThreatstreamIntegration extends Integration {
     ]
   };
 
+  homePage = 'https://www.anomali.com/products/threatstream'
   settings = {
     host: {
       help: 'The threatstream host to send queries'

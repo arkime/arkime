@@ -25,6 +25,7 @@ class BuiltWithIntegration extends Integration {
     domain: 'fetchDomain'
   };
 
+  homePage = 'https://builtwith.com/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

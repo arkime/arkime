@@ -28,6 +28,7 @@ class AlienVaultOTXIntegration extends Integration {
     url: 'fetchHash'
   };
 
+  homePage = 'https://otx.alienvault.com/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
