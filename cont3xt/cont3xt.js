@@ -164,8 +164,9 @@ function apiPutSettings (req, res, next) {
     if (!save) {
       return res.send({ success: false, text: 'Nothing sent to change' });
     }
-    user.save();
-    res.send({ success: true, text: 'Saved' });
+    user.save((err) => {
+      res.send({ success: true, text: 'Saved' });
+    });
   });
 }
 
