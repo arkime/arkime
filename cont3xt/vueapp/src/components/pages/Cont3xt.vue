@@ -187,15 +187,33 @@
               />
             </b-input-group>
           </b-form>
-          <link-group-cards
-            v-if="searchItype"
-            :numDays="numDays"
-            :query="searchTerm"
-            :itype="searchItype"
-            :numHours="numHours"
-            :stopDate="stopDate"
-            :startDate="startDate"
-          /> <!-- /link groups -->
+          <!-- link groups -->
+          <div v-if="searchItype"
+            class="d-flex flex-wrap link-group-cards-wrapper">
+            <reorder-list
+              :index="index"
+              class="w-25 p-2"
+              @update="updateList"
+              :key="linkGroup._id"
+              :list="getLinkGroups"
+              v-for="(linkGroup, index) in getLinkGroups">
+              <template slot="handle">
+                <span class="fa fa-bars d-inline link-group-card-handle" />
+              </template>
+              <template slot="default">
+                <link-group-card
+                  :query="searchTerm"
+                  :num-days="numDays"
+                  :itype="searchItype"
+                  :num-hours="numHours"
+                  :stop-date="stopDate"
+                  :start-date="startDate"
+                  :link-group-index="index"
+                  v-if="getLinkGroups.length"
+                />
+              </template>
+            </reorder-list>
+          </div> <!-- /link groups -->
         </div> <!-- /itype results summary -->
         <!-- integration results -->
         <div
@@ -239,6 +257,7 @@
 import { mapGetters } from 'vuex';
 
 import Focus from '@/utils/Focus';
+import ReorderList from '@/utils/ReorderList';
 import Cont3xtIp from '@/components/itypes/IP';
 import Cont3xtUrl from '@/components/itypes/URL';
 import Cont3xtHash from '@/components/itypes/Hash';
@@ -246,7 +265,8 @@ import Cont3xtText from '@/components/itypes/Text';
 import Cont3xtEmail from '@/components/itypes/Email';
 import Cont3xtPhone from '@/components/itypes/Phone';
 import Cont3xtDomain from '@/components/itypes/Domain';
-import LinkGroupCards from '@/components/links/LinkGroupCards';
+import UserService from '@/components/services/UserService';
+import LinkGroupCard from '@/components/links/LinkGroupCard';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
 
@@ -260,8 +280,9 @@ export default {
     Cont3xtEmail,
     Cont3xtPhone,
     Cont3xtDomain,
-    LinkGroupCards,
-    IntegrationCard
+    LinkGroupCard,
+    IntegrationCard,
+    ReorderList
   },
   directives: { Focus },
   data () {
@@ -281,7 +302,7 @@ export default {
   computed: {
     ...mapGetters([
       'getRendering', 'getWaitRendering', 'getIntegrationData',
-      'getIntegrationsError', 'getLinkGroupsError'
+      'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -316,6 +337,18 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    updateList ({ list }) {
+      const ids = [];
+      for (const group of list) {
+        ids.push(group._id);
+      }
+
+      UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
+        this.$store.commit('SET_LINK_GROUPS', list); // update list order
+      }).catch((err) => {
+        this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+      });
+    },
     handleScroll (e) {
       this.scrollPx = e.target.scrollTop;
     },
@@ -484,5 +517,18 @@ body.dark .search-nav {
   bottom: 0px;
   position: fixed;
   color: var(--info);
+}
+
+.link-group-cards-wrapper {
+  margin-left: -0.5rem !important;
+  margin-right: -0.5rem !important;
+}
+
+.link-group-card-handle {
+  top: 1rem;
+  z-index: 10;
+  float: right;
+  right: 1.5rem;
+  position: relative;
 }
 </style>

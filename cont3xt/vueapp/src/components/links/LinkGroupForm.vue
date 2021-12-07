@@ -1,6 +1,6 @@
 <template>
   <!-- form -->
-  <b-form>
+  <b-form v-if="lg">
     <!-- group name -->
     <b-input-group
       size="sm"
@@ -49,74 +49,82 @@
       v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
     /> <!-- /group roles -->
     <!-- group links -->
-    <b-card
-      draggable
+    <reorder-list
       :key="i"
-      class="mb-2"
-      @drag="drag($event, i)"
-      @drop="drop($event, lg)"
-      @dragover.prevent="dragOver($event, i)"
+      :index="i"
+      :list="lg.links"
+      @update="updateList"
       v-for="(link, i) in lg.links">
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-link mr-2" />
-            Name
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          trim
-          v-model="link.name"
-          :state="link.name.length > 0"
-          @change="$emit('update-link-group', lg)"
-        />
-        <template #append>
-          <color-picker
-            :color="link.color"
-            :link-name="link.name"
-            @colorSelected="changeColor"
-          />
-        </template>
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-link mr-2" />
-            URL
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          trim
-          v-model="link.url"
-          :state="link.url.length > 0"
-          @change="$emit('update-link-group', lg)"
-        />
-        <template #append>
-          <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover="'These values within links will be filled in \'${indicator}\' (your search query), \'${startDate}\', \'${stopDate}\', \'${numDays}\', \'${numHours}\', \'${type}\''">
-            <span class="fa fa-info-circle" />
-          </b-input-group-text>
-        </template>
-      </b-input-group>
-      <b-button
-        size="sm"
-        variant="danger"
-        @click="removeLink(i)"
-        class="pull-right mt-1"
-        v-b-tooltip.hover.left="'Remove this link'">
-        <span class="fa fa-times-circle" />
-      </b-button>
-      <b-form-checkbox-group
-        v-model="link.itypes"
-        :options="itypeOptions"
-        @change="$emit('update-link-group', lg)"
-      />
-    </b-card> <!-- /group links -->
+      <template slot="handle">
+        <span class="fa fa-bars d-inline link-handle" />
+      </template>
+      <template slot="default">
+        <b-card class="mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="w-50 mr-4">
+              <b-input-group
+                size="sm"
+                class="mb-2">
+                <template #prepend>
+                  <b-input-group-text>
+                    <span class="fa fa-link mr-2" />
+                    Name
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  trim
+                  v-model="link.name"
+                  :state="link.name.length > 0"
+                  @change="$emit('update-link-group', lg)"
+                />
+                <template #append>
+                  <color-picker
+                    :color="link.color"
+                    :link-name="link.name"
+                    @colorSelected="changeColor"
+                  />
+                </template>
+              </b-input-group>
+            </div>
+            <b-form-checkbox-group
+              v-model="link.itypes"
+              :options="itypeOptions"
+              @change="$emit('update-link-group', lg)"
+            />
+            <b-button
+              size="sm"
+              variant="danger"
+              @click="removeLink(i)"
+              v-b-tooltip.hover.left="'Remove this link'">
+              <span class="fa fa-times-circle" />
+            </b-button>
+          </div>
+          <b-input-group
+            size="sm"
+            class="mb-2">
+            <template #prepend>
+              <b-input-group-text>
+                <span class="fa fa-link mr-2" />
+                URL
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              trim
+              v-model="link.url"
+              :state="link.url.length > 0"
+              @change="$emit('update-link-group', lg)"
+            />
+            <template #append>
+              <b-input-group-text
+                class="cursor-help"
+                v-b-tooltip.hover="'These values within links will be filled in \'${indicator}\' (your search query), \'${startDate}\', \'${stopDate}\', \'${numDays}\', \'${numHours}\', \'${type}\''">
+                <span class="fa fa-info-circle" />
+              </b-input-group-text>
+            </template>
+          </b-input-group>
+        </b-card>
+      </template>
+    </reorder-list> <!-- /group links -->
     <b-button
       block
       size="sm"
@@ -141,6 +149,7 @@
 import { mapGetters } from 'vuex';
 
 import ColorPicker from '@/utils/ColorPicker';
+import ReorderList from '@/utils/ReorderList';
 
 const defaultLink = {
   url: '',
@@ -151,16 +160,17 @@ const defaultLink = {
 export default {
   name: 'CreateLinkGroup',
   components: {
-    ColorPicker
+    ColorPicker,
+    ReorderList
   },
   props: {
-    linkGroup: {
-      type: Object
+    linkGroupIndex: {
+      type: Number
     }
   },
   data () {
     return {
-      lg: this.linkGroup ? JSON.parse(JSON.stringify(this.linkGroup)) : undefined,
+      lg: this.linkGroupIndex !== undefined ? JSON.parse(JSON.stringify(this.$store.getters.getLinkGroups[this.linkGroupIndex])) : undefined,
       itypeOptions: [
         { text: 'Domain', value: 'domain' },
         { text: 'IP', value: 'ip' },
@@ -175,7 +185,13 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRoles'])
+    ...mapGetters(['getRoles', 'getLinkGroups'])
+  },
+  watch: {
+    linkGroupIndex (oldVal, newVal) {
+      if (newVal === undefined) { return undefined; }
+      this.lg = JSON.parse(JSON.stringify(this.getLinkGroups[this.linkGroupIndex]));
+    }
   },
   created () {
     if (!this.lg) { // creating new link group
@@ -201,23 +217,10 @@ export default {
         }
       }
     },
-    drag (e, index) {
-      this.dragging = index; // index of the field being dragged
-    },
-    dragOver (e, index) {
-      this.draggedOver = index; // index of the field that is being dragged over
-    },
-    drop (e, lg) {
-      const linksClone = [...lg.links];
-      // remove the dragged field from the list
-      const draggedField = linksClone.splice(this.dragging, 1)[0];
-      // and replace it in the new position
-      linksClone.splice(this.draggedOver, 0, draggedField);
-
-      this.dragging = -1;
-      this.$set(lg, 'links', linksClone);
-      this.$emit('update-link-group', lg);
-      this.$emit('save-link-group', lg);
+    updateList ({ list }) {
+      this.$set(this.lg, 'links', list);
+      this.$emit('update-link-group', this.lg);
+      this.$emit('save-link-group', this.lg);
     }
   }
 };
@@ -226,5 +229,15 @@ export default {
 <style scoped>
 .alert.alert-sm {
   padding: 0.4rem 0.8rem;
+}
+
+.link-handle {
+  top: 18px;
+  left: -9px;
+  z-index: 10;
+  padding: 5px 6px;
+  position: relative;
+  border-radius: 14px;
+  background: var(--secondary);
 }
 </style>

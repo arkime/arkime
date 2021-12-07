@@ -32,6 +32,7 @@ body {
 .cursor-help, .help-cursor { cursor: help; }
 .cursor-text, .text-cursor { cursor: text; }
 .cursor-move, .move-cursor { cursor: move; }
+.cursor-grab, .grab-cursor { cursor: grab; }
 .cursor-pointer, .pointer-cursor { cursor: pointer; }
 .cursor-crosshair, .crosshair-cursor { cursor: crosshair; }
 

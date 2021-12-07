@@ -28,6 +28,31 @@
           </span>&nbsp;
           Link Groups
         </a>
+        <div
+          role="tablist"
+          aria-orientation="vertical"
+          v-if="visibleTab === 'linkgroups'">
+          <div class="nav flex-column nav-pills ml-4 mt-2 small">
+            <reorder-list
+              :index="i"
+              :key="lg._id"
+              @update="updateList"
+              :list="getLinkGroups"
+              v-for="(lg, i) in getLinkGroups">
+              <template slot="handle">
+                <span class="fa fa-bars d-inline sub-menu-handle" />
+              </template>
+              <template slot="default">
+                <a
+                  @click="selectedLinkGroup = i"
+                  class="nav-link cursor-pointer d-inline-block sub-menu-item"
+                  :class="{'active':selectedLinkGroup === i}">
+                  {{ lg.name }}
+                </a>
+              </template>
+            </reorder-list>
+          </div>
+        </div>
       </div>
     </div> <!-- /navigation -->
 
@@ -176,7 +201,11 @@
           class="position-fixed fixed-bottom m-0 rounded-0">
           {{ getLinkGroupsError }}
         </b-alert> <!-- /link group error -->
-        <link-group-cards /> <!-- /link groups -->
+        <link-group-card
+          v-if="getLinkGroups.length"
+          :link-group-index="selectedLinkGroup"
+          @delete-link-group="deleteLinkGroup"
+        /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
@@ -199,8 +228,9 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import ReorderList from '@/utils/ReorderList';
 import UserService from '@/components/services/UserService';
-import LinkGroupCards from '@/components/links/LinkGroupCards';
+import LinkGroupCard from '@/components/links/LinkGroupCard';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
 let timeout;
@@ -208,7 +238,8 @@ let timeout;
 export default {
   name: 'Cont3xtSettings',
   components: {
-    LinkGroupCards,
+    ReorderList,
+    LinkGroupCard,
     CreateLinkGroupModal
   },
   data () {
@@ -218,7 +249,8 @@ export default {
       integrationSettings: {},
       integrationSettingsErr: '',
       saveIntegrationSettingsSuccess: '',
-      rawIntegrationSettings: undefined
+      rawIntegrationSettings: undefined,
+      selectedLinkGroup: 0
     };
   },
   created () {
@@ -301,6 +333,32 @@ export default {
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
+    // NOTE: need to toggle selectedLinkGroup so that the children that use it
+    // (LinkGroupCard & LinkGroupForm) can update their data based on the value
+    // For example: the selectedLinkGroup index doesn't change when an item in
+    // the list is deleted, but the data associated with that index does
+    deleteLinkGroup ({ index }) {
+      this.selectedLinkGroup = undefined;
+      setTimeout(() => {
+        if (index >= this.getLinkGroups.length - 1) {
+          this.selectedLinkGroup = Math.max(this.getLinkGroups.length - 1, 0);
+        } else {
+          this.selectedLinkGroup = index;
+        }
+      }, 100);
+    },
+    updateList ({ list }) { // TODO if selectedLinkGroup is the dragged one, do some shit
+      const ids = [];
+      for (const group of list) {
+        ids.push(group._id);
+      }
+
+      UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
+        this.$store.commit('SET_LINK_GROUPS', list); // update list order
+      }).catch((err) => {
+        this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+      });
+    },
     /* helpers ------------------------------------------------------------- */
     getIntegrationSettingValues () {
       const settings = {};
@@ -352,3 +410,17 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.sub-menu-item {
+  width: 100%;
+  padding-left: 32px !important;
+  margin-left: -14px;
+}
+.sub-menu-handle {
+  top: 12px;
+  left: 4px;
+  float: left;
+  position: relative;
+}
+</style>
