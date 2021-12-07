@@ -1,4 +1,4 @@
-AC_INIT([arkime], [3.1.2-GIT])
+AC_INIT([arkime], [3.2.0])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
