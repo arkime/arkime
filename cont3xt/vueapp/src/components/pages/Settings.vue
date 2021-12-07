@@ -347,7 +347,7 @@ export default {
         }
       }, 100);
     },
-    updateList ({ list }) { // TODO if selectedLinkGroup is the dragged one, do some shit
+    updateList ({ list, from, to }) {
       const ids = [];
       for (const group of list) {
         ids.push(group._id);
@@ -358,6 +358,19 @@ export default {
       }).catch((err) => {
         this.$store.commit('SET_LINK_GROUPS_ERROR', err);
       });
+
+      // NOTE: need to toggle selectedLinkGroup so that the children that use it
+      // (LinkGroupCard & LinkGroupForm) can update their data based on the value
+      // For example: the selectedLinkGroup index doesn't change when the items
+      // are reordered, but the data associated with that index does if the
+      // selected link group is either the dragged item or the target item
+      if (this.selectedLinkGroup === from || this.selectedLinkGroup === to) {
+        const index = this.selectedLinkGroup;
+        this.selectedLinkGroup = undefined;
+        setTimeout(() => {
+          this.selectedLinkGroup = index;
+        }, 100);
+      }
     },
     /* helpers ------------------------------------------------------------- */
     getIntegrationSettingValues () {

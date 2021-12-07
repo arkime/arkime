@@ -42,7 +42,7 @@ export default {
       // and replace it in the new position
       clone.splice(draggedOver, 0, draggedField);
       // update the parent
-      this.$emit('update', { list: clone });
+      this.$emit('update', { list: clone, from: dragging, to: draggedOver });
     }
   }
 };
