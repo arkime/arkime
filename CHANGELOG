@@ -22,12 +22,13 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.1.2 2021/11/xx
+3.2.0 2021/12/07
   - release - node 14.18.2
   - release - remove daily.sh, setup a cron directly now
   - all - refactor some shared code into common directory
   - capture - fix memory leak with ip4 frags and packet q overflowing
   - capture - standardize on config error process exiting
+  - capture - ietf quic improvements
   - tests - add some auth tests to test suite
   - viewer - jquery upgrade
   - viewer - help fields display improvements
@@ -36,6 +37,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - userAuthCreateTmpl improvements
   - viewer - fix cron and database bounding queries
   - viewer - fix settings page not loading on pre 3.x config
+  - viewer - cyberchef didn't always load the packets
 
 3.1.1 2021/10/13
   - release - node 14.18.1
