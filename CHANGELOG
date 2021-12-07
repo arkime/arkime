@@ -24,6 +24,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 3.2.1 2022/01/xx
   - esproxy - handle sessions2 without prefix
+  - capture - new parseHTTPHeaderValueMaxLen replaces hard coded 1024
 
 3.2.0 2021/12/07
   - release - node 14.18.2
