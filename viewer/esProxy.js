@@ -49,6 +49,8 @@ if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
 
 const oldprefix = prefix === 'arkime_' ? '' : prefix;
 
+console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
+
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
 const esClientCert = Config.get('esClientCert');
@@ -303,7 +305,7 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
-  } else if (path.startsWith(`/${prefix}sessions`) && path.endsWith('/_search') && validateSearchIds(req)) {
+  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
