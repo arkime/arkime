@@ -61,13 +61,12 @@
       <template slot="default">
         <b-card class="mb-2">
           <div class="d-flex justify-content-between align-items-center">
-            <div class="w-50 mr-4">
+            <div class="w-40 mr-4">
               <b-input-group
                 size="sm"
                 class="mb-2">
                 <template #prepend>
                   <b-input-group-text>
-                    <span class="fa fa-link mr-2" />
                     Name
                   </b-input-group-text>
                 </template>
@@ -104,7 +103,6 @@
             class="mb-2">
             <template #prepend>
               <b-input-group-text>
-                <span class="fa fa-link mr-2" />
                 URL
               </b-input-group-text>
             </template>

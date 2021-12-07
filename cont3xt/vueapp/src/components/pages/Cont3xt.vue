@@ -192,7 +192,7 @@
             class="d-flex flex-wrap link-group-cards-wrapper">
             <reorder-list
               :index="index"
-              class="w-25 p-2"
+              class="w-50 p-2"
               @update="updateList"
               :key="linkGroup._id"
               :list="getLinkGroups"

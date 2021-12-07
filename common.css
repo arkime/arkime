@@ -28,6 +28,9 @@ body {
   margin-top: 70px !important;
 }
 
+/* widths */
+.w-40 { width: 40% !important; }
+
 /* cursors */
 .cursor-help, .help-cursor { cursor: help; }
 .cursor-text, .text-cursor { cursor: text; }
