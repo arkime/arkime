@@ -80,7 +80,7 @@ class AlienVaultOTXIntegration extends Integration {
         field: 'general.pulse_info.pulses',
         type: 'table',
         fields: [
-          { label: 'Description', field: 'description' }, { label: 'Created', field: 'created', type: 'date' }, { label: 'Modified', field: 'modified', type: 'date' }, { label: 'Tags', field: 'tags' }, { label: 'Targeted Countries', field: 'targeted_countries' }, { label: 'ID', field: 'id' }
+          { label: 'Name', field: 'name' }, { label: 'Description', field: 'description' }, { label: 'Created', field: 'created', type: 'date' }, { label: 'Modified', field: 'modified', type: 'date' }, { label: 'Tags', field: 'tags', type: 'array', pivot: 'true' }, { label: 'Targeted Countries', field: 'targeted_countries', type: 'array' }, { label: 'Industries', field: 'industries', type: 'array' }, { label: 'Malware', field: 'malware_families', type: 'table', fields: [{ label: 'Name', field: 'display_name', pivot: 'true' }] }, { label: 'ID', field: 'id' }
         ]
       },
       {
@@ -104,7 +104,7 @@ class AlienVaultOTXIntegration extends Integration {
         field: 'passive_dns.passive_dns',
         type: 'table',
         fields: [
-          { label: 'Type', field: 'record_type' }, { label: 'Hostname', field: 'hostname', pivot: 'true' }, { label: 'first_seen', field: 'first', type: 'date' }, { label: 'last_seen', field: 'last', type: 'date' }
+          { label: 'Type', field: 'record_type' }, { label: 'Hostname', field: 'hostname', pivot: 'true' }, { label: 'address', field: 'address' }, { label: 'first_seen', field: 'first', type: 'date' }, { label: 'last_seen', field: 'last', type: 'date' }
         ]
       },
       {
@@ -113,6 +113,14 @@ class AlienVaultOTXIntegration extends Integration {
         type: 'table',
         fields: [
           { label: 'Domain', field: 'domain' }, { label: 'Related by', field: 'related' }, { label: 'Related type', field: 'related_type' }
+        ]
+      },
+      {
+        label: 'Samples',
+        field: 'analysis',
+        type: 'table',
+        fields: [
+          { label: 'TLP', field: 'analysis.metadata.tlp' }, { label: 'Class', field: 'analysis.info.results.file_class' }, { label: 'Size', field: 'analysis.info.results.filesize' }, { label: 'Status', field: 'analysis.plugins.adobemalwareclassifier.results.alerts', type: 'array' }, { label: 'PEHash', field: 'analysis.plugins.pe32info.results.pehash' }, { label: 'IMPHash', field: 'analysis.plugins.pe32info.results.imphash' }, { label: 'CompileTime', field: 'analysis.plugins.exiftool.results.Time_Stamp' }, { label: 'Date', field: 'analysis.datetime_int', type: 'date' }
         ]
       }
     ]

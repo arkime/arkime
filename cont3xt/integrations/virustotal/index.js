@@ -69,6 +69,7 @@ class VirusTotalDomainIntegration extends Integration {
       'Alexa domain info',
       'Webutation domain info',
       'BitDefender category',
+      'Sophos category',
       'Forcepoint ThreatSeeker category',
       'BitDefender domain info',
       {
@@ -94,7 +95,11 @@ class VirusTotalDomainIntegration extends Integration {
             label: 'url',
             defang: true
           },
-          'sha256',
+          {
+            label: 'sha256',
+            field: 'sha256',
+            pivot: 'true'
+          },
           'scan_date'
         ]
       },
@@ -102,6 +107,8 @@ class VirusTotalDomainIntegration extends Integration {
       makeSamples('undetected_downloaded_samples'),
       makeSamples('detected_referrer_samples'),
       makeSamples('undetected_referrer_samples'),
+      makeSamples('detected_communicating_samples'),
+      makeSamples('undetected_communicating_samples'),
       {
         label: 'resolutions',
         type: 'table',
@@ -109,6 +116,11 @@ class VirusTotalDomainIntegration extends Integration {
           'ip_address',
           'last_resolved'
         ]
+      },
+      {
+        label: 'Pcaps',
+        field: 'pcaps',
+        type: 'array'
       }
     ]
   };
@@ -216,7 +228,11 @@ class VirusTotalIPIntegration extends Integration {
             label: 'url',
             defang: true
           },
-          'sha256',
+          {
+            label: 'sha256',
+            field: 'sha256',
+            pivot: 'true'
+          },
           'scan_date'
         ]
       },
@@ -224,6 +240,8 @@ class VirusTotalIPIntegration extends Integration {
       makeSamples('undetected_downloaded_samples'),
       makeSamples('detected_referrer_samples'),
       makeSamples('undetected_referrer_samples'),
+      makeSamples('detected_communicating_samples'),
+      makeSamples('undetected_communicating_samples'),
       {
         label: 'resolutions',
         type: 'table',
@@ -231,6 +249,11 @@ class VirusTotalIPIntegration extends Integration {
           'hostname',
           'last_resolved'
         ]
+      },
+      {
+        label: 'Pcaps',
+        field: 'pcaps',
+        type: 'array'
       }
     ]
   };
@@ -325,7 +348,12 @@ class VirusTotalHashIntegration extends Integration {
           'version'
         ]
       },
-      'response_code'
+      'response_code',
+      {
+        label: 'Pcaps',
+        field: 'pcaps',
+        type: 'array'
+      }
     ]
   };
 
@@ -373,7 +401,11 @@ function makeSamples (field) {
     fields: [
       'positives',
       'total',
-      'sha256',
+      {
+        label: 'sha256',
+        field: 'sha256',
+        pivot: 'true'
+      },
       'date'
     ]
   };

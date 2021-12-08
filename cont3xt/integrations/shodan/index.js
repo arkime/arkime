@@ -76,13 +76,11 @@ class ShodanIntegration extends Integration {
         fields: [
           {
             label: 'issued',
-            field: 'ssl.cert.issued',
-            type: 'date'
+            field: 'ssl.cert.issued'
           },
           {
             label: 'expires',
-            field: 'ssl.cert.expires',
-            type: 'date'
+            field: 'ssl.cert.expires'
           },
           {
             label: 'sha1',
