@@ -1,7 +1,8 @@
 <template>
   <div>
     <!-- search -->
-    <div class="mb-1">
+    <div class="mb-1"
+      v-if="data.length > 1">
       <b-input-group size="sm">
         <template #prepend>
           <b-input-group-text>
