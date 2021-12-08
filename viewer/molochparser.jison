@@ -9,6 +9,7 @@
 \/(?:\\?.)*?\/             return 'REGEXSTR'
 [-+a-zA-Z0-9_.@:*?/$]+      return 'STR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
+\][^\]\\]*(?:\\.[^\]\\]*)*\[ return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
 "<"                        return 'lt'
@@ -206,14 +207,18 @@ function parseIpPort (yy, field, ipPortStr) {
   ipPortStr = ipPortStr.trim();
 
   // We really have a list of them
-  if (ipPortStr[0] === '[' && ipPortStr[ipPortStr.length - 1] === ']') {
-    obj = { bool: { should: [] } };
-    ListToArray(ipPortStr).forEach(function (str) {
-      obj.bool.should.push(parseIpPort(yy, field, str));
-    });
+  if (isArrayFull(ipPortStr)) {
+    const list = ListToArrayMap(ipPortStr, str => parseIpPort(yy, field, str));
+
     // Optimize 1 item in array
-    if (obj.bool.should.length === 1) {
-      obj = obj.bool.should[0];
+    if (list.length === 1) {
+      return list[0]
+    }
+
+    if (isArrayAND(ipPortStr)) {
+      obj = { bool: { must: list } };
+    } else {
+      obj = { bool: { should: list } };
     }
     return obj;
   }
@@ -362,6 +367,8 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
   const shortcuts = ListToArrayShortcuts(yy, value);
   if (shortcuts.length === 0) { return undefined; }
 
+  if (isArrayAND(value)) { throw value + ' - AND array not supported with shortcuts'; }
+
   let obj;
   const info = getFieldInfo(yy, field);
 
@@ -499,7 +506,7 @@ function formatNormalQuery (yy, field, op, value) {
       return { bool: { must_not: parseIpPort(yy, field, value) } };
     }
 
-    if (value[0] === '[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
@@ -516,7 +523,7 @@ function formatNormalQuery (yy, field, op, value) {
       return obj;
     }
 
-    if (value[0] === '[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
@@ -533,7 +540,7 @@ function formatNormalQuery (yy, field, op, value) {
       return obj;
     }
 
-    if (value[0] === '[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
@@ -555,13 +562,13 @@ function formatNormalQuery (yy, field, op, value) {
     if (op === 'ne') { return { bool: { must_not: stringQuery(yy, field, value.toUpperCase()) } }; }
     throw "Invalid operator '" + op + "' for " + field;
   case 'fileand':
-    if (value[0] === '[') { throw value + ' - List queries not supported for file queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for file queries - ' + value; }
 
     if (op === 'eq') { return { fileand: stripQuotes(value) }; }
     if (op === 'ne') { return { bool: { must_not: { fileand: stripQuotes(value) } } }; }
     throw op + ' - not supported for file queries';
   case 'viewand':
-    if (value[0] === '[') { throw value + ' - List queries not supported for view queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for view queries - ' + value; }
 
     value = stripQuotes(value);
     if (!yy.views || !yy.views[value]) { throw value + ' - View not found for user'; }
@@ -580,7 +587,7 @@ function formatNormalQuery (yy, field, op, value) {
       return obj;
     }
 
-    if (value[0] === '[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
@@ -597,7 +604,7 @@ function formatNormalQuery (yy, field, op, value) {
       return obj;
     }
 
-    if (value[0] === '[') { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
+    if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
@@ -647,59 +654,63 @@ function stringQuery (yy, field, str) {
   if (str[0] === '"' && str[str.length - 1] === '"') {
     str = str.substring(1, str.length - 1).replace(/\\(.)/g, '$1');
     quoted = true;
-  } else if (str[0] === '[' && str[str.length - 1] === ']') {
+  } else if (isArrayFull(str)) {
     const rawField = field2Raw(yy, field);
-    const strs = ListToArray(str);
-    if (info.transform) {
-      for (let i = 0; i < strs.length; i++) {
-        strs[i] = global.moloch[info.transform](strs[i]);
-      }
-    }
+    const strs = ListToArrayMap(str, global.moloch[info.transform]);
 
-    obj = [];
+    const items = [];
     let terms = null;
     strs.forEach(function (astr) {
-      let should;
+      let item;
 
       if (typeof astr === 'string' && astr[0] === '/' && astr[astr.length - 1] === '/') {
         checkRegex(astr);
 
-        should = { regexp: {} };
-        should.regexp[rawField] = astr.substring(1, astr.length - 1);
-        obj.push(should);
+        item = { regexp: {} };
+        item.regexp[rawField] = astr.substring(1, astr.length - 1);
+        items.push(item);
       } else if (typeof astr === 'string' && astr.indexOf('*') !== -1) {
         if (astr === '*') {
           throw "Please use 'EXISTS!' instead of a '*' in expression";
         }
 
-        should = { wildcard: {} };
-        should.wildcard[rawField] = astr;
-        obj.push(should);
+        item = { wildcard: {} };
+        item.wildcard[rawField] = astr;
+        items.push(item);
       } else {
         if (astr[0] === '"' && astr[astr.length - 1] === '"') {
           astr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
         }
 
         if (info.type.match(/termfield/)) {
-          // Reuse same terms element
+          if (isArrayAND(str)) {
+            item = { term: {} };
+            item.term[dbField] = astr;
+            items.push(item);
+            return;
+          }
+
+          // Reuse same terms element for all terms query and add to items once
           if (terms === null) {
             terms = { terms: {} };
             terms.terms[dbField] = [];
-            obj.push(terms);
+            items.push(terms);
           }
           terms.terms[dbField].push(astr);
         } else {
-          should = { match_phrase: {} };
-          should.match_phrase[dbField] = astr;
-          obj.push(should);
+          item = { match_phrase: {} };
+          item.match_phrase[dbField] = astr;
+          items.push(item);
         }
       }
     }); // forEach
 
-    if (obj.length === 1) {
-      obj = obj[0];
+    if (items.length === 1) {
+      obj = items[0];
+    } else if (isArrayAND(str)) {
+      obj = { bool: { must: items } };
     } else {
-      obj = { bool: { should: obj } };
+      obj = { bool: { should: items } };
     }
 
     return obj;
@@ -787,8 +798,30 @@ global.moloch.removeProtocolAndURI = function (text) {
   return text;
 };
 
+function isArrayAND(value) {
+  return (value[0] === ']');
+}
+
+function isArrayStart(value) {
+  if (value[0] === '[' || value[0] === ']') {
+    return true;
+  }
+  return false;
+}
+
+function isArrayFull(value) {
+  if (value[0] === '[' && value[value.length - 1] === ']') {
+    return true;
+  }
+  if (value[0] === ']' && value[value.length - 1] === '[') {
+    return true;
+  }
+  return false;
+}
+
+
 function ListToArray (text, always) {
-  if (text[0] === '[' && text[text.length - 1] === ']') {
+  if (isArrayFull(text)) {
     text = text.substring(1, text.length - 1);
   } else if (!always) {
     return text;
@@ -802,8 +835,16 @@ function ListToArray (text, always) {
   return strs;
 }
 
+function ListToArrayMap (text, mapCb, always) {
+  let list = ListToArray(text, always);
+
+  if (!mapCb || !Array.isArray(list)) { return list; }
+
+  return list.map(mapCb);
+}
+
 function ListToArrayShortcuts (yy, text) {
-  if (text[0] === '[' && text[text.length - 1] === ']') {
+  if (isArrayFull(text)) {
     text = text.substring(1, text.length - 1);
   }
 
@@ -828,7 +869,18 @@ function ListToArrayShortcuts (yy, text) {
 
 function termOrTermsInt (dbField, str) {
   let obj = {};
-  if (str[0] === '[' && str[str.length - 1] === ']') {
+  if (isArrayFull(str)) {
+    if (isArrayAND(str)) {
+      obj.bool = {
+        must: ListToArray(str).map(x => {
+          const o = { term: {} };
+          o.term[dbField] = parseInt(x);
+          return o;
+        })
+      };
+      return obj;
+    }
+
     obj = { terms: {} };
     obj.terms[dbField] = ListToArray(str).map(x => parseInt(x));
   } else {
@@ -849,9 +901,19 @@ function termOrTermsInt (dbField, str) {
 
 function termOrTermsFloat (dbField, str) {
   let obj = {};
-  if (str[0] === '[' && str[str.length - 1] === ']') {
+  if (isArrayFull(str)) {
+    if (isArrayAND(str)) {
+      obj.bool = {
+        must: ListToArray(str).map(x => {
+          const o = { term: {} };
+          o.term[dbField] = parseFloat(x);
+          return o;
+        })
+      };
+      return obj;
+    }
+
     obj = { terms: {} };
-    obj.terms[dbField] = ListToArray(str);
     obj.terms[dbField] = ListToArray(str).map(x => parseFloat(x));
   } else {
     str = stripQuotes(str);
@@ -873,9 +935,19 @@ function termOrTermsFloat (dbField, str) {
 
 function termOrTermsSeconds (dbField, str) {
   let obj = {};
-  if (str[0] === '[' && str[str.length - 1] === ']') {
+  if (isArrayFull(str)) {
+    if (isArrayAND(str)) {
+      obj.bool = {
+        must: ListToArray(str).map(x => {
+          const o = { term: {} };
+          o.term[dbField] = parseSeconds(x);
+          return o;
+        })
+      };
+      return obj;
+    }
+
     obj = { terms: {} };
-    obj.terms[dbField] = ListToArray(str);
     obj.terms[dbField] = ListToArray(str).map(x => parseSeconds(x));
   } else {
     str = parseSeconds(stripQuotes(str));
@@ -888,20 +960,26 @@ function termOrTermsSeconds (dbField, str) {
 // This uses weird gte/lte range of the same date because if you give a second
 // date, you want everything that happen from 0ms-1000ms, not just at 0ms
 function termOrTermsDate (dbField, str) {
-  let obj = {};
-  if (str[0] === '[' && str[str.length - 1] === ']') {
-    obj = { bool: { should: [] } };
+  if (isArrayFull(str)) {
+    const items = []
     ListToArray(str).forEach(function (astr) {
       const d = moment.unix(parseSeconds(stripQuotes(astr))).format();
       const r = { range: {} };
       r.range[dbField] = { gte: d, lte: d };
-      obj.bool.should.push(r);
+      items.push(r);
     });
-  } else {
-    const d = moment.unix(parseSeconds(stripQuotes(str))).format();
-    obj = { range: {} };
-    obj.range[dbField] = { gte: d, lte: d };
+
+
+    if (isArrayAND(str)) {
+      return { bool: { must: items } };
+    } else {
+      return { bool: { should: items } };
+    }
   }
+
+  const d = moment.unix(parseSeconds(stripQuotes(str))).format();
+  const obj = { range: {} };
+  obj.range[dbField] = { gte: d, lte: d };
   return obj;
 }
 
