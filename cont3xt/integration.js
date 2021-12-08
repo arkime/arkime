@@ -58,7 +58,7 @@ class Integration {
 
     if (Integration.debug > 1) {
       setTimeout(() => {
-        const sorted = Integration.integrations.all.sort((a, b) => {return a.order - b.order});
+        const sorted = Integration.integrations.all.sort((a, b) => { return a.order - b.order; });
         console.log('ORDER:');
         for (const integration of sorted) {
           if (integration.card) {
