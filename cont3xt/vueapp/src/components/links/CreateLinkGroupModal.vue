@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    size="xl"
     scrollable
     id="link-group-form">
     <!-- header -->
