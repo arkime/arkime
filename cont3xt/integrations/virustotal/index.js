@@ -44,7 +44,7 @@ class VirusTotalIntegration extends Integration {
 class VirusTotalDomainIntegration extends Integration {
   name = 'VT Domain';
   icon = 'integrations/virustotal/icon.png';
-  order = 320;
+  order = 600;
   configName = 'VirusTotal'
   itypes = {
     domain: 'fetchDomain'
@@ -178,7 +178,7 @@ class VirusTotalDomainIntegration extends Integration {
 class VirusTotalIPIntegration extends Integration {
   name = 'VT IP';
   icon = 'integrations/virustotal/icon.png';
-  order = 340;
+  order = 620;
   configName = 'VirusTotal'
   itypes = {
     ip: 'fetchIp'
@@ -311,7 +311,7 @@ class VirusTotalIPIntegration extends Integration {
 class VirusTotalHashIntegration extends Integration {
   name = 'VT Hash';
   icon = 'integrations/virustotal/icon.png';
-  order = 360;
+  order = 640;
   configName = 'VirusTotal'
   itypes = {
     hash: 'fetchHash'

@@ -19,7 +19,7 @@ const axios = require('axios');
 class BuiltWithIntegration extends Integration {
   name = 'BuiltWith';
   icon = 'integrations/builtwith/icon.png';
-  order = 300;
+  order = 360;
   cacheTimeout = '1w';
   itypes = {
     domain: 'fetchDomain'

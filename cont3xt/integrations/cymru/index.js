@@ -19,6 +19,7 @@ const axios = require('axios');
 class CymruIntegration extends Integration {
   name = 'Cymru';
   icon = 'integrations/cymru/icon.png';
+  order = 520;
   itypes = {
     hash: 'fetchHash'
   };

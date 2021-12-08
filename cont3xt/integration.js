@@ -55,6 +55,18 @@ class Integration {
         require(file);
       });
     });
+
+    if (Integration.debug > 1) {
+      setTimeout(() => {
+        const sorted = Integration.integrations.all.sort((a, b) => {return a.order - b.order});
+        console.log('ORDER:');
+        for (const integration of sorted) {
+          if (integration.card) {
+            console.log(`${integration.name}: ${integration.order}`);
+          }
+        }
+      }, 1000);
+    }
   }
 
   static register (integration) {

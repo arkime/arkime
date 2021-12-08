@@ -19,7 +19,7 @@ const axios = require('axios');
 class AlienVaultOTXIntegration extends Integration {
   name = 'AlienVaultOTX';
   icon = 'integrations/alienvaultotx/icon.png';
-  order = 300;
+  order = 13000;
   cacheTimeout = '1w';
   itypes = {
     ip: 'fetchIp',

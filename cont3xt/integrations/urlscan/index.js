@@ -19,7 +19,7 @@ const axios = require('axios');
 class URLScanIntegration extends Integration {
   name = 'URLScan';
   icon = 'integrations/urlscan/icon.png';
-  order = 300;
+  order = 500;
   itypes = {
     domain: 'fetch',
     ip: 'fetch'

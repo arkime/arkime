@@ -19,7 +19,7 @@ const axios = require('axios');
 class ShodanIntegration extends Integration {
   name = 'Shodan';
   icon = 'integrations/shodan/icon.png';
-  order = 240;
+  order = 260;
   itypes = {
     ip: 'fetchIp'
   };

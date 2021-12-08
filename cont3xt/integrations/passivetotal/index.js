@@ -144,7 +144,7 @@ class PassiveTotalWhoisIntegration extends Integration {
 class PassiveTotalSubdomainsIntegration extends Integration {
   name = 'PT Subdomains';
   icon = 'integrations/passivetotal/iconSubDomains.png';
-  order = 280;
+  order = 320;
   configName = 'PassiveTotal';
   itypes = {
     domain: 'fetchDomain'
@@ -212,7 +212,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
 class PassiveTotalDNSIntegration extends Integration {
   name = 'PT DNS';
   icon = 'integrations/passivetotal/icon.png';
-  order = 260;
+  order = 300;
   configName = 'PassiveTotal';
   itypes = {
     ip: 'fetch',

@@ -19,7 +19,7 @@ const axios = require('axios');
 class TwilioIntegration extends Integration {
   name = 'Twilio';
   icon = 'integrations/twilio/icon.png';
-  order = 300;
+  order = 440;
   cacheTimeout = '1w';
   itypes = {
     phone: 'fetch'

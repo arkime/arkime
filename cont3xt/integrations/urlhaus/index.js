@@ -19,7 +19,7 @@ const axios = require('axios');
 class URLHausIntegration extends Integration {
   name = 'URLHaus';
   icon = 'integrations/urlhaus/icon.png';
-  order = 300;
+  order = 460;
   cacheTimeout = '1w';
   itypes = {
     domain: 'fetch',

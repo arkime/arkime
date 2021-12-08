@@ -19,7 +19,7 @@ const axios = require('axios');
 class BGPViewIntegration extends Integration {
   name = 'BGPView';
   icon = 'integrations/bgpview/icon.png';
-  order = 300;
+  order = 340;
   cacheTimeout = '1w';
   itypes = {
     ip: 'fetch'

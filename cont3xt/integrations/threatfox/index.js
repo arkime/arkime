@@ -19,7 +19,7 @@ const axios = require('axios');
 class ThreatFoxIntegration extends Integration {
   name = 'ThreatFox';
   icon = 'integrations/threatfox/icon.png';
-  order = 300;
+  order = 420;
   cacheTimeout = '1w';
   itypes = {
     ip: 'fetchIp',
