@@ -236,8 +236,10 @@ export default {
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
         .replace(/\${numHours}/g, this.numHours)
-        .replace(/\${stopDate}/g, this.stopDate)
-        .replace(/\${startDate}/g, this.startDate);
+        .replace(/\${stopTS}/g, this.stopDate)
+        .replace(/\${startTS}/g, this.startDate)
+        .replace(/\${stopDate}/g, this.stopDate.split('T')[0])
+        .replace(/\${startDate}/g, this.startDate.split('T')[0]);
     },
     openAllLinks (linkGroup) {
       for (const link of linkGroup.links) {

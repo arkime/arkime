@@ -115,7 +115,7 @@
             <template #append>
               <b-input-group-text
                 class="cursor-help"
-                v-b-tooltip.hover="'These values within links will be filled in \'${indicator}\' (your search query), \'${startDate}\', \'${stopDate}\', \'${numDays}\', \'${numHours}\', \'${type}\''">
+                v-b-tooltip.hover.html="linkTip">
                 <span class="fa fa-info-circle" />
               </b-input-group-text>
             </template>
@@ -179,7 +179,11 @@ export default {
         { text: 'Text', value: 'text' }
       ],
       dragging: -1,
-      draggedOver: undefined
+      draggedOver: undefined,
+      linkTip: {
+        /* eslint-disable no-template-curly-in-string */
+        title: 'These values within links will be filled in <code>${indicator}</code>, <code>${startDate}</code>, <code>${stopDate}</code>, <code>${startTS}</code>, <code>${stopTS}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${type}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
+      }
     };
   },
   computed: {
