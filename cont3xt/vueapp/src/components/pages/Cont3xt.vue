@@ -530,8 +530,8 @@ body.dark .search-nav {
 }
 
 .link-group-cards-wrapper {
+  margin-right: -1.25rem !important;
   margin-left: -0.5rem !important;
-  margin-right: -0.5rem !important;
 }
 
 .link-group-card-handle {

@@ -5,8 +5,8 @@ User Settings Description - an object with each sub object a setting.
 
 Card Description - an object of the following
   * title - title of the card
-  * fields - an array of fields. 
-    * If the element is just a string that means 
+  * fields - an array of fields.
+    * If the element is just a string that means
       * both "name" and "field" are that string
       * type is string
     * otherwise it can be an object with
@@ -25,4 +25,5 @@ Card Description - an object of the following
       * defang - when true defang the string, change http to hXXp and change . to [.]
       * pivot - when set this field should be added to action menu for table entry that you can replace query with
       * join - with array, display with value as the separator on one line (example single: ', ')
-   
+      * defaultSortField - with array, sorts the table by this field
+      * defaultSortDirection - with array and defaultSortField, sorts the table in this direction ('asc' or 'desc')

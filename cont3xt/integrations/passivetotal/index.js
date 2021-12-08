@@ -237,6 +237,8 @@ class PassiveTotalDNSIntegration extends Integration {
         label: 'results',
         type: 'table',
         field: 'results',
+        defaultSortField: 'firstSeen',
+        defaultSortDirection: 'desc',
         fields: [
           {
             label: 'DNS Type',

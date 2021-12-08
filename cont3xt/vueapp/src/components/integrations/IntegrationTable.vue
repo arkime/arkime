@@ -107,17 +107,34 @@ export default {
     size: { // the rows of data to display initially and increment or
       type: Number, // decrement thereafter (by clicking more/less)
       default: 50
+    },
+    defaultSortField: { // the default field to sort the table by
+      type: String // if undefined, the table is not sorted
+    },
+    defaultSortDirection: { // the default sort direction (asc or desc)
+      type: String,
+      default: 'desc'
     }
   },
   data () {
     return {
-      desc: true,
       searchTerm: '',
-      sortField: undefined,
+      sortField: this.defaultSortField || undefined,
       tableLen: Math.min(this.tableData.length || 1, this.size),
+      desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
       data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
       filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData]
     };
+  },
+  mounted () {
+    if (this.sortField) {
+      for (const field of this.fields) {
+        if (field.path.includes(this.sortField)) {
+          this.sortBy(field);
+          break;
+        }
+      }
+    }
   },
   watch: {
     searchTerm (newValue, oldValue) {

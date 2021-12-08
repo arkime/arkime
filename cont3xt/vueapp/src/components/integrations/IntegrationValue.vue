@@ -20,6 +20,8 @@
           v-if="value.value"
           :fields="field.fields"
           :table-data="value.value"
+          :default-sort-field="field.defaultSortField"
+          :default-sort-direction="field.defaultSortDirection"
         />
         <template #overlay>
           <div class="overlay-loading">
