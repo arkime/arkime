@@ -154,6 +154,7 @@
 </template>
 
 <script>
+import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
@@ -231,7 +232,7 @@ export default {
       this.$set(linkGroup, 'links', updatedLinkGroup.links || []);
     },
     getUrl (url) {
-      return url.replace(/\${indicator}/g, this.query)
+      return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
         .replace(/\${numHours}/g, this.numHours)
