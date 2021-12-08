@@ -404,13 +404,13 @@ class Integration {
     const integration = Integration.integrationsByName[req.params.integration];
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
-      res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
+      return res.send({ success: false, text: `integration ${itype} ${req.params.integration} not found` });
     }
 
     const keys = req.user.getCont3xtKeys();
     const disabled = keys?.[integration.name]?.disabled;
     if (disabled === true || disabled === 'true') {
-      res.send({ success: false, text: `integration ${itype} ${req.params.integration} disabled` });
+      return res.send({ success: false, text: `integration ${itype} ${req.params.integration} disabled` });
     }
 
     const stats = integration.stats;

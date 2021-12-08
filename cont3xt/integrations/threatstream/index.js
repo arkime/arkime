@@ -53,6 +53,10 @@ class ThreatstreamIntegration extends Integration {
 
   homePage = 'https://www.anomali.com/products/threatstream'
   settings = {
+    disabled: {
+      help: 'Disable integration for all queries',
+      type: 'boolean'
+    },
     host: {
       help: 'The threatstream host to send queries. Only set if you have a on premise deployment.'
     },
