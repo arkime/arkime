@@ -81,7 +81,8 @@ class Integration {
     }
 
     // Can disable a integration globally
-    if (integration.getConfig('disabled', false) === 'true') {
+    const disabled = integration.getConfig('disabled', false);
+    if (disabled === true || disabled === 'true') {
       console.log(integration.name, 'disabled');
       return;
     }
@@ -266,7 +267,8 @@ class Integration {
 
     for (const integration of integrations) {
       // Can disable a integration per user
-      if (keys?.[integration.name]?.disabled === 'true') {
+      const disabled = keys?.[integration.name]?.disabled;
+      if (disabled === true || disabled === 'true') {
         shared.total--;
         if (Integration.debug > 1) {
           console.log('DISABLED', integration.name);
@@ -406,7 +408,8 @@ class Integration {
     }
 
     const keys = req.user.getCont3xtKeys();
-    if (keys?.[integration.name]?.disabled === 'true') {
+    const disabled = keys?.[integration.name]?.disabled;
+    if (disabled === true || disabled === 'true') {
       res.send({ success: false, text: `integration ${itype} ${req.params.integration} disabled` });
     }
 
