@@ -36,8 +36,7 @@
           <router-link
             to="settings"
             active-class="active"
-            class="nav-link"
-            exact>
+            class="nav-link">
             Settings
           </router-link>
         </li>

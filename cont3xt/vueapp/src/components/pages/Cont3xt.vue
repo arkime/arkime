@@ -190,29 +190,31 @@
           <!-- link groups -->
           <div v-if="searchItype"
             class="d-flex flex-wrap link-group-cards-wrapper">
-            <reorder-list
-              :index="index"
-              class="w-50 p-2"
-              @update="updateList"
-              :key="linkGroup._id"
-              :list="getLinkGroups"
-              v-for="(linkGroup, index) in getLinkGroups">
-              <template slot="handle">
-                <span class="fa fa-bars d-inline link-group-card-handle" />
-              </template>
-              <template slot="default">
-                <link-group-card
-                  :query="searchTerm"
-                  :num-days="numDays"
-                  :itype="searchItype"
-                  :num-hours="numHours"
-                  :stop-date="stopDate"
-                  :start-date="startDate"
-                  :link-group-index="index"
-                  v-if="getLinkGroups.length"
-                />
-              </template>
-            </reorder-list>
+            <template v-for="(linkGroup, index) in getLinkGroups">
+              <reorder-list
+                :index="index"
+                class="w-50 p-2"
+                @update="updateList"
+                :key="linkGroup._id"
+                :list="getLinkGroups"
+                v-if="hasLinksWithItype(linkGroup)">
+                <template slot="handle">
+                  <span class="fa fa-bars d-inline link-group-card-handle" />
+                </template>
+                <template slot="default">
+                  <link-group-card
+                    :query="searchTerm"
+                    :num-days="numDays"
+                    :itype="searchItype"
+                    :num-hours="numHours"
+                    :stop-date="stopDate"
+                    :start-date="startDate"
+                    :link-group-index="index"
+                    v-if="getLinkGroups.length"
+                  />
+                </template>
+              </reorder-list>
+            </template>
           </div> <!-- /link groups -->
         </div> <!-- /itype results summary -->
         <!-- integration results -->
@@ -463,6 +465,14 @@ export default {
         this.numHours = this.numDays * 24;
         break;
       }
+    },
+    hasLinksWithItype (linkGroup) {
+      for (const link of linkGroup.links) {
+        if (link.itypes.indexOf(this.searchItype) > -1) {
+          return true;
+        }
+      }
+      return false;
     },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {

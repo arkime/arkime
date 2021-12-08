@@ -1,71 +1,89 @@
 <template>
-  <table class="table table-sm table-striped table-bordered small">
-    <tr>
-      <th
-        @click="sortBy(field)"
-        v-for="field in fields"
-        :key="`${field.label}-header`"
-        :class="{'cursor-pointer':field.type==='string'}">
-        {{ field.label }}
-        <template v-if="field.type === 'string'">
-          <span
-            class="fa fa-sort"
-            v-if="sortField !== field.label"
-          />
-          <span
-            class="fa fa-sort-desc"
-            v-else-if="sortField === field.label && desc"
-          />
-          <span
-            class="fa fa-sort-asc"
-            v-else-if="sortField === field.label && !desc"
-          />
+  <div>
+    <!-- search -->
+    <div class="mb-1">
+      <b-input-group size="sm">
+        <template #prepend>
+          <b-input-group-text>
+            <span class="fa fa-search" />
+          </b-input-group-text>
         </template>
-      </th>
-    </tr>
-    <tr
-      :key="index"
-      v-for="index in (Math.max(tableLen, 0))">
-      <td class="break-all"
-        v-for="field in fields"
-        :key="`${field.label}-${index}-cell`">
-        <integration-value
-          :field="field"
-          :truncate="true"
-          :hide-label="true"
-          v-if="data[index - 1]"
-          :data="data[index - 1]"
+        <b-form-input
+          debounce="400"
+          v-model="searchTerm"
+          placeholder="Search table values"
         />
-      </td>
-    </tr>
-    <tr v-if="data.length > tableLen || tableLen > size">
-      <td :colspan="fields.length">
-        <div class="d-flex justify-content-between">
-          <a
-            @click="showLess"
-            class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen <= size}">
-            show less...
-          </a>
-          <a
-            @click="showAll"
-            class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen >= data.length}">
-            show ALL
-            <span v-if="data.length > 2000">
-              (careful)
-            </span>
-          </a>
-          <a
-            @click="showMore"
-            class="btn btn-link btn-xs"
-            :class="{'disabled':tableLen >= data.length}">
-            show more...
-          </a>
-        </div>
-      </td>
-    </tr>
-  </table>
+      </b-input-group>
+    </div> <!-- /search -->
+    <!-- data -->
+    <table class="table table-sm table-striped table-bordered small">
+      <tr>
+        <th
+          @click="sortBy(field)"
+          v-for="field in fields"
+          :key="`${field.label}-header`"
+          :class="{'cursor-pointer':isSortable(field)}">
+          {{ field.label }}
+          <template v-if="isSortable(field)">
+            <span
+              class="fa fa-sort"
+              v-if="sortField !== field.label"
+            />
+            <span
+              class="fa fa-sort-desc"
+              v-else-if="sortField === field.label && desc"
+            />
+            <span
+              class="fa fa-sort-asc"
+              v-else-if="sortField === field.label && !desc"
+            />
+          </template>
+        </th>
+      </tr>
+      <tr
+        :key="index"
+        v-for="index in (Math.max(tableLen, 0))">
+        <td class="break-all"
+          v-for="field in fields"
+          :key="`${field.label}-${index}-cell`">
+          <integration-value
+            :field="field"
+            :truncate="true"
+            :hide-label="true"
+            v-if="filteredData[index - 1]"
+            :data="filteredData[index - 1]"
+          />
+        </td>
+      </tr>
+      <tr v-if="filteredData.length > tableLen || tableLen > size">
+        <td :colspan="fields.length">
+          <div class="d-flex justify-content-between">
+            <a
+              @click="showLess"
+              class="btn btn-link btn-xs"
+              :class="{'disabled':tableLen <= size}">
+              show less...
+            </a>
+            <a
+              @click="showAll"
+              class="btn btn-link btn-xs"
+              :class="{'disabled':tableLen >= filteredData.length}">
+              show ALL
+              <span v-if="filteredData.length > 2000">
+                (careful)
+              </span>
+            </a>
+            <a
+              @click="showMore"
+              class="btn btn-link btn-xs"
+              :class="{'disabled':tableLen >= filteredData.length}">
+              show more...
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table> <!-- /data -->
+  </div>
 </template>
 
 <script>
@@ -93,15 +111,40 @@ export default {
   },
   data () {
     return {
-      desc: false,
+      desc: true,
+      searchTerm: '',
       sortField: undefined,
+      tableLen: Math.min(this.tableData.length || 1, this.size),
       data: Array.isArray(this.tableData) ? this.tableData : [this.tableData],
-      tableLen: Math.min(this.tableData.length || 1, this.size)
+      filteredData: Array.isArray(this.tableData) ? this.tableData : [this.tableData]
     };
+  },
+  watch: {
+    searchTerm (newValue, oldValue) {
+      if (!newValue) {
+        this.filteredData = this.data;
+        return;
+      }
+
+      this.filteredData = this.data.filter((row) => {
+        let match = false;
+        const query = newValue.toLowerCase();
+
+        for (const c in row) {
+          if (!row[c]) { continue; }
+          match = row[c].toString().toLowerCase().match(query)?.length > 0;
+          if (match) { break; }
+        }
+
+        return match;
+      });
+
+      this.tableLen = Math.min(this.filteredData.length, this.tableLen);
+    }
   },
   methods: {
     showMore () {
-      this.tableLen = Math.min(this.tableLen + this.size, this.data.length);
+      this.tableLen = Math.min(this.tableLen + this.size, this.filteredData.length);
     },
     showLess () {
       this.tableLen = Math.max(this.tableLen - this.size, this.size);
@@ -109,11 +152,14 @@ export default {
     showAll () {
       this.$store.commit('SET_RENDERING_TABLE', true);
       setTimeout(() => { // need settimeout for rendering to take effect
-        this.tableLen = this.data.length;
+        this.tableLen = this.filteredData.length;
       }, 100);
     },
+    isSortable (field) {
+      return field.type === 'string' || field.type === 'date';
+    },
     sortBy (field) {
-      if (field.type !== 'string') {
+      if (!this.isSortable(field)) {
         return;
       }
 
@@ -125,7 +171,7 @@ export default {
 
       this.sortField = field.label;
 
-      this.data.sort((a, b) => {
+      this.filteredData.sort((a, b) => {
         let valueA = JSON.parse(JSON.stringify(a));
         let valueB = JSON.parse(JSON.stringify(b));
 
@@ -137,10 +183,20 @@ export default {
         if (!valueA) { valueA = ''; }
         if (!valueB) { valueB = ''; }
 
-        if (this.desc) {
-          return valueA.localeCompare(valueB);
+        if (field.type === 'string') {
+          if (this.desc) {
+            return valueA.toString().localeCompare(valueB);
+          } else {
+            return valueB.toString().localeCompare(valueA);
+          }
         } else {
-          return valueB.localeCompare(valueA);
+          valueA = new Date(valueA);
+          valueB = new Date(valueB);
+          if (this.desc) {
+            return valueA.getTime() < valueB.getTime() ? 1 : -1;
+          } else {
+            return valueB.getTime() < valueA.getTime() ? 1 : -1;
+          }
         }
       });
     }

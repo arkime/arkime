@@ -186,6 +186,7 @@ export default {
     },
     saveLinkGroup (linkGroup) {
       this.$set(linkGroup, 'rawEdit', undefined);
+      this.$set(linkGroup, 'success', undefined);
 
       LinkService.updateLinkGroup(linkGroup).then((response) => {
         linkGroup.success = true;

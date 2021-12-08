@@ -5,7 +5,7 @@
     <div
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12">
+      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
       <div class="nav flex-column nav-pills">
         <a @click="openView('general')"
           class="nav-link cursor-pointer"
@@ -22,37 +22,33 @@
           Integrations
         </a>
         <a @click="openView('linkgroups')"
-          class="nav-link cursor-pointer"
+          class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
           <span class="fa fa-fw fa-link">
           </span>&nbsp;
           Link Groups
         </a>
-        <div
-          role="tablist"
-          aria-orientation="vertical"
-          v-if="visibleTab === 'linkgroups'">
-          <div class="nav flex-column nav-pills ml-4 mt-2 small">
-            <reorder-list
-              :index="i"
-              :key="lg._id"
-              @update="updateList"
-              :list="getLinkGroups"
-              v-for="(lg, i) in getLinkGroups">
-              <template slot="handle">
-                <span class="fa fa-bars d-inline sub-menu-handle" />
-              </template>
-              <template slot="default">
-                <a
-                  @click="selectedLinkGroup = i"
-                  class="nav-link cursor-pointer d-inline-block sub-menu-item"
-                  :class="{'active':selectedLinkGroup === i}">
-                  {{ lg.name }}
-                </a>
-              </template>
-            </reorder-list>
-          </div>
-        </div>
+        <template v-if="visibleTab === 'linkgroups'">
+          <reorder-list
+            :index="i"
+            :key="lg._id"
+            @update="updateList"
+            :list="getLinkGroups"
+            v-for="(lg, i) in getLinkGroups"
+            style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
+            <template slot="handle">
+              <span class="fa fa-bars d-inline sub-nav-handle" />
+            </template>
+            <template slot="default">
+              <a :title="lg.name"
+                @click="selectedLinkGroup = i"
+                :class="{'active':selectedLinkGroup === i}"
+                class="nav-link sub-nav-link cursor-pointer">
+                {{ lg.name }}
+              </a>
+            </template>
+          </reorder-list>
+        </template>
       </div>
     </div> <!-- /navigation -->
 
@@ -68,15 +64,18 @@
 
       <!-- integrations settings -->
       <div v-if="visibleTab === 'integrations'">
-        <h1 class="ml-2 w-100 d-flex justify-content-between align-items-start">
-          Integrations
+        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+          <h1>
+            Integrations
+          </h1>
           <b-alert
             variant="success"
+            class="alert-sm mt-1"
             :show="!!saveIntegrationSettingsSuccess.length">
             <span class="fa fa-check mr-2" />
             {{ saveIntegrationSettingsSuccess }}
           </b-alert>
-          <div class="mt-2 mr-3">
+          <div class="mr-3">
             <b-button
               class="mr-2"
               variant="outline-warning"
@@ -91,7 +90,7 @@
               Save
             </b-button>
           </div>
-        </h1>
+        </div>
         <div class="d-flex flex-wrap">
           <!-- integration settings error -->
           <b-alert
@@ -425,15 +424,30 @@ export default {
 </script>
 
 <style scoped>
-.sub-menu-item {
-  width: 100%;
-  padding-left: 32px !important;
-  margin-left: -14px;
-}
-.sub-menu-handle {
-  top: 12px;
-  left: 4px;
-  float: left;
+.nav-pills {
+  max-width: 100%;
   position: relative;
+}
+.nav-pills .nav-link {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sub-nav-link {
+  padding-left: 32px !important;
+}
+.sub-nav-handle {
+  top: 12px;
+  left: 1.4rem;
+  float: left;
+  z-index: 10;
+  position: relative;
+}
+
+.alert.alert-sm {
+  padding: 0.4rem 0.8rem;
 }
 </style>
