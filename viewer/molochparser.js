@@ -565,6 +565,8 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
   const shortcuts = ListToArrayShortcuts(yy, value);
   if (shortcuts.length === 0) { return undefined; }
 
+  if (isArrayAND(value)) { throw value + ' - AND array not supported with shortcuts'; }
+
   let obj;
   const info = getFieldInfo(yy, field);
 

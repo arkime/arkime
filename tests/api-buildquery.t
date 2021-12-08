@@ -1,4 +1,4 @@
-use Test::More tests => 153;
+use Test::More tests => 154;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -13,9 +13,13 @@ sub doTest {
 my ($expression, $expected, $debug) = @_;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     $json = viewerGet('/api/buildquery?date=-1&expression=' . uri_escape($expression));
-    diag "ERROR: ", $json->{error} if (exists $json->{error});
-    eq_or_diff($json->{esquery}->{query}->{bool}->{filter}[0], from_json($expected), {context => 3});
-    diag to_json($json->{esquery}->{query}->{bool}->{filter}[0]) if ($debug);
+    if (exists $json->{error}) {
+        is($json->{error}, $expected);
+        diag to_json($json) if ($debug);
+    } else {
+        eq_or_diff($json->{esquery}->{query}->{bool}->{filter}[0], from_json($expected), {context => 3});
+        diag to_json($json->{esquery}->{query}->{bool}->{filter}[0]) if ($debug);
+    }
 }
 
 # Create shortcuts for testing
@@ -105,6 +109,8 @@ doTest('ip.src != [1.2.3.4,$ipshortcut1]', qq({"bool":{"must_not":[{"term":{"sou
 doTest('ip.src != [$ipshortcut1,1.2.3.4]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src != [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"must":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src != [$ipshortcut1,1.2.3.4,$ipshortcut2]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
+
+doTest('ip.src == ]$ipshortcut1[', q(]$ipshortcut1[ - AND array not supported with shortcuts));
 
 #### IP
 
