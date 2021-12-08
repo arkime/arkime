@@ -1,4 +1,4 @@
-use Test::More tests => 154;
+use Test::More tests => 158;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -44,6 +44,12 @@ doTest('ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"must_not":[{"term":{"source.ip"
 
 doTest('ip.src == ]1.2.3.4,2.3.4.5[', '{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
 doTest('ip.src != ]1.2.3.4,2.3.4.5[', '{"bool":{"must_not":{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}}');
+
+doTest('ip.src == ]1.2.3.4,2.3.4.5[ && ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}]}}');
+doTest('ip.src != ]1.2.3.4,2.3.4.5[ && ip.src == [1.2.3.4,2.3.4.5]', '{"bool":{"must":[{"bool":{"must_not":{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}},{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}]}}');
+
+doTest('ip.src != [1.2.3.4,2.3.4.5] && ip.src == ]1.2.3.4,2.3.4.5[', '{"bool":{"must":[{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}},{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
+doTest('ip.src == [1.2.3.4,2.3.4.5] && ip.src != ]1.2.3.4,2.3.4.5[', '{"bool":{"must":[{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}},{"bool":{"must_not":{"bool":{"must":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}}]}}');
 
 doTest('ip.src == 1.2.3.4/31', '{"term":{"source.ip":"1.2.3.4/31"}}');
 doTest('ip.src != 1.2.3.4/31', '{"bool":{"must_not":{"term":{"source.ip":"1.2.3.4/31"}}}}');

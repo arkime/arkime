@@ -9,7 +9,7 @@
 \/(?:\\?.)*?\/             return 'REGEXSTR'
 [-+a-zA-Z0-9_.@:*?/$]+      return 'STR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
-\][^\]\\]*(?:\\.[^\]\\]*)*\[ return 'LIST'
+\][^\[\\]*(?:\\.[^\[\\]*)*\[ return 'LIST'
 "EXISTS!"                  return "EXISTS"
 "<="                       return 'lte'
 "<"                        return 'lt'
