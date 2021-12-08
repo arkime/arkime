@@ -123,6 +123,7 @@ export default {
     searchTerm (newValue, oldValue) {
       if (!newValue) {
         this.filteredData = this.data;
+        this.setTableLen();
         return;
       }
 
@@ -139,10 +140,11 @@ export default {
         return match;
       });
 
-      this.tableLen = Math.min(this.filteredData.length, this.tableLen);
+      this.setTableLen();
     }
   },
   methods: {
+    /* exposed page functions ---------------------------------------------- */
     showMore () {
       this.tableLen = Math.min(this.tableLen + this.size, this.filteredData.length);
     },
@@ -199,6 +201,10 @@ export default {
           }
         }
       });
+    },
+    // helpers ------------------------------------------------------------- */
+    setTableLen () {
+      this.tableLen = Math.min(this.filteredData.length, this.size);
     }
   },
   updated () { // data is rendered

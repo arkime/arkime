@@ -4,7 +4,7 @@
     v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable))"
     class="h-100 align-self-stretch">
     <template #header>
-      <h6 class="mb-0">
+      <h6 class="mb-0 link-header">
         {{ linkGroup.name }}
       </h6>
     </template>
@@ -12,7 +12,8 @@
       <template
         v-for="(link, i) in linkGroup.links">
         <!-- display link to click -->
-        <div :key="link.url + i + 'click'"
+        <div class="link-display"
+          :key="link.url + i + 'click'"
           v-if="itype && link.itypes.indexOf(itype) > -1">
           <b-form-checkbox
             inline
@@ -21,13 +22,16 @@
             :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
           />
           <a target="_blank"
+            :title="link.name"
             :href="getUrl(link.url)"
             :style="link.color ? `color:${link.color}` : ''">
             {{ link.name }}
           </a>
         </div> <!-- /display link to click -->
         <!-- display link to view -->
-        <div v-else-if="!itype"
+        <div
+          v-else-if="!itype"
+          :title="link.name"
           :key="link.url + i + 'view'">
           <strong class="text-warning">
             {{ link.name }}
@@ -274,5 +278,18 @@ export default {
 .link-checkbox {
   margin-right: 0;
   min-height: 1rem;
+}
+
+.link-header {
+  overflow: hidden;
+  margin-right: 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.link-display {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
