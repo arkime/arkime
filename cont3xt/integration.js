@@ -263,6 +263,10 @@ class Integration {
     let normalizedQuery = query;
     if (itype === 'ip') {
       normalizedQuery = ipaddr.parse(query).toNormalizedString();
+      // I'm sure there is some function to do this with ipv6 but I couldn't find it
+      if (normalizedQuery.includes(':')) {
+        normalizedQuery = normalizedQuery.split(':').map(x => x.padStart(4, '0')).join(':');
+      }
     }
 
     for (const integration of integrations) {
