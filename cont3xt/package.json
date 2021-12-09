@@ -30,7 +30,6 @@
     "not ie <= 8"
   ],
   "dependencies": {
-    "@censys/node": "^2.0.2",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^2.3.4",
     "maxmind": "^4.3.2",
