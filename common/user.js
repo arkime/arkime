@@ -69,11 +69,12 @@ class User {
    * Initialize the User subsystem
    */
   static initialize (options) {
+    if (options.debug > 1) {
+      console.log('User.initialize', options);
+    }
     User.debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
 
-    // options.url = 'lmdb://./lmdb-users';
-    // options.url = 'redis://localhost:6379/1';
     if (!options.url) {
       User.implementation = new UserESImplementation(options);
     } else if (options.url.startsWith('lmdb')) {
@@ -206,23 +207,68 @@ class User {
   /**
    * Return all available roles using cache
    */
-  static allRolesCache () {
+  static async allRolesCache () {
     if (User.rolesCache._timeStamp > Date.now() - User.userCacheTimeout) {
       return User.rolesCache.roles;
     }
 
     User.rolesCache._timeStamp = Date.now();
-    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...User.implementation.allRoles()]);
+    const userAllRoles = await User.implementation.allRoles();
+    User.rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...userAllRoles]);
     return User.rolesCache.roles;
   }
 
   /**
-   * Api for listing available roles
+   * Web Api for listing available roles
    */
   static async apiRoles (req, res, next) {
     const roles = await User.allRolesCache();
     return res.send({ success: true, roles: [...roles].sort() });
   }
+
+  /**
+   * Web Api for getting current user
+   */
+  static apiGetUser (req, res, next) {
+    const userProps = [
+      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
+      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
+      'roles'
+    ];
+
+    const clone = {};
+
+    for (const prop of userProps) {
+      if (req.user[prop]) {
+        clone[prop] = req.user[prop];
+      }
+    }
+
+    /* ALW - FIX LATER FOR internals
+    clone.canUpload = internals.allowUploads;
+
+    // If esAdminUser is set use that, other wise use createEnable privilege
+    if (internals.esAdminUsersSet) {
+      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+    } else {
+      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+    }
+
+    // If no settings, use defaults
+    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
+
+    // Use settingsDefaults for any settings that are missing
+    for (const item in internals.settingDefaults) {
+      if (clone.settings[item] === undefined) {
+        clone.settings[item] = internals.settingDefaults[item];
+      }
+    }
+    */
+
+    return res.send(clone);
+  };
 
   /******************************************************************************/
   // Regression Tests APIs
@@ -240,6 +286,12 @@ class User {
   /******************************************************************************/
   // Per User Methods
   /******************************************************************************/
+  /**
+   * Save user, callback only
+   */
+  save (cb) {
+    User.setUser(this.userId, this, cb);
+  }
 
   /**
    * Generate set of all the roles this user has
