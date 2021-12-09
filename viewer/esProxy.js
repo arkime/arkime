@@ -49,6 +49,8 @@ if (prefix !== '' && prefix.charAt(prefix.length - 1) !== '_') {
 
 const oldprefix = prefix === 'arkime_' ? '' : prefix;
 
+console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
+
 const esSSLOptions = { rejectUnauthorized: !Config.insecure, ca: Config.getCaTrustCerts(Config.nodeName()) };
 const esClientKey = Config.get('esClientKey');
 const esClientCert = Config.get('esClientCert');
@@ -288,6 +290,14 @@ function validateSearchIds (req) {
     return false;
   }
 }
+function validateUpdate (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return json.script !== undefined && json.doc === undefined;
+  } catch (e) {
+    return false;
+  }
+}
 
 // Post requests
 app.post('*', saveBody, (req, res) => {
@@ -303,11 +313,14 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
-  } else if (path.startsWith(`/${prefix}sessions`) && path.endsWith('/_search') && validateSearchIds(req)) {
+  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
+  } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
+    console.log(`UPDATE : ${req.sensor.node} path:>${path}<:`);
+    console.log(req.body.toString('utf8'));
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>${path}<:`);
-    // console.log(req.body.toString('utf8'));
+    console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res);

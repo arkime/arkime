@@ -553,6 +553,9 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   vModule.makeRequest = (node, path, user, cb) => {
     vModule.getViewUrl(node, (err, viewUrl, client) => {
+      if (err) {
+        return cb(err);
+      }
       const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
       const url = new URL(nodePath, viewUrl);
       const options = {

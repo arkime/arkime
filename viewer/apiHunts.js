@@ -266,6 +266,9 @@ ${Config.arkimeWebURL()}hunt
       try {
         await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, text: successText }));
+        if (Config.get('cronQueries', false)) {
+          hModule.processHuntJobs();
+        }
         hModule.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
@@ -562,7 +565,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
 
           if (Config.debug > 2) {
-            console.log('HUNT', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+            console.log('HUNT -', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
           }
 
           // do sessions query
@@ -575,12 +578,17 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
   hModule.processHuntJobs = async (cb) => {
+    if (internals.runningHuntJob) {
+      if (Config.debug) {
+        console.log('HUNT - processing hunt jobs already', internals.runningHuntJob?.name);
+      }
+      return (cb ? cb() : null);
+    }
+    internals.runningHuntJob = true;
+
     if (Config.debug) {
       console.log('HUNT - processing hunt jobs');
     }
-
-    if (internals.runningHuntJob) { return (cb ? cb() : null); }
-    internals.runningHuntJob = true;
 
     const query = {
       size: 10000,

@@ -15,7 +15,7 @@ module.exports = (app, Config) => {
     elasticBase: Config.getArray('elasticsearch', ',', 'http://localhost:9200'),
     remoteClusters: Config.configMap('remote-clusters', 'moloch-clusters'),
     esQueryTimeout: Config.get('elasticsearchTimeout', 5 * 60) + 's',
-    esScrollTimeout: Config.get('elasticsearchScrollTimeout', 2 * 60) + 's',
+    esScrollTimeout: Config.get('elasticsearchScrollTimeout', 5 * 60) + 's',
     userNameHeader: Config.get('userNameHeader'),
     esAdminUsersSet: Config.get('esAdminUsers', false) !== false,
     esAdminUsers: Config.get('multiES', false) ? [] : Config.getArray('esAdminUsers', ',', ''),

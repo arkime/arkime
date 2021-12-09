@@ -80,6 +80,8 @@ LOCAL  int headerReqValue;
 LOCAL  int headerResField;
 LOCAL  int headerResValue;
 
+LOCAL  int parseHTTPHeaderValueMaxLen;
+
 /******************************************************************************/
 void http_common_parse_cookie(MolochSession_t *session, char *cookie, int len)
 {
@@ -129,7 +131,7 @@ void http_common_add_header_value(MolochSession_t *session, int pos, const char 
     case MOLOCH_FIELD_TYPE_STR_HASH:
     case MOLOCH_FIELD_TYPE_STR_GHASH:
         if (pos == headerReqValue || pos == headerResValue)
-            moloch_field_string_add_lower(pos, session, s, MIN(l, 1024));
+            moloch_field_string_add_lower(pos, session, s, MIN(l, parseHTTPHeaderValueMaxLen));
         else
             moloch_field_string_add(pos, session, s, l, TRUE);
         break;
@@ -1054,4 +1056,6 @@ static const char *method_strings[] =
     parserSettings.on_message_complete = moloch_hp_cb_on_message_complete;
     parserSettings.on_header_field = moloch_hp_cb_on_header_field;
     parserSettings.on_header_value = moloch_hp_cb_on_header_value;
+
+    parseHTTPHeaderValueMaxLen = moloch_config_int(NULL, "parseHTTPHeaderValueMaxLen", 1024, 1, 2048);
 }
