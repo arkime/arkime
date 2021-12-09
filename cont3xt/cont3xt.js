@@ -107,6 +107,14 @@ app.post('/regressionTests/shutdown', (req, res) => {
 
 app.use(Auth.doAuth);
 
+// check for cont3xt user
+app.use((req, res, next) => {
+  if (!req.user.hasRole('cont3xtUser')) {
+    return res.send('NO!');
+  }
+  next();
+})
+
 app.get('/api/user', User.apiGetUser);
 
 app.get('/api/linkGroup', LinkGroup.apiGet);
