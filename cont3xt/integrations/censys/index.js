@@ -108,10 +108,6 @@ class CensysIntegration extends Integration {
   async fetchIp (user, ip) {
     const id = this.getUserConfig(user, this.name, 'id');
     const secret = this.getUserConfig(user, this.name, 'secret');
-    // Andy, this is my hack job
-    const cAuthString = `${id}:${secret}`;
-    const bufferAuthString = Buffer.from(cAuthString, 'utf8');
-    const base64AuthString = bufferAuthString.toString('base64');
     if (!id || !secret) {
       return undefined;
     }
@@ -119,9 +115,12 @@ class CensysIntegration extends Integration {
     try {
       const c = await axios.get(`https://search.censys.io/api/v2/hosts/${ip}`, {
         headers: {
-          Authorization: `Basic ${base64AuthString}`,
           'User-Agent': this.userAgent()
-        }
+        },
+        auth: {
+          username: id,
+          password: secret
+        },
       });
 
       return c.data;
