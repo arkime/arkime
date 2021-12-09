@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 const Integration = require('../../integration.js');
-const { SearchClient } = require('@censys/node');
+const axios = require('axios');
 
 class CensysIntegration extends Integration {
   name = 'Censys';
@@ -24,7 +24,65 @@ class CensysIntegration extends Integration {
     ip: 'fetchIp'
   };
 
-  homePage = 'https://www.censys.io/'
+  card = {
+    title: 'Censys for %{query}',
+    fields: [
+      {
+        label: 'Services',
+        field: 'result.services',
+        defaultSortField: 'observed_at',
+        defaultSortDirection: 'asc',
+        type: 'table',
+        fields: [
+          {
+            label: 'service',
+            field: 'extended_service_name'
+          },
+          {
+            label: 'port',
+            field: 'port'
+          },
+          {
+            label: 'proto',
+            field: 'transport_protocol'
+          },
+          {
+            label: 'banner',
+            field: 'banner'
+          },
+          {
+            label: 'product',
+            field: 'software',
+            type: 'table',
+            fields: [
+              {
+                label: 'uniform_resource_id',
+                field: 'uniform_resource_identifier'
+              }
+            ]
+          },
+          {
+            label: 'observed_at',
+            field: 'observed_at',
+            type: 'date'
+          }
+        ]
+      },
+      {
+        label: 'Certificates',
+        field: 'result.services',
+        type: 'table',
+        fields: [
+          {
+            label: 'tls',
+            field: 'tls'
+          }
+        ]
+      }
+    ]
+  };
+
+  homePage = 'https://search.censys.io/'
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
@@ -50,46 +108,23 @@ class CensysIntegration extends Integration {
   async fetchIp (user, ip) {
     const id = this.getUserConfig(user, this.name, 'id');
     const secret = this.getUserConfig(user, this.name, 'secret');
+    // Andy, this is my hack job
+    const cAuthString = `${id}:${secret}`;
+    const bufferAuthString = Buffer.from(cAuthString, 'utf8');
+    const base64AuthString = bufferAuthString.toString('base64');
     if (!id || !secret) {
       return undefined;
     }
 
     try {
-      const c = new SearchClient({
-        apiId: id,
-        apiSecret: secret
+      const c = await axios.get(`https://search.censys.io/api/v2/hosts/${ip}`, {
+        headers: {
+          Authorization: `Basic ${base64AuthString}`,
+          'User-Agent': this.userAgent()
+        }
       });
 
-      const fields = [
-        'ip',
-        'location',
-        'protocols',
-        'updated_at',
-        '443.https.get.title',
-        '443.https.get.headers.server',
-        '443.https.get.headers.x_powered_by',
-        '443.https.get.metadata.description',
-        '443.https.tls.certificate.parsed.subject_dn',
-        '443.https.tls.certificate.parsed.names',
-        '443.https.tls.certificate.parsed.subject.common_name'
-      ];
-
-      const query2 = c.v1.ipv4.search(ip, fields);
-
-      let censysData = {};
-
-      for await (const page of query2) {
-        censysData = { ...censysData, ...page };
-      }
-
-      /* { //TODO: account for balance!
-          c.v1.ipv4.account().then(res => {
-
-          });
-      } */
-
-      censysData._count = 1;
-      return censysData;
+      return c.data;
     } catch (err) {
       console.log(this.name, ip, err);
       return undefined;
