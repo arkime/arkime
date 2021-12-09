@@ -120,7 +120,7 @@ class CensysIntegration extends Integration {
         auth: {
           username: id,
           password: secret
-        },
+        }
       });
 
       return c.data;
