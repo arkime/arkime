@@ -764,6 +764,21 @@ export default {
     });
   },
 
+  /**
+   * Gets roles available to users
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getRoles (page) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.get('api/user/roles').then((response) => {
+        return resolve(response.data.roles);
+      }).catch((err) => {
+        return reject(err);
+      });
+    });
+  },
+
   /* internal methods ---------------------------------------------------- */
   /**
    * Adds the name as a property on a view (instead of just key)

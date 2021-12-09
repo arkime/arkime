@@ -178,7 +178,8 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   border-color: var(--color-gray-light);
   background-color: var(--color-background, #FFF);
 }
-.dropdown-menu a.dropdown-item {
+.dropdown-menu a.dropdown-item,
+.dropdown-menu div.custom-control {
   padding: 2px 8px;
   color: var(--color-foreground, #212529);
 }
