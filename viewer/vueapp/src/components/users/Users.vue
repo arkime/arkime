@@ -339,32 +339,53 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col form-group">
-                      <div class="input-group input-group-sm">
-                        <div class="input-group-prepend cursor-help"
-                          v-b-tooltip.hover
-                          :title="columns[11].help">
-                          <span class="input-group-text">
-                            {{ columns[11].name }}
-                          </span>
+                    <div class="col d-flex flex-row">
+                      <div>
+                        <div class="input-group input-group-sm">
+                          <div class="input-group-prepend cursor-help"
+                            v-b-tooltip.hover
+                            :title="columns[11].help">
+                            <span class="input-group-text">
+                              {{ columns[11].name }}
+                            </span>
+                          </div>
+                          <select class="form-control time-limit-select"
+                            v-model="listUser[columns[11].sort]"
+                            @change="changeTimeLimit(listUser)">
+                            <option value="1">1 hour</option>
+                            <option value="6">6 hours</option>
+                            <option value="24">24 hours</option>
+                            <option value="48">48 hours</option>
+                            <option value="72">72 hours</option>
+                            <option value="168">1 week</option>
+                            <option value="336">2 weeks</option>
+                            <option value="720">1 month</option>
+                            <option value="1440">2 months</option>
+                            <option value="4380">6 months</option>
+                            <option value="8760">1 year</option>
+                            <option value=undefined>All (careful)</option>
+                          </select>
                         </div>
-                        <select class="form-control time-limit-select"
-                          v-model="listUser[columns[11].sort]"
-                          @change="changeTimeLimit(listUser)">
-                          <option value="1">1 hour</option>
-                          <option value="6">6 hours</option>
-                          <option value="24">24 hours</option>
-                          <option value="48">48 hours</option>
-                          <option value="72">72 hours</option>
-                          <option value="168">1 week</option>
-                          <option value="336">2 weeks</option>
-                          <option value="720">1 month</option>
-                          <option value="1440">2 months</option>
-                          <option value="4380">6 months</option>
-                          <option value="8760">1 year</option>
-                          <option value=undefined>All (careful)</option>
-                        </select>
                       </div>
+                      <!-- user roles -->
+                      <div class="ml-3"
+                        v-if="tmpRolesSupport">
+                        <b-dropdown
+                          size="sm"
+                          class="mb-2"
+                          text="User's Roles">
+                          <b-dropdown-form>
+                            <b-form-checkbox-group
+                              :options="userRoles"
+                              v-model="listUser.roles"
+                            />
+                          </b-dropdown-form>
+                        </b-dropdown>
+                        <span
+                          class="fa fa-info-circle fa-lg cursor-help ml-2"
+                          v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                        />
+                      </div> <!-- /user roles -->
                     </div>
                   </div>
                 </td>
@@ -742,7 +763,9 @@ export default {
         { additional: true, name: 'Hide Files Page', sort: 'hideFiles', help: 'Hide the Files page from this user' },
         { additional: true, name: 'Hide PCAP', sort: 'hidePcap', help: 'Hide PCAP (and only show metadata/session detail) for this user when they open a Session' },
         { additional: true, name: 'Disable PCAP Download', sort: 'disablePcapDownload', help: 'Do not allow this user to download PCAP files' }
-      ]
+      ],
+      userRoles: [],
+      tmpRolesSupport: this.$constants.MOLOCH_TMP_ROLES_SUPPORT
     };
   },
   computed: {
@@ -771,6 +794,12 @@ export default {
   },
   created: function () {
     this.loadData();
+
+    if (this.tmpRolesSupport) {
+      UserService.getRoles().then((response) => {
+        this.userRoles = response;
+      });
+    }
   },
   methods: {
     /* exposed page functions ------------------------------------ */

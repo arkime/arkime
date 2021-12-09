@@ -462,6 +462,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       user.hidePcap = req.body.hidePcap === true;
       user.disablePcapDownload = req.body.disablePcapDownload === true;
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+      user.roles = req.body.roles;
 
       // Can only change createEnabled if it is currently turned on
       if (req.body.createEnabled !== undefined && req.user.createEnabled) {
