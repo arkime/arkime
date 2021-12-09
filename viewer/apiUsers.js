@@ -360,6 +360,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         hideFiles: req.body.hideFiles === true,
         hidePcap: req.body.hidePcap === true,
         disablePcapDownload: req.body.disablePcapDownload === true,
+        roles: req.body.roles || undefined,
         welcomeMsgNum: 0
       };
 

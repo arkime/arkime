@@ -494,17 +494,36 @@
                   />
                 </div>
               </div>
-              <div>
-                <button
-                  type="button"
-                  role="button"
-                  title="Create new user"
-                  class="btn btn-sm btn-theme-tertiary pull-right mb-4"
-                  @click="createUser">
-                  <span class="fa fa-plus-circle">
-                  </span>&nbsp;
-                  Create
-                </button>
+              <div class="row">
+                <div class="col-sm-9 offset-sm-3 d-flex justify-content-between">
+                  <div v-if="tmpRolesSupport">
+                    <b-dropdown
+                      size="sm"
+                      class="mb-2"
+                      text="User's Roles">
+                      <b-dropdown-form>
+                        <b-form-checkbox-group
+                          :options="userRoles"
+                          v-model="newuser.roles"
+                        />
+                      </b-dropdown-form>
+                    </b-dropdown>
+                    <span
+                      class="fa fa-info-circle fa-lg cursor-help ml-2"
+                      v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    role="button"
+                    title="Create new user"
+                    class="btn btn-sm btn-theme-tertiary pull-right mb-4"
+                    @click="createUser">
+                    <span class="fa fa-plus-circle">
+                    </span>&nbsp;
+                    Create
+                  </button>
+                </div>
               </div>
             </form>
           </div>
