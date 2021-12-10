@@ -1032,7 +1032,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     size: 500,
     query: {
       bool: {
-        must: [
+        filter: [
           { terms: { node: nodes } },
           { bool: { should: [] } }
         ],
@@ -1049,7 +1049,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     } else {
       obj.wildcard.name = pcapDir + '/*';
     }
-    query.query.bool.must[1].bool.should.push(obj);
+    query.query.bool.filter[1].bool.should.push(obj);
   });
 
   if (Config.debug > 1) {

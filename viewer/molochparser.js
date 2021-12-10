@@ -105,7 +105,7 @@ case 7:
 this.$ = 'ne'
 break;
 case 12:
-this.$ = {bool: {must: [$$[$0-2], $$[$0]]}};
+this.$ = {bool: {filter: [$$[$0-2], $$[$0]]}};
 break;
 case 13:
 this.$ = {bool: {should: [$$[$0-2], $$[$0]]}};
@@ -371,14 +371,14 @@ function parseIpPort (yy, field, ipPortStr) {
     if (singlePort !== -1) {
       const expInfo = getFieldInfo(yy, exp);
       if (expInfo.portField) {
-        singleObj = { bool: { must: [singleObj, { term: {} }] } };
-        singleObj.bool.must[1].term[expInfo.portField] = singlePort;
+        singleObj = { bool: { filter: [singleObj, { term: {} }] } };
+        singleObj.bool.filter[1].term[expInfo.portField] = singlePort;
       } else {
         throw exp + " doesn't support port";
       }
 
       if (singleIp === undefined) {
-        singleObj = singleObj.bool.must[1];
+        singleObj = singleObj.bool.filter[1];
       }
     }
 
@@ -414,7 +414,7 @@ function parseIpPort (yy, field, ipPortStr) {
     }
 
     if (isArrayAND(ipPortStr)) {
-      obj = { bool: { must: list } };
+      obj = { bool: { filter: list } };
     } else {
       obj = { bool: { should: list } };
     }
@@ -906,7 +906,7 @@ function stringQuery (yy, field, str) {
     if (items.length === 1) {
       obj = items[0];
     } else if (isArrayAND(str)) {
-      obj = { bool: { must: items } };
+      obj = { bool: { filter: items } };
     } else {
       obj = { bool: { should: items } };
     }
@@ -1070,7 +1070,7 @@ function termOrTermsInt (dbField, str) {
   if (isArrayFull(str)) {
     if (isArrayAND(str)) {
       obj.bool = {
-        must: ListToArray(str).map(x => {
+        filter: ListToArray(str).map(x => {
           const o = { term: {} };
           o.term[dbField] = parseInt(x);
           return o;
@@ -1102,7 +1102,7 @@ function termOrTermsFloat (dbField, str) {
   if (isArrayFull(str)) {
     if (isArrayAND(str)) {
       obj.bool = {
-        must: ListToArray(str).map(x => {
+        filter: ListToArray(str).map(x => {
           const o = { term: {} };
           o.term[dbField] = parseFloat(x);
           return o;
@@ -1136,7 +1136,7 @@ function termOrTermsSeconds (dbField, str) {
   if (isArrayFull(str)) {
     if (isArrayAND(str)) {
       obj.bool = {
-        must: ListToArray(str).map(x => {
+        filter: ListToArray(str).map(x => {
           const o = { term: {} };
           o.term[dbField] = parseSeconds(x);
           return o;
@@ -1169,7 +1169,7 @@ function termOrTermsDate (dbField, str) {
 
 
     if (isArrayAND(str)) {
-      return { bool: { must: items } };
+      return { bool: { filter: items } };
     } else {
       return { bool: { should: items } };
     }

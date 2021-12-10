@@ -151,10 +151,10 @@ module.exports = (Config, Db, molochparser, internals) => {
           } else if (files.length > 1) {
             obj.bool = { should: [] };
             files.forEach(function (file) {
-              obj.bool.should.push({ bool: { must: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
+              obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
             });
           } else {
-            obj.bool = { must: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
+            obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
           }
           if (finished && outstanding === 0) {
             doneCb(err);
@@ -229,15 +229,15 @@ module.exports = (Config, Db, molochparser, internals) => {
           } else {
             collapseQuery(query.bool.should);
           }
-        } else if (query.bool?.must?.length > 0) {
-          // Collapse must: must:
-          const len = query.bool.must.length;
-          const newItems = newArray(query.bool.must, 'must');
-          query.bool.must = newItems;
+        } else if (query.bool?.filter?.length > 0) {
+          // Collapse filter: filter:
+          const len = query.bool.filter.length;
+          const newItems = newArray(query.bool.filter, 'filter');
+          query.bool.filter = newItems;
           if (newItems.length !== len) {
             collapseQuery(query);
           } else {
-            collapseQuery(query.bool.must);
+            collapseQuery(query.bool.filter);
           }
         } else {
           // Just recurse

@@ -817,15 +817,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       sort: {},
       from: parseInt(req.query.start) || 0,
       size: parseInt(req.query.length) || 10000,
-      query: { bool: { must: [] } }
+      query: { bool: { filter: [] } }
     };
 
     query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
 
     if (req.query.history) { // only get finished jobs
-      query.query.bool.must.push({ term: { status: 'finished' } });
+      query.query.bool.filter.push({ term: { status: 'finished' } });
       if (req.query.searchTerm) { // apply search term
-        query.query.bool.must.push({
+        query.query.bool.filter.push({
           query_string: {
             query: req.query.searchTerm,
             fields: ['name', 'userId']
@@ -835,7 +835,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     } else { // get queued, paused, running jobs
       query.from = 0;
       query.size = 1000;
-      query.query.bool.must.push({ terms: { status: ['queued', 'paused', 'running'] } });
+      query.query.bool.filter.push({ terms: { status: ['queued', 'paused', 'running'] } });
     }
 
     if (Config.debug) {
