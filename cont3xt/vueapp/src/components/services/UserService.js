@@ -75,8 +75,18 @@ export default {
         }
         return response.json();
       }).then((response) => {
-        store.commit('SET_ROLES', response.roles);
-        return resolve(response);
+        const roles = [];
+        for (let role of response.roles) {
+          let userDefined = false;
+          if (role.startsWith('role:')) {
+            role = role.replace('role:', '');
+            userDefined = true;
+          }
+          role = { text: role, value: role, userDefined };
+          roles.push(role);
+        }
+        store.commit('SET_ROLES', roles);
+        return resolve(roles);
       }).catch((err) => { // this catches an issue within the ^ .then
         return reject(err);
       });

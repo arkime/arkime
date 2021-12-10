@@ -26,10 +26,20 @@
       text="Who Can View">
       <b-dropdown-form>
         <b-form-checkbox-group
-          :options="getRoles"
           v-model="lg.viewRoles"
-          @change="$emit('update-link-group', lg)"
-        />
+          @change="$emit('update-link-group', lg)">
+          <b-form-checkbox
+            v-for="role in getRoles"
+            :value="role.value"
+            :key="role.value">
+            {{ role.text }}
+            <span
+              v-if="role.userDefined"
+              class="fa fa-user cursor-help ml-2"
+              v-b-tooltip.hover="'User defined role'"
+            />
+          </b-form-checkbox>
+        </b-form-checkbox-group>
       </b-dropdown-form>
     </b-dropdown>
     <b-dropdown
@@ -38,10 +48,20 @@
       text="Who Can Edit">
       <b-dropdown-form>
         <b-form-checkbox-group
-          :options="getRoles"
           v-model="lg.editRoles"
-          @change="$emit('update-link-group', lg)"
-        />
+          @change="$emit('update-link-group', lg)">
+          <b-form-checkbox
+            v-for="role in getRoles"
+            :value="role.value"
+            :key="role.value">
+            {{ role.text }}
+            <span
+              v-if="role.userDefined"
+              class="fa fa-user cursor-help ml-2"
+              v-b-tooltip.hover="'User defined role'"
+            />
+          </b-form-checkbox>
+        </b-form-checkbox-group>
       </b-dropdown-form>
     </b-dropdown>
     <span
