@@ -133,6 +133,9 @@ exports.initialize = async (info, cb) => {
 
   if (info.usersHost) {
     User.initialize({
+      insecure: info.insecure,
+      ca: info.ca,
+      requestTimeout: info.requestTimeout,
       node: info.usersHost,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
@@ -144,6 +147,9 @@ exports.initialize = async (info, cb) => {
     });
   } else {
     User.initialize({
+      insecure: info.insecure,
+      ca: info.ca,
+      requestTimeout: info.requestTimeout,
       node: info.host,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
