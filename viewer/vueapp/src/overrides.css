@@ -180,6 +180,7 @@ input.field-typeahead + ul[uib-typeahead-popup] {
 }
 .dropdown-menu a.dropdown-item,
 .dropdown-menu div.custom-control {
+  display: block;
   padding: 2px 8px;
   color: var(--color-foreground, #212529);
 }

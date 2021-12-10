@@ -772,7 +772,18 @@ export default {
   getRoles (page) {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/user/roles').then((response) => {
-        return resolve(response.data.roles);
+        // remove "role:" from user defined roles and mark them as userDefined
+        const roles = [];
+        for (let role of response.data.roles) {
+          let userDefined = false;
+          if (role.startsWith('role:')) {
+            role = role.replace('role:', '');
+            userDefined = true;
+          }
+          role = { text: role, value: role, userDefined };
+          roles.push(role);
+        }
+        return resolve(roles);
       }).catch((err) => {
         return reject(err);
       });
