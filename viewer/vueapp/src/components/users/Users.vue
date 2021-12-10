@@ -376,11 +376,18 @@
                           text="User's Roles">
                           <b-dropdown-form>
                             <b-form-checkbox-group
-                              :options="userRoles"
                               v-model="listUser.roles">
-                              <template v-slot:default()="data">
-                               asdf {{data}}
-                              </template>
+                              <b-form-checkbox
+                                v-for="role in userRoles"
+                                :value="role.value"
+                                :key="role.value">
+                                {{ role.text }}
+                                <span
+                                  v-if="role.userDefined"
+                                  class="fa fa-user cursor-help ml-2"
+                                  v-b-tooltip.hover="'User defined role'"
+                                />
+                              </b-form-checkbox>
                             </b-form-checkbox-group>
                           </b-dropdown-form>
                         </b-dropdown>
