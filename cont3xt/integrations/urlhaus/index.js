@@ -58,7 +58,7 @@ class URLHausIntegration extends Integration {
         return Integration.NoResult;
       }
 
-      if (result.data.query_status === 'ok') {
+      if (result.data.query_status === 'ok' && result.data.data !== undefined) {
         result.data._count = result.data.data.length;
       } else {
         result.data._count = 0;
