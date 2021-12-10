@@ -113,7 +113,7 @@ app.use((req, res, next) => {
     return res.send('NO!');
   }
   next();
-})
+});
 
 app.get('/api/user', User.apiGetUser);
 
