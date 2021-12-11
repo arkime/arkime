@@ -120,15 +120,15 @@ module.exports = (Db) => {
         req.query.stopTime = parseInt(req.query.stopTime, 10);
       }
 
-      if (!query.query) { query.query = { bool: {} }; }
-      query.query.bool.filter = [{
+      if (!query.query) { query.query = { bool: { filter: [] } }; }
+      query.query.bool.filter.push({
         range: {
           timestamp: {
             gte: req.query.startTime,
             lte: req.query.stopTime
           }
         }
-      }];
+      });
     }
 
     Promise.all([
