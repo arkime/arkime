@@ -276,7 +276,11 @@ function validateBulk (req) {
 function validateFilesSearch (req) {
   try {
     const json = JSON.parse(req.body.toString('utf8'));
-    return json.query.bool.must[0].terms.node.includes(req.sensor.node);
+    if (json.query.bool.filter) {
+      return json.query.bool.filter[0].terms.node.includes(req.sensor.node);
+    } else {
+      return json.query.bool.must[0].terms.node.includes(req.sensor.node);
+    }
   } catch (e) {
     return false;
   }

@@ -81,7 +81,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       size: 10000,
       query: {
         bool: {
-          must: [],
+          filter: [],
           should: [],
           must_not: [
             { term: { hide: true } }
@@ -118,10 +118,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     if (req.query.hide !== undefined && req.query.hide !== 'none') {
       if (req.query.hide === 'old' || req.query.hide === 'both') {
-        query.query.bool.must.push({ range: { currentTime: { gte: 'now-5m' } } });
+        query.query.bool.filter.push({ range: { currentTime: { gte: 'now-5m' } } });
       }
       if (req.query.hide === 'nosession' || req.query.hide === 'both') {
-        query.query.bool.must.push({ range: { monitoring: { gte: '1' } } });
+        query.query.bool.filter.push({ range: { monitoring: { gte: '1' } } });
       }
     }
 
@@ -439,6 +439,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           searchesTime: node.indices.search.query_time_in_millis,
           heapSize: node.jvm.mem.heap_used_in_bytes,
           nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
+          uptime: Math.floor(node.jvm.uptime_in_millis / 1000),
           cpu: node.process.cpu.percent,
           read: read,
           write: write,

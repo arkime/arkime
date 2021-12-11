@@ -15,6 +15,10 @@ console.info = jest.fn(); // don't display console.info messages
 
 Vue.use(BootstrapVue);
 
+Vue.prototype.$constants = {
+  MOLOCH_TMP_ROLES_SUPPORT: false
+};
+
 Vue.directive('focus-input', FocusInput);
 
 jest.mock('../src/components/users/UserService');

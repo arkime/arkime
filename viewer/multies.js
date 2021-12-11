@@ -706,7 +706,7 @@ function fixQuery (node, body, doneCb) {
         outstanding--;
         obj.bool = { should: [] };
         result.hits.hits.forEach((file) => {
-          obj.bool.should.push({ bool: { must: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
+          obj.bool.should.push({ bool: { filter: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
         });
         if (obj.bool.should.length === 0) {
           err = 'No matching files found';

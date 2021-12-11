@@ -224,6 +224,7 @@ function setupAuth () {
   const es = getConfig('wiseService', 'usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
+    insecure: internals.insecure,
     node: es,
     prefix: getConfig('wiseService', 'usersPrefix', ''),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),

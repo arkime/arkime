@@ -71,10 +71,10 @@ module.exports = (Db) => {
     };
 
     if (req.query.searchTerm || userId) {
-      query.query = { bool: { must: [] } };
+      query.query = { bool: { filter: [] } };
 
       if (req.query.searchTerm) { // apply search term
-        query.query.bool.must.push({
+        query.query.bool.filter.push({
           query_string: {
             query: req.query.searchTerm,
             fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
@@ -83,24 +83,24 @@ module.exports = (Db) => {
       }
 
       if (userId) { // filter on userId
-        query.query.bool.must.push({
+        query.query.bool.filter.push({
           wildcard: { userId: '*' + userId + '*' }
         });
       }
     }
 
     if (req.query.api) { // filter on api endpoint
-      if (!query.query) { query.query = { bool: { must: [] } }; }
-      query.query.bool.must.push({
+      if (!query.query) { query.query = { bool: { filter: [] } }; }
+      query.query.bool.filter.push({
         wildcard: { api: '*' + req.query.api + '*' }
       });
     }
 
     if (req.query.exists) {
-      if (!query.query) { query.query = { bool: { must: [] } }; }
+      if (!query.query) { query.query = { bool: { filter: [] } }; }
       const existsArr = req.query.exists.split(',');
       for (let i = 0, len = existsArr.length; i < len; ++i) {
-        query.query.bool.must.push({
+        query.query.bool.filter.push({
           exists: { field: existsArr[i] }
         });
       }

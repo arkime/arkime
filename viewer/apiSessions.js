@@ -2199,14 +2199,14 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       delete query.aggregations;
       const size = +req.query.size || 20;
 
-      if (!query.query.bool.must) {
-        query.query.bool.must = [];
+      if (!query.query.bool.filter) {
+        query.query.bool.filter = [];
       }
 
       let lastQ = query;
       for (let i = 0; i < fields.length; i++) {
         // Require that each field exists
-        query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+        query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
 
         if (fields[i].script) {
           lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size: size } } };
@@ -2471,13 +2471,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       delete query.aggregations;
       query.size = 0;
 
-      if (!query.query.bool.must) {
-        query.query.bool.must = [];
+      if (!query.query.bool.filter) {
+        query.query.bool.filter = [];
       }
 
       let lastQ = query;
       for (let i = 0; i < fields.length; i++) {
-        query.query.bool.must.push({ exists: { field: fields[i].dbField } });
+        query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
         lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size: +Config.get('maxAggSize', 10000) } } };
         lastQ = lastQ.aggregations.field;
       }

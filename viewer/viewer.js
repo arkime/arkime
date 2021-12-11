@@ -1032,7 +1032,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     size: 500,
     query: {
       bool: {
-        must: [
+        filter: [
           { terms: { node: nodes } },
           { bool: { should: [] } }
         ],
@@ -1049,7 +1049,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     } else {
       obj.wildcard.name = pcapDir + '/*';
     }
-    query.query.bool.must[1].bool.should.push(obj);
+    query.query.bool.filter[1].bool.should.push(obj);
   });
 
   if (Config.debug > 1) {
@@ -1414,6 +1414,12 @@ app.get( // user page configuration endpoint
   '/api/user/config/:page',
   [ArkimeUtil.noCacheJson, checkCookieToken, getSettingUserCache],
   userAPIs.getPageConfig
+);
+
+app.get( // user roles endpoint
+  '/api/user/roles',
+  [ArkimeUtil.noCacheJson, checkCookieToken],
+  User.apiRoles
 );
 
 // notifier apis --------------------------------------------------------------
@@ -2042,7 +2048,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
-    businessDays: Config.get('businessDays', '1,2,3,4,5')
+    businessDays: Config.get('businessDays', '1,2,3,4,5'),
+    tmpRolesSupport: Config.get('tmpRolesSupport', false)
   };
 
   // Create a fresh Vue app instance

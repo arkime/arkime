@@ -84,7 +84,7 @@ module.exports = (Db, internals, ViewerUtils) => {
     const query = {
       query: {
         bool: {
-          must: [
+          filter: [
             {
               bool: {
                 should: [
@@ -106,7 +106,7 @@ module.exports = (Db, internals, ViewerUtils) => {
     };
 
     if (req.query.searchTerm) {
-      query.query.bool.must.push({
+      query.query.bool.filter.push({
         wildcard: { name: '*' + req.query.searchTerm + '*' }
       });
     }
@@ -116,7 +116,7 @@ module.exports = (Db, internals, ViewerUtils) => {
       const fieldType = internals.shortcutTypeMap[req.query.fieldType];
 
       if (fieldType) {
-        query.query.bool.must.push({
+        query.query.bool.filter.push({
           exists: { field: fieldType }
         });
       }
@@ -207,7 +207,7 @@ module.exports = (Db, internals, ViewerUtils) => {
     const query = {
       query: {
         bool: {
-          must: [
+          filter: [
             { term: { name: req.body.name } }
           ]
         }
@@ -306,7 +306,7 @@ module.exports = (Db, internals, ViewerUtils) => {
       const query = {
         query: {
           bool: {
-            must: [
+            filter: [
               { term: { name: req.body.name } } // same name
             ],
             must_not: [
