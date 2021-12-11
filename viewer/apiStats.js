@@ -439,6 +439,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           searchesTime: node.indices.search.query_time_in_millis,
           heapSize: node.jvm.mem.heap_used_in_bytes,
           nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
+          uptime: Math.floor(node.jvm.uptime_in_millis / 1000),
           cpu: node.process.cpu.percent,
           read: read,
           write: write,
