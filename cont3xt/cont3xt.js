@@ -341,9 +341,14 @@ function setupAuth () {
   }
 
   User.initialize({
+    insecure: internals.insecure,
+    requestTimeout: getConfig('cont3xt', 'elasticsearchTimeout', 300),
     debug: internals.debug,
     url: usersUrl,
     node: usersEs,
+    clientKey: getConfig('cont3xt', 'esClientKey'),
+    clientCert: getConfig('cont3xt', 'esClientCert'),
+    clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),
     prefix: getConfig('cont3xt', 'usersPrefix', ''),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
