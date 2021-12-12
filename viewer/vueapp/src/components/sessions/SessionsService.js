@@ -238,6 +238,7 @@ export default {
    */
   send: function (params, routeParams) {
     return new Promise((resolve, reject) => {
+      const cluster = params.cluster;
       const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
       if (options.error) { return reject({ text: options.error }); };
@@ -247,7 +248,7 @@ export default {
 
       // add tags and cluster to data instead of url params
       options.data.tags = params.tags;
-      options.data.cluster = params.cluster;
+      options.data.cluster = cluster; // ALW use the cluster before routeParams replaces it
       delete options.params.tags;
       delete options.params.cluster;
 
