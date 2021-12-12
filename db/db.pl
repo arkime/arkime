@@ -1005,7 +1005,7 @@ sub fieldsUpdate
       "type": "termfield",
       "dbField2": "node"
     }');
-    esPost("/${PREFIX}fields_v30/_doc/node?timeout=${ESTIMEOUT}s", '{
+    esPost("/${PREFIX}fields_v30/_doc/srcNode?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Arkime Source Node",
       "group": "general",
       "help": "Source Arkime node name the session was recorded on when using send to cluster",
