@@ -148,7 +148,7 @@ export default {
         { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.shards); } },
         { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segments); } },
         { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 },
-        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.uptime) + 'm'; } }
+        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.moment(Date.now() - (item.uptime * 60 * 1000), 'from'); } }
       ]
     };
   },

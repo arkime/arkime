@@ -1655,7 +1655,7 @@ exports.fileNameToFiles = function (fileName, cb) {
 };
 
 exports.getSequenceNumber = async (sName) => {
-  const { data: sinfo } = await exports.index('sequence', 'sequence', sName, {});
+  const { body: sinfo } = await exports.index('sequence', 'sequence', sName, {});
   return sinfo._version;
 };
 

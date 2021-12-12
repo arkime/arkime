@@ -834,7 +834,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/sessions/${sid}/${fields.node}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
         if (req.body.tags) {
           sendPath += `&tags=${req.body.tags}`;
         }
