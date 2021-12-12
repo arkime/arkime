@@ -320,6 +320,7 @@ const singletonFields = {
   lastPacket: true,
   ipProtocol: true,
   node: true,
+  srcNode: true,
   'tcpflags.rst': true,
   'tcpflags.syn': true,
   'tcpflags.srcZero': true,

@@ -3230,6 +3230,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       // If we know the session len and haven't read the session
       if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
         session = JSON.parse(buffer.toString('utf8', 0, sessionlen));
+        session.srcNode = session.node; // Save original node
         session.node = Config.nodeName();
         buffer = buffer.slice(sessionlen);
 
