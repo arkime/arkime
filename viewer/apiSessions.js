@@ -3059,7 +3059,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cluster: req.query.cluster,
       id: req.params.id,
       saveId: req.query.saveId,
-      tags: req.body.tags,
+      tags: req.query.tags,
       nodeName: req.params.nodeName
     };
 
