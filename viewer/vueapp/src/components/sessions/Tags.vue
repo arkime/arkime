@@ -15,11 +15,11 @@
             Tags
           </span>
         </div>
-        <input
+        <b-form-input
+          autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          v-focus-input="true"
           placeholder="Enter a comma separated list of tags"
         />
       </div> <!-- /tags input -->
@@ -90,13 +90,11 @@
 </template>
 
 <script>
-import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochTagSessions',
-  directives: { FocusInput },
   components: { SegmentSelect },
   props: {
     add: Boolean,

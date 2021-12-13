@@ -56,7 +56,9 @@
           </span>&nbsp;
           Export Intersection
         </b-dropdown-item>
-        <b-dropdown-item @click="periodicQuery"
+        <b-dropdown-item
+          v-if="!multiviewer"
+          @click="periodicQuery"
           title="Create Periodic Query">
           <span class="fa fa-fw fa-search" />&nbsp;
           Create Periodic Query
