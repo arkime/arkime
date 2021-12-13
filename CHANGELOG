@@ -32,6 +32,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - fix --insecure which broke in 3.2.0
   - viewer - ES Nodes has new uptime stat
   - viewer - fix 3.x sending to remote cluster
+  - wise - fixed views that used require: not working
 
 3.2.0 2021/12/07
   - release - node 14.18.2
