@@ -201,7 +201,8 @@
             <td class="no-wrap">
               {{ item.method }}
             </td>
-            <td class="no-wrap">
+            <td class="no-wrap"
+              :title="item.api">
               {{ item.api }}
             </td>
             <td class="no-wrap">
@@ -264,47 +265,41 @@
                   </span>
                 </div> <!-- /req body -->
                 <!-- query params -->
-                <div v-if="item.query"
-                  class="mt-2">
-                  <dt><h5>
-                    Query parameters
-                    <sup>
-                      <span class="fa fa-info-circle text-theme-primary">
-                      </span>
-                    </sup>
-                  </h5></dt>
-                  <dd><h5>&nbsp;</h5></dd>
-                  <span v-for="(value, key) in item.queryObj"
-                    :key="key">
-                    <dt>{{ key }}</dt>
-                    <dd class="break-word">
-                      {{ value }}&nbsp;
-                      <span v-if="key === 'view' && item.view && item.view.expression">
-                        ({{ item.view.expression }})
-                      </span>
-                    </dd>
-                  </span>
+                <div class="mt-2">
+                  <template v-if="item.query">
+                    <dt><h5>
+                      Query parameters
+                      <sup>
+                        <span class="fa fa-info-circle text-theme-primary">
+                        </span>
+                      </sup>
+                    </h5></dt>
+                    <dd><h5>&nbsp;</h5></dd>
+                    <span v-for="(value, key) in item.queryObj"
+                      :key="key">
+                      <dt>{{ key }}</dt>
+                      <dd class="break-word">
+                        {{ value }}&nbsp;
+                        <span v-if="key === 'view' && item.view && item.view.expression">
+                          ({{ item.view.expression }})
+                        </span>
+                      </dd>
+                    </span>
+                  </template>
                   <div class="mt-2">
                     <em>
-                      <strong>
+                      <strong v-if="item.query">
                         <span class="fa fa-info-circle text-theme-primary">
                         </span>&nbsp;
                         Parsed from:
                       </strong>
                       <span style="word-break:break-all;">
-                        {{ item.api }}?{{ item.query }}
+                        {{ item.api }}{{ item.query ? '?' : '' }}{{ item.query }}
                       </span>
                     </em>
                   </div>
                 </div> <!-- /query params -->
               </dl>
-              <!-- no info -->
-              <h6 v-if="!item.query && !item.body && item.recordsReturned === undefined"
-                class="mb-3">
-                <span class="fa fa-frown-o fa-lg">
-                </span>&nbsp;
-                <em>Sorry! There is no more information to show.</em>
-              </h6> <!-- no info -->
             </td>
           </tr> <!-- /history item info -->
         </template>
