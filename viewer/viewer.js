@@ -908,37 +908,46 @@ function sendSessionWorker (options, cb) {
     Auth.addS2SAuth(reqOptions, options.user, options.nodeName, receivePath, sobj.serverSecret || sobj.passwordSecret);
     ViewerUtils.addCaTrust(reqOptions, options.nodeName);
 
-    let result = '';
-    const preq = client.request(url, reqOptions, (pres) => {
-      pres.on('data', (chunk) => {
-        result += chunk;
-      });
-      pres.on('end', () => {
-        result = JSON.parse(result);
-        if (!result.success) {
-          console.log('ERROR sending session ', result);
-        }
-        cb();
-      });
-    });
-
-    preq.on('error', (e) => {
-      console.log("ERROR - Couldn't connect to ", url, '\nerror=', e);
-      cb();
-    });
-
     const sessionStr = JSON.stringify(session);
     const b = Buffer.alloc(12);
     b.writeUInt32BE(Buffer.byteLength(sessionStr), 0);
     b.writeUInt32BE(buffer.length, 8);
-    preq.write(b);
-    preq.write(sessionStr);
-    preq.write(buffer);
-    preq.end();
+
+    function doRequest (retry) {
+      let result = '';
+      const preq = client.request(url, reqOptions, (pres) => {
+        pres.on('data', (chunk) => {
+          result += chunk;
+        });
+        pres.on('end', () => {
+          result = JSON.parse(result);
+          if (!result.success) {
+            console.log('ERROR sending session ', result);
+          }
+          return cb();
+        });
+      });
+
+      preq.on('error', (e) => {
+        if (retry) {
+          console.log('Retrying', url, e);
+          doRequest(false);
+        } else {
+          console.log("ERROR - Couldn't connect to ", url, '\nerror=', e);
+          return cb();
+        }
+      });
+
+      preq.write(b);
+      preq.write(sessionStr);
+      preq.write(buffer);
+      preq.end();
+    };
+    doRequest(true);
   }, undefined, 10);
 }
 
-internals.sendSessionQueue = async.queue(sendSessionWorker, 10);
+internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 
 const qlworking = {};
 function sendSessionsListQL (pOptions, list, nextQLCb) {
