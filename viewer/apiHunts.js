@@ -269,7 +269,6 @@ ${Config.arkimeWebURL()}hunt
         if (Config.get('cronQueries', false)) {
           hModule.processHuntJobs();
         }
-        hModule.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
         return res.serverError(500, errorText);
