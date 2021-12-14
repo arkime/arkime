@@ -410,41 +410,44 @@ export default {
     const data = { segments: params.segments };
 
     // merge params and routeParams
-    params = Object.assign(params, routeParams);
+    const combinedParams = { // last object property overwrites the previous one
+      ...params,
+      ...routeParams
+    };
 
-    if (!params.applyTo || params.applyTo === 'open') {
+    if (!combinedParams.applyTo || combinedParams.applyTo === 'open') {
       // specific sessions that have been opened
       data.ids = [];
-      for (let i = 0, len = params.sessions.length; i < len; ++i) {
-        data.ids.push(params.sessions[i].id);
+      for (let i = 0, len = combinedParams.sessions.length; i < len; ++i) {
+        data.ids.push(combinedParams.sessions[i].id);
       }
       if (data.ids.length > 0) {
-        delete params.expression;
+        delete combinedParams.expression;
       }
       data.ids = data.ids.join(',');
       if (!data.ids) { error = 'There are no matching sessions open.'; }
-    } else if (params.applyTo === 'visible') {
+    } else if (combinedParams.applyTo === 'visible') {
       // all sessions visible on the sessions page
-      params.length = params.numVisible;
-    } else if (params.applyTo === 'matching') {
+      combinedParams.length = combinedParams.numVisible;
+    } else if (combinedParams.applyTo === 'matching') {
       // all sessions in query results
-      params.start = 0;
-      params.length = params.numMatching;
+      combinedParams.start = 0;
+      combinedParams.length = combinedParams.numMatching;
     }
 
     // remove unnecessary url route params
-    delete params.applyTo;
-    delete params.segments;
-    delete params.sessions;
-    delete params.numVisible;
-    delete params.numMatching;
+    delete combinedParams.applyTo;
+    delete combinedParams.segments;
+    delete combinedParams.sessions;
+    delete combinedParams.numVisible;
+    delete combinedParams.numMatching;
 
     return {
       data: data,
       url: baseUrl,
       error: error,
       method: method,
-      params: params
+      params: combinedParams
     };
   }
 
