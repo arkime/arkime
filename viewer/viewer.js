@@ -17,7 +17,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 70;
+const MIN_DB_VERSION = 72;
 
 // ============================================================================
 // MODULES
@@ -647,9 +647,13 @@ function logAction (uiPage) {
     };
 
     req._molochStartTime = new Date();
+
     function finish () {
-      log.queryTime = new Date() - req._molochStartTime;
       res.removeListener('finish', finish);
+
+      log.queryTime = new Date() - req._molochStartTime;
+
+      if (req._molochESQuery) { log.esQuery = req._molochESQuery; }
 
       try {
         Db.historyIt(log);
