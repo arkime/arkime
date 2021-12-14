@@ -1,4 +1,4 @@
-use Test::More tests => 40;
+use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -60,6 +60,10 @@ my ($url) = @_;
 
 # Make sure another user doesn't see our history
     $json = get("/history/list?molochRegressionUser=historytest2");
+    is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
+
+# Make sure another user doesn't see our history when time given
+    $json = get("/history/list?molochRegressionUser=historytest2&startTime=0&stopTime=2147483647");
     is ($json->{recordsFiltered}, 0, "Test2: recordsFiltered");
 
 # Make sure can't request someone elses

@@ -88,7 +88,8 @@
               Fields
             </span>
           </div>
-          <input
+          <b-form-input
+            autofocus
             type="text"
             class="form-control"
             v-model="intersectionFields"

@@ -428,7 +428,7 @@ class WISESourceAPI {
       }
 
       const parts = req.split('.');
-      let output = '  if (';
+      let output = 'if (';
       for (let i = 0; i < parts.length; i++) {
         if (i > 0) {
           output += ' && ';
@@ -439,7 +439,7 @@ class WISESourceAPI {
         }
       }
       output += ')\n';
-      output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+      output += `  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
 
       for (const field of fields.split(',')) {
         const info = WISESource.field2Info[field];
@@ -452,9 +452,9 @@ class WISESourceAPI {
         }
         const pos = info.db.lastIndexOf('.');
         if (pos === -1) {
-          output += `      +arrayList(session, '${info.db}', '${info.friendlyName}', '${field}')\n`;
+          output += `    +arrayList(session, '${info.db}', '${info.friendly}', '${field}')\n`;
         } else {
-          output += `      +arrayList(session.${info.db.slice(0, pos)}, '${info.db.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
+          output += `    +arrayList(session.${info.db.slice(0, pos)}, '${info.db.slice(pos + 1)}', '${info.friendly}', '${field}')\n`;
         }
       }
 

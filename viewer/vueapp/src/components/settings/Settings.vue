@@ -62,7 +62,8 @@
             </span>&nbsp;
             Views
           </a>
-          <a class="nav-link cursor-pointer"
+          <a v-if="!multiviewer"
+            class="nav-link cursor-pointer"
             @click="openView('cron')"
             :class="{'active':visibleTab === 'cron'}">
             <span class="fa fa-fw fa-search">
@@ -675,7 +676,7 @@
         </form> <!-- /view settings -->
 
         <!-- cron query settings -->
-        <form v-if="visibleTab === 'cron'"
+        <form v-if="visibleTab === 'cron' && !multiviewer"
           class="form-horizontal"
           id="cron">
 
@@ -2708,8 +2709,8 @@ export default {
         this.visibleTab = tab;
       }
 
-      if (tab === 'password' && this.multiviewer) {
-        // multiviewer user can't change password
+      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer)) {
+        // multiviewer user can't change password or configure periodic queries
         this.openView('general');
       }
     }

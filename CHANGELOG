@@ -31,6 +31,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - new AND arrays with ][ syntax vs OR arrays with []
   - viewer - fix --insecure which broke in 3.2.0
   - viewer - ES Nodes has new uptime stat
+  - viewer - fix 3.x sending to remote cluster
+  - viewer - disable periodic queries on multiviewer
+  - viewer - history can always toggle open and show api
+  - wise - fixed views that used require: not working
+  - db.pl - sync-files, add-missing, and other fixes since 3.x
 
 3.2.0 2021/12/07
   - release - node 14.18.2

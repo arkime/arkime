@@ -2,7 +2,7 @@
   <span>
     <span v-if="status === 'running'"
       v-b-tooltip.hover.right
-      title="Starting"
+      title="Running (just started)"
       class="fa fa-play-circle fa-fw cursor-help">
     </span>
     <span v-else-if="status === 'paused'"

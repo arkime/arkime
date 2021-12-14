@@ -72,6 +72,8 @@ dl
     +clickableLabel('node', 'Node')
   dd
     +clickableValue('node', session.node)
+    if (session.srcNode)
+      +clickableValue('srcNode', session.srcNode)
 
   +arrayList(session, "protocol", "Protocols", "protocols")
 

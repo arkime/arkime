@@ -17,10 +17,10 @@
               Filename
             </span>
           </div>
-          <input
+          <b-form-input
+            autofocus
             type="text"
             v-model="filename"
-            v-focus-input="true"
             class="form-control"
             placeholder="Enter a filename"
           />
@@ -101,13 +101,11 @@
 </template>
 
 <script>
-import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochExportCsv',
-  directives: { FocusInput },
   components: { SegmentSelect },
   props: {
     start: Number,

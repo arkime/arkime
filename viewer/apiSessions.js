@@ -834,7 +834,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/sessions/${sid}/${fields.node}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
+        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&cluster=${req.body.cluster}`;
         if (req.body.tags) {
           sendPath += `&tags=${req.body.tags}`;
         }
@@ -3059,7 +3059,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       cluster: req.query.cluster,
       id: req.params.id,
       saveId: req.query.saveId,
-      tags: req.body.tags,
+      tags: req.query.tags,
       nodeName: req.params.nodeName
     };
 
@@ -3230,6 +3230,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       // If we know the session len and haven't read the session
       if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
         session = JSON.parse(buffer.toString('utf8', 0, sessionlen));
+        session.srcNode = session.node; // Save original node
         session.node = Config.nodeName();
         buffer = buffer.slice(sessionlen);
 

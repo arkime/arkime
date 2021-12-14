@@ -12,11 +12,11 @@
             View Name
           </span>
         </div>
-        <input
+        <b-form-input
+          autofocus
           type="text"
           maxlength="20"
           v-model="name"
-          v-focus-input="true"
           class="form-control"
           placeholder="Enter a (short) view name"
           v-on:keydown.enter="$event.stopPropagation()"
@@ -116,11 +116,9 @@
 
 <script>
 import UserService from '../users/UserService';
-import FocusInput from '../utils/FocusInput';
 
 export default {
   name: 'MolochModifyView',
-  directives: { FocusInput },
   props: {
     editView: Object,
     initialExpression: String,

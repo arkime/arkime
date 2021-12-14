@@ -15,9 +15,10 @@
             Filename
           </span>
         </div>
-        <input v-model="filename"
-          v-focus-input="true"
+        <b-form-input
+          autofocus
           type="text"
+          v-model="filename"
           class="form-control"
           placeholder="Enter a filename"
         />
@@ -60,14 +61,12 @@
 </template>
 
 <script>
-import FocusInput from '../utils/FocusInput';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect';
 
 export default {
   name: 'MolochExportPcap',
   components: { SegmentSelect },
-  directives: { FocusInput },
   props: {
     start: Number,
     done: Function,
