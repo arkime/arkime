@@ -5240,9 +5240,8 @@ sub historyUpdate
         "type": "keyword"
       },
       "esQuery": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
+        "type": "text",
+        "index": "false"
       }
     }
   }
