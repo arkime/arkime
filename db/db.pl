@@ -5859,7 +5859,7 @@ sub progress {
     if ($verbose == 1) {
         local $| = 1;
         logmsg ".";
-    } elsif ($verbose == 2) {
+    } elsif ($verbose >= 2) {
         local $| = 1;
         logmsg "$msg";
     }
@@ -6319,7 +6319,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         if ($lastUsed > $ARGV[2]) {
             my $userId = $hit->{_source}->{userId};
             print "Disabling user: $userId\n";
-            esPost("/${PREFIX}users/user/$userId/_update", '{"doc": {"enabled": false}}');
+            esPost("/${PREFIX}users/_doc/$userId/_update", '{"doc": {"enabled": false}}');
             $rmcount++;
         }
     }
@@ -6391,9 +6391,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     if ($existingShortcut) { # update the shortcut
       $verb = "Updated";
       my $id = $existingShortcut->{_id};
-      esPost("/${PREFIX}lookups/lookup/${id}", to_json($newShortcut));
+      esPost("/${PREFIX}lookups/_doc/${id}", to_json($newShortcut));
     } else { # create the shortcut
-      esPost("/${PREFIX}lookups/lookup", to_json($newShortcut));
+      esPost("/${PREFIX}lookups/_doc", to_json($newShortcut));
     }
 
     # increment the _meta version by 1
@@ -6610,7 +6610,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     foreach my $hit (@{$results->{hits}->{hits}}) {
         my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
-        esPost("/${PREFIX}files/file/" . $hit->{_id} . "/_update", $script);
+        esPost("/${PREFIX}files/_doc/" . $hit->{_id} . "/_update", $script);
     }
     logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
@@ -6675,17 +6675,17 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^hide-?node$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
-    esPost("/${PREFIX}stats/stat/$ARGV[2]/_update", '{"doc": {"hide": true}}');
+    esPost("/${PREFIX}stats/_doc/$ARGV[2]/_update", '{"doc": {"hide": true}}');
     exit 0;
 } elsif ($ARGV[1] =~ /^unhide-?node$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
-    esPost("/${PREFIX}stats/stat/$ARGV[2]/_update", '{"script" : "ctx._source.remove(\"hide\")"}');
+    esPost("/${PREFIX}stats/_doc/$ARGV[2]/_update", '{"script" : "ctx._source.remove(\"hide\")"}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?alias$/) {
     my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
     die "Node $ARGV[2] already exists, must remove first" if ($results->{found});
-    esPost("/${PREFIX}stats/stat/$ARGV[2]", '{"nodeName": "' . $ARGV[2] . '", "hostname": "' . $ARGV[3] . '", "hide": true}');
+    esPost("/${PREFIX}stats/_doc/$ARGV[2]", '{"nodeName": "' . $ARGV[2] . '", "hostname": "' . $ARGV[3] . '", "hide": true}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];
@@ -6701,7 +6701,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         my $info = esGet("/${PREFIX}files/_doc/$ARGV[2]-$filenum", 1);
         if (!$info->{found}) {
             logmsg "Adding $dir/$file $filenum $ctime\n";
-            esPost("/${PREFIX}files/file/$ARGV[2]-$filenum", to_json({
+            esPost("/${PREFIX}files/_doc/$ARGV[2]-$filenum", to_json({
                          'locked' => 0,
                          'first' => $ctime,
                          'num' => $filenum,
@@ -6750,7 +6750,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             my $node = $1;
             my $filenum = int($3);
             progress("Adding $file $node $filenum $stat[7]\n");
-            esPost("/${PREFIX}files/file/$node-$filenum", to_json({
+            esPost("/${PREFIX}files/_doc/$node-$filenum", to_json({
                          'locked' => 0,
                          'first' => $stat[10],
                          'num' => $filenum,
@@ -6763,7 +6763,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
           my $node = $1;
           my $filenum = int($3);
           $remotefileshash{$file}->{filesize} = $stat[7];
-          esPost("/${PREFIX}files/file/$node-$filenum", to_json($remotefileshash{$file}), 1);
+          esPost("/${PREFIX}files/_doc/$node-$filenum", to_json($remotefileshash{$file}), 1);
         }
     }
     logmsg("\n") if ($verbose > 0);
@@ -6773,7 +6773,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $found = $result->{found};
     die "Field $ARGV[3] isn't found" if (!$found);
 
-    esPost("/${PREFIX}fields/field/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
+    esPost("/${PREFIX}fields/_doc/$ARGV[3]/_update", "{\"doc\":{\"disabled\":" . ($ARGV[2] eq "disable"?"true":"false").  "}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
     die "This command doesn't work anymore, use force-sessions3-update";
