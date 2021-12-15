@@ -141,8 +141,9 @@ module.exports = (Db) => {
         item.id = hit._id;
         item.index = hit._index;
         if (!req.user.createEnabled) {
-          // remove forced expression for reqs made by nonadmin users
+          // remove forced expression and es query for reqs made by nonadmin users
           item.forcedExpression = undefined;
+          item.esQuery = undefined;
         }
         results.results.push(item);
       }

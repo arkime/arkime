@@ -299,6 +299,13 @@
                     </em>
                   </div>
                 </div> <!-- /query params -->
+                <!-- es query -->
+                <div v-has-permission="'createEnabled'">
+                  <div class="mt-3" v-if="item.esQuery">
+                    <h5>Elasticsearch Query</h5>
+                    <pre class="mr-3 ml-3">{{ JSON.parse(item.esQuery) }}</pre>
+                  </div>
+                </div>
               </dl>
             </td>
           </tr> <!-- /history item info -->
