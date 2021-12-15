@@ -269,7 +269,6 @@ ${Config.arkimeWebURL()}hunt
         if (Config.get('cronQueries', false)) {
           hModule.processHuntJobs();
         }
-        hModule.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
         return res.serverError(500, errorText);
@@ -754,7 +753,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         startTime: req.body.query.startTime,
         stopTime: req.body.query.stopTime,
         view: req.body.query.view
-      }
+      },
+      description: req.body.description
     };
 
     async function doneCb (doneHunt, invalidUsers) {

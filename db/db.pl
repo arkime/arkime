@@ -65,6 +65,7 @@
 # 68 - cron query enhancements
 # 70 - reindex everything, ecs, sessions3
 # 71 - user.roles, user.cont3xt
+# 72 - save es query in history, hunt description
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -76,7 +77,7 @@ use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 
-my $VERSION = 71;
+my $VERSION = 72;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5237,6 +5238,10 @@ sub historyUpdate
       },
       "forcedExpression": {
         "type": "keyword"
+      },
+      "esQuery": {
+        "type": "text",
+        "index": "false"
       }
     }
   }
@@ -5382,6 +5387,10 @@ sub huntsUpdate
     },
     "removed": {
       "type": "boolean"
+    },
+    "description": {
+      "type": "text",
+      "index": "false"
     }
   }
 }';
@@ -5720,7 +5729,7 @@ my ($loud) = @_;
     ) {
         $main::versionNumber = $version->{"${PREFIX}sessions3_template"}->{mappings}->{_meta}->{molochDbVersion};
         return;
-    } 
+    }
 
     if (defined $version &&
         exists $version->{"${OLDPREFIX}sessions2_template"} &&
@@ -7311,9 +7320,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions3Update();
         historyUpdate();
         fieldsUpdate();
-    } elsif ($main::versionNumber <= 71) {
+    } elsif ($main::versionNumber <= 72) {
         sessions3Update();
         historyUpdate();
+        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
