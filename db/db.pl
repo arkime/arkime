@@ -7320,6 +7320,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         sessions3Update();
         historyUpdate();
         fieldsUpdate();
+        huntsUpdate();
     } elsif ($main::versionNumber <= 72) {
         sessions3Update();
         historyUpdate();
