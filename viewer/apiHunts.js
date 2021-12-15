@@ -753,7 +753,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         startTime: req.body.query.startTime,
         stopTime: req.body.query.stopTime,
         view: req.body.query.view
-      }
+      },
+      description: req.body.description
     };
 
     async function doneCb (doneHunt, invalidUsers) {

@@ -7,6 +7,12 @@
         </hunt-status>
       </div>
     </div>
+    <div class="row" v-if="job.description">
+      <div class="col-12">
+        <span class="fa fa-fw fa-file-text" />&nbsp;
+        {{ job.description }}
+      </div>
+    </div>
     <div>
       <span class="fa fa-fw fa-eye">
       </span>&nbsp;

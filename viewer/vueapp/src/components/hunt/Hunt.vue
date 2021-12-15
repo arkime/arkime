@@ -163,6 +163,26 @@
                 </div> <!-- /notifier -->
               </div>
               <div class="row">
+                <div class="form-group col-12">
+                  <div class="input-group input-group-sm">
+                    <span
+                      v-b-tooltip.hover
+                      class="input-group-prepend cursor-help"
+                      title="Describe what or why you are hunting">
+                      <span class="input-group-text">
+                        Description
+                      </span>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="jobDescription"
+                      placeholder="What are you hunting for? Or why are you hunting?"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
                 <!-- packet search text & text type -->
                 <div class="form-group col-12">
                   <div class="input-group input-group-sm">
@@ -866,6 +886,7 @@ export default {
       jobType: 'raw',
       jobNotifier: undefined,
       jobUsers: '',
+      jobDescription: '',
       // notifiers
       notifiers: undefined,
       // hunt limits
@@ -958,6 +979,7 @@ export default {
       this.jobName = '';
       this.jobUsers = '';
       this.jobSearch = '';
+      this.jobDescription = '';
       this.createFormError = '';
       this.createFormOpened = false;
     },
@@ -996,7 +1018,8 @@ export default {
         totalSessions: this.sessions.recordsFiltered,
         query: this.sessionsQuery,
         notifier: this.jobNotifier,
-        users: this.jobUsers
+        users: this.jobUsers,
+        description: this.jobDescription
       };
 
       HuntService.create(newJob).then((response) => {
@@ -1004,6 +1027,7 @@ export default {
         this.jobName = '';
         this.jobUsers = '';
         this.jobSearch = '';
+        this.jobDescription = '';
         this.createFormError = '';
         this.jobNotifier = undefined;
         this.loadData();

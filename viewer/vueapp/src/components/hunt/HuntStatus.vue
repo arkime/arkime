@@ -20,9 +20,7 @@
       title="Finished"
       class="fa fa-check fa-fw cursor-help">
     </span>
-    &nbsp;
-    <span v-if="!hideText">
-      This hunt is
+    &nbsp;<span v-if="!hideText">This hunt is
       <strong>{{ status }}</strong>
     </span>
   </span>
