@@ -71,11 +71,31 @@
             <th class="ignore-element" style="width:85px;">
               <!-- table fit button -->
               <div class="fit-btn-container">
-                <button type="button"
+                <button
+                  type="button"
+                  @click="openAll"
+                  v-if="!loading && sessions.data.length <= 50"
+                  class="btn btn-xs btn-theme-tertiary open-all-btn"
+                  v-b-tooltip.hover.right="'Open all visible sessions (up to 50)'">
+                  <span class="fa fa-plus-circle">
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  @click="closeAll"
+                  v-if="!loading && stickySessions.length > 0"
+                  v-b-tooltip.hover.right="'Close all open sessions'"
+                  class="btn btn-xs btn-theme-secondary close-all-btn ml-4">
+                  <span class="fa fa-times-circle">
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  @click="fitTable"
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
-                  @click="fitTable"
-                  v-b-tooltip.hover.right="'Fit the table to the current window size'">
+                  v-b-tooltip.hover.right="'Fit the table to the current window size'"
+                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h">
                   </span>
                 </button>
@@ -864,6 +884,14 @@ export default {
 
       this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
+    expandSessionDetail: function (session) {
+      if (session.expanded) { return; }
+      this.toggleSessionDetail(session);
+    },
+    collapseSessionDetail: function (session) {
+      if (!session.expanded) { return; }
+      this.toggleSessionDetail(session);
+    },
     /**
      * Closes the session detail for a session
      * Triggered by the sticky session component
@@ -1632,26 +1660,33 @@ export default {
       this.calculateInfoColumnWidth(defaultColWidths.info);
       this.toggleStickyHeader();
     },
-    /* Opens up to 10 session details in the table */
+    /* Opens up to 50 session details in the table */
     openAll: function () {
       // opening too many session details at once is bad!
-      if (this.sessions.data.length > 10) {
-        alert('You\'re trying to open too many session details at once! I\'ll only open the first 10 for you, sorry!');
+      if (this.sessions.data.length > 50) {
+        alert('You\'re trying to open too many session details at once! I\'ll only open the first 50 for you, sorry!');
       }
 
-      const len = Math.min(this.sessions.data.length, 10);
+      const len = Math.min(this.sessions.data.length, 50);
 
       for (let i = 0; i < len; ++i) {
-        this.toggleSessionDetail(this.sessions.data[i]);
+        this.expandSessionDetail(this.sessions.data[i]);
       }
 
       // unset open all for future queries
-      this.$router.replace({
-        query: {
-          ...this.$route.query,
-          openAll: undefined
-        }
-      });
+      if (this.$route.query.openAll) {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            openAll: undefined
+          }
+        });
+      }
+    },
+    closeAll: function () {
+      for (const session of this.sessions.data) {
+        this.collapseSessionDetail(session);
+      }
     },
     /* Initializes column drag and drop */
     initializeColDragDrop: function () {
@@ -2026,10 +2061,15 @@ div.fit-btn-container {
   z-index: 3;
   position: relative;
 }
-div.fit-btn-container > button.fit-btn {
-  position: absolute;
+div.fit-btn-container > button.fit-btn,
+div.fit-btn-container > button.open-all-btn,
+div.fit-btn-container > button.close-all-btn {
   height: 16px;
   line-height: 1;
+  position: absolute;
+}
+div.fit-btn-container > button.fit-btn.fit-btn-right {
+  left: 48px;
 }
 
 /* animate sticky sessions enter/leave */
