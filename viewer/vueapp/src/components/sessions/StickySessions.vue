@@ -224,13 +224,13 @@ export default {
 
 <style scoped>
 .sticky-session-btn {
-  width: 60px;
+  width: 100px;
   display: block;
   position: fixed;
   top: 76px;
   right: 0;
   z-index: 5;
-  margin-right: -30px;
+  margin-right: -50px;
   overflow: hidden;
   padding: 1px 10px 2px 12px;
   border-radius: 4px 0 0 4px;
@@ -332,14 +332,14 @@ a.list-group-item:focus {
   }
   40%, 43% {
     animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
-    transform: translate3d(-20px, 0, 0);
+    transform: translate3d(-50px, 0, 0);
   }
   70% {
     animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
-    transform: translate3d(-8px, 0, 0);
+    transform: translate3d(-20px, 0, 0);
   }
   90% {
-    transform: translate3d(-2px, 0, 0);
+    transform: translate3d(-10px, 0, 0);
   }
 }
 </style>
