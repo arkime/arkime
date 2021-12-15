@@ -6,89 +6,97 @@
     <label v-if="!hideLabel"
       class="text-warning pr-2">
       {{ field.label }}
+      <span
+        class="fa cursor-pointer"
+        @click="visible = !visible"
+        v-if="field.type == 'table' || field.type === 'array'"
+        :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+      />
     </label>
-    <!-- table field -->
-    <template v-if="field.type === 'table'">
-      <b-overlay
-        no-center
-        rounded="sm"
-        blur="0.2rem"
-        opacity="0.9"
-        variant="transparent"
-        :show="getRenderingTable">
-        <integration-table
-          v-if="value.value"
-          :fields="field.fields"
-          :table-data="value.value"
-          :default-sort-field="field.defaultSortField"
-          :default-sort-direction="field.defaultSortDirection"
-        />
-        <template #overlay>
-          <div class="overlay-loading">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Rendering table data...</p>
-          </div>
-        </template>
-      </b-overlay>
-    </template> <!-- /table field -->
-    <!-- array field -->
-    <template v-else-if="field.type === 'array'">
-      <b-overlay
-        no-center
-        rounded="sm"
-        blur="0.2rem"
-        opacity="0.9"
-        variant="transparent"
-        :show="getRenderingArray">
-        <integration-array
-          :field="field"
-          v-if="value.value"
-          :array-data="value.value"
-        />
-        <template #overlay>
-          <div class="overlay-loading">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Rendering array data...</p>
-          </div>
-        </template>
-      </b-overlay>
-    </template> <!-- /array field -->
-    <!-- url field -->
-    <template v-else-if="field.type === 'url'">
-      <a
-        target="_blank"
-        :href="value.value"
-        rel="noopener noreferrer">
-        {{ value.value }}
-      </a>
-    </template> <!-- /url field -->
-    <!-- json field -->
-    <template v-else-if="field.type === 'json'">
-      <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
-    </template> <!-- /json field -->
-    <!-- ms field -->
-    <template v-else-if="field.type === 'ms'">
-      {{ this.$options.filters.dateString(value.value) }}
-    </template> <!-- /ms field -->
-    <!-- seconds field -->
-    <template v-else-if="field.type === 'seconds'">
-      {{ this.$options.filters.dateString(value.value * 1000) }}
-    </template> <!-- /seconds field -->
-    <!-- date field -->
-    <template v-else-if="field.type === 'date'">
-      {{ this.$options.filters.reDateString(value.value) }}
-    </template> <!-- /seconds field -->
-    <!-- default string field -->
-    <template v-else>
-      <template v-if="field.pivot">
-        <cont3xt-field
-          :value="value.value"
-        />
-      </template>
+    <template v-if="visible">
+      <!-- table field -->
+      <template v-if="field.type === 'table'">
+        <b-overlay
+          no-center
+          rounded="sm"
+          blur="0.2rem"
+          opacity="0.9"
+          variant="transparent"
+          :show="getRenderingTable">
+          <integration-table
+            v-if="value.value"
+            :fields="field.fields"
+            :table-data="value.value"
+            :default-sort-field="field.defaultSortField"
+            :default-sort-direction="field.defaultSortDirection"
+          />
+          <template #overlay>
+            <div class="overlay-loading">
+              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+              <p>Rendering table data...</p>
+            </div>
+          </template>
+        </b-overlay>
+      </template> <!-- /table field -->
+      <!-- array field -->
+      <template v-else-if="field.type === 'array'">
+        <b-overlay
+          no-center
+          rounded="sm"
+          blur="0.2rem"
+          opacity="0.9"
+          variant="transparent"
+          :show="getRenderingArray">
+          <integration-array
+            :field="field"
+            v-if="value.value"
+            :array-data="value.value"
+          />
+          <template #overlay>
+            <div class="overlay-loading">
+              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+              <p>Rendering array data...</p>
+            </div>
+          </template>
+        </b-overlay>
+      </template> <!-- /array field -->
+      <!-- url field -->
+      <template v-else-if="field.type === 'url'">
+        <a
+          target="_blank"
+          :href="value.value"
+          rel="noopener noreferrer">
+          {{ value.value }}
+        </a>
+      </template> <!-- /url field -->
+      <!-- json field -->
+      <template v-else-if="field.type === 'json'">
+        <pre class="text-info"><code>{{ JSON.stringify(value.value, null, 2) }}</code></pre>
+      </template> <!-- /json field -->
+      <!-- ms field -->
+      <template v-else-if="field.type === 'ms'">
+        {{ this.$options.filters.dateString(value.value) }}
+      </template> <!-- /ms field -->
+      <!-- seconds field -->
+      <template v-else-if="field.type === 'seconds'">
+        {{ this.$options.filters.dateString(value.value * 1000) }}
+      </template> <!-- /seconds field -->
+      <!-- date field -->
+      <template v-else-if="field.type === 'date'">
+        {{ this.$options.filters.reDateString(value.value) }}
+      </template> <!-- /seconds field -->
+      <!-- default string field -->
       <template v-else>
-        {{ value.value }}
-      </template>
-    </template> <!-- /default string field -->
+        <template v-if="field.pivot">
+          <cont3xt-field
+            :value="value.value"
+          />
+        </template>
+        <template v-else>
+          {{ value.value }}
+        </template>
+      </template> <!-- /default string field -->
+    </template>
   </span>
 </template>
 
@@ -124,6 +132,11 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  data () {
+    return {
+      visible: true
+    };
   },
   computed: {
     ...mapGetters(['getRenderingTable', 'getRenderingArray']),

@@ -2,8 +2,8 @@
   <b-card
     class="mb-2"
     v-if="data && data[itype]">
-    <div class="d-flex mb-2">
-      <div class="d-flex flex-grow-1 flex-wrap mt-1">
+    <div class="d-xl-flex mb-2">
+      <div class="d-xl-flex flex-grow-1 flex-wrap mt-1">
         <h4 class="text-warning">
           {{ itype.toUpperCase() }}
         </h4>
