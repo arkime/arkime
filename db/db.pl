@@ -65,7 +65,7 @@
 # 68 - cron query enhancements
 # 70 - reindex everything, ecs, sessions3
 # 71 - user.roles, user.cont3xt
-# 72 - save es query in history
+# 72 - save es query in history, hunt description
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -5387,6 +5387,10 @@ sub huntsUpdate
     },
     "removed": {
       "type": "boolean"
+    },
+    "description": {
+      "type": "text",
+      "index": "false"
     }
   }
 }';
@@ -7319,6 +7323,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     } elsif ($main::versionNumber <= 72) {
         sessions3Update();
         historyUpdate();
+        huntsUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
