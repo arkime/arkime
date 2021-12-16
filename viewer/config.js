@@ -502,7 +502,7 @@ exports.loadFields = function (data) {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 Auth.initialize({
-  debug: internals.debug,
+  debug: exports.debug,
   mode: 'digest',
   basePath: exports.basePath(),
   realm: exports.get('httpRealm', 'Moloch'),
