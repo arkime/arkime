@@ -1084,6 +1084,7 @@ exports.historyIt = async function (doc) {
 
   if (internals?.healthCache?.molochDbVersion < 72) {
     delete doc.esQuery;
+    delete doc.esQueryIndices;
   }
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'

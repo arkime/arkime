@@ -29,12 +29,14 @@ my ($url) = @_;
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
+    sleep(1);
 
 # Make a request
     countTest(4, "molochRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
     sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
+    sleep(1);
 
 # See if recorded, should be the only item that is ours
     my $json = viewerGet("/history/list?molochRegressionUser=historytest1");
