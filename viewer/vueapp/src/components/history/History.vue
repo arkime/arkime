@@ -303,7 +303,7 @@
                 <div v-has-permission="'createEnabled'">
                   <div class="mt-3" v-if="item.esQueryIndices">
                     <h5>Elasticsearch Query Indices</h5>
-                    <pre class="mr-3 ml-3">{{ item.esQueryIndices }}</pre>
+                    <code class="mr-3 ml-3">{{ item.esQueryIndices }}</code>
                   </div>
                   <div class="mt-3" v-if="item.esQuery">
                     <h5>Elasticsearch Query</h5>
