@@ -38,7 +38,9 @@
       :map-data="mapData"
       :primary="true"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="cancelAndLoad(true)">
+      @fetchMapData="cancelAndLoad(true)"
+      @fetchGraphData="fetchGraphData"
+      :show-hide-btn="true">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
@@ -865,6 +867,11 @@ export default {
       } else if (runNewQuery) {
         this.loadData(updateTable);
       }
+    },
+    fetchGraphData: function () {
+      this.graphData = undefined;
+      this.mapData = undefined;
+      this.cancelAndLoad(true);
     },
 
     /* SESSION DETAIL */
