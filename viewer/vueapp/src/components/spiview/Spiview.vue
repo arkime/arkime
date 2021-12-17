@@ -115,7 +115,7 @@
               Loading SPI data
             </em>
             <button type="button"
-              class="btn btn-warning btn-sm pull-right"
+              class="btn btn-warning btn-sm pull-right cancel-btn"
               @click="cancelLoading">
               <span class="fa fa-ban">
               </span>&nbsp;
@@ -1390,5 +1390,10 @@ export default {
 /* force wrapping */
 .spiview-page .spi-bucket {
   display: inline-block;
+}
+
+/* canel btn */
+.cancel-btn {
+  margin-right: 80px;
 }
 </style>

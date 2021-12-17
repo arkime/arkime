@@ -1,33 +1,36 @@
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary}">
 
+    <!-- viz options button -->
+    <div class="viz-options-btn-container">
+      <b-dropdown
+        right
+        size="sm"
+        v-if="primary"
+        variant="primary"
+        class="viz-options-btn">
+        <template #button-content>
+          <span class="fa fa-bar-chart-o fa-fw" />
+          <span class="fa fa-gear fa-fw" />
+        </template>
+        <b-dropdown-item
+          @click="toggleStickyViz"
+          v-b-tooltip.hover.left="'Toggle sticky visualizations and table headers'">
+          {{ !stickyViz ? 'Pin' : 'Unpin' }} visualizations
+        </b-dropdown-item>
+        <b-dropdown-item
+          v-if="showHideBtn"
+          @click="toggleHideViz"
+          v-b-tooltip.hover.left="!hideViz ? 'Hide graph & map (speeds up large queries!)' : 'Show graph & map'">
+          {{ !hideViz ? 'Hide' : 'Show' }} visualizations
+        </b-dropdown-item>
+      </b-dropdown>
+    </div>
+    <!-- viz options button -->
+
     <div class="pt-2 pl-2 pr-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
-
-      <!-- sticky viz button -->
-      <div class="sticky-viz-btn"
-        v-if="primary"
-        @click="toggleStickyViz"
-        v-b-tooltip.hover.left
-        title="Toggle sticky visualizations and table headers">
-        <span v-if="stickyViz"
-          class="fa fa-fw fa-thumb-tack">
-        </span>
-        <span v-else
-          class="fa fa-fw fa-thumb-tack fa-rotate-90">
-        </span>
-      </div> <!-- /sticky viz button -->
-
-      <!-- toggle viz button -->
-      <div
-        v-if="primary && showHideBtn"
-        class="hide-viz-btn"
-        @click="toggleHideViz"
-        v-b-tooltip.hover.left="!hideViz ? 'Hide graph & map (speeds up large queries!)' : 'Show graph & map'">
-        <span v-if="hideViz" class="fa fa-fw fa-eye" />
-        <span v-else class="fa fa-fw fa-eye-slash" />
-      </div> <!-- /toggle viz button -->
 
       <template v-if="!hideViz">
         <!-- map content -->
@@ -1322,49 +1325,19 @@ export default {
   background-color: var(--color-background, white);
 }
 
-.sticky-viz-btn {
-  display: block;
-  position: absolute;
-  margin-top: 116px;
-  right: 0;
-  z-index: 4;
-  overflow: hidden;
-  padding: 2px 8px 3px 8px;
-  border-radius: 4px 0 0 4px;
-  cursor: pointer;
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
+/* viz options button styles ----------------- */
+.viz-options-btn-container {
+  z-index: 5;
+  position: relative;
 }
-
-.sticky-viz .sticky-viz-btn {
+.viz-options-btn {
+  right: 8px;
+  display: block;
   position: fixed;
+  margin-top: -35px;
 }
 
 /* hide vizualization styles ----------------- */
-.hide-viz-btn {
-  display: block;
-  position: absolute;
-  margin-top: 146px;
-  right: 0;
-  z-index: 3;
-  overflow: hidden;
-  padding: 2px 8px 3px 8px;
-  border-radius: 4px 0 0 4px;
-  cursor: pointer;
-  background-color: var(--color-tertiary);
-  color: var(--color-button, #FFF);
-}
-
-.hide-viz .sticky-viz-btn {
-  z-index: 5;
-  position: fixed;
-  margin-top: -42px;
-}
-.hide-viz .hide-viz-btn {
-  position: fixed;
-  margin-top: -3px;
-}
-
 .hide-viz .viz-container {
   height: auto;
 }
@@ -1374,7 +1347,7 @@ export default {
 .hide-viz.sticky-viz .viz-container {
   z-index: 5;
   overflow: visible;
+  box-shadow: none !important;
   background-color: transparent;
 }
-
 </style>
