@@ -869,6 +869,11 @@ export default {
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
 
+      // roles might be undefined, but compare to emtpy array since toggling on
+      // any roles sets roles to an array, and removing that role = empty array
+      if (oldUser.roles === undefined) { oldUser.roles = []; }
+      if (newUser.roles === undefined) { newUser.roles = []; }
+
       // make sure these fields exist or the objects will be different
       // (undefined is the same as false for these fields)
       oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
