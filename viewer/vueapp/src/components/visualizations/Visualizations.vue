@@ -14,15 +14,14 @@
           <span class="fa fa-gear fa-fw" />
         </template>
         <b-dropdown-item
-          @click="toggleStickyViz"
-          v-b-tooltip.hover.left="'Toggle sticky visualizations and table headers'">
-          {{ !stickyViz ? 'Pin' : 'Unpin' }} visualizations
+          @click="toggleStickyViz">
+          {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ page && page === 'spigraph' ? ' top' : '' }} {{ page && page === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="showHideBtn"
           @click="toggleHideViz"
-          v-b-tooltip.hover.left="!hideViz ? 'Hide graph & map (speeds up large queries!)' : 'Show graph & map'">
-          {{ !hideViz ? 'Hide' : 'Show' }} visualizations
+          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
+          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
         </b-dropdown-item>
       </b-dropdown>
     </div>
@@ -292,7 +291,8 @@ export default {
       type: Array,
       required: true
     },
-    showHideBtn: Boolean
+    showHideBtn: Boolean,
+    page: String
   },
   data: function () {
     return {

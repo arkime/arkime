@@ -40,7 +40,8 @@
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="cancelAndLoad(true)"
       @fetchGraphData="fetchGraphData"
-      :show-hide-btn="true">
+      :show-hide-btn="true"
+      page="sessions">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="sessions-content ml-2"

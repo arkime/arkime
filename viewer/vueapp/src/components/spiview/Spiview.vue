@@ -153,7 +153,8 @@
       :timelineDataFilters="timelineDataFilters"
       @fetchMapData="fetchVizData"
       @fetchGraphData="fetchGraphData"
-      :show-hide-btn="true">
+      :show-hide-btn="true"
+      page="spiview">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
