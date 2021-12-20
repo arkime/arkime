@@ -3,8 +3,10 @@
     v-b-tooltip.hover="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
-    <label v-if="!hideLabel"
-      class="text-warning pr-2">
+    <label
+      v-if="!hideLabel"
+      class="text-warning"
+      :class="field.type === 'table' ? 'w-100 pr-0': 'pr-2'">
       {{ field.label }}
       <span
         class="fa cursor-pointer"
@@ -12,6 +14,15 @@
         v-if="field.type == 'table' || field.type === 'array'"
         :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
       />
+      <b-button
+        size="xs"
+        @click="copy"
+        class="float-right"
+        variant="outline-success"
+        v-if="field.type === 'table'"
+        v-b-tooltip.hover="'Copy as table as CSV string'">
+        <span class="fa fa-copy fa-fw" />
+      </b-button>
     </label>
     <template v-if="visible">
       <!-- table field -->
@@ -141,26 +152,8 @@ export default {
   computed: {
     ...mapGetters(['getRenderingTable', 'getRenderingArray']),
     value () {
-      let value = JSON.parse(JSON.stringify(this.data));
       let full;
-
-      for (const p of this.field.path) {
-        if (!value) {
-          console.warn(`Can't resolve path: ${this.field.path.join('.')}`);
-          return '';
-        }
-        value = value[p];
-      }
-
-      if (this.field.defang) {
-        value = dr.defang(value);
-      }
-
-      // don't show empty tables, lists, or strings
-      if (this.field.type !== 'json' && value && value.length === 0) {
-        // ignores ms because it's a number and value.length is undefined
-        value = undefined;
-      }
+      let value = this.findValue(this.data, this.field);
 
       // truncate long values
       if (this.truncate && value && value.length > (this.field.len || 100)) {
@@ -169,6 +162,53 @@ export default {
       }
 
       return { value, full };
+    }
+  },
+  methods: {
+    /* page functions ------------------------------------------------------ */
+    copy () {
+      let csvStr = '';
+
+      const fieldLabels = [];
+      for (const field of this.field.fields) {
+        fieldLabels.push(field.label);
+      }
+
+      csvStr += `${fieldLabels.join(',')}\n`;
+
+      for (const valueRow of this.value.value) {
+        const values = [];
+        for (const field of this.field.fields) {
+          values.push(this.findValue(valueRow, field));
+        }
+        csvStr += `${values.join(',')}\n`;
+      }
+
+      this.$copyText(csvStr);
+    },
+    /* helpers ------------------------------------------------------------- */
+    findValue (data, field) {
+      let value = JSON.parse(JSON.stringify(data));
+
+      for (const p of field.path) {
+        if (!value) {
+          console.warn(`Can't resolve path: ${field.path.join('.')}`);
+          return '';
+        }
+        value = value[p];
+      }
+
+      if (field.defang) {
+        value = dr.defang(value);
+      }
+
+      // don't show empty tables, lists, or strings
+      if (field.type !== 'json' && value && value.length === 0) {
+        // ignores ms because it's a number and value.length is undefined
+        value = undefined;
+      }
+
+      return value;
     }
   }
 };

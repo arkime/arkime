@@ -13,6 +13,14 @@
         v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._createTime)}`">
         <span class="fa fa-refresh fa-fw" />
       </b-button>
+      <b-button
+        size="sm"
+        @click="copy"
+        variant="outline-success"
+        class="ml-1 mt-1 float-right"
+        v-b-tooltip.hover="'Copy as raw JSON'">
+        <span class="fa fa-copy fa-fw" />
+      </b-button>
     </h5>
     <!-- error with data -->
     <b-alert
@@ -22,7 +30,7 @@
         <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
       </span>
       <div class="display-inline-block">
-        Error fetching data:
+        <strong>Error:</strong>
         <br>
         {{ error }}
       </div>
@@ -121,6 +129,16 @@ export default {
       }).catch((err) => {
         this.error = err;
       });
+    },
+    copy () {
+      this.error = '';
+
+      if (!this.getIntegrationData.data) {
+        this.error = 'No raw data to copy!';
+        return;
+      }
+
+      this.$copyText(JSON.stringify(this.getIntegrationData.data, false, 2));
     }
   },
   updated () { // card data is rendered
