@@ -1173,6 +1173,7 @@ export default {
       this.jobSearch = job.search;
       this.jobNotifier = job.notifier;
       this.jobSearchType = job.searchType;
+      this.jobDescription = job.description;
       this.createFormOpened = true;
     },
     repeatJob: function (job) {
