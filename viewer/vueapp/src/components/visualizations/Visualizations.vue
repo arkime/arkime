@@ -31,7 +31,7 @@
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
 
-      <template v-if="!hideViz">
+      <div v-show="!hideViz">
         <!-- map content -->
         <div :class="{'expanded':mapExpanded}">
 
@@ -246,7 +246,7 @@
           </div> <!-- /graph -->
 
         </div> <!-- /graph content -->
-      </template>
+      </div>
 
     </div>
 
@@ -270,6 +270,8 @@ let landColorLight;
 
 let timeout;
 let basePath;
+let plotCheck;
+let initialized;
 
 // bar width vars
 let barWidth;
@@ -280,8 +282,14 @@ let barWidthInPixels;
 export default {
   name: 'MolochVisualizations',
   props: {
-    graphData: Object,
-    mapData: Object,
+    graphData: {
+      typte: Object,
+      default: () => { return {}; }
+    },
+    mapData: {
+      type: Object,
+      default: () => { return {}; }
+    },
     primary: Boolean,
     id: {
       type: String,
@@ -415,10 +423,18 @@ export default {
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
     graphData: function (newVal, oldVal) {
-      if (newVal && oldVal) {
-        this.setupGraphData(); // setup this.graph and this.graphOptions
-        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-        this.calculateHoverBarWidth();
+      if (newVal && oldVal && !this.hideViz) {
+        if (plotCheck) { clearInterval(plotCheck); }
+        plotCheck = setInterval(() => { // wait for plot func to be loaded
+          if ($.plot || initialized) {
+            clearInterval(plotCheck);
+            initialized = true;
+            plotCheck = undefined;
+            this.setupGraphData(); // setup this.graph and this.graphOptions
+            this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+            this.calculateHoverBarWidth();
+          }
+        });
       }
     },
     mapData: function (newVal, oldVal) {
@@ -501,8 +517,6 @@ export default {
       this.showMap = showMap;
       this.stickyViz = stickyViz;
       this.hideViz = hideViz;
-
-      if (this.hideViz) { return; }
 
       if (this.primary) {
         this.$store.commit('toggleMaps', showMap);
@@ -894,6 +908,7 @@ export default {
     },
     /* helper MAP functions */
     onMapResize: function () {
+      if (this.hideViz) { return; }
       if (this.mapExpanded) {
         $(this.mapEl).css({
           position: 'fixed',
