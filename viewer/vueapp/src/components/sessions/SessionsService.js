@@ -61,6 +61,10 @@ export default {
       if (localStorage.getItem('sessions-open-map') === 'true') {
         params.map = true;
       }
+      // set whether vizualizations are open on the sessions page
+      if (localStorage.getItem('sessions-hide-viz') === 'true') {
+        params.facets = 0;
+      }
 
       const options = {
         url: 'api/sessions',

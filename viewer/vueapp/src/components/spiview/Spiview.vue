@@ -115,7 +115,7 @@
               Loading SPI data
             </em>
             <button type="button"
-              class="btn btn-warning btn-sm pull-right"
+              class="btn btn-warning btn-sm pull-right cancel-btn"
               @click="cancelLoading">
               <span class="fa fa-ban">
               </span>&nbsp;
@@ -151,7 +151,10 @@
       :map-data="mapData"
       :primary="true"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="fetchMapData">
+      @fetchMapData="fetchVizData"
+      @fetchGraphData="fetchGraphData"
+      :show-hide-btn="true"
+      page="spiview">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="spiview-content mr-1 ml-1">
@@ -821,22 +824,31 @@ export default {
         this.getSpiData(this.spiQuery);
       }
     },
-    fetchMapData: function () {
+    fetchVizData: function (graphData) {
       const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
       if (!field) { field = 'destination.ip'; }
 
       const query = this.constructQuery(field, 100);
-      query.facets = 1; // Force facets for map data
+      query.facets = 1; // Force facets for map/graph data
 
       this.get(query).promise
         .then((response) => {
           if (response.error) { this.error = response.error; }
           this.mapData = response.map;
+          if (graphData) {
+            this.graphData = response.graph;
+          }
         })
         .catch((error) => {
           this.error = error.text;
         });
+    },
+    fetchGraphData: function () {
+      this.mapData = undefined;
+      this.graphData = undefined;
+
+      this.fetchVizData(true);
     },
     /* helper functions ---------------------------------------------------- */
     constructQuery: function (dbField, count) {
@@ -860,6 +872,12 @@ export default {
       if (localStorage.getItem('spiview-open-map') === 'true') {
         query.map = true;
       }
+      // set whether vizualizations are open on the spiview page
+      let hideViz = false;
+      if (localStorage.getItem('spiview-hide-viz') === 'true') {
+        hideViz = true;
+        query.facets = 0;
+      }
 
       const promise = new Promise((resolve, reject) => {
         const options = {
@@ -872,6 +890,10 @@ export default {
         Vue.axios(options).then((response) => {
           if (response.data.bsqErr) {
             response.data.error = response.data.bsqErr;
+          }
+          if (hideViz) { // always set map/graph data so viz area shows up
+            this.mapData = {};
+            this.graphData = {};
           }
           resolve(response.data);
         }).catch((error) => {
@@ -1369,5 +1391,10 @@ export default {
 /* force wrapping */
 .spiview-page .spi-bucket {
   display: inline-block;
+}
+
+/* canel btn */
+.cancel-btn {
+  margin-right: 80px;
 }
 </style>
