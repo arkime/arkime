@@ -23,6 +23,11 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 3.2.2 2022/01/xx
+  - viewer - default to hunt reassembled packets
+  - viewer - add descriptions to hunts
+  - viewer - hide graph/map (speeds up large queries)
+  - viewer - history logs es query/indices
+  - viewer - open up to 50 sessions at a time button
 
 3.2.1 2021/12/14
   - esproxy - handle sessions2 without prefix
