@@ -2,8 +2,8 @@
   <div class="container-fluid">
 
     <!-- search -->
-    <div class="fixed-top pl-2 pr-2 search-nav">
-      <b-input-group>
+    <div class="fixed-top pl-2 pr-2 search-nav d-flex justify-content-between">
+      <b-input-group class="flex-grow-1 mr-2">
         <template #prepend>
           <b-input-group-text>
             <span class="fa fa-search" />
@@ -23,6 +23,12 @@
           </b-button>
         </b-input-group-append>
       </b-input-group>
+      <b-button
+        @click="shareLink"
+        variant="outline-primary"
+        v-b-tooltip.hover="'Copy share link to clipboard'">
+        <span class="fa fa-share-alt fa-fw" />
+      </b-button>
     </div> <!-- /search -->
 
     <!-- page content -->
@@ -473,6 +479,9 @@ export default {
         }
       }
       return false;
+    },
+    shareLink () {
+      this.$copyText(window.location.href);
     },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {
