@@ -287,7 +287,7 @@ test('hunt page create hunt and form validation', async () => {
       size: 50,
       search: 'coconut',
       searchType: 'ascii',
-      type: 'raw',
+      type: 'reassembled',
       src: true,
       dst: true,
       totalSessions: 100,
