@@ -3,27 +3,28 @@
     v-b-tooltip.hover="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
-    <label
-      v-if="!hideLabel"
-      class="text-warning"
-      :class="field.type === 'table' ? 'w-100 pr-0': 'pr-2'">
-      {{ field.label }}
-      <span
-        class="fa cursor-pointer"
-        @click="visible = !visible"
-        v-if="field.type == 'table' || field.type === 'array'"
-        :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
-      />
+    <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-content-between align-items-center' : 'd-inline'">
+      <label
+        v-if="!hideLabel"
+        class="text-warning"
+        @click="toggleValue"
+        :class="field.type === 'table' || field.type === 'array' ? 'flex-grow-1 cursor-pointer': 'pr-2'">
+        {{ field.label }}
+        <span
+          class="fa"
+          v-if="field.type === 'table' || field.type === 'array'"
+          :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+        />
+      </label>
       <b-button
         size="xs"
         @click="copy"
-        class="float-right"
         variant="outline-success"
         v-if="field.type === 'table'"
         v-b-tooltip.hover="'Copy as table as CSV string'">
         <span class="fa fa-copy fa-fw" />
       </b-button>
-    </label>
+    </div>
     <template v-if="visible">
       <!-- table field -->
       <template v-if="field.type === 'table'">
@@ -166,6 +167,13 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    toggleValue () {
+      if (this.field.type !== 'table' && this.field.type !== 'array') {
+        return;
+      }
+
+      this.visible = !this.visible;
+    },
     copy () {
       let csvStr = '';
 
@@ -176,7 +184,12 @@ export default {
 
       csvStr += `${fieldLabels.join(',')}\n`;
 
-      for (const valueRow of this.value.value) {
+      let value = this.value.value;
+      if (!Array.isArray(value)) {
+        value = [value];
+      }
+
+      for (const valueRow of value) {
         const values = [];
         for (const field of this.field.fields) {
           values.push(this.findValue(valueRow, field));
