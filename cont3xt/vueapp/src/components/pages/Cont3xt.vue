@@ -17,12 +17,32 @@
         />
         <b-input-group-append>
           <b-button
+            @click="skipCache = !skipCache"
+            :variant="skipCache ? 'warning': 'outline-warning'"
+            v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
+            <span class="fa fa-database fa-fw" />
+          </b-button>
+          <b-button
             @click="search"
             variant="success">
             Get Cont3xt
           </b-button>
         </b-input-group-append>
       </b-input-group>
+      <div
+        v-b-tooltip.hover="'Coming soon!'">
+        <b-button
+          class="mr-2 disabled"
+          @click="generateReport"
+          variant="outline-secondary">
+          <span v-if="!loadingReport"
+            class="fa fa-file-text fa-fw"
+          />
+          <span v-else
+            class="fa fa-spinner fa-spin fa-fw"
+          />
+        </b-button>
+      </div>
       <b-button
         @click="shareLink"
         variant="outline-primary"
@@ -304,7 +324,9 @@ export default {
       scrollPx: 0,
       searchItype: '',
       initialized: false,
-      searchTerm: this.$route.query.q || ''
+      searchTerm: this.$route.query.q || '',
+      loadingReport: false,
+      skipCache: false
     };
   },
   computed: {
@@ -385,7 +407,7 @@ export default {
         });
       }
 
-      Cont3xtService.search(this.searchTerm).subscribe({
+      Cont3xtService.search({ searchTerm: this.searchTerm, skipCache: this.skipCache }).subscribe({
         next: (data) => {
           if (data.itype && !this.searchItype) {
             // determine the search type and save the search term
@@ -482,6 +504,17 @@ export default {
     },
     shareLink () {
       this.$copyText(window.location.href);
+    },
+    generateReport () {
+      this.error = '';
+      this.loadingReport = true;
+
+      Cont3xtService.generateReport({ searchTerm: this.searchTerm, skipCache: this.skipCache }).then((response) => {
+        this.loadingReport = false;
+      }).catch((error) => {
+        this.error = error;
+        this.loadingReport = false;
+      });
     },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {

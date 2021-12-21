@@ -39,9 +39,10 @@ export default {
    * Watches for a stream of data then reads and parses each chunk.
    * Sends chunks back to the subscriber of the search.
    * @param {String} searchTerm - The query to search the integrations for
+   * @param {Boolean} skipCache - Whether to use the cached result or fetch it new
    * @returns {Observable} - The observable object to subscribe to updates
    */
-  search (searchTerm) {
+  search ({ searchTerm, skipCache }) {
     return new Observable((subscriber) => {
       searchTerm = dr.refang(searchTerm.trim());
 
@@ -52,7 +53,7 @@ export default {
       fetch('api/integration/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: searchTerm })
+        body: JSON.stringify({ query: searchTerm, skipCache })
       }).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
           throw new Error(response.statusText);
@@ -158,6 +159,31 @@ export default {
           throw new Error(response.statusText);
         }
         return response.json();
+      }).then((response) => {
+        return resolve(response);
+      }).catch((err) => { // this catches an issue within the ^ .then
+        return reject(err);
+      });
+    });
+  },
+
+  /**
+   * Retrieves the report for this search
+   * @param {String} searchTerm - The query to search the integrations for
+   * @param {Boolean} skipCache - Whether to use the cached result or fetch it new
+   * @returns {Promise} - The promise that either resovles the or rejects in error
+   */
+  generateReport ({ searchTerm, skipCache }) {
+    return new Promise((resolve, reject) => {
+      fetch('api/integration/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: searchTerm })
+      }).then((response) => {
+        if (!response.ok) { // test for bad response code
+          throw new Error(response.statusText);
+        }
+        return response.body;
       }).then((response) => {
         return resolve(response);
       }).catch((err) => { // this catches an issue within the ^ .then
