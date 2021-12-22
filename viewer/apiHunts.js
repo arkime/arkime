@@ -120,7 +120,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     }
 
     if (Config.debug) {
-      console.log(errorMsg);
+      console.log('HUNT - pauseHuntJobWithError', errorMsg);
     }
 
     error.time = Math.floor(Date.now() / 1000);
@@ -141,6 +141,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     async function continueProcess () {
       try {
         await Db.setHunt(huntId, hunt);
+        if (Config.debug) {
+          console.log('HUNT - pauseHuntJobWithError - cleared running');
+        }
         internals.runningHuntJob = undefined;
         hModule.processHuntJobs();
       } catch (err) {
@@ -328,6 +331,9 @@ ${Config.arkimeWebURL()}hunt
       async function continueProcess () {
         try {
           await Db.setHunt(huntId, hunt);
+          if (Config.debug) {
+            console.log('HUNT - huntFailedSessions - cleared running');
+          }
           internals.runningHuntJob = undefined;
           hModule.processHuntJobs(); // start new hunt
         } catch (err) {
@@ -441,6 +447,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           if (result && result._scroll_id) {
             Db.clearScroll({ body: { scroll_id: result._scroll_id } });
           }
+          if (Config.debug) {
+            console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
+          }
           internals.runningHuntJob = undefined;
           return;
         }
@@ -466,6 +475,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           try {
             await Db.setHunt(huntId, hunt);
             internals.runningHuntJob = undefined;
+            if (Config.debug) {
+              console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
+            }
             hModule.processHuntJobs(); // start new hunt or go back over failedSessionIds
           } catch (err) {
             console.log(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
