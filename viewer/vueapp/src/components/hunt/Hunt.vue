@@ -883,7 +883,7 @@ export default {
       jobSearchType: 'ascii',
       jobSrc: true,
       jobDst: true,
-      jobType: 'raw',
+      jobType: 'reassembled',
       jobNotifier: undefined,
       jobUsers: '',
       jobDescription: '',
