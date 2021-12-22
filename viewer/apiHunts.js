@@ -1156,7 +1156,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
         console.log('HUNT - remoteHunt error', hunt.error || session.error);
-        return res.send({ matched: false });
+        if (!res.headersSent) { res.send({ matched: false }); }
+        return;
       }
 
       hunt = hunt._source;
@@ -1166,18 +1167,19 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       sessionHunt(sessionId, options, (err, matched) => {
         if (err) {
-          return res.send({ matched: false, error: err });
+          if (!res.headersSent) { res.send({ matched: false, error: err }); }
+          return;
         }
 
         if (matched) {
           updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
-        return res.send({ matched: matched });
+        if (!res.headersSent) { res.send({ matched: matched }); }
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/${req.params.nodeName}/hunt/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
-      res.send({ matched: false, error: err });
+      if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };
 
