@@ -610,9 +610,6 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           endCb(msg1, null);
           break;
         case undefined:
-          const msg2 = util.format(session._id, 'in file', pcap.filename, 'corrupt packet size at', pos, 'packet #', i, 'of', fields.packetPos.length);
-          console.log('ERROR - processSessionIdDisk -', msg2);
-          endCb(msg2, null);
           break;
         default:
           packetCb(pcap, packet, nextCb, i);
