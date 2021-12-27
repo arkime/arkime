@@ -263,37 +263,10 @@ my ($cmd) = @_;
 
     die "Must run in tests directory" if (! -f "../db/db.pl");
 
-    if ($cmd eq "--viewernostart") {
-        print "Skipping ES Init and PCAP load\n";
-        $main::userAgent->post("http://localhost:8123/regressionTests/flushCache");
-    } elsif ($cmd eq "--viewerstart" || $cmd eq "--viewerhang") {
-        print "Skipping ES Init and PCAP load\n";
-        $main::userAgent->post("http://localhost:8123/regressionTests/flushCache");
-        print ("Starting viewer\n");
-        if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
-            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/multies.all &");
-            waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
-            system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
-            system("cd ../cont3xt ; node --trace-warnings cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini --debug > /tmp/moloch.cont3xt 2>&1 &");
-        } else {
-            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
-            waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
-            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
-            system("cd ../cont3xt ; node cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini > /dev/null 2>&1 &");
-        }
-        waitFor($MolochTest::host, 8081, 1);
-        sleep (10000) if ($cmd eq "--viewerhang");
-    } else {
+    my $node = "node";
+    $node = "c8 node" if ($main::c8);
+
+    if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         print ("Initializing ES\n");
         if ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
@@ -312,16 +285,20 @@ my ($cmd) = @_;
         system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
         system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
         system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
+    }
 
-        # Start Wise
+    if ($cmd ne "--viewernostart") {
+        print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
+            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /tmp/moloch.wise &");
         } else {
-            system("cd ../wiseService ; node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
+            system("cd ../wiseService ; $node wiseService.js --regressionTests -c ../tests/config.test.json > /dev/null &");
         }
 
         waitFor($MolochTest::host, 8081, 1);
+    }
 
+    if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
 
@@ -345,27 +322,30 @@ my ($cmd) = @_;
         die "Loaded" if ($cmd eq "--viewerload");
 
         esCopy("tests_fields", "tests2_fields", "field");
+    }
 
+    if ($cmd ne "--viewernostart") {
         print ("Starting viewer\n");
         if ($main::debug) {
-            system("cd ../viewer ; node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug > /tmp/multies.all &");
+            system("cd ../viewer ; $node --trace-warnings multies.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/multies.all &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
-            system("cd ../viewer ; node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
-            system("cd ../parliament ; node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
-            system("cd ../cont3xt ; node --trace-warnings cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini --debug > /tmp/moloch.cont3xt 2>&1 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/moloch.test &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 --debug $INSECURE > /tmp/moloch.test2 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js -c ../tests/config.test.ini -n test3 --debug $INSECURE > /tmp/moloch.test3 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/moloch.all &");
+            system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests -c /dev/null --debug > /tmp/moloch.parliament 2>&1 &");
+            system("cd ../cont3xt ; $node --trace-warnings cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini --debug > /tmp/moloch.cont3xt 2>&1 &");
         } else {
-            system("cd ../viewer ; node multies.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node multies.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             waitFor($MolochTest::host, 8200, 1);
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
-            system("cd ../viewer ; node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
-            system("cd ../parliament ; node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
-            system("cd ../cont3xt ; node cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini > /dev/null 2>&1 &");
+            system("cd ../viewer ; $node viewer.js -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js -c ../tests/config.test.ini -n test2 $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js -c ../tests/config.test.ini -n test3 $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
+            system("cd ../parliament ; $node parliament.js --regressionTests -c /dev/null > /dev/null 2>&1 &");
+            system("cd ../cont3xt ; $node cont3xt.js --regressionTests -c ../tests/cont3xt.tests.ini > /dev/null 2>&1 &");
         }
+        sleep (10000) if ($cmd eq "--viewerhang");
     }
 
     waitFor($MolochTest::host, 8123);
@@ -393,13 +373,21 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
+    }
+
+# Coverage
+    if ($main::c8) {
+        system("cd ../viewer ; c8 report");
+        system("cd ../wiseService ; c8 report");
+        system("cd ../parliament ; c8 report");
+        system("cd ../cont3xt ; c8 report");
     }
 
     exit(1) if ( $parser->has_errors );
 }
 ################################################################################
 $main::debug = 0;
+$main::c8 = 0;
 $main::valgrind = 0;
 $main::copy = "";
 $main::cmd = "--capture";
@@ -407,6 +395,12 @@ $main::cmd = "--capture";
 while (scalar (@ARGV) > 0) {
     if ($ARGV[0] eq "--debug") {
         $main::debug = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--c8") {
+        my @files = glob("../*/coverage/tmp/*");
+        print "len:", scalar(@files), "@files\n";
+        system("rm -f  @files") if (scalar(@files) > 0);
+        $main::c8 = 1;
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
         $INSECURE = "--insecure";
