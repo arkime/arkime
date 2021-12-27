@@ -394,10 +394,11 @@ while (scalar (@ARGV) > 0) {
         $main::debug = 1;
         shift @ARGV;
     } elsif ($ARGV[0] eq "--c8") {
-        my @files = glob("../*/coverage/tmp/*");
-        print "len:", scalar(@files), "@files\n";
-        system("rm -f  @files") if (scalar(@files) > 0);
         $main::c8 = 1;
+        $main::debug = 1;
+        system("rm -rf ../viewer/coverage");
+        system("rm -rf ../wiseService/coverage");
+        system("rm -rf ../parliament/coverage");
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
         $INSECURE = "--insecure";
