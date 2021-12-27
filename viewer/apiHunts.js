@@ -120,7 +120,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     }
 
     if (Config.debug) {
-      console.log(errorMsg);
+      console.log('HUNT - pauseHuntJobWithError', errorMsg);
     }
 
     error.time = Math.floor(Date.now() / 1000);
@@ -141,6 +141,9 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
     async function continueProcess () {
       try {
         await Db.setHunt(huntId, hunt);
+        if (Config.debug) {
+          console.log('HUNT - pauseHuntJobWithError - cleared running');
+        }
         internals.runningHuntJob = undefined;
         hModule.processHuntJobs();
       } catch (err) {
@@ -328,6 +331,9 @@ ${Config.arkimeWebURL()}hunt
       async function continueProcess () {
         try {
           await Db.setHunt(huntId, hunt);
+          if (Config.debug) {
+            console.log('HUNT - huntFailedSessions - cleared running');
+          }
           internals.runningHuntJob = undefined;
           hModule.processHuntJobs(); // start new hunt
         } catch (err) {
@@ -441,6 +447,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           if (result && result._scroll_id) {
             Db.clearScroll({ body: { scroll_id: result._scroll_id } });
           }
+          if (Config.debug) {
+            console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
+          }
           internals.runningHuntJob = undefined;
           return;
         }
@@ -466,6 +475,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           try {
             await Db.setHunt(huntId, hunt);
             internals.runningHuntJob = undefined;
+            if (Config.debug) {
+              console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
+            }
             hModule.processHuntJobs(); // start new hunt or go back over failedSessionIds
           } catch (err) {
             console.log(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
@@ -1143,7 +1155,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       Db.getSessionPromise(sessionId)
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
-        res.send({ matched: false });
+        console.log('HUNT - remoteHunt error', hunt.error || session.error);
+        if (!res.headersSent) { res.send({ matched: false }); }
+        return;
       }
 
       hunt = hunt._source;
@@ -1153,18 +1167,19 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       sessionHunt(sessionId, options, (err, matched) => {
         if (err) {
-          return res.send({ matched: false, error: err });
+          if (!res.headersSent) { res.send({ matched: false, error: err }); }
+          return;
         }
 
         if (matched) {
           updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
-        return res.send({ matched: matched });
+        if (!res.headersSent) { res.send({ matched: matched }); }
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/${req.params.nodeName}/hunt/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
-      res.send({ matched: false, error: err });
+      if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };
 

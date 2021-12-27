@@ -654,6 +654,7 @@ function logAction (uiPage) {
       log.queryTime = new Date() - req._molochStartTime;
 
       if (req._molochESQuery) { log.esQuery = req._molochESQuery; }
+      if (req._molochESQueryIndices) { log.esQueryIndices = req._molochESQueryIndices; }
 
       try {
         Db.historyIt(log);

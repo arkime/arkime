@@ -1082,6 +1082,10 @@ exports.historyIt = async function (doc) {
     twoDigitString(d.getUTCFullYear() % 100) + 'w' +
     twoDigitString(Math.floor((d - jan) / 604800000));
 
+  if (internals?.healthCache?.molochDbVersion < 72) {
+    delete doc.esQuery;
+    delete doc.esQueryIndices;
+  }
   return internals.client7.index({
     index: iname, body: doc, refresh: true, timeout: '10m'
   });
@@ -1107,6 +1111,9 @@ exports.deleteHistory = async (id, index) => {
 
 // Hunt DB interactions
 exports.createHunt = async (doc) => {
+  if (internals?.healthCache?.molochDbVersion < 72) {
+    delete doc.description;
+  }
   return internals.client7.index({
     index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
   });

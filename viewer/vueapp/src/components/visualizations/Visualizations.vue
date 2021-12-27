@@ -1,238 +1,252 @@
 <template>
-  <div :class="{'sticky-viz':stickyViz && primary}">
+  <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary}">
+
+    <!-- viz options button -->
+    <div class="viz-options-btn-container">
+      <b-dropdown
+        right
+        size="sm"
+        v-if="primary"
+        variant="primary"
+        class="viz-options-btn">
+        <template #button-content>
+          <span class="fa fa-bar-chart-o fa-fw" />
+          <span class="fa fa-gear fa-fw" />
+        </template>
+        <b-dropdown-item
+          @click="toggleStickyViz">
+          {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ page && page === 'spigraph' ? ' top' : '' }} {{ page && page === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+        </b-dropdown-item>
+        <b-dropdown-item
+          v-if="showHideBtn"
+          @click="toggleHideViz"
+          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
+          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
+        </b-dropdown-item>
+      </b-dropdown>
+    </div>
+    <!-- viz options button -->
 
     <div class="pt-2 pl-2 pr-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
 
-      <!-- sticky viz button -->
-      <div class="sticky-viz-btn"
-        v-if="primary"
-        @click="toggleStickyViz"
-        v-b-tooltip.hover.left
-        title="Toggle sticky visualizations">
-        <span v-if="stickyViz"
-          class="fa fa-fw fa-thumb-tack">
-        </span>
-        <span v-else
-          class="fa fa-fw fa-thumb-tack fa-rotate-90">
-        </span>
-      </div> <!-- /sticky viz button -->
+      <div v-show="!hideViz">
+        <!-- map content -->
+        <div :class="{'expanded':mapExpanded}">
 
-      <!-- map content -->
-      <div :class="{'expanded':mapExpanded}">
+          <!-- map open button -->
+          <div class="map-btn"
+            v-show="!showMap && primary"
+            @click="toggleMap"
+            v-b-tooltip.hover.left
+            title="View map">
+            <span class="fa fa-fw fa-globe">
+            </span>
+          </div> <!-- /map open button -->
 
-        <!-- map open button -->
-        <div class="map-btn"
-          v-show="!showMap && primary"
-          @click="toggleMap"
-          v-b-tooltip.hover.left
-          title="View map">
-          <span class="fa fa-fw fa-globe">
-          </span>
-        </div> <!-- /map open button -->
+          <div class="inline-map">
+            <div v-if="mapData">
+              <div class="map-container">
 
-        <div class="inline-map">
-          <div v-if="mapData">
-            <div class="map-container">
+                <!-- map -->
+                <div class="map"
+                  :id="'molochMap' + id">
+                </div> <!-- /map -->
 
-              <!-- map -->
-              <div class="map"
-                :id="'molochMap' + id">
-              </div> <!-- /map -->
-
-              <!-- map buttons -->
-              <button type="button"
-                v-if="primary"
-                class="btn btn-xs btn-default btn-close-map btn-fw"
-                @click="toggleMap"
-                v-b-tooltip.hover.left
-                title="Close map">
-                <span class="fa fa-close">
-                </span>
-              </button>
-              <button type="button"
-                class="btn btn-xs btn-default btn-fw btn-z-index-2"
-                :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
-                @click="toggleMapSize"
-                v-b-tooltip.hover.left
-                title="Expand/Collapse Map">
-                <span class="fa"
-                  :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
-                </span>
-              </button>
-              <div v-if="primary"
-                class="btn-group-vertical src-dst-btns btn-fw">
+                <!-- map buttons -->
                 <button type="button"
-                  class="btn btn-xs btn-default"
-                  :class="{'active':src}"
-                  @click="toggleSrcDstXff('src')"
+                  v-if="primary"
+                  class="btn btn-xs btn-default btn-close-map btn-fw"
+                  @click="toggleMap"
                   v-b-tooltip.hover.left
-                  title="Toggle source countries">
-                  <strong>S</strong>
+                  title="Close map">
+                  <span class="fa fa-close">
+                  </span>
                 </button>
                 <button type="button"
-                  class="btn btn-xs btn-default"
-                  :class="{'active':dst}"
-                  @click="toggleSrcDstXff('dst')"
+                  class="btn btn-xs btn-default btn-fw btn-z-index-2"
+                  :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
+                  @click="toggleMapSize"
                   v-b-tooltip.hover.left
-                  title="Toggle destination countries">
-                  <strong>D</strong>
+                  title="Expand/Collapse Map">
+                  <span class="fa"
+                    :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
+                  </span>
                 </button>
+                <div v-if="primary"
+                  class="btn-group-vertical src-dst-btns btn-fw">
+                  <button type="button"
+                    class="btn btn-xs btn-default"
+                    :class="{'active':src}"
+                    @click="toggleSrcDstXff('src')"
+                    v-b-tooltip.hover.left
+                    title="Toggle source countries">
+                    <strong>S</strong>
+                  </button>
+                  <button type="button"
+                    class="btn btn-xs btn-default"
+                    :class="{'active':dst}"
+                    @click="toggleSrcDstXff('dst')"
+                    v-b-tooltip.hover.left
+                    title="Toggle destination countries">
+                    <strong>D</strong>
+                  </button>
+                </div>
+                <button v-if="primary"
+                  type="button"
+                  class="btn btn-xs btn-default btn-fw xff-btn"
+                  @click="toggleSrcDstXff('xffGeo')"
+                  :class="{'active':xffGeo}"
+                  title="Toggle XFF Countries">
+                  <small>XFF</small>
+                </button> <!-- /map buttons -->
+
+                <!-- map legend -->
+                <div class="map-legend"
+                  v-if="mapExpanded && legend.length">
+                  <strong>Top 10</strong>&nbsp;
+                  <span v-for="(item, key) in legend"
+                    :key="key"
+                    class="legend-item"
+                    :style="{'background-color':item.color}">
+                    {{ item.name }}
+                    ({{ item.value | commaString }})
+                  </span>
+                </div> <!-- map legend -->
+
               </div>
-              <button v-if="primary"
-                type="button"
-                class="btn btn-xs btn-default btn-fw xff-btn"
-                @click="toggleSrcDstXff('xffGeo')"
-                :class="{'active':xffGeo}"
-                title="Toggle XFF Countries">
-                <small>XFF</small>
-              </button> <!-- /map buttons -->
-
-              <!-- map legend -->
-              <div class="map-legend"
-                v-if="mapExpanded && legend.length">
-                <strong>Top 10</strong>&nbsp;
-                <span v-for="(item, key) in legend"
-                  :key="key"
-                  class="legend-item"
-                  :style="{'background-color':item.color}">
-                  {{ item.name }}
-                  ({{ item.value | commaString }})
-                </span>
-              </div> <!-- map legend -->
-
             </div>
           </div>
-        </div>
 
-      </div> <!-- /map content -->
+        </div> <!-- /map content -->
 
-      <!-- graph content -->
-      <div>
+        <!-- graph content -->
+        <div>
 
-        <!-- graph controls -->
-        <div class="session-graph-btn-container"
-          v-if="primary">
-          <!-- zoom in/out -->
-          <div class="btn-group btn-group-xs">
-            <label class="btn btn-default"
-              @click="zoomOut"
-              v-b-tooltip.hover.right
-              title="Zoom out">
-              <span class="fa fa-search-minus">
-              </span>
-            </label>
-            <label class="btn btn-default"
-              @click="zoomIn"
-              v-b-tooltip.hover.right
-              title="Zoom in">
-              <span class="fa fa-search-plus">
-              </span>
-            </label>
-          </div> <!-- /zoom in/out -->
-          <!-- pan left/right -->
-          <div class="btn-group btn-group-xs ml-1">
-            <label class="btn btn-default"
-              @click="panLeft"
-              v-b-tooltip.hover
-              title="Pan left">
-              <span class="fa fa-chevron-left">
-              </span>
-            </label>
-            <b-dropdown size="sm"
-              boundary="body"
-              variant="default"
-              class="pan-dropdown">
-              <template slot="button-content">
-                {{ plotPan * 100 + '%' }}
-              </template>
-              <b-dropdown-item @click="plotPanChange(0.05)">
-                5%
-              </b-dropdown-item>
-              <b-dropdown-item @click="plotPanChange(0.1)">
-                10%
-              </b-dropdown-item>
-              <b-dropdown-item @click="plotPanChange(0.2)">
-                20%
-              </b-dropdown-item>
-              <b-dropdown-item @click="plotPanChange(0.5)">
-                50%
-              </b-dropdown-item>
-              <b-dropdown-item @click="plotPanChange(1)">
-                100%
-              </b-dropdown-item>
-            </b-dropdown>
-            <label class="btn btn-default"
-              @click="panRight"
-              v-b-tooltip.hover
-              title="Pan right">
-              <span class="fa fa-chevron-right">
-              </span>
-            </label>
-          </div> <!-- /pan left/right -->
-          <!-- graph type -->
-          <div class="btn-group btn-group-xs btn-group-radios ml-1">
-            <b-form-radio-group
-              size="sm"
-              buttons
-              v-model="graphType"
-              @input="changeGraphType">
-              <b-radio
-                value="sessionsHisto"
-                key="sessionsHisto"
-                class="btn-radio">
-                {{ "Session" }}
-              </b-radio>
-              <b-radio
-                v-for="filter in timelineDataFilters"
-                :value="filter.dbField + 'Histo'"
-                :key="filter.dbField"
-                class="btn-radio">
-                {{ filter.friendlyName }}
-              </b-radio>
-            </b-form-radio-group>
-          </div> <!-- graph type -->
-          <!-- series type -->
-          <div class="btn-group btn-group-xs btn-group-radios ml-1">
-            <b-form-radio-group
-              size="sm"
-              buttons
-              v-model="seriesType"
-              @input="changeSeriesType">
-              <b-radio value="lines"
-                class="btn-radio">
-                Lines
-              </b-radio>
-              <b-radio value="bars"
-                class="btn-radio">
-                Bars
-              </b-radio>
-            </b-form-radio-group>
-          </div> <!-- series type -->
-          <!-- cap times -->
-          <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
-            <b-form-checkbox
-              button
-              size="sm"
-              :active="showCapStartTimes"
-              v-model="showCapStartTimes"
-              @change="toggleCapStartTimes"
-              v-b-tooltip="'Toggle the capture process start time(s)'">
-              Cap Restarts
-            </b-form-checkbox> <!-- /cap times -->
-          </div>
-        </div> <!-- /graph controls -->
+          <!-- graph controls -->
+          <div class="session-graph-btn-container"
+            v-if="primary">
+            <!-- zoom in/out -->
+            <div class="btn-group btn-group-xs">
+              <label class="btn btn-default"
+                @click="zoomOut"
+                v-b-tooltip.hover.right
+                title="Zoom out">
+                <span class="fa fa-search-minus">
+                </span>
+              </label>
+              <label class="btn btn-default"
+                @click="zoomIn"
+                v-b-tooltip.hover.right
+                title="Zoom in">
+                <span class="fa fa-search-plus">
+                </span>
+              </label>
+            </div> <!-- /zoom in/out -->
+            <!-- pan left/right -->
+            <div class="btn-group btn-group-xs ml-1">
+              <label class="btn btn-default"
+                @click="panLeft"
+                v-b-tooltip.hover
+                title="Pan left">
+                <span class="fa fa-chevron-left">
+                </span>
+              </label>
+              <b-dropdown size="sm"
+                boundary="body"
+                variant="default"
+                class="pan-dropdown">
+                <template slot="button-content">
+                  {{ plotPan * 100 + '%' }}
+                </template>
+                <b-dropdown-item @click="plotPanChange(0.05)">
+                  5%
+                </b-dropdown-item>
+                <b-dropdown-item @click="plotPanChange(0.1)">
+                  10%
+                </b-dropdown-item>
+                <b-dropdown-item @click="plotPanChange(0.2)">
+                  20%
+                </b-dropdown-item>
+                <b-dropdown-item @click="plotPanChange(0.5)">
+                  50%
+                </b-dropdown-item>
+                <b-dropdown-item @click="plotPanChange(1)">
+                  100%
+                </b-dropdown-item>
+              </b-dropdown>
+              <label class="btn btn-default"
+                @click="panRight"
+                v-b-tooltip.hover
+                title="Pan right">
+                <span class="fa fa-chevron-right">
+                </span>
+              </label>
+            </div> <!-- /pan left/right -->
+            <!-- graph type -->
+            <div class="btn-group btn-group-xs btn-group-radios ml-1">
+              <b-form-radio-group
+                size="sm"
+                buttons
+                v-model="graphType"
+                @input="changeGraphType">
+                <b-radio
+                  value="sessionsHisto"
+                  key="sessionsHisto"
+                  class="btn-radio">
+                  {{ "Session" }}
+                </b-radio>
+                <b-radio
+                  v-for="filter in timelineDataFilters"
+                  :value="filter.dbField + 'Histo'"
+                  :key="filter.dbField"
+                  class="btn-radio">
+                  {{ filter.friendlyName }}
+                </b-radio>
+              </b-form-radio-group>
+            </div> <!-- graph type -->
+            <!-- series type -->
+            <div class="btn-group btn-group-xs btn-group-radios ml-1">
+              <b-form-radio-group
+                size="sm"
+                buttons
+                v-model="seriesType"
+                @input="changeSeriesType">
+                <b-radio value="lines"
+                  class="btn-radio">
+                  Lines
+                </b-radio>
+                <b-radio value="bars"
+                  class="btn-radio">
+                  Bars
+                </b-radio>
+              </b-form-radio-group>
+            </div> <!-- series type -->
+            <!-- cap times -->
+            <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
+              <b-form-checkbox
+                button
+                size="sm"
+                :active="showCapStartTimes"
+                v-model="showCapStartTimes"
+                @change="toggleCapStartTimes"
+                v-b-tooltip="'Toggle the capture process start time(s)'">
+                Cap Restarts
+              </b-form-checkbox> <!-- /cap times -->
+            </div>
+          </div> <!-- /graph controls -->
 
-        <!-- graph -->
-        <div v-if="graphData"
-          class="plot-container pr-4">
-          <div class="plot-area"
-            :id="'plotArea' + id">
-          </div>
-        </div> <!-- /graph -->
+          <!-- graph -->
+          <div v-if="graphData"
+            class="plot-container pr-4">
+            <div class="plot-area"
+              :id="'plotArea' + id">
+            </div>
+          </div> <!-- /graph -->
 
-      </div> <!-- /graph content -->
+        </div> <!-- /graph content -->
+      </div>
 
     </div>
 
@@ -256,6 +270,8 @@ let landColorLight;
 
 let timeout;
 let basePath;
+let plotCheck;
+let initialized;
 
 // bar width vars
 let barWidth;
@@ -266,8 +282,14 @@ let barWidthInPixels;
 export default {
   name: 'MolochVisualizations',
   props: {
-    graphData: Object,
-    mapData: Object,
+    graphData: {
+      typte: Object,
+      default: () => { return {}; }
+    },
+    mapData: {
+      type: Object,
+      default: () => { return {}; }
+    },
     primary: Boolean,
     id: {
       type: String,
@@ -276,7 +298,9 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
-    }
+    },
+    showHideBtn: Boolean,
+    page: String
   },
   data: function () {
     return {
@@ -293,7 +317,8 @@ export default {
       graph: undefined,
       graphOptions: {},
       showMap: undefined,
-      stickyViz: false
+      stickyViz: false,
+      hideViz: false
     };
   },
   computed: {
@@ -398,10 +423,18 @@ export default {
       this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
     },
     graphData: function (newVal, oldVal) {
-      if (newVal && oldVal) {
-        this.setupGraphData(); // setup this.graph and this.graphOptions
-        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-        this.calculateHoverBarWidth();
+      if (newVal && oldVal && !this.hideViz) {
+        if (plotCheck) { clearInterval(plotCheck); }
+        plotCheck = setInterval(() => { // wait for plot func to be loaded
+          if ($.plot || initialized) {
+            clearInterval(plotCheck);
+            initialized = true;
+            plotCheck = undefined;
+            this.setupGraphData(); // setup this.graph and this.graphOptions
+            this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+            this.calculateHoverBarWidth();
+          }
+        });
       }
     },
     mapData: function (newVal, oldVal) {
@@ -473,6 +506,9 @@ export default {
       const stickyViz = localStorage && localStorage[`${basePath}-sticky-viz`] &&
         localStorage[`${basePath}-sticky-viz`] !== 'false';
 
+      const hideViz = localStorage && localStorage[`${basePath}-hide-viz`] &&
+        localStorage[`${basePath}-hide-viz`] !== 'false';
+
       this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
         localStorage[`${basePath}-cap-times`] !== 'false';
 
@@ -480,6 +516,7 @@ export default {
 
       this.showMap = showMap;
       this.stickyViz = stickyViz;
+      this.hideViz = hideViz;
 
       if (this.primary) {
         this.$store.commit('toggleMaps', showMap);
@@ -519,6 +556,13 @@ export default {
       this.stickyViz = !this.stickyViz;
       this.$store.commit('toggleStickyViz', this.stickyViz);
       localStorage[`${basePath}-sticky-viz`] = this.stickyViz;
+    },
+    toggleHideViz: function () {
+      this.hideViz = !this.hideViz;
+      localStorage[`${basePath}-hide-viz`] = this.hideViz;
+      if (!this.hideViz) {
+        this.$emit('fetchGraphData');
+      }
     },
     /* exposed MAP functions */
     toggleMap: function () {
@@ -864,6 +908,7 @@ export default {
     },
     /* helper MAP functions */
     onMapResize: function () {
+      if (this.hideViz) { return; }
       if (this.mapExpanded) {
         $(this.mapEl).css({
           position: 'fixed',
@@ -1288,27 +1333,36 @@ export default {
   left: 0;
   right: 0;
   z-index: 3;
+  height: 183px;
   position: fixed;
   overflow: hidden;
   box-shadow: 0 0 16px -2px black;
   background-color: var(--color-background, white);
 }
 
-.sticky-viz-btn {
+/* viz options button styles ----------------- */
+.viz-options-btn-container {
+  z-index: 5;
+  position: relative;
+}
+.viz-options-btn {
+  right: 8px;
   display: block;
-  position: absolute;
-  margin-top: 127px;
-  right: 0;
-  z-index: 4;
-  overflow: hidden;
-  padding: 2px 8px 3px 8px;
-  border-radius: 4px 0 0 4px;
-  cursor: pointer;
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
+  position: fixed;
+  margin-top: -35px;
 }
 
-.sticky-viz .sticky-viz-btn {
-  position: fixed;
+/* hide vizualization styles ----------------- */
+.hide-viz .viz-container {
+  height: auto;
+}
+.hide-viz.sticky-viz {
+  padding-bottom: 0px;
+}
+.hide-viz.sticky-viz .viz-container {
+  z-index: 5;
+  overflow: visible;
+  box-shadow: none !important;
+  background-color: transparent;
 }
 </style>

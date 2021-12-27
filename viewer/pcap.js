@@ -101,7 +101,12 @@ Pcap.prototype.open = function (filename, info) {
   }
 
   this.fd = fs.openSync(filename, 'r');
-  this.readHeader();
+  try {
+    this.readHeader();
+  } catch (err) {
+    delete this.fd;
+    throw err;
+  }
 };
 
 Pcap.prototype.openReadWrite = function (filename) {
@@ -163,7 +168,12 @@ Pcap.prototype.readHeader = function (cb) {
     }
   };
 
-  this.bigEndian = this.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
+  const magic = this.headBuffer.readUInt32LE(0);
+  if (magic !== 0xd4c3b2a1 && magic !== 0xa1b2c3d4) {
+    throw new Error('Corrupt PCAP header');
+  }
+
+  this.bigEndian = magic === 0xd4c3b2a1;
   if (this.bigEndian) {
     this.linkType = this.headBuffer.readUInt32BE(20);
   } else {

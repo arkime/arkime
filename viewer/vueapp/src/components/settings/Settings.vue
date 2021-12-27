@@ -131,7 +131,7 @@
             <template class="form-group row justify-content-md-center">
               <button type="button"
                 title="Reset settings to default"
-                @click="resetSettings()"
+                @click="resetSettings"
                 class="btn btn-theme-quaternary btn-sm pull-right ml-1">
                 <span class="fa fa-repeat">
                 </span>&nbsp;
@@ -487,6 +487,12 @@
                   {{ filter.friendlyName || 'unknown field' }}
                 </label>
               </h4>
+              <b-button
+                size="sm"
+                variant="danger"
+                @click="resetDefaultFilters">
+                Reset default timeline filters
+              </b-button>
             </div>
           </div>
         </form>
@@ -2825,6 +2831,22 @@ export default {
         this.msgType = 'danger';
       });
     },
+    // attach the full field object to the component's timelineDataFilters from array of dbField
+    setTimelineDataFilterFields: function () {
+      this.timelineDataFilters = [];
+      for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
+        const filter = this.settings.timelineDataFilters[i];
+        const fieldOBJ = FieldService.getField(filter, this.integerFields);
+        if (fieldOBJ) {
+          this.timelineDataFilters.push(fieldOBJ);
+        }
+      }
+    },
+    resetDefaultFilters: function () {
+      this.$set(this.settings, 'timelineDataFilters', UserService.getDefaultSettings().timelineDataFilters);
+      this.setTimelineDataFilterFields();
+      this.update();
+    },
     updateTimezone (newTimezone) {
       this.settings.timezone = newTimezone;
       this.updateTime();
@@ -3718,15 +3740,7 @@ export default {
       return new Promise((resolve, reject) => {
         this.integerFields = this.fields.filter(i => i.type === 'integer');
 
-        // attach the full field object to the component's timelineDataFilters from array of dbField
-        this.timelineDataFilters = [];
-        for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
-          const filter = this.settings.timelineDataFilters[i];
-          const fieldOBJ = FieldService.getField(filter, this.integerFields);
-          if (fieldOBJ) {
-            this.timelineDataFilters.push(fieldOBJ);
-          }
-        }
+        this.setTimelineDataFilterFields();
 
         // update the user settings for spigraph field & connections src/dst fields
         // NOTE: dbField is saved in settings, but show the field's friendlyName

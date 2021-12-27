@@ -137,6 +137,8 @@ export default {
    * @returns {object} The field or undefined
    */
   getField (search, fields, ignoreAliases) {
+    if (!search) { return undefined; }
+
     for (const k in fields) {
       if (search === fields[k].exp ||
           search === fields[k].dbField ||

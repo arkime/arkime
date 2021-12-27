@@ -33,12 +33,14 @@
 
     <!-- visualizations -->
     <moloch-visualizations
-      v-if="mapData && graphData && showToolBars"
       :graph-data="graphData"
       :map-data="mapData"
       :primary="true"
       :timelineDataFilters="timelineDataFilters"
-      @fetchMapData="cancelAndLoad(true)">
+      @fetchMapData="cancelAndLoad(true)"
+      @fetchGraphData="fetchGraphData"
+      :show-hide-btn="true"
+      page="sessions">
     </moloch-visualizations> <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
@@ -74,7 +76,7 @@
                 <button
                   type="button"
                   @click="openAll"
-                  v-if="!loading && sessions.data.length <= 50"
+                  v-if="!loading && sessions.data && sessions.data.length <= 50"
                   class="btn btn-xs btn-theme-tertiary open-all-btn"
                   v-b-tooltip.hover.right="'Open all visible sessions (up to 50)'">
                   <span class="fa fa-plus-circle">
@@ -567,7 +569,7 @@ import Sortable from 'sortablejs';
 
 const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
-let componentInitialized = false;
+let searchIssued = false;
 let holdingClick = false;
 let timeout;
 let filterFieldsTimeout;
@@ -838,6 +840,8 @@ export default {
      * @param {bool} updateTable  Whether the table needs updating
      */
     cancelAndLoad: function (runNewQuery, updateTable) {
+      searchIssued = true;
+
       const clientCancel = () => {
         if (pendingPromise) {
           pendingPromise.source.cancel();
@@ -864,6 +868,13 @@ export default {
         });
       } else if (runNewQuery) {
         this.loadData(updateTable);
+      }
+    },
+    fetchGraphData: function () {
+      this.graphData = undefined;
+      this.mapData = undefined;
+      if (this.shouldIssueQuery()) {
+        this.cancelAndLoad(true);
       }
     },
 
@@ -1438,6 +1449,11 @@ export default {
         this.loading = false;
       });
     },
+    shouldIssueQuery: function () {
+      const manualQuery = this.user.settings.manualQuery && JSON.parse(this.user.settings.manualQuery);
+      const hasExpression = this.query.expression && this.query.expression.length;
+      return searchIssued || !manualQuery || (manualQuery && hasExpression);
+    },
     setupUserSettings: function () {
       // if settings has custom sort field and the custom sort field
       // exists in the table headers, apply it
@@ -1457,18 +1473,12 @@ export default {
       this.setupFields();
 
       // IMPORTANT: kicks off the initial search query
-      const manualQuery = this.user.settings.manualQuery && JSON.parse(this.user.settings.manualQuery);
-      const hasExpression = this.query.expression && this.query.expression.length;
-      const issueQuery = componentInitialized || !manualQuery || (manualQuery && hasExpression);
-
-      if (issueQuery) {
+      if (this.shouldIssueQuery()) {
         this.cancelAndLoad(true);
       } else {
         this.loading = false;
         this.error = 'Now, issue a query!';
       }
-
-      componentInitialized = true;
     },
     /**
      * Makes a request to the Session Service to get the list of sessions
@@ -1849,7 +1859,7 @@ export default {
   },
   beforeDestroy: function () {
     holdingClick = false;
-    componentInitialized = false;
+    searchIssued = false;
     colDragDropInitialized = false;
 
     if (pendingPromise) {

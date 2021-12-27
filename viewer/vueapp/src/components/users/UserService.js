@@ -19,6 +19,11 @@ const defaultSettings = {
 
 export default {
 
+  /* returns the default user settings */
+  getDefaultSettings () {
+    return defaultSettings;
+  },
+
   /**
    * Gets current user from the server and caches it
    * @returns {Promise} Promise A promise object that signals the completion
