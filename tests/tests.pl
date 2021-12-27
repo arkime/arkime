@@ -373,6 +373,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
     }
 
 # Coverage
@@ -402,6 +403,7 @@ while (scalar (@ARGV) > 0) {
         system("rm -rf ../viewer/coverage");
         system("rm -rf ../wiseService/coverage");
         system("rm -rf ../parliament/coverage");
+        system("rm -rf ../cont3xt/coverage");
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
         $INSECURE = "--insecure";
