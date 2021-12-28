@@ -3,9 +3,10 @@
 const async = require('async');
 const RE2 = require('re2');
 const util = require('util');
+const Pcap = require('./pcap.js');
 
-module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils) => {
-  const hModule = {};
+module.exports = (Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils) => {
+  const huntAPIs = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -145,7 +146,7 @@ module.exports = (Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, Viewer
           console.log('HUNT - pauseHuntJobWithError - cleared running');
         }
         internals.runningHuntJob = undefined;
-        hModule.processHuntJobs();
+        huntAPIs.processHuntJobs();
       } catch (err) {
         return console.log('ERROR - pauseHuntJobWithError - could not update hunt with errors:', util.inspect(err, false, 50));
       }
@@ -270,7 +271,7 @@ ${Config.arkimeWebURL()}hunt
         await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, text: successText }));
         if (Config.get('cronQueries', false)) {
-          hModule.processHuntJobs();
+          huntAPIs.processHuntJobs();
         }
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
@@ -335,7 +336,7 @@ ${Config.arkimeWebURL()}hunt
             console.log('HUNT - huntFailedSessions - cleared running');
           }
           internals.runningHuntJob = undefined;
-          hModule.processHuntJobs(); // start new hunt
+          huntAPIs.processHuntJobs(); // start new hunt
         } catch (err) {
           console.log(`ERROR - huntFailedSessions - could not update hunt (${huntId})`, util.inspect(err, false, 50));
         }
@@ -478,7 +479,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             if (Config.debug) {
               console.log('HUNT - runHuntJob - cleared running', huntId, hunt.name);
             }
-            hModule.processHuntJobs(); // start new hunt or go back over failedSessionIds
+            huntAPIs.processHuntJobs(); // start new hunt or go back over failedSessionIds
           } catch (err) {
             console.log(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
           }
@@ -588,7 +589,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
-  hModule.processHuntJobs = async (cb) => {
+  huntAPIs.processHuntJobs = async (cb) => {
     if (internals.runningHuntJob) {
       if (Config.debug) {
         console.log('HUNT - processing hunt jobs already', internals.runningHuntJob?.name);
@@ -709,7 +710,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {Hunt} hunt - The newly created hunt object.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  hModule.createHunt = async (req, res) => {
+  huntAPIs.createHunt = async (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
     if (!req.body.name) { return res.serverError(403, 'Missing hunt name'); }
@@ -773,7 +774,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       try {
         const { body: result } = await Db.createHunt(doneHunt);
         doneHunt.id = result._id;
-        hModule.processHuntJobs(() => {
+        huntAPIs.processHuntJobs(() => {
           const response = {
             success: true,
             hunt: doneHunt
@@ -824,7 +825,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {number} recordsTotal - The total number of hunts Arkime has.
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */
-  hModule.getHunts = (req, res) => {
+  huntAPIs.getHunts = (req, res) => {
     const query = {
       sort: {},
       from: parseInt(req.query.start) || 0,
@@ -907,7 +908,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the delete hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.deleteHunt = async (req, res) => {
+  huntAPIs.deleteHunt = async (req, res) => {
     try {
       await Db.deleteHunt(req.params.id);
       return res.send(JSON.stringify({
@@ -928,7 +929,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the cancel hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.cancelHunt = async (req, res) => {
+  huntAPIs.cancelHunt = async (req, res) => {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -947,7 +948,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       await Db.setHunt(req.params.id, hunt);
       internals.runningHuntJob = undefined;
-      hModule.processHuntJobs();
+      huntAPIs.processHuntJobs();
       return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/${req.params.id}/cancel`, util.inspect(err, false, 50));
@@ -963,7 +964,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the pause hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.pauseHunt = (req, res) => {
+  huntAPIs.pauseHunt = (req, res) => {
     updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
   };
 
@@ -975,7 +976,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the play hunt operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.playHunt = (req, res) => {
+  huntAPIs.playHunt = (req, res) => {
     updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
   };
 
@@ -987,7 +988,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.removeFromSessions = async (req, res) => {
+  huntAPIs.removeFromSessions = async (req, res) => {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -1052,7 +1053,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} users - The list of users that were added to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
    */
-  hModule.addUsers = async (req, res) => {
+  huntAPIs.addUsers = async (req, res) => {
     if (!req.body.users) {
       return res.serverError(403, 'You must provide users in a comma separated string');
     }
@@ -1107,7 +1108,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {array} users - The list of users who have access to the hunt.
    * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
    */
-  hModule.removeUsers = async (req, res) => {
+  huntAPIs.removeUsers = async (req, res) => {
     try {
       const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
 
@@ -1145,7 +1146,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
    * @returns {string} error - If an error occurred, describes the error.
    */
-  hModule.remoteHunt = async (req, res) => {
+  huntAPIs.remoteHunt = async (req, res) => {
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
@@ -1183,5 +1184,5 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     });
   };
 
-  return hModule;
+  return huntAPIs;
 };

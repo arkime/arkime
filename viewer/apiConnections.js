@@ -6,7 +6,7 @@ const util = require('util');
 let fieldsMap;
 
 module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
-  const cModule = {};
+  const connectionAPIs = {};
 
   if (!fieldsMap) {
     setTimeout(() => { // make sure db.js loads before fetching fields
@@ -478,7 +478,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @returns {array} links - The list of links
    * @returns {array} nodes - The list of nodes
    */
-  cModule.getConnections = (req, res) => {
+  connectionAPIs.getConnections = (req, res) => {
     buildConnections(req, res, (err, nodes, links, total) => {
       if (err) { return res.serverError(403, err.toString()); }
       res.send({
@@ -499,7 +499,7 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @returns {csv} csv - The csv with the connections requested
    */
-  cModule.getConnectionsCSV = (req, res) => {
+  connectionAPIs.getConnectionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     const seperator = req.query.seperator ?? ',';
@@ -541,5 +541,5 @@ module.exports = (Config, Db, ViewerUtils, sessionAPIs) => {
     });
   };
 
-  return cModule;
+  return connectionAPIs;
 };

@@ -7,7 +7,7 @@ const Auth = require('../common/auth');
 const User = require('../common/user');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
-  const uModule = {};
+  const userAPIs = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -128,7 +128,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return user.spiviewFieldConfigs || [];
   }
 
-  uModule.getCurrentUser = (req) => {
+  userAPIs.getCurrentUser = (req) => {
     const userProps = [
       'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
@@ -166,7 +166,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return clone;
   };
 
-  uModule.getViews = async (req, cb) => {
+  userAPIs.getViews = async (req, cb) => {
     if (!req.settingUser) { return {}; }
 
     // Clone the views so we don't modify that cached user
@@ -189,7 +189,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
-  uModule.findUserState = (stateName, user) => {
+  userAPIs.findUserState = (stateName, user) => {
     if (!user.tableStates || !user.tableStates[stateName]) {
       return {};
     }
@@ -312,8 +312,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user
    * @returns {ArkimeUser} user - The currently logged in user.
    */
-  uModule.getUser = (req, res) => {
-    return res.send(uModule.getCurrentUser(req));
+  userAPIs.getUser = (req, res) => {
+    return res.send(userAPIs.getCurrentUser(req));
   };
 
   /**
@@ -324,7 +324,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the add user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.createUser = (req, res) => {
+  userAPIs.createUser = (req, res) => {
     if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
       return res.serverError(403, 'Missing/Empty required fields');
     }
@@ -390,7 +390,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUser = async (req, res) => {
+  userAPIs.deleteUser = async (req, res) => {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
       return res.serverError(403, 'Can not delete yourself');
@@ -417,7 +417,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update user operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUser = (req, res) => {
+  userAPIs.updateUser = (req, res) => {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
@@ -496,7 +496,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserPassword = (req, res) => {
+  userAPIs.updateUserPassword = (req, res) => {
     if (!req.body.newPassword || req.body.newPassword.length < 3) {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
@@ -530,7 +530,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/css
    * @returns {css} css - The css file that includes user configured styles.
    */
-  uModule.getUserCSS = (req, res) => {
+  userAPIs.getUserCSS = (req, res) => {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
         console.log(`ERROR - ${req.method} /api/user/css`, msg);
@@ -598,7 +598,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of users Arkime knows about.
    * @returns {number} recordsFiltered - The number of users returned in this result.
    */
-  uModule.getUsers = (req, res) => {
+  userAPIs.getUsers = (req, res) => {
     const query = {
       from: +req.body.start || 0,
       size: +req.body.length || 10000
@@ -636,7 +636,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/settings
    * @returns {ArkimeSettings} settings - The user's configured settings
    */
-  uModule.getUserSettings = (req, res) => {
+  userAPIs.getUserSettings = (req, res) => {
     const settings = (req.settingUser.settings)
       ? Object.assign(JSON.parse(JSON.stringify(internals.settingDefaults)), JSON.parse(JSON.stringify(req.settingUser.settings)))
       : JSON.parse(JSON.stringify(internals.settingDefaults));
@@ -652,7 +652,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserSettings = (req, res) => {
+  userAPIs.updateUserSettings = (req, res) => {
     req.settingUser.settings = req.body;
     delete req.settingUser.settings.token;
 
@@ -676,8 +676,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/views
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
-  uModule.getUserViews = (req, res) => {
-    uModule.getViews(req, (err, views) => {
+  userAPIs.getUserViews = (req, res) => {
+    userAPIs.getViews(req, (err, views) => {
       res.send(views);
     });
   };
@@ -692,7 +692,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} viewName - The name of the new view.
    * @returns {ArkimeView} view - The new view data.
    */
-  uModule.createUserView = (req, res) => {
+  userAPIs.createUserView = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing view name');
     }
@@ -751,7 +751,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserView = (req, res) => {
+  userAPIs.deleteUserView = (req, res) => {
     const viewName = req.body.name || req.params.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
@@ -814,7 +814,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the share view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.userViewToggleShare = (req, res) => {
+  userAPIs.userViewToggleShare = (req, res) => {
     const viewName = req.params.name || req.body.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
@@ -871,7 +871,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the update view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserView = (req, res) => {
+  userAPIs.updateUserView = (req, res) => {
     const key = req.body.key || req.params.key;
 
     if (!key) {
@@ -965,7 +965,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/crons
    * @returns {ArkimeQuery[]} queries - A list of query objects.
    */
-  uModule.getUserCron = (req, res) => {
+  userAPIs.getUserCron = (req, res) => {
     if (!req.settingUser) {
       return res.serverError(403, 'Unknown user');
     }
@@ -1005,7 +1005,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeQuery} query - The new query
    */
-  uModule.createUserCron = async (req, res) => {
+  userAPIs.createUserCron = async (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing query name');
     }
@@ -1086,7 +1086,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserCron = async (req, res) => {
+  userAPIs.deleteUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
@@ -1113,7 +1113,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeQuery} query - The updated query object
    */
-  uModule.updateUserCron = async (req, res) => {
+  userAPIs.updateUserCron = async (req, res) => {
     const key = req.body.key || req.params.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
@@ -1192,7 +1192,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/columns
    * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
    */
-  uModule.getUserColumns = (req, res) => {
+  userAPIs.getUserColumns = (req, res) => {
     return res.send(userColumns(req.settingUser));
   };
 
@@ -1205,7 +1205,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new custom Sessions column configuration.
    */
-  uModule.createUserColumns = (req, res) => {
+  userAPIs.createUserColumns = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing custom column configuration name');
     }
@@ -1260,7 +1260,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeColumnConfig} colConfig - The udpated custom Sessions column configuration.
    */
-  uModule.updateUserColumns = (req, res) => {
+  userAPIs.updateUserColumns = (req, res) => {
     const colName = req.body.name || req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
@@ -1311,7 +1311,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete Sessions column configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserColumns = (req, res) => {
+  userAPIs.deleteUserColumns = (req, res) => {
     const colName = req.body.name || req.params.name;
     if (!colName) {
       return res.serverError(403, 'Missing custom column configuration name');
@@ -1353,7 +1353,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/spiview
    * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
    */
-  uModule.getUserSpiviewFields = (req, res) => {
+  userAPIs.getUserSpiviewFields = (req, res) => {
     return res.send(userSpiview(req.settingUser));
   };
 
@@ -1366,7 +1366,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {string} name - The name of the new SPI View fields configuration.
    */
-  uModule.createUserSpiviewFields = (req, res) => {
+  userAPIs.createUserSpiviewFields = (req, res) => {
     if (!req.body.name) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
     }
@@ -1418,7 +1418,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {object} colConfig - The udpated SPI View fields configuration.
    */
-  uModule.updateUserSpiviewFields = (req, res) => {
+  userAPIs.updateUserSpiviewFields = (req, res) => {
     const spiName = req.body.name || req.params.name;
     if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
@@ -1466,7 +1466,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete SPI View fields configuration operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.deleteUserSpiviewFields = (req, res) => {
+  userAPIs.deleteUserSpiviewFields = (req, res) => {
     const spiName = req.params.name || req.body.name;
     if (!spiName) {
       return res.serverError(403, 'Missing custom SPI View fields configuration name');
@@ -1509,7 +1509,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.acknowledgeMsg = (req, res) => {
+  userAPIs.acknowledgeMsg = (req, res) => {
     if (!req.body.msgNum) {
       return res.serverError(403, 'Message number required');
     }
@@ -1546,8 +1546,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/state/:name
    * @returns {object} tableState - The table state requested.
    */
-  uModule.getUserState = (req, res) => {
-    return res.send(uModule.findUserState(req.params.name, req.user));
+  userAPIs.getUserState = (req, res) => {
+    return res.send(userAPIs.findUserState(req.params.name, req.user));
   };
 
   /**
@@ -1558,7 +1558,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  uModule.updateUserState = (req, res) => {
+  userAPIs.updateUserState = (req, res) => {
     User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/${req.params.name} (getUser)`, util.inspect(err, false, 50), user);
@@ -1592,52 +1592,52 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /user/config/:page
    * @returns {object} config The configuration data for the page
    */
-  uModule.getPageConfig = (req, res) => {
+  userAPIs.getPageConfig = (req, res) => {
     switch (req.params.page) {
     case 'sessions': {
       const colConfigs = userColumns(req.settingUser);
-      const tableState = uModule.findUserState('sessionsNew', req.user);
-      const colWidths = uModule.findUserState('sessionsColWidths', req.user);
+      const tableState = userAPIs.findUserState('sessionsNew', req.user);
+      const colWidths = userAPIs.findUserState('sessionsColWidths', req.user);
       return res.send({ colWidths, tableState, colConfigs });
     }
     case 'spiview': {
       const fieldConfigs = userSpiview(req.settingUser);
-      const spiviewFields = uModule.findUserState('spiview', req.user);
+      const spiviewFields = userAPIs.findUserState('spiview', req.user);
       return res.send({ fieldConfigs, spiviewFields });
     }
     case 'connections': {
-      const fieldHistoryConnectionsSrc = uModule.findUserState('fieldHistoryConnectionsSrc', req.user);
-      const fieldHistoryConnectionsDst = uModule.findUserState('fieldHistoryConnectionsDst', req.user);
+      const fieldHistoryConnectionsSrc = userAPIs.findUserState('fieldHistoryConnectionsSrc', req.user);
+      const fieldHistoryConnectionsDst = userAPIs.findUserState('fieldHistoryConnectionsDst', req.user);
       return res.send({ fieldHistoryConnectionsSrc, fieldHistoryConnectionsDst });
     }
     case 'files': {
-      const tableState = uModule.findUserState('fieldsCols', req.user);
-      const columnWidths = uModule.findUserState('filesColWidths', req.user);
+      const tableState = userAPIs.findUserState('fieldsCols', req.user);
+      const columnWidths = userAPIs.findUserState('filesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'captureStats': {
-      const tableState = uModule.findUserState('captureStatsCols', req.user);
-      const columnWidths = uModule.findUserState('captureStatsColWidths', req.user);
+      const tableState = userAPIs.findUserState('captureStatsCols', req.user);
+      const columnWidths = userAPIs.findUserState('captureStatsColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esIndices': {
-      const tableState = uModule.findUserState('esIndicesCols', req.user);
-      const columnWidths = uModule.findUserState('esIndicesColWidths', req.user);
+      const tableState = userAPIs.findUserState('esIndicesCols', req.user);
+      const columnWidths = userAPIs.findUserState('esIndicesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esNodes': {
-      const tableState = uModule.findUserState('esNodesCols', req.user);
-      const columnWidths = uModule.findUserState('esNodesColWidths', req.user);
+      const tableState = userAPIs.findUserState('esNodesCols', req.user);
+      const columnWidths = userAPIs.findUserState('esNodesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esRecovery': {
-      const tableState = uModule.findUserState('esRecoveryCols', req.user);
-      const columnWidths = uModule.findUserState('esRecoveryColWidths', req.user);
+      const tableState = userAPIs.findUserState('esRecoveryCols', req.user);
+      const columnWidths = userAPIs.findUserState('esRecoveryColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     case 'esTasks': {
-      const tableState = uModule.findUserState('esTasksCols', req.user);
-      const columnWidths = uModule.findUserState('esTasksColWidths', req.user);
+      const tableState = userAPIs.findUserState('esTasksCols', req.user);
+      const columnWidths = userAPIs.findUserState('esTasksColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
     default:
@@ -1645,5 +1645,5 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     }
   };
 
-  return uModule;
+  return userAPIs;
 };

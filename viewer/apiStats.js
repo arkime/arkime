@@ -5,7 +5,7 @@ const util = require('util');
 const async = require('async');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
-  const sModule = {};
+  const statsAPIs = {};
 
   // --------------------------------------------------------------------------
   // APIs
@@ -46,7 +46,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /eshealth
    * @returns {ESHealth} health - The elasticsearch cluster health status and info
    */
-  sModule.getESHealth = async (req, res) => {
+  statsAPIs.getESHealth = async (req, res) => {
     try {
       const health = await Db.healthCache();
       return res.send(health);
@@ -75,7 +75,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of nodes.
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
-  sModule.getStats = (req, res) => {
+  statsAPIs.getStats = (req, res) => {
     const query = {
       from: 0,
       size: 10000,
@@ -223,7 +223,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
    */
-  sModule.getDetailedStats = (req, res) => {
+  statsAPIs.getDetailedStats = (req, res) => {
     if (req.query.name === undefined) {
       return res.send('{}');
     }
@@ -349,7 +349,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES clusters.
    * @returns {number} recordsFiltered - The number of ES clusters returned in this result.
    */
-  sModule.getESStats = (req, res) => {
+  statsAPIs.getESStats = (req, res) => {
     let stats = [];
 
     Promise.all([
@@ -507,7 +507,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES indices.
    * @returns {number} recordsFiltered - The number of ES indices returned in this result.
    */
-  sModule.getESIndices = (req, res) => {
+  statsAPIs.getESIndices = (req, res) => {
     async.parallel({
       indices: Db.indicesCache,
       indicesSettings: Db.indicesSettingsCache
@@ -591,7 +591,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.deleteESIndex = async (req, res) => {
+  statsAPIs.deleteESIndex = async (req, res) => {
     try {
       await Db.deleteIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
@@ -609,7 +609,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/optimize
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
-  sModule.optimizeESIndex = (req, res) => {
+  statsAPIs.optimizeESIndex = (req, res) => {
     try {
       Db.optimizeIndex([req.params.index], {});
     } catch (err) {
@@ -628,7 +628,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close index operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.closeESIndex = async (req, res) => {
+  statsAPIs.closeESIndex = async (req, res) => {
     try {
       await Db.closeIndex([req.params.index], {});
       return res.send(JSON.stringify({ success: true }));
@@ -646,7 +646,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esindices/:index/open
    * @returns {boolean} success - Always true, the openIndex function might block. Check the logs for errors.
    */
-  sModule.openESIndex = (req, res) => {
+  statsAPIs.openESIndex = (req, res) => {
     try {
       Db.openIndex([req.params.index], {});
     } catch (err) {
@@ -667,7 +667,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the close shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.shrinkESIndex = async (req, res) => {
+  statsAPIs.shrinkESIndex = async (req, res) => {
     if (!req.body || !req.body.target) {
       return res.serverError(403, 'Missing target');
     }
@@ -738,7 +738,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of ES tasks.
    * @returns {number} recordsFiltered - The number of ES tasks returned in this result.
    */
-  sModule.getESTasks = async (req, res) => {
+  statsAPIs.getESTasks = async (req, res) => {
     try {
       const { body: { tasks } } = await Db.tasks();
 
@@ -822,7 +822,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelESTask = async (req, res) => {
+  statsAPIs.cancelESTask = async (req, res) => {
     let taskId;
     if (req.params.id) {
       taskId = req.params.id;
@@ -850,7 +850,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel task operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelUserESTask = async (req, res) => {
+  statsAPIs.cancelUserESTask = async (req, res) => {
     let cancelId;
     if (req.params.id) {
       cancelId = req.params.id;
@@ -877,7 +877,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the cancel all tasks operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.cancelAllESTasks = async (req, res) => {
+  statsAPIs.cancelAllESTasks = async (req, res) => {
     try {
       const { body: result } = await Db.taskCancel();
       return res.send(JSON.stringify({ success: true, text: result }));
@@ -895,7 +895,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
-  sModule.getESAdminSettings = (req, res) => {
+  statsAPIs.getESAdminSettings = (req, res) => {
     Promise.all([
       Db.getClusterSettings({ flatSettings: true, include_defaults: true }),
       Db.getILMPolicy(),
@@ -1024,7 +1024,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.setESAdminSettings = async (req, res) => {
+  statsAPIs.setESAdminSettings = async (req, res) => {
     if (req.body.key === undefined) { return res.serverError(500, 'Missing key'); }
     if (req.body.value === undefined) { return res.serverError(500, 'Missing value'); }
 
@@ -1147,7 +1147,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.rerouteES = async (req, res) => {
+  statsAPIs.rerouteES = async (req, res) => {
     try {
       await Db.reroute();
       return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
@@ -1164,7 +1164,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  sModule.flushES = (req, res) => {
+  statsAPIs.flushES = (req, res) => {
     Db.refresh('*');
     Db.flush('*');
     return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
@@ -1178,7 +1178,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
    */
-  sModule.unfloodES = (req, res) => {
+  statsAPIs.unfloodES = (req, res) => {
     Db.setIndexSettings('*', {
       body: { 'index.blocks.read_only_allow_delete': null }
     });
@@ -1193,7 +1193,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.clearCacheES = async (req, res) => {
+  statsAPIs.clearCacheES = async (req, res) => {
     try {
       const { body: data } = await Db.clearCache();
       return res.send(JSON.stringify({
@@ -1225,7 +1225,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {array} nodeExcludes - List of node names that disallow the allocation of shards.
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
-  sModule.getESShards = (req, res) => {
+  statsAPIs.getESShards = (req, res) => {
     Promise.all([
       Db.shards(),
       Db.getClusterSettings({ flatSettings: true })
@@ -1309,7 +1309,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether exclude node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.excludeESShard = async (req, res) => {
+  statsAPIs.excludeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1357,7 +1357,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether include node operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.includeESShard = async (req, res) => {
+  statsAPIs.includeESShard = async (req, res) => {
     if (Config.get('multiES', false)) {
       return res.serverError(401, 'Not supported in multies');
     }
@@ -1412,7 +1412,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of indices.
    * @returns {number} recordsFiltered - The number of indices returned in this result.
    */
-  sModule.getESRecovery = async (req, res) => {
+  statsAPIs.getESRecovery = async (req, res) => {
     const sortField = (req.query.sortField || 'index') + (req.query.desc === 'true' ? ':desc' : '');
 
     try {
@@ -1475,7 +1475,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of stats.
    * @returns {number} recordsFiltered - The number of stats returned in this result.
    */
-  sModule.getParliament = (req, res) => {
+  statsAPIs.getParliament = (req, res) => {
     const query = {
       size: 1000,
       query: {
@@ -1533,5 +1533,5 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     });
   };
 
-  return sModule;
+  return statsAPIs;
 };
