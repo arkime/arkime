@@ -175,6 +175,7 @@ Pcap.prototype.readHeader = function (cb) {
   this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
 
   if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
+    fs.close(this.fd, () => {});
     throw new Error('Corrupt PCAP header');
   }
 

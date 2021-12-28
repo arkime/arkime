@@ -307,7 +307,13 @@ ${Config.arkimeWebURL()}hunt
 
         const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
 
+        if (Config.debug > 1) {
+          console.log('HUNT - failed remote', huntRemotePath);
+        }
         ViewerUtils.makeRequest(session.node, huntRemotePath, user, (err, response) => {
+          if (Config.debug > 1) {
+            console.log('HUNT - failed remote repsonse', huntRemotePath, err, response);
+          }
           if (err) {
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
           }
@@ -429,7 +435,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }, () => { // Check Remotely
           const huntRemotePath = `${node}/hunt/${huntId}/remote/${sessionId}`;
 
+          if (Config.debug > 1) {
+            console.log('HUNT - failed remote', huntRemotePath);
+          }
           ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
+            if (Config.debug > 1) {
+              console.log('HUNT - failed remote repsonse', huntRemotePath, err, response);
+            }
             if (err) {
               return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
             }
@@ -1150,6 +1162,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
+    if (Config.debug > 1) {
+      console.log('HUNT - incoming', huntId, sessionId);
+    }
+
     // fetch hunt and session
     Promise.all([
       Db.get('hunts', 'hunt', huntId),
@@ -1167,6 +1183,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const options = buildHuntOptions(huntId, hunt);
 
       sessionHunt(sessionId, options, (err, matched) => {
+        if (Config.debug > 1) {
+          console.log('HUNT - result', huntId, sessionId, err, matched);
+        }
         if (err) {
           if (!res.headersSent) { res.send({ matched: false, error: err }); }
           return;
