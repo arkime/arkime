@@ -65,7 +65,10 @@ exports.get = function (key) {
 exports.make = function (key, header) {
   const pcap = new Pcap(key);
   pcap.headBuffer = header;
-  pcap.bigEndian = pcap.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
+
+  const magic = this.headBuffer.readUInt32LE(0);
+  pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+
   if (pcap.bigEndian) {
     pcap.linkType = pcap.headBuffer.readUInt32BE(20);
   } else {
@@ -169,11 +172,12 @@ Pcap.prototype.readHeader = function (cb) {
   };
 
   const magic = this.headBuffer.readUInt32LE(0);
-  if (magic !== 0xd4c3b2a1 && magic !== 0xa1b2c3d4) {
+  this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+
+  if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
     throw new Error('Corrupt PCAP header');
   }
 
-  this.bigEndian = magic === 0xd4c3b2a1;
   if (this.bigEndian) {
     this.linkType = this.headBuffer.readUInt32BE(20);
   } else {
