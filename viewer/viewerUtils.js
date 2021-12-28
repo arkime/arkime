@@ -5,11 +5,12 @@ const http = require('http');
 const https = require('https');
 const Auth = require('../common/auth');
 const User = require('../common/user');
+const molochparser = require('./molochparser.js');
 
-module.exports = (Config, Db, molochparser, internals) => {
-  const vModule = {};
+module.exports = (Config, Db, internals) => {
+  const ViewerUtils = {};
 
-  vModule.addCaTrust = (options, node) => {
+  ViewerUtils.addCaTrust = (options, node) => {
     if (!Config.isHTTPS(node)) {
       return;
     }
@@ -26,7 +27,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.noCache = (req, res, ct) => {
+  ViewerUtils.noCache = (req, res, ct) => {
     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
     if (ct) {
       res.setHeader('Content-Type', ct);
@@ -34,7 +35,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.queryValueToArray = (val) => {
+  ViewerUtils.queryValueToArray = (val) => {
     if (val === undefined || val === null) {
       return [];
     }
@@ -53,7 +54,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   //
   // This code was factored out from buildSessionQuery.
   // -------------------------------------------------------------------------
-  vModule.determineQueryTimes = (reqQuery) => {
+  ViewerUtils.determineQueryTimes = (reqQuery) => {
     let startTimeSec = null;
     let stopTimeSec = null;
     let interval = 60 * 60;
@@ -126,7 +127,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   /* This method fixes up parts of the query that jison builds to what ES actually
    * understands.  This includes using the collapse function and the filename mapping.
    */
-  vModule.lookupQueryItems = (query, doneCb) => {
+  ViewerUtils.lookupQueryItems = (query, doneCb) => {
     // console.log('BEFORE', JSON.stringify(query, false, 2));
     collapseQuery(query);
     // console.log('AFTER', JSON.stringify(query, false, 2));
@@ -249,7 +250,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
+  ViewerUtils.continueBuildQuery = (req, query, err, finalCb, queryOverride = null) => {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -265,7 +266,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       }
     }
 
-    vModule.lookupQueryItems(query.query.bool.filter, async (lerr) => {
+    ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
       req._molochESQuery = JSON.stringify(query);
 
       if (reqQuery.date === '-1' || // An all query
@@ -286,7 +287,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  vModule.mapMerge = (aggregations) => {
+  ViewerUtils.mapMerge = (aggregations) => {
     const map = { src: {}, dst: {}, xffGeo: {} };
 
     if (!aggregations || !aggregations.mapG1) {
@@ -308,7 +309,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return map;
   };
 
-  vModule.graphMerge = (req, query, aggregations) => {
+  ViewerUtils.graphMerge = (req, query, aggregations) => {
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
     // Convert old names to names locally
@@ -389,7 +390,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return graph;
   };
 
-  vModule.fixFields = (fields, fixCb) => {
+  ViewerUtils.fixFields = (fields, fixCb) => {
     if (!fields.fileId) {
       fields.fileId = [];
       return fixCb(null, fields);
@@ -410,7 +411,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  vModule.errorString = (err, result) => {
+  ViewerUtils.errorString = (err, result) => {
     let str;
     if (err && typeof err === 'string') {
       str = err;
@@ -430,7 +431,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.loadFields = async () => {
+  ViewerUtils.loadFields = async () => {
     try {
       let data = await Db.loadFields();
       data = data.hits.hits;
@@ -469,12 +470,12 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.oldDB2newDB = (x) => {
+  ViewerUtils.oldDB2newDB = (x) => {
     if (!internals.oldDBFields[x]) { return x; }
     return internals.oldDBFields[x].dbFieldECS || internals.oldDBFields[x].dbField2;
   };
 
-  vModule.mergeUnarray = (to, from) => {
+  ViewerUtils.mergeUnarray = (to, from) => {
     for (const key in from) {
       if (Array.isArray(from[key])) {
         to[key] = from[key][0];
@@ -484,7 +485,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.commaStringToArray = (commaString) => {
+  ViewerUtils.commaStringToArray = (commaString) => {
     // split string on commas and newlines
     let values = commaString.split(/[,\n]+/g);
 
@@ -497,7 +498,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
-  vModule.arrayToObject = (array, key) => {
+  ViewerUtils.arrayToObject = (array, key) => {
     return array.reduce((obj, item) => {
       obj[item[key]] = item;
       return obj;
@@ -505,7 +506,7 @@ module.exports = (Config, Db, molochparser, internals) => {
   };
 
   // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
-  vModule.splitRemain = (str, separator, limit) => {
+  ViewerUtils.splitRemain = (str, separator, limit) => {
     str = str.split(separator);
     if (str.length <= limit) { return str; }
 
@@ -515,7 +516,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return ret;
   };
 
-  vModule.arrayZeroFill = (n) => {
+  ViewerUtils.arrayZeroFill = (n) => {
     const a = [];
 
     while (n > 0) {
@@ -526,7 +527,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     return a;
   };
 
-  vModule.getViewUrl = (node, cb) => {
+  ViewerUtils.getViewUrl = (node, cb) => {
     if (Array.isArray(node)) {
       node = node[0];
     }
@@ -557,8 +558,8 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  vModule.makeRequest = (node, path, user, cb) => {
-    vModule.getViewUrl(node, (err, viewUrl, client) => {
+  ViewerUtils.makeRequest = (node, path, user, cb) => {
+    ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
       if (err) {
         return cb(err);
       }
@@ -570,7 +571,7 @@ module.exports = (Config, Db, molochparser, internals) => {
       };
 
       Auth.addS2SAuth(options, user, node, nodePath);
-      vModule.addCaTrust(options, node);
+      ViewerUtils.addCaTrust(options, node);
 
       function responseFunc (pres) {
         let response = '';
@@ -597,7 +598,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     });
   };
 
-  vModule.addCluster = (cluster, options) => {
+  ViewerUtils.addCluster = (cluster, options) => {
     if (!options) options = {};
     if (cluster && Config.get('multiES', false)) {
       options.cluster = cluster;
@@ -607,7 +608,7 @@ module.exports = (Config, Db, molochparser, internals) => {
 
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  vModule.getUserCacheIncAnon = (userId, cb) => {
+  ViewerUtils.getUserCacheIncAnon = (userId, cb) => {
     if (internals.noPasswordSecret) { // user is anonymous
       User.getUserCache('anonymous', (err, anonUser) => {
         const anon = internals.anonymousUser;
@@ -624,7 +625,7 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  vModule.validateUserIds = async (userIdList) => {
+  ViewerUtils.validateUserIds = async (userIdList) => {
     // don't even bother searching for users if in anonymous mode
     if (!!internals.noPasswordSecret && !Config.get('regressionTests', false)) {
       return { validUsers: [], invalidUsers: [] };
@@ -650,5 +651,5 @@ module.exports = (Config, Db, molochparser, internals) => {
     }
   };
 
-  return vModule;
+  return ViewerUtils;
 };

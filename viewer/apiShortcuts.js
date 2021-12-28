@@ -3,7 +3,7 @@
 const util = require('util');
 
 module.exports = (Db, internals, ViewerUtils) => {
-  const sModule = {};
+  const shortcutAPIs = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -73,7 +73,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {number} recordsTotal - The total number of shortcut results stored.
    * @returns {number} recordsFiltered - The number of shortcut items returned in this result.
    */
-  sModule.getShortcuts = (req, res) => {
+  shortcutAPIs.getShortcuts = (req, res) => {
     // return nothing if we can't find the user
     const user = req.settingUser;
     if (!user) { return res.send({}); }
@@ -186,7 +186,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {Shortcut} shortcut - The new shortcut object.
    * @returns {boolean} success - Whether the create shortcut operation was successful.
    */
-  sModule.createShortcut = (req, res) => {
+  shortcutAPIs.createShortcut = (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
       return res.serverError(403, 'Missing shortcut name');
@@ -277,7 +277,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the upate shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.updateShortcut = async (req, res) => {
+  shortcutAPIs.updateShortcut = async (req, res) => {
     // make sure all the necessary data is included in the post body
     if (!req.body.name) {
       return res.serverError(403, 'Missing shortcut name');
@@ -372,7 +372,7 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @returns {boolean} success - Whether the delete shortcut operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  sModule.deleteShortcut = async (req, res) => {
+  shortcutAPIs.deleteShortcut = async (req, res) => {
     try {
       const { data: shortcut } = await Db.getShortcut(req.params.id);
 
@@ -408,10 +408,10 @@ module.exports = (Db, internals, ViewerUtils) => {
    * @ignore
    * @returns {boolean} success - Always true.
    */
-  sModule.syncShortcuts = (req, res) => {
+  shortcutAPIs.syncShortcuts = (req, res) => {
     Db.updateLocalShortcuts();
     return res.send(JSON.stringify({ success: true }));
   };
 
-  return sModule;
+  return shortcutAPIs;
 };
