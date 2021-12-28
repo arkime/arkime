@@ -1613,9 +1613,10 @@ exports.fileIdToFile = async (node, num, cb) => {
   const key = node + '!' + num;
   const info = internals.fileId2File[key];
   if (info !== undefined) {
-    return setImmediate(() => {
-      cb(info);
-    });
+    if (cb) {
+      return setImmediate(() => { cb(info); });
+    }
+    return info;
   }
 
   let file = null;
@@ -1627,7 +1628,7 @@ exports.fileIdToFile = async (node, num, cb) => {
   } catch (err) { // Cache file is unknown
     internals.fileId2File[key] = null;
   }
-  return cb(file);
+  return cb ? cb(file) : file;
 };
 
 exports.fileNameToFiles = function (fileName, cb) {

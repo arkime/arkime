@@ -651,7 +651,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           const ipcap = Pcap.get(fields.node + ':' + file.num);
 
           try {
-            ipcap.open(file.name, file);
+            ipcap.open(file);
           } catch (err) {
             console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
             if (err.code === 'EACCES') {
@@ -1041,7 +1041,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
               const ipcap = Pcap.get(`write${fields.node}:${file.num}`);
 
               try {
-                ipcap.openReadWrite(file.name, file);
+                ipcap.openReadWrite(file);
               } catch (err) {
                 console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
                 return nextCb(`Couldn't open file for scrubbing pcap: ${err}`);

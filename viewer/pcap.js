@@ -81,13 +81,13 @@ Pcap.prototype.isOpen = function () {
   return this.fd !== undefined;
 };
 
-Pcap.prototype.open = function (filename, info) {
+Pcap.prototype.open = function (info) {
   if (this.fd) {
     return;
   }
-  this.filename = filename;
+  this.filename = info.name;
   if (info) {
-    this.encoding = info.encoding || 'normal';
+    this.encoding = info.encoding ?? 'normal';
     if (info.dek) {
       // eslint-disable-next-line node/no-deprecated-api
       const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
@@ -103,7 +103,7 @@ Pcap.prototype.open = function (filename, info) {
     this.encoding = 'normal';
   }
 
-  this.fd = fs.openSync(filename, 'r');
+  this.fd = fs.openSync(info.name, 'r');
   try {
     this.readHeader();
   } catch (err) {
@@ -112,12 +112,12 @@ Pcap.prototype.open = function (filename, info) {
   }
 };
 
-Pcap.prototype.openReadWrite = function (filename) {
+Pcap.prototype.openReadWrite = function (info) {
   if (this.fd) {
     return;
   }
-  this.filename = filename;
-  this.fd = fs.openSync(filename, 'r+');
+  this.filename = info.name;
+  this.fd = fs.openSync(info.name, 'r+');
 };
 
 Pcap.prototype.unref = function () {
