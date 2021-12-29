@@ -976,6 +976,11 @@ void moloch_http_init();
 unsigned char *moloch_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len);
 gboolean moloch_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw);
 
+#define MOLOCH_HTTP_PRIORITY_BEST      0
+#define MOLOCH_HTTP_PRIORITY_NORMAL    1
+#define MOLOCH_HTTP_PRIORITY_DROPABLE  2
+gboolean moloch_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, MolochHttpResponse_cb func, gpointer uw);
+
 
 gboolean moloch_http_set(void *server, char *key, int key_len, char *data, uint32_t data_len, MolochHttpResponse_cb func, gpointer uw);
 unsigned char *moloch_http_get(void *server, char *key, int key_len, size_t *mlen);

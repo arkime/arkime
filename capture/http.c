@@ -56,6 +56,7 @@ typedef struct molochhttprequest_t {
     uint32_t              dataOutLen;
     uint16_t              snamePos;
     int16_t               retries;
+    uint8_t               priority;
 } MolochHttpRequest_t;
 
 typedef struct {
@@ -86,7 +87,8 @@ typedef struct {
 LOCAL HASH_VAR(s_, connections, MolochHttpConnHead_t, 119);
 LOCAL MOLOCH_LOCK_DEFINE(connections);
 
-LOCAL MolochHttpRequestHead_t requests;
+#define PRIORITY_MAX MOLOCH_HTTP_PRIORITY_NORMAL
+LOCAL MolochHttpRequestHead_t requests[PRIORITY_MAX + 1];
 LOCAL int                     requestsTimer;
 LOCAL MOLOCH_LOCK_DEFINE(requests);
 
@@ -127,7 +129,7 @@ LOCAL z_stream z_strm;
 LOCAL MOLOCH_LOCK_DEFINE(z_strm);
 
 LOCAL gboolean moloch_http_send_timer_callback(gpointer);
-LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async);
+LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, int priority);
 
 /******************************************************************************/
 LOCAL int moloch_http_conn_cmp(const void *keyv, const MolochHttpConn_t *conn)
@@ -246,7 +248,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
 
     while (1) {
         MOLOCH_LOCK(requests);
-        moloch_http_add_request(server, &server->syncRequest, FALSE);
+        moloch_http_add_request(server, &server->syncRequest, -1);
         MOLOCH_UNLOCK(requests);
 
         server->syncRequest.used = 0;
@@ -313,7 +315,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
     return dataIn;
 }
 /******************************************************************************/
-LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, gboolean async)
+LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest_t *request, int priority)
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -336,7 +338,10 @@ LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
 
-    if (async) {
+    if (priority >= 0) {
+        if (priority > PRIORITY_MAX) {
+            priority = PRIORITY_MAX;
+        }
         curl_easy_setopt(request->easy, CURLOPT_OPENSOCKETDATA, &server->snames[request->snamePos]);
         curl_easy_setopt(request->easy, CURLOPT_CLOSESOCKETDATA, &server->snames[request->snamePos]);
 
@@ -345,7 +350,7 @@ LOCAL void moloch_http_add_request(MolochHttpServer_t *server, MolochHttpRequest
 #endif
         server->outstanding++;
 
-        DLL_PUSH_TAIL(rqt_, &requests, request);
+        DLL_PUSH_TAIL(rqt_, &requests[priority], request);
 
         if (!requestsTimer)
             requestsTimer = g_timeout_add(0, moloch_http_send_timer_callback, NULL);
@@ -405,7 +410,7 @@ LOCAL void moloch_http_curlm_check_multi_info(MolochHttpServer_t *server)
                 MOLOCH_LOCK(requests);
                 server->snames[request->snamePos].allowedAtSeconds = now.tv_sec + 30;
                 server->outstanding--;
-                moloch_http_add_request(server, request, TRUE);
+                moloch_http_add_request(server, request, request->priority);
                 MOLOCH_UNLOCK(requests);
             } else {
 
@@ -713,7 +718,12 @@ LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
     while (1) {
         MolochHttpRequest_t *request;
         MOLOCH_LOCK(requests);
-        DLL_POP_HEAD(rqt_, &requests, request);
+        for (int r = 0; r <= PRIORITY_MAX; r++) {
+            DLL_POP_HEAD(rqt_, &requests[r], request);
+            if (request)
+                break;
+        }
+
         if (!request) {
             requestsTimer = 0;
             MOLOCH_UNLOCK(requests);
@@ -732,6 +742,11 @@ LOCAL gboolean moloch_http_send_timer_callback(gpointer UNUSED(unused))
 /******************************************************************************/
 gboolean moloch_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, MolochHttpResponse_cb func, gpointer uw)
 {
+   return moloch_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? MOLOCH_HTTP_PRIORITY_DROPABLE : MOLOCH_HTTP_PRIORITY_NORMAL, func, uw);
+}
+/******************************************************************************/
+gboolean moloch_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, MolochHttpResponse_cb func, gpointer uw)
+{
     MolochHttpServer_t        *server = serverV;
 
     if (key_len == -1)
@@ -740,6 +755,8 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     if (key_len > 1000) {
         LOGEXIT("ERROR - URL too long %.*s", key_len, key);
     }
+
+    gboolean dropable = priority == MOLOCH_HTTP_PRIORITY_DROPABLE;
 
     // Are we overloaded
     if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
@@ -760,6 +777,8 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
             request->headerList = curl_slist_append(request->headerList, headers[i]);
         }
     }
+
+    request->priority = priority;
 
     if (dropable)
         request->retries = 0;
@@ -862,7 +881,7 @@ gboolean moloch_http_send(void *serverV, const char *method, const char *key, in
     request->key[key_len] = 0;
 
     MOLOCH_LOCK(requests);
-    moloch_http_add_request(server, request, TRUE);
+    moloch_http_add_request(server, request, priority);
     MOLOCH_UNLOCK(requests);
     return 0;
 }
@@ -1044,7 +1063,9 @@ void moloch_http_init()
     curl_global_init(CURL_GLOBAL_SSL);
 
     HASH_INIT(h_, connections, moloch_session_hash, (HASH_CMP_FUNC)moloch_http_conn_cmp);
-    DLL_INIT(rqt_, &requests);
+    for (int r = 0; r <= PRIORITY_MAX; r++) {
+        DLL_INIT(rqt_, &requests[r]);
+    }
 }
 /******************************************************************************/
 void moloch_http_exit()
