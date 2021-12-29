@@ -64,12 +64,12 @@ const compression = require('compression');
 
 // internal app deps
 const { internals } = require('./internals')(app, Config);
-const ViewerUtils = require('./viewerUtils')(Config, Db, molochparser, internals);
+const ViewerUtils = require('./viewerUtils')(Config, Db, internals);
 const notifierAPIs = require('./apiNotifiers')(Config, Db, internals);
-const sessionAPIs = require('./apiSessions')(Config, Db, internals, molochparser, Pcap, version, ViewerUtils);
+const sessionAPIs = require('./apiSessions')(Config, Db, internals, ViewerUtils);
 const connectionAPIs = require('./apiConnections')(Config, Db, ViewerUtils, sessionAPIs);
 const statsAPIs = require('./apiStats')(Config, Db, internals, ViewerUtils);
-const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, Pcap, sessionAPIs, ViewerUtils);
+const huntAPIs = require('./apiHunts')(Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils);
 const userAPIs = require('./apiUsers')(Config, Db, internals, ViewerUtils);
 const historyAPIs = require('./apiHistory')(Db);
 const shortcutAPIs = require('./apiShortcuts')(Db, internals, ViewerUtils);

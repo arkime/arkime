@@ -65,7 +65,10 @@ exports.get = function (key) {
 exports.make = function (key, header) {
   const pcap = new Pcap(key);
   pcap.headBuffer = header;
-  pcap.bigEndian = pcap.headBuffer.readUInt32LE(0) === 0xd4c3b2a1;
+
+  const magic = this.headBuffer.readUInt32LE(0);
+  pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+
   if (pcap.bigEndian) {
     pcap.linkType = pcap.headBuffer.readUInt32BE(20);
   } else {
@@ -78,13 +81,17 @@ Pcap.prototype.isOpen = function () {
   return this.fd !== undefined;
 };
 
-Pcap.prototype.open = function (filename, info) {
+Pcap.prototype.isCorrupt = function () {
+  return this.corrupt;
+};
+
+Pcap.prototype.open = function (info) {
   if (this.fd) {
     return;
   }
-  this.filename = filename;
+  this.filename = info.name;
   if (info) {
-    this.encoding = info.encoding || 'normal';
+    this.encoding = info.encoding ?? 'normal';
     if (info.dek) {
       // eslint-disable-next-line node/no-deprecated-api
       const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
@@ -100,7 +107,7 @@ Pcap.prototype.open = function (filename, info) {
     this.encoding = 'normal';
   }
 
-  this.fd = fs.openSync(filename, 'r');
+  this.fd = fs.openSync(info.name, 'r');
   try {
     this.readHeader();
   } catch (err) {
@@ -109,12 +116,12 @@ Pcap.prototype.open = function (filename, info) {
   }
 };
 
-Pcap.prototype.openReadWrite = function (filename) {
+Pcap.prototype.openReadWrite = function (info) {
   if (this.fd) {
     return;
   }
-  this.filename = filename;
-  this.fd = fs.openSync(filename, 'r+');
+  this.filename = info.name;
+  this.fd = fs.openSync(info.name, 'r+');
 };
 
 Pcap.prototype.unref = function () {
@@ -169,11 +176,14 @@ Pcap.prototype.readHeader = function (cb) {
   };
 
   const magic = this.headBuffer.readUInt32LE(0);
-  if (magic !== 0xd4c3b2a1 && magic !== 0xa1b2c3d4) {
+  this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+
+  if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
+    this.corrupt = true;
+    fs.close(this.fd, () => {});
     throw new Error('Corrupt PCAP header');
   }
 
-  this.bigEndian = magic === 0xd4c3b2a1;
   if (this.bigEndian) {
     this.linkType = this.headBuffer.readUInt32BE(20);
   } else {

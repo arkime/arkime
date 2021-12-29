@@ -12,9 +12,12 @@ const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
+const Pcap = require('./pcap.js');
+const version = require('./version');
+const molochparser = require('./molochparser.js');
 
-module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtils) => {
-  const sModule = {};
+module.exports = (Config, Db, internals, ViewerUtils) => {
+  const sessionAPIs = {};
 
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
@@ -24,7 +27,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       fields.push('rootId');
     }
 
-    sModule.buildSessionQuery(req, (err, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       if (err) {
         return res.send('Could not build query.  Err: ' + err);
       }
@@ -323,7 +326,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   }
 
   function reqGetRawBody (req, cb) {
-    sModule.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
+    sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
       if (err) {
         return cb(err);
       }
@@ -501,7 +504,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
 
     const packets = [];
-    sModule.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
+    sessionAPIs.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
       let obj = {};
       if (buffer.length > 16) {
         try {
@@ -631,7 +634,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
       const opcap = Pcap.get(fields.node + ':' + fileNum);
-      if (!opcap.isOpen()) {
+      if (opcap.isCorrupt()) {
+        return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
+      } else if (!opcap.isOpen()) {
         Db.fileIdToFile(fields.node, fileNum, (file) => {
           if (!file) {
             console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table", fields.node + '-' + fileNum);
@@ -648,7 +653,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
           const ipcap = Pcap.get(fields.node + ':' + file.num);
 
           try {
-            ipcap.open(file.name, file);
+            ipcap.open(file);
           } catch (err) {
             console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
             if (err.code === 'EACCES') {
@@ -718,7 +723,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
-      sModule.isLocalView(fields.node, () => {
+      sessionAPIs.isLocalView(fields.node, () => {
         // Get from our DISK
         pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, () => {
@@ -770,7 +775,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   }
 
   function localGetItemByHash (nodeName, sessionID, hash, cb) {
-    sModule.processSessionIdAndDecode(sessionID, 10000, (err, session, incoming) => {
+    sessionAPIs.processSessionIdAndDecode(sessionID, 10000, (err, session, incoming) => {
       if (err) {
         return cb(err);
       }
@@ -822,7 +827,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
-      sModule.isLocalView(fields.node, () => {
+      sessionAPIs.isLocalView(fields.node, () => {
         const options = {
           user: req.user,
           cluster: req.body.cluster,
@@ -858,7 +863,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-      sModule.sessionsListFromIds(req, ids, fields, (err, list) => {
+      sessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
         sessionsPcapList(req, res, list, pcapWriter, extension);
       });
     } else {
@@ -874,7 +879,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     let boffset = 0;
     const packets = {};
 
-    sModule.processSessionId(id, false, (pcap, buffer) => {
+    sessionAPIs.processSessionId(id, false, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
         res.write(buffer);
         writerOptions.writeHeader = false;
@@ -915,7 +920,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     let b = Buffer.alloc(0xfffe);
     let boffset = 0;
 
-    sModule.processSessionId(id, true, (pcap, buffer) => {
+    sessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
         res.write(pcap.getHeaderNg());
         writerOptions.writeHeader = false;
@@ -1038,7 +1043,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               const ipcap = Pcap.get(`write${fields.node}:${file.num}`);
 
               try {
-                ipcap.openReadWrite(file.name, file);
+                ipcap.openReadWrite(file);
               } catch (err) {
                 console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
                 return nextCb(`Couldn't open file for scrubbing pcap: ${err}`);
@@ -1077,7 +1082,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     async.eachLimit(list, 10, (item, nextCb) => {
       const fields = item.fields;
 
-      sModule.isLocalView(fields.node, () => {
+      sessionAPIs.isLocalView(fields.node, () => {
         // Get from our DISK
         pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
       }, () => {
@@ -1103,7 +1108,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
   // --------------------------------------------------------------------------
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
-  sModule.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
+  sessionAPIs.processSessionId = (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) => {
     let options;
     if (!fullSession) {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
@@ -1203,7 +1208,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {boolean} queryOverride=null - override the client query with overriding query
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
-  sModule.buildSessionQuery = async (req, buildCb, queryOverride = null) => {
+  sessionAPIs.buildSessionQuery = async (req, buildCb, queryOverride = null) => {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
@@ -1385,7 +1390,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }
   };
 
-  sModule.sessionsListFromIds = (req, ids, fields, cb) => {
+  sessionAPIs.sessionsListFromIds = (req, ids, fields, cb) => {
     let processSegments = false;
     if (req && ((req.query.segments && req.query.segments.match(/^(time|all)$/)) || (req.query.segments && req.query.segments.match(/^(time|all)$/)))) {
       if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
@@ -1416,7 +1421,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       });
     }, (err) => {
       if (processSegments) {
-        sModule.buildSessionQuery(req, (err, query, indices) => {
+        sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
           query.fields = fields;
           query._source = false;
           sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
@@ -1429,7 +1434,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     });
   };
 
-  sModule.isLocalView = (node, yesCb, noCb) => {
+  sessionAPIs.isLocalView = (node, yesCb, noCb) => {
     if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
@@ -1448,7 +1453,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     return Db.isLocalView(node, yesCb, noCb);
   };
 
-  sModule.proxyRequest = (req, res, errCb) => {
+  sessionAPIs.proxyRequest = (req, res, errCb) => {
     ViewerUtils.noCache(req, res);
 
     ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
@@ -1495,7 +1500,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     });
   };
 
-  sModule.addTagsList = (allTagNames, sessionList, doneCb) => {
+  sessionAPIs.addTagsList = (allTagNames, sessionList, doneCb) => {
     if (!sessionList.length) {
       console.log(`No sessions to add tags (${allTagNames}) to`);
       return doneCb(null);
@@ -1518,7 +1523,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     }, doneCb);
   };
 
-  sModule.removeTagsList = (res, allTagNames, sessionList) => {
+  sessionAPIs.removeTagsList = (res, allTagNames, sessionList) => {
     if (!sessionList.length) {
       return res.serverError(200, 'No sessions to remove tags from');
     }
@@ -1546,9 +1551,9 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     });
   };
 
-  sModule.processSessionIdAndDecode = (id, numPackets, doneCb) => {
+  sessionAPIs.processSessionIdAndDecode = (id, numPackets, doneCb) => {
     let packets = [];
-    sModule.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
+    sessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
       let obj = {};
       if (buffer.length > 16) {
         pcap.decode(buffer, obj);
@@ -1602,8 +1607,8 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
    */
-  sModule.getQuery = (req, res) => {
-    sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+  sessionAPIs.getQuery = (req, res) => {
+    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         return res.send({
           recordsTotal: 0,
@@ -1633,7 +1638,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sModule.getSessions = (req, res) => {
+  sessionAPIs.getSessions = (req, res) => {
     let map = {};
     let graph = {};
 
@@ -1652,7 +1657,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       recordsFiltered: 0
     };
 
-    sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -1766,7 +1771,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {csv} csv - The csv with the sessions requested
    */
-  sModule.getSessionsCSV = (req, res) => {
+  sessionAPIs.getSessionsCSV = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/csv');
 
     // default fields to display in csv
@@ -1785,7 +1790,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-      sModule.sessionsListFromIds(req, ids, fields, (err, list) => {
+      sessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
         csvListWriter(req, res, list, reqFields);
       });
     } else {
@@ -1809,7 +1814,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sModule.getSPIView = (req, res) => {
+  sessionAPIs.getSPIView = (req, res) => {
     if (req.query.spi === undefined) {
       return res.send({ spi: {}, recordsTotal: 0, recordsFiltered: 0 });
     }
@@ -1822,7 +1827,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     const response = { spi: {} };
 
-    sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -1981,10 +1986,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
    */
-  sModule.getSPIGraph = (req, res) => {
+  sessionAPIs.getSPIGraph = (req, res) => {
     req.query.facets = 1;
 
-    sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
       if (bsqErr) {
         return res.serverError(403, bsqErr.toString());
@@ -2174,7 +2179,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
    * @returns {array} tableResults - The list data to populate the table
    */
-  sModule.getSPIGraphHierarchy = (req, res) => {
+  sessionAPIs.getSPIGraphHierarchy = (req, res) => {
     if (req.query.exp === undefined) {
       return res.serverError(403, 'Missing exp parameter');
     }
@@ -2193,7 +2198,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       fields.push(field);
     }
 
-    sModule.buildSessionQuery(req, (err, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
@@ -2298,7 +2303,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} exp - Comma separated list of expression field names to return.
    * @returns {string} The list of unique fields (with counts if requested)
    */
-  sModule.getUnique = (req, res) => {
+  sessionAPIs.getUnique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
     if (req.query.field === undefined && req.query.exp === undefined) {
@@ -2356,7 +2361,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       };
     }
 
-    sModule.buildSessionQuery(req, (err, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       delete query.sort;
       delete query.aggregations;
 
@@ -2435,7 +2440,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
-  sModule.getMultiunique = (req, res) => {
+  sessionAPIs.getMultiunique = (req, res) => {
     ViewerUtils.noCache(req, res, 'text/plain; charset=utf-8');
 
     if (req.query.exp === undefined) {
@@ -2466,7 +2471,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
       }
     }
 
-    sModule.buildSessionQuery(req, (err, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       delete query.sort;
       delete query.aggregations;
       query.size = 0;
@@ -2524,7 +2529,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/detail
    * @returns {html} The html to display as session detail
    */
-  sModule.getDetail = (req, res) => {
+  sessionAPIs.getDetail = (req, res) => {
     const options = ViewerUtils.addCluster(req.query.cluster);
     options._source = 'cert';
     options.fields = ['*'];
@@ -2577,13 +2582,13 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/packets
    * @returns {html} The html to display as session packets
    */
-  sModule.getPackets = (req, res) => {
-    sModule.isLocalView(req.params.nodeName, () => {
+  sessionAPIs.getPackets = (req, res) => {
+    sessionAPIs.isLocalView(req.params.nodeName, () => {
       ViewerUtils.noCache(req, res);
       req.packetsOnly = true;
       localSessionDetail(req, res);
     }, () => {
-      return sModule.proxyRequest(req, res);
+      return sessionAPIs.proxyRequest(req, res);
     });
   };
 
@@ -2602,7 +2607,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {boolean} success - Whether the add tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sModule.addTags = (req, res) => {
+  sessionAPIs.addTags = (req, res) => {
     let tags = [];
     if (req.body.tags) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
@@ -2615,11 +2620,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sModule.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
+      sessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, async () => {
+        sessionAPIs.addTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -2632,7 +2637,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        sModule.addTagsList(tags, list, async () => {
+        sessionAPIs.addTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -2658,7 +2663,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {boolean} success - Whether the remove tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sModule.removeTags = (req, res) => {
+  sessionAPIs.removeTags = (req, res) => {
     let tags = [];
     if (req.body.tags) {
       tags = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
@@ -2671,12 +2676,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sModule.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
-        sModule.removeTagsList(res, tags, list);
+      sessionAPIs.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
+        sessionAPIs.removeTagsList(res, tags, list);
       });
     } else {
       sessionsListFromQuery(req, res, ['tags'], (err, list) => {
-        sModule.removeTagsList(res, tags, list);
+        sessionAPIs.removeTagsList(res, tags, list);
       });
     }
   };
@@ -2688,7 +2693,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    * @returns {file} file - The file in the session
    */
-  sModule.getRawBody = (req, res) => {
+  sessionAPIs.getRawBody = (req, res) => {
     reqGetRawBody(req, (err, data) => {
       if (err) {
         console.trace(err);
@@ -2709,7 +2714,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName
    * @returns {image/png} image - The bitmap image.
    */
-  sModule.getFilePNG = (req, res) => {
+  sessionAPIs.getFilePNG = (req, res) => {
     reqGetRawBody(req, (err, data) => {
       if (err || data === null || data.length === 0) {
         return res.send(internals.emptyPNG);
@@ -2738,7 +2743,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAP file with the sessions requested
    */
-  sModule.getPCAP = (req, res) => {
+  sessionAPIs.getPCAP = (req, res) => {
     return sessionsPcap(req, res, writePcap, 'pcap');
   };
 
@@ -2752,7 +2757,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAPNG file with the sessions requested
    */
-  sModule.getPCAPNG = (req, res) => {
+  sessionAPIs.getPCAPNG = (req, res) => {
     return sessionsPcap(req, res, writePcapNg, 'pcapng');
   };
 
@@ -2763,7 +2768,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
-  sModule.getPCAPFromNode = (req, res) => {
+  sessionAPIs.getPCAPFromNode = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     writePcap(res, req.params.id, { writeHeader: writeHeader }, () => {
@@ -2778,7 +2783,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/:nodeName/:id/pcapng
    * @returns {pcap} A PCAPNG file with the session requested
    */
-  sModule.getPCAPNGFromNode = (req, res) => {
+  sessionAPIs.getPCAPNGFromNode = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     writePcapNg(res, req.params.id, { writeHeader: writeHeader }, () => {
@@ -2793,7 +2798,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /session/entire/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
-  sModule.getEntirePCAP = (req, res) => {
+  sessionAPIs.getEntirePCAP = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
     const writerOptions = { writeHeader: true };
@@ -2826,10 +2831,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
-  sModule.getPacketPNG = (req, res) => {
+  sessionAPIs.getPacketPNG = (req, res) => {
     ViewerUtils.noCache(req, res, 'image/png');
 
-    sModule.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
+    sessionAPIs.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
       if (err) {
         return res.send(internals.emptyPNG);
       }
@@ -2876,10 +2881,10 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
-  sModule.getRawPackets = (req, res) => {
+  sessionAPIs.getRawPackets = (req, res) => {
     ViewerUtils.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    sModule.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
+    sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
         return res.send('Error');
       }
@@ -2900,12 +2905,12 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
-  sModule.getBodyHash = (req, res) => {
+  sessionAPIs.getBodyHash = (req, res) => {
     let hash = null;
     let nodeName = null;
     let sessionID = null;
 
-    sModule.buildSessionQuery(req, (bsqErr, query, indices) => {
+    sessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         res.status(400);
         return res.end(bsqErr);
@@ -2939,7 +2944,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 
-            sModule.isLocalView(nodeName, () => { // get file from the local disk
+            sessionAPIs.isLocalView(nodeName, () => { // get file from the local disk
               localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
@@ -2959,7 +2964,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
               preq.params.id = sessionID;
               preq.params.hash = hash;
               preq.url = `api/session/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
-              return sModule.proxyRequest(preq, res);
+              return sessionAPIs.proxyRequest(preq, res);
             });
           } else {
             res.status(400);
@@ -2977,7 +2982,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * Retrieve decodings.
    * @name /sessions/decodings
    */
-  sModule.getDecodings = (req, res) => {
+  sessionAPIs.getDecodings = (req, res) => {
     res.send(JSON.stringify(decode.settings()));
   };
 
@@ -2989,7 +2994,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {SessionsQuery} query - The request query to filter sessions
    * @returns {file} file - The file that matches the hash
    */
-  sModule.getBodyHashFromNode = (req, res) => {
+  sessionAPIs.getBodyHashFromNode = (req, res) => {
     localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
@@ -3015,7 +3020,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @returns {boolean} success - Whether the operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
-  sModule.deleteData = (req, res) => {
+  sessionAPIs.deleteData = (req, res) => {
     if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
       return res.serverError(403, 'You can\'t delete nothing');
     }
@@ -3031,7 +3036,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
 
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
-      sModule.sessionsListFromIds(req, ids, ['node'], (err, list) => {
+      sessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
         scrubList(req, res, whatToRemove, list);
       });
     } else if (req.query.expression) {
@@ -3050,7 +3055,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * Sends a session to a node.
    * @name /session/:nodeName/:id/send
    */
-  sModule.sendSessionToNode = (req, res) => {
+  sessionAPIs.sendSessionToNode = (req, res) => {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
@@ -3079,7 +3084,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
    * @param {saveId} saveId - The sessionId to use on the remote side.
    */
-  sModule.sendSessionsToNode = (req, res) => {
+  sessionAPIs.sendSessionsToNode = (req, res) => {
     ViewerUtils.noCache(req, res);
     res.statusCode = 200;
 
@@ -3120,11 +3125,11 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /sessions/send
    * @param {string} ids - Comma separated list of session ids.
    */
-  sModule.sendSessions = (req, res) => {
+  sessionAPIs.sendSessions = (req, res) => {
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      sModule.sessionsListFromIds(req, ids, ['node'], (err, list) => {
+      sessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
         sendSessionsList(req, res, list);
       });
     } else {
@@ -3142,7 +3147,7 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
    * @name /sessions/receive
    * @param {saveId} saveId - The sessionId to save the session.
    */
-  sModule.receiveSession = (req, res) => {
+  sessionAPIs.receiveSession = (req, res) => {
     if (!req.query.saveId) { return res.serverError(200, 'Missing saveId'); }
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
@@ -3283,5 +3288,5 @@ module.exports = (Config, Db, internals, molochparser, Pcap, version, ViewerUtil
     });
   };
 
-  return sModule;
+  return sessionAPIs;
 };

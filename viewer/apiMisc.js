@@ -7,7 +7,7 @@ const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => {
-  const mModule = {};
+  const miscAPIs = {};
 
   // --------------------------------------------------------------------------
   // HELPERS
@@ -65,7 +65,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @param {boolean} array=false Whether to return an array of fields, otherwise returns a map
    * @returns {array/map} The map or list of database fields
    */
-  mModule.getFields = (req, res) => {
+  miscAPIs.getFields = (req, res) => {
     if (!internals.fieldsMap) {
       res.status(404);
       res.send('Cannot locate fields');
@@ -90,7 +90,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {number} recordsTotal - The total number of files Arkime knows about
    * @returns {number} recordsFiltered - The number of files returned in this result
    */
-  mModule.getFiles = (req, res) => {
+  miscAPIs.getFiles = (req, res) => {
     const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
 
     const query = {
@@ -145,7 +145,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /:nodeName/:fileNum/filesize
    * @returns {number} filesize - The size of the file (-1 if the file cannot be found).
    */
-  mModule.getFileSize = (req, res) => {
+  miscAPIs.getFileSize = (req, res) => {
     Db.fileIdToFile(req.params.nodeName, req.params.fileNum, (file) => {
       if (!file) {
         return res.send({ filesize: -1 });
@@ -170,7 +170,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /title
    * @returns {string} title - The title of the app based on the configured setting.
    */
-  mModule.getPageTitle = (req, res) => {
+  miscAPIs.getPageTitle = (req, res) => {
     let titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_');
 
     titleConfig = titleConfig.replace(/_cluster_/g, internals.clusterName)
@@ -188,7 +188,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /valueactions
    * @returns {object} - The list of actions that can be preformed on data values.
    */
-  mModule.getValueActions = (req, res) => {
+  miscAPIs.getValueActions = (req, res) => {
     if (!req.user || !req.user.userId) {
       return res.send({});
     }
@@ -228,7 +228,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @param {string} ip - The IP to search domain names for.
    * @returns {string} domains - A comma separated string list of all the matching domain names.
    */
-  mModule.getReverseDNS = (req, res) => {
+  miscAPIs.getReverseDNS = (req, res) => {
     dns.reverse(req.query.ip, (err, data) => {
       if (err) {
         return res.send('reverse error');
@@ -245,7 +245,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /upload
    * @param {string} tags - A comma separated list of tags to add to each session created.
    */
-  mModule.upload = (req, res) => {
+  miscAPIs.upload = (req, res) => {
     const exec = require('child_process').exec;
 
     let tags = '';
@@ -291,7 +291,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {Array} active - The active Arkime clusters.
    * @returns {Array} inactive - The inactive Arkime clusters.
    */
-  mModule.getClusters = async (req, res) => {
+  miscAPIs.getClusters = async (req, res) => {
     const clusters = await getClusters();
     res.send(clusters);
   };
@@ -303,7 +303,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /remoteclusters
    * @returns {Object} remoteclusters - Key/value pairs of remote Arkime clusters, the key being the name of the cluster
    */
-  mModule.getRemoteClusters = (req, res) => {
+  miscAPIs.getRemoteClusters = (req, res) => {
     const clusters = remoteClusters();
 
     if (!Object.keys(clusters).length) {
@@ -330,7 +330,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {Array} fieldsmap - Available database field objects pertaining to sessions
    * @returns {Object} fieldshistory - The user's field history for the search expression input
    */
-  mModule.getAppInfo = async (req, res) => {
+  miscAPIs.getAppInfo = async (req, res) => {
     try {
       let esHealth, esHealthError;
       try { // deal with es health errors
@@ -377,7 +377,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @name /cyberchef/:nodeName/session/:id
    * @param {string} type=src - Whether to send the source (src) or destination (dst) packets.
    */
-  mModule.cyberChef = (req, res) => {
+  miscAPIs.cyberChef = (req, res) => {
     sessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
       if (err) {
         console.log(`ERROR - ${req.method} /${req.params.nodeName}/session/${req.params.id}/cyberchef`, util.inspect(err, false, 50));
@@ -399,7 +399,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * Loads the CyberChef UI.
    * @name /cyberchef
    */
-  mModule.getCyberChefUI = (req, res) => {
+  miscAPIs.getCyberChefUI = (req, res) => {
     let found = false;
     let path = req.path.substring(1);
 
@@ -436,5 +436,5 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     });
   };
 
-  return mModule;
+  return miscAPIs;
 };

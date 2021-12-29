@@ -344,7 +344,7 @@ LOCAL void moloch_db_send_bulk(char *json, int len)
 {
     if (config.debug > 4)
         LOG("Sending Bulk:>%.*s<", len, json);
-    moloch_http_send(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, FALSE, moloch_db_send_bulk_cb, NULL);
+    moloch_http_schedule(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, MOLOCH_HTTP_PRIORITY_NORMAL, moloch_db_send_bulk_cb, NULL);
 }
 LOCAL MolochDbSendBulkFunc sendBulkFunc = moloch_db_send_bulk;
 /******************************************************************************/
@@ -1671,12 +1671,16 @@ LOCAL void moloch_db_update_stats(int n, gboolean sync)
             moloch_http_free_buffer(json);
         } else {
             // Dropable if the current time isn't first 2 seconds of each minute
-            moloch_http_send(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, (cursec % 60) >= 2, NULL, NULL);
+            if ((cursec % 60) >= 2) {
+                moloch_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, NULL, NULL);
+            } else {
+                moloch_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
+            }
         }
     } else {
         char key[200];
         int key_len = snprintf(key, sizeof(key), "/%sdstats/_doc/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec/intervals[n])%1440, intervals[n]);
-        moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
+        moloch_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, NULL, NULL);
     }
 }
 /******************************************************************************/
@@ -1743,7 +1747,7 @@ LOCAL void moloch_db_health_check_cb(int UNUSED(code), unsigned char *data, int 
 // Runs on main thread
 LOCAL gboolean moloch_db_health_check (gpointer user_data )
 {
-    moloch_http_send(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, TRUE, moloch_db_health_check_cb, user_data);
+    moloch_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, moloch_db_health_check_cb, user_data);
     clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
     return TRUE;
 }
@@ -1787,7 +1791,7 @@ void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw
 
     key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
     int json_len = snprintf(json, MOLOCH_HTTP_BUFFER_SIZE, "{}");
-    moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, FALSE, moloch_db_get_sequence_number_cb, r);
+    moloch_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_BEST, moloch_db_get_sequence_number_cb, r);
 }
 /******************************************************************************/
 uint32_t moloch_db_get_sequence_number_sync(char *name)
@@ -2046,7 +2050,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 
     BSB_EXPORT_u08(jbsb, '}');
 
-    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, FALSE, NULL, NULL);
+    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, MOLOCH_HTTP_PRIORITY_BEST, NULL, NULL);
 
     MOLOCH_UNLOCK(nextFileNum);
 
@@ -2395,7 +2399,7 @@ void moloch_db_add_field(char *group, char *kind, char *expression, char *friend
     }
 
     BSB_EXPORT_u08(bsb, '}');
-    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
+    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
 }
 /******************************************************************************/
 void moloch_db_update_field(char *expression, char *name, char *value)
@@ -2420,7 +2424,7 @@ void moloch_db_update_field(char *expression, char *name, char *value)
         moloch_db_js0n_str(&bsb, (unsigned char*)value, TRUE);
     }
     BSB_EXPORT_sprintf(bsb, "}}");
-    moloch_http_send(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, FALSE, NULL, NULL);
+    moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
 }
 /******************************************************************************/
 void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
@@ -2438,7 +2442,7 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
 
     json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %" PRIu64 "}}", filesize);
 
-    moloch_http_send(esServer, "POST", key, key_len, json, json_len, NULL, TRUE, NULL, NULL);
+    moloch_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, NULL, NULL);
 }
 /******************************************************************************/
 gboolean moloch_db_file_exists(const char *filename, uint32_t *outputId)

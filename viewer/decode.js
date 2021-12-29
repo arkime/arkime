@@ -895,7 +895,7 @@ if (require.main === module) {
     const Pcap = require('./pcap.js');
     const fs = require('fs');
     const pcap = new Pcap(filename);
-    pcap.open(filename);
+    pcap.open({ name: filename });
     const stat = fs.statSync(filename);
     let pos = 24;
     const packets = [];

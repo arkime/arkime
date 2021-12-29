@@ -3,7 +3,7 @@
 const util = require('util');
 
 module.exports = (Db) => {
-  const hModule = {};
+  const historyAPIs = {};
 
   // --------------------------------------------------------------------------
   // APIs
@@ -48,7 +48,7 @@ module.exports = (Db) => {
    * @returns {number} recordsTotal - The total number of history results stored.
    * @returns {number} recordsFiltered - The number of history items returned in this result.
    */
-  hModule.getHistories = (req, res) => {
+  historyAPIs.getHistories = (req, res) => {
     let userId;
     if (req.user.createEnabled) { // user is an admin, they can view all history items
       // if the admin has requested a specific user
@@ -168,7 +168,7 @@ module.exports = (Db) => {
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  hModule.deleteHistory = async (req, res) => {
+  historyAPIs.deleteHistory = async (req, res) => {
     if (!req.query.index) {
       return res.serverError(403, 'Missing history index');
     }
@@ -185,5 +185,5 @@ module.exports = (Db) => {
     }
   };
 
-  return hModule;
+  return historyAPIs;
 };
