@@ -22,9 +22,12 @@ test('commaString', () => {
 test('roundCommaString', () => {
   expect(filters.roundCommaString('asdf')).toBe(0); // default
   expect(filters.roundCommaString(123456.654321)).toBe('123,457');
+  expect(filters.roundCommaString(123456, 2)).toBe('123,456.00');
   expect(filters.roundCommaString(123456.654321, 2)).toBe('123,456.65');
   expect(filters.roundCommaString(123456.654321, 3)).toBe('123,456.654');
   expect(filters.roundCommaString(123456789.98765, 4)).toBe('123,456,789.9877');
+  expect(filters.roundCommaString(123456789.9, 4)).toBe('123,456,789.9000');
+  expect(filters.roundCommaString(123456789.90, 4)).toBe('123,456,789.9000');
 });
 
 test('extractIPv6String', () => {

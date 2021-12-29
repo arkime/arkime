@@ -58,7 +58,7 @@ export const roundCommaString = function (input, decimals) {
 
   if (!decimals) { decimals = 0; }
 
-  return commaString(round(input, decimals));
+  return commaString(round(input, decimals).toFixed(decimals));
 };
 Vue.filter('roundCommaString', roundCommaString);
 
