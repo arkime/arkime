@@ -81,6 +81,10 @@ Pcap.prototype.isOpen = function () {
   return this.fd !== undefined;
 };
 
+Pcap.prototype.isCorrupt = function () {
+  return this.corrupt;
+};
+
 Pcap.prototype.open = function (info) {
   if (this.fd) {
     return;
@@ -175,6 +179,7 @@ Pcap.prototype.readHeader = function (cb) {
   this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
 
   if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
+    this.corrupt = true;
     fs.close(this.fd, () => {});
     throw new Error('Corrupt PCAP header');
   }

@@ -308,11 +308,11 @@ ${Config.arkimeWebURL()}hunt
         const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
 
         if (Config.debug > 1) {
-          console.log('HUNT - failed remote', huntRemotePath);
+          console.log('HUNT - remote', huntRemotePath);
         }
         ViewerUtils.makeRequest(session.node, huntRemotePath, user, (err, response) => {
           if (Config.debug > 1) {
-            console.log('HUNT - failed remote repsonse', huntRemotePath, err, response);
+            console.log('HUNT - remote response', huntRemotePath, err, response);
           }
           if (err) {
             return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
@@ -440,7 +440,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           }
           ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
             if (Config.debug > 1) {
-              console.log('HUNT - failed remote repsonse', huntRemotePath, err, response);
+              console.log('HUNT - failed remote response', huntRemotePath, err, response);
             }
             if (err) {
               return continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
