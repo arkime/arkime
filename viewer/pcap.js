@@ -22,7 +22,7 @@ const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 
-const Pcap = module.exports = exports = function Pcap (key) {
+const Pcap = module.exports = function Pcap (key) {
   this.key = key;
   this.count = 0;
   this.closing = false;
@@ -52,7 +52,7 @@ Pcap.prototype.ref = function () {
   this.count++;
 };
 
-exports.get = function (key) {
+Pcap.get = function (key) {
   if (internals.pcaps[key]) {
     return internals.pcaps[key];
   }
@@ -62,7 +62,18 @@ exports.get = function (key) {
   return pcap;
 };
 
-exports.make = function (key, header) {
+Pcap.getOrOpen = function (info) {
+  const key = `${info.node}:${info.num}`;
+  if (internals.pcaps[key]) {
+    return internals.pcaps[key];
+  }
+  const pcap = new Pcap(key);
+  pcap.open(info);
+  internals.pcaps[key] = pcap;
+  return pcap;
+};
+
+Pcap.make = function (key, header) {
   const pcap = new Pcap(key);
   pcap.headBuffer = header;
 
@@ -177,6 +188,7 @@ Pcap.prototype.readHeader = function (cb) {
 
   const magic = this.headBuffer.readUInt32LE(0);
   this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+  this.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
 
   if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
     this.corrupt = true;
@@ -271,6 +283,10 @@ Pcap.prototype.readPacket = function (pos, cb) {
   }
 };
 
+Pcap.prototype.readPacketPromise = async function (pos) {
+  return new Promise((resolve, reject) => { this.readPacket(pos, data => resolve(data)); });
+};
+
 Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
   let len = packet.pcap.incl_len + 16; // 16 = pcap header length
   if (entire) {
@@ -307,11 +323,11 @@ Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
 /// / Utilities
 /// ///////////////////////////////////////////////////////////////////////////////
 
-exports.protocol2Name = function (num) {
+Pcap.protocol2Name = function (num) {
   return internals.pr2name[num] || '' + num;
 };
 
-exports.inet_ntoa = function (num) {
+Pcap.inet_ntoa = function (num) {
   return (num >> 24 & 0xff) + '.' + (num >> 16 & 0xff) + '.' + (num >> 8 & 0xff) + '.' + (num & 0xff);
 };
 
@@ -479,8 +495,8 @@ Pcap.prototype.ip4 = function (buffer, obj, pos) {
     ttl: buffer[8],
     p: buffer[9],
     sum: buffer.readUInt16BE(10),
-    addr1: exports.inet_ntoa(buffer.readUInt32BE(12)),
-    addr2: exports.inet_ntoa(buffer.readUInt32BE(16))
+    addr1: Pcap.inet_ntoa(buffer.readUInt32BE(12)),
+    addr2: Pcap.inet_ntoa(buffer.readUInt32BE(16))
   };
 
   switch (obj.ip.p) {
@@ -710,6 +726,10 @@ Pcap.prototype.pcap = function (buffer, obj) {
     };
   }
 
+  if (this.nanosecond) {
+    obj.pcap.ts_usec = Math.floor(obj.pcap.ts_usec / 1000);
+  }
+
   switch (this.linkType) {
   case 0: // NULL
     if (buffer[16] === 30) {
@@ -780,7 +800,7 @@ Pcap.prototype.getHeaderNg = function () {
 /// / Reassembly array of packets
 /// ///////////////////////////////////////////////////////////////////////////////
 
-exports.reassemble_icmp = function (packets, numPackets, cb) {
+Pcap.reassemble_icmp = function (packets, numPackets, cb) {
   const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
@@ -802,7 +822,7 @@ exports.reassemble_icmp = function (packets, numPackets, cb) {
   cb(null, results);
 };
 
-exports.reassemble_udp = function (packets, numPackets, cb) {
+Pcap.reassemble_udp = function (packets, numPackets, cb) {
   const results = [];
   try {
     packets.length = Math.min(packets.length, numPackets);
@@ -828,7 +848,7 @@ exports.reassemble_udp = function (packets, numPackets, cb) {
   }
 };
 
-exports.reassemble_sctp = function (packets, numPackets, cb) {
+Pcap.reassemble_sctp = function (packets, numPackets, cb) {
   const results = [];
   try {
     packets.length = Math.min(packets.length, numPackets);
@@ -854,7 +874,7 @@ exports.reassemble_sctp = function (packets, numPackets, cb) {
   }
 };
 
-exports.reassemble_esp = function (packets, numPackets, cb) {
+Pcap.reassemble_esp = function (packets, numPackets, cb) {
   const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
@@ -876,7 +896,7 @@ exports.reassemble_esp = function (packets, numPackets, cb) {
   cb(null, results);
 };
 
-exports.reassemble_generic_ip = function (packets, numPackets, cb) {
+Pcap.reassemble_generic_ip = function (packets, numPackets, cb) {
   const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
@@ -898,7 +918,7 @@ exports.reassemble_generic_ip = function (packets, numPackets, cb) {
   cb(null, results);
 };
 
-exports.reassemble_generic_ether = function (packets, numPackets, cb) {
+Pcap.reassemble_generic_ether = function (packets, numPackets, cb) {
   const results = [];
   packets.length = Math.min(packets.length, numPackets);
   packets.forEach((item) => {
@@ -923,7 +943,7 @@ exports.reassemble_generic_ether = function (packets, numPackets, cb) {
 // Needs to be rewritten since its possible for packets to be
 // dropped by windowing and other things to actually be displayed allowed.
 // If multiple tcp sessions in one moloch session display can be wacky/wrong.
-exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
+Pcap.reassemble_tcp = function (packets, numPackets, skey, cb) {
   try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
     const packets2 = [];
@@ -1062,7 +1082,7 @@ exports.reassemble_tcp = function (packets, numPackets, skey, cb) {
   }
 };
 
-exports.packetFlow = function (session, packets, numPackets, cb) {
+Pcap.packetFlow = function (session, packets, numPackets, cb) {
   let sKey, dKey;
   const error = false;
 
@@ -1127,7 +1147,7 @@ exports.packetFlow = function (session, packets, numPackets, cb) {
   return cb(null, results, sKey, dKey);
 };
 
-exports.key = function (packet) {
+Pcap.key = function (packet) {
   if (!packet.ip) { return packet.ether.addr1; }
   const sep = packet.ip.addr1.includes(':') ? '.' : ':';
   switch (packet.ip.p) {
@@ -1142,7 +1162,7 @@ exports.key = function (packet) {
   }
 };
 
-exports.keyFromSession = function (session) {
+Pcap.keyFromSession = function (session) {
   switch (session.ipProtocol) {
   case 6: // tcp
   case 'tcp':
