@@ -184,11 +184,11 @@ Pcap.prototype.readHeader = function (cb) {
   this.headBuffer = Buffer.alloc(64);
   fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
 
-  if (this.encoding.startsWith('aes-256-ctr')) {
+  if (this.encoding === 'aes-256-ctr') {
     const decipher = this.createDecipher(0);
     this.headBuffer = Buffer.concat([decipher.update(this.headBuffer),
       decipher.final()]);
-  } else if (this.encoding.startsWith('xor-2048')) {
+  } else if (this.encoding === 'xor-2048') {
     for (let i = 0; i < this.headBuffer.length; i++) {
       this.headBuffer[i] ^= this.encKey[i % 256];
     }

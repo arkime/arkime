@@ -2448,7 +2448,8 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t pack
     key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u/_update", config.prefix, config.nodeName, fileid);
 
     json_len = snprintf(json, 2000, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u}}", filesize, packetsSize, packets);
-    LOG("ALW %s", json);
+    if (config.debug)
+        LOG("Updated %s-%u with %s", config.nodeName, fileid, json);
 
     moloch_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, NULL, NULL);
 }

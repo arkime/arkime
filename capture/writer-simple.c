@@ -92,17 +92,17 @@ struct {
 } indexFiles[MOLOCH_MAX_PACKET_THREADS][INDEX_FILES_CACHE_SIZE];
 
 /*
- * Compreession design inspired by Philip Gladstone and others.
+ * Compression design inspired by Philip Gladstone and others.
  * A compressed file is made up of compressed blocks.
  * You can only start reading a compressed file at the beginning of a block.
- * Blocks are variable sized
+ * Blocks are variable sized, with the max UNCOMPRESED data per block
+ * controlled by simpleGzipBlockSize.
+ * uncompressedBits is calculated so it can hold simpleGzipBlockSize.
  * The file pos for each packet is made of two parts
- *   X the location in the file of the start of the compress block
+ *   X the location in the file of the start of the compress block, which
+ *   is shifted uncompressedBits
  *   Y the location inside the uncompressed block of the packet start
- * When a file is created the value of simpleUncompressedBits is used for max
- * size of Y, which is the UNCOMPRESSED block size.
- * A larger simpleGzipBlockSize leads to better compression but slower
- * read time.
+ * A larger simpleGzipBlockSize leads to better compression but slower read time.
  */
 LOCAL int      uncompressedBits;    // Number of bits used in filepos to store location in block
 LOCAL uint32_t simpleGzipBlockSize; // Max data that we try and compress, can be represented by uncompressedBits
