@@ -765,6 +765,8 @@ void writer_simple_init(char *name)
         uncompressedBits = ceil(log2(simpleGzipBlockSize));
         if ((uint32_t)pow(2, uncompressedBits) == simpleGzipBlockSize)
             simpleGzipBlockSize--;
+        if (simpleGzipBlockSize > config.pcapWriteSize)
+            LOGEXIT("pcapWriteSize must be larger than simpleGzipBlockSize");
         if (config.debug)
             LOG("Will gzip - blocksize: %u bits: %u", simpleGzipBlockSize, uncompressedBits);
     }
