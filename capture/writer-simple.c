@@ -773,12 +773,7 @@ void writer_simple_init(char *name)
             LOG("Will gzip - blocksize: %u bits: %u", simpleGzipBlockSize, uncompressedBits);
     }
 
-    if (mode && !mode[0]) {
-        g_free(mode);
-        mode = NULL;
-    }
-
-    if (mode == NULL) {
+    if (mode == NULL || !mode[0]) {
     } else if (strcmp(mode, "aes-256-ctr") == 0) {
         simpleMode = MOLOCH_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
@@ -792,6 +787,10 @@ void writer_simple_init(char *name)
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
         CONFIGEXIT("Unknown simpleEncoding '%s'", mode);
+    }
+
+    if (mode) {
+        g_free(mode);
     }
 
     pageSize = getpagesize();
