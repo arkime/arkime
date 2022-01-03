@@ -7,13 +7,6 @@
       aria-orientation="vertical"
       class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
       <div class="nav flex-column nav-pills">
-        <a @click="openView('general')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'general'}">
-          <span class="fa fa-fw fa-cog">
-          </span>&nbsp;
-          General
-        </a>
         <a @click="openView('integrations')"
           class="nav-link cursor-pointer"
           :class="{'active':visibleTab === 'integrations'}">
@@ -53,15 +46,6 @@
     </div> <!-- /navigation -->
 
     <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
-      <!-- general settings -->
-      <div v-if="visibleTab === 'general'">
-        <div class="text-center">
-          <b-card>
-            <h1>Coming soon!</h1>
-          </b-card>
-        </div>
-      </div> <!-- /general settings -->
-
       <!-- integrations settings -->
       <div v-if="visibleTab === 'integrations'">
         <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
@@ -244,7 +228,7 @@ export default {
   data () {
     return {
       settins: {},
-      visibleTab: 'linkgroups',
+      visibleTab: 'integrations',
       integrationSettings: {},
       integrationSettingsErr: '',
       saveIntegrationSettingsSuccess: '',
@@ -256,7 +240,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'integrations' || tab === 'linkgroups') {
+      if (tab === 'integrations' || tab === 'linkgroups') {
         this.visibleTab = tab;
       }
     }

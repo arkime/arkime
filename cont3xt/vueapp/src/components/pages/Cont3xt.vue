@@ -30,17 +30,13 @@
         </b-input-group-append>
       </b-input-group>
       <div
-        v-b-tooltip.hover="'Coming soon!'">
+        v-b-tooltip.hover="'Download a report of this result.'">
         <b-button
-          class="mr-2 disabled"
+          class="mr-2"
           @click="generateReport"
-          variant="outline-secondary">
-          <span v-if="!loadingReport"
-            class="fa fa-file-text fa-fw"
-          />
-          <span v-else
-            class="fa fa-spinner fa-spin fa-fw"
-          />
+          variant="outline-secondary"
+          :class="{'disabled':!searchComplete}">
+          <span class="fa fa-file-text fa-fw" />
         </b-button>
       </div>
       <b-button
@@ -325,8 +321,8 @@ export default {
       searchItype: '',
       initialized: false,
       searchTerm: this.$route.query.q || '',
-      loadingReport: false,
-      skipCache: false
+      skipCache: false,
+      searchComplete: false
     };
   },
   computed: {
@@ -393,6 +389,7 @@ export default {
       this.results = {};
       this.searchItype = '';
       this.initialized = true;
+      this.searchComplete = false;
       this.$store.commit('RESET_LOADING');
       this.$store.commit('SET_INTEGRATION_DATA', {});
 
@@ -454,6 +451,7 @@ export default {
           this.error = e;
         },
         complete: () => {
+          this.searchComplete = true;
           setTimeout(() => { // clear the loading progress bar after 2 seconds
             if (!this.loading.failed && this.loading.total === this.loading.received) {
               this.$store.commit('RESET_LOADING');
@@ -506,15 +504,14 @@ export default {
       this.$copyText(window.location.href);
     },
     generateReport () {
-      this.error = '';
-      this.loadingReport = true;
+      if (!this.searchComplete) { return; }
 
-      Cont3xtService.generateReport({ searchTerm: this.searchTerm, skipCache: this.skipCache }).then((response) => {
-        this.loadingReport = false;
-      }).catch((error) => {
-        this.error = error;
-        this.loadingReport = false;
-      });
+      const a = document.createElement('a');
+      const file = new Blob([JSON.stringify(this.results, false, 2)], { type: 'application/json' });
+      a.href = URL.createObjectURL(file);
+      a.download = 'report.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
     },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {
