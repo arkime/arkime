@@ -863,7 +863,6 @@ void moloch_config_monitor_files(char *desc, char **names, MolochFilesChange_cb 
  */
 void     moloch_db_init();
 char    *moloch_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
-
 char    *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     moloch_db_save_session(MolochSession_t *session, int final);
 void     moloch_db_add_local_ip(char *str, MolochIpInfo_t *ii);

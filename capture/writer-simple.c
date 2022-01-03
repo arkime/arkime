@@ -100,8 +100,8 @@ struct {
  *   X the location in the file of the start of the compress block
  *   Y the location inside the uncompressed block of the packet start
  * When a file is created the value of simpleUncompressedBits is used for max
- * size of Y, whih is the UNCOMPRESSED block size.
- * A larger simpleUncompressedBits leads to better compression but slower
+ * size of Y, which is the UNCOMPRESSED block size.
+ * A larger simpleGzipBlockSize leads to better compression but slower
  * read time.
  */
 LOCAL int      uncompressedBits;    // Number of bits used in filepos to store location in block
@@ -156,7 +156,8 @@ LOCAL void writer_simple_free(MolochSimple_t *info)
             EVP_CIPHER_CTX_free(info->file->cipher_ctx);
             break;
         }
-        deflateEnd(&info->file->z_strm);
+        if (gzip)
+            deflateEnd(&info->file->z_strm);
         MOLOCH_TYPE_FREE(MolochSimpleFile_t, info->file);
     }
     info->file = 0;
@@ -757,7 +758,7 @@ void writer_simple_init(char *name)
     simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
-    simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 0, 0, 16777216);
+    simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 0, 0, 0xfffff);
     if (simpleGzipBlockSize > 0) {
         gzip = TRUE;
         if (simpleGzipBlockSize < 8192)

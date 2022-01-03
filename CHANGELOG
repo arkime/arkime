@@ -28,6 +28,13 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - hide graph/map (speeds up large queries)
   - viewer - history logs es query/indices
   - viewer - open up to 50 sessions at a time button
+  - viewer - make sure hunt progress bar shows up
+  - viewer - handle corrupt pcap files better
+  - viewer - handle hunt errors better
+  - capture - make sure file/seq es requests have higher priority
+  - capture - support pcap flies with 0 timestamp
+  - capture - use .arkime file extension for non standard pcap files
+  - all - support creating gzip files, set simpleGzipBlockSize
 
 3.2.1 2021/12/14
   - esproxy - handle sessions2 without prefix
