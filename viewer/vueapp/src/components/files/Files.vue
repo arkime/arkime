@@ -123,7 +123,9 @@ export default {
         { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.first * 1000, this.user.settings.timezone); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
         { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } },
         { id: 'encoding', name: 'Encoding', help: 'File encoding', width: 140 },
-        { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'Packet Pos Encoding', width: 140 }
+        { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'Packet Pos Encoding', width: 140 },
+        { id: 'packets', sort: 'packets', name: 'Packets', help: 'Number of packets in file', width: 130 },
+        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', help: 'Size of packets before compression', width: 150 }
       ]
     };
   },

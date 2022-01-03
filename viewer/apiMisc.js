@@ -91,7 +91,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
    * @returns {number} recordsFiltered - The number of files returned in this result
    */
   miscAPIs.getFiles = (req, res) => {
-    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding'];
+    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits'];
 
     const query = {
       _source: columns,
