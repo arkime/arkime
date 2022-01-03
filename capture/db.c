@@ -1928,7 +1928,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     char numstr[100];
     snprintf(numstr, sizeof(numstr), "%u", num);
 
-    if (name) {
+    if (name && name[0] != '.') {
         char *name1 = g_regex_replace_literal(numRegex, name, -1, 0, numstr, 0, NULL);
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)moloch_char_to_hexstr[num%256], 0, NULL);
         g_free(name1);
@@ -2013,7 +2013,12 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             moloch_db_mkpath(filename);
         }
 
-        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u.pcap", config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, num);
+        if (!name) {
+            name = ".pcap";
+        }
+
+        snprintf(filename+flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u%s", config.nodeName, tmp.tm_year%100, tmp.tm_mon+1, tmp.tm_mday, num, name);
+        name = 0;
 
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
@@ -2041,6 +2046,8 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
             char *value1 = g_regex_replace_literal(numRegex, value, -1, 0, numstr, 0, NULL);
             BSB_EXPORT_sprintf(jbsb, "\"%s\"", value1);
             g_free(value1);
+        } else if ((long)value < 32) {
+            BSB_EXPORT_sprintf(jbsb, "%ld", (long)value);
         } else if (*value == '{' || *value == '[')
             BSB_EXPORT_sprintf(jbsb, "%s", value);
         else
@@ -2427,7 +2434,7 @@ void moloch_db_update_field(char *expression, char *name, char *value)
     moloch_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(bsb), NULL, MOLOCH_HTTP_PRIORITY_NORMAL, NULL, NULL);
 }
 /******************************************************************************/
-void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
+void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets)
 {
     char                   key[1000];
     int                    key_len;
@@ -2436,11 +2443,12 @@ void moloch_db_update_filesize(uint32_t fileid, uint64_t filesize)
     if (config.dryRun)
         return;
 
-    char                  *json = moloch_http_get_buffer(1000);
+    char                  *json = moloch_http_get_buffer(2000);
 
     key_len = snprintf(key, sizeof(key), "/%sfiles/_doc/%s-%u/_update", config.prefix, config.nodeName, fileid);
 
-    json_len = snprintf(json, 1000, "{\"doc\": {\"filesize\": %" PRIu64 "}}", filesize);
+    json_len = snprintf(json, 2000, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u}}", filesize, packetsSize, packets);
+    LOG("ALW %s", json);
 
     moloch_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, MOLOCH_HTTP_PRIORITY_DROPABLE, NULL, NULL);
 }
@@ -2657,6 +2665,7 @@ void moloch_db_init()
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         MOLOCH_LOCK_INIT(dbInfo[thread].lock);
+        dbInfo[thread].prefixTime = -1;
     }
 }
 /******************************************************************************/

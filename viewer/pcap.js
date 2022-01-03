@@ -21,6 +21,7 @@
 const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
+const zlib = require('zlib');
 
 const Pcap = module.exports = function Pcap (key) {
   this.key = key;
@@ -103,10 +104,16 @@ Pcap.prototype.open = function (info) {
   this.filename = info.name;
   if (info) {
     this.encoding = info.encoding ?? 'normal';
+
     if (info.dek) {
       // eslint-disable-next-line node/no-deprecated-api
       const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+    }
+
+    if (info.uncompressedBits) {
+      this.uncompressedBits = info.uncompressedBits;
+      this.uncompressedBitsSize = Math.pow(2, this.uncompressedBits);
     }
 
     if (info.iv) {
@@ -173,18 +180,26 @@ Pcap.prototype.readHeader = function (cb) {
     return this.headBuffer;
   }
 
-  this.headBuffer = Buffer.alloc(24);
-  fs.readSync(this.fd, this.headBuffer, 0, 24, 0);
+  // pcap header is 24 but reading extra becaue of gzip/encryption
+  this.headBuffer = Buffer.alloc(64);
+  fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
 
-  if (this.encoding === 'aes-256-ctr') {
+  if (this.encoding.startsWith('aes-256-ctr')) {
     const decipher = this.createDecipher(0);
     this.headBuffer = Buffer.concat([decipher.update(this.headBuffer),
       decipher.final()]);
-  } else if (this.encoding === 'xor-2048') {
+  } else if (this.encoding.startsWith('xor-2048')) {
     for (let i = 0; i < this.headBuffer.length; i++) {
       this.headBuffer[i] ^= this.encKey[i % 256];
     }
   };
+
+  if (this.uncompressedBits) {
+    this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+  }
+
+  // Actual pcap header is 24, that is all we need
+  this.headBuffer = this.headBuffer.slice(0, 24);
 
   const magic = this.headBuffer.readUInt32LE(0);
   this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
@@ -215,7 +230,18 @@ Pcap.prototype.readPacket = function (pos, cb) {
     return;
   }
 
-  const buffer = Buffer.alloc(1792); // Divisible by 256 and 16 and > 1550
+  let plen = 1792; // Divisible by 256 and 16 and > 1550
+  let insideOffset = 0;
+
+  // Get the start offset and inside offset.
+  // Will need to fetch at least insideOffset plus packet length on 256 boundary
+  if (this.uncompressedBits) {
+    insideOffset = pos & (this.uncompressedBitsSize - 1);
+    pos = Math.floor(pos / this.uncompressedBitsSize);
+    plen = 256 * Math.ceil((insideOffset + 2048) / 256);
+  }
+  const buffer = Buffer.alloc(plen); // Divisible by 256 and 16 and > 1550
+
   let posoffset = 0;
 
   if (this.encoding === 'aes-256-ctr') {
@@ -233,6 +259,7 @@ Pcap.prototype.readPacket = function (pos, cb) {
         return cb(null);
       }
 
+      // Decrypt if needed
       if (this.encoding === 'aes-256-ctr') {
         const decipher = this.createDecipher(pos / 16);
         readBuffer = Buffer.concat([
@@ -246,11 +273,26 @@ Pcap.prototype.readPacket = function (pos, cb) {
         readBuffer = readBuffer.slice(posoffset);
       }
 
+      // Uncompress if needed
+      if (this.uncompressedBits) {
+        // Actualy ungzip and reset how much we read to the ungziped length
+        readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        bytesRead = readBuffer.length;
+      }
+
+      if (insideOffset) {
+        // Reset readBuffer to where the packet actually starts inside the buffer
+        readBuffer = readBuffer.slice(insideOffset);
+        bytesRead = readBuffer.length;
+      }
+
       const len = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
 
       if (len < 0 || len > 0xffff) {
         return cb(undefined);
       }
+
+      // ALWFIX - doesn't work for GZIP
 
       // Full packet fit
       if ((16 + len) <= (bytesRead - posoffset)) {
