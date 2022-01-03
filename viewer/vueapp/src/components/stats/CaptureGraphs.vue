@@ -284,7 +284,8 @@ export default {
       if (document.hidden) {
         this.context.stop();
       } else {
-        this.context.start();
+        initialized = false;
+        this.loadData();
       }
     }
   },
