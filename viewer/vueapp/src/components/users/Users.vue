@@ -847,9 +847,7 @@ export default {
     this.loadData();
 
     if (this.tmpRolesSupport) {
-      UserService.getRoles().then((response) => {
-        this.userRoles = response;
-      });
+      this.getRoles();
     }
   },
   methods: {
@@ -984,6 +982,7 @@ export default {
       UserService.createUser(user).then((response) => {
         this.newuser = { enabled: true, packetSearch: true };
         this.reloadData();
+        if (createRole) { this.getRoles(); }
 
         this.msg = response.data.text;
         this.msgType = 'success';
@@ -1060,6 +1059,11 @@ export default {
           this.loading = false;
           this.error = error.text;
         });
+    },
+    getRoles: function () {
+      UserService.getRoles().then((response) => {
+        this.userRoles = response;
+      });
     }
   }
 };
