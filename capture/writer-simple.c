@@ -423,7 +423,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "uncompressedBits", uncompressedBitsArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
                                               (char *)NULL);
-
+            g_free(kekId);
             break;
         case MOLOCH_SIMPLE_AES256CTR: {
             info->file->cipher_ctx = EVP_CIPHER_CTX_new();
@@ -447,6 +447,7 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
                                               "uncompressedBits", uncompressedBitsArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : MOLOCH_VAR_ARG_SKIP,
                                               (char *)NULL);
+            g_free(kekId);
             break;
         }
         default:
