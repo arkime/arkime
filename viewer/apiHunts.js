@@ -270,9 +270,7 @@ ${Config.arkimeWebURL()}hunt
       try {
         await Db.setHunt(req.params.id, hunt);
         res.send(JSON.stringify({ success: true, text: successText }));
-        if (Config.get('cronQueries', false)) {
-          huntAPIs.processHuntJobs();
-        }
+        huntAPIs.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
         return res.serverError(500, errorText);
@@ -602,6 +600,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   // Kick off the process of running a hunt job
   // cb is optional and is called either when a job has been started or end of function
   huntAPIs.processHuntJobs = async (cb) => {
+    if (!Config.get('cronQueries', false)) {
+      return;
+    }
+
     if (internals.runningHuntJob) {
       if (Config.debug) {
         console.log('HUNT - processing hunt jobs already', internals.runningHuntJob?.name);
@@ -880,7 +882,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.id = hit._id;
         hunt.index = hit._index;
         // don't add the running job to the queue
-        if (internals.runningHuntJob && hunt.status === 'running') {
+        if (hunt.status === 'running' && (!Config.get('cronQueries', false) || internals.runningHuntJob)) {
           runningJob = hunt;
           continue;
         }
