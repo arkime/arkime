@@ -550,7 +550,7 @@
                       role="button"
                       title="Create new user"
                       class="btn btn-sm btn-theme-tertiary"
-                      @click="createUser">
+                      @click="createUser(false)">
                       <span class="fa fa-plus-circle">
                       </span>&nbsp;
                       Create User
@@ -972,7 +972,7 @@ export default {
         return;
       }
 
-      if (!this.newuser.password) {
+      if (!createRole && !this.newuser.password) {
         this.createError = 'Password can not be empty';
         return;
       }
