@@ -329,7 +329,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
-    if (req.body.userId.match(/[^@\w.-]/)) {
+    let userIdTest = req.body.userId;
+    if (userIdTest.startsWith('role:')) {
+      userIdTest = userIdTest.replace('role:', '');
+    }
+    if (userIdTest.match(/[^@\w.-]/)) {
       return res.serverError(403, 'User ID must be word characters');
     }
 
