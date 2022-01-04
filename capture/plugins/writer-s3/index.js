@@ -101,10 +101,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       Key: parts[4],
       Range: 'bytes=0-128'
     };
-    let cacheKey = "pcap:" + fields.node + ":" + fields.packetPos[0];
-    let headerData = lru.get(cacheKey);
+    const cacheKey = 'pcap:' + fields.node + ':' + fields.packetPos[0];
+    const headerData = lru.get(cacheKey);
     if (headerData) {
-      // console.log("CACHED-HEADER", cacheKey);
       header = headerData.header;
       pcap = headerData.pcap;
       if (headerCb) {
@@ -113,7 +112,7 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       readyToProcess();
     } else {
       if (S3DEBUG) {
-        console.log("s3.getObject for header", params);
+        console.log('s3.getObject for header', params);
       }
       s3.getObject(params, function (err, data) {
         if (err) {
@@ -140,23 +139,20 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     let itemPos = 0;
 
     function doProcess (data, nextCb) {
-      // console.log("NEXT", data);
-
-      let haveAllCached = true;
+      let haveAllCached = data.compressed;
       // See if we have all the required decompressed blocks
       for (let i = 0; i < data.subPackets.length; i++) {
         const sp = data.subPackets[i];
-        const decompressedCacheKey = "data:" + data.params.Bucket +":" + data.params.Key + ":" + sp.rangeStart;
+        const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
         const cachedDecompressed = lru.get(decompressedCacheKey);
         if (!cachedDecompressed) {
-          // console.log("CACHE-MISS", decompressedCacheKey);
           haveAllCached = false;
           if (CacheInProgress[decompressedCacheKey]) {
             // We need to wait for this to complete
-            if (CacheInProgress[decompressedCacheKey] == true) {
+            if (CacheInProgress[decompressedCacheKey] === true) {
               CacheInProgress[decompressedCacheKey] = [];
             }
-            CacheInProgress[decompressedCacheKey].push(function() { doProcess(data, nextCb); });
+            CacheInProgress[decompressedCacheKey].push(function () { doProcess(data, nextCb); });
             return;
           }
           break;
@@ -164,29 +160,29 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       }
 
       if (haveAllCached) {
-        // We have all the data that we need
-        // console.log("ALL-CACHED");
+        // We have all the data that we need. Note that this code assumes
+        // that the data is compressed. Doing the caching for uncompressed
+        // files is left as an exercise for the reader.
         async.each(data.subPackets, (sp, nextSubCb) => {
-          const decompressedCacheKey = "data:" + data.params.Bucket +":" + data.params.Key + ":" + sp.rangeStart;
+          const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
           const block = lru.get(decompressedCacheKey);
           const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
           const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-          // console.log("CACHED-PACKET", sp);
           packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
         },
         nextCb);
       } else {
         for (let i = 0; i < data.subPackets.length; i++) {
           const sp = data.subPackets[i];
-          const decompressedCacheKey = "data:" + data.params.Bucket +":" + data.params.Key + ":" + sp.rangeStart;
+          const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
           if (!CacheInProgress[decompressedCacheKey]) {
             CacheInProgress[decompressedCacheKey] = true;
           }
         }
         data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
         if (S3DEBUG) {
-          console.log("s3.getObject for pcap data", data.params);
+          console.log('s3.getObject for pcap data', data.params);
         }
         s3.getObject(data.params, function (err, s3data) {
           if (err) {
@@ -203,14 +199,13 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                 const offset = sp.rangeStart - data.rangeStart;
                 decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
                   { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-                const decompressedCacheKey = "data:" + data.params.Bucket +":" + data.params.Key + ":" + sp.rangeStart;
+                const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
-                // console.log("Decompressed offset", sp.rangeStart, "set cache", decompressedCacheKey);
                 const cip = CacheInProgress[decompressedCacheKey];
                 delete CacheInProgress[decompressedCacheKey];
-                if (cip && cip != true) {
-                  for (let i = 0; i < cip.length; i++) {
-                    cip[i]();
+                if (cip && cip !== true) {
+                  for (let j = 0; j < cip.length; j++) {
+                    cip[j]();
                   }
                 }
               }
@@ -220,7 +215,6 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
               const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-              // console.log("PACKET", sp);
               packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
             },
             nextCb);
@@ -229,7 +223,6 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
               const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
               const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
 
-              // console.log("UN-PACKET", sp);
               packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
             },
             nextCb);
@@ -338,7 +331,6 @@ function s3Expire () {
     if (err || !data.hits || !data.hits.hits) {
       return;
     }
-    // console.log("HITS", data.hits.hits);
 
     data.hits.hits.forEach((item) => {
       const parts = splitRemain(item._source.name, '/', 4);

@@ -44,7 +44,7 @@
   },
   "scripts": {
     "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common",
-    "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService",
+    "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService capture/plugins common",
     "common:lint": "eslint --ext .js,.vue common",
     "viewer:addtestuser": "cd viewer && node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
     "viewer:build": "cd viewer && node vueapp/build/build.js",
