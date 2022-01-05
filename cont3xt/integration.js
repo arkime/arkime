@@ -298,7 +298,7 @@ class Integration {
       }
       const istats = itypeStats[itype];
 
-      if (shared.skipIntegrations.includes(integration.name)) {
+      if (shared.doIntegrations && !shared.doIntegrations.includes(integration.name)) {
         shared.sent++;
         writeDone();
         return;
@@ -366,7 +366,7 @@ class Integration {
    * The search api to go against integrations
    *
    * body.query String to actually query
-   * body.skipIntegrations Array of integration names to skip
+   * body.doIntegrations Array of integration names to skip
    * body.skipCache Don't use the cache
    */
   static async apiSearch (req, res, next) {
@@ -374,8 +374,8 @@ class Integration {
       return res.send({ success: false, text: 'Missing query' });
     }
 
-    if (req.body.skipIntegrations && !Array.isArray(req.body.skipIntegrations)) {
-      return res.send({ success: false, text: 'skipIntegrations bad format' });
+    if (req.body.doIntegrations && !Array.isArray(req.body.doIntegrations)) {
+      return res.send({ success: false, text: 'doIntegrations bad format' });
     }
 
     const query = req.body.query.trim();
@@ -385,7 +385,7 @@ class Integration {
     const integrations = Integration.integrations[itype];
     const shared = {
       skipCache: !!req.body.skipCache,
-      skipIntegrations: req.body.skipIntegrations ?? [],
+      doIntegrations: req.body.doIntegrations,
       user: req.user,
       res: res,
       sent: 0,
