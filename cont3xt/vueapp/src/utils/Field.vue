@@ -16,7 +16,7 @@
       <b-dropdown-item
         target="_blank"
         v-if="options.pivot"
-        :href="`?q=${value}`">
+        :href="`?b=${base64Encode(value)}`">
         {{ options.pivot }}
       </b-dropdown-item>
     </div>
@@ -61,6 +61,10 @@ export default {
     doCopy (value) {
       this.$copyText(value);
       this.isOpen = false;
+    },
+    /* base64 encodes value */
+    base64Encode (value) {
+      return window.btoa(value);
     }
   }
 };

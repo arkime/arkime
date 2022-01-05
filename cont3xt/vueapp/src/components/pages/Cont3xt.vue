@@ -30,17 +30,18 @@
             </template>
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop="toggleAllIntegrations(true)">
+              @click.native.capture.stop.prevent="toggleAllIntegrations(true)">
               Select All
             </b-dropdown-item>
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop="toggleAllIntegrations(false)">
+              @click.native.capture.stop.prevent="toggleAllIntegrations(false)">
               Unselect All
             </b-dropdown-item>
             <b-dropdown-divider />
             <b-dropdown-form>
               <b-form-checkbox-group
+                stacked
                 v-model="selectedIntegrations">
                 <template
                   v-for="(integration, key) in getIntegrations">
@@ -56,12 +57,12 @@
             <b-dropdown-divider />
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop="toggleAllIntegrations(true)">
+              @click.native.capture.stop.prevent="toggleAllIntegrations(true)">
               Select All
             </b-dropdown-item>
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop="toggleAllIntegrations(false)">
+              @click.native.capture.stop.prevent="toggleAllIntegrations(false)">
               Unselect All
             </b-dropdown-item>
           </b-dropdown>
@@ -180,14 +181,15 @@
             </h3>
             <pre class="text-info"><code>{{ results }}</code></pre>
           </div>
-          <hr>
+          <hr v-if="searchTerm && initialized">
           <!-- link groups -->
           <b-alert
             variant="danger"
             :show="!!getLinkGroupsError.length">
             {{ getLinkGroupsError }}
           </b-alert>
-          <b-form inline>
+          <b-form inline
+            v-if="searchTerm && initialized">
             <b-input-group
               size="sm"
               class="mr-2 mb-1">
@@ -258,7 +260,7 @@
             </b-input-group>
           </b-form>
           <!-- link groups -->
-          <div v-if="searchItype"
+          <div v-if="searchItype && initialized"
             class="d-flex flex-wrap link-group-cards-wrapper">
             <template v-for="(linkGroup, index) in getLinkGroups">
               <reorder-list
@@ -368,7 +370,7 @@ export default {
       scrollPx: 0,
       searchItype: '',
       initialized: false,
-      searchTerm: this.$route.query.q ? window.atob(this.$route.query.q) : '',
+      searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       skipCache: false,
       searchComplete: false
     };
@@ -443,13 +445,15 @@ export default {
 
       let failed = 0;
 
-      if (!this.$route.query.q ||
-        (this.$route.query.q && window.atob(this.$route.query.q) !== this.searchTerm)
+      // only match on b because we remove the q param
+      if (!this.$route.query.b ||
+        (this.$route.query.b && window.atob(this.$route.query.b) !== this.searchTerm)
       ) {
         this.$router.push({
           query: {
             ...this.$route.query,
-            q: window.btoa(this.searchTerm)
+            b: window.btoa(this.searchTerm),
+            q: undefined // remove the q param
           }
         });
       }
@@ -638,7 +642,7 @@ body.dark .search-nav {
 <style>
 /* scroll the integration select dropdown */
 .integration-select > ul {
-  width: 180px;
+  width: 200px;
   overflow: scroll;
   max-height: 300px;
 }
