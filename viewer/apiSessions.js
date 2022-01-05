@@ -1032,15 +1032,17 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           }
 
           // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-          const opcap = Pcap.get(`write${fields.node}:${fileNum}`);
-          if (!opcap.isOpen()) {
+          const opcap = Pcap.get(`write:${fields.node}:${fileNum}`);
+          if (opcap.isCorrupt()) {
+            return nextCb('Corrupt');
+          } else if (!opcap.isOpen()) {
             Db.fileIdToFile(fields.node, fileNum, (file) => {
               if (!file) {
                 console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
                 return nextCb(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
               }
 
-              const ipcap = Pcap.get(`write${fields.node}:${file.num}`);
+              const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
 
               try {
                 ipcap.openReadWrite(file);

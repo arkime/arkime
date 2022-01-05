@@ -102,27 +102,23 @@ Pcap.prototype.open = function (info) {
     return;
   }
   this.filename = info.name;
-  if (info) {
-    this.encoding = info.encoding ?? 'normal';
+  this.encoding = info.encoding ?? 'normal';
 
-    if (info.dek) {
-      // eslint-disable-next-line node/no-deprecated-api
-      const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
-      this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
-    }
+  if (info.dek) {
+    // eslint-disable-next-line node/no-deprecated-api
+    const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
+    this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+  }
 
-    if (info.uncompressedBits) {
-      this.uncompressedBits = info.uncompressedBits;
-      this.uncompressedBitsSize = Math.pow(2, this.uncompressedBits);
-    }
+  if (info.uncompressedBits) {
+    this.uncompressedBits = info.uncompressedBits;
+    this.uncompressedBitsSize = Math.pow(2, this.uncompressedBits);
+  }
 
-    if (info.iv) {
-      const iv = Buffer.from(info.iv, 'hex');
-      this.iv = Buffer.alloc(16);
-      iv.copy(this.iv);
-    }
-  } else {
-    this.encoding = 'normal';
+  if (info.iv) {
+    const iv = Buffer.from(info.iv, 'hex');
+    this.iv = Buffer.alloc(16);
+    iv.copy(this.iv);
   }
 
   this.fd = fs.openSync(info.name, 'r');
@@ -135,11 +131,26 @@ Pcap.prototype.open = function (info) {
 };
 
 Pcap.prototype.openReadWrite = function (info) {
+  if (info.uncompressedBits !== undefined) {
+    this.corrupt = true;
+    throw new Error('Can\'t write gzip files');
+  }
+  if (info.encoding !== undefined) {
+    this.corrupt = true;
+    throw new Error('Can\'t write encrypted files');
+  }
+
   if (this.fd) {
     return;
   }
   this.filename = info.name;
   this.fd = fs.openSync(info.name, 'r+');
+  try {
+    this.readHeader();
+  } catch (err) {
+    delete this.fd;
+    throw err;
+  }
 };
 
 Pcap.prototype.unref = function () {
@@ -357,10 +368,12 @@ Pcap.prototype.readPacketPromise = async function (pos) {
 };
 
 Pcap.prototype.scrubPacket = function (packet, pos, buf, entire) {
-  let len = packet.pcap.incl_len + 16; // 16 = pcap header length
+  const hlen = (this.shortHeader === undefined) ? 16 : 6;
+
+  let len = packet.pcap.incl_len + hlen; // hlen = pcap header length
   if (entire) {
-    pos += 16; // Don't delete pcap header
-    len -= 16;
+    pos += hlen; // Don't delete pcap header
+    len -= hlen;
   } else {
     switch (packet.ip.p) {
     case 1:
