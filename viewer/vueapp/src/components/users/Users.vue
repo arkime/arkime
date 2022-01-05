@@ -376,9 +376,19 @@
                           text="User's Roles">
                           <b-dropdown-form>
                             <b-form-checkbox-group
-                              :options="userRoles"
-                              v-model="listUser.roles"
-                            />
+                              v-model="listUser.roles">
+                              <b-form-checkbox
+                                v-for="role in userRoles"
+                                :value="role.value"
+                                :key="role.value">
+                                {{ role.text }}
+                                <span
+                                  v-if="role.userDefined"
+                                  class="fa fa-user cursor-help ml-2"
+                                  v-b-tooltip.hover="'User defined role'"
+                                />
+                              </b-form-checkbox>
+                            </b-form-checkbox-group>
                           </b-dropdown-form>
                         </b-dropdown>
                         <span
@@ -395,7 +405,7 @@
         </table> <!-- /user table -->
 
         <div v-if="createError"
-          class="alert alert-sm alert-danger p-3  mt-4 text-break">
+          class="alert alert-sm alert-danger p-3 ml-1 mr-2 mt-4 mb-2 text-break">
           <span class="fa fa-exclamation-triangle">
           </span>&nbsp;
           {{ createError }}
@@ -503,9 +513,19 @@
                       text="User's Roles">
                       <b-dropdown-form>
                         <b-form-checkbox-group
-                          :options="userRoles"
-                          v-model="newuser.roles"
-                        />
+                          v-model="newuser.roles">
+                          <b-form-checkbox
+                            v-for="role in userRoles"
+                            :value="role.value"
+                            :key="role.value">
+                            {{ role.text }}
+                            <span
+                              v-if="role.userDefined"
+                              class="fa fa-user cursor-help ml-2"
+                              v-b-tooltip.hover="'User defined role'"
+                            />
+                          </b-form-checkbox>
+                        </b-form-checkbox-group>
                       </b-dropdown-form>
                     </b-dropdown>
                     <span
@@ -513,16 +533,29 @@
                       v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
                     />
                   </div>
-                  <button
-                    type="button"
-                    role="button"
-                    title="Create new user"
-                    class="btn btn-sm btn-theme-tertiary pull-right mb-4"
-                    @click="createUser">
-                    <span class="fa fa-plus-circle">
-                    </span>&nbsp;
-                    Create
-                  </button>
+                  <div class="mb-4">
+                    <button
+                      v-if="tmpRolesSupport"
+                      type="button"
+                      role="button"
+                      title="Create new role"
+                      class="btn btn-sm btn-warning"
+                      @click="createUser(true)">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create Role
+                    </button>
+                    <button
+                      type="button"
+                      role="button"
+                      title="Create new user"
+                      class="btn btn-sm btn-theme-tertiary"
+                      @click="createUser(false)">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create User
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
@@ -711,7 +744,6 @@
             </form>
           </div>
         </div> <!-- /new user form -->
-
       </div>
 
     </div> <!-- /users content -->
@@ -815,9 +847,7 @@ export default {
     this.loadData();
 
     if (this.tmpRolesSupport) {
-      UserService.getRoles().then((response) => {
-        this.userRoles = response;
-      });
+      this.getRoles();
     }
   },
   methods: {
@@ -929,7 +959,7 @@ export default {
           this.msgType = 'danger';
         });
     },
-    createUser: function () {
+    createUser: function (createRole) {
       this.createError = '';
 
       if (!this.newuser.userId) {
@@ -942,22 +972,28 @@ export default {
         return;
       }
 
-      if (!this.newuser.password) {
+      if (!createRole && !this.newuser.password) {
         this.createError = 'Password can not be empty';
         return;
       }
 
-      UserService.createUser(this.newuser)
-        .then((response) => {
-          this.newuser = { enabled: true, packetSearch: true };
-          this.reloadData();
+      const user = JSON.parse(JSON.stringify(this.newuser));
+      if (createRole) {
+        if (!user.userId.startsWith('role:')) {
+          user.userId = `role:${user.userId}`;
+        }
+      }
 
-          this.msg = response.data.text;
-          this.msgType = 'success';
-        })
-        .catch((error) => {
-          this.createError = error.text;
-        });
+      UserService.createUser(user).then((response) => {
+        this.newuser = { enabled: true, packetSearch: true };
+        this.reloadData();
+        if (createRole) { this.getRoles(); }
+
+        this.msg = response.data.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        this.createError = error.text;
+      });
     },
     openSettings: function (userId) {
       this.$router.push({
@@ -1028,6 +1064,11 @@ export default {
           this.loading = false;
           this.error = error.text;
         });
+    },
+    getRoles: function () {
+      UserService.getRoles().then((response) => {
+        this.userRoles = response;
+      });
     }
   }
 };

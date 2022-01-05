@@ -66,6 +66,9 @@ test('users page user crud', async () => {
   UserService.deleteUser = jest.fn().mockResolvedValue({
     data: { text: 'Successfully deleted the user!' }
   });
+  UserService.getRoles = jest.fn().mockResolvedValue({
+    data: []
+  });
 
   const {
     getByText, getAllByRole, getByTitle, queryByText, getByLabelText,

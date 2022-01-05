@@ -222,8 +222,21 @@ class User {
    * Web Api for listing available roles
    */
   static async apiRoles (req, res, next) {
-    const roles = await User.allRolesCache();
-    return res.send({ success: true, roles: [...roles].sort() });
+    let roles = await User.allRolesCache();
+
+    const userDefinedRoles = [];
+    roles = [...roles].sort();
+
+    // put user defined roles at the top
+    roles = roles.filter((role) => {
+      const startsWithRole = role.startsWith('role:');
+      if (startsWithRole) { userDefinedRoles.push(role); }
+      return !startsWithRole;
+    });
+
+    roles = userDefinedRoles.concat(roles);
+
+    return res.send({ success: true, roles });
   }
 
   /**
@@ -484,8 +497,7 @@ class UserESImplementation {
       query: {
         bool: {
           must_not: [
-            { term: { userId: '_moloch_shared' } }, // exclude shared ues
-            { prefix: { userId: 'role:' } } // exclude roles
+            { term: { userId: '_moloch_shared' } } // exclude shared user
           ]
         }
       }
@@ -619,7 +631,7 @@ class UserLMDBImplementation {
   async searchUsers (query) {
     let hits = [];
     this.store.getRange({})
-      .filter(({ key, value }) => key !== '_moloch_shared' && !key.startsWith('role:'))
+      .filter(({ key, value }) => key !== '_moloch_shared')
       .forEach(({ key, value }) => {
         value = cleanSearchUser(value);
         value.id = key;
@@ -727,7 +739,7 @@ class UserRedisImplementation {
 
   // search against user index, promise only
   async searchUsers (query) {
-    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared' && !key.startsWith('role:'));
+    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared');
     let hits = [];
     for (const key of keys) {
       const data = await this.client.get(key);

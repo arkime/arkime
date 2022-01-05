@@ -325,11 +325,18 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.createUser = (req, res) => {
-    if (!req.body || !req.body.userId || !req.body.userName || !req.body.password) {
+    if (!req.body || !req.body.userId || !req.body.userName) {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
-    if (req.body.userId.match(/[^@\w.-]/)) {
+    let userIdTest = req.body.userId;
+    if (userIdTest.startsWith('role:')) {
+      userIdTest = userIdTest.replace('role:', '');
+    } else if (!req.body.password) { // roles don't require passwords
+      return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    if (userIdTest.match(/[^@\w.-]/)) {
       return res.serverError(403, 'User ID must be word characters');
     }
 
