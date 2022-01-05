@@ -16,14 +16,24 @@
           :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
         />
       </label>
-      <b-button
-        size="xs"
-        @click="copy"
-        variant="outline-success"
-        v-if="field.type === 'table'"
-        v-b-tooltip.hover="'Copy as table as CSV string'">
-        <span class="fa fa-copy fa-fw" />
-      </b-button>
+      <div>
+        <b-button
+          size="xs"
+          @click="copy"
+          variant="outline-success"
+          v-if="field.type === 'table'"
+          v-b-tooltip.hover="'Copy as table as CSV string'">
+          <span class="fa fa-copy fa-fw" />
+        </b-button>
+        <b-button
+          size="xs"
+          @click="download"
+          variant="outline-success"
+          v-if="field.type === 'table'"
+          v-b-tooltip.hover="'Download as table as CSV'">
+          <span class="fa fa-download fa-fw" />
+        </b-button>
+      </div>
     </div>
     <template v-if="visible">
       <!-- table field -->
@@ -151,7 +161,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getRenderingTable', 'getRenderingArray']),
+    ...mapGetters(['getRenderingTable', 'getRenderingArray', 'getIntegrationData']),
     value () {
       let full;
       let value = this.findValue(this.data, this.field);
@@ -175,29 +185,16 @@ export default {
       this.visible = !this.visible;
     },
     copy () {
-      let csvStr = '';
-
-      const fieldLabels = [];
-      for (const field of this.field.fields) {
-        fieldLabels.push(field.label);
-      }
-
-      csvStr += `${fieldLabels.join(',')}\n`;
-
-      let value = this.value.value;
-      if (!Array.isArray(value)) {
-        value = [value];
-      }
-
-      for (const valueRow of value) {
-        const values = [];
-        for (const field of this.field.fields) {
-          values.push(this.findValue(valueRow, field));
-        }
-        csvStr += `${values.join(',')}\n`;
-      }
-
-      this.$copyText(csvStr);
+      this.$copyText(this.generateCSVString());
+    },
+    download () {
+      const a = document.createElement('a');
+      const file = new Blob([this.generateCSVString()], { type: 'text/csv' });
+      a.href = URL.createObjectURL(file);
+      const { source } = this.$store.state.displayIntegration;
+      a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getIntegrationData._query}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
     },
     /* helpers ------------------------------------------------------------- */
     findValue (data, field) {
@@ -222,6 +219,31 @@ export default {
       }
 
       return value;
+    },
+    generateCSVString () {
+      let csvStr = '';
+
+      const fieldLabels = [];
+      for (const field of this.field.fields) {
+        fieldLabels.push(field.label);
+      }
+
+      csvStr += `${fieldLabels.join(',')}\n`;
+
+      let value = this.value.value;
+      if (!Array.isArray(value)) {
+        value = [value];
+      }
+
+      for (const valueRow of value) {
+        const values = [];
+        for (const field of this.field.fields) {
+          values.push(this.findValue(valueRow, field));
+        }
+        csvStr += `${values.join(',')}\n`;
+      }
+
+      return csvStr;
     }
   }
 };

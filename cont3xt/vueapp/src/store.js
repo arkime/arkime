@@ -24,7 +24,7 @@ const store = new Vuex.Store({
     integrationsArray: [],
     displayIntegration: {},
     integrationData: {},
-    linkGroups: [],
+    linkGroups: undefined,
     linkGroupsError: '',
     checkedLinks: {}
   },

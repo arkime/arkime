@@ -185,14 +185,14 @@
           {{ getLinkGroupsError }}
         </b-alert> <!-- /link group error -->
         <link-group-card
-          v-if="getLinkGroups.length"
+          v-if="getLinkGroups && getLinkGroups.length"
           :link-group-index="selectedLinkGroup"
           @delete-link-group="deleteLinkGroup"
         /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
-          v-if="!getLinkGroups.length">
+          v-if="getLinkGroups && !getLinkGroups.length">
           <div class="col">
             No Link Groups are configured.
             <b-button
@@ -227,7 +227,6 @@ export default {
   },
   data () {
     return {
-      settins: {},
       visibleTab: 'integrations',
       integrationSettings: {},
       integrationSettingsErr: '',

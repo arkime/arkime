@@ -320,7 +320,7 @@ export default {
       scrollPx: 0,
       searchItype: '',
       initialized: false,
-      searchTerm: this.$route.query.q || '',
+      searchTerm: this.$route.query.q ? window.atob(this.$route.query.q) : '',
       skipCache: false,
       searchComplete: false
     };
@@ -395,11 +395,13 @@ export default {
 
       let failed = 0;
 
-      if (this.$route.query.q !== this.searchTerm) {
+      if (!this.$route.query.q ||
+        (this.$route.query.q && window.atob(this.$route.query.q) !== this.searchTerm)
+      ) {
         this.$router.push({
           query: {
             ...this.$route.query,
-            q: this.searchTerm
+            q: window.btoa(this.searchTerm)
           }
         });
       }
@@ -509,7 +511,7 @@ export default {
       const a = document.createElement('a');
       const file = new Blob([JSON.stringify(this.results, false, 2)], { type: 'application/json' });
       a.href = URL.createObjectURL(file);
-      a.download = 'report.json';
+      a.download = `${new Date().toISOString()}_${this.searchTerm}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
     },

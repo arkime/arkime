@@ -5,22 +5,29 @@
     <h5 class="text-warning mb-3"
       v-if="card && card.title && getIntegrationData._query">
       {{ card.title.replace('%{query}', getIntegrationData._query) }}
-      <b-button
-        size="sm"
-        @click="refresh"
-        variant="outline-info"
-        class="ml-1 mt-1 float-right"
-        v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._createTime)}`">
-        <span class="fa fa-refresh fa-fw" />
-      </b-button>
-      <b-button
-        size="sm"
-        @click="copy"
-        variant="outline-success"
-        class="ml-1 mt-1 float-right"
-        v-b-tooltip.hover="'Copy as raw JSON'">
-        <span class="fa fa-copy fa-fw" />
-      </b-button>
+      <div class="float-right mt-1">
+        <b-button
+          size="sm"
+          @click="copy"
+          variant="outline-success"
+          v-b-tooltip.hover="'Copy as raw JSON'">
+          <span class="fa fa-copy fa-fw" />
+        </b-button>
+        <b-button
+          size="sm"
+          @click="download"
+          variant="outline-success"
+          v-b-tooltip.hover="'Download as raw JSON'">
+          <span class="fa fa-download fa-fw" />
+        </b-button>
+        <b-button
+          size="sm"
+          @click="refresh"
+          variant="outline-info"
+          v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._createTime)}`">
+          <span class="fa fa-refresh fa-fw" />
+        </b-button>
+      </div>
     </h5>
     <!-- error with data -->
     <b-alert
@@ -139,6 +146,22 @@ export default {
       }
 
       this.$copyText(JSON.stringify(this.getIntegrationData.data, false, 2));
+    },
+    download () {
+      this.error = '';
+
+      if (!this.getIntegrationData.data) {
+        this.error = 'No raw data to copy!';
+        return;
+      }
+
+      const a = document.createElement('a');
+      const file = new Blob([JSON.stringify(this.getIntegrationData.data, false, 2)], { type: 'application/json' });
+      a.href = URL.createObjectURL(file);
+      const { source } = this.$store.state.displayIntegration;
+      a.download = `${new Date().toISOString()}_${source}_${this.getIntegrationData._query}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
   },
   updated () { // card data is rendered
