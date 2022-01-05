@@ -214,6 +214,7 @@ import { mapGetters } from 'vuex';
 import ReorderList from '@/utils/ReorderList';
 import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard';
+import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
 let timeout;
@@ -279,6 +280,8 @@ export default {
 
       UserService.setIntegrationSettings({ settings }).then((response) => {
         this.saveIntegrationSettingsSuccess = 'Saved!';
+        // NOTE: don't need to do anything with the data (the store does it)
+        Cont3xtService.getIntegrations();
       }).catch((err) => {
         this.integrationSettingsErr = err;
       });

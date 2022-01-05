@@ -50,10 +50,18 @@ export default {
         return subscriber.complete();
       }
 
+      // NOTE: this assumes that the client has already fetched the integrations
+      const doIntegrations = [];
+      for (const integration of store.state.selectedIntegrations) {
+        if (store.state.integrations[integration] && store.state.integrations[integration].doable) {
+          doIntegrations.push(integration);
+        }
+      }
+
       fetch('api/integration/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: searchTerm, skipCache })
+        body: JSON.stringify({ query: searchTerm, skipCache, doIntegrations })
       }).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
           throw new Error(response.statusText);
@@ -114,6 +122,10 @@ export default {
         return response.json();
       }).then((response) => {
         store.commit('SET_INTEGRATIONS', response.integrations);
+        if (!store.state.selectedIntegrations) {
+          // if integrations have not been initialized, set them!
+          store.commit('SET_SELECTED_INTEGRATIONS', Object.keys(response.integrations));
+        }
         return resolve(response.integrations);
       }).catch((err) => { // this catches an issue within the ^ .then
         store.commit('SET_INTEGRATIONS_ERROR', err);

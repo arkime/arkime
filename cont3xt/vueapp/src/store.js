@@ -26,7 +26,8 @@ const store = new Vuex.Store({
     integrationData: {},
     linkGroups: undefined,
     linkGroupsError: '',
-    checkedLinks: {}
+    checkedLinks: {},
+    selectedIntegrations: undefined
   },
   mutations: {
     SET_USER (state, data) {
@@ -106,11 +107,11 @@ const store = new Vuex.Store({
     TOGGLE_CHECK_LINK (state, { lgId, lname }) {
       const clone = JSON.parse(JSON.stringify(state.checkedLinks));
 
-      if (!state.checkedLinks[lgId]) {
+      if (!clone[lgId]) {
         clone[lgId] = {};
       }
 
-      if (state.checkedLinks[lgId][lname]) {
+      if (clone[lgId][lname]) {
         clone[lgId][lname] = false;
       } else {
         clone[lgId][lname] = true;
@@ -135,6 +136,9 @@ const store = new Vuex.Store({
           return;
         }
       }
+    },
+    SET_SELECTED_INTEGRATIONS (state, data) {
+      Vue.set(state, 'selectedIntegrations', data);
     }
   },
   getters: {
@@ -183,7 +187,7 @@ const store = new Vuex.Store({
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks'
+      'checkedLinks', 'selectedIntegrations'
     ]
   })]
 });

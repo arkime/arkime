@@ -22,6 +22,49 @@
             v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
             <span class="fa fa-database fa-fw" />
           </b-button>
+          <b-dropdown
+            class="integration-select"
+            v-b-tooltip.hover="'Select integrations to run against this search'">
+            <template #button-content>
+              <span class="fa fa-eye" />
+            </template>
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop="toggleAllIntegrations(true)">
+              Select All
+            </b-dropdown-item>
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop="toggleAllIntegrations(false)">
+              Unselect All
+            </b-dropdown-item>
+            <b-dropdown-divider />
+            <b-dropdown-form>
+              <b-form-checkbox-group
+                v-model="selectedIntegrations">
+                <template
+                  v-for="(integration, key) in getIntegrations">
+                  <b-form-checkbox
+                    :key="key"
+                    :value="key"
+                    v-if="integration.doable">
+                    {{ key }}
+                  </b-form-checkbox>
+                </template>
+              </b-form-checkbox-group>
+            </b-dropdown-form>
+            <b-dropdown-divider />
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop="toggleAllIntegrations(true)">
+              Select All
+            </b-dropdown-item>
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop="toggleAllIntegrations(false)">
+              Unselect All
+            </b-dropdown-item>
+          </b-dropdown>
           <b-button
             @click="search"
             variant="success">
@@ -59,8 +102,13 @@
           <h1 class="text-warning display-4">
             Welcome to Cont3xt!
           </h1>
-          <h4 class="text-success lead">
+          <h4 v-if="!searchTerm"
+            class="text-success lead">
             Search for IPs, domains, URLs, emails, phone numbers, or hashes.
+          </h4>
+          <h4 v-else
+            class="text-success lead">
+            <strong>Hit enter to issue your search!</strong>
           </h4>
         </div>
       </div> <!-- /welcome -->
@@ -328,7 +376,8 @@ export default {
   computed: {
     ...mapGetters([
       'getRendering', 'getWaitRendering', 'getIntegrationData',
-      'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups'
+      'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
+      'getIntegrations'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -336,6 +385,10 @@ export default {
     },
     displayIntegration () {
       return this.$store.state.displayIntegration;
+    },
+    selectedIntegrations: {
+      get () { return this.$store.state.selectedIntegrations; },
+      set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
     }
   },
   watch: {
@@ -354,11 +407,6 @@ export default {
         }
         this.$store.commit('SET_WAIT_RENDERING', false);
       }, 100);
-    }
-  },
-  mounted () {
-    if (this.searchTerm) {
-      this.search();
     }
   },
   methods: {
@@ -515,6 +563,9 @@ export default {
       a.click();
       URL.revokeObjectURL(a.href);
     },
+    toggleAllIntegrations (select) {
+      this.selectedIntegrations = select ? Object.keys(this.getIntegrations) : [];
+    },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {
       if (this.results[itype] && this.results[itype][source]) {
@@ -581,5 +632,20 @@ body.dark .search-nav {
   float: right;
   right: 1.5rem;
   position: relative;
+}
+</style>
+
+<style>
+/* scroll the integration select dropdown */
+.integration-select > ul {
+  width: 180px;
+  overflow: scroll;
+  max-height: 300px;
+}
+/* condense the dropdown items */
+.integration-select .dropdown-item,
+.integration-select .custom-control {
+  font-size: 0.8rem;
+  padding: 0.1rem 0.5rem;
 }
 </style>
