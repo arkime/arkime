@@ -193,11 +193,22 @@ class Integration {
   static async apiList (req, res, next) {
     const results = {};
     const integrations = Integration.integrations.all;
+
+    const keys = req.user.getCont3xtKeys();
+
     for (const integration of integrations) {
       if (Object.keys(integration.itypes).length === 0) { continue; }
 
       let doable = true;
-      if (integration.settings) {
+
+      // First check if user has disabled integration
+      const disabled = keys?.[integration.name]?.disabled;
+      if (disabled === true || disabled === 'true') {
+        doable = false;
+      }
+
+      // If still doable check to see if all settings set
+      if (doable && integration.settings) {
         for (const setting in integration.settings) {
           if (integration.settings[setting].required && !integration.getUserConfig(req.user, integration.name, setting)) {
             doable = false;
