@@ -37,6 +37,7 @@ extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL  gboolean              localPcapIndex;
 LOCAL  gboolean              gzip;
+LOCAL  gboolean              shortHeader;
 
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
@@ -84,6 +85,7 @@ LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
+LOCAL uint32_t               firstPacket[MOLOCH_MAX_PACKET_THREADS];
 
 #define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS-1)
 struct {
@@ -400,7 +402,9 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            if (gzip)
+            if (shortHeader)
+                name = ".arkime";
+            else if (gzip)
                 name = ".pcap.gz";
             else
                 name = ".pcap";
@@ -464,7 +468,16 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
-        writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
+        if (shortHeader) {
+            firstPacket[thread] = packet->ts.tv_sec;
+            MolochPcapFileHdr_t   pcapFileHeader2;
+            memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
+            pcapFileHeader2.magic = 0xa1b2c3d5;
+            pcapFileHeader2.thiszone = firstPacket[thread];
+            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader2, 20);
+        } else {
+            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
+        }
 
         uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
         writer_simple_write_output(info, (unsigned char *)&linktype, 4);
@@ -475,7 +488,6 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         // Make a new block for start of packets
         if (gzip)
             writer_simple_gzip_make_new_block(info);
-
         gettimeofday(&fileAge[thread], NULL);
     } else {
         info = currentInfo[thread];
@@ -493,15 +505,27 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         packet->writerFilePos = info->file->pos;
     }
 
-    struct moloch_pcap_sf_pkthdr hdr;
-
-    hdr.ts.tv_sec  = packet->ts.tv_sec;
-    hdr.ts.tv_usec = packet->ts.tv_usec;
-    hdr.caplen     = packet->pktlen;
-    hdr.pktlen     = packet->pktlen;
-
     info->file->packets++;
-    writer_simple_write_output(info, (unsigned char *)&hdr, 16);
+    if (shortHeader) {
+        char header[6];
+        // LLLL LLLL LLLL LLLL
+        memcpy(header, &packet->pktlen, 2);
+
+        // SSSS SSSS SSSS MMMM MMMM MMMM MMMM MMMM
+        uint32_t t = ((packet->ts.tv_sec - firstPacket[thread]) << 20) | packet->ts.tv_usec;
+
+        memcpy(header+2, &t, 4);
+
+        writer_simple_write_output(info, (unsigned char *)&header, 6);
+    } else {
+        struct moloch_pcap_sf_pkthdr hdr;
+
+        hdr.ts.tv_sec  = packet->ts.tv_sec;
+        hdr.ts.tv_usec = packet->ts.tv_usec;
+        hdr.caplen     = packet->pktlen;
+        hdr.pktlen     = packet->pktlen;
+        writer_simple_write_output(info, (unsigned char *)&hdr, 16);
+    }
     writer_simple_write_output(info, packet->pkt, packet->pktlen);
 
     if (info->bufpos > config.pcapWriteSize) {
@@ -812,6 +836,8 @@ void writer_simple_init(char *name)
     }
 
     config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
+
+    shortHeader = moloch_config_boolean(NULL, "simpleShortHeader", FALSE);
 
     localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
     if (localPcapIndex) {
