@@ -288,6 +288,7 @@ class Integration {
         if (Integration.debug > 1) {
           console.log('DISABLED', integration.name);
         }
+        writeDone();
         continue;
       }
 
@@ -299,9 +300,9 @@ class Integration {
       const istats = itypeStats[itype];
 
       if (shared.doIntegrations && !shared.doIntegrations.includes(integration.name)) {
-        shared.sent++;
+        shared.total--;
         writeDone();
-        return;
+        continue;
       }
 
       stats.total++;
