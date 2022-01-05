@@ -643,7 +643,10 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
     if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
         return;
 
-    writer_simple_process_buf(session->thread, 0);
+    // Don't force writes for gzip for now
+    if (!gzip) {
+        writer_simple_process_buf(session->thread, 0);
+    }
 }
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
@@ -652,10 +655,6 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
  */
 LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
 {
-    // In gzip mode we can't do timer, at least for now
-    if (gzip)
-        return FALSE;
-
     struct timeval now;
     gettimeofday(&now, NULL);
 
@@ -838,6 +837,10 @@ void writer_simple_init(char *name)
     config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
 
     shortHeader = moloch_config_boolean(NULL, "simpleShortHeader", FALSE);
+
+    if (shortHeader && config.maxFileTimeM > 60) {
+        config.maxFileTimeM = 60;
+    }
 
     localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
     if (localPcapIndex) {
