@@ -205,10 +205,16 @@ Pcap.prototype.readHeader = function (cb) {
   this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
   this.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
 
-  if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d) {
+  if (!this.bigEndian && magic !== 0xa1b2c3d4 && magic !== 0xa1b23c4d && magic !== 0xa1b2c3d5) {
     this.corrupt = true;
     fs.close(this.fd, () => {});
     throw new Error('Corrupt PCAP header');
+  }
+
+  // arkime short header
+  if (magic === 0xa1b2c3d5) {
+    this.shortHeader = this.headBuffer.readUInt32LE(8);
+    this.headBuffer[0] = 0xd4; // Reset header to normal since all apis pretend it is
   }
 
   if (this.bigEndian) {
@@ -224,13 +230,25 @@ Pcap.prototype.readHeader = function (cb) {
 };
 
 Pcap.prototype.readPacket = function (pos, cb) {
+  return this.readPacketInternal(pos, -1, cb);
+};
+
+Pcap.prototype.readPacketInternal = function (posArg, hpLen, cb) {
+  let pos = posArg;
+
   // Hacky!! File isn't actually opened, try again soon
   if (!this.fd) {
     setTimeout(this.readPacket, 10, pos, cb);
     return;
   }
 
-  let plen = 1792; // Divisible by 256 and 16 and > 1550
+  // Divisible by 256
+  if (hpLen === -1) {
+    hpLen = 1792;
+  } else {
+    hpLen = 256 * Math.ceil(hpLen / 256);
+  }
+
   let insideOffset = 0;
 
   // Get the start offset and inside offset.
@@ -238,12 +256,12 @@ Pcap.prototype.readPacket = function (pos, cb) {
   if (this.uncompressedBits) {
     insideOffset = pos & (this.uncompressedBitsSize - 1);
     pos = Math.floor(pos / this.uncompressedBitsSize);
-    plen = 256 * Math.ceil((insideOffset + 2048) / 256);
+    hpLen = 256 * Math.ceil((insideOffset + hpLen) / 256);
   }
-  const buffer = Buffer.alloc(plen); // Divisible by 256 and 16 and > 1550
+  const buffer = Buffer.alloc(hpLen); // Divisible by 256 and 16 and > 1550
 
+  // If encrypted we might have to actually start before the current pos
   let posoffset = 0;
-
   if (this.encoding === 'aes-256-ctr') {
     posoffset = pos % 16;
     pos = pos - posoffset; // Can't use & ~0xf because javascript is 32bit
@@ -255,7 +273,11 @@ Pcap.prototype.readPacket = function (pos, cb) {
   try {
     // Try and read full packet and header in one read
     fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, readBuffer) => {
-      if (bytesRead - posoffset < 16) {
+      // Set buffer to what was read
+      readBuffer = readBuffer.slice(0, bytesRead);
+
+      // Make sure we have at least the packet header
+      if (readBuffer.length - posoffset < 16) {
         return cb(null);
       }
 
@@ -267,7 +289,7 @@ Pcap.prototype.readPacket = function (pos, cb) {
           decipher.final()
         ]).slice(posoffset);
       } else if (this.encoding === 'xor-2048') {
-        for (let i = posoffset; i < bytesRead; i++) {
+        for (let i = posoffset; i < readBuffer.length; i++) {
           readBuffer[i] ^= this.encKey[i % 256];
         }
         readBuffer = readBuffer.slice(posoffset);
@@ -275,49 +297,54 @@ Pcap.prototype.readPacket = function (pos, cb) {
 
       // Uncompress if needed
       if (this.uncompressedBits) {
-        // Actualy ungzip and reset how much we read to the ungziped length
         readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-        bytesRead = readBuffer.length;
       }
 
+      // Reset readBuffer to where the packet actually starts inside the buffer
       if (insideOffset) {
-        // Reset readBuffer to where the packet actually starts inside the buffer
         readBuffer = readBuffer.slice(insideOffset);
-        bytesRead = readBuffer.length;
       }
 
-      const len = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
+      let packetLen;
+      let hlen;
+      if (this.shortHeader === undefined) {
+        hlen = 16;
+        packetLen = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
+      } else {
+        hlen = 6;
+        packetLen = (this.bigEndian ? readBuffer.readUInt16BE(0) : readBuffer.readUInt16LE(0));
+      }
 
-      if (len < 0 || len > 0xffff) {
+      if (packetLen < 0 || packetLen > 0xffff) {
         return cb(undefined);
       }
 
-      // ALWFIX - doesn't work for GZIP
-
       // Full packet fit
-      if ((16 + len) <= (bytesRead - posoffset)) {
-        return cb(readBuffer.slice(0, 16 + len));
-      }
-      // Full packet didn't fit, get what was missed
-      try {
-        const buffer2 = Buffer.alloc((16 + len) - (bytesRead - posoffset));
-        fs.read(this.fd, buffer2, 0, buffer2.length, pos + bytesRead, (err, subBytesRead, ignore) => {
-          if (this.encoding === 'aes-256-ctr') {
-            const decipher = this.createDecipher((pos + subBytesRead) / 16);
-            return cb(Buffer.concat([readBuffer, decipher.update(buffer2),
-              decipher.final()]));
-          } else if (this.encoding === 'xor-2048') {
-            for (let i = posoffset; i < subBytesRead; i++) {
-              buffer2[i] ^= this.encKey[i % 256];
-            }
-          }
+      if ((hlen + packetLen) <= readBuffer.length) {
+        if (this.shortHeader !== undefined) {
+          const t = readBuffer.readUInt32LE(2);
+          const sec = (t >>> 20) + this.shortHeader;
+          const usec = t & 0xfffff;
 
-          return cb(Buffer.concat([readBuffer, buffer2]));
-        });
-      } catch (e) {
-        console.log('Error ', e, 'for file', this.filename);
+          // Make a new buffer with standard pcap header and packet data
+          const newBuffer = Buffer.allocUnsafe(16 + packetLen);
+          newBuffer.writeUInt32LE(sec, 0);
+          newBuffer.writeUInt32LE(usec, 4);
+          newBuffer.writeUInt32LE(packetLen, 8);
+          newBuffer.writeUInt32LE(packetLen, 12);
+          readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
+          return cb(newBuffer);
+        }
+        return cb(readBuffer.slice(0, hlen + packetLen));
+      }
+
+      // Don't try again
+      if (posArg !== -1) {
         return cb(null);
       }
+
+      // Full packet didn't fit, try again
+      return this.readPacketInternal(posArg, 16 + packetLen);
     });
   } catch (e) {
     console.log('Error ', e, 'for file', this.filename);

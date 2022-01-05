@@ -37,6 +37,8 @@ extern MolochConfig_t        config;
 extern MolochPcapFileHdr_t   pcapFileHeader;
 LOCAL  gboolean              localPcapIndex;
 LOCAL  gboolean              gzip;
+LOCAL  gboolean              simpleShortHeader;
+LOCAL  int                   simpleGzipLevel;
 
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
@@ -84,6 +86,7 @@ LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
 LOCAL struct timeval         lastSave[MOLOCH_MAX_PACKET_THREADS];
 LOCAL struct timeval         fileAge[MOLOCH_MAX_PACKET_THREADS];
+LOCAL uint32_t               firstPacket[MOLOCH_MAX_PACKET_THREADS];
 
 #define INDEX_FILES_CACHE_SIZE (MOLOCH_MAX_PACKET_THREADS-1)
 struct {
@@ -395,12 +398,14 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
             info->file->z_strm.avail_out = config.pcapWriteSize + MOLOCH_PACKET_MAX_LEN;
-            deflateInit2(&info->file->z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
         }
 
         switch(simpleMode) {
         case MOLOCH_SIMPLE_NORMAL:
-            if (gzip)
+            if (simpleShortHeader)
+                name = ".arkime";
+            else if (gzip)
                 name = ".pcap.gz";
             else
                 name = ".pcap";
@@ -464,7 +469,16 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
-        writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
+        if (simpleShortHeader) {
+            firstPacket[thread] = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
+            MolochPcapFileHdr_t   pcapFileHeader2;
+            memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
+            pcapFileHeader2.magic = 0xa1b2c3d5;
+            pcapFileHeader2.thiszone = firstPacket[thread];
+            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader2, 20);
+        } else {
+            writer_simple_write_output(info, (unsigned char *)&pcapFileHeader, 20);
+        }
 
         uint32_t linktype = moloch_packet_dlt_to_linktype(pcapFileHeader.dlt);
         writer_simple_write_output(info, (unsigned char *)&linktype, 4);
@@ -475,7 +489,6 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         // Make a new block for start of packets
         if (gzip)
             writer_simple_gzip_make_new_block(info);
-
         gettimeofday(&fileAge[thread], NULL);
     } else {
         info = currentInfo[thread];
@@ -493,15 +506,34 @@ LOCAL void writer_simple_write(const MolochSession_t * const session, MolochPack
         packet->writerFilePos = info->file->pos;
     }
 
-    struct moloch_pcap_sf_pkthdr hdr;
-
-    hdr.ts.tv_sec  = packet->ts.tv_sec;
-    hdr.ts.tv_usec = packet->ts.tv_usec;
-    hdr.caplen     = packet->pktlen;
-    hdr.pktlen     = packet->pktlen;
-
     info->file->packets++;
-    writer_simple_write_output(info, (unsigned char *)&hdr, 16);
+    if (simpleShortHeader) {
+        char header[6];
+        // LLLL LLLL LLLL LLLL
+        memcpy(header, &packet->pktlen, 2);
+
+        // SSSS SSSS SSSS MMMM MMMM MMMM MMMM MMMM
+        uint32_t t;
+        if (firstPacket[thread] > packet->ts.tv_sec) {
+            LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
+            // Time stamp is too early, just prented its at firstPacket time
+            t = packet->ts.tv_usec;
+        } else {
+            t = ((packet->ts.tv_sec - firstPacket[thread]) << 20) | packet->ts.tv_usec;
+        }
+
+        memcpy(header+2, &t, 4);
+
+        writer_simple_write_output(info, (unsigned char *)&header, 6);
+    } else {
+        struct moloch_pcap_sf_pkthdr hdr;
+
+        hdr.ts.tv_sec  = packet->ts.tv_sec;
+        hdr.ts.tv_usec = packet->ts.tv_usec;
+        hdr.caplen     = packet->pktlen;
+        hdr.pktlen     = packet->pktlen;
+        writer_simple_write_output(info, (unsigned char *)&hdr, 16);
+    }
     writer_simple_write_output(info, packet->pkt, packet->pktlen);
 
     if (info->bufpos > config.pcapWriteSize) {
@@ -619,7 +651,10 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
     if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
         return;
 
-    writer_simple_process_buf(session->thread, 0);
+    // Don't force writes for gzip for now
+    if (!gzip) {
+        writer_simple_process_buf(session->thread, 0);
+    }
 }
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
@@ -628,10 +663,6 @@ LOCAL void writer_simple_check(MolochSession_t *session, void *UNUSED(uw1), void
  */
 LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
 {
-    // In gzip mode we can't do timer, at least for now
-    if (gzip)
-        return FALSE;
-
     struct timeval now;
     gettimeofday(&now, NULL);
 
@@ -757,18 +788,27 @@ void writer_simple_init(char *name)
     moloch_writer_write        = writer_simple_write;
 
     simpleMaxQ = moloch_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
+    simpleGzipLevel = moloch_config_int(NULL, "simpleGzipLevel", 6, 1, 9);
     char *mode = moloch_config_str(NULL, "simpleEncoding", NULL);
 
     simpleGzipBlockSize = moloch_config_int(NULL, "simpleGzipBlockSize", 0, 0, 0xfffff);
     if (simpleGzipBlockSize > 0) {
         gzip = TRUE;
-        if (simpleGzipBlockSize < 8192)
+        if (simpleGzipBlockSize < 8192) {
             simpleGzipBlockSize = 8191;
+            LOG ("INFO: Reseting simpleGzipBlockSize to %d, the minimum value", simpleGzipBlockSize);
+        }
         uncompressedBits = ceil(log2(simpleGzipBlockSize));
+
+        // simpleGzipBlockSize can't be a power of 2
         if ((uint32_t)pow(2, uncompressedBits) == simpleGzipBlockSize)
             simpleGzipBlockSize--;
-        if (simpleGzipBlockSize > config.pcapWriteSize)
-            LOGEXIT("pcapWriteSize must be larger than simpleGzipBlockSize");
+
+        if (simpleGzipBlockSize > config.pcapWriteSize) {
+            config.pcapWriteSize = simpleGzipBlockSize + 1;
+            LOG ("INFO: Reseting pcapWriteSize to %d, so it is larger than simpleGzipBlockSize", config.pcapWriteSize);
+        }
+
         if (config.debug)
             LOG("Will gzip - blocksize: %u bits: %u", simpleGzipBlockSize, uncompressedBits);
     }
@@ -783,7 +823,7 @@ void writer_simple_init(char *name)
             config.maxFileSizeB = 64LL*1024LL*1024LL*1024LL;
         }
     } else if (strcmp(mode, "xor-2048") == 0) {
-        LOG("WARNING - simpleEncoding of xor-2048 is not actually secure");
+        LOG("WARNING - simpleEncoding of xor-2048 is NOT actually secure");
         simpleMode = MOLOCH_SIMPLE_XOR2048;
     } else {
         CONFIGEXIT("Unknown simpleEncoding '%s'", mode);
@@ -793,8 +833,8 @@ void writer_simple_init(char *name)
         g_free(mode);
     }
 
+    // Since we are doing direct IO must be a multiple of pagesize;
     pageSize = getpagesize();
-
     if (config.pcapWriteSize % pageSize != 0) {
         config.pcapWriteSize = ((config.pcapWriteSize + pageSize - 1) / pageSize) * pageSize;
         LOG ("INFO: Reseting pcapWriteSize to %u since it must be a multiple of %u", config.pcapWriteSize, pageSize);
@@ -812,6 +852,12 @@ void writer_simple_init(char *name)
     }
 
     config.gapPacketPos = moloch_config_boolean(NULL, "gapPacketPos", TRUE);
+
+    simpleShortHeader = moloch_config_boolean(NULL, "simpleShortHeader", FALSE);
+    if (simpleShortHeader && config.maxFileTimeM > 60) {
+        config.maxFileTimeM = 60;
+        LOG ("INFO: Reseting maxFileTimeM to 60 since using simpleShortHeader");
+    }
 
     localPcapIndex = moloch_config_boolean(NULL, "localPcapIndex", FALSE);
     if (localPcapIndex) {
