@@ -214,6 +214,7 @@ Pcap.prototype.readHeader = function (cb) {
   // arkime short header
   if (magic === 0xa1b2c3d5) {
     this.shortHeader = this.headBuffer.readUInt32LE(8);
+    this.headBuffer[0] = 0xd4; // Reset header to normal since all apis pretend it is
   }
 
   if (this.bigEndian) {
