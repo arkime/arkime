@@ -44,12 +44,12 @@
                 stacked
                 v-model="selectedIntegrations">
                 <template
-                  v-for="(integration, key) in getIntegrations">
+                  v-for="integration in sortedIntegrations">
                   <b-form-checkbox
-                    :key="key"
-                    :value="key"
+                    :key="integration.key"
+                    :value="integration.key"
                     v-if="integration.doable">
-                    {{ key }}
+                    {{ integration.key }}
                   </b-form-checkbox>
                 </template>
               </b-form-checkbox-group>
@@ -391,6 +391,14 @@ export default {
     selectedIntegrations: {
       get () { return this.$store.state.selectedIntegrations; },
       set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
+    },
+    sortedIntegrations () {
+      const integrations = [];
+      for (const integration in this.$store.state.integrations) {
+        integrations.push({ ...this.$store.state.integrations[integration], key: integration });
+      }
+      integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
+      return integrations;
     }
   },
   watch: {
