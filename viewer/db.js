@@ -286,8 +286,7 @@ exports.getWithOptions = async (index, type, id, options) => {
 exports.getSessionPromise = (id, options) => {
   return new Promise((resolve, reject) => {
     exports.getSession(id, options, (err, session) => {
-      if (err) { reject(err); }
-      resolve(session);
+      err ? reject(err) : resolve(session);
     });
   });
 };
