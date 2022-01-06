@@ -29,7 +29,8 @@ class LinkGroup {
    * Return LinkGroups user can see
    */
   static async apiGet (req, res, next) {
-    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...req.user.getRoles()]);
+    const roles = await req.user.getRoles();
+    let linkGroups = await Db.getMatchingLinkGroups(req.user.userId, [...roles]);
 
     // Set editable on any linkGroups that the user is allowed to edit
     for (const lg of linkGroups) {
