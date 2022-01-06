@@ -405,7 +405,7 @@ class Integration {
       if (Integration.classify(url.hostname) === 'ip') {
         Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip);
       } else {
-        const equery = extractDomain(query, {tld: true});
+        const equery = extractDomain(query, { tld: true });
         Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain);
       }
     }
