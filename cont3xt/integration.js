@@ -166,7 +166,7 @@ class Integration {
 
     // https://urlregex.com/
     // eslint-disable-next-line no-useless-escape
-    if (str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
+    if (str.match(/https?:\/\//) && str.match(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/)) {
       return 'url';
     }
 
@@ -401,8 +401,13 @@ class Integration {
       const dquery = query.slice(query.indexOf('@') + 1);
       Integration.runIntegrationsList(shared, dquery, 'domain', Integration.integrations.domain);
     } else if (itype === 'url') {
-      const equery = extractDomain(query);
-      Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain);
+      const url = new URL(query);
+      if (Integration.classify(url.hostname) === 'ip') {
+        Integration.runIntegrationsList(shared, url.hostname, 'ip', Integration.integrations.ip);
+      } else {
+        const equery = extractDomain(query, {tld: true});
+        Integration.runIntegrationsList(shared, equery, 'domain', Integration.integrations.domain);
+      }
     }
   }
 
