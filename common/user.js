@@ -332,7 +332,7 @@ class User {
     const allRoles = new Set();
 
     // The roles we need to process to see if any subroles
-    let rolesQ = [...this.roles ?? []];
+    const rolesQ = [...this.roles ?? []];
 
     while (rolesQ.length) {
       const r = rolesQ.pop();
