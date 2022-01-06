@@ -39,6 +39,18 @@
               v-b-tooltip.hover="'User defined role'"
             />
           </b-form-checkbox>
+          <template v-for="role in lg.viewRoles">
+            <b-form-checkbox
+              :key="role"
+              :value="role"
+              v-if="!getRoles.find(r => r.value === role)">
+              {{ role }}
+              <span
+                class="fa fa-times-circle cursor-help ml-2"
+                v-b-tooltip.hover="'This role no longer exists'"
+              />
+            </b-form-checkbox>
+          </template>
         </b-form-checkbox-group>
       </b-dropdown-form>
     </b-dropdown>
@@ -61,6 +73,18 @@
               v-b-tooltip.hover="'User defined role'"
             />
           </b-form-checkbox>
+          <template v-for="role in lg.editRoles">
+            <b-form-checkbox
+              :key="role"
+              :value="role"
+              v-if="!getRoles.find(r => r.value === role)">
+              {{ role }}
+              <span
+                class="fa fa-times-circle cursor-help ml-2"
+                v-b-tooltip.hover="'This role no longer exists'"
+              />
+            </b-form-checkbox>
+          </template>
         </b-form-checkbox-group>
       </b-dropdown-form>
     </b-dropdown>
