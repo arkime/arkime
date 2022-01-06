@@ -756,17 +756,25 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
         LOGEXIT("ERROR - URL too long %.*s", key_len, key);
     }
 
-    gboolean dropable = priority == MOLOCH_HTTP_PRIORITY_DROPABLE;
-
     // Are we overloaded
-    if (dropable && !config.quitting && server->outstanding > server->maxOutstandingRequests) {
-        LOG("ERROR - Dropping request %.*s of size %u queue %u is too big", key_len, key, data_len, server->outstanding);
-        MOLOCH_THREAD_INCR(server->dropped);
-
-        if (data) {
-            MOLOCH_SIZE_FREE(buffer, data);
+    if (!config.quitting && server->outstanding > server->maxOutstandingRequests) {
+        int drop = FALSE;
+        if (priority == MOLOCH_HTTP_PRIORITY_DROPABLE) {
+            LOG("ERROR - Dropping request (https://arkime.com/faq#error-dropping-request) %.*s of size %u queue %u is too big", key_len, key, data_len, server->outstanding);
+            drop = TRUE;
+        } else if (priority == MOLOCH_HTTP_PRIORITY_NORMAL && server->outstanding > server->maxOutstandingRequests * 2) {
+            LOG("ERROR - Dropping request (https://arkime.com/faq#error-dropping-request) %.*s of size %u queue %u is WAY too big", key_len, key, data_len, server->outstanding);
+            drop = TRUE;
         }
-        return 1;
+
+        if (drop) {
+            MOLOCH_THREAD_INCR(server->dropped);
+
+            if (data) {
+                MOLOCH_SIZE_FREE(buffer, data);
+            }
+            return 1;
+        }
     }
 
     MolochHttpRequest_t       *request = MOLOCH_TYPE_ALLOC0(MolochHttpRequest_t);
@@ -780,7 +788,7 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
 
     request->priority = priority;
 
-    if (dropable)
+    if (priority == MOLOCH_HTTP_PRIORITY_DROPABLE)
         request->retries = 0;
     else
         request->retries = server->maxRetries;

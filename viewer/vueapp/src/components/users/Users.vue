@@ -388,6 +388,18 @@
                                   v-b-tooltip.hover="'User defined role'"
                                 />
                               </b-form-checkbox>
+                              <template v-for="role in listUser.roles">
+                                <b-form-checkbox
+                                  :key="role"
+                                  :value="role"
+                                  v-if="!userRoles.find(r => r.value === role)">
+                                  {{ role }}
+                                  <span
+                                    class="fa fa-times-circle cursor-help ml-2"
+                                    v-b-tooltip.hover="'This role no longer exists'"
+                                  />
+                                </b-form-checkbox>
+                              </template>
                             </b-form-checkbox-group>
                           </b-dropdown-form>
                         </b-dropdown>

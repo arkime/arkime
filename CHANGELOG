@@ -23,6 +23,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 3.2.2 2022/01/xx
+  - BREAKING - non standard pcap files now use the .arkime extension
   - viewer - default to hunt reassembled packets
   - viewer - add descriptions to hunts
   - viewer - hide graph/map (speeds up large queries)
@@ -31,10 +32,12 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - viewer - make sure hunt progress bar shows up
   - viewer - handle corrupt pcap files better
   - viewer - handle hunt errors better
+  - viewer - scrubbing won't crash on unsupported files
   - capture - make sure file/seq es requests have higher priority
   - capture - support pcap flies with 0 timestamp
   - capture - use .arkime file extension for non standard pcap files
   - all - support creating gzip files, set simpleGzipBlockSize
+  - all - support creating pcap files with short packet headers, set simpleShortHeader
 
 3.2.1 2021/12/14
   - esproxy - handle sessions2 without prefix

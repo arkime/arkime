@@ -103,13 +103,32 @@ class User {
   }
 
   /**
-   * Return a user checking cache first or go to DB, callback only
+   * Return a user checking cache first
    */
-  static getUserCache (userId, cb) {
+  static async getUserCache (userId, cb) {
+    // If we have the cache just cb/return it
     if (User.usersCache[userId] && User.usersCache[userId]._timeStamp > Date.now() - User.userCacheTimeout) {
-      return cb(null, User.usersCache[userId].user);
+      if (cb) {
+        return cb(null, User.usersCache[userId].user);
+      } else {
+        return User.usersCache[userId].user;
+      }
     }
 
+    // Promise version
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        User.getUser(userId, (err, user) => {
+          if (err) { return reject(err); }
+          if (!user) { return resolve(user); }
+
+          User.usersCache[userId] = { _timeStamp: Date.now(), user: user };
+          return resolve(user);
+        });
+      });
+    }
+
+    // CB version
     User.getUser(userId, (err, user) => {
       if (err || !user) {
         return cb(err, user);
@@ -307,24 +326,49 @@ class User {
   }
 
   /**
-   * Generate set of all the roles this user has
+   * Generate set of all the roles this user has and store in _allRoles.
    */
-  expandRoles () {
-    const roles = new Set(this.roles ?? []);
-    for (const r of this.roles ?? []) {
+  async expandRoles () {
+    const allRoles = new Set();
+
+    // The roles we need to process to see if any subroles
+    const rolesQ = [...this.roles ?? []];
+
+    while (rolesQ.length) {
+      const r = rolesQ.pop();
+
+      // Deal with system roles first, they are easy
       if (systemRolesMapping[r]) {
-        systemRolesMapping[r].forEach(roles.add, roles);
+        allRoles.add(r);
+        systemRolesMapping[r].forEach(allRoles.add, allRoles);
+        continue;
       }
+
+      // Already processed
+      if (allRoles.has(r)) { continue; }
+
+      // See if role actually exists
+      const role = await User.getUserCache(r);
+      if (!role) { continue; }
+      allRoles.add(r);
+
+      // schedule any sub roles
+      if (!role.roles) { continue; }
+      role.roles.forEach(r2 => {
+        if (allRoles.has(r2)) { return; } // Already processed
+        rolesQ.push(r2);
+      });
     }
-    this._allRoles = roles;
+
+    this._allRoles = allRoles;
   }
 
   /**
    * Check if user has role. The check can be against a single role or array of roles.
    */
-  hasRole (role) {
+  async hasRole (role) {
     if (this._allRoles === undefined) {
-      this.expandRoles();
+      await this.expandRoles();
     }
 
     if (!Array.isArray(role)) {
@@ -342,9 +386,9 @@ class User {
   /**
    * Return set of all roles for ourself
    */
-  getRoles () {
+  async getRoles () {
     if (this._allRoles === undefined) {
-      this.expandRoles();
+      await this.expandRoles();
     }
 
     return this._allRoles;
