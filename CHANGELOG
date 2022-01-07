@@ -36,6 +36,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - make sure file/seq es requests have higher priority
   - capture - support pcap flies with 0 timestamp
   - capture - use .arkime file extension for non standard pcap files
+  - capture - new _dropBySession rule op
   - all - support creating gzip files, set simpleGzipBlockSize
   - all - support creating pcap files with short packet headers, set simpleShortHeader
 

@@ -26,7 +26,7 @@ extern MolochConfig_t        config;
 struct molochdrophashitem_t {
     MolochDropHashItem_t *dhg_next, *dhg_prev;
     MolochDropHashItem_t *hnext;
-    uint8_t               key[16];
+    uint8_t               key[MOLOCH_SESSIONID_LEN - 1];
     uint32_t              last;
     uint32_t              goodFor;
     uint16_t              port;
@@ -40,11 +40,11 @@ struct molochdrophash_t {
 };
 
 /******************************************************************************/
-LOCAL inline uint32_t moloch_drophash_hash6 (const void *key)
+LOCAL inline uint32_t moloch_drophash_hash (const void *key, int len)
 {
     uint32_t  h = 0;
     uint32_t *p = (uint32_t *)key;
-    uint32_t *end = p + 4;
+    uint32_t *end = p + len/4;
     while (p < end) {
         h = (h + *p) * 0xc6a4a793;
         h ^= h >> 16;
@@ -94,15 +94,15 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
 
     MolochDropHashItem_t *item;
     uint32_t              h;
-    if (group->isIp4)
+    if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash6(key) % hash->num;
+        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
 
     MOLOCH_LOCK(group->lock);
     if (hash->heads[h]) {
         for (item = hash->heads[h]; item; item = item->hnext) {
-            if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
+            if (memcmp(key, item->key, group->keyLen) == 0) {
                 MOLOCH_UNLOCK(group->lock);
                 return 0;
             }
@@ -113,7 +113,7 @@ int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key
     item->hnext    = hash->heads[h];
     item->flags    = 0;
     item->port     = port;
-    memcpy(item->key, key, group->isIp4?4:16);
+    memcpy(item->key, key, group->keyLen);
     item->last     = current;
     item->goodFor  = goodFor;
     hash->heads[h] = item;
@@ -131,17 +131,17 @@ int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *k
     MolochDropHash_t *hash = group->drops[port];
 
     uint32_t              h;
-    if (group->isIp4)
+    if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash6(key) % hash->num;
+        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
 
     if (!hash->heads[h])
         return 0;
 
     MolochDropHashItem_t *item;
     for (item = hash->heads[h]; item; item = item->hnext) {
-        if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
+        if (memcmp(key, item->key, group->keyLen) == 0) {
 
             // Same time as last time, drop
             if (likely(item->last == current))
@@ -172,17 +172,17 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 
     MolochDropHashItem_t *item, *parent = NULL;
     uint32_t              h;
-    if (group->isIp4)
+    if (group->keyLen == 4)
         h = (*(uint32_t *)key) % hash->num;
     else
-        h = moloch_drophash_hash6(key) % hash->num;
+        h = moloch_drophash_hash(key, group->keyLen) % hash->num;
 
     if (!hash->heads[h])
         return;
 
     MOLOCH_LOCK(group->lock);
     for (item = hash->heads[h]; item; parent = item, item = item->hnext) {
-        if (memcmp(key, item->key, group->isIp4?4:16) == 0) {
+        if (memcmp(key, item->key, group->keyLen) == 0) {
             hash->cnt--;
             if (parent) {
                 parent->hnext = item->hnext;
@@ -199,10 +199,10 @@ void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key)
 }
 
 /******************************************************************************/
-void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
+void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int keyLen)
 {
     MOLOCH_LOCK_INIT(group->lock);
-    group->isIp4 = isIp4;
+    group->keyLen = keyLen;
     DLL_INIT(dhg_, group);
 
     if (!file)
@@ -218,7 +218,7 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
 
     int      cnt;
     int      ver;
-    char     fisIp4;
+    char     fkeyLen;
     char     key[16];
     uint32_t last;
     uint32_t goodFor;
@@ -243,15 +243,20 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
         return;
     }
 
-    if (!fread(&fisIp4, 1, 1, fp)) {
+    if (!fread(&fkeyLen, 1, 1, fp)) {
         fclose(fp);
         LOG("ERROR - `%s` corrupt", group->file);
         return;
     }
 
-    if (fisIp4 != isIp4) {
+    if (fkeyLen == 0)
+        fkeyLen = 16;
+    else if (fkeyLen == 1)
+        fkeyLen = 4;
+
+    if (fkeyLen != keyLen) {
         fclose(fp);
-        LOG("ERROR - isIp4 mismatch %d != %d", fisIp4, isIp4);
+        LOG("ERROR - keyLen mismatch %d != %d", fkeyLen, keyLen);
         return;
     }
 
@@ -263,7 +268,7 @@ void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4)
     for (int i = 0; i < cnt; i++) {
         int read = 0;
         read += fread(&port, 2, 1, fp);
-        read += fread(key, isIp4?4:16, 1, fp);
+        read += fread(key, keyLen, 1, fp);
         read += fread(&last, 4, 1, fp);
         read += fread(&goodFor, 4, 1, fp);
         read += fread(&flags, 2, 1, fp);
@@ -298,11 +303,11 @@ void moloch_drophash_save(MolochDropHashGroup_t *group)
     int ver = 2;
 
     fwrite(&ver, 4, 1, fp);
-    fwrite(&group->isIp4, 1, 1, fp);
+    fwrite(&group->keyLen, 1, 1, fp);
     fwrite(&group->dhg_count, 4, 1, fp);
     DLL_FOREACH(dhg_, group, item) {
         fwrite(&item->port, 2, 1, fp);
-        fwrite(item->key, group->isIp4?4:16, 1, fp);
+        fwrite(item->key, group->keyLen, 1, fp);
         fwrite(&item->last, 4, 1, fp);
         fwrite(&item->goodFor, 4, 1, fp);
         fwrite(&item->flags, 2, 1, fp);
