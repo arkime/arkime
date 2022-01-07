@@ -34,8 +34,8 @@ class LinkGroup {
 
     // Set editable on any linkGroups that the user is allowed to edit
     for (const lg of linkGroups) {
-      lg._editable = lg.creator === req.user.userId || req.user.hasRole(lg.editRoles);
-      lg._viewable = lg.creator === req.user.userId || req.user.hasRole(lg.viewRoles);
+      lg._editable = lg.creator === req.user.userId || await req.user.hasRole(lg.editRoles);
+      lg._viewable = lg.creator === req.user.userId || await req.user.hasRole(lg.viewRoles);
     }
 
     const reordered = [];
@@ -121,7 +121,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (olinkGroup.creator !== req.user.userId && !req.user.hasRole(olinkGroup.editRoles)) {
+    if (olinkGroup.creator !== req.user.userId && !(await req.user.hasRole(olinkGroup.editRoles))) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
@@ -153,7 +153,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    if (linkGroup.creator !== req.user.userId && !req.user.hasRole(linkGroup.editRoles)) {
+    if (linkGroup.creator !== req.user.userId && !(await req.user.hasRole(linkGroup.editRoles))) {
       return res.send({ success: false, text: 'Permission denied' });
     }
 
