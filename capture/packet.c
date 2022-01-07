@@ -113,6 +113,8 @@ LOCAL MolochFragsHead_t          fragsList;
 // These are in network byte order
 LOCAL MolochDropHashGroup_t      packetDrop4;
 LOCAL MolochDropHashGroup_t      packetDrop6;
+LOCAL MolochDropHashGroup_t      packetDrop4S;
+LOCAL MolochDropHashGroup_t      packetDrop6S;
 
 #ifndef IPPROTO_IPV4
 #define IPPROTO_IPV4            4
@@ -784,6 +786,13 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
                           ip4->ip_dst.s_addr, tcphdr->th_dport);
         packet->mProtocol = tcpMProtocol;
 
+        const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+        if (packetDrop4S.drops[dropPort] &&
+            moloch_drophash_should_drop(&packetDrop4, dropPort, sessionId+1, packet->ts.tv_sec)) {
+
+            return MOLOCH_PACKET_IPPORT_DROPPED;
+        }
+
         break;
     case IPPROTO_UDP:
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
@@ -941,6 +950,13 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
 
             moloch_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
                                ip6->ip6_dst.s6_addr, tcphdr->th_dport);
+
+            const int dropPort = (tcphdr->th_dport * tcphdr->th_sport) & 0xffff;
+            if (packetDrop6S.drops[dropPort] &&
+                moloch_drophash_should_drop(&packetDrop6, dropPort, sessionId+1, packet->ts.tv_sec)) {
+
+                return MOLOCH_PACKET_IPPORT_DROPPED;
+            }
             packet->mProtocol = tcpMProtocol;
             done = 1;
             break;
@@ -1328,6 +1344,12 @@ LOCAL gboolean moloch_packet_save_drophash(gpointer UNUSED(user_data))
     if (packetDrop6.changed)
         moloch_drophash_save(&packetDrop6);
 
+    if (packetDrop4S.changed)
+        moloch_drophash_save(&packetDrop4S);
+
+    if (packetDrop6S.changed)
+        moloch_drophash_save(&packetDrop6S);
+
     return TRUE;
 }
 /******************************************************************************/
@@ -1422,10 +1444,17 @@ void moloch_packet_init()
 
     char filename[PATH_MAX];
     snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
-    moloch_drophash_init(&packetDrop4, filename, TRUE);
+    moloch_drophash_init(&packetDrop4, filename, 4);
 
     snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6", config.nodeName);
-    moloch_drophash_init(&packetDrop6, filename, FALSE);
+    moloch_drophash_init(&packetDrop6, filename, 16);
+
+    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4S", config.nodeName);
+    moloch_drophash_init(&packetDrop4S, filename, 12);
+
+    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6S", config.nodeName);
+    moloch_drophash_init(&packetDrop6S, filename, 36);
+
     g_timeout_add_seconds(10, moloch_packet_save_drophash, 0);
 
     mac1Field = moloch_field_define("general", "lotermfield",
@@ -1681,20 +1710,29 @@ void moloch_packet_drophash_add(MolochSession_t *session, int which, int min)
     if (session->ses != SESSION_TCP)
         return;
 
-    // packetDrop is kept in network byte order
-    const int port = (which == 0)?htons(session->port1):htons(session->port2);
-
-    if (MOLOCH_SESSION_v6(session)) {
-        if (which == 0) {
-            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec, min*60);
+    if (which == -1) {
+        const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
+        if (MOLOCH_SESSION_v6(session)) {
+            moloch_drophash_add(&packetDrop6S, port, session->sessionId+1, session->lastPacket.tv_sec, min*60);
         } else {
-            moloch_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec, min*60);
+            moloch_drophash_add(&packetDrop4S, port, session->sessionId+1, session->lastPacket.tv_sec, min*60);
         }
     } else {
-        if (which == 0) {
-            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+        // packetDrop is kept in network byte order
+        const int port = (which == 0)?htons(session->port1):htons(session->port2);
+
+        if (MOLOCH_SESSION_v6(session)) {
+            if (which == 0) {
+                moloch_drophash_add(&packetDrop6, port, (void*)&session->addr1, session->lastPacket.tv_sec, min*60);
+            } else {
+                moloch_drophash_add(&packetDrop6, port, (void*)&session->addr2, session->lastPacket.tv_sec, min*60);
+            }
         } else {
-            moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+            if (which == 0) {
+                moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr1.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+            } else {
+                moloch_drophash_add(&packetDrop4, port, &((uint32_t *)session->addr2.s6_addr)[3], session->lastPacket.tv_sec, min*60);
+            }
         }
     }
 }
