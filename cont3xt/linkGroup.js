@@ -78,6 +78,14 @@ class LinkGroup {
       return 'Missing list of links';
     }
 
+    if (lg.viewRoles !== undefined && !Array.isArray(lg.viewRoles)) {
+      return 'viewRoles must be array';
+    }
+
+    if (lg.editRoles !== undefined && !Array.isArray(lg.editRoles)) {
+      return 'editRoles must be array';
+    }
+
     for (const link of lg.links) {
       if (typeof (link.name) !== 'string') {
         return 'Link missing name';
