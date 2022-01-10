@@ -103,7 +103,7 @@ export default {
       columns: [ // es tasks table columns
         // default columns
         { id: 'action', name: 'Action', sort: 'action', default: true, width: 200 },
-        { id: 'description', name: 'Description', sort: 'description', default: true, width: 300, breakword: true },
+        { id: 'description', name: 'Description', sort: 'description', default: true, width: 300, classes: 'break-all' },
         { id: 'start_time_in_millis', name: 'Start Time', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
         { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return this.$options.filters.commaString(this.$options.filters.round(item.running_time_in_nanos / 1000000, 1)); } },
         { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.childrenCount); } },

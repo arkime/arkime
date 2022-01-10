@@ -17,9 +17,10 @@
         </span>
       </button>
       <tr ref="draggableColumns">
-        <th v-if="actionColumn"
-          class="ignore-element text-left"
-           style="width:70px;">
+        <th
+          v-if="actionColumn"
+          style="width:70px;"
+          class="ignore-element text-left">
           <div class="d-flex align-items-center">
             <!-- column visibility button -->
             <b-dropdown
@@ -77,8 +78,8 @@
           :key="column.name"
           v-b-tooltip.hover
           :title="column.help"
-          @click.self="sort(column.sort)"
-          :class="{'cursor-pointer':column.sort}"
+          @click.self="sort(column)"
+          :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
           class="col-header">
           <div class="grip">&nbsp;</div>
@@ -118,7 +119,8 @@
           <td v-if="actionColumn">
             Avg
           </td>
-          <td v-for="(column, index) in computedColumns"
+          <td :class="column.classes"
+            v-for="(column, index) in computedColumns"
             :key="column.id + index + 'avg'">
             {{ calculateFormatAvgValue(column) }}
           </td>
@@ -128,7 +130,8 @@
           <td v-if="actionColumn">
             Total
           </td>
-          <td v-for="(column, index) in computedColumns"
+          <td :class="column.classes"
+            v-for="(column, index) in computedColumns"
             :key="column.id + index + 'total'">
             {{ calculateFormatTotValue(column) }}
           </td>
@@ -152,15 +155,15 @@
             </slot> <!-- /action buttons -->
           </td>
           <!-- cell value -->
-          <td v-for="(column, colindex) in computedColumns"
-            :key="column.id + colindex"
-            :class="{'break-all':column.breakword}">
+          <td :class="column.classes"
+            v-for="(column, colindex) in computedColumns"
+            :key="column.id + colindex">
             {{ calculateFormatValue(column, item, index) }}
           </td> <!-- /cell value -->
         </tr>
         <!-- more info row -->
-        <tr v-if="infoRow && item.opened"
-          class="text-left"
+        <tr class="text-left"
+          v-if="infoRow && item.opened"
           :key="item.id+'moreInfo'">
           <td :colspan="tableColspan">
             <div :id="'moreInfo-' + item.id"></div>
@@ -184,7 +187,8 @@
         <td v-if="actionColumn">
           Avg
         </td>
-        <td v-for="(column, index) in computedColumns"
+        <td :class="column.classes"
+          v-for="(column, index) in computedColumns"
           :key="column.id + index + 'avgfoot'">
           {{ calculateFormatAvgValue(column) }}
         </td>
@@ -193,7 +197,8 @@
         <td v-if="actionColumn">
           Total
         </td>
-        <td v-for="(column, index) in computedColumns"
+        <td :class="column.classes"
+          v-for="(column, index) in computedColumns"
           :key="column.id + index + 'totalfoot'">
           {{ calculateFormatTotValue(column) }}
         </td>
@@ -478,10 +483,11 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    sort: function (sort) {
+    sort: function (column) {
+      if (!column.sort) { return; }
       // if the sort field is the same, toggle it, otherwise set it to default (true)
-      this.tableDesc = this.tableSortField === sort ? !this.tableDesc : true;
-      this.tableSortField = sort;
+      this.tableDesc = this.tableSortField === column.sort ? !this.tableDesc : true;
+      this.tableSortField = column.sort;
       this.loadData(this.tableSortField, this.tableDesc);
       this.saveTableState();
     },
