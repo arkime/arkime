@@ -118,7 +118,7 @@
     "nodemon": "^2.0.3",
     "ora": "^5.1.0",
     "portfinder": "^1.0.13",
-    "postcss": "^8.2.10",
+    "postcss": "^8.4.5",
     "postcss-import": "^14.0.0",
     "postcss-loader": "^5.0.0",
     "postcss-url": "^10.1.1",
