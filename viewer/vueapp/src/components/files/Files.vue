@@ -124,8 +124,10 @@ export default {
         { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } },
         { id: 'encoding', name: 'Encoding', help: 'File encoding', width: 140 },
         { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'Packet Pos Encoding', width: 140 },
-        { id: 'packets', sort: 'packets', name: 'Packets', help: 'Number of packets in file', width: 130 },
-        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', help: 'Size of packets before compression', width: 150 }
+        { id: 'packets', sort: 'packets', name: 'Packets', classes: 'text-right', help: 'Number of packets in file', width: 130 },
+        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-right', help: 'Size of packets before compression', width: 150 },
+        { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-right', help: 'Uncompressed Bits', width: 150 },
+        { id: 'compression', name: 'Compression', classes: 'text-right', help: 'Compression', width: 100, dataFunction: (item) => { return item.compression + '%'; } }
       ]
     };
   },
