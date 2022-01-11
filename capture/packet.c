@@ -752,6 +752,7 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
         return MOLOCH_PACKET_DONT_PROCESS_OR_FREE;
     }
 
+    packet->mProtocol = 0;
     packet->ipProtocol = ip4->ip_p;
     switch (ip4->ip_p) {
     case IPPROTO_IPV4:
@@ -855,6 +856,11 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
         return MOLOCH_PACKET_CORRUPT;
     }
 
+    // Corrupt ip6 header
+    if ((ip6->ip6_vfc & 0xf0) != 0x60) {
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
     if (ipTree6) {
         patricia_node_t *node;
 
@@ -888,11 +894,13 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
     }
 
 
-#ifdef DEBUG_PACKET
-    LOG("Got ip6 header %p %d", packet, packet->pktlen);
-#endif
+    packet->mProtocol = 0;
     int nxt = ip6->ip6_nxt;
     int done = 0;
+
+#ifdef DEBUG_PACKET
+    LOG("Got ip6 header %p %d nxt: %d", packet, packet->pktlen, nxt);
+#endif
     do {
         packet->ipProtocol = nxt;
 
@@ -1050,6 +1058,10 @@ LOCAL MolochPacketRC moloch_packet_ieee802(MolochPacketBatch_t *batch, MolochPac
 /******************************************************************************/
 LOCAL MolochPacketRC moloch_packet_ether(MolochPacketBatch_t * batch, MolochPacket_t * const packet, const uint8_t *data, int len)
 {
+#ifdef DEBUG_PACKET
+    LOG("enter %p %p %d", packet, data, len);
+#endif
+
     if (len < 14) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Too short %d", len);
