@@ -24,6 +24,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 
 3.2.2 2022/01/xx
   - BREAKING - non standard pcap files now use the .arkime extension
+  - release - node 14.18.3
   - viewer - default to hunt reassembled packets
   - viewer - add descriptions to hunts
   - viewer - hide graph/map (speeds up large queries)
@@ -37,6 +38,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - support pcap flies with 0 timestamp
   - capture - use .arkime file extension for non standard pcap files
   - capture - new _dropBySession rule op
+  - capture - fix infite recursion - thanks albntomat0_1
+  - capture - improve udp/tcp header length checking
   - all - support creating gzip files, set simpleGzipBlockSize
   - all - support creating pcap files with short packet headers, set simpleShortHeader
 
