@@ -102,12 +102,12 @@ export default {
       },
       columns: [ // es tasks table columns
         // default columns
-        { id: 'action', name: 'Action', sort: 'action', default: true, width: 200 },
-        { id: 'description', name: 'Description', sort: 'description', default: true, width: 300, classes: 'break-all' },
-        { id: 'start_time_in_millis', name: 'Start Time', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
+        { id: 'action', name: 'Action', classes: 'text-left', sort: 'action', default: true, width: 200 },
+        { id: 'description', name: 'Description', classes: 'text-left break-all', sort: 'description', default: true, width: 300 },
+        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-left', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
         { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return this.$options.filters.commaString(this.$options.filters.round(item.running_time_in_nanos / 1000000, 1)); } },
         { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.childrenCount); } },
-        { id: 'user', name: 'User', sort: 'user', default: true, width: 100 },
+        { id: 'user', name: 'User', classes: 'text-left', sort: 'user', default: true, width: 100 },
         // all the rest of the available stats
         { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', width: 100 },
         { id: 'id', name: 'ID', sort: 'id', width: 80 },
