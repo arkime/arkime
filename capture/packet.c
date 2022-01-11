@@ -758,6 +758,10 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
         return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         break;
     case IPPROTO_TCP:
+        if (packet->payloadLen < (int)sizeof(struct tcphdr)) {
+            return MOLOCH_PACKET_CORRUPT;
+        }
+
         if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: too small for tcp hdr %p %d", packet, len);
@@ -795,6 +799,10 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
 
         break;
     case IPPROTO_UDP:
+        if (packet->payloadLen < (int)sizeof(struct udphdr)) {
+            return MOLOCH_PACKET_CORRUPT;
+        }
+
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: too small for udp header %p %d", packet, len);
@@ -926,6 +934,10 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             return MOLOCH_PACKET_UNKNOWN;
 
         case IPPROTO_TCP:
+            if (packet->payloadLen < (int)sizeof(struct tcphdr)) {
+                return MOLOCH_PACKET_CORRUPT;
+            }
+
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
             }
@@ -961,6 +973,10 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             done = 1;
             break;
         case IPPROTO_UDP:
+            if (packet->payloadLen < (int)sizeof(struct udphdr)) {
+                return MOLOCH_PACKET_CORRUPT;
+            }
+
             if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
             }
