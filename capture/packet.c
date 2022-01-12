@@ -737,8 +737,8 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
     if ((uint8_t*)data - packet->pkt >= 2048)
         return MOLOCH_PACKET_CORRUPT;
 
-    packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->v6 = 0;
+    packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
     packet->payloadLen = ip_len - ip_hdr_len;
 
@@ -759,10 +759,6 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
         return moloch_packet_ip4(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
         break;
     case IPPROTO_TCP:
-        if (packet->payloadLen < (int)sizeof(struct tcphdr)) {
-            return MOLOCH_PACKET_CORRUPT;
-        }
-
         if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: too small for tcp hdr %p %d", packet, len);
@@ -800,10 +796,6 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
 
         break;
     case IPPROTO_UDP:
-        if (packet->payloadLen < (int)sizeof(struct udphdr)) {
-            return MOLOCH_PACKET_CORRUPT;
-        }
-
         if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: too small for udp header %p %d", packet, len);
@@ -817,6 +809,12 @@ LOCAL MolochPacketRC moloch_packet_ip4(MolochPacketBatch_t *batch, MolochPacket_
             int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
             if (rc != MOLOCH_PACKET_UNKNOWN)
                 return rc;
+
+            // Reset state on UNKNOWN
+            packet->v6 = 0;
+            packet->ipOffset = (uint8_t*)data - packet->pkt;
+            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+            packet->payloadLen = ip_len - ip_hdr_len;
         }
 
         if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
@@ -873,9 +871,8 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
 
     int ip_hdr_len = sizeof(struct ip6_hdr);
 
-    packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->v6 = 1;
-
+    packet->ipOffset = (uint8_t*)data - packet->pkt;
     packet->payloadOffset = packet->ipOffset + ip_hdr_len;
 
     if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
@@ -942,10 +939,6 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             return MOLOCH_PACKET_UNKNOWN;
 
         case IPPROTO_TCP:
-            if (packet->payloadLen < (int)sizeof(struct tcphdr)) {
-                return MOLOCH_PACKET_CORRUPT;
-            }
-
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
             }
@@ -981,10 +974,6 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
             done = 1;
             break;
         case IPPROTO_UDP:
-            if (packet->payloadLen < (int)sizeof(struct udphdr)) {
-                return MOLOCH_PACKET_CORRUPT;
-            }
-
             if (len < ip_hdr_len + (int)sizeof(struct udphdr)) {
                 return MOLOCH_PACKET_CORRUPT;
             }
@@ -998,6 +987,12 @@ LOCAL MolochPacketRC moloch_packet_ip6(MolochPacketBatch_t * batch, MolochPacket
                 int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
                 if (rc != MOLOCH_PACKET_UNKNOWN)
                     return rc;
+
+                // Reset state on UNKNOWN
+                packet->v6 = 1;
+                packet->ipOffset = (uint8_t*)data - packet->pkt;
+                packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+                packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
             }
 
             if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
