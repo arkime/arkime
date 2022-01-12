@@ -902,13 +902,13 @@ struct molochdrophashgroup_t {
     int                   dhg_count;
     int                   changed;
     char                 *file;
-    char                  isIp4;
+    char                  keyLen;
     MolochDropHash_t     *drops[0x10000];
     MOLOCH_LOCK_EXTERN(lock);
 };
 
 
-void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int isIp4);
+void moloch_drophash_init(MolochDropHashGroup_t *group, char *file, int keyLen);
 int moloch_drophash_add (MolochDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor);
 int moloch_drophash_should_drop (MolochDropHashGroup_t *group, int port, void *key, uint32_t current);
 void moloch_drophash_delete (MolochDropHashGroup_t *group, int port, void *key);

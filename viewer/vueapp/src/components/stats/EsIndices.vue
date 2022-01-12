@@ -112,8 +112,8 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Name', sort: 'index', doStats: false, default: true, width: 200 },
-        { id: 'docs.count', name: 'Documents', sort: 'docs.count', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docs.count']); } },
+        { id: 'index', name: 'Name', classes: 'text-left', sort: 'index', doStats: false, default: true, width: 200 },
+        { id: 'docs.count', name: 'Documents', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docs.count']); } },
         { id: 'store.size', name: 'Disk Size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item['store.size']); } },
         { id: 'pri', name: 'Shards', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.pri); } },
         { id: 'segmentsCount', name: 'Segments', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segmentsCount); } },

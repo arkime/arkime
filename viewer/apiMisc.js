@@ -120,6 +120,7 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
         if (fields.locked === undefined) {
           fields.locked = 0;
         }
+        fields.compression = fields.packetsSize ? Math.round(100 - (100 * fields.filesize / fields.packetsSize)) : 0;
         fields.id = fields._id;
         results.results.push(fields);
       }

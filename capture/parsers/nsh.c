@@ -30,6 +30,13 @@ LOCAL MolochPacketRC nsh_packet_enqueue(MolochPacketBatch_t * batch, MolochPacke
 
     int length = (data[1] & 0x3f) * 4;
 
+    if (length < 4) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Invalid length %d", length);
+#endif
+        return MOLOCH_PACKET_CORRUPT;
+    }
+
     if (len < length) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Too short %d < %d", len, length);

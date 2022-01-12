@@ -21,12 +21,18 @@ const AWS = require('aws-sdk');
 const async = require('async');
 const zlib = require('zlib');
 const S3s = {};
+const LRU = require('lru-cache');
+const CacheInProgress = {};
 let Config;
 let Db;
 let Pcap;
 
 const COMPRESSED_BLOCK_SIZE = 100000;
 const COMPRESSED_WITHIN_BLOCK_BITS = 20;
+
+const S3DEBUG = false;
+// Store up to 100 items
+const lru = new LRU({ max: 100 });
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
@@ -95,67 +101,134 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       Key: parts[4],
       Range: 'bytes=0-128'
     };
-    // console.log("HEADER", params);
-    s3.getObject(params, function (err, data) {
-      if (err) {
-        console.log(err, info);
-        return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
-      }
-      if (params.Key.endsWith('.gz')) {
-        header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-      } else {
-        header = data.Body;
-      }
-      header = header.subarray(0, 24);
-      pcap = Pcap.make(info.name, header);
+    const cacheKey = 'pcap:' + fields.node + ':' + fields.packetPos[0];
+    const headerData = lru.get(cacheKey);
+    if (headerData) {
+      header = headerData.header;
+      pcap = headerData.pcap;
       if (headerCb) {
         headerCb(pcap, header);
       }
       readyToProcess();
-    });
+    } else {
+      if (S3DEBUG) {
+        console.log('s3.getObject for header', params);
+      }
+      s3.getObject(params, function (err, data) {
+        if (err) {
+          console.log(err, info);
+          return endCb("Couldn't open s3 file, save might not be complete yet - " + info.name, fields);
+        }
+        if (params.Key.endsWith('.gz')) {
+          header = zlib.gunzipSync(data.Body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else {
+          header = data.Body;
+        }
+        header = header.subarray(0, 24);
+        pcap = Pcap.make(info.name, header);
+        lru.set(cacheKey, { pcap: pcap, header: header });
+        if (headerCb) {
+          headerCb(pcap, header);
+        }
+        readyToProcess();
+      });
+    }
   });
 
   function readyToProcess () {
     let itemPos = 0;
 
     function doProcess (data, nextCb) {
-      // console.log("NEXT", data);
-      data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
-      s3.getObject(data.params, function (err, s3data) {
-        if (err) {
-          console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
-          return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
-        }
-        if (data.compressed) {
-          // Need to decompress the block(s)
-          const decompressed = {};
-          // First build a map from rangeStart to the decompressed block
-          for (let i = 0; i < data.subPackets.length; i++) {
-            const sp = data.subPackets[i];
-            if (!decompressed[sp.rangeStart]) {
-              const offset = sp.rangeStart - data.rangeStart;
-              decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
-                { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+      let haveAllCached = data.compressed;
+      // See if we have all the required decompressed blocks
+      for (let i = 0; i < data.subPackets.length; i++) {
+        const sp = data.subPackets[i];
+        const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+        const cachedDecompressed = lru.get(decompressedCacheKey);
+        if (!cachedDecompressed) {
+          haveAllCached = false;
+          if (CacheInProgress[decompressedCacheKey]) {
+            // We need to wait for this to complete
+            if (CacheInProgress[decompressedCacheKey] === true) {
+              CacheInProgress[decompressedCacheKey] = [];
             }
+            CacheInProgress[decompressedCacheKey].push(function () { doProcess(data, nextCb); });
+            return;
           }
-          async.each(data.subPackets, (sp, nextSubCb) => {
-            const block = decompressed[sp.rangeStart];
-            const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
-            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
-
-            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
-          },
-          nextCb);
-        } else {
-          async.each(data.subPackets, (sp, nextSubCb) => {
-            const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
-            const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
-
-            packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
-          },
-          nextCb);
+          break;
         }
-      });
+      }
+
+      if (haveAllCached) {
+        // We have all the data that we need. Note that this code assumes
+        // that the data is compressed. Doing the caching for uncompressed
+        // files is left as an exercise for the reader.
+        async.each(data.subPackets, (sp, nextSubCb) => {
+          const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+          const block = lru.get(decompressedCacheKey);
+          const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
+          const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
+
+          packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
+        },
+        nextCb);
+      } else {
+        for (let i = 0; i < data.subPackets.length; i++) {
+          const sp = data.subPackets[i];
+          const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+          if (!CacheInProgress[decompressedCacheKey]) {
+            CacheInProgress[decompressedCacheKey] = true;
+          }
+        }
+        data.params.Range = 'bytes=' + data.rangeStart + '-' + (data.rangeEnd - 1);
+        if (S3DEBUG) {
+          console.log('s3.getObject for pcap data', data.params);
+        }
+        s3.getObject(data.params, function (err, s3data) {
+          if (err) {
+            console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
+            return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
+          }
+          if (data.compressed) {
+            // Need to decompress the block(s)
+            const decompressed = {};
+            // First build a map from rangeStart to the decompressed block
+            for (let i = 0; i < data.subPackets.length; i++) {
+              const sp = data.subPackets[i];
+              if (!decompressed[sp.rangeStart]) {
+                const offset = sp.rangeStart - data.rangeStart;
+                decompressed[sp.rangeStart] = zlib.inflateRawSync(s3data.Body.subarray(offset, offset + COMPRESSED_BLOCK_SIZE),
+                  { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+                lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
+                const cip = CacheInProgress[decompressedCacheKey];
+                delete CacheInProgress[decompressedCacheKey];
+                if (cip && cip !== true) {
+                  for (let j = 0; j < cip.length; j++) {
+                    cip[j]();
+                  }
+                }
+              }
+            }
+            async.each(data.subPackets, (sp, nextSubCb) => {
+              const block = decompressed[sp.rangeStart];
+              const subPacketData = block.subarray(sp.packetStart, sp.packetEnd);
+              const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
+
+              packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
+            },
+            nextCb);
+          } else {
+            async.each(data.subPackets, (sp, nextSubCb) => {
+              const subPacketData = s3data.Body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
+              const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
+
+              packetCb(pcap, subPacketData.subarray(0, len + 16), nextSubCb, sp.itemPos);
+            },
+            nextCb);
+          }
+        });
+      }
     }
 
     // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
@@ -258,7 +331,6 @@ function s3Expire () {
     if (err || !data.hits || !data.hits.hits) {
       return;
     }
-    // console.log("HITS", data.hits.hits);
 
     data.hits.hits.forEach((item) => {
       const parts = splitRemain(item._source.name, '/', 4);

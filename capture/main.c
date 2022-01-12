@@ -753,6 +753,7 @@ void moloch_mlockall_init()
  */
 
 MolochPacketBatch_t   batch;
+uint64_t              fuzzloch_sessionid = 0;
 
 int
 LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
@@ -795,19 +796,40 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * process the packet.  The current time just increases for each packet.
  */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    MolochPacket_t       *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
     static uint64_t       ts = 10000;
+    BSB                   bsb;
 
-    packet->pktlen        = size;
-    packet->pkt           = (u_char *)data;
-    packet->ts.tv_sec     = ts >> 4;
-    packet->ts.tv_usec    = ts & 0x8;
-    ts++;
-    packet->readerFilePos = 0;
-    packet->readerPos     = 0;
+    BSB_INIT(bsb, data, size);
 
-    // In FUZZ mode batch will actually process it
-    moloch_packet_batch(&batch, packet);
+    fuzzloch_sessionid++;
+
+    while (BSB_REMAINING(bsb) > 3 && !BSB_IS_ERROR(bsb)) {
+        uint16_t len = 0;
+        BSB_IMPORT_u16(bsb, len);
+
+        if (len == 0 || len > BSB_REMAINING(bsb))
+            break;
+
+        u_char *ptr = 0;
+        BSB_IMPORT_ptr(bsb, ptr, len);
+
+        if (!ptr || BSB_IS_ERROR(bsb))
+            break;
+
+        // LOG("Packet %llu %d", fuzzloch_sessionid, len);
+
+        MolochPacket_t *packet = MOLOCH_TYPE_ALLOC0(MolochPacket_t);
+        packet->pktlen         = len;
+        packet->pkt            = ptr;
+        packet->ts.tv_sec      = ts >> 4;
+        packet->ts.tv_usec     = ts & 0x8;
+        ts++;
+        packet->readerFilePos  = 0;
+        packet->readerPos      = 0;
+
+        // In FUZZ mode batch will actually process it
+        moloch_packet_batch(&batch, packet);
+    }
 
     return 0;
 }
