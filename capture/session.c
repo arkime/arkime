@@ -58,6 +58,23 @@ LOCAL MolochSesCmdHead_t   sessionCmds[MOLOCH_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
+#ifdef FUZZLOCH
+// If FUZZLOCH mode we just use a unique sessionid for each input
+extern uint64_t fuzzloch_sessionid;
+void moloch_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2))
+{
+    buf[0] = 13;
+    memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
+    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, 13 - 1 - sizeof(fuzzloch_sessionid));
+}
+void moloch_session_id6 (uint8_t *buf, uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
+{
+    buf[0] = 37;
+    memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
+    memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, 37 - 1 - sizeof(fuzzloch_sessionid));
+}
+#else
+/******************************************************************************/
 void moloch_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
 {
     buf[0] = 13;
@@ -110,6 +127,7 @@ void moloch_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *
         memcpy(buf+35, &port1, 2);
     }
 }
+#endif
 /******************************************************************************/
 char *moloch_session_id_string (uint8_t *sessionId, char *buf)
 {
