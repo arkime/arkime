@@ -426,6 +426,15 @@ class ThreatStreamSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  checkMd5Index (db, dbFile) {
+    const results = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'md5_index'").all();
+    if (!results || results.length === 0) {
+      console.log(`ERROR - Must create the md5_index. Run:\n  echo "CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)" | sqlite3 ${dbFile}`);
+      process.exit();
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   openDbCopy () {
     const dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
@@ -443,28 +452,24 @@ class ThreatStreamSource extends WISESource {
         // 1) Lock realDb
         realDb.prepare('BEGIN IMMEDIATE').run();
 
-        // 2) Create md5 index on readDB, this can take a while
-        console.log(this.section, 'CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)');
-        realDb.prepare('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)').run();
-
-        // 3) Copy real Db to .temp so that the .moloch db still works
+        // 2) Copy real Db to .temp so that the .moloch db still works
         console.log(this.section, '- Copying DB', dbStat.mtime);
         exec(`/bin/cp -f ${dbFile} ${dbFile}.temp`, (err, stdout, stderr) => {
-          // 4) Unlock realDb and close
+          // 3) Unlock realDb and close
           realDb.prepare('END').run();
           realDb.close();
           realDb = null;
 
-          // 5) Close current .moloch db if open
+          // 4) Close current .moloch db if open
           if (this.db) {
             this.db.close();
             this.db = null;
           }
 
-          // 6) Remove old .moloch and rename .tmp to .moloch
+          // 5) Remove old .moloch and rename .tmp to .moloch
           exec(`/bin/rm -f ${dbFile}.moloch`, (err, subStdout, subStderr) => {
             exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, subSubStdout, subSubStderr) => {
-              // 7) open new .moloch file
+              // 6) open new .moloch file
               this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
               console.log(`${this.section} - Loaded DB`);
               this.reloadTime = new Date();
@@ -483,11 +488,23 @@ class ThreatStreamSource extends WISESource {
     // This will also run on startup.
     if (this.mtime !== dbStat.mtime.getTime()) {
       this.mtime = dbStat.mtime.getTime();
-      realDb = betterSqlite3(dbFile);
+      try {
+        realDb = betterSqlite3(dbFile, { timeout: 1000 });
+      } catch (err) {
+        console.log(`ERROR - couldn't open threatstream db ${dbFile}`, err);
+        process.exit();
+      }
+      this.checkMd5Index(realDb, dbFile);
       copyIt();
-    } else if (!this.db) {
-      // Open the DB if not already opened.
-      this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
+    }
+
+    try {
+      if (!this.db) {
+        // Open the DB if not already opened.
+        this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
+        console.log(`${this.section} - Loaded DB`);
+      }
+    } catch (err) {
     }
   };
 
@@ -503,27 +520,15 @@ class ThreatStreamSource extends WISESource {
       process.exit();
     }
 
-    this.db = betterSqlite3(dbFile);
-    if (!this.db) {
-      console.log('ERROR - couldn\'t open threatstream db');
+    try {
+      this.db = betterSqlite3(dbFile);
+    } catch (err) {
+      console.log(`ERROR - couldn't open threatstream db ${dbFile}`, err);
       process.exit();
     }
+    console.log(`${this.section} - Loaded DB`);
 
-    const createStatement = this.db.prepare('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)');
-    const createIt = () => {
-      try {
-        this.db.transaction(() => {
-          createStatement.run();
-        }).immediate();
-      } catch (err) {
-        console.log(this.section, 'Failed to lock sqlite DB', dbFile);
-        if (err.code === 'SQLITE_BUSY') {
-          return setTimeout(() => { createIt(); }, 10 * 1000); // Try to lock in 30 seconds
-        }
-        process.exit();
-      }
-    };
-    createIt();
+    this.checkMd5Index(this.db, dbFile);
 
     setInterval(() => {
       try {
