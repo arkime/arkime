@@ -123,7 +123,6 @@
     "postcss-loader": "^5.0.0",
     "postcss-url": "^10.1.1",
     "semver": "^7.3.2",
-    "shelljs": "^0.8.4",
     "sortablejs": "^1.13.0",
     "style-loader": "^3.2.1",
     "terser-webpack-plugin": "^5.1.1",
