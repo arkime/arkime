@@ -54,6 +54,10 @@ class Auth {
     if (Auth.mode === 'digest') {
       passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
         function (userid, done) {
+          if (userid.startsWith('role:')) {
+            console.log(`User ${userid} Can not authenticate with role`);
+            return done('Can not authenticate with role');
+          }
           User.getUserCache(userid, (err, user) => {
             if (err) { return done(err); }
             if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
@@ -135,6 +139,11 @@ class Auth {
 
   static regressionTestsAuth (req, res, next) {
     const userId = req.query.molochRegressionUser ?? 'anonymous';
+
+    if (userId.startsWith('role:')) {
+      return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
+    }
+
     User.getUserCache(userId, (err, user) => {
       if (user) {
         req.user = user;
@@ -205,6 +214,10 @@ class Auth {
       return res.status(401).send(JSON.stringify({ success: false, text: 'User name header is empty' }));
     }
 
+    if (userId.startsWith('role:')) {
+      return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
+    }
+
     function headerAuthCheck (err, user) {
       if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
       if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
@@ -250,10 +263,16 @@ class Auth {
   static s2sAuth (req, res, next) {
     const obj = Auth.auth2obj(req.headers['x-arkime-auth'] || req.headers['x-moloch-auth']);
     obj.path = obj.path.replace(Auth.basePath, '/');
+
+    if (obj.user.startsWith('role:')) {
+      return res.send('Can not authenticate with role');
+    }
+
     if (obj.path !== req.url) {
       console.log('ERROR - mismatch url', obj.path, req.url);
       return res.send('Unauthorized based on bad url');
     }
+
     if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
       console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
       return res.send('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');

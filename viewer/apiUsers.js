@@ -5,6 +5,7 @@ const util = require('util');
 const stylus = require('stylus');
 const Auth = require('../common/auth');
 const User = require('../common/user');
+const cryptoLib = require('crypto');
 
 module.exports = (Config, Db, internals, ViewerUtils) => {
   const userAPIs = {};
@@ -331,8 +332,9 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     let userIdTest = req.body.userId;
     if (userIdTest.startsWith('role:')) {
-      userIdTest = userIdTest.replace('role:', '');
-    } else if (!req.body.password) { // roles don't require passwords
+      userIdTest = userIdTest.slice(5);
+      req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
+    } else if (!req.body.password) {
       return res.serverError(403, 'Missing/Empty required fields');
     }
 
@@ -342,6 +344,10 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     if (req.body.userId === '_moloch_shared') {
       return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
+    }
+
+    if (req.body.roles && !Array.isArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array');
     }
 
     User.getUser(req.body.userId, (err, user) => {
@@ -379,7 +385,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         if (!err) {
           return res.send(JSON.stringify({
             success: true,
-            text: 'User created succesfully'
+            text: `${req.body.userId.startsWith('role:') ? 'Role' : 'User'} created succesfully`
           }));
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);

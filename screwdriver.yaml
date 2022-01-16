@@ -25,7 +25,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: make install
+            - installing: scl enable devtoolset-9 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -230,7 +230,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: INSTALL_BUNDLE=bundle make install
+            - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
@@ -288,7 +288,7 @@ jobs:
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: make install
+            - installing: scl enable devtoolset-9 'make install'
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
             - build-package: |

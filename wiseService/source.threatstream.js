@@ -22,7 +22,7 @@ const unzipper = require('unzipper');
 const WISESource = require('./wiseSource.js');
 const request = require('request');
 const exec = require('child_process').exec;
-let sqlite3;
+const betterSqlite3 = require('better-sqlite3');
 
 class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -79,7 +79,6 @@ class ThreatStreamSource extends WISESource {
       break;
     case 'sqlite3':
     case 'sqlite3-copy':
-      sqlite3 = require('sqlite3');
       if (this.mode === 'sqlite3-copy') {
         this.openDbCopy();
         setInterval(this.openDbCopy.bind(this), 30 * 60 * 1000);
@@ -328,12 +327,10 @@ class ThreatStreamSource extends WISESource {
       return cb('dropped');
     }
 
-    this.db.all(`SELECT * FROM ts WHERE ${field} = ? AND state != "falsepos" AND itype IN (${this.typesWithQuotes[type]})`, value, (err, data) => {
-      if (err) {
-        console.log(this.section, 'ERROR', err, data);
-        return cb('dropped');
-      }
-      if (data.length === 0) {
+    try {
+      const data = this.db.prepare(`SELECT * FROM ts WHERE ${field} = ? AND state != 'falsepos' AND itype IN (${this.typesWithQuotes[type]})`).all(value);
+
+      if (!data || data.length === 0) {
         return cb(null, WISESource.emptyResult);
       }
 
@@ -358,7 +355,10 @@ class ThreatStreamSource extends WISESource {
       });
       const result = WISESource.encodeResult.apply(null, args);
       return cb(null, result);
-    });
+    } catch (err) {
+      console.log(this.section, 'ERROR', err);
+      return cb('dropped');
+    }
   };
 
   // ----------------------------------------------------------------------------
@@ -426,6 +426,15 @@ class ThreatStreamSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
+  checkMd5Index (db, dbFile) {
+    const results = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'md5_index'").all();
+    if (!results || results.length === 0) {
+      console.log(`ERROR - Must create the md5_index. Run:\n  echo "CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)" | sqlite3 ${dbFile}`);
+      process.exit();
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   openDbCopy () {
     const dbFile = this.api.getConfig('threatstream', 'dbFile', 'ts.db');
 
@@ -438,56 +447,64 @@ class ThreatStreamSource extends WISESource {
       process.exit();
     }
 
-    // * Lock the real DB
-    // * Copy the real db to .temp so that anything currently running still works
-    // * Unlock the real DB and close
-    // * create md5 index on .temp version
-    // * Close .moloch db
-    // * mv .temp to .moloch
-    // * Open .moloch
-    const beginImmediate = (err) => {
-      // Repeat until we lock the DB
-      if (err && err.code === 'SQLITE_BUSY') {
-        console.log(this.section, 'Failed to lock sqlite DB', dbFile);
-        return setTimeout(() => {
-          realDb.run('BEGIN IMMEDIATE', beginImmediate);
-        }, 30 * 1000); // Try to lock in 30 seconds
-      }
+    const copyIt = () => {
+      try {
+        // 1) Lock realDb
+        realDb.prepare('BEGIN IMMEDIATE').run();
 
-      console.log(this.section, '- Copying DB', dbStat.mtime);
-      exec(`/bin/cp -f ${dbFile} ${dbFile}.temp`, (err, stdout, stderr) => {
-        realDb.run('END', (err) => {
+        // 2) Copy real Db to .temp so that the .moloch db still works
+        console.log(this.section, '- Copying DB', dbStat.mtime);
+        exec(`/bin/cp -f ${dbFile} ${dbFile}.temp`, (err, stdout, stderr) => {
+          // 3) Unlock realDb and close
+          realDb.prepare('END').run();
           realDb.close();
           realDb = null;
 
-          const tempDb = new sqlite3.Database(dbFile + '.temp');
-          tempDb.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
-            tempDb.close();
-            if (this.db) {
-              this.db.close();
-            }
+          // 4) Close current .moloch db if open
+          if (this.db) {
+            this.db.close();
             this.db = null;
-            exec(`/bin/rm -f ${dbFile}.moloch`, (err, subStdout, subStderr) => {
-              exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, subSubStdout, subSubStderr) => {
-                this.db = new sqlite3.Database(`${dbFile}.moloch`, sqlite3.OPEN_READONLY);
-                console.log(`${this.section} - Loaded DB`);
-                this.reloadTime = new Date();
-              });
+          }
+
+          // 5) Remove old .moloch and rename .tmp to .moloch
+          exec(`/bin/rm -f ${dbFile}.moloch`, (err, subStdout, subStderr) => {
+            exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, subSubStdout, subSubStderr) => {
+              // 6) open new .moloch file
+              this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
+              console.log(`${this.section} - Loaded DB`);
+              this.reloadTime = new Date();
             });
           });
         });
-      });
+      } catch (err) {
+        if (err.code === 'SQLITE_BUSY') {
+          return setTimeout(() => { copyIt(); }, 30 * 1000); // Try to lock in 30 seconds
+        }
+        console.log('Threatstream failed', err);
+      }
     };
 
     // If the last copy time doesn't match start the copy process.
     // This will also run on startup.
     if (this.mtime !== dbStat.mtime.getTime()) {
       this.mtime = dbStat.mtime.getTime();
-      realDb = new sqlite3.Database(dbFile);
-      realDb.run('BEGIN IMMEDIATE', beginImmediate);
-    } else if (!this.db) {
-      // Open the DB if not already opened.
-      this.db = new sqlite3.Database(dbFile + '.moloch', sqlite3.OPEN_READONLY);
+      try {
+        realDb = betterSqlite3(dbFile, { timeout: 1000 });
+      } catch (err) {
+        console.log(`ERROR - couldn't open threatstream db ${dbFile}`, err);
+        process.exit();
+      }
+      this.checkMd5Index(realDb, dbFile);
+      copyIt();
+    }
+
+    try {
+      if (!this.db) {
+        // Open the DB if not already opened.
+        this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
+        console.log(`${this.section} - Loaded DB`);
+      }
+    } catch (err) {
     }
   };
 
@@ -503,43 +520,27 @@ class ThreatStreamSource extends WISESource {
       process.exit();
     }
 
-    const beginImmediate = (err) => {
-      // Repeat until we lock the DB
-      if (err && err.code === 'SQLITE_BUSY') {
-        console.log(this.section, 'Failed to lock sqlite DB', dbFile);
-        return setTimeout(() => {
-          this.db.run('BEGIN IMMEDIATE', beginImmediate);
-        }, 30 * 1000); // Try to lock in 30 seconds
-      }
-
-      this.db.run('CREATE INDEX IF NOT EXISTS md5_index ON ts (md5)', (err) => {
-        this.db.run('END', (err) => {
-        });
-      });
-    };
-
-    this.db = new sqlite3.Database(dbFile);
-    if (!this.db) {
-      console.log('ERROR - couldn\'t open threatstream db');
+    try {
+      this.db = betterSqlite3(dbFile);
+    } catch (err) {
+      console.log(`ERROR - couldn't open threatstream db ${dbFile}`, err);
       process.exit();
     }
-    this.db.run('BEGIN IMMEDIATE', beginImmediate);
+    console.log(`${this.section} - Loaded DB`);
 
-    this.truncating = false;
+    this.checkMd5Index(this.db, dbFile);
+
     setInterval(() => {
-      if (this.truncating) { return; }
-      this.truncating = true;
-      this.db.all('PRAGMA main.wal_checkpoint(TRUNCATE)', (err, data) => {
-        if (data.length > 0 && data[0].busy) {
-          this.db.all('PRAGMA main.wal_checkpoint(PASSIVE)', (err, subData) => {
-            console.log('Threatstream Passive - ', err, subData);
-            this.truncating = false;
-          });
-        } else {
-          console.log('Threatstream Truncate - ', err, data);
-          this.truncating = false;
+      try {
+        const result = this.db.pragma('main.wal_checkpoint(TRUNCATE)');
+        console.log('Threatstream Truncate - ', result);
+        if (result.length > 0 && result[0].busy) {
+          const result2 = this.db.pragma('main.wal_checkpoint(PASSIVE)');
+          console.log('Threatstream Passive Truncate - ', result2);
         }
-      });
+      } catch (err) {
+        console.log('Threatstream truncate error', err);
+      }
     }, 5 * 60 * 1000);
   };
 }

@@ -537,7 +537,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
             g_hash_table_add(field->ghash, (gpointer)string);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a string %s field and tried to set '%.*s'", info->dbField, len, string);
+            LOGEXIT("ERROR - Not a string, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
         }
     }
 
@@ -595,7 +595,7 @@ const char *moloch_field_string_add(int pos, MolochSession_t *session, const cha
         g_hash_table_add(field->ghash, (gpointer)string);
         goto added;
     default:
-        LOGEXIT("ERROR - Not a string %s field and tried to set '%.*s'", info->dbField, len, string);
+        LOGEXIT("ERROR - Not a string, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
     }
 
 added:
@@ -699,7 +699,7 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
                 moloch_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
         default:
-            LOGEXIT("ERROR - Not a string hash %s field and tried to set '%.*s'", info->dbField, len, string);
+            LOGEXIT("ERROR - Not a string hash, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
         }
     }
 
@@ -737,24 +737,25 @@ const char *moloch_field_string_uw_add(int pos, MolochSession_t *session, const 
             moloch_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
     default:
-        LOGEXIT("ERROR - Not a string hash %s field and tried to set '%.*s'", info->dbField, len, string);
+        LOGEXIT("ERROR - Not a string hash, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
     }
 }
 /******************************************************************************/
 gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
 {
-    MolochField_t        *field;
-    MolochIntHashStd_t   *hash;
-    MolochInt_t          *hint;
+    MolochField_t                    *field;
+    MolochIntHashStd_t               *hash;
+    MolochInt_t                      *hint;
+    const MolochFieldInfo_t          *info = config.fields[pos];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 13 + config.fields[pos]->dbFieldLen;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 13 + info->dbFieldLen;
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_INT:
             field->i = i;
             goto added;
@@ -774,13 +775,13 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
             g_hash_table_add(field->ghash, (void *)(long)i);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a int %s field and tried to set %d", config.fields[pos]->dbField, i);
+            LOGEXIT("ERROR - Not an integer, expression: %s field: %s, tried to set '%d'", info->expression, info->dbFieldFull, i);
         }
     }
 
     field = session->fields[pos];
     field->jsonSize += 13;
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_INT:
         field->i = i;
         goto added;
@@ -803,11 +804,11 @@ gboolean moloch_field_int_add(int pos, MolochSession_t *session, int i)
         }
         goto added;
     default:
-        LOGEXIT("ERROR - Not a int %s field and tried to set %d", config.fields[pos]->dbField, i);
+        LOGEXIT("ERROR - Not an integer, expression: %s field: %s, tried to set '%d'", info->expression, info->dbFieldFull, i);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
+    if (info->ruleEnabled)
       moloch_rules_run_field_set(session, pos, (gpointer)(long)i);
 
     return TRUE;
@@ -815,17 +816,18 @@ added:
 /******************************************************************************/
 gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
 {
-    MolochField_t        *field;
-    uint32_t             fint;
+    MolochField_t                    *field;
+    uint32_t                          fint;
+    const MolochFieldInfo_t          *info = config.fields[pos];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 15 + config.fields[pos]->dbFieldLen;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 15 + info->dbFieldLen;
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_FLOAT:
             field->f = f;
             goto added;
@@ -839,13 +841,13 @@ gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
             g_hash_table_add(field->ghash, (gpointer)(long)fint);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a float %s field and tried to set %f", config.fields[pos]->dbField, f);
+            LOGEXIT("ERROR - Not a float, expression: %s field: %s, tried to set '%f'", info->expression, info->dbFieldFull, f);
         }
     }
 
     field = session->fields[pos];
     field->jsonSize += 15;
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_FLOAT:
         field->f = f;
         goto added;
@@ -861,11 +863,11 @@ gboolean moloch_field_float_add(int pos, MolochSession_t *session, float f)
         }
         goto added;
     default:
-        LOGEXIT("ERROR - Not a float %s field and tried to set %f", config.fields[pos]->dbField, f);
+        LOGEXIT("ERROR - Not a float, expression: %s field: %s, tried to set '%f'", info->expression, info->dbFieldFull, f);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled) {
+    if (info->ruleEnabled) {
       memcpy(&fint, &f, 4);
       moloch_rules_run_field_set(session, pos, (gpointer)(long)fint);
     }
@@ -919,9 +921,10 @@ void *moloch_field_parse_ip(const char *str) {
 /******************************************************************************/
 gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
 {
-    MolochField_t        *field;
+    MolochField_t                    *field;
+    const MolochFieldInfo_t          *info = config.fields[pos];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     int len = strlen(str);
@@ -934,8 +937,8 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + len + 100;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 3 + info->dbFieldLen + len + 100;
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
             goto added;
@@ -944,13 +947,13 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a ip %s field and tried to set '%s'", config.fields[pos]->dbField, str);
+            LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, str);
         }
     }
 
     field = session->fields[pos];
     field->jsonSize += (3 + len + 100);
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
         field->ip = v;
@@ -963,11 +966,11 @@ gboolean moloch_field_ip_add_str(int pos, MolochSession_t *session, char *str)
             goto added;
         }
     default:
-        LOGEXIT("ERROR - Not a ip %s field and tried to set '%s'", config.fields[pos]->dbField, str);
+        LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, str);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
+    if (info->ruleEnabled)
       moloch_rules_run_field_set(session, pos, v);
 
     return TRUE;
@@ -975,9 +978,11 @@ added:
 /******************************************************************************/
 gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
 {
-    MolochField_t        *field;
+    MolochField_t                    *field;
+    const MolochFieldInfo_t          *info = config.fields[pos];
+    char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
@@ -989,8 +994,8 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 15 + 100;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 3 + info->dbFieldLen + 15 + 100;
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
             goto added;
@@ -999,13 +1004,14 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a ip %s field", config.fields[pos]->dbField);
+            snprintf(ipbuf, sizeof(ipbuf), "%u.%u.%u.%u", i & 0xff, (i >> 8) & 0xff, (i >> 16) & 0xff, (i >> 24) & 0xff);
+            LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
         }
     }
 
     field = session->fields[pos];
     field->jsonSize += (3 + 15 + 100);
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
         field->ip = v;
@@ -1018,11 +1024,12 @@ gboolean moloch_field_ip4_add(int pos, MolochSession_t *session, uint32_t i)
             goto added;
         }
     default:
-        LOGEXIT("ERROR - Not a ip %s field", config.fields[pos]->dbField);
+        snprintf(ipbuf, sizeof(ipbuf), "%u.%u.%u.%u", i & 0xff, (i >> 8) & 0xff, (i >> 16) & 0xff, (i >> 24) & 0xff);
+        LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
+    if (info->ruleEnabled)
       moloch_rules_run_field_set(session, pos, v);
 
     return TRUE;
@@ -1030,9 +1037,11 @@ added:
 /******************************************************************************/
 gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *val)
 {
-    MolochField_t        *field;
+    MolochField_t                    *field;
+    const MolochFieldInfo_t          *info = config.fields[pos];
+    char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (config.fields[pos]->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
+    if (info->flags & MOLOCH_FIELD_FLAG_DISABLED || pos >= session->maxFields)
         return FALSE;
 
     struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
@@ -1040,8 +1049,8 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
     if (!session->fields[pos]) {
         field = MOLOCH_TYPE_ALLOC(MolochField_t);
         session->fields[pos] = field;
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 30 + 100;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 3 + info->dbFieldLen + 30 + 100;
+        switch (info->type) {
         case MOLOCH_FIELD_TYPE_IP:
             field->ip = v;
             goto added;
@@ -1050,13 +1059,14 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            LOGEXIT("ERROR - Not a ip %s field", config.fields[pos]->dbField);
+            inet_ntop(AF_INET6, v, ipbuf, sizeof(ipbuf));
+            LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
         }
     }
 
     field = session->fields[pos];
     field->jsonSize += (3 + 30 + 100);
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case MOLOCH_FIELD_TYPE_IP:
         g_free(field->ip);
         field->ip = v;
@@ -1069,11 +1079,12 @@ gboolean moloch_field_ip6_add(int pos, MolochSession_t *session, const uint8_t *
             goto added;
         }
     default:
-        LOGEXIT("ERROR - Not a ip %s field", config.fields[pos]->dbField);
+        inet_ntop(AF_INET6, v, ipbuf, sizeof(ipbuf));
+        LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
     }
 
 added:
-    if (config.fields[pos]->ruleEnabled)
+    if (info->ruleEnabled)
       moloch_rules_run_field_set(session, pos, v);
 
     return TRUE;

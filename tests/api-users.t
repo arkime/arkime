@@ -1,4 +1,4 @@
-use Test::More tests => 112;
+use Test::More tests => 115;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -15,6 +15,9 @@ my $pwd = "*/pcap";
 
 # clean old crons
     esPost("/tests_queries/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+
+# clean old users
+    esPost("/tests_users/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # users
     my $users = viewerPost("/user/list", "");
@@ -335,9 +338,23 @@ my $pwd = "*/pcap";
     $json = viewerDeleteToken("/api/user/cron/$key?molochRegressionUser=test1", $test1Token);
     ok($json->{success}, "query can be updated");
 
+# roles
+    $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true, "roles":"bad"}', $token);
+    eq_or_diff($json, from_json('{"text": "Roles field must be an array", "success": false}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "role:test1", "userName": "UserName", "enabled":true}', $token);
+    eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
+
+    $json = viewerPostToken("/user/create", '{"userId": "role:test2", "userName": "UserName", "enabled":true, "roles":["role:test1"]}', $token);
+
+    $json = viewerPost("/user/list?molochRegressionUser=role:test1", "");
+    eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
+
 # Delete Users
     $json = viewerDeleteToken("/api/user/test1", $token);
     $json = viewerPostToken2("/user/delete", "userId=test2", $token2);
+    $json = viewerPostToken2("/user/delete", "userId=role:test1", $token2);
+    $json = viewerPostToken2("/user/delete", "userId=role:test2", $token2);
     esGet("/_refresh");
     $users = viewerPost("/user/list", "");
     is (@{$users->{data}}, 0, "Removed user #1");
