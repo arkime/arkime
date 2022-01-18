@@ -69,6 +69,7 @@ LOCAL uint64_t          esHealthMS;
 LOCAL int               dbExit;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
+LOCAL char             *ecsEventProvider;
 
 extern uint64_t         packetStats[MOLOCH_PACKET_MAX];
 
@@ -645,15 +646,15 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     if (session->ipProtocol == IPPROTO_TCP) {
         BSB_EXPORT_sprintf(jbsb,
                            "\"tcpflags\":{"
-                           "\"syn\": %d,"
-                           "\"syn-ack\": %d,"
-                           "\"ack\": %d,"
-                           "\"psh\": %d,"
-                           "\"fin\": %d,"
-                           "\"rst\": %d,"
-                           "\"urg\": %d,"
-                           "\"srcZero\": %d,"
-                           "\"dstZero\": %d"
+                           "\"syn\":%d,"
+                           "\"syn-ack\":%d,"
+                           "\"ack\":%d,"
+                           "\"psh\":%d,"
+                           "\"fin\":%d,"
+                           "\"rst\":%d,"
+                           "\"urg\":%d,"
+                           "\"srcZero\":%d,"
+                           "\"dstZero\":%d"
                            "},",
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN],
                            session->tcpFlagCnt[MOLOCH_TCPFLAG_SYN_ACK],
@@ -667,7 +668,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
                            );
 
         if (session->synTime && session->ackTime) {
-            BSB_EXPORT_sprintf(jbsb, "\"initRTT\": %u,", ((session->ackTime - session->synTime)/2000));
+            BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->ackTime - session->synTime)/2000));
         }
 
     }
@@ -812,14 +813,14 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     // Currently don't do communityId for ICMP because it requires magic
     if (session->ses != SESSION_ICMP && session->ses != SESSION_OTHER) {
         char *communityId = moloch_db_community_id(session);
-        BSB_EXPORT_sprintf(jbsb, ",\"community_id\": \"1:%s\"", communityId);
+        BSB_EXPORT_sprintf(jbsb, ",\"community_id\":\"1:%s\"", communityId);
         g_free(communityId);
     }
 
     if (session->fields[vlanField]) {
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
         ghash = session->fields[vlanField]->ghash;
-        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\": %u,", g_hash_table_size(ghash));
+        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", g_hash_table_size(ghash));
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
@@ -904,6 +905,10 @@ void moloch_db_save_session(MolochSession_t *session, int final)
     }
     BSB_EXPORT_cstr(jbsb, "],");
 
+    if (ecsEventProvider) {
+        BSB_EXPORT_sprintf(jbsb, "\"event\":{\"provider\":\"%s\"},", ecsEventProvider);
+    }
+
     int inGroupNum = 0;
     for (int sortedFieldsIndexPos = 0; sortedFieldsIndexPos < dbInfo[thread].sortedFieldsIndexCnt; sortedFieldsIndexPos++) {
         const int pos = dbInfo[thread].sortedFieldsIndex[sortedFieldsIndexPos];
@@ -924,7 +929,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
             inGroupNum = config.fields[pos]->dbGroupNum;
 
             if (inGroupNum) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*s\": {", config.fields[pos]->dbGroupLen, config.fields[pos]->dbGroup);
+                BSB_EXPORT_sprintf(jbsb, "\"%.*s\":{", config.fields[pos]->dbGroupLen, config.fields[pos]->dbGroup);
             }
         }
 
@@ -992,7 +997,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
@@ -1010,7 +1015,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[pos]->dbField, HASH_COUNT(i_, *ihash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             HASH_FORALL(i_, *ihash, hint,
@@ -1029,7 +1034,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
@@ -1062,7 +1067,7 @@ void moloch_db_save_session(MolochSession_t *session, int final)
         case MOLOCH_FIELD_TYPE_FLOAT_GHASH:
             ghash = session->fields[pos]->ghash;
             if (flags & MOLOCH_FIELD_FLAG_CNT) {
-                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\": %u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
+                BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
@@ -2663,6 +2668,9 @@ void moloch_db_init()
             timers[t++] = g_timeout_add_seconds( 30, moloch_db_health_check, 0);
         }
     }
+
+    ecsEventProvider = moloch_config_str(NULL, "ecsEventProvider", NULL);
+
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         MOLOCH_LOCK_INIT(dbInfo[thread].lock);

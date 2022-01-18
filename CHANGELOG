@@ -44,6 +44,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - improve udp/tcp header length checking
   - capture - improve error messages for field setting issues
   - capture - cache when getting pcap data from S3 (thanks pjsg)
+  - capture - New ecsEventProvider setting
   - wise - switch from node-sqlite3 to better-sqlite3 package
   - all - support creating gzip files, set simpleGzipBlockSize
   - all - support creating pcap files with short packet headers, set simpleShortHeader
