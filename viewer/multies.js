@@ -104,13 +104,15 @@ function node2Prefix (node) {
   for (let p = 1; p < parts.length; p++) {
     const kv = parts[p].split(':');
     if (kv[0] === 'prefix') {
-      if (kv[1].charAt(kv[1].length - 1) !== '_') {
+      if (kv[1] === '') {
+        return '';
+      } else if (kv[1].charAt(kv[1].length - 1) !== '_') {
         return kv[1] + '_';
       }
       return kv[1];
     }
   }
-  return '';
+  return 'arkime_';
 }
 
 function node2Name (node) {
