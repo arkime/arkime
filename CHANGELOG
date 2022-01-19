@@ -22,7 +22,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.3.0 2022/01/xx
+3.3.0 2022/01/19
   - BREAKING - non standard pcap files now use the .arkime extension
   - BREAKING - for wise multiES entries, prefix: now defaults to arkime_
   - BREAKING - for wise threatstream source you must create md5 index manually
