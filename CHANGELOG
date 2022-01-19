@@ -22,8 +22,12 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.2.2 2022/01/xx
+3.3.1 2022/02/xx
+
+3.3.0 2022/01/19
   - BREAKING - non standard pcap files now use the .arkime extension
+  - BREAKING - for wise multiES entries, prefix: now defaults to arkime_
+  - BREAKING - for wise threatstream source you must create md5 index manually
   - release - node 14.18.3
   - viewer - default to hunt reassembled packets
   - viewer - add descriptions to hunts
@@ -40,6 +44,10 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - new _dropBySession rule op
   - capture - fix infite recursion - thanks albntomat0_1
   - capture - improve udp/tcp header length checking
+  - capture - improve error messages for field setting issues
+  - capture - cache when getting pcap data from S3 (thanks pjsg)
+  - capture - New ecsEventProvider setting
+  - wise - switch from node-sqlite3 to better-sqlite3 package
   - all - support creating gzip files, set simpleGzipBlockSize
   - all - support creating pcap files with short packet headers, set simpleShortHeader
 

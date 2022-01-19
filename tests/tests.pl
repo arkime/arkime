@@ -59,10 +59,19 @@ sub doFuzz2Pcap {
 
         my $len = length($buf);
 
+        # Pcap header
         syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000001000000"));
-        syswrite($out, pack('H*VV', "1234567800000000", $len, $len));
 
-        syswrite($out, $buf);
+        my $pos = 0;
+        my $num = 0;
+        while ($pos < $len) {
+            my $ilen = unpack("x${pos}n", $buf);
+            $pos += 2;
+            syswrite($out, pack('VH*VV', $num, "00000000", $ilen, $ilen));
+            syswrite($out, $buf, $ilen, $pos);
+            $pos += $ilen;
+            $num++;
+        }
 
         close($in);
         close($out);
