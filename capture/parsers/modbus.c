@@ -26,8 +26,7 @@ LOCAL  int exceptionCodeField;
 LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned char *data, int len, int which) {
 
     if (len < MODBUS_TCP_HEADER_LEN || data[3] != 0) {
-        moloch_parsers_unregister(session, uw);
-        return -1;
+        return MOLOCH_PARSER_UNREGISTER;
     }
 
     ModbusInfo_t *modbus = uw;
@@ -49,8 +48,7 @@ LOCAL int modbus_tcp_parser(MolochSession_t *session, void *uw, const unsigned c
 
         if (protocolId != 0) {
             // Protocol ID should always be 0
-            moloch_parsers_unregister(session, uw);
-            return 0;
+            return MOLOCH_PARSER_UNREGISTER;
         }
 
         uint16_t modbusLen = 0;
