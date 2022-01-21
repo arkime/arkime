@@ -23,6 +23,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
 3.3.1 2022/02/xx
+  - viewer - fix processing large packets or xored packets not always working
 
 3.3.0 2022/01/19
   - BREAKING - non standard pcap files now use the .arkime extension

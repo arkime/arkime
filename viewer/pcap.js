@@ -241,35 +241,33 @@ Pcap.prototype.readHeader = function (cb) {
 };
 
 Pcap.prototype.readPacket = function (pos, cb) {
-  return this.readPacketInternal(pos, -1, cb);
-};
-
-Pcap.prototype.readPacketInternal = function (posArg, hpLen, cb) {
-  let pos = posArg;
-
   // Hacky!! File isn't actually opened, try again soon
   if (!this.fd) {
     setTimeout(this.readPacket, 10, pos, cb);
     return;
   }
 
-  // Divisible by 256
+  return this.readPacketInternal(pos, -1, cb);
+};
+
+Pcap.prototype.readPacketInternal = function (posArg, hpLenArg, cb) {
+  let pos = posArg;
+  let hpLen = hpLenArg;
+
+  // -1 is used to mean first try for this packet
   if (hpLen === -1) {
     hpLen = 1792;
-  } else {
-    hpLen = 256 * Math.ceil(hpLen / 256);
   }
 
   let insideOffset = 0;
 
   // Get the start offset and inside offset.
-  // Will need to fetch at least insideOffset plus packet length on 256 boundary
   if (this.uncompressedBits) {
     insideOffset = pos & (this.uncompressedBitsSize - 1);
+
+    // Shift >> info.uncompressedBits for real pos
     pos = Math.floor(pos / this.uncompressedBitsSize);
-    hpLen = 256 * Math.ceil((insideOffset + hpLen) / 256);
   }
-  const buffer = Buffer.alloc(hpLen); // Divisible by 256 and 16 and > 1550
 
   // If encrypted we might have to actually start before the current pos
   let posoffset = 0;
@@ -280,6 +278,10 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLen, cb) {
     posoffset = pos % 256;
     pos = pos - posoffset; // Can't use & ~0xff because javascript is 32bit
   }
+
+  // Make sure the buffer is multiple of 256 and contains offsets
+  hpLen = 256 * Math.ceil((hpLen + insideOffset + posoffset) / 256);
+  const buffer = Buffer.alloc(hpLen);
 
   try {
     // Try and read full packet and header in one read
@@ -350,12 +352,12 @@ Pcap.prototype.readPacketInternal = function (posArg, hpLen, cb) {
       }
 
       // Don't try again
-      if (posArg !== -1) {
+      if (hpLenArg !== -1) {
         return cb(null);
       }
 
       // Full packet didn't fit, try again
-      return this.readPacketInternal(posArg, 16 + packetLen);
+      return this.readPacketInternal(posArg, 16 + packetLen, cb);
     });
   } catch (e) {
     console.log('Error ', e, 'for file', this.filename);
