@@ -317,7 +317,7 @@ my ($cmd) = @_;
         if (!$main::debug) {
             $mcmd .= " 2>&1 1>/dev/null";
         } else {
-            $mcmd .= " --debug 2>&1 1>/tmp/moloch.capture";
+            $mcmd .= " --debug 1>/tmp/moloch.capture 2>&1";
         }
 
 

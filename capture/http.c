@@ -196,7 +196,7 @@ unsigned char *moloch_http_send_sync(void *serverV, const char *method, const ch
         curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, moloch_http_curl_write_callback);
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
         curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
-        curl_easy_setopt(easy, CURLOPT_TIMEOUT, 60L);
+        curl_easy_setopt(easy, CURLOPT_TIMEOUT, 120L);
         curl_easy_setopt(easy, CURLOPT_TCP_KEEPALIVE, 1L);
     } else {
         easy = server->syncRequest.easy;
@@ -456,9 +456,7 @@ LOCAL gboolean moloch_http_watch_callback(int fd, GIOCondition condition, gpoint
                  ((condition & G_IO_OUT) ? CURL_CSELECT_OUT : 0) |
                  ((condition & (G_IO_HUP | G_IO_ERR)) ? CURL_CSELECT_ERR : 0);
 
-    while (curl_multi_socket_action(server->multi, fd, action, &server->multiRunning) == CURLM_CALL_MULTI_PERFORM) {
-    }
-
+    curl_multi_socket_action(server->multi, fd, action, &server->multiRunning);
     moloch_http_curlm_check_multi_info(server);
     return TRUE;
 }
@@ -490,10 +488,11 @@ LOCAL gboolean moloch_http_timer_callback(gpointer serverV)
 {
     MolochHttpServer_t        *server = serverV;
 
-    while (curl_multi_perform(server->multi, &server->multiRunning) == CURLM_CALL_MULTI_PERFORM) {
-    }
+    curl_multi_socket_action(server->multi, CURL_SOCKET_TIMEOUT, 0, &server->multiRunning);
     moloch_http_curlm_check_multi_info(server);
-    return G_SOURCE_CONTINUE;
+
+    server->multiTimer = 0;
+    return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
 LOCAL int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_ms, void *serverV)
@@ -508,12 +507,10 @@ LOCAL int moloch_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_
         return CURLE_OK;
     }
 
-    if (!server->multiTimer) {
-        server->multiTimer = g_timeout_add(50, moloch_http_timer_callback, server);
+    if (server->multiTimer) {
+        g_source_remove(server->multiTimer);
     }
-
-    if (timeout_ms == 0)
-        moloch_http_timer_callback(serverV);
+    server->multiTimer = g_timeout_add(timeout_ms, moloch_http_timer_callback, server);
 
     return CURLE_OK;
 }
@@ -883,7 +880,7 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
     }
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
-    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, 60L);
+    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, 120L);
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -936,7 +933,7 @@ void moloch_http_free_server(void *serverV)
 
     // Finish any still running requests
     while (server->multiRunning) {
-        curl_multi_perform(server->multi, &server->multiRunning);
+        curl_multi_socket_action(server->multi, CURL_SOCKET_TIMEOUT, 0, &server->multiRunning);
         moloch_http_curlm_check_multi_info(server);
     }
 
