@@ -7348,3 +7348,5 @@ if ($DOHOTWARM) {
 logmsg "Finished\n";
 
 sleep 1;
+esGet("/_flush", 1);
+esGet("/_refresh", 1);

@@ -13,12 +13,27 @@ my $token = getTokenCookie();
 
 sub doTest {
     my ($encryption, $gzip, $shortheader) = @_;
-    my ($tag, $cmd, $id, $json, $content, $result);
+    my ($cmd, $id, $json, $content, $result);
 
-  ###### socks-http-pass.pcap
-    $tag = "socks-$prefix-$encryption-$gzip-$shortheader";
-    #diag $tag;
-    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $tag";
+    my $stag = "socks-$prefix-$encryption-$gzip-$shortheader";
+    my $btag = "bdat-$prefix-$encryption-$gzip-$shortheader";
+
+  ###### wireshark-bdat.pcap - run
+    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag";
+    if (defined $encryption) {
+        $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
+    }
+    if (defined $gzip) {
+        $cmd .= " -o simpleGzipBlockSize=$gzip";
+    }
+    if (defined $shortheader) {
+        $cmd .= " -o simpleShortHeader=$shortheader";
+    }
+    #diag "$cmd\n";
+    system("$cmd &");
+
+  ###### socks-http-pass.pcap - run
+    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -31,10 +46,11 @@ sub doTest {
     #diag "$cmd\n";
     system($cmd);
 
-    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$tag && port.src == 54072"));
+  ###### socks-http-pass.pcap - test
+    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$stag && port.src == 54072"));
     $id = $json->{data}->[0]->{id};
 
-    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$tag && port.src == 54068"));
+    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$stag && port.src == 54068"));
     my $sid = $json->{data}->[0]->{id};
 
     $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii")->content;
@@ -54,22 +70,7 @@ sub doTest {
     ok ($content =~ /domain in examples without prior coordination or asking for permission/);
 
   ###### wireshark-bdat.pcap - test big packets
-    $tag = "bdat-$prefix-$encryption-$gzip-$shortheader";
-    #diag $tag;
-    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $tag";
-    if (defined $encryption) {
-        $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
-    }
-    if (defined $gzip) {
-        $cmd .= " -o simpleGzipBlockSize=$gzip";
-    }
-    if (defined $shortheader) {
-        $cmd .= " -o simpleShortHeader=$shortheader";
-    }
-    #diag "$cmd\n";
-    system($cmd);
-
-    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$tag"));
+    $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$btag"));
     $id = $json->{data}->[0]->{id};
 
     $content = $MolochTest::userAgent->get("http://$MolochTest::host:8123/test/session/$id/packets?line=false&ts=false&base=ascii")->content;

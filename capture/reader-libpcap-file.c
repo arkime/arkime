@@ -503,7 +503,7 @@ LOCAL gboolean reader_libpcapfile_read()
     }
 
     // pause reading if too many waiting ES operations
-    if (moloch_http_queue_length(esServer) > 40) {
+    if (moloch_http_queue_length(esServer) > 30) {
         if (config.debug)
             LOG("Waiting to process more packets, es q: %d", moloch_http_queue_length(esServer));
         return G_SOURCE_CONTINUE;
