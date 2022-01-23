@@ -262,9 +262,8 @@ sub esCopy
 
         $id = $incoming->{_scroll_id};
 
-        esPost("/_bulk", $out);
+        esPost("/_bulk?refresh=wait_for", $out);
     }
-    esGet("/_flush");
 }
 ################################################################################
 sub countTest {

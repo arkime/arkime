@@ -305,7 +305,7 @@ my $hToken = getTokenCookie('huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/hunt?molochRegressionUser=huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");

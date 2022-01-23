@@ -831,6 +831,7 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
 
       if (result.error) {
         console.log('ERROR - GET /fields/field/_search', result.error);
+        return res.send(obj);
       }
 
       for (let h = 0; h < result.hits.hits.length; h++) {
