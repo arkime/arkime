@@ -38,7 +38,6 @@ const usersMissing = {
   userName: '',
   expression: '',
   enabled: 0,
-  createEnabled: 0,
   webEnabled: 0,
   headerAuthEnabled: 0,
   emailSearch: 0,
@@ -47,7 +46,7 @@ const usersMissing = {
 };
 
 const searchColumns = [
-  'userId', 'userName', 'expression', 'enabled', 'createEnabled',
+  'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
   'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
   'lastUsed', 'timeLimit', 'roles'
@@ -190,8 +189,9 @@ class User {
       const user = Object.assign(new User(), data);
       cleanUser(user);
       user.settings = user.settings ?? {};
+      user.expandRoles();
       if (readOnly) {
-        user.createEnabled = false;
+        user.roles = user.roles.filter(role => role === 'usersAdmin');
       }
       return cb(null, user);
     });
@@ -215,10 +215,14 @@ class User {
   /**
    * Set user, callback only
    */
-  static setUser (userId, doc, cb) {
-    delete doc._allRoles;
+  static setUser (userId, user, cb) {
+    delete user._allRoles;
+    if (user.createEnabled && !user.roles.includes('usersAdmin')) {
+      user.roles.push('usersAdmin');
+    }
+    delete user.createEnabled;
     delete User.usersCache[userId];
-    User.implementation.setUser(userId, doc, (err, boo) => {
+    User.implementation.setUser(userId, user, (err, boo) => {
       cb(err, boo);
     });
   };
@@ -263,7 +267,7 @@ class User {
    */
   static apiGetUser (req, res, next) {
     const userProps = [
-      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
       'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
@@ -364,23 +368,73 @@ class User {
   }
 
   /**
-   * Check if user has role. The check can be against a single role or array of roles.
+   * Check if user has ANY of the roles in role2Check. The check can be against a single role or array of roles.
    */
-  async hasRole (role) {
-    if (this._allRoles === undefined) {
-      await this.expandRoles();
+  hasRole (role2Check) {
+
+    if (!Array.isArray(role2Check)) {
+      return this._allRoles.has(role2Check);
     }
 
-    if (!Array.isArray(role)) {
-      return this._allRoles.has(role);
-    }
-
-    for (const r of role) {
+    for (const r of role2Check) {
       if (this._allRoles.has(r)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Check if user has ALL of the roles in role2Check. The check can be against a single role or array of roles.
+   */
+  hasAllRole (role2Check) {
+
+    if (!Array.isArray(role2Check)) {
+      return this._allRoles.has(role2Check);
+    }
+
+    for (const r of role2Check) {
+      if (!this._allRoles.has(r)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   *
+   */
+  static checkRole (role) {
+    return async (req, res, next) => {
+      if (!req.user.hasAllRole(role)) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
+   *
+   */
+  static checkPermissions (permissions) {
+    const inversePermissions = {
+      hidePcap: true,
+      hideFiles: true,
+      hideStats: true,
+      disablePcapDownload: true
+    };
+
+    return (req, res, next) => {
+      for (const permission of permissions) {
+        if ((!req.user[permission] && !inversePermissions[permission]) ||
+          (req.user[permission] && inversePermissions[permission])) {
+          console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
+          return res.serverError(403, 'You do not have permission to access this resource');
+        }
+      }
+      next();
+    };
   }
 
   /**
@@ -424,6 +478,18 @@ function cleanUser (user) {
   user.packetSearch = user.packetSearch || false;
   user.timeLimit = user.timeLimit || undefined;
   user.lastUsed = user.lastUsed || 0;
+
+  // By default give to all user stuff if never had roles
+  if (user.roles === undefined) {
+    user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+  }
+
+  // Replace createEnabled
+  if (user.createEnabled && !user.roles.includes('usersAdmin')) {
+    // ALW should this write back to db?
+    user.roles.push('usersAdmin');
+    delete user.createEnabled;
+  }
 }
 
 /******************************************************************************/

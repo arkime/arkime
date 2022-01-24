@@ -63,7 +63,6 @@ function main () {
     webEnabled: true,
     headerAuthEnabled: false,
     emailSearch: false,
-    createEnabled: false,
     removeEnabled: false,
     packetSearch: false,
     welcomeMsgNum: 0,
@@ -75,8 +74,7 @@ function main () {
     switch (process.argv[i]) {
     case '--admin':
     case '-admin':
-      nuser.createEnabled = true;
-      roles.add('usersAdmin');
+      roles.add('superAdmin');
       break;
 
     case '--remove':
@@ -131,6 +129,13 @@ function main () {
       console.log('Unknown option', process.argv[i]);
       help();
     }
+  }
+
+  if (roles.size === 0) {
+    roles.add('arkimeUser');
+    roles.add('cont3xtUser');
+    roles.add('parliamentUser');
+    roles.add('wiseUser');
   }
 
   nuser.roles = [...roles];

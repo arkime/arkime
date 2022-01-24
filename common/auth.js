@@ -96,7 +96,6 @@ class Auth {
     req.user = Object.assign(new User(), {
       userId: 'anonymous',
       enabled: true,
-      createEnabled: true,
       webEnabled: true,
       headerAuthEnabled: false,
       emailSearch: true,
@@ -106,6 +105,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
+    req.user.expandRoles();
     return next();
   }
 
@@ -113,7 +113,6 @@ class Auth {
     req.user = Object.assign(new User(), {
       userId: 'anonymous',
       enabled: true,
-      createEnabled: false,
       webEnabled: true,
       headerAuthEnabled: false,
       emailSearch: true,
@@ -123,6 +122,7 @@ class Auth {
       welcomeMsgNum: 1,
       roles: ['superAdmin']
     });
+    req.user.expandRoles();
     User.getUserCache('anonymous', (err, user) => {
       if (user) {
         req.user.setLastUsed();
@@ -153,16 +153,24 @@ class Auth {
       req.user = Object.assign(new User(), {
         userId: userId,
         enabled: true,
-        createEnabled: userId === 'anonymous',
         webEnabled: true,
         headerAuthEnabled: false,
         emailSearch: true,
         removeEnabled: true,
         packetSearch: true,
         settings: {},
-        welcomeMsgNum: 1,
-        roles: ['superAdmin']
+        welcomeMsgNum: 1
       });
+
+      if (userId === 'superAdmin') {
+        req.user.roles = ['superAdmin'];
+      } else if (userId === 'anonymous') {
+        req.user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+      } else {
+        req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser']
+      }
+
+      req.user.expandRoles();
       return next();
     });
   }

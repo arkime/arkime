@@ -24,7 +24,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
           webEnabled: false,
           emailSearch: false,
           headerAuthEnabled: false,
-          createEnabled: false,
           removeEnabled: false,
           packetSearch: false,
           views: {}
@@ -131,7 +130,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
   userAPIs.getCurrentUser = (req) => {
     const userProps = [
-      'createEnabled', 'emailSearch', 'enabled', 'removeEnabled',
+      'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
       'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
@@ -147,11 +146,11 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
 
     clone.canUpload = internals.allowUploads;
 
-    // If esAdminUser is set use that, other wise use createEnable privilege
+    // If esAdminUser is set use that, other wise use arkimeAdmin privilege
     if (internals.esAdminUsersSet) {
       clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
     } else {
-      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+      clone.esAdminUser = req.user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false;
     }
 
     // If no settings, use defaults
@@ -220,7 +219,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {string} userId - The ID of the user.
    * @param {string} userName - The name of the user (to be displayed in the UI).
    * @param {boolean} enabled=true - Whether the user is enabled (or disabled). Disabled users cannot access the UI or APIs.
-   * @param {boolean} createEnabled=false - Can create new accounts and change the settings for other accounts and other administrative tasks.
    * @param {boolean} webEnabled=true - Can access the web interface. When off only APIs can be used.
    * @param {boolean} headerAuthEnabled=false - Can login using the web auth header. This setting doesn't disable the password so it should be scrambled.
    * @param {boolean} emailSearch=false - Can perform searches for fields relating to email.
@@ -350,6 +348,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'Roles field must be an array');
     }
 
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
@@ -365,7 +371,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         webEnabled: req.body.webEnabled === true,
         emailSearch: req.body.emailSearch === true,
         headerAuthEnabled: req.body.headerAuthEnabled === true,
-        createEnabled: req.body.createEnabled === true,
         removeEnabled: req.body.removeEnabled === true,
         packetSearch: req.body.packetSearch === true,
         timeLimit: req.body.timeLimit,
@@ -373,7 +378,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         hideFiles: req.body.hideFiles === true,
         hidePcap: req.body.hidePcap === true,
         disablePcapDownload: req.body.disablePcapDownload === true,
-        roles: req.body.roles || undefined,
+        roles: req.body.roles,
         welcomeMsgNum: 0
       };
 
@@ -441,6 +446,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
     }
 
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
+    }
+
     User.getUser(userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
@@ -478,11 +491,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
 
-      // Can only change createEnabled if it is currently turned on
-      if (req.body.createEnabled !== undefined && req.user.createEnabled) {
-        user.createEnabled = req.body.createEnabled === true;
-      }
-
       User.setUser(userId, user, (err, info) => {
         if (Config.debug) {
           console.log('setUser', user, err, info);
@@ -514,7 +522,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
-    if (!req.user.createEnabled && (Auth.store2ha1(req.user.passStore) !==
+    if (!req.user.hasRole('usersAdmin') && (Auth.store2ha1(req.user.passStore) !==
       Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
       req.token.userId !== req.user.userId)) {
       return res.serverError(403, 'New password mismatch');
@@ -765,7 +773,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.deleteUserView = (req, res) => {
-    const viewName = req.body.name || req.params.name;
+    const viewName = req.body.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
@@ -781,7 +789,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can delete the shared view
-          if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
+          if (!user.hasRole('arkimeAdmin') && sharedUser.views[viewName].user !== user.userId) {
             return res.serverError(401, 'Need admin privelages to delete another user\'s shared view');
           }
           delete sharedUser.views[viewName];
@@ -828,7 +836,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.userViewToggleShare = (req, res) => {
-    const viewName = req.params.name || req.body.name;
+    const viewName = req.body.name;
     if (!viewName) {
       return res.serverError(403, 'Missing view name');
     }
@@ -866,7 +874,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
         // if unsharing, remove it from shared user and add it to current user
         if (sharedUser.views[viewName] === undefined) { return res.serverError(404, 'View not found'); }
         // only admins or the user that created the view can update the shared view
-        if (!user.createEnabled && sharedUser.views[viewName].user !== user.userId) {
+        if (!user.hasRole('arkimeAdmin') && sharedUser.views[viewName].user !== user.userId) {
           return res.serverError(401, 'Need admin privelages to unshare another user\'s shared view');
         }
         // delete the shared view
@@ -885,7 +893,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.updateUserView = (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
 
     if (!key) {
       return res.serverError(403, 'Missing view key');
@@ -910,7 +918,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
             return res.serverError(404, 'View not found');
           }
           // only admins or the user that created the view can update the shared view
-          if (!user.createEnabled && sharedUser.views[req.body.name].user !== user.userId) {
+          if (!user.hasRole('arkimeAdmin') && sharedUser.views[req.body.name].user !== user.userId) {
             return res.serverError(401, 'Need admin privelages to update another user\'s shared view');
           }
           sharedUser.views[req.body.name] = {
@@ -1100,7 +1108,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   userAPIs.deleteUserCron = async (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
     }
@@ -1127,7 +1135,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @returns {ArkimeQuery} query - The updated query object
    */
   userAPIs.updateUserCron = async (req, res) => {
-    const key = req.body.key || req.params.key;
+    const key = req.body.key;
     if (!key) {
       return res.serverError(403, 'Missing query key');
     }

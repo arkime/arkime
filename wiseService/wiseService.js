@@ -241,7 +241,7 @@ function isConfigWeb (req, res, next) {
 
 // ----------------------------------------------------------------------------
 function checkAdmin (req, res, next) {
-  if (req.user.createEnabled) {
+  if (req.user.hasRole('wiseAdmin')) {
     return next();
   } else {
     console.log(`${req.userId} is not an admin`);
