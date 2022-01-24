@@ -16,7 +16,7 @@ my $json;
   esPost("/tests_hunts/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 # Make sure no hunts
-  my $hunts = viewerGet("/hunt/list");
+  my $hunts = viewerGet("/hunt/list?all");
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 # Create huntuser
@@ -77,7 +77,7 @@ my $hToken = getTokenCookie('huntuser');
   eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
 
 # Make sure no hunts
-  my $hunts = viewerGet("/api/hunts");
+  my $hunts = viewerGet("/api/hunts?all");
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
 
 ##### GOOD
@@ -173,15 +173,9 @@ my $hToken = getTokenCookie('huntuser');
   $json = viewerPostToken("/hunt?molochRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
   my $id6 = $json->{hunt}->{id};
 
-  esGet("/_flush");
-  esGet("/_refresh");
-
   viewerGet("/regressionTests/processHuntJobs");
 
-  esGet("/_flush");
-  esGet("/_refresh");
-
-  $hunts = viewerGet("/hunt/list?history=true");
+  $hunts = viewerGet("/hunt/list?all");
   my ($viewHunt, $badHunt);
   foreach my $item (@{$hunts->{data}}) {
     if ($item->{id} eq $id5) {
@@ -192,7 +186,6 @@ my $hToken = getTokenCookie('huntuser');
     }
   }
 
-
 # verify viewHunt and badHunt
   is($viewHunt->{query}->{view}, "tls", "hunt has a view applied");
   is($viewHunt->{unrunnable}, undef, "hunt should be runable");
@@ -201,6 +194,7 @@ my $hToken = getTokenCookie('huntuser');
 
 # add a hunt that is shared with another user
   $json = viewerPostToken("/hunt?molochRegressionUser=anonymous", '{"users":"huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  esGet("/_refresh");
   is ($json->{hunt}->{users}->[0], "huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
 
@@ -309,9 +303,6 @@ my $hToken = getTokenCookie('huntuser');
 
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");
-
-  esGet("/_flush");
-  esGet("/_refresh");
 
   # create hash of results
   $hunts = viewerGet("/hunt/list?history=true");

@@ -862,7 +862,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     } else { // get queued, paused, running jobs
       query.from = 0;
       query.size = 1000;
-      query.query.bool.filter.push({ terms: { status: ['queued', 'paused', 'running'] } });
+      if (req.query.all === undefined) {
+        query.query.bool.filter.push({ terms: { status: ['queued', 'paused', 'running'] } });
+      }
     }
 
     if (Config.debug) {
@@ -881,12 +883,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         const hunt = hit._source;
         hunt.id = hit._id;
         hunt.index = hit._index;
-        // don't add the running job to the queue
-        if (hunt.status === 'running' && (!Config.get('cronQueries', false) || internals.runningHuntJob)) {
-          runningJob = hunt;
-          continue;
-        }
-
         hunt.users = hunt.users || [];
 
         // clear out secret fields for users who don't have access to that hunt
@@ -898,6 +894,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           hunt.userId = '';
           hunt.searchType = '';
           delete hunt.query;
+        }
+
+        // don't add the running job to the queue
+        if (hunt.status === 'running' && (!Config.get('cronQueries', false) || internals.runningHuntJob)) {
+          runningJob = hunt;
+          if (req.query.all !== undefined) {
+            continue;
+          }
         }
         results.results.push(hunt);
       }

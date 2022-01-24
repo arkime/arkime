@@ -204,18 +204,22 @@ if (Config.get('regressionTests')) {
     res.send('{}');
   });
   // Make sure all jobs have run and return
-  app.get('/regressionTests/processHuntJobs', function (req, res) {
+  app.get('/regressionTests/processHuntJobs', async function (req, res) {
+    await Db.flush();
+    await Db.refresh();
     huntAPIs.processHuntJobs();
 
     setTimeout(function checkHuntFinished () {
       if (internals.runningHuntJob) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        Db.search('hunts', 'hunt', { query: { term: { status: 'queued' } } }, function (err, result) {
+        Db.search('hunts', 'hunt', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
           if (result.hits.total > 0) {
             huntAPIs.processHuntJobs();
+            await Db.refresh();
             setTimeout(checkHuntFinished, 1000);
           } else {
+            await Db.refresh();
             res.send('{}');
           }
         });

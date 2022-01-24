@@ -70,6 +70,7 @@ sub doTest {
     ok ($content =~ /domain in examples without prior coordination or asking for permission/);
 
   ###### wireshark-bdat.pcap - test big packets
+    esGet("/_refresh");
     $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$btag"));
     $id = $json->{data}->[0]->{id};
 
