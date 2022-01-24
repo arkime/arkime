@@ -8,9 +8,6 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-# Clear out node2
-    system("../db/db.pl --prefix tests2 $MolochTest::elasticsearch initnoprompt 2>&1 1>/dev/null");
-    sleep(1);
     esCopy("tests_fields", "tests2_fields");
     esGet("/_flush");
 
@@ -36,7 +33,7 @@ my $json;
     $json = viewerGet2("/file/list");
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
 
-    $json = viewerGet2("/sessions.json?map=true");
+    $json = viewerGet2("/sessions.json?map=true&date=-1");
     is ($json->{recordsTotal}, 0, "Correct sessions.json recordsTotal");
     is ($json->{graph}->{interval}, 60, "Correct sessions.json graph interval");
     is (scalar @{$json->{graph}->{sessionsHisto}}, 0, "Correct sessions.json graph sessionsHisto");
@@ -46,9 +43,9 @@ my $json;
     is (scalar @{$json->{graph}->{"server.bytesHisto"}}, 0, "Correct sessions.json graph dstDataBytesHisto");
     is (scalar keys %{$json->{map}}, 0, "Correct sessions.json map");
 
-    $json = viewerGet2("/spigraph.json?map=true");
+    $json = viewerGet2("/spigraph.json?map=true&date=-1");
     is ($json->{recordsTotal}, 0, "Correct spigraph.json recordsTotal");
-    is ($json->{graph}->{interval}, 60, "Correct spigraph.json graph interval");
+    is ($json->{graph}->{interval}, 3600, "Correct spigraph.json graph interval");
     is (scalar @{$json->{graph}->{sessionsHisto}}, 0, "Correct spigraph.json graph sessionsHisto");
     is (scalar @{$json->{graph}->{"source.packetsHisto"}}, 0, "Correct spigraph.json graph srcPacketsHisto");
     is (scalar @{$json->{graph}->{"destination.packetsHisto"}}, 0, "Correct spigraph.json graph dstPacketsHisto");
@@ -56,13 +53,13 @@ my $json;
     is (scalar @{$json->{graph}->{"server.bytesHisto"}}, 0, "Correct spigraph.json graph dstDataBytesHisto");
     is (scalar keys %{$json->{map}}, 0, "Correct spigraph.json map");
 
-    $json = viewerGet2("/spiview.json?map=true");
+    $json = viewerGet2("/spiview.json?map=true&date=-1");
     is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
     is ($json->{recordsTotal}, 0, "Correct spiview.json recordsTotal");
     is (!exists $json->{graph}, 1, "Shouldn't have spiview.json graph");
     is (!exists $json->{map}, 1, "Shouldn't have spiview.json map");
 
-    $json = viewerGet2("/spiview.json?spi=ta&facets=1&map=true");
+    $json = viewerGet2("/spiview.json?spi=ta&facets=1&map=true&date=-1");
     is (scalar keys %{$json->{spi}}, 1, "one spiview.json spi");
     is (scalar keys %{$json->{spi}->{ta}}, 2, "Two spiview.json ta elements");
     is ($json->{recordsTotal}, 0, "Correct spiview.json recordsTotal");
@@ -73,7 +70,7 @@ my $json;
     is (scalar @{$json->{graph}->{"server.bytesHisto"}}, 0, "Correct spiview.json graph dstDataBytesHisto");
     is (scalar keys %{$json->{map}}, 3, "Correct spiview.json map");
 
-    $json = viewerGet2("/connections.json");
+    $json = viewerGet2("/connections.json?date=-1");
     is ($json->{recordsFiltered}, 0, "Correct connections.json recordsFiltered");
     is (!exists $json->{graph}, 1, "Shouldn't have connections.json graph");
     is (!exists $json->{map}, 1, "Shouldn't have connections.json map");
