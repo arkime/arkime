@@ -544,6 +544,12 @@ LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
         DLL_PUSH_HEAD(packet_, &frags->packets, packet);
     }
 
+    if (DLL_COUNT(packet_, &frags->packets) > 100) {
+        droppedFrags++;
+        moloch_packet_frags_free(frags);
+        return FALSE;
+    }
+
     // Don't bother checking until we get a packet with no flags
     if (!frags->haveNoFlags) {
         return FALSE;
