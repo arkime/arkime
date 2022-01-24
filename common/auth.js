@@ -165,9 +165,9 @@ class Auth {
       if (userId === 'superAdmin') {
         req.user.roles = ['superAdmin'];
       } else if (userId === 'anonymous') {
-        req.user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+        req.user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
       } else {
-        req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser']
+        req.user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
       }
 
       req.user.expandRoles();

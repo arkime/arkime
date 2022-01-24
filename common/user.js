@@ -371,7 +371,6 @@ class User {
    * Check if user has ANY of the roles in role2Check. The check can be against a single role or array of roles.
    */
   hasRole (role2Check) {
-
     if (!Array.isArray(role2Check)) {
       return this._allRoles.has(role2Check);
     }
@@ -388,7 +387,6 @@ class User {
    * Check if user has ALL of the roles in role2Check. The check can be against a single role or array of roles.
    */
   hasAllRole (role2Check) {
-
     if (!Array.isArray(role2Check)) {
       return this._allRoles.has(role2Check);
     }
