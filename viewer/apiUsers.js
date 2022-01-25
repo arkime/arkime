@@ -133,8 +133,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
-      'roles'
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
     ];
 
     const clone = {};
@@ -145,6 +144,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     }
 
+    clone.roles = [...req.user._allRoles];
     clone.canUpload = internals.allowUploads;
 
     // If esAdminUser is set use that, other wise use arkimeAdmin privilege

@@ -1561,7 +1561,7 @@ app.post( // cancel elasticsearch task endpoint
 
 app.post( // cancel elasticsearch task by opaque id endpoint
   ['/api/estasks/:id/cancelwith', '/estask/cancelById'],
-  // should not have createEnabled check so users can use, each user is name spaced
+  // should not have admin check so users can use, each user is name spaced
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],
   statsAPIs.cancelUserESTask
 );
@@ -2029,7 +2029,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/users' && !req.user.createEnabled) {
+  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 
@@ -2049,7 +2049,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userId_/g, req.user ? req.user.userId : '-')
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
-  const limit = req.user.createEnabled ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+  const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
   const appContext = {
     theme: theme,
