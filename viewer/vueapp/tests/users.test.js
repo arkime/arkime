@@ -1,15 +1,20 @@
 'use strict';
 
 import Vue from 'vue';
+// eslint-disable-next-line no-shadow
+import $ from 'jquery';
 import BootstrapVue from 'bootstrap-vue';
 import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import Users from '../src/components/users/Users.vue';
 import UserService from '../src/components/users/UserService';
 import FocusInput from '../src/components/utils/FocusInput.vue';
+import HasRole from '../src/components/utils/HasRole.vue';
 import '../src/filters.js';
 import '../../../common/vueFilters';
 const { users, userWithSettings } = require('./consts');
+
+global.$ = global.jQuery = $;
 
 console.info = jest.fn(); // don't display console.info messages
 
@@ -20,6 +25,7 @@ Vue.prototype.$constants = {
 };
 
 Vue.directive('focus-input', FocusInput);
+Vue.directive('has-role', HasRole);
 
 jest.mock('../src/components/users/UserService');
 

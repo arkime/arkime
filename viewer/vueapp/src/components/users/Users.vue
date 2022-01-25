@@ -221,6 +221,7 @@
                       type="button"
                       role="button"
                       class="btn btn-sm btn-theme-primary"
+                      v-has-role="'arkimeAdmin'"
                       @click="openSettings(listUser.userId)"
                       v-b-tooltip.hover
                       :title="`Settings for ${listUser.userId}`">
