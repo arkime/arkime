@@ -15,7 +15,7 @@ export default {
   name: 'ToggleBtn',
   props: ['opened'],
   computed: {
-    btnClass: function () {
+    btnClass () {
       return {
         'btn-theme-primary': this.opened,
         'collapsed btn-theme-tertiary': !this.opened
@@ -23,7 +23,7 @@ export default {
     }
   },
   methods: {
-    toggle: function () {
+    toggle () {
       this.$emit('toggle');
     }
   }

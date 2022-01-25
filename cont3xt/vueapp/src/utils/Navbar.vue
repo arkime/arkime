@@ -40,6 +40,14 @@
             Settings
           </router-link>
         </li>
+        <li class="nav-item mr-2">
+          <router-link
+            to="users"
+            active-class="active"
+            class="nav-link">
+            Users
+          </router-link>
+        </li>
       </ul> <!-- /page links -->
       <div class="form-inline"
         @keyup.enter="login"

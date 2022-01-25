@@ -5,6 +5,7 @@ import Cont3xtStats from '@/components/pages/Stats';
 import Cont3xtSettings from '@/components/pages/Settings';
 import Cont3xtHelp from '@/components/pages/Help';
 import Cont3xt404 from '@/components/pages/404';
+import Users from '@/components/pages/Users';
 
 Vue.use(Router);
 
@@ -27,6 +28,11 @@ export default new Router({
       path: '/settings',
       name: 'Settings',
       component: Cont3xtSettings
+    },
+    {
+      path: '/users',
+      name: 'Users',
+      component: Users
     },
     {
       path: '/help',

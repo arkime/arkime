@@ -1,0 +1,1174 @@
+<template>
+
+  <div class="user-page">
+    <MolochCollapsible>
+      <span class="fixed-header">
+        <div class="users-search">
+          <div class="p-1">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text input-group-text-fw">
+                  <span v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw">
+                  </span>
+                  <span v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
+              </div>
+              <input type="text"
+                class="form-control"
+                v-model="query.filter"
+                v-focus-input="focusInput"
+                @blur="onOffFocus"
+                @input="searchForUsers"
+                placeholder="Begin typing to search for users by name"
+              />
+              <span class="input-group-append">
+                <button
+                  type="button"
+                  role="button"
+                  @click="clear"
+                  :disabled="!query.filter"
+                  title="clear search input"
+                  class="btn btn-outline-secondary btn-clear-input">
+                  <span class="fa fa-close">
+                  </span>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="users-paging">
+          <div class="ml-1 mt-1 pull-right">
+            <moloch-toast
+              class="mr-1"
+              :message="msg"
+              :type="msgType"
+              :done="messageDone">
+            </moloch-toast>
+          </div>
+          <moloch-paging v-if="users"
+            class="mt-1 ml-1"
+            :records-total="recordsTotal"
+            :records-filtered="recordsFiltered"
+            v-on:changePaging="changePaging">
+          </moloch-paging>
+        </div>
+      </span>
+    </MolochCollapsible>
+    <div class="users-content">
+
+      <moloch-error v-if="error"
+        :message="error">
+      </moloch-error>
+
+      <div v-if="!error">
+
+        <moloch-loading v-if="loading">
+        </moloch-loading>
+
+        <!-- user table -->
+        <table v-if="users"
+          class="table table-sm table-striped small">
+          <thead>
+            <tr>
+              <th width="50px;">&nbsp;</th>
+              <th v-for="column of notAdditionalCols"
+                :key="column.name"
+                class="cursor-pointer"
+                :class="{'no-wrap':column.nowrap}"
+                :title="column.help"
+                v-b-tooltip.hover
+                @click="columnClick(column.sort)">
+                {{ column.name }}
+                <span v-if="column.sort !== undefined">
+                  <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
+                  <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
+                  <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                </span>
+              </th>
+              <th width="180px">&nbsp;</th>
+            </tr>
+          </thead>
+          <transition-group name="list"
+            tag="tbody">
+            <!-- no results -->
+            <tr v-if="!users.length"
+              key="noUsers"
+              class="text-danger text-center">
+              <td colspan="12"
+                class="pt-2">
+                <h6>No users match your search</h6>
+              </td>
+            </tr> <!-- /no results -->
+            <!-- user -->
+            <template v-for="(listUser, index) of users">
+              <!-- user settings -->
+              <tr :key="listUser.id + 'user'">
+                <!-- /toggle settings button -->
+                <td :class="{'btn-indicator':listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit || listUser.expression}">
+                  <toggle-btn v-if="listUser.hideStats || listUser.hideFiles || listUser.hidePcap || listUser.disablePcapDownload || listUser.timeLimit || listUser.expression"
+                    v-b-tooltip.hover
+                    class="btn-toggle-user"
+                    :opened="listUser.expanded"
+                    @toggle="toggleAdvSettings(listUser)"
+                    :class="{expanded: listUser.expanded}"
+                    title="This user has additional restricted permissions">
+                  </toggle-btn>
+                  <toggle-btn v-else
+                    class="btn-toggle-user"
+                    :opened="listUser.expanded"
+                    :class="{expanded: listUser.expanded}"
+                    @toggle="toggleAdvSettings(listUser)">
+                  </toggle-btn>
+                </td> <!-- /toggle advanced settings button -->
+                <td class="no-wrap">
+                  <div class="cell-text">
+                    {{ listUser.userId }}
+                  </div>
+                </td>
+                <td class="no-wrap">
+                  <input v-model="listUser.userName"
+                    class="form-control form-control-sm"
+                    type="text"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.enabled"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.createEnabled"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.webEnabled"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.headerAuthEnabled"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.emailSearch"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.removeEnabled"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <input
+                    type="checkbox"
+                    role="checkbox"
+                    v-model="listUser.packetSearch"
+                  />
+                </td>
+                <td class="no-wrap">
+                  <div v-if="listUser.lastUsed"
+                    class="cell-text">
+                    {{ listUser.lastUsed | timezoneDateString(user.settings.timezone, user.settings.ms) }}
+                  </div>
+                  <div v-else
+                    class="cell-text">
+                    Never
+                  </div>
+                </td>
+                <td class="no-wrap">
+                  <span class="pull-right">
+                    <button v-if="userHasChanged(listUser.userId)"
+                      type="button"
+                      role="button"
+                      class="btn btn-sm btn-success"
+                      @click="updateUser(listUser)"
+                      v-b-tooltip.hover
+                      :title="`Save the updated settings for ${listUser.userId}`">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
+                    <button v-if="userHasChanged(listUser.userId)"
+                      type="button"
+                      role="button"
+                      class="btn btn-sm btn-warning"
+                      @click="cancelEdits(listUser.userId)"
+                      v-b-tooltip.hover
+                      :title="`Cancel changed settings for ${listUser.userId}`">
+                      <span class="fa fa-ban">
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="button"
+                      class="btn btn-sm btn-theme-primary"
+                      @click="openSettings(listUser.userId)"
+                      v-b-tooltip.hover
+                      :title="`Settings for ${listUser.userId}`">
+                      <span class="fa fa-gear">
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="button"
+                      class="btn btn-sm btn-theme-secondary"
+                      @click="openHistory(listUser.userId)"
+                      v-b-tooltip.hover
+                      :title="`History for ${listUser.userId}`">
+                      <span class="fa fa-history">
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="button"
+                      class="btn btn-sm btn-danger"
+                      @click="deleteUser(listUser, index)"
+                      v-b-tooltip.hover
+                      :title="`Delete ${listUser.userId}`">
+                      <span class="fa fa-trash-o">
+                      </span>
+                    </button>
+                  </span>
+                </td>
+              </tr> <!-- /user settings -->
+              <!-- advanced user settings -->
+              <tr :key="listUser.id + 'adv'"
+                v-if="listUser.expanded">
+                <td colspan="3">
+                  <div class="row">
+                    <div class="col mt-2">
+                      <strong>
+                        Configure additional user permissions:
+                      </strong>
+                    </div>
+                  </div>
+                </td>
+                <td colspan="9">
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-check form-check-inline form-group">
+                        <span v-b-tooltip.hover
+                          :title="columns[12].help">
+                          <input class="form-check-input"
+                            type="checkbox"
+                            role="checkbox"
+                            :id="listUser.id + 'stats'"
+                            v-model="listUser[columns[12].sort]"
+                          />
+                          <label class="form-check-label"
+                            :for="listUser.id + 'stats'">
+                            {{ columns[12].name }}
+                          </label>
+                        </span>
+                        <span v-b-tooltip.hover
+                          :title="columns[13].help">
+                          <input class="form-check-input ml-3"
+                            type="checkbox"
+                            role="checkbox"
+                            :id="listUser.id + 'files'"
+                            v-model="listUser[columns[13].sort]"
+                          />
+                          <label class="form-check-label"
+                            :for="listUser.id + 'files'">
+                            {{ columns[13].name }}
+                          </label>
+                        </span>
+                        <span v-b-tooltip.hover
+                          :title="columns[14].help">
+                          <input class="form-check-input ml-3"
+                            type="checkbox"
+                            role="checkbox"
+                            :id="listUser.id + 'pcap'"
+                            v-model="listUser[columns[14].sort]"
+                          />
+                          <label class="form-check-label"
+                            :for="listUser.id + 'pcap'">
+                            {{ columns[14].name }}
+                          </label>
+                        </span>
+                        <span v-b-tooltip.hover
+                          :title="columns[15].help">
+                          <input class="form-check-input ml-3"
+                            type="checkbox"
+                            role="checkbox"
+                            :id="listUser.id + 'pcapDownload'"
+                            v-model="listUser[columns[15].sort]"
+                          />
+                          <label class="form-check-label"
+                            :for="listUser.id + 'pcapDownload'">
+                            {{ columns[15].name }}
+                          </label>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col form-group">
+                      <div class="input-group input-group-sm">
+                        <div class="input-group-prepend cursor-help"
+                          v-b-tooltip.hover
+                          :title="columns[10].help">
+                          <span class="input-group-text">
+                          {{ columns[10].name }}
+                          </span>
+                        </div>
+                        <input v-model="listUser[columns[10].sort]"
+                          class="form-control form-control-sm"
+                          type="text"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col d-flex flex-row">
+                      <div>
+                        <div class="input-group input-group-sm">
+                          <div class="input-group-prepend cursor-help"
+                            v-b-tooltip.hover
+                            :title="columns[11].help">
+                            <span class="input-group-text">
+                              {{ columns[11].name }}
+                            </span>
+                          </div>
+                          <select class="form-control time-limit-select"
+                            v-model="listUser[columns[11].sort]"
+                            @change="changeTimeLimit(listUser)">
+                            <option value="1">1 hour</option>
+                            <option value="6">6 hours</option>
+                            <option value="24">24 hours</option>
+                            <option value="48">48 hours</option>
+                            <option value="72">72 hours</option>
+                            <option value="168">1 week</option>
+                            <option value="336">2 weeks</option>
+                            <option value="720">1 month</option>
+                            <option value="1440">2 months</option>
+                            <option value="4380">6 months</option>
+                            <option value="8760">1 year</option>
+                            <option value=undefined>All (careful)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- user roles -->
+                      <div class="ml-3"
+                        v-if="tmpRolesSupport">
+                        <b-dropdown
+                          size="sm"
+                          class="mb-2"
+                          text="User's Roles">
+                          <b-dropdown-form>
+                            <b-form-checkbox-group
+                              v-model="listUser.roles">
+                              <b-form-checkbox
+                                v-for="role in userRoles"
+                                :value="role.value"
+                                :key="role.value">
+                                {{ role.text }}
+                                <span
+                                  v-if="role.userDefined"
+                                  class="fa fa-user cursor-help ml-2"
+                                  v-b-tooltip.hover="'User defined role'"
+                                />
+                              </b-form-checkbox>
+                              <template v-for="role in listUser.roles">
+                                <b-form-checkbox
+                                  :key="role"
+                                  :value="role"
+                                  v-if="!userRoles.find(r => r.value === role)">
+                                  {{ role }}
+                                  <span
+                                    class="fa fa-times-circle cursor-help ml-2"
+                                    v-b-tooltip.hover="'This role no longer exists'"
+                                  />
+                                </b-form-checkbox>
+                              </template>
+                            </b-form-checkbox-group>
+                          </b-dropdown-form>
+                        </b-dropdown>
+                        <span
+                          class="fa fa-info-circle fa-lg cursor-help ml-2"
+                          v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                        />
+                      </div> <!-- /user roles -->
+                    </div>
+                  </div>
+                </td>
+              </tr> <!-- /advanced user settings -->
+            </template> <!-- /user -->
+          </transition-group>
+        </table> <!-- /user table -->
+
+        <div v-if="createError"
+          class="alert alert-sm alert-danger p-3 ml-1 mr-2 mt-4 mb-2 text-break">
+          <span class="fa fa-exclamation-triangle">
+          </span>&nbsp;
+          {{ createError }}
+        </div>
+        <!-- new user form -->
+        <div class="row new-user-form mr-1 ml-1">
+          <div class="col-sm-7">
+            <div class="row mb-3">
+              <div class="col-sm-9 offset-sm-3">
+                <h3 class="mt-3">
+                  New User
+                </h3>
+              </div>
+            </div>
+            <form>
+              <div class="form-group row">
+                <label :for="columns[0].sort"
+                  class="col-sm-3 col-form-label text-right">
+                  {{ columns[0].name }}<sup v-if="columns[0].required">*</sup>
+                </label>
+                <div class="col-sm-9">
+                  <input :id="columns[0].sort"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="newuser[columns[0].sort]"
+                  />
+                </div>
+              </div>
+              <div class="form-group row">
+                <label :for="columns[1].sort"
+                  class="col-sm-3 col-form-label text-right">
+                  {{ columns[1].name }}<sup v-if="columns[1].required">*</sup>
+                </label>
+                <div class="col-sm-9">
+                  <input :id="columns[1].sort"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="newuser[columns[1].sort]"
+                    autocomplete="username"
+                  />
+                </div>
+              </div>
+              <div class="form-group row">
+                <label :for="columns[10].sort"
+                  class="col-sm-3 col-form-label text-right cursor-help"
+                  v-b-tooltip.hover
+                  :title="columns[10].help">
+                  {{ columns[10].name }}
+                </label>
+                <div class="col-sm-9">
+                  <input :id="columns[10].sort"
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="newuser[columns[10].sort]"
+                  />
+                </div>
+              </div>
+              <div class="form-group row">
+                <label :for="columns[11].sort"
+                  class="col-sm-3 col-form-label text-right cursor-help"
+                  v-b-tooltip.hover
+                  :title="columns[11].help">
+                  {{ columns[11].name }}
+                </label>
+                <div class="col-sm-9">
+                  <select :id="columns[11].sort"
+                    class="form-control form-control-sm"
+                    v-model="newuser[columns[11].sort]"
+                    @change="changeTimeLimit(newuser)">
+                    <option value="1">1 hour</option>
+                    <option value="6">6 hours</option>
+                    <option value="24">24 hours</option>
+                    <option value="48">48 hours</option>
+                    <option value="72">72 hours</option>
+                    <option value="168">1 week</option>
+                    <option value="336">2 weeks</option>
+                    <option value="720">1 month</option>
+                    <option value="1440">2 months</option>
+                    <option value="4380">6 months</option>
+                    <option value="8760">1 year</option>
+                    <option value=undefined selected>All (careful)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="password"
+                  class="col-sm-3 col-form-label text-right">
+                  Password<sup>*</sup>
+                </label>
+                <div class="col-sm-9">
+                  <input id="password"
+                    type="password"
+                    class="form-control form-control-sm"
+                    v-model="newuser.password"
+                    autocomplete="new-password"
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-9 offset-sm-3 d-flex justify-content-between">
+                  <div v-if="tmpRolesSupport">
+                    <b-dropdown
+                      size="sm"
+                      class="mb-2"
+                      text="User's Roles">
+                      <b-dropdown-form>
+                        <b-form-checkbox-group
+                          v-model="newuser.roles">
+                          <b-form-checkbox
+                            v-for="role in userRoles"
+                            :value="role.value"
+                            :key="role.value">
+                            {{ role.text }}
+                            <span
+                              v-if="role.userDefined"
+                              class="fa fa-user cursor-help ml-2"
+                              v-b-tooltip.hover="'User defined role'"
+                            />
+                          </b-form-checkbox>
+                        </b-form-checkbox-group>
+                      </b-dropdown-form>
+                    </b-dropdown>
+                    <span
+                      class="fa fa-info-circle fa-lg cursor-help ml-2"
+                      v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <button
+                      v-if="tmpRolesSupport"
+                      type="button"
+                      role="button"
+                      title="Create new role"
+                      class="btn btn-sm btn-warning"
+                      @click="createUser(true)">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create Role
+                    </button>
+                    <button
+                      type="button"
+                      role="button"
+                      title="Create new user"
+                      class="btn btn-sm btn-theme-tertiary"
+                      @click="createUser(false)">
+                      <span class="fa fa-plus-circle">
+                      </span>&nbsp;
+                      Create User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="col-sm-3">
+            <div class="row mb-3">
+              <div class="col-sm-12">
+                <h3 class="mt-2">&nbsp;</h3>
+              </div>
+            </div>
+            <form>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[2].help"
+                    :for="columns[2].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[2].sort"
+                      v-model="newuser[columns[2].sort]"
+                    />
+                    Enabled
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[3].help"
+                    :for="columns[3].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[3].sort"
+                      v-model="newuser[columns[3].sort]"
+                    />
+                    Admin
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[4].help"
+                    :for="columns[4].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[4].sort"
+                      v-model="newuser[columns[4].sort]"
+                    />
+                    Web Interface
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[5].help"
+                    :for="columns[5].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[5].sort"
+                      v-model="newuser[columns[5].sort]"
+                    />
+                    Web Auth Header
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[6].help"
+                    :for="columns[6].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[6].sort"
+                      v-model="newuser[columns[6].sort]"
+                    />
+                    Email Search
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[7].help"
+                    :for="columns[7].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[7].sort"
+                      v-model="newuser[columns[7].sort]"
+                    />
+                    Can Remove Data
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm offset-sm-1 col-sm-11">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[8].help"
+                    :for="columns[8].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[8].sort"
+                      v-model="newuser[columns[8].sort]"
+                    />
+                    Can Create Hunts
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="col-sm-2">
+            <div class="row mb-3">
+              <div class="col-sm-12">
+                <h3 class="mt-2">&nbsp;</h3>
+              </div>
+            </div>
+            <form>
+              <div class="form-group form-group-sm">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[12].help"
+                    :for="columns[12].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[12].sort"
+                      v-model="newuser[columns[12].sort]"
+                    />
+                    {{ columns[12].name }}
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[13].help"
+                    :for="columns[13].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[13].sort"
+                      v-model="newuser[columns[13].sort]"
+                    />
+                    {{ columns[13].name }}
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[14].help"
+                    :for="columns[14].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[14].sort"
+                      v-model="newuser[columns[14].sort]"
+                    />
+                    {{ columns[14].name }}
+                  </label>
+                </div>
+              </div>
+              <div class="form-group form-group-sm">
+                <div class="checkbox">
+                  <label v-b-tooltip.hover
+                    :title="columns[15].help"
+                    :for="columns[15].sort">
+                    <input
+                      type="checkbox"
+                      role="checkbox"
+                      :id="columns[15].sort"
+                      v-model="newuser[columns[15].sort]"
+                    />
+                    {{ columns[15].name }}
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div> <!-- /new user form -->
+      </div>
+
+    </div> <!-- /users content -->
+  </div> <!-- container-fluid -->
+
+</template>
+
+<script>
+import UserService from '../users/UserService';
+import MolochPaging from '../utils/Pagination';
+import MolochError from '../utils/Error';
+import MolochLoading from '../utils/Loading';
+import MolochToast from '../utils/Toast';
+import MolochCollapsible from '../utils/CollapsibleWrapper';
+import FocusInput from '../utils/FocusInput';
+import ToggleBtn from '../utils/ToggleBtn';
+
+let searchInputTimeout; // timeout to debounce the search input
+
+export default {
+  name: 'Users',
+  components: {
+    MolochPaging,
+    MolochError,
+    MolochLoading,
+    MolochToast,
+    MolochCollapsible,
+    ToggleBtn
+  },
+  directives: { FocusInput },
+  data: function () {
+    return {
+      error: '',
+      loading: true,
+      users: null,
+      recordsTotal: 0,
+      recordsFiltered: 0,
+      dbUserList: null,
+      createError: '',
+      newuser: {
+        enabled: true,
+        webEnabled: true,
+        packetSearch: true
+      },
+      msg: '',
+      msgType: undefined,
+      query: {
+        length: parseInt(this.$route.query.length) || 50,
+        start: 0,
+        filter: null,
+        sortField: 'userId',
+        desc: false
+      },
+      columns: [
+        { name: 'User ID', sort: 'userId', nowrap: true, required: true, help: 'The id used for login, can not be changed once created' },
+        { name: 'User Name', sort: 'userName', nowrap: true, required: true, help: 'Friendly name for user' },
+        { name: 'Enabled', sort: 'enabled', nowrap: true, help: 'Is the account currently enabled for anything?' },
+        { name: 'Admin', sort: 'createEnabled', nowrap: true, help: 'Can create new accounts and change the settings for other accounts' },
+        { name: 'Web Interface', sort: 'webEnabled', help: 'Can access the web interface. When off only APIs can be used' },
+        { name: 'Web Auth Header', sort: 'headerAuthEnabled', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
+        { name: 'Email Search', sort: 'emailSearch', help: 'Can perform email searches' },
+        { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
+        { name: 'Can Create Hunts', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
+        { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Arkime' },
+        { additional: true, name: 'Forced Expression', sort: 'expression', help: 'A Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
+        { additional: true, name: 'Query Time Limit', sort: 'timeLimit', help: 'Restrict the maximum time window of a user\'s query' },
+        { additional: true, name: 'Hide Stats Page', sort: 'hideStats', help: 'Hide the Stats page from this user' },
+        { additional: true, name: 'Hide Files Page', sort: 'hideFiles', help: 'Hide the Files page from this user' },
+        { additional: true, name: 'Hide PCAP', sort: 'hidePcap', help: 'Hide PCAP (and only show metadata/session detail) for this user when they open a Session' },
+        { additional: true, name: 'Disable PCAP Download', sort: 'disablePcapDownload', help: 'Do not allow this user to download PCAP files' }
+      ],
+      userRoles: [],
+      tmpRolesSupport: this.$constants.MOLOCH_TMP_ROLES_SUPPORT
+    };
+  },
+  computed: {
+    user: {
+      get: function () {
+        return this.$store.state.user;
+      },
+      set: function (newValue) {
+        this.$store.commit('setUser', newValue);
+      }
+    },
+    focusInput: {
+      get: function () {
+        return this.$store.state.focusSearch;
+      },
+      set: function (newValue) {
+        this.$store.commit('setFocusSearch', newValue);
+      }
+    },
+    shiftKeyHold: function () {
+      return this.$store.state.shiftKeyHold;
+    },
+    notAdditionalCols: function () {
+      return this.columns.filter(column => !column.additional);
+    }
+  },
+  created: function () {
+    this.loadData();
+
+    if (this.tmpRolesSupport) {
+      this.getRoles();
+    }
+  },
+  methods: {
+    /* exposed page functions ------------------------------------ */
+    changePaging (pagingValues) {
+      this.query.length = pagingValues.length;
+      this.query.start = pagingValues.start;
+
+      this.loadData();
+    },
+    searchForUsers () {
+      if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
+      // debounce the input so it only issues a request after keyups cease for 400ms
+      searchInputTimeout = setTimeout(() => {
+        searchInputTimeout = null;
+        this.loadData();
+      }, 400);
+    },
+    clear () {
+      this.query.filter = undefined;
+      this.loadData();
+    },
+    onOffFocus: function () {
+      this.focusInput = false;
+    },
+    columnClick (colName) {
+      this.query.sortField = colName;
+      this.query.desc = !this.query.desc;
+      this.reloadData();
+    },
+    /* remove the message when user is done with it or duration ends */
+    messageDone: function () {
+      this.msg = null;
+      this.msgType = null;
+    },
+    changeTimeLimit: function (user) {
+      if (user.timeLimit === 'undefined') {
+        delete user.timeLimit;
+      } else {
+        user.timeLimit = parseInt(user.timeLimit);
+      }
+    },
+    cancelEdits: function (userId) {
+      const canceledUser = this.users.find(u => u.userId === userId);
+      const oldUser = this.dbUserList.find(u => u.userId === userId);
+      Object.assign(canceledUser, oldUser);
+    },
+    userHasChanged: function (userId) {
+      console.log('USER HAS CHANGED?', userId); // TODO ECR
+      const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
+      const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
+
+      // roles might be undefined, but compare to emtpy array since toggling on
+      // any roles sets roles to an array, and removing that role = empty array
+      if (oldUser.roles === undefined) { oldUser.roles = []; }
+      if (newUser.roles === undefined) { newUser.roles = []; }
+
+      // make sure these fields exist or the objects will be different
+      // (undefined is the same as false for these fields)
+      oldUser.timeLimit = oldUser.timeLimit ? oldUser.timeLimit : undefined;
+      newUser.timeLimit = newUser.timeLimit ? newUser.timeLimit : undefined;
+      oldUser.hidePcap = oldUser.hidePcap ? oldUser.hidePcap : undefined;
+      newUser.hidePcap = newUser.hidePcap ? newUser.hidePcap : undefined;
+      oldUser.hideFiles = oldUser.hideFiles ? oldUser.hideFiles : undefined;
+      newUser.hideFiles = newUser.hideFiles ? newUser.hideFiles : undefined;
+      oldUser.hideStats = oldUser.hideStats ? oldUser.hideStats : undefined;
+      newUser.hideStats = newUser.hideStats ? newUser.hideStats : undefined;
+      oldUser.disablePcapDownload = oldUser.disablePcapDownload ? oldUser.disablePcapDownload : undefined;
+      newUser.disablePcapDownload = newUser.disablePcapDownload ? newUser.disablePcapDownload : undefined;
+
+      oldUser.expanded = undefined; // don't care about expanded field (just for UI)
+      newUser.expanded = undefined;
+      oldUser.lastUsed = undefined; // don't compare lastused, it might be different if the user is using the UI
+      newUser.lastUsed = undefined;
+
+      return JSON.stringify(newUser) !== JSON.stringify(oldUser);
+    },
+    updateUser: function (user) {
+      this.$set(user, 'expanded', undefined);
+      UserService.updateUser(user)
+        .then((response) => {
+          this.msg = response.data.text;
+          this.msgType = 'success';
+          this.reloadData();
+          // update the current user if they were changed
+          if (this.user.userId === user.userId) {
+            const combined = { // last object property overwrites the previous one
+              ...this.user,
+              ...user
+            };
+            // time limit is special because it can be undefined
+            combined.timeLimit = user.timeLimit || undefined;
+            this.$set(this, 'user', combined);
+          }
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    deleteUser: function (user, index) {
+      UserService.deleteUser(user)
+        .then((response) => {
+          this.users.splice(index, 1);
+          this.msg = response.data.text;
+          this.msgType = 'success';
+        })
+        .catch((error) => {
+          this.msg = error.text;
+          this.msgType = 'danger';
+        });
+    },
+    createUser: function (createRole) {
+      this.createError = '';
+
+      if (!this.newuser.userId) {
+        this.createError = 'User ID can not be empty';
+        return;
+      }
+
+      if (!this.newuser.userName) {
+        this.createError = 'User Name can not be empty';
+        return;
+      }
+
+      if (!createRole && !this.newuser.password) {
+        this.createError = 'Password can not be empty';
+        return;
+      }
+
+      const user = JSON.parse(JSON.stringify(this.newuser));
+      if (createRole) {
+        if (!user.userId.startsWith('role:')) {
+          user.userId = `role:${user.userId}`;
+        }
+      }
+
+      UserService.createUser(user).then((response) => {
+        this.newuser = { enabled: true, packetSearch: true };
+        this.reloadData();
+        if (createRole) { this.getRoles(); }
+
+        this.msg = response.data.text;
+        this.msgType = 'success';
+      }).catch((error) => {
+        this.createError = error.text;
+      });
+    },
+    openSettings: function (userId) {
+      this.$router.push({
+        path: '/settings',
+        query: {
+          ...this.$route.query,
+          userId: userId
+        }
+      });
+    },
+    openHistory: function (userId) {
+      this.$router.push({
+        path: '/history',
+        query: {
+          ...this.$route.query,
+          userId: userId
+        }
+      });
+    },
+    toggleAdvSettings: function (user) {
+      this.$set(user, 'expanded', !user.expanded);
+    },
+    /* helper functions ------------------------------------------ */
+    loadUser: function () {
+      UserService.getCurrent()
+        .then((response) => {
+          this.user = response;
+        }, (error) => {
+          this.user = { settings: { timezone: 'local' } };
+        });
+    },
+    loadData: function () {
+      UserService.getUsers(this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          this.users = JSON.parse(JSON.stringify(response.data.data));
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data.data;
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.error = error.text;
+        });
+    },
+    reloadData: function () {
+      UserService.getUsers(this.query)
+        .then((response) => {
+          this.error = '';
+          this.loading = false;
+          const userData = JSON.parse(JSON.stringify(response.data.data));
+          this.recordsTotal = response.data.recordsTotal;
+          this.recordsFiltered = response.data.recordsFiltered;
+          // Dont modify original list. Used for comparing
+          this.dbUserList = response.data.data;
+
+          // Dont update users that have edits. Update dbUserList first to compare against
+          // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
+          this.users = userData.map(u => {
+            const matchedUser = this.users.find(item => item.userId === u.userId);
+            // If user already exists and is still being edited, keep user obj
+            return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
+          });
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.error = error.text;
+        });
+    },
+    getRoles: function () {
+      UserService.getRoles().then((response) => {
+        this.userRoles = response;
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+/* search navbar */
+.users-search {
+  z-index: 5;
+  border: none;
+  background-color: var(--color-secondary-lightest);
+  position: relative;
+
+  -webkit-box-shadow: 0 0 16px -2px black;
+     -moz-box-shadow: 0 0 16px -2px black;
+          box-shadow: 0 0 16px -2px black;
+}
+
+/* paging/toast navbar */
+.users-paging {
+  z-index: 4;
+  height: 40px;
+  background-color: var(--color-quaternary-lightest);
+}
+
+/* page content */
+.users-content {
+  margin-top: 10px;
+}
+
+.users-content form .form-group-sm .checkbox {
+  min-height: 0;
+  padding-top: 0;
+  margin-bottom: -8px;
+}
+
+/* condense the form */
+.new-user-form .form-group {
+  margin-bottom: .25rem;
+}
+.new-user-form {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+  background-color: var(--color-gray-lighter);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 3px;
+}
+
+/* field table animation */
+.list-enter-active, .list-leave-active {
+  transition: all .5s;
+}
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-move {
+  transition: transform .5s;
+}
+
+td .cell-text {
+  margin-top: 5px;
+}
+
+td input[type="checkbox"] {
+  margin-top: 9px;
+}
+
+/* center cell content vertically */
+.btn-toggle-user {
+  margin-top: 2px;
+}
+.btn-toggle-user.collapsed {
+  background: var(--color-tertiary);
+}
+
+/* indication that a user has additional permissions set */
+.btn-indicator .btn-toggle-user:not(.expanded) {
+  background: linear-gradient(135deg, var(--color-tertiary) 1%, var(--color-tertiary) 75%, var(--color-tertiary) 75%, var(--color-tertiary-darker) 77%, var(--color-tertiary-darker) 100%);
+}
+
+.form-control.time-limit-select {
+  -webkit-appearance: none;
+  border-radius: 0 4px 4px 0;
+  max-width: 120px;
+}
+
+.form-check-inline {
+  white-space: nowrap;
+}
+</style>
