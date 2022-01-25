@@ -109,7 +109,7 @@ app.use(Auth.doAuth);
 
 // check for cont3xt user
 app.use(async (req, res, next) => {
-  if (!await req.user.hasRole('cont3xtUser')) {
+  if (!req.user.hasRole('cont3xtUser')) {
     return res.send('NO!');
   }
   next();

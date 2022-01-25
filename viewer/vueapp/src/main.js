@@ -18,6 +18,7 @@ import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import App from './App';
 import MolochSessionField from './components/sessions/SessionField';
 import HasPermission from './components/utils/HasPermission';
+import HasRole from './components/utils/HasRole';
 import interceptorSetup from './interceptors';
 import router from './router';
 import store from './store';
@@ -46,6 +47,7 @@ Vue.use(VueAxios, axios);
 Vue.use(VueMoment, { moment });
 
 Vue.directive('has-permission', HasPermission);
+Vue.directive('has-role', HasRole);
 Vue.component('moloch-session-field', MolochSessionField);
 
 interceptorSetup();

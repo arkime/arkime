@@ -10,6 +10,7 @@ import HistoryComponent from '../src/components/history/History.vue';
 import HistoryService from '../src/components/history/HistoryService';
 import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
+import HasRole from '../src/components/utils/HasRole.vue';
 import '../src/filters.js';
 import '../../../common/vueFilters';
 const { histories, userWithSettings } = require('./consts');
@@ -20,6 +21,7 @@ global.$ = global.jQuery = $;
 
 Vue.use(BootstrapVue);
 Vue.directive('has-permission', HasPermission);
+Vue.directive('has-role', HasRole);
 
 jest.mock('../src/components/history/HistoryService');
 jest.mock('../src/components/users/UserService');

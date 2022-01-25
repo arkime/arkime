@@ -125,7 +125,7 @@
     </div>
     <template v-if="!anonymousMode">
       <div class="row mb-2"
-        v-if="user.userId === job.userId || user.createEnabled">
+        v-if="user.userId === job.userId || user.roles.includes('arkimeAdmin')">
         <div class="col-12">
           <span class="fa fa-fw fa-share-alt">
           </span>&nbsp;

@@ -1,7 +1,6 @@
 'use strict';
 
 export const users = [{
-  createEnabled: true,
   emailSearch: false,
   enabled: true,
   expression: '',
@@ -13,9 +12,9 @@ export const users = [{
   userId: 'testuserid',
   userName: 'testuser',
   webEnabled: true,
-  welcomeMsgNum: 1
+  welcomeMsgNum: 1,
+  roles: ['arkimeAdmin']
 }, {
-  createEnabled: false,
   emailSearch: false,
   enabled: true,
   expression: '',
@@ -27,7 +26,8 @@ export const users = [{
   userId: 'testuserid2',
   userName: 'testuser2',
   webEnabled: true,
-  welcomeMsgNum: 1
+  welcomeMsgNum: 1,
+  roles: []
 }];
 
 export const userSettings = {
