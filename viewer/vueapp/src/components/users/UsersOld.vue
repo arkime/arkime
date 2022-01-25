@@ -220,6 +220,7 @@
                     <button
                       type="button"
                       role="button"
+                      v-has-role="'arkimeAdmin'"
                       class="btn btn-sm btn-theme-primary"
                       @click="openSettings(listUser.userId)"
                       v-b-tooltip.hover
@@ -820,7 +821,7 @@ export default {
         { name: 'Can Remove Data', sort: 'removeEnabled', help: 'Can delete tags or delete/scrub pcap data' },
         { name: 'Can Create Hunts', sort: 'packetSearch', help: 'Can create a packet search job (hunt)' },
         { name: 'Last Used', sort: 'lastUsed', help: 'The last time this user used Arkime' },
-        { additional: true, name: 'Forced Expression', sort: 'expression', help: 'A Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
+        { additional: true, name: 'Forced Expression', sort: 'expression', help: 'An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)' },
         { additional: true, name: 'Query Time Limit', sort: 'timeLimit', help: 'Restrict the maximum time window of a user\'s query' },
         { additional: true, name: 'Hide Stats Page', sort: 'hideStats', help: 'Hide the Stats page from this user' },
         { additional: true, name: 'Hide Files Page', sort: 'hideFiles', help: 'Hide the Files page from this user' },
@@ -908,7 +909,6 @@ export default {
       Object.assign(canceledUser, oldUser);
     },
     userHasChanged: function (userId) {
-      console.log('USER HAS CHANGED?', userId); // TODO ECR
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
 

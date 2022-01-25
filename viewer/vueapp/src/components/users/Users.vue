@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
     <UsersCommon
-      :roles="userRoles">
+      :roles="userRoles"
+      parent-app="Arkime">
       <template #loading>
-        <MolochLoading
-        />
+        <MolochLoading />
       </template>
     </UsersCommon>
   </div>
@@ -28,7 +28,7 @@ export default {
     };
   },
   created () {
-    if (this.tmpRolesSupport) { // TODO ECR update roles when creating roles
+    if (this.tmpRolesSupport) { // TODO update roles when creating roles
       UserService.getRoles().then((response) => {
         this.userRoles = response;
       });
