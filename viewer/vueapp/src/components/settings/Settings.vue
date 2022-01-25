@@ -100,7 +100,7 @@
             Password
           </a>
           <a class="nav-link cursor-pointer"
-            v-has-permission="'createEnabled'"
+            v-has-role="'arkimeAdmin'"
             @click="openView('notifiers')"
             :class="{'active':visibleTab === 'notifiers'}">
             <span class="fa fa-fw fa-bell">
@@ -531,7 +531,7 @@
                     v-model="item.shared"
                     @change="toggleShared(item)"
                     class="form-check mt-2"
-                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
+                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -540,7 +540,7 @@
                     v-model="item.name"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
-                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
+                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -548,7 +548,7 @@
                     v-model="item.expression"
                     @input="viewChanged(key)"
                     class="form-control form-control-sm"
-                    :disabled="!user.createEnabled && item.user && item.user !== user.userId"
+                    :disabled="!user.roles.includes('arkimeAdmin') && item.user && item.user !== user.userId"
                   />
                 </td>
                 <td>
@@ -588,7 +588,7 @@
                       <span class="fa fa-clipboard fa-fw">
                       </span>
                     </button>
-                    <span v-if="user.createEnabled || item.user === user.userId || !item.user">
+                    <span v-if="user.roles.includes('arkimeAdmin') || item.user === user.userId || !item.user">
                       <span v-if="item.changed">
                         <button type="button"
                           v-b-tooltip.hover
@@ -1897,7 +1897,7 @@
         <!-- notifiers settings -->
         <form class="form-horizontal"
           v-if="visibleTab === 'notifiers'"
-          v-has-permission="'createEnabled'"
+          v-has-role="'arkimeAdmin'"
           id="notifiers">
 
           <h3>
@@ -2226,7 +2226,7 @@
                 <tr :key="`${item.id}-content`">
                   <td>
                     <input type="checkbox"
-                      :disabled="(!user.createEnabled && item.userId !== user.userId) || item.locked"
+                      :disabled="(!user.roles.includes('arkimeAdmin') && item.userId !== user.userId) || item.locked"
                       v-model="item.shared"
                       @input="toggleShortcutShared(item, index)"
                     />
@@ -2269,7 +2269,7 @@
                         <span class="fa fa-clipboard fa-fw">
                         </span>
                       </button>
-                      <span v-if="user.createEnabled || item.userId === user.userId">
+                      <span v-if="user.roles.includes('arkimeAdmin') || item.userId === user.userId">
                         <button type="button"
                           v-b-tooltip.hover
                           title="Delete this shortcut"
@@ -2739,7 +2739,7 @@ export default {
     UserService.getCurrent().then((response) => {
       this.displayName = response.userId;
       // only admins can edit other users' settings
-      if (response.createEnabled && this.$route.query.userId) {
+      if (response.roles.includes('arkimeAdmin') && this.$route.query.userId) {
         if (response.userId === this.$route.query.userId) {
           // admin editing their own user so the routeParam is unnecessary
           this.$router.push({

@@ -40,7 +40,7 @@
 
         <b-navbar-nav>
           <template v-for="item of menuOrder">
-            <template v-if="user && menu[item] && menu[item].hasPermission">
+            <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
               <b-nav-item
                 :key="menu[item].link"
                 class="cursor-pointer"
@@ -150,7 +150,7 @@ export default {
       if (!this.$constants.MOLOCH_DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };
         menu.settings = { title: 'Settings', link: 'settings' };
-        menu.users = { title: 'Users', link: 'users', permission: 'createEnabled' };
+        menu.users = { title: 'Users', link: 'users', role: 'usersAdmin' };
       }
 
       // preserve url query parameters
@@ -179,6 +179,7 @@ export default {
           item.hasPermission = !item.permission ||
             (this.user[item.permission] !== undefined && this.user[item.permission] && !item.reverse) ||
             (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
+          item.hasRole = !item.role || this.user.roles.includes(item.role);
         }
       }
 

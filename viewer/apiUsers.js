@@ -133,7 +133,8 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
+      'roles'
     ];
 
     const clone = {};
