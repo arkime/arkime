@@ -544,7 +544,7 @@ LOCAL gboolean moloch_packet_frags_process(MolochPacket_t * const packet)
         DLL_PUSH_HEAD(packet_, &frags->packets, packet);
     }
 
-    if (DLL_COUNT(packet_, &frags->packets) > 100) {
+    if (DLL_COUNT(packet_, &frags->packets) > 50) {
         droppedFrags++;
         moloch_packet_frags_free(frags);
         return FALSE;
