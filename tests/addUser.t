@@ -27,8 +27,8 @@ my $users = viewerPost("/api/users", "");
 
 # validate the flags
 eq_or_diff($users->{recordsTotal}, 8, "Should have 8 users");
-ok($users->{data}->[0]->{createEnabled}, "Admin user");
-ok(!$users->{data}->[1]->{createEnabled}, "Not admin user");
+eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
+eq_or_diff($users->{data}->[1]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
 ok(!$users->{data}->[2]->{webEnabled}, "API only");
 ok($users->{data}->[3]->{emailSearch}, "Email Search");
 eq_or_diff($users->{data}->[4]->{expression}, "ip.src == 10.0.0.1");
@@ -74,7 +74,7 @@ delete $mresponse->{lastUsed};
 eq_or_diff($response, $mresponse);
 
 delete $response->{passStore};
-eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"createEnabled":false,"expression":"","settings":{}}'));
+eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
 
 system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
 $response = viewerGet("/regressionTests/getUser/authtest2");

@@ -100,7 +100,7 @@
         Settings
       </a>
       <a href="help#users"
-        v-has-permission="'createEnabled'"
+        v-has-role="'arkimeAdmin'"
         class="nav-link">
         <span class="fa fa-fw fa-users">
         </span>&nbsp;
@@ -1172,11 +1172,11 @@
 
       <hr>
 
-      <h3 id="users" v-has-permission="'createEnabled'">
+      <h3 id="users" v-has-role="'arkimeAdmin'">
         <span class="fa fa-fw fa-users"></span>&nbsp;
         Users
       </h3>
-      <p v-has-permission="'createEnabled'">
+      <p v-has-role="'arkimeAdmin'">
         The Users page, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
         These options include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
         if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
@@ -1213,7 +1213,7 @@
         <code>'?'</code> - shows you the keyboard shortcuts help dialog
       </p>
 
-      <hr v-has-permission="'createEnabled'">
+      <hr v-has-role="'arkimeAdmin'">
 
       <h3 id="fields">
         <span class="fa fa-fw fa-list"></span>&nbsp;

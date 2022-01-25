@@ -33,7 +33,7 @@
                   size="sm"
                   v-if="column.hasDropdown"
                   class="column-actions-btn pull-right mb-1"
-                  v-has-permission="'createEnabled'">
+                  v-has-role="'arkimeAdmin'">
                   <b-dropdown-item v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
                     Exclude node {{ column.name }}

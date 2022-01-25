@@ -52,7 +52,6 @@ module.exports = (app, Config) => {
     anonymousUser: {
       userId: 'anonymous',
       enabled: true,
-      createEnabled: false,
       webEnabled: true,
       headerAuthEnabled: false,
       emailSearch: true,
@@ -83,7 +82,6 @@ module.exports = (app, Config) => {
       userName: '',
       expression: '',
       enabled: 0,
-      createEnabled: 0,
       webEnabled: 0,
       headerAuthEnabled: 0,
       emailSearch: 0,

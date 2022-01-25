@@ -40,7 +40,7 @@
           <span class="no-wrap">
             <b-dropdown size="sm"
               class="row-actions-btn"
-              v-has-permission="'createEnabled'">
+              v-has-role="'arkimeAdmin'">
               <b-dropdown-item v-if="!item.nodeExcluded"
                 @click="exclude('name', item)">
                 Exclude node {{ item.name }}

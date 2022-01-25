@@ -299,7 +299,7 @@ module.exports = (Db, internals, ViewerUtils) => {
       }
 
       // only allow admins or shortcut creator to update shortcut item
-      if (!req.user.createEnabled && req.settingUser.userId !== fetchedShortcut._source.userId) {
+      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== fetchedShortcut._source.userId) {
         return res.serverError(403, 'Permission denied');
       }
 
@@ -378,7 +378,7 @@ module.exports = (Db, internals, ViewerUtils) => {
 
       // only allow admins or shortcut creator to delete shortcut item
 
-      if (!req.user.createEnabled && req.settingUser.userId !== shortcut?._source.userId) {
+      if (!req.user.hasRole('arkimeAdmin') && req.settingUser.userId !== shortcut?._source.userId) {
         return res.serverError(403, 'Permission denied');
       }
 

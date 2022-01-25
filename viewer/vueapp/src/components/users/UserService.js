@@ -118,11 +118,10 @@ export default {
   /**
    * Determines whether a user has permission to perform a specific task
    * @param {string} priv The privilege in question. Values include:
-   *                      'createEnabled', 'emailSearch', 'enabled', 'packetSearch',
+   *                      'emailSearch', 'enabled', 'packetSearch',
    *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled',
    *                      '!hideStats', '!hideFiles', '!hidePcap', '!disablePcapDownload'
-   * @returns {boolean}   A promise object that signals the completion
-   *                            or rejection of the request.
+   * @returns {boolean}   true if all permissions are included.
    */
   hasPermission (priv) {
     const user = store.state.user;
@@ -136,6 +135,29 @@ export default {
       }
       if ((!reverse && !user[p]) ||
         (reverse && user[p])) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  /**
+   * Determines whether a user has role to perform a specific task
+   * @param {string} role The role in question.
+   * @returns {boolean} true if all roles are included
+   */
+  hasRole (role) {
+    const user = store.state.user;
+    if (!user) { return false; }
+    const roles = role.split(',');
+    for (let r of roles) {
+      let reverse = false;
+      if (r.startsWith('!')) {
+        reverse = true;
+        r = r.substr(1);
+      }
+      if ((!reverse && !user.roles.includes(r)) ||
+        (reverse && user.roles.includes(r))) {
         return false;
       }
     }

@@ -50,7 +50,7 @@ module.exports = (Db) => {
    */
   historyAPIs.getHistories = (req, res) => {
     let userId;
-    if (req.user.createEnabled) { // user is an admin, they can view all history items
+    if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
       // if the admin has requested a specific user
       if (req.query.userId) { userId = req.query.userId; }
     } else { // user isn't an admin, so they can only view their own history items
@@ -140,7 +140,7 @@ module.exports = (Db) => {
         const item = hit._source;
         item.id = hit._id;
         item.index = hit._index;
-        if (!req.user.createEnabled) {
+        if (!req.user.hasRole('arkimeAdmin')) {
           // remove forced expression and es query for reqs made by nonadmin users
           item.forcedExpression = undefined;
           item.esQuery = undefined;
