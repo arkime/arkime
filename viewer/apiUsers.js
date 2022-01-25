@@ -144,7 +144,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       }
     }
 
-    close.roles = req.user._allRoles;
+    clone.roles = req.user._allRoles;
     clone.canUpload = internals.allowUploads;
 
     // If esAdminUser is set use that, other wise use arkimeAdmin privilege
