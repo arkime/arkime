@@ -23,7 +23,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==modbus"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid>1"));
 
 # modbus.transactionid.cnt
-    countTest(6, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid.cnt>1"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid.cnt>1"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid.cnt==256"));
 
 # modbus.funccode
