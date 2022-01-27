@@ -11,7 +11,7 @@ import App from '@/App';
 import router from '@/router';
 import store from '@/store';
 import '@/utils/filters.js';
-import '@/../../../common/vueFilters.js';
+import '@/../../../common/vueapp/vueFilters.js';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles

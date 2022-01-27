@@ -19,7 +19,6 @@
 
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
-const User = require('../common/user');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
 
@@ -443,3 +442,5 @@ class Auth {
 }
 
 module.exports = Auth;
+
+const User = require('../common/user');

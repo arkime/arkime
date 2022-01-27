@@ -123,13 +123,13 @@
 
         <!-- toggle column -->
          <template #cell(toggle)="data">
-          <span :class="{'btn-indicator':data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
+          <span :class="{'btn-indicator':data.item.emailSearch || data.item.removeEnabled || data.item.packetSerach || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
             <ToggleBtn
               class="btn-toggle-user"
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover="data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              v-b-tooltip.hover="data.item.emailSearch || data.item.removeEnabled || data.item.packetSerach || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -152,7 +152,7 @@
             </b-button>
             <b-button
               size="sm"
-              variant="theme-primary"
+              variant="primary"
               v-has-role="'arkimeAdmin'"
               @click="openSettings(data.item.userId)"
               v-if="!data.item.userId.startsWith('role:')"
@@ -161,7 +161,7 @@
             </b-button>
             <b-button
               size="sm"
-              variant="theme-secondary"
+              variant="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
               v-b-tooltip.hover="`History for ${data.item.userId}`">
@@ -511,7 +511,7 @@
           </b-button>
           <div>
             <b-button
-              variant="theme-tertiary"
+              variant="primary"
               @click="createUser(true)"
               v-if="roles && createMode === 'role'"
               v-b-tooltip.hover="'Create New Role'">
@@ -519,7 +519,7 @@
               Create Role
             </b-button>
             <b-button
-              variant="theme-tertiary"
+              variant="primary"
               @click="createUser(false)"
               v-if="createMode === 'user'"
               v-b-tooltip.hover="'Create New User'">

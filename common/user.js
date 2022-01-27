@@ -19,6 +19,7 @@
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const util = require('util');
+const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 const systemRolesMapping = {
@@ -343,6 +344,200 @@ class User {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send({
         recordsTotal: 0, recordsFiltered: 0, data: []
+      });
+    });
+  };
+
+  /**
+   * POST - /api/user
+   *
+   * Creates a new user (admin only).
+   * @name /user
+   * @returns {boolean} success - Whether the add user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiCreateUser (req, res) {
+    if (!req.body || !req.body.userId || !req.body.userName) {
+      return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    let userIdTest = req.body.userId;
+    if (userIdTest.startsWith('role:')) {
+      userIdTest = userIdTest.slice(5);
+      req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
+    } else if (!req.body.password) {
+      return res.serverError(403, 'Missing/Empty required fields');
+    }
+
+    if (userIdTest.match(/[^@\w.-]/)) {
+      return res.serverError(403, 'User ID must be word characters');
+    }
+
+    if (req.body.userId === '_moloch_shared') {
+      return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
+    }
+
+    if (req.body.roles && !Array.isArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array');
+    }
+
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+    }
+
+    User.getUser(req.body.userId, (err, user) => {
+      if (user) {
+        console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User already exists');
+      }
+
+      const nuser = {
+        userId: req.body.userId,
+        userName: req.body.userName,
+        expression: req.body.expression,
+        passStore: Auth.pass2store(req.body.userId, req.body.password),
+        enabled: req.body.enabled === true,
+        webEnabled: req.body.webEnabled === true,
+        emailSearch: req.body.emailSearch === true,
+        headerAuthEnabled: req.body.headerAuthEnabled === true,
+        removeEnabled: req.body.removeEnabled === true,
+        packetSearch: req.body.packetSearch === true,
+        timeLimit: req.body.timeLimit,
+        hideStats: req.body.hideStats === true,
+        hideFiles: req.body.hideFiles === true,
+        hidePcap: req.body.hidePcap === true,
+        disablePcapDownload: req.body.disablePcapDownload === true,
+        roles: req.body.roles,
+        welcomeMsgNum: 0
+      };
+
+      if (User.debug) {
+        console.log('Creating new user', nuser);
+      }
+
+      User.setUser(req.body.userId, nuser, (err, info) => {
+        if (!err) {
+          return res.send(JSON.stringify({
+            success: true,
+            text: `${req.body.userId.startsWith('role:') ? 'Role' : 'User'} created succesfully`
+          }));
+        } else {
+          console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
+          return res.serverError(403, err);
+        }
+      });
+    });
+  };
+
+  /**
+   * DELETE - /api/user/:id
+   *
+   * Deletes a user (admin only).
+   * @name /user/:id
+   * @returns {boolean} success - Whether the delete user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async apiDeleteUser (req, res) {
+    const userId = req.body.userId || req.params.id;
+    if (userId === req.user.userId) {
+      return res.serverError(403, 'Can not delete yourself');
+    }
+
+    try {
+      await User.deleteUser(userId);
+      res.send(JSON.stringify({
+        success: true, text: 'User deleted successfully'
+      }));
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
+      res.send(JSON.stringify({
+        success: false, text: 'User not deleted'
+      }));
+    }
+  };
+
+  /**
+   * POST - /api/user/:id
+   *
+   * Updates a user (admin only).
+   * @name /user/:id
+   * @returns {boolean} success - Whether the update user operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUser (req, res) {
+    const userId = req.body.userId || req.params.id;
+
+    if (!userId) {
+      return res.serverError(403, 'Missing userId');
+    }
+
+    if (userId === '_moloch_shared') {
+      return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+    }
+
+    if (req.body.roles === undefined) {
+      req.body.roles = [];
+    }
+
+    if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
+      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
+    }
+
+    User.getUser(userId, (err, user) => {
+      if (err || !user) {
+        console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
+        return res.serverError(403, 'User not found');
+      }
+
+      user.enabled = req.body.enabled === true;
+
+      if (req.body.expression !== undefined) {
+        if (req.body.expression.match(/^\s*$/)) {
+          delete user.expression;
+        } else {
+          user.expression = req.body.expression;
+        }
+      }
+
+      if (req.body.userName !== undefined) {
+        if (req.body.userName.match(/^\s*$/)) {
+          console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
+          return res.serverError(403, 'Username can not be empty');
+        } else {
+          user.userName = req.body.userName;
+        }
+      }
+
+      user.webEnabled = req.body.webEnabled === true;
+      user.emailSearch = req.body.emailSearch === true;
+      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+      user.removeEnabled = req.body.removeEnabled === true;
+      user.packetSearch = req.body.packetSearch === true;
+      user.hideStats = req.body.hideStats === true;
+      user.hideFiles = req.body.hideFiles === true;
+      user.hidePcap = req.body.hidePcap === true;
+      user.disablePcapDownload = req.body.disablePcapDownload === true;
+      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+      user.roles = req.body.roles;
+
+      User.setUser(userId, user, (err, info) => {
+        if (User.debug) {
+          console.log('setUser', user, err, info);
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
+          return res.serverError(500, 'Error updating user:' + err);
+        }
+
+        return res.send(JSON.stringify({
+          success: true,
+          text: `User ${userId} updated successfully`
+        }));
       });
     });
   };
@@ -972,3 +1167,5 @@ class UserRedisImplementation {
 }
 
 module.exports = User;
+
+const Auth = require('../common/auth');
