@@ -18,6 +18,7 @@
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
+const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 const systemRolesMapping = {
@@ -304,6 +305,46 @@ class User {
     */
 
     return res.send(clone);
+  };
+
+  /**
+   * POST - /api/users
+   *
+   * Retrieves a list of users (admin only).
+   * @name /users
+   * @returns {ArkimeUser[]} data - The list of users configured.
+   * @returns {number} recordsTotal - The total number of users.
+   * @returns {number} recordsFiltered - The number of users returned in this result.
+   */
+  static apiGetUsers (req, res, next) {
+    const query = {
+      from: +req.body.start || 0,
+      size: +req.body.length || 10000
+    };
+
+    if (req.body.filter) {
+      query.filter = req.body.filter;
+    }
+
+    query.sortField = req.body.sortField || 'userId';
+    query.sortDescending = req.body.desc === true;
+
+    Promise.all([
+      User.searchUsers(query),
+      User.numberOfUsers()
+    ]).then(([users, total]) => {
+      if (users.error) { throw users.error; }
+      res.send({
+        recordsTotal: total,
+        recordsFiltered: users.total,
+        data: users.users
+      });
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      return res.send({
+        recordsTotal: 0, recordsFiltered: 0, data: []
+      });
+    });
   };
 
   /******************************************************************************/

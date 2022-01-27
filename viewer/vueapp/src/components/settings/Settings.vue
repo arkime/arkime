@@ -2542,7 +2542,7 @@ import MolochLoading from '../utils/Loading';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
 import MolochPaging from '../utils/Pagination';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import Utils from '../utils/utils';
 
 let clockInterval;

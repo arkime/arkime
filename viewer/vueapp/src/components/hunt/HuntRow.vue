@@ -194,7 +194,7 @@
 </template>
 
 <script>
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import HuntStatus from './HuntStatus';
 
 export default {

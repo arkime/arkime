@@ -276,3 +276,9 @@ pre {
 .bootstrap-datetimepicker-widget table td > a:hover {
   color: black !important;
 }
+
+
+/* apply theme colors to modals -------------------------------------------- */
+.modal-content {
+  background-color: var(--color-background);
+}

@@ -23,7 +23,7 @@ import interceptorSetup from './interceptors';
 import router from './router';
 import store from './store';
 import './filters.js';
-import '@/../../../common/vueFilters.js';
+import '@/../../../common/vueapp/vueFilters.js';
 
 import '../../../common.css';
 // bootstrap overrides

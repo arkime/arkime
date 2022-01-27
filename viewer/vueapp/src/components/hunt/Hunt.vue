@@ -826,7 +826,7 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochSearch from '../search/Search';
 import MolochLoading from '../utils/Loading';
 import MolochPaging from '../utils/Pagination';

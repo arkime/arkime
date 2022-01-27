@@ -343,7 +343,7 @@ import qs from 'qs';
 import MolochPaging from '../utils/Pagination';
 import MolochLoading from '../utils/Loading';
 import MolochError from '../utils/Error';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochTime from '../search/Time';
 import FocusInput from '../utils/FocusInput';
 import MolochToast from '../utils/Toast';

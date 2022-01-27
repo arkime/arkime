@@ -1272,7 +1272,7 @@ app.get( // user css endpoint
 app.post( // get users endpoint
   ['/api/users', '/user/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
-  userAPIs.getUsers
+  User.apiGetUsers
 );
 
 app.post( // update user password endpoint

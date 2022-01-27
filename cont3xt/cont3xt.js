@@ -109,13 +109,11 @@ app.use(Auth.doAuth);
 
 // check for cont3xt user
 app.use(async (req, res, next) => {
-  if (!req.user.hasRole('cont3xtUser')) {
+  if (!await req.user.hasRole('cont3xtUser')) {
     return res.send('NO!');
   }
   next();
 });
-
-app.get('/api/user', User.apiGetUser);
 
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
@@ -124,6 +122,7 @@ app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', User.apiRoles);
 app.get('/api/user', User.apiGetUser);
+app.get('/api/users', User.apiGetUsers); // TODO CHECK FOR USERS ADMIN ROLE!!!!
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);

@@ -98,15 +98,26 @@
               class="fa fa-info-circle fa-lg cursor-help ml-2"
               v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
-            <b-button
-              size="sm"
-              variant="success"
-              class="pull-right"
-              v-b-modal.create-user-modal
+            <div class="pull-right"
               v-if="data.field.key === 'action'">
-              <span class="fa fa-plus-circle mr-1" />
-              New User
-            </b-button>
+              <b-button
+                size="sm"
+                v-if="roles"
+                variant="success"
+                v-b-modal.create-user-modal
+                @click="createMode = 'role'">
+                <span class="fa fa-plus-circle mr-1" />
+                Role
+              </b-button>
+              <b-button
+                size="sm"
+                variant="primary"
+                v-b-modal.create-user-modal
+                @click="createMode = 'user'">
+                <span class="fa fa-plus-circle mr-1" />
+                User
+              </b-button>
+            </div>
           </span>
         </template> <!-- /column headers -->
 
@@ -308,12 +319,11 @@
       </b-table>
     </div> <!-- /users table -->
 
-    <!-- TODO dark theme modal styles -->
     <!-- create user -->
     <b-modal
       size="xl"
       id="create-user-modal"
-      title="Create a New User">
+      :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
       <!-- create form -->
       <b-form>
         <div class="row">
@@ -427,12 +437,11 @@
         </div>
         <b-input-group
           size="sm"
-          class="mb-2">
+          class="mb-2"
+          v-if="createMode === 'user'">
           <template #prepend>
-            <b-input-group-text
-              class="cursor-help"
-              v-b-tooltip.hover="'Required to create a new user, but not required to create a new role'">
-              Password
+            <b-input-group-text>
+              Password<sup>*</sup>
             </b-input-group-text>
           </template>
           <b-form-input
@@ -441,7 +450,6 @@
             v-model="newUser.password"
             placeholder="New password"
             autocomplete="new-password"
-            @input="validatePassword = true; createError = ''"
           />
         </b-input-group>
         <b-form-checkbox inline
@@ -503,9 +511,9 @@
           </b-button>
           <div>
             <b-button
-              v-if="roles"
-              variant="warning"
+              variant="theme-tertiary"
               @click="createUser(true)"
+              v-if="roles && createMode === 'role'"
               v-b-tooltip.hover="'Create New Role'">
               <span class="fa fa-plus-circle mr-1" />
               Create Role
@@ -513,6 +521,7 @@
             <b-button
               variant="theme-tertiary"
               @click="createUser(false)"
+              v-if="createMode === 'user'"
               v-b-tooltip.hover="'Create New User'">
               <span class="fa fa-plus-circle mr-1" />
               Create User
@@ -536,14 +545,15 @@
 
 <script>
 import UserService from './UserService';
-import ToggleBtn from '@/components/utils/ToggleBtn';
+import ToggleBtn from './ToggleBtn';
 
 export default {
   name: 'UsersCommon',
   components: { ToggleBtn },
   props: {
     roles: Array,
-    parentApp: String
+    parentApp: String,
+    currentUserId: String
   },
   data () {
     return {
@@ -560,6 +570,7 @@ export default {
       currentPage: 1,
       sortField: 'userId',
       desc: false,
+      createMode: 'user',
       createError: '',
       validatePassword: undefined,
       newUser: {
@@ -615,6 +626,10 @@ export default {
       const newUser = JSON.parse(JSON.stringify(this.users.find(u => u.userId === userId)));
       const oldUser = JSON.parse(JSON.stringify(this.dbUserList.find(u => u.userId === userId)));
 
+      // remove _showDetails for user (added by b-table when user row is expanded)
+      delete newUser._showDetails;
+      delete oldUser._showDetails;
+
       // roles might be undefined, but compare to emtpy array since toggling on
       // any roles sets roles to an array, and removing that role = empty array
       if (oldUser.roles === undefined) { oldUser.roles = []; }
@@ -638,25 +653,22 @@ export default {
       oldUser.lastUsed = undefined; // don't compare lastused, it might be different if the user is using the UI
       newUser.lastUsed = undefined;
 
-      this.$set(this.changed, userId, JSON.stringify(newUser) !== JSON.stringify(oldUser));
+      const hasChanged = JSON.stringify(newUser) !== JSON.stringify(oldUser);
+      this.$set(this.changed, userId, hasChanged);
+      return hasChanged;
     },
     updateUser (row) {
       if (row.detailsShowing) { row.toggleDetails(); }
 
       const user = row.item;
       UserService.updateUser(user).then((response) => {
-        this.$set(this.changed, user.id, false);
+        this.$set(this.changed, user.userId, false);
         this.showMessage({ variant: 'success', message: response.data.text });
         this.reloadUsers();
-        // TODO update the current user if they were changed
-        if (this.user.userId === user.userId) {
-          const combined = { // last object property overwrites the previous one
-            ...this.user,
-            ...user
-          };
-          // time limit is special because it can be undefined
-          combined.timeLimit = user.timeLimit || undefined;
-          this.$set(this, 'user', combined);
+
+        // update the current user if they were changed
+        if (this.currentUserId === user.userId) {
+          this.$emit('update-current-user');
         }
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
