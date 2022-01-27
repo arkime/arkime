@@ -78,6 +78,7 @@
         small
         hover
         striped
+        foot-clone
         show-empty
         sort-icon-left
         no-local-sorting
@@ -97,6 +98,15 @@
               class="fa fa-info-circle fa-lg cursor-help ml-2"
               v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
+            <b-button
+              size="sm"
+              variant="success"
+              class="pull-right"
+              v-b-modal.create-user-modal
+              v-if="data.field.key === 'action'">
+              <span class="fa fa-plus-circle mr-1" />
+              New User
+            </b-button>
           </span>
         </template> <!-- /column headers -->
 
@@ -251,7 +261,9 @@
               @input="userHasChanged(data.item.userId)">
               Disable Arkime PCAP Download
             </b-form-checkbox>
-            <b-input-group class="mt-3">
+            <b-input-group
+              size="sm"
+              class="mt-2">
               <template #prepend>
                 <b-input-group-text
                   v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)'">
@@ -263,7 +275,9 @@
                 @input="userHasChanged(data.item.userId)"
               />
             </b-input-group>
-            <b-input-group class="mt-3 w-25">
+            <b-input-group
+              size="sm"
+              class="mt-2 w-25">
               <template #prepend>
                 <b-input-group-text
                   v-b-tooltip.hover="'Restrict the maximum time window of a user\'s query'">
@@ -294,6 +308,229 @@
       </b-table>
     </div> <!-- /users table -->
 
+    <!-- TODO dark theme modal styles -->
+    <!-- create user -->
+    <b-modal
+      size="xl"
+      id="create-user-modal"
+      title="Create a New User">
+      <!-- create form -->
+      <b-form>
+        <div class="row">
+          <b-input-group
+            size="sm"
+            class="col-md-6 mt-2">
+            <template #prepend>
+              <b-input-group-text>
+                User ID<sup>*</sup>
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              autofocus
+              autocomplete="userid"
+              v-model="newUser.userId"
+              placeholder="Unique user ID"
+              :state="this.newUser.userId.length > 0"
+            />
+          </b-input-group>
+          <b-input-group
+            size="sm"
+            class="col-md-6 mt-2">
+            <template #prepend>
+              <b-input-group-text>
+                User Name<sup>*</sup>
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              autocomplete="username"
+              v-model="newUser.userName"
+              placeholder="Readable user name"
+              :state="this.newUser.userName.length > 0"
+            />
+          </b-input-group>
+        </div>
+        <b-input-group
+          size="sm"
+          class="mt-2">
+          <template #prepend>
+            <b-input-group-text
+              class="cursor-help"
+              v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)'">
+              Forced Expression
+            </b-input-group-text>
+          </template>
+          <b-form-input
+            autocomplete="expression"
+            placeholder="node == test"
+            v-model="newUser.expression"
+          />
+        </b-input-group>
+        <div class="row">
+          <div class="col-md-6">
+            <b-input-group
+              size="sm"
+              class="mt-2">
+              <template #prepend>
+                <b-input-group-text
+                  class="cursor-help"
+                  v-b-tooltip.hover="'Restrict the maximum time window of a user\'s query'">
+                  Query Time Limit
+                </b-input-group-text>
+              </template>
+              <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
+              <select
+                class="form-control"
+                v-model="newUser.timeLimit">
+                <option value="1">1 hour</option>
+                <option value="6">6 hours</option>
+                <option value="24">24 hours</option>
+                <option value="48">48 hours</option>
+                <option value="72">72 hours</option>
+                <option value="168">1 week</option>
+                <option value="336">2 weeks</option>
+                <option value="720">1 month</option>
+                <option value="1440">2 months</option>
+                <option value="4380">6 months</option>
+                <option value="8760">1 year</option>
+                <option value=undefined>All (careful)</option>
+              </select>
+            </b-input-group>
+          </div>
+          <div v-if="roles"
+            class="col-md-6 mt-2">
+            <b-dropdown
+              size="sm"
+              class="mb-2"
+              text="User's Roles">
+              <b-dropdown-form>
+                <b-form-checkbox-group
+                  v-model="newUser.roles">
+                  <b-form-checkbox
+                    v-for="role in roles"
+                    :value="role.value"
+                    :key="role.value">
+                    {{ role.text }}
+                    <span
+                      v-if="role.userDefined"
+                      class="fa fa-user cursor-help ml-2"
+                      v-b-tooltip.hover="'User defined role'"
+                    />
+                  </b-form-checkbox>
+                </b-form-checkbox-group>
+              </b-dropdown-form>
+            </b-dropdown>
+            <span
+              class="fa fa-info-circle fa-lg cursor-help ml-2"
+              v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+            />
+          </div>
+        </div>
+        <b-input-group
+          size="sm"
+          class="mb-2">
+          <template #prepend>
+            <b-input-group-text
+              class="cursor-help"
+              v-b-tooltip.hover="'Required to create a new user, but not required to create a new role'">
+              Password
+            </b-input-group-text>
+          </template>
+          <b-form-input
+            type="password"
+            :state="validatePassword"
+            v-model="newUser.password"
+            placeholder="New password"
+            autocomplete="new-password"
+            @input="validatePassword = true; createError = ''"
+          />
+        </b-input-group>
+        <b-form-checkbox inline
+          v-model="newUser.enabled">
+          Enabled
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.webEnabled">
+          Web Interface
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.headerAuthEnabled">
+          Web Auth Header
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.emailSearch">
+          Arkime Email Search
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.removeEnabled">
+          Can Remove Arkime Data
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.packetSearch">
+          Can Create Arkime Hunts
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.hideStats">
+          Hide Arkime Stats Page
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.hideFiles">
+          Hide Arkime Files Page
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.hidePcap">
+          Hide Arkime PCAP
+        </b-form-checkbox>
+        <b-form-checkbox inline
+          v-model="newUser.disablePcapDownload">
+          Disable Arkime PCAP Download
+        </b-form-checkbox>
+      </b-form> <!-- /create form -->
+      <!-- create form error -->
+      <b-alert
+        variant="danger"
+        class="mt-2 mb-0"
+        :show="!!createError">
+        {{ createError }}
+      </b-alert> <!-- /create form error -->
+      <!-- modal footer -->
+      <template #modal-footer>
+        <div class="w-100 d-flex justify-content-between">
+          <b-button
+            variant="danger"
+            @click="$bvModal.hide('create-user-modal')">
+            <span class="fa fa-times" />
+            Cancel
+          </b-button>
+          <div>
+            <b-button
+              v-if="roles"
+              variant="warning"
+              @click="createUser(true)"
+              v-b-tooltip.hover="'Create New Role'">
+              <span class="fa fa-plus-circle mr-1" />
+              Create Role
+            </b-button>
+            <b-button
+              variant="theme-tertiary"
+              @click="createUser(false)"
+              v-b-tooltip.hover="'Create New User'">
+              <span class="fa fa-plus-circle mr-1" />
+              Create User
+            </b-button>
+          </div>
+        </div>
+      </template> <!-- /modal footer -->
+    </b-modal> <!-- /create user -->
+
+    <!-- messages -->
+    <b-alert
+      :show="!!msg"
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;"
+      :variant="msgType"
+      dismissible>
+      {{ msg }}
+    </b-alert> <!-- messages -->
   </div>
 </template>
 
@@ -311,6 +548,8 @@ export default {
   data () {
     return {
       error: '',
+      msg: '',
+      msgType: '',
       loading: true,
       searchTerm: '',
       users: undefined,
@@ -321,6 +560,16 @@ export default {
       currentPage: 1,
       sortField: 'userId',
       desc: false,
+      createError: '',
+      validatePassword: undefined,
+      newUser: {
+        userId: '',
+        userName: '',
+        password: '',
+        enabled: true,
+        webEnabled: true,
+        packetSearch: true
+      },
       fields: [
         { label: '', key: 'toggle', sortable: false },
         { label: 'User ID', key: 'userId', sortable: true, required: true, help: 'The id used for login, can not be changed once created' },
@@ -397,10 +646,9 @@ export default {
       const user = row.item;
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.id, false);
-        this.msg = response.data.text;
-        this.msgType = 'success';
-        this.reloadData();
-        // update the current user if they were changed
+        this.showMessage({ variant: 'success', message: response.data.text });
+        this.reloadUsers();
+        // TODO update the current user if they were changed
         if (this.user.userId === user.userId) {
           const combined = { // last object property overwrites the previous one
             ...this.user,
@@ -411,18 +659,15 @@ export default {
           this.$set(this, 'user', combined);
         }
       }).catch((error) => {
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.showMessage({ variant: 'danger', message: error.text });
       });
     },
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {
         this.users.splice(index, 1);
-        this.msg = response.data.text;
-        this.msgType = 'success';
+        this.showMessage({ variant: 'success', message: response.data.text });
       }).catch((error) => {
-        this.msg = error.text;
-        this.msgType = 'danger';
+        this.showMessage({ variant: 'danger', message: error.text });
       });
     },
     cancelEdits (userId) {
@@ -449,7 +694,60 @@ export default {
         }
       });
     },
+    createUser (createRole) {
+      this.createError = '';
+      this.validatePassword = undefined;
+
+      if (!this.newUser.userId) {
+        this.createError = 'User ID can not be empty';
+        return;
+      }
+
+      if (!this.newUser.userName) {
+        this.createError = 'User Name can not be empty';
+        return;
+      }
+
+      if (!createRole && !this.newUser.password) {
+        this.validatePassword = false;
+        this.createError = 'Password can not be empty';
+        return;
+      }
+
+      const user = JSON.parse(JSON.stringify(this.newUser));
+      if (createRole) {
+        if (!user.userId.startsWith('role:')) {
+          user.userId = `role:${user.userId}`;
+        }
+      }
+
+      UserService.createUser(user).then((response) => {
+        this.newUser = {
+          userId: '',
+          userName: '',
+          password: '',
+          enabled: true,
+          webEnabled: true,
+          packetSearch: true
+        };
+
+        this.reloadUsers();
+        this.$emit('update-roles');
+        this.$bvModal.hide('create-user-modal');
+        this.showMessage({ variant: 'success', message: response.data.text });
+      }).catch((error) => {
+        this.createError = error.text;
+      });
+    },
     /* helper functions ---------------------------------------------------- */
+    showMessage ({ variant, message }) {
+      this.msg = message;
+      this.msgType = variant;
+      setTimeout(() => {
+        this.msg = '';
+        this.msgType = '';
+      }, 10000);
+    },
     loadUsers () {
       const query = {
         desc: this.desc,
@@ -480,7 +778,7 @@ export default {
         start: (this.currentPage - 1) * this.perPage
       };
 
-      UserService.getUsers(query).then((response) => {
+      UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
         const userData = JSON.parse(JSON.stringify(response.data.data));
