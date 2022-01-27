@@ -141,7 +141,7 @@ void moloch_parser_init()
     transactionIdField = moloch_field_define("modbus", "integer",
         "modbus.transactionid", "Modbus Transaction IDs", "modbus.transactionid",
         "Modbus Transaction IDs",
-        MOLOCH_FIELD_TYPE_INT_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
         (char *) NULL);
 
     protocolIdField = moloch_field_define("modbus", "integer",
@@ -153,12 +153,12 @@ void moloch_parser_init()
     functionCodeField = moloch_field_define("modbus", "integer",
         "modbus.funccode", "Modbus Function Code", "modbus.funccode",
         "Modbus Function Codes",
-        MOLOCH_FIELD_TYPE_INT_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 
     exceptionCodeField = moloch_field_define("modbus", "integer",
         "modbus.exccode", "Modbus Exception Code", "modbus.exccode",
         "Modbus Exception Codes",
-        MOLOCH_FIELD_TYPE_INT_ARRAY, MOLOCH_FIELD_FLAG_CNT,
+        MOLOCH_FIELD_TYPE_INT_GHASH, MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 }

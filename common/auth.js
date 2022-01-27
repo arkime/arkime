@@ -347,7 +347,7 @@ class Auth {
         return d;
       }
     } catch (e) {
-      console.log("passwordSecret set in the [default] section can not decrypt information.  You may need to re-add users if you've changed the secret.", e);
+      console.log("passwordSecret set in the [default] section can not decrypt information.  Make sure passwordSecret is the same for all nodes. You may need to re-add users if you've changed the secret.", e);
       process.exit(1);
     }
   };

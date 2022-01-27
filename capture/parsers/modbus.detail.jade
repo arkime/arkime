@@ -1,7 +1,3 @@
-mixin clickableValue(expr, value, parse, session)
-  moloch-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
-
-
 if (session.modbus)
   div.sessionDetailMeta.bold modbus
   dl.sessionDetailMeta
