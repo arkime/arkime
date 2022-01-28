@@ -107,7 +107,7 @@ app.post('/regressionTests/shutdown', (req, res) => {
 
 app.use(Auth.doAuth);
 
-// check for cont3xt user
+// check for cont3xt user and role permissions
 app.use(async (req, res, next) => {
   if (!req.user.hasRole('cont3xtUser')) {
     return res.send('NO!');
@@ -215,6 +215,10 @@ app.use('/app.js.map', express.static(
 ), missingResource);
 // vue index page
 app.use((req, res, next) => {
+  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
+    return res.status(403).send('Permission denied');
+  }
+
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });

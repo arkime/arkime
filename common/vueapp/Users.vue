@@ -155,7 +155,7 @@
               variant="primary"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               @click="openSettings(data.item.userId)"
-              v-if="!data.item.userId.startsWith('role:')"
+              v-if="parentApp === 'Arkime' && !data.item.userId.startsWith('role:')"
               v-b-tooltip.hover="`Settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
             </b-button>
