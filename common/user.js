@@ -172,7 +172,8 @@ class User {
    * @param query.filter search userId userName for
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
-   * @returns {total: number matching, users: the users in the from-size section}
+   * @returns {number} total - The total number of matching users
+   * @returns {ArkimeUsers[]} users - The users in the from->size section
    */
   static searchUsers (query) {
     if (query.size > 10000) {
