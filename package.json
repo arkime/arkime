@@ -133,7 +133,7 @@
     "postcss-import": "^14.0.0",
     "postcss-loader": "^5.0.0",
     "postcss-url": "^10.1.1",
-    "sass": "^1.48.0",
+    "sass": "^1.32.13",
     "sass-loader": "^12.4.0",
     "semver": "^7.3.2",
     "sortablejs": "^1.13.0",
