@@ -73,7 +73,7 @@
     </template> <!-- /loading -->
 
     <!-- users table -->
-    <div v-if="!error && users">
+    <div v-if="!error">
       <b-table
         small
         hover

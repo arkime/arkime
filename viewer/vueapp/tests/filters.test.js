@@ -1,7 +1,7 @@
 'use strict';
 
 const filters = require('../src/filters');
-const commonFilters = require('../../../common/vueFilters');
+const commonFilters = require('../../../common/vueapp/vueFilters');
 const { fields } = require('./consts');
 
 test('round', () => {

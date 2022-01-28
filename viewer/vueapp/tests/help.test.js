@@ -7,8 +7,8 @@ import { render, fireEvent } from '@testing-library/vue';
 import Help from '../src/components/help/Help.vue';
 import FieldService from '../src/components/search/FieldService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
-import HasRole from '../src/components/utils/HasRole.vue';
-const { fields } = require('./consts');
+import HasRole from '../../../common/vueapp/HasRole.vue';
+const { fields, userWithSettings } = require('./consts');
 
 global.$ = global.jQuery = $;
 
@@ -17,12 +17,17 @@ Vue.directive('has-role', HasRole);
 
 jest.mock('../src/components/search/FieldService');
 
+const store = {
+  user: userWithSettings
+};
+
 test('help page field list', async () => {
   FieldService.get = jest.fn().mockResolvedValue(fields);
 
   const $route = { path: 'http://localhost:8123/arkime/help#fields' };
 
   const { getByText, queryByText } = render(Help, {
+    store,
     mocks: { $route }
   });
 

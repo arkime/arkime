@@ -14,8 +14,8 @@
 </template>
 
 <script>
-import UserService from '@/components/users/UserService';
-import MolochLoading from '@/components/utils/Loading';
+import UserService from './UserService';
+import MolochLoading from '../utils/Loading';
 import UsersCommon from '../../../../../common/vueapp/Users';
 
 export default {
