@@ -100,7 +100,7 @@
         Settings
       </a>
       <a href="help#users"
-        v-has-role="'arkimeAdmin'"
+        v-has-role="{user:user,roles:'arkimeAdmin'}"
         class="nav-link">
         <span class="fa fa-fw fa-users">
         </span>&nbsp;
@@ -1172,18 +1172,18 @@
 
       <hr>
 
-      <h3 id="users" v-has-role="'arkimeAdmin'">
+      <h3 id="users" v-has-role="{user:user,roles:'arkimeAdmin'}">
         <span class="fa fa-fw fa-users"></span>&nbsp;
         Users
       </h3>
-      <p v-has-role="'arkimeAdmin'">
-        The Users page, as you may have guessed, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
+      <p v-has-role="{user:user,roles:'arkimeAdmin'}">
+        The Users page, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
         These options include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
         if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
-        This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to the users <a href="help#settings" class="no-decoration">Settings</a> page.
+        This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to that specific user's <a href="help#settings" class="no-decoration">Settings</a> page, where an admin can view and configure settings for each user.
       </p>
 
-      <hr>
+      <hr v-has-role="{user:user,roles:'arkimeAdmin'}">
 
       <h3 id="hotkeys">
         <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
@@ -1213,7 +1213,7 @@
         <code>'?'</code> - shows you the keyboard shortcuts help dialog
       </p>
 
-      <hr v-has-role="'arkimeAdmin'">
+      <hr>
 
       <h3 id="fields">
         <span class="fa fa-fw fa-list"></span>&nbsp;
@@ -1350,6 +1350,11 @@ export default {
   watch: {
     searchFields: function (newVal, oldVal) {
       this.debounceGetFilteredFields();
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user;
     }
   },
   created: function () {

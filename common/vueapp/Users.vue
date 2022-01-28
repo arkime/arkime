@@ -153,7 +153,7 @@
             <b-button
               size="sm"
               variant="primary"
-              v-has-role="'arkimeAdmin'"
+              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               @click="openSettings(data.item.userId)"
               v-if="!data.item.userId.startsWith('role:')"
               v-b-tooltip.hover="`Settings for ${data.item.userId}`">
@@ -544,16 +544,18 @@
 </template>
 
 <script>
-import UserService from './UserService';
+import HasRole from './HasRole';
 import ToggleBtn from './ToggleBtn';
+import UserService from './UserService';
 
 export default {
   name: 'UsersCommon',
+  directives: { HasRole },
   components: { ToggleBtn },
   props: {
     roles: Array,
     parentApp: String,
-    currentUserId: String
+    currentUser: Object
   },
   data () {
     return {
@@ -667,7 +669,7 @@ export default {
         this.reloadUsers();
 
         // update the current user if they were changed
-        if (this.currentUserId === user.userId) {
+        if (this.currentUser.userId === user.userId) {
           this.$emit('update-current-user');
         }
       }).catch((error) => {
@@ -819,12 +821,9 @@ export default {
 .btn-toggle-user {
   margin-top: 2px;
 }
-.btn-toggle-user.collapsed {
-  background: var(--color-tertiary);
-}
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--color-tertiary) 1%, var(--color-tertiary) 75%, var(--color-tertiary) 75%, var(--color-tertiary-darker) 77%, var(--color-tertiary-darker) 100%);
+  background: linear-gradient(135deg, var(--primary) 1%, var(--primary) 75%, var(--primary) 75%, var(--dark) 77%, var(--dark) 100%);
 }
 </style>

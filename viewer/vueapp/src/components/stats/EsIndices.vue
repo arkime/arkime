@@ -37,7 +37,7 @@
           slot-scope="{ item }">
           <b-dropdown size="sm"
             class="row-actions-btn"
-            v-has-role="'arkimeAdmin'"
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
             v-has-permission="'removeEnabled'">
             <b-dropdown-item
               @click.stop.prevent="confirmDeleteIndex(item.index)">

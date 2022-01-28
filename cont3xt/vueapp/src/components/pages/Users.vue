@@ -4,8 +4,8 @@
       v-if="getUser"
       :roles="getRoles"
       parent-app="Cont3xt"
+      :current-user="getUser"
       @update-roles="updateRoles"
-      :current-user-id="getUser.userId"
       @update-current-user="updateCurrentUser">
     </UsersCommon>
   </div>

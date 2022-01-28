@@ -272,8 +272,7 @@ class User {
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
       'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit',
-      'roles'
+      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
     ];
 
     const clone = {};
@@ -283,6 +282,8 @@ class User {
         clone[prop] = req.user[prop];
       }
     }
+
+    clone.roles = [...req.user._allRoles];
 
     /* ALW - FIX LATER FOR internals
     clone.canUpload = internals.allowUploads;

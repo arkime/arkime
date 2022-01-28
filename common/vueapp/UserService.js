@@ -62,5 +62,28 @@ export default {
         reject(error);
       });
     });
+  },
+
+  /**
+   * Determines whether a user has role to perform a specific task
+   * @param {Object} user The user to check roles for
+   * @param {String} role The role in question
+   * @returns {Boolean} true if all roles are included
+   */
+  hasRole (user, role) {
+    if (!user) { return false; }
+    const roles = role.split(',');
+    for (let r of roles) {
+      let reverse = false;
+      if (r.startsWith('!')) {
+        reverse = true;
+        r = r.substr(1);
+      }
+      if ((!reverse && !user.roles.includes(r)) ||
+        (reverse && user.roles.includes(r))) {
+        return false;
+      }
+    }
+    return true;
   }
 };

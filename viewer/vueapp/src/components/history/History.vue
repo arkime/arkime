@@ -170,7 +170,7 @@
                 role="button"
                 title="Delete history"
                 class="btn btn-xs btn-warning"
-                v-has-role="'arkimeAdmin'"
+                v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
                 <span class="fa fa-trash-o">
@@ -192,7 +192,7 @@
             <td class="no-wrap text-right">
               {{ item.range*1000 | readableTime }}
             </td>
-            <td v-has-role="'arkimeAdmin'"
+            <td v-has-role="{user:user,roles:'arkimeAdmin'}"
               class="no-wrap">
               {{ item.userId }}
             </td>
@@ -224,7 +224,7 @@
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
                 <!-- forced expression -->
-                <div v-has-role="'arkimeAdmin'"
+                <div v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
                   class="mt-1">
                   <span>
@@ -301,7 +301,7 @@
                   </div>
                 </div> <!-- /query params -->
                 <!-- es query -->
-                <div v-has-role="'arkimeAdmin'">
+                <div v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <div class="mt-3" v-if="item.esQueryIndices">
                     <h5>Elasticsearch Query Indices</h5>
                     <code class="mr-3 ml-3">{{ item.esQueryIndices }}</code>

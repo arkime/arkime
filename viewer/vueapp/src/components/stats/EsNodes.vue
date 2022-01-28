@@ -40,7 +40,7 @@
           <span class="no-wrap">
             <b-dropdown size="sm"
               class="row-actions-btn"
-              v-has-role="'arkimeAdmin'">
+              v-has-role="{user:user,roles:'arkimeAdmin'}">
               <b-dropdown-item v-if="!item.nodeExcluded"
                 @click="exclude('name', item)">
                 Exclude node {{ item.name }}
@@ -166,6 +166,9 @@ export default {
         return this.stats.filter(s => s.roles.indexOf('data') > -1);
       }
       return this.stats;
+    },
+    user () {
+      return this.$store.state.user;
     }
   },
   watch: {

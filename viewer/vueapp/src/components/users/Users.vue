@@ -3,8 +3,8 @@
     <UsersCommon
       :roles="userRoles"
       parent-app="Arkime"
+      :current-user="user"
       @update-roles="getRoles"
-      :current-user-id="user.userId"
       @update-current-user="updateCurrentUser">
       <template #loading>
         <MolochLoading />
