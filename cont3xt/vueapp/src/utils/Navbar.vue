@@ -43,6 +43,7 @@
         <li class="nav-item mr-2">
           <router-link
             to="users"
+            v-if="getUser"
             class="nav-link"
             active-class="active"
             v-has-role="{user:getUser,roles:'usersAdmin'}">

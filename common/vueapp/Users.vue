@@ -544,15 +544,16 @@
 </template>
 
 <script>
-import './vueFilters.js';
 import HasRole from './HasRole';
 import ToggleBtn from './ToggleBtn';
 import UserService from './UserService';
+import { timezoneDateString } from './vueFilters';
 
 export default {
   name: 'UsersCommon',
   directives: { HasRole },
   components: { ToggleBtn },
+  filters: { timezoneDateString },
   props: {
     roles: Array,
     parentApp: String,
