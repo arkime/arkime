@@ -182,7 +182,7 @@
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          {{ data.value ? (data.value | timezoneDateString(currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}
+          {{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}
         </template> <!-- /last used column -->
         <!-- all other columns -->
         <template #cell()="data">
@@ -553,7 +553,6 @@ export default {
   name: 'UsersCommon',
   directives: { HasRole },
   components: { ToggleBtn },
-  filters: { timezoneDateString },
   props: {
     roles: Array,
     parentApp: String,
@@ -608,6 +607,9 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    tzDateStr (date, tz, ms) {
+      return timezoneDateString(date, tz, ms);
+    },
     perPageChange (newVal) {
       this.perPage = newVal;
       this.loadUsers(false);
