@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import moment from 'moment-timezone';
 
 /**
  * Parses ipv6
@@ -114,33 +113,6 @@ export const humanReadableBytes = function (fileSizeInBytes) {
   }
 };
 Vue.filter('humanReadableBytes', humanReadableBytes);
-
-/**
- * Parses date to string and applies the selected timezone
- *
- * @example
- * '{{ 1524680821 | timezoneDateString("local", false) }}'
- * this.$options.filters.timezoneDateString(1524680821, "local", false);
- *
- * @param {int} ms           The time in milliseconds from epoch
- * @param {string} timezone  The timezone to use ('gmt', 'local', or 'localtz'), default = 'local'
- * @returns {string}         The date formatted and converted to the requested timezone
- */
-export const timezoneDateString = function (ms, timezone, showMs) {
-  if (isNaN(ms)) { return 'Invalid date'; }
-
-  let format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : 'YYYY/MM/DD HH:mm:ss z';
-
-  if (timezone === 'gmt') {
-    return moment.tz(ms, 'utc').format(format);
-  } else if (timezone === 'localtz') {
-    return moment.tz(ms, Intl.DateTimeFormat().resolvedOptions().timeZone).format(format);
-  }
-
-  format = showMs ? 'YYYY/MM/DD HH:mm:ss.SSS' : 'YYYY/MM/DD HH:mm:ss';
-  return moment(ms).format(format);
-};
-Vue.filter('timezoneDateString', timezoneDateString);
 
 /**
  * Turns milliseconds into a human readable time range

@@ -182,7 +182,7 @@
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          {{ data.value ? (data.value | timezoneDateString(user.settings.timezone, user.settings.ms)) : 'Never' }}
+          {{ data.value ? (data.value | timezoneDateString(currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}
         </template> <!-- /last used column -->
         <!-- all other columns -->
         <template #cell()="data">

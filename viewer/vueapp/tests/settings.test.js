@@ -15,6 +15,7 @@ import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasRole from '../../../common/vueapp/HasRole.vue';
 import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
+import '../../../common/vueapp/vueFilters';
 const {
   userSettings, userWithSettings, views, periodicQueries, fields, notifiers,
   notifierTypes, shortcuts, users, fieldsMap
