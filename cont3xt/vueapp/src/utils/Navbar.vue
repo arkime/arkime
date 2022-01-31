@@ -45,7 +45,7 @@
             to="users"
             class="nav-link"
             active-class="active"
-            v-has-permission="{user:user,roles:'usersAdmin'}">
+            v-has-role="{user:getUser,roles:'usersAdmin'}">
             Users
           </router-link>
         </li>
@@ -99,7 +99,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getLoading'])
+    ...mapGetters(['getLoading', 'getUser'])
   },
   mounted: function () {
     if (localStorage.getItem('cont3xtTheme')) {

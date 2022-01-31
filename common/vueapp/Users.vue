@@ -544,6 +544,7 @@
 </template>
 
 <script>
+import './vueFilters.js';
 import HasRole from './HasRole';
 import ToggleBtn from './ToggleBtn';
 import UserService from './UserService';
