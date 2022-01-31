@@ -57,11 +57,12 @@ class Auth {
             console.log(`User ${userid} Can not authenticate with role`);
             return done('Can not authenticate with role');
           }
-          User.getUserCache(userid, (err, user) => {
+          User.getUserCache(userid, async (err, user) => {
             if (err) { return done(err); }
             if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
             if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
+            await user.expandRoles();
             return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
           });
         },
@@ -225,12 +226,13 @@ class Auth {
       return res.status(401).send(JSON.stringify({ success: false, text: 'Can not authenticate with role' }));
     }
 
-    function headerAuthCheck (err, user) {
+    async function headerAuthCheck (err, user) {
       if (err || !user) { return res.send(JSON.stringify({ success: false, text: 'User not found' })); }
       if (!user.enabled) { return res.send(JSON.stringify({ success: false, text: 'User not enabled' })); }
       if (!user.headerAuthEnabled) { return res.send(JSON.stringify({ success: false, text: 'User header auth not enabled' })); }
 
       req.user = user;
+      await req.user.expandRoles();
       req.user.setLastUsed();
       return next();
     }
