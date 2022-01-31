@@ -7,7 +7,7 @@ import { render, fireEvent, waitFor } from '@testing-library/vue';
 import userEvent from '@testing-library/user-event';
 import Pagination from '../src/components/utils/Pagination.vue';
 import '../src/filters';
-import '../../../common/vueFilters';
+import '../../../common/vueapp/vueFilters';
 
 Vue.use(BootstrapVue);
 

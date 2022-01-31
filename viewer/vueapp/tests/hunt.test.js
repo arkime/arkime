@@ -15,7 +15,7 @@ import SessionsService from '../src/components/sessions/SessionsService';
 import UserService from '../src/components/users/UserService';
 import ConfigService from '../src/components/utils/ConfigService';
 import '../src/filters.js';
-import '../../../common/vueFilters';
+import '../../../common/vueapp/vueFilters';
 const { hunts, userWithSettings } = require('./consts');
 
 console.info = jest.fn(); // ignore tooltip warnings

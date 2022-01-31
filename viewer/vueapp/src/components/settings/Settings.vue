@@ -100,7 +100,7 @@
             Password
           </a>
           <a class="nav-link cursor-pointer"
-            v-has-role="'arkimeAdmin'"
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
             @click="openView('notifiers')"
             :class="{'active':visibleTab === 'notifiers'}">
             <span class="fa fa-fw fa-bell">
@@ -1897,7 +1897,7 @@
         <!-- notifiers settings -->
         <form class="form-horizontal"
           v-if="visibleTab === 'notifiers'"
-          v-has-role="'arkimeAdmin'"
+          v-has-role="{user:user,roles:'arkimeAdmin'}"
           id="notifiers">
 
           <h3>
@@ -2542,7 +2542,7 @@ import MolochLoading from '../utils/Loading';
 import MolochFieldTypeahead from '../utils/FieldTypeahead';
 import ColorPicker from '../utils/ColorPicker';
 import MolochPaging from '../utils/Pagination';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import Utils from '../utils/utils';
 
 let clockInterval;

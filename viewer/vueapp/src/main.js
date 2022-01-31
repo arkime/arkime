@@ -18,12 +18,12 @@ import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 import App from './App';
 import MolochSessionField from './components/sessions/SessionField';
 import HasPermission from './components/utils/HasPermission';
-import HasRole from './components/utils/HasRole';
+import HasRole from '@/../../../common/vueapp/HasRole';
 import interceptorSetup from './interceptors';
 import router from './router';
 import store from './store';
 import './filters.js';
-import '@/../../../common/vueFilters.js';
+import '@/../../../common/vueapp/vueFilters.js';
 
 import '../../../common.css';
 // bootstrap overrides
@@ -46,8 +46,8 @@ Vue.use(BootstrapVue);
 Vue.use(VueAxios, axios);
 Vue.use(VueMoment, { moment });
 
-Vue.directive('has-permission', HasPermission);
 Vue.directive('has-role', HasRole);
+Vue.directive('has-permission', HasPermission);
 Vue.component('moloch-session-field', MolochSessionField);
 
 interceptorSetup();

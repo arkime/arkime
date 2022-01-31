@@ -88,6 +88,7 @@
     "wise:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files wiseService/*.js > ../arkimeweb/_wiki/api_wise.md",
     "wise:dev": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "wise:devdebug": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
+    "common:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files common/*.js > ../arkimeweb/_wiki/api_common.md",
     "test": "cd viewer && jest"
   },
   "devDependencies": {
@@ -132,7 +133,7 @@
     "postcss-import": "^14.0.0",
     "postcss-loader": "^5.0.0",
     "postcss-url": "^10.1.1",
-    "sass": "^1.48.0",
+    "sass": "^1.32.13",
     "sass-loader": "^12.4.0",
     "semver": "^7.3.2",
     "sortablejs": "^1.13.0",

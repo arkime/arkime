@@ -556,7 +556,7 @@ import Utils from '../utils/utils';
 import MolochSearch from '../search/Search';
 import customCols from './customCols.json';
 import MolochPaging from '../utils/Pagination';
-import ToggleBtn from '../utils/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
 import MolochError from '../utils/Error';
 import MolochLoading from '../utils/Loading';
 import MolochNoResults from '../utils/NoResults';

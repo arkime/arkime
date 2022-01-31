@@ -1,10 +1,9 @@
 <template>
 
-  <a
-    role="button"
+  <a role="button"
     @click="toggle"
     :class="btnClass"
-    class="btn btn-sm btn-toggle cursor-pointer">
+    class="btn btn-sm btn-toggle">
     <span class="fa fa-close" />
   </a>
 
@@ -15,15 +14,15 @@ export default {
   name: 'ToggleBtn',
   props: ['opened'],
   computed: {
-    btnClass: function () {
+    btnClass () {
       return {
-        'btn-theme-primary': this.opened,
-        'collapsed btn-theme-tertiary': !this.opened
+        'btn-warning': this.opened,
+        'collapsed btn-primary': !this.opened
       };
     }
   },
   methods: {
-    toggle: function () {
+    toggle () {
       this.$emit('toggle');
     }
   }
@@ -35,6 +34,24 @@ export default {
 .btn-sm {
   padding: 3px 8px;
   font-size: 12px;
+}
+
+/* use bootstrap theme styles for button */
+.btn-toggle {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+.btn-toggle:hover {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+.btn-toggle:not(.collapsed) {
+  border-color: var(--warning);
+  background-color: var(--warning);
+}
+.btn-toggle:not(.collapsed):hover {
+  border-color: var(--warning);
+  background-color: var(--warning);
 }
 
 /* transition for font awesome icon

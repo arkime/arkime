@@ -115,8 +115,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.get('/api/user', User.apiGetUser);
-
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
@@ -124,6 +122,10 @@ app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
 
 app.get('/api/roles', User.apiRoles);
 app.get('/api/user', User.apiGetUser);
+app.post('/api/users', [jsonParser, User.checkRole('usersAdmin')], User.apiGetUsers);
+app.post('/api/user', [jsonParser, User.checkRole('usersAdmin')], User.apiCreateUser);
+app.delete('/api/user/:id', [jsonParser, User.checkRole('usersAdmin')], User.apiDeleteUser);
+app.post('/api/user/:id', [jsonParser, User.checkRole('usersAdmin')], User.apiUpdateUser);
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
@@ -213,6 +215,10 @@ app.use('/app.js.map', express.static(
 ), missingResource);
 // vue index page
 app.use((req, res, next) => {
+  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
+    return res.status(403).send('Permission denied');
+  }
+
   const renderer = vueServerRenderer.createRenderer({
     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
   });

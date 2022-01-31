@@ -12,7 +12,7 @@ import ConfigService from '../src/components/utils/ConfigService';
 import FieldService from '../src/components/search/FieldService';
 import SettingsService from '../src/components/settings/SettingsService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
-import HasRole from '../src/components/utils/HasRole.vue';
+import HasRole from '../../../common/vueapp/HasRole.vue';
 import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
 const {

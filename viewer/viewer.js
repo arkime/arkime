@@ -1249,18 +1249,18 @@ app.get( // current user endpoint
 app.post( // create user endpoint
   ['/api/user', '/user/create'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  userAPIs.createUser
+  User.apiCreateUser
 );
 
 app.delete( // user delete endpoint
   ['/api/user/:id', '/user/delete'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  userAPIs.deleteUser
+  User.apiDeleteUser
 );
 app.post( // user delete endpoint for backwards compatibility with API 0.x-2.x
   ['/user/delete'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  userAPIs.deleteUser
+  User.apiDeleteUser
 );
 
 app.get( // user css endpoint
@@ -1272,7 +1272,7 @@ app.get( // user css endpoint
 app.post( // get users endpoint
   ['/api/users', '/user/list'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
-  userAPIs.getUsers
+  User.apiGetUsers
 );
 
 app.post( // update user password endpoint
@@ -1414,7 +1414,7 @@ app.put( // acknowledge message endoint
 app.post( // update user endpoint
   ['/api/user/:id', '/user/update'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
-  userAPIs.updateUser
+  User.apiUpdateUser
 );
 
 app.get( // user state endpoint

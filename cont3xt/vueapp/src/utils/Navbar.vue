@@ -35,9 +35,18 @@
         <li class="nav-item mr-2">
           <router-link
             to="settings"
-            active-class="active"
-            class="nav-link">
+            class="nav-link"
+            active-class="active">
             Settings
+          </router-link>
+        </li>
+        <li class="nav-item mr-2">
+          <router-link
+            to="users"
+            class="nav-link"
+            active-class="active"
+            v-has-permission="{user:user,roles:'usersAdmin'}">
+            Users
           </router-link>
         </li>
       </ul> <!-- /page links -->
