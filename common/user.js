@@ -222,11 +222,20 @@ class User {
    */
   static setUser (userId, user, cb) {
     delete user._allRoles;
-    if (user.createEnabled && !user.roles.includes('usersAdmin')) {
-      user.roles.push('usersAdmin');
+
+    // Save with usersAdmin role if needed
+    if (user.createEnabled) {
+      if (user.roles === undefined) {
+        user.roles = ['usersAdmin'];
+      } else if (!user.roles.includes('usersAdmin')) {
+        user.roles.push('usersAdmin');
+      }
     }
+
     // Maintain compatibility for now
-    user.createEnabled = user.roles.includes('usersAdmin');
+    if (user.roles !== undefined) {
+      user.createEnabled = user.roles.includes('usersAdmin');
+    }
 
     delete User.usersCache[userId];
     User.implementation.setUser(userId, user, (err, boo) => {
