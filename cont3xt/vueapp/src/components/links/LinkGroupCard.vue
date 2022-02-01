@@ -14,7 +14,7 @@
         <!-- display link to click -->
         <div class="link-display"
           :key="link.url + i + 'click'"
-          v-if="itype && link.itypes.indexOf(itype) > -1">
+          v-if="itype && link.itypes.indexOf(itype) > -1 && link.name !== '----------'">
           <b-form-checkbox
             inline
             class="link-checkbox"
@@ -30,7 +30,7 @@
         </div> <!-- /display link to click -->
         <!-- display link to view -->
         <div
-          v-else-if="!itype"
+          v-else-if="!itype && link.name !== '----------'"
           :title="link.name"
           :key="link.url + i + 'view'">
           <strong class="text-warning">
@@ -41,6 +41,9 @@
             {{ link.url }}
           </a>
         </div> <!-- /display link to view -->
+        <!-- separator -->
+        <hr v-else-if="link.name === '----------'"
+          :key="link.url + i + 'separator'" />
       </template>
     </b-card-body>
     <template #footer v-if="itype">

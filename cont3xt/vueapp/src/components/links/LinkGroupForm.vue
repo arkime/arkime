@@ -107,7 +107,8 @@
         <span class="fa fa-bars d-inline link-handle" />
       </template>
       <template slot="default">
-        <b-card class="mb-2">
+        <b-card class="mb-2"
+          v-if="link.name != '----------'">
           <div class="d-flex justify-content-between align-items-center">
             <div class="w-40 mr-4">
               <b-input-group
@@ -169,17 +170,59 @@
             </template>
           </b-input-group>
         </b-card>
+        <template v-else>
+          <hr class="link-separator">
+          <b-button
+            size="sm"
+            variant="danger"
+            @click="removeLink(i)"
+            class="remove-separator"
+            v-b-tooltip.hover.left="'Remove this separator'">
+            <span class="fa fa-times-circle" />
+          </b-button>
+        </template>
       </template>
+      <div class="d-flex">
+        <b-button
+          block
+          size="sm"
+          variant="danger"
+          class="mr-1 mt-0"
+          style="width:30px;"
+          @click="pushLink({ index: i, target: lg.links.length })"
+          v-b-tooltip.hover="'Push to the BOTTOM'">
+          <span class="fa fa-arrow-circle-down mr-2" />
+        </b-button>
+        <b-button
+          block
+          size="sm"
+          class="ml-1 mr-1 mt-0"
+          variant="secondary"
+          @click="addSeparator(i)">
+          <span class="fa fa-underline mr-2" />
+          Add a Separator
+        </b-button>
+        <b-button
+          block
+          size="sm"
+          variant="info"
+          class="mr-1 ml-1 mt-0"
+          @click="addLink(i)">
+          <span class="fa fa-link mr-2" />
+          Add Another Link
+        </b-button>
+        <b-button
+          block
+          size="sm"
+          class="ml-1 mt-0"
+          variant="warning"
+          style="width:30px;"
+          @click="pushLink({ index: i, target: 0 })"
+          v-b-tooltip.hover="'Push to the TOP'">
+          <span class="fa fa-arrow-circle-up mr-2" />
+        </b-button>
+      </div>
     </reorder-list> <!-- /group links -->
-    <b-button
-      block
-      size="sm"
-      class="mt-2"
-      variant="info"
-      @click="addLink">
-      <span class="fa fa-link mr-2" />
-      Add another
-    </b-button>
     <div
       class="mt-2"
       v-if="lg.creator">
@@ -251,8 +294,22 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    addLink () {
-      this.lg.links.push(JSON.parse(JSON.stringify(defaultLink)));
+    addLink (index) {
+      this.lg.links.splice(index + 1, 0, JSON.parse(JSON.stringify(defaultLink)));
+    },
+    addSeparator (index) {
+      const link = JSON.parse(JSON.stringify(defaultLink));
+      link.url = '----------';
+      link.name = '----------';
+      link.itypes = ['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'];
+      this.lg.links.splice(index + 1, 0, link);
+    },
+    pushLink ({ index, target }) {
+      // remove the link from the list
+      const link = this.lg.links.splice(index, 1)[0];
+      // and replace it in the first position
+      this.lg.links.splice(target, 0, link);
+      this.updateList({ list: this.lg.links });
     },
     removeLink (index) {
       this.lg.links.splice(index, 1);
@@ -289,5 +346,11 @@ export default {
   position: relative;
   border-radius: 14px;
   background: var(--secondary);
+}
+
+.remove-separator {
+  float: right;
+  display: inline;
+  margin-top: -34px;
 }
 </style>
