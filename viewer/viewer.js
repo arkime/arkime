@@ -1243,7 +1243,7 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 app.get( // current user endpoint
   ['/api/user', '/user/current'],
   User.checkPermissions(['webEnabled']),
-  userAPIs.getUser
+  User.apiGetUser
 );
 
 app.post( // create user endpoint
@@ -2504,5 +2504,6 @@ Db.initialize({
   usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
   esBasicAuth: Config.get('elasticsearchBasicAuth', null),
   usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
-  cronQueries: Config.get('cronQueries', false)
+  cronQueries: Config.get('cronQueries', false),
+  getCurrentUserCB: userAPIs.getCurrentUserCB
 }, main);

@@ -55,6 +55,7 @@ const searchColumns = [
 ];
 
 let readOnly = false;
+let getCurrentUserCB;
 
 /******************************************************************************/
 // User class
@@ -75,6 +76,7 @@ class User {
     }
     User.debug = options.debug ?? 0;
     readOnly = options.readOnly ?? false;
+    getCurrentUserCB = options.getCurrentUserCB;
 
     if (!options.url) {
       User.implementation = new UserESImplementation(options);
@@ -223,7 +225,9 @@ class User {
     if (user.createEnabled && !user.roles.includes('usersAdmin')) {
       user.roles.push('usersAdmin');
     }
-    delete user.createEnabled;
+    // Maintain compatibility for now
+    user.createEnabled = user.roles.includes('usersAdmin');
+
     delete User.usersCache[userId];
     User.implementation.setUser(userId, user, (err, boo) => {
       cb(err, boo);
@@ -268,7 +272,7 @@ class User {
   /**
    * Web Api for getting current user
    */
-  static apiGetUser (req, res, next) {
+  static getCurrentUser (req) {
     const userProps = [
       'emailSearch', 'enabled', 'removeEnabled',
       'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
@@ -286,27 +290,15 @@ class User {
 
     clone.roles = [...req.user._allRoles];
 
-    /* ALW - FIX LATER FOR internals
-    clone.canUpload = internals.allowUploads;
-
-    // If esAdminUser is set use that, other wise use createEnable privilege
-    if (internals.esAdminUsersSet) {
-      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
-    } else {
-      clone.esAdminUser = req.user.createEnabled && Config.get('multiES', false) === false;
+    if (getCurrentUserCB) {
+      getCurrentUserCB(req.user, clone);
     }
 
-    // If no settings, use defaults
-    if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }
+    return clone;
+  }
 
-    // Use settingsDefaults for any settings that are missing
-    for (const item in internals.settingDefaults) {
-      if (clone.settings[item] === undefined) {
-        clone.settings[item] = internals.settingDefaults[item];
-      }
-    }
-    */
-
+  static apiGetUser (req, res, next) {
+    const clone = User.getCurrentUser(req);
     return res.send(clone);
   };
 
@@ -720,12 +712,11 @@ function cleanUser (user) {
     user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
   }
 
-  // Replace createEnabled
+  // Convert createEnable to usersAdmin role
   if (user.createEnabled && !user.roles.includes('usersAdmin')) {
-    // ALW should this write back to db?
     user.roles.push('usersAdmin');
-    delete user.createEnabled;
   }
+  delete user.createEnabled;
 }
 
 /******************************************************************************/

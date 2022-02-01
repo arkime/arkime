@@ -127,30 +127,14 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
     return user.spiviewFieldConfigs || [];
   }
 
-  userAPIs.getCurrentUser = (req) => {
-    const userProps = [
-      'emailSearch', 'enabled', 'removeEnabled',
-      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed', 'timeLimit'
-    ];
-
-    const clone = {};
-
-    for (const prop of userProps) {
-      if (req.user[prop]) {
-        clone[prop] = req.user[prop];
-      }
-    }
-
-    clone.roles = [...req.user._allRoles];
+  userAPIs.getCurrentUserCB = (user, clone) => {
     clone.canUpload = internals.allowUploads;
 
     // If esAdminUser is set use that, other wise use arkimeAdmin privilege
     if (internals.esAdminUsersSet) {
-      clone.esAdminUser = internals.esAdminUsers.includes(req.user.userId);
+      clone.esAdminUser = internals.esAdminUsers.includes(user.userId);
     } else {
-      clone.esAdminUser = req.user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false;
+      clone.esAdminUser = user.hasRole('arkimeAdmin') && Config.get('multiES', false) === false;
     }
 
     // If no settings, use defaults
@@ -303,17 +287,6 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
    * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOC.
    * @param {string} lastToggledBy - The user who last enabled or disabled this query.
    */
-
-  /**
-   * GET - /api/user
-   *
-   * Retrieves the currently logged in user.
-   * @name /user
-   * @returns {ArkimeUser} user - The currently logged in user.
-   */
-  userAPIs.getUser = (req, res) => {
-    return res.send(userAPIs.getCurrentUser(req));
-  };
 
   /**
    * POST - /api/user/password
