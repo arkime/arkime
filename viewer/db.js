@@ -143,7 +143,8 @@ exports.initialize = async (info, cb) => {
       apiKey: info.usersEsApiKey,
       basicAuth: info.usersEsBasicAuth,
       prefix: internals.usersPrefix,
-      debug: internals.debug
+      debug: internals.debug,
+      getCurrentUserCB: info.getCurrentUserCB
     });
   } else {
     User.initialize({
@@ -158,7 +159,8 @@ exports.initialize = async (info, cb) => {
       basicAuth: info.esBasicAuth,
       prefix: internals.prefix,
       debug: internals.debug,
-      readOnly: internals.multiES
+      readOnly: internals.multiES,
+      getCurrentUserCB: info.getCurrentUserCB
     });
   }
 
