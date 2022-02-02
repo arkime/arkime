@@ -80,7 +80,7 @@ export default {
           let userDefined = false;
           const roleId = role;
           if (role.startsWith('role:')) {
-            role = role.replace('role:', '');
+            role = role.slice(5);
             userDefined = true;
           }
           role = { text: role, value: roleId, userDefined };

@@ -617,17 +617,23 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
-    getRolesStr (roles) {
-      let fixedRoles = [];
-      for (let role of roles) {
+    getRolesStr (userRoles) {
+      let userDefinedRoles = [];
+      let roles = [];
+      for (let role of userRoles) {
         if (role.startsWith('role:')) {
-          role = role.replace('role:', '');
+          role = role.slice(5);
+          userDefinedRoles.push(role);
+          continue;
         }
-        fixedRoles.push(role);
+        roles.push(role);
       }
 
-      fixedRoles = fixedRoles.sort();
-      return fixedRoles.join(', ');
+      userDefinedRoles = userDefinedRoles.sort();
+      roles = roles.sort();
+
+      const allRoles = userDefinedRoles.concat(roles);
+      return allRoles.join(', ');
     },
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
