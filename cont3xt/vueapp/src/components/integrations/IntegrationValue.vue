@@ -16,7 +16,7 @@
           :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
         />
       </label>
-      <div>
+      <div class="d-inline">
         <b-button
           size="xs"
           @click="copy"
