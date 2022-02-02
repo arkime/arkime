@@ -199,7 +199,7 @@
           />
           <b-dropdown
             size="sm"
-            text="User's Roles"
+            :text="data.item.roles.join(', ')"
             v-else-if="data.field.type === 'select' && roles && roles.length">
             <b-dropdown-form>
               <b-form-checkbox-group
