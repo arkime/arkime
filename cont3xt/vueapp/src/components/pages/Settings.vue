@@ -22,6 +22,7 @@
             size="xs"
             class="float-right"
             variant="secondary"
+            v-if="visibleTab === 'linkgroups'"
             @click.stop.prevent="openLinkGroupForm"
             v-b-tooltip.hover="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />

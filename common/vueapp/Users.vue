@@ -199,6 +199,7 @@
           />
           <b-dropdown
             size="sm"
+            class="roles-dropdown"
             :text="data.item.roles.join(', ')"
             v-else-if="data.field.type === 'select' && roles && roles.length">
             <b-dropdown-form>
@@ -835,5 +836,10 @@ export default {
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
   background: linear-gradient(135deg, var(--primary) 1%, var(--primary) 75%, var(--primary) 75%, var(--dark) 77%, var(--dark) 100%);
+}
+
+/* make the roles dropdown text smaller */
+.roles-dropdown > button {
+  font-size: 0.8rem;
 }
 </style>
