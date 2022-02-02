@@ -22,8 +22,8 @@
     <!-- group roles -->
     <b-dropdown
       size="sm"
-      class="mb-2"
-      text="Who Can View">
+      text="Who Can View"
+      class="roles-dropdown mb-2">
       <b-dropdown-form>
         <b-form-checkbox-group
           v-model="lg.viewRoles"
@@ -56,8 +56,8 @@
     </b-dropdown>
     <b-dropdown
       size="sm"
-      class="mb-2"
-      text="Who Can Edit">
+      text="Who Can Edit"
+      class="mb-2 roles-dropdown">
       <b-dropdown-form>
         <b-form-checkbox-group
           v-model="lg.editRoles"

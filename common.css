@@ -85,6 +85,13 @@ body {
   border-radius: 3px;
 }
 
+/* user roles dropdown scrolls for long lists */
+.roles-dropdown ul {
+  overflow: auto;
+  max-width: 220px;
+  max-height: 200px;
+}
+
 /* INFO AREA --------------------------------- */
 /* displays large text for important information
  * note: must contain an inner div with the text
