@@ -10,16 +10,22 @@
         <a @click="openView('integrations')"
           class="nav-link cursor-pointer"
           :class="{'active':visibleTab === 'integrations'}">
-          <span class="fa fa-fw fa-key">
-          </span>&nbsp;
+          <span class="fa fa-fw fa-key mr-1" />
           Integrations
         </a>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
-          <span class="fa fa-fw fa-link">
-          </span>&nbsp;
+          <span class="fa fa-fw fa-link mr-1" />
           Link Groups
+          <b-button
+            size="xs"
+            class="float-right"
+            variant="secondary"
+            @click.stop.prevent="openLinkGroupForm"
+            v-b-tooltip.hover="'Create a new link group'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
         </a>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
@@ -270,6 +276,9 @@ export default {
       this.$router.push({
         hash: tabName
       });
+    },
+    openLinkGroupForm () {
+      this.$bvModal.show('link-group-form');
     },
     /* toggles the visibility of the value of password fields */
     toggleVisiblePasswordField (field) {

@@ -123,13 +123,13 @@
 
         <!-- toggle column -->
          <template #cell(toggle)="data">
-          <span :class="{'btn-indicator':data.item.emailSearch || data.item.removeEnabled || data.item.packetSerach || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
+          <span :class="{'btn-indicator':!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
             <ToggleBtn
               class="btn-toggle-user"
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover="data.item.emailSearch || data.item.removeEnabled || data.item.packetSerach || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              v-b-tooltip.hover="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -238,19 +238,19 @@
         <template #row-details="data">
           <div class="m-2">
             <b-form-checkbox inline
-              v-model="data.item.emailSearch"
-              @input="userHasChanged(data.item.userId)">
-              Arkime Email Search
+              :checked="!data.item.emailSearch"
+              @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
+              Disable Arkime Email Search
             </b-form-checkbox>
             <b-form-checkbox inline
-              v-model="data.item.removeEnabled"
-              @input="userHasChanged(data.item.userId)">
-              Can Remove Arkime Data
+              :checked="!data.item.removeEnabled"
+              @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
+              Disable Arkime Data Removal
             </b-form-checkbox>
             <b-form-checkbox inline
-              v-model="data.item.packetSearch"
-              @input="userHasChanged(data.item.userId)">
-              Can Create Arkime Hunts
+              :checked="!data.item.packetSearch"
+              @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
+              Disable Arkime Hunting
             </b-form-checkbox>
             <b-form-checkbox inline
               v-model="data.item.hideStats"
@@ -464,18 +464,23 @@
           v-model="newUser.headerAuthEnabled">
           Web Auth Header
         </b-form-checkbox>
+
         <b-form-checkbox inline
-          v-model="newUser.emailSearch">
-          Arkime Email Search
+          :checked="!newUser.emailSearch"
+          @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
+          Disable Arkime Email Search
         </b-form-checkbox>
         <b-form-checkbox inline
-          v-model="newUser.removeEnabled">
-          Can Remove Arkime Data
+          :checked="!newUser.removeEnabled"
+          @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
+          Disable Arkime Data Removal
         </b-form-checkbox>
         <b-form-checkbox inline
-          v-model="newUser.packetSearch">
-          Can Create Arkime Hunts
+          :checked="!newUser.packetSearch"
+          @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
+          Disable Arkime Hunting
         </b-form-checkbox>
+
         <b-form-checkbox inline
           v-model="newUser.hideStats">
           Hide Arkime Stats Page
@@ -549,6 +554,17 @@ import ToggleBtn from './ToggleBtn';
 import UserService from './UserService';
 import { timezoneDateString } from './vueFilters';
 
+const defaultNewUser = {
+  userId: '',
+  userName: '',
+  password: '',
+  enabled: true,
+  webEnabled: true,
+  packetSearch: true,
+  emailSearch: false,
+  removeEnabled: false
+};
+
 export default {
   name: 'UsersCommon',
   directives: { HasRole },
@@ -576,14 +592,7 @@ export default {
       createMode: 'user',
       createError: '',
       validatePassword: undefined,
-      newUser: {
-        userId: '',
-        userName: '',
-        password: '',
-        enabled: true,
-        webEnabled: true,
-        packetSearch: true
-      },
+      newUser: defaultNewUser,
       fields: [
         { label: '', key: 'toggle', sortable: false },
         { label: 'User ID', key: 'userId', sortable: true, required: true, help: 'The id used for login, can not be changed once created' },
@@ -618,6 +627,10 @@ export default {
       this.sortField = ctx.sortBy;
       this.desc = ctx.sortDesc;
       this.loadUsers();
+    },
+    negativeToggle (newVal, user, field, existing) {
+      this.$set(user, field, !newVal);
+      if (existing) { this.userHasChanged(user.userId); }
     },
     changeTimeLimit (user) {
       if (user.timeLimit === 'undefined') {
@@ -740,14 +753,7 @@ export default {
       }
 
       UserService.createUser(user).then((response) => {
-        this.newUser = {
-          userId: '',
-          userName: '',
-          password: '',
-          enabled: true,
-          webEnabled: true,
-          packetSearch: true
-        };
+        this.newUser = defaultNewUser;
 
         this.reloadUsers();
         this.$emit('update-roles');
