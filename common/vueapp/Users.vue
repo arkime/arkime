@@ -200,7 +200,7 @@
           <b-dropdown
             size="sm"
             class="roles-dropdown"
-            :text="data.item.roles.join(', ')"
+            :text="getRolesStr(data.item.roles)"
             v-else-if="data.field.type === 'select' && roles && roles.length">
             <b-dropdown-form>
               <b-form-checkbox-group
@@ -617,6 +617,18 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    getRolesStr (roles) {
+      let fixedRoles = [];
+      for (let role of roles) {
+        if (role.startsWith('role:')) {
+          role = role.replace('role:', '');
+        }
+        fixedRoles.push(role);
+      }
+
+      fixedRoles = fixedRoles.sort();
+      return fixedRoles.join(', ');
+    },
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
     },
