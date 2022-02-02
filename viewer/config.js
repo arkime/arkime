@@ -95,8 +95,11 @@ if (!fs.existsSync(internals.configFile)) {
 internals.config = ini.parseSync(internals.configFile);
 
 if (internals.config.default === undefined) {
-  console.log('ERROR - [default] section missing from', internals.configFile);
-  process.exit(1);
+  if (internals.nodeName !== 'cont3xt') {
+    console.log('ERROR - [default] section missing from', internals.configFile);
+    process.exit(1);
+  }
+  internals.config.default = {};
 }
 
 exports.sectionGet = function (section, key, defaultValue) {
