@@ -51,10 +51,20 @@
           </router-link>
         </li>
       </ul> <!-- /page links -->
+      <!-- health check -->
+      <div class="mr-2 text-light">
+        <span v-if="healthError">
+          {{ healthError || 'Network Error' }} - try
+          <a @click="reload"
+            class="cursor-pointer">
+            reloading the page
+          </a>
+        </span>
+      </div> <!-- /health check -->
+      <!-- dark/light mode -->
       <div class="form-inline"
         @keyup.enter="login"
         @keyup.esc="clearLogin">
-        <!-- dark/light mode -->
         <button type="button"
           @click="toggleTheme"
           v-b-tooltip.hover.left
@@ -67,8 +77,8 @@
           <span v-if="theme === 'dark'"
             class="fa fa-moon-o">
           </span>
-        </button> <!-- /dark/light mode -->
-      </div>
+        </button>
+      </div> <!-- /dark/light mode -->
     </nav> <!-- /cont3xt nav -->
     <b-progress
       height="8px"
@@ -90,13 +100,17 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { mapGetters } from 'vuex';
+
+let interval;
 
 export default {
   name: 'Cont3xtNavbar',
   data: function () {
     return {
-      theme: 'dark' // default theme is dark
+      theme: 'dark', // default theme is dark
+      healthError: ''
     };
   },
   computed: {
@@ -118,10 +132,18 @@ export default {
         document.body.classList = [];
       }
     }
+
+    interval = setInterval(() => {
+      axios.get('api/health').then((response) => {
+        this.healthError = '';
+      }).catch((error) => {
+        this.healthError = error.text || error;
+      });
+    }, 10000);
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    toggleTheme: function () {
+    toggleTheme () {
       if (this.theme === 'light') {
         this.theme = 'dark';
         document.body.classList = [this.theme];
@@ -131,7 +153,13 @@ export default {
       }
 
       localStorage.setItem('cont3xtTheme', this.theme);
+    },
+    reload () {
+      window.location.reload();
     }
+  },
+  beforeDestroy: function () {
+    if (interval) { clearInterval(interval); }
   }
 };
 </script>
