@@ -55,7 +55,7 @@ jobs:
 
     centos-8:
         requires: [~pr, ~commit]
-        image: andywick/arkime-build-8:3.0.1-2
+        image: andywick/arkime-build-8:3.3.2-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
@@ -312,7 +312,7 @@ jobs:
 
     release-centos-8:
         requires: [release-build]
-        image: andywick/arkime-build-8:3.0.1-2
+        image: andywick/arkime-build-8:3.3.2-1
         steps:
             - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .

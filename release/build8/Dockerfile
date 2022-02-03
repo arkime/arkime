@@ -1,4 +1,4 @@
-FROM centos:8
+FROM oraclelinux:8
 MAINTAINER Andy Wick <andy.wick@oath.com>
 
 RUN \
@@ -8,7 +8,7 @@ yum -y install git sudo perl-Test perl-Test-Simple bzip2 wget ruby-devel rubygem
 rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
 rpm -ivh http://rpms.remirepo.net/enterprise/remi-release-8.rpm && \
 yum -y install dnf-plugins-core && \
-dnf config-manager --set-enabled powertools && \
+dnf config-manager --set-enabled ol8_codeready_builder && \
 dnf config-manager --set-enabled remi && \
 yum -y clean all && \
 yum -y install pfring && \
