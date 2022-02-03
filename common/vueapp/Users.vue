@@ -596,14 +596,14 @@ export default {
       newUser: defaultNewUser,
       fields: [
         { label: '', key: 'toggle', sortable: false },
-        { label: 'User ID', key: 'userId', sortable: true, required: true, help: 'The id used for login, can not be changed once created' },
-        { name: 'User Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly name for user' },
-        { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?' },
-        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox', help: 'Can access the web interface. When off only APIs can be used' },
-        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
-        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned to this user' },
-        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time this user used Arkime' },
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px' }
+        { label: 'User ID', key: 'userId', sortable: true, required: true, help: 'The id used for login, can not be changed once created', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'User Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly name for user', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned to this user', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time this user used Arkime', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
       ]
     };
   },
