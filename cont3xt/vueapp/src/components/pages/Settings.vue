@@ -59,16 +59,21 @@
           <h1>
             Integrations
           </h1>
-          <b-alert
-            variant="success"
-            class="alert-sm mt-1"
-            :show="!!saveIntegrationSettingsSuccess.length">
-            <span class="fa fa-check mr-2" />
-            {{ saveIntegrationSettingsSuccess }}
-          </b-alert>
-          <div class="mr-3">
+          <b-input-group class="ml-4 mr-2">
+            <template #prepend>
+              <b-input-group-text>
+                <span class="fa fa-search" />
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              autofocus
+              debounce="400"
+              v-model="integrationSearchTerm"
+            />
+          </b-input-group>
+          <div class="mr-3 no-wrap">
             <b-button
-              class="mr-2"
+              class="mr-1"
               variant="outline-warning"
               @click="toggleRawIntegrationSettings">
               <span class="fa fa-pencil mr-2" />
@@ -83,20 +88,11 @@
           </div>
         </div>
         <div class="d-flex flex-wrap">
-          <!-- integration settings error -->
-          <b-alert
-            dismissible
-            variant="danger"
-            style="z-index: 2000;"
-            :show="!!integrationSettingsErr"
-            class="position-fixed fixed-bottom m-0 rounded-0">
-            {{ integrationSettingsErr }}
-          </b-alert> <!-- /integration settings error -->
           <template v-if="!rawIntegrationSettings">
             <div
               :key="key"
               class="w-25 p-2"
-              v-for="(setting, key) in integrationSettings">
+              v-for="(setting, key) in filteredIntegrationSettings">
               <b-card>
                 <template #header>
                   <h4 class="mb-0 d-inline">
@@ -212,6 +208,16 @@
       </div> <!-- /link group settings -->
     </div>
 
+    <!-- messages -->
+    <b-alert
+      :show="!!msg"
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;"
+      :variant="msgType"
+      dismissible>
+      {{ msg }}
+    </b-alert> <!-- messages -->
+
   </div>
 </template>
 
@@ -235,10 +241,12 @@ export default {
   },
   data () {
     return {
+      msg: '',
+      msgType: '',
       visibleTab: 'integrations',
       integrationSettings: {},
-      integrationSettingsErr: '',
-      saveIntegrationSettingsSuccess: '',
+      integrationSearchTerm: '',
+      filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       selectedLinkGroup: 0
     };
@@ -254,8 +262,9 @@ export default {
 
     UserService.getIntegrationSettings().then((response) => {
       this.integrationSettings = response;
+      this.filteredIntegrationSettings = JSON.parse(JSON.stringify(response));
     }).catch((err) => {
-      this.integrationSettingsErr = err;
+      this.showMessage({ variant: 'danger', message: err });
     });
   },
   computed: {
@@ -266,6 +275,24 @@ export default {
       },
       set (value) {
         this.$store.commit('SET_LINK_GROUPS_ERROR', '');
+      }
+    }
+  },
+  watch: {
+    integrationSearchTerm (searchTerm) {
+      if (!searchTerm) {
+        this.filteredIntegrationSettings = JSON.parse(JSON.stringify(this.integrationSettings));
+        return;
+      }
+
+      const query = searchTerm.toLowerCase();
+
+      for (const key in this.integrationSettings) {
+        if (key.toString().toLowerCase().match(query)?.length > 0) {
+          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
+          continue;
+        }
+        delete this.filteredIntegrationSettings[key];
       }
     }
   },
@@ -289,11 +316,11 @@ export default {
       const settings = this.getIntegrationSettingValues();
 
       UserService.setIntegrationSettings({ settings }).then((response) => {
-        this.saveIntegrationSettingsSuccess = 'Saved!';
+        this.showMessage({ variant: 'success', message: 'Saved!' });
         // NOTE: don't need to do anything with the data (the store does it)
         Cont3xtService.getIntegrations();
       }).catch((err) => {
-        this.integrationSettingsErr = err;
+        this.showMessage({ variant: 'danger', message: err });
       });
     },
     toggleRawIntegrationSettings () {
@@ -320,6 +347,8 @@ export default {
           this.$set(this.integrationSettings[s], 'values', rawIntegrationSettings[s]);
         }
       }
+
+      this.filteredIntegrationSettings = JSON.parse(JSON.stringify(this.integrationSettings));
     },
     getState (field, setting, sname) {
       if (!field.required) {
@@ -368,10 +397,22 @@ export default {
       }
     },
     /* helpers ------------------------------------------------------------- */
+    showMessage ({ variant, message }) {
+      this.msg = message;
+      this.msgType = variant;
+      setTimeout(() => {
+        this.msg = '';
+        this.msgType = '';
+      }, 10000);
+    },
     getIntegrationSettingValues () {
       const settings = {};
       for (const setting in this.integrationSettings) {
-        settings[setting] = this.integrationSettings[setting].values;
+        let values = this.integrationSettings[setting].values;
+        if (this.filteredIntegrationSettings[setting]) {
+          values = this.filteredIntegrationSettings[setting].values;
+        }
+        settings[setting] = values;
       }
       return settings;
     },
