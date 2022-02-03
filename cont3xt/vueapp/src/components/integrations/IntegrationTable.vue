@@ -8,6 +8,25 @@
           <b-input-group-text>
             <span class="fa fa-search" />
           </b-input-group-text>
+          <b-dropdown
+            size="sm"
+            variant="outline-secondary"
+            :text="`Searching ${!selectedFields.length || selectedFields.length === fields.length ? 'all' : selectedFields.join(', ')} fields`">
+            <b-dropdown-form>
+              <b-form-checkbox-group
+                stacked
+                v-model="selectedFields">
+                <template
+                  v-for="field in fields">
+                  <b-form-checkbox
+                    :key="field.label"
+                    :value="field.label">
+                    {{ field.label }}
+                  </b-form-checkbox>
+                </template>
+              </b-form-checkbox-group>
+            </b-dropdown-form>
+          </b-dropdown>
         </template>
         <b-form-input
           debounce="400"
@@ -120,6 +139,7 @@ export default {
   data () {
     return {
       searchTerm: '',
+      selectedFields: this.fields.map(f => f.label), // select all fields to start
       sortField: this.defaultSortField || undefined,
       tableLen: Math.min(this.tableData.length || 1, this.size),
       desc: this.defaultSortDirection && this.defaultSortDirection === 'desc',
@@ -144,14 +164,27 @@ export default {
         this.setTableLen();
         return;
       }
-
       this.filteredData = this.data.filter((row) => {
         let match = false;
         const query = newValue.toLowerCase();
 
-        for (const c in row) {
-          if (!row[c]) { continue; }
-          match = row[c].toString().toLowerCase().match(query)?.length > 0;
+        for (const field of this.fields) {
+          // if no fields selected, search all fields
+          if (this.selectedFields.length && this.selectedFields.indexOf(field.label) < 0) { continue; }
+          for (const c in row) {
+            if (!field.path.includes(c)) { continue; }
+            if (!row[c]) { continue; }
+
+            let value = row;
+            for (const p of field.path) {
+              value = value[p];
+            }
+
+            if (!value) { continue; }
+
+            match = value.toString().toLowerCase().match(query)?.length > 0;
+            if (match) { break; }
+          }
           if (match) { break; }
         }
 
