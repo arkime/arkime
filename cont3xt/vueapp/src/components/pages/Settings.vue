@@ -96,6 +96,11 @@
               <b-card>
                 <template #header>
                   <h4 class="mb-0 d-inline">
+                    <img
+                      v-if="getIntegrations[key]"
+                      class="integration-setting-img"
+                      :src="getIntegrations[key].icon"
+                    />
                     {{ key }}
                   </h4>
                   <div class="pull-right mt-1">
@@ -268,7 +273,7 @@ export default {
     });
   },
   computed: {
-    ...mapGetters(['getLinkGroups', 'getLinkGroupsError']),
+    ...mapGetters(['getLinkGroups', 'getLinkGroupsError', 'getIntegrations']),
     linkGroupsError: {
       get () {
         return !!this.$store.state.linkGroupsError;
@@ -486,5 +491,10 @@ export default {
 
 .alert.alert-sm {
   padding: 0.4rem 0.8rem;
+}
+
+.integration-setting-img {
+  height:27px;
+  margin-left: -8px;
 }
 </style>
