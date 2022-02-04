@@ -11,6 +11,7 @@
           :value="data[itype]._query"
            class="align-self-center mr-1"
         />
+        <!-- use whois first -->
         <template v-if="data[itype].Whois">
           <template v-for="whois in data[itype].Whois">
             <template v-if="whois.data">
@@ -31,6 +32,53 @@
                   {{ whois.data.registrar }}
                 </b-badge>
               </h5>
+            </template>
+          </template>
+        </template>
+        <!-- fallback to pt whois -->
+        <template v-else-if="data[itype]['PT Whois']">
+          <template v-for="ptwhois in data[itype]['PT Whois']">
+            <template v-if="ptwhois.data">
+              <template v-if="ptwhois.data.registered">
+                <h5 class="align-self-end mr-1"
+                  :key="`ptwhois-${ptwhois._query}-date`"
+                  v-if="ptwhois.data.registered">
+                  <b-badge
+                    variant="light"
+                    class="cursor-help"
+                    v-b-tooltip="ptwhois.data.registered">
+                    {{ ptwhois.data.registered | removeTime }}
+                  </b-badge>
+                </h5>
+                <h5 class="align-self-end"
+                  :key="`ptwhois-${ptwhois._query}-reg`"
+                  v-if="ptwhois.data.registrar">
+                  <b-badge variant="light">
+                    {{ ptwhois.data.registrar }}
+                  </b-badge>
+                </h5>
+              </template>
+            </template>
+          </template>
+        </template>
+        <!-- lastly check for vt whois -->
+        <template v-else-if="data[itype]['VT Domain']">
+          <template v-for="vtdomain in data[itype]['VT Domain']">
+            <template v-if="vtdomain.data">
+              <template v-if="vtdomain.data.whois">
+                <h5 class="align-self-end"
+                  :key="`vtdomain-${vtdomain._query}-date`">
+                  <b-badge variant="light">
+                    {{ getVTDomainField(vtdomain.data.whois, 'Creation Date: ') | removeTime }}
+                  </b-badge>
+                </h5>
+                <h5 class="align-self-end"
+                  :key="`vtdomain-${vtdomain._query}-reg`">
+                  <b-badge variant="light">
+                    {{ getVTDomainField(vtdomain.data.whois, 'Registrar: ') }}
+                  </b-badge>
+                </h5>
+              </template>
             </template>
           </template>
         </template>
@@ -108,6 +156,16 @@ export default {
     return {
       itype: 'domain'
     };
+  },
+  methods: {
+    // parse the VT Domain whois field for values
+    // NOTE: assumes that each value ends with \n
+    getVTDomainField (data, fStr) {
+      const start = data.indexOf(fStr) + fStr.length;
+      const leftover = data.slice(start);
+      const end = leftover.indexOf('\n');
+      return data.slice(start, end + start);
+    }
   }
 };
 </script>
