@@ -12,6 +12,17 @@
             size="sm"
             variant="outline-secondary"
             :text="`Searching ${!selectedFields.length || selectedFields.length === fields.length ? 'all' : selectedFields.join(', ')} fields`">
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop.prevent="toggleAllFields(true)">
+              Select All
+            </b-dropdown-item>
+            <b-dropdown-item
+              class="small"
+              @click.native.capture.stop.prevent="toggleAllFields(false)">
+              Unselect All
+            </b-dropdown-item>
+            <b-dropdown-divider />
             <b-dropdown-form>
               <b-form-checkbox-group
                 stacked
@@ -252,6 +263,9 @@ export default {
           }
         }
       });
+    },
+    toggleAllFields (select) {
+      this.selectedFields = select ? this.fields.map(f => f.label) : [];
     },
     // helpers ------------------------------------------------------------- */
     setTableLen () {
