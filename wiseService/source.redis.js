@@ -24,11 +24,6 @@ class RedisSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { tagsSetting: true, typeSetting: true, formatSetting: 'csv' });
-    this.url = api.getConfig(section, 'url');
-    if (this.url === undefined) {
-      console.log(this.section, '- ERROR not loading since no url specified in config file');
-      return;
-    }
 
     this.column = +api.getConfig(section, 'column', 0);
     this.template = api.getConfig(section, 'template', undefined);

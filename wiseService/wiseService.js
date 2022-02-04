@@ -97,7 +97,9 @@ const internals = {
   regressionTests: false,
   webconfig: false,
   configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
-  startTime: Date.now()
+  startTime: Date.now(),
+  options: {},
+  debugged: {}
 };
 
 internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 'sha256'];
@@ -110,6 +112,15 @@ function processArgs (argv) {
     if (argv[i] === '-c') {
       i++;
       internals.configFile = argv[i];
+    } else if (process.argv[i] === '-o') {
+      i++;
+      const equal = process.argv[i].indexOf('=');
+      if (equal === -1) {
+        console.log('Missing equal sign in', process.argv[i]);
+        process.exit(1);
+      }
+
+      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -187,10 +198,15 @@ const cspHeader = helmet.contentSecurityPolicy({
 app.use(cspHeader);
 
 function getConfig (section, sectionKey, d) {
-  if (!internals.config[section]) {
-    return d;
+  const key = `${section}.${sectionKey}`;
+  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+
+  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+    console.log(`CONFIG - ${key} is ${value}`);
+    internals.debugged[key] = 1;
   }
-  return internals.config[section][sectionKey] || d;
+
+  return value;
 }
 
 // Explicit sigint handler for running under docker
