@@ -521,7 +521,7 @@ class ThreatStreamSource extends WISESource {
     }
 
     try {
-      this.db = betterSqlite3(dbFile);
+      this.db = betterSqlite3(dbFile, { readonly: true, timeout: 1000 });
     } catch (err) {
       console.log(`ERROR - couldn't open threatstream db ${dbFile}`, err);
       process.exit();
