@@ -39,6 +39,7 @@ class EmailVerifyIntegration extends Integration {
   async fetchEmail (user, email) {
     try {
       const result = await emailValidator.verify(email);
+      result._cont3xt = {};
       return result;
     } catch (err) {
       console.log(this.name, email, err);

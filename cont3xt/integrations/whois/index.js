@@ -50,7 +50,7 @@ class WhoisIntegration extends Integration {
   async fetchDomain (user, domain) {
     try {
       const data = await whois(domain);
-      data._count = 1;
+      data._cont3xt = { count: 1 };
       return data;
     } catch (err) {
       console.log(this.name, domain, err);

@@ -160,11 +160,11 @@ class AlienVaultOTXIntegration extends Integration {
         })).data;
       }
 
-      result._count = 0;
-      result._count += result.general?.pulse_info?.count ?? 0;
-      result._count += result.malware?.count ?? 0;
-      if (result._count > 0) {
-        result._severity = 'high';
+      result._cont3xt = { count: 0 };
+      result._cont3xt.count += result.general?.pulse_info?.count ?? 0;
+      result._cont3xt.count += result.malware?.count ?? 0;
+      if (result._cont3xt.count > 0) {
+        result._cont3xt.severity = 'high';
       }
       return result;
     } catch (err) {

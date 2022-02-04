@@ -45,8 +45,13 @@ class RDAPIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+
       if (res.status === 200) {
-        return { name: res.data.name, link: res.data.links[0].value };
+        return {
+          _cont3xt: {},
+          name: res.data.name,
+          link: res.data.links[0].value
+        };
       } else {
         return null;
       }

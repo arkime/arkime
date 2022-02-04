@@ -24,7 +24,7 @@
           size="sm"
           @click="refresh"
           variant="outline-info"
-          v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._createTime)}`">
+          v-b-tooltip.hover="`Queried ${$options.filters.moment(getIntegrationData.data._cont3xt.createTime, 'from')}\n${$options.filters.dateString(getIntegrationData.data._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
         </b-button>
       </div>
@@ -56,7 +56,7 @@
       </div>
     </b-alert> <!-- no template -->
     <!-- no data -->
-    <template v-if="Object.keys(getIntegrationData.data).length === 1 && getIntegrationData.data._createTime">
+    <template v-if="Object.keys(getIntegrationData.data).length === 1 && getIntegrationData.data._cont3xt.createTime">
       <h5 class="display-4 text-center mt-4 mb-4 text-muted">
         <span class="fa fa-folder-open" />
         <br>

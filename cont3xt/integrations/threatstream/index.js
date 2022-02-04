@@ -96,8 +96,10 @@ class ThreatstreamIntegration extends Integration {
       });
 
       if (result.data.meta.total_count === 0) { return Integration.NoResult; }
-      result.data._count = result.data.meta.total_count;
-      result.data._severity = 'high';
+      result.data._cont3xt = {
+        severity: 'high',
+        count: result.data.meta.total_count
+      };
 
       return result.data;
     } catch (err) {

@@ -123,6 +123,7 @@ class CensysIntegration extends Integration {
         }
       });
 
+      c.data._cont3xt = {};
       return c.data;
     } catch (err) {
       console.log(this.name, ip, err);

@@ -131,7 +131,7 @@ class PassiveTotalWhoisIntegration extends Integration {
         }
       });
 
-      result.data._count = 1;
+      result.data._cont3xt = { count: 1 };
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
@@ -198,7 +198,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
         }
       });
 
-      result.data._count = result.data.subdomains.length;
+      result.data._cont3xt = { count: result.data.subdomains.length };
       if (result.data.subdomains.length === 0) { return undefined; }
       return result.data;
     } catch (err) {
@@ -299,7 +299,7 @@ class PassiveTotalDNSIntegration extends Integration {
       });
 
       if (result.data.totalRecords === 0 || result.data.results.length === 0) { return undefined; }
-      result.data._count = parseInt(result.data.totalRecords);
+      result.data._cont3xt = { count: parseInt(result.data.totalRecords) };
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

@@ -80,7 +80,8 @@ class TwilioIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
-      result.data._count = 1;
+
+      result.data._cont3xt = { count: 1 };
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

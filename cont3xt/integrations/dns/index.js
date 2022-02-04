@@ -76,6 +76,8 @@ class DNSIntegration extends Integration {
           item.data = `${parseInt(data.slice(4, 6))} ${Buffer.from(data.slice(8, 8 + len * 2), 'hex').toString()} ${Buffer.from(data.slice(8 + len * 2), 'hex').toString()}`;
         });
       }
+
+      result._cont3xt = {};
       return result;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

@@ -16,9 +16,9 @@
         />
         <b-badge
           class="btn-badge"
-          v-if="data[itype][integration.name][0].data._count !== undefined"
+          v-if="data[itype][integration.name][0].data._cont3xt.count !== undefined"
           :variant="countBadgeColor(data[itype][integration.name][0].data)">
-          {{ data[itype][integration.name][0].data._count | humanReadableNumber }}
+          {{ data[itype][integration.name][0].data._cont3xt.count | humanReadableNumber }}
         </b-badge>
         <b-tooltip
           :target="itype + integration.name">
@@ -62,9 +62,9 @@ export default {
   },
   methods: {
     countBadgeColor (data) {
-      if (data._count === 0) {
+      if (data._cont3xt.count === 0) {
         return 'secondary';
-      } else if (data._severity === 'high') {
+      } else if (data._cont3xt.severity === 'high') {
         return 'danger';
       } else {
         return 'success';
