@@ -47,11 +47,7 @@ class RDAPIntegration extends Integration {
       });
 
       if (res.status === 200) {
-        return {
-          _cont3xt: {},
-          name: res.data.name,
-          link: res.data.links[0].value
-        };
+        return { name: res.data.name, link: res.data.links[0].value };
       } else {
         return null;
       }
