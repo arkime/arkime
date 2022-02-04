@@ -172,6 +172,12 @@
         </b-card>
         <template v-else>
           <hr class="link-separator">
+          <b-form-checkbox-group
+            class="text-center"
+            v-model="link.itypes"
+            :options="itypeOptions"
+            @change="$emit('update-link-group', lg)"
+          />
           <b-button
             size="sm"
             variant="danger"
@@ -301,7 +307,6 @@ export default {
       const link = JSON.parse(JSON.stringify(defaultLink));
       link.url = '----------';
       link.name = '----------';
-      link.itypes = ['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'];
       this.lg.links.splice(index + 1, 0, link);
     },
     pushLink ({ index, target }) {
@@ -351,6 +356,6 @@ export default {
 .remove-separator {
   float: right;
   display: inline;
-  margin-top: -34px;
+  margin-top: -42px;
 }
 </style>
