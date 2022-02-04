@@ -53,8 +53,8 @@
           <template v-for="(spur, index) in data[itype].Spur">
             <template v-if="(value && value === spur._query) || !value">
               <h5
+                class="align-self-end mr-1"
                 v-if="spur.data && spur.data.infrastructure"
-                class="align-self-end mr-1 cursor-help"
                 :key="`spur-${value}-${index}-infrastructure`">
                 <b-badge variant="light">
                   {{ spur.data.infrastructure }}
@@ -62,7 +62,7 @@
               </h5>
             </template>
           </template>
-      </template>
+        </template>
       </div>
       <div class="d-flex align-self-center justify-content-end">
         <integration-btns
