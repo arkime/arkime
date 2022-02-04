@@ -77,7 +77,6 @@ class DNSIntegration extends Integration {
         });
       }
 
-      result._cont3xt = {};
       return result;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

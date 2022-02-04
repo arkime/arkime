@@ -257,6 +257,7 @@ class Integration {
       if (response === Integration.NoResult) {
         shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: { _cont3xt: { createTime: Date.now() } } }));
       } else {
+        if (!response._cont3xt) { response._cont3xt = {}; }
         shared.res.write(JSON.stringify({ sent: shared.sent, total: shared.total, name: integration.name, itype: itype, query: query, data: response }));
       }
       shared.res.write(',\n');
@@ -317,6 +318,7 @@ class Integration {
         if (response) {
           stats.cacheFound++;
           istats.cacheFound++;
+          if (!response._cont3xt) { response._cont3xt = {}; }
           if (Date.now() - response._cont3xt.createTime < integration.cacheTimeout) {
             stats.cacheGood++;
             istats.cacheGood++;

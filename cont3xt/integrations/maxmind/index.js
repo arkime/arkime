@@ -69,7 +69,6 @@ class MaxmindIntegration extends Integration {
         result.country = this.countryLookup.get(ip);
       }
 
-      result._cont3xt = {};
       return result;
     } catch (err) {
       console.log(this.name, ip, err);

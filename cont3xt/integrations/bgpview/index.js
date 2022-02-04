@@ -122,7 +122,6 @@ class BGPViewIntegration extends Integration {
         }
       });
 
-      result.data._cont3xt = {};
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
