@@ -278,6 +278,11 @@ class WISESource {
         }
       }
 
+      // The rest of the code assumes an array
+      if (!Array.isArray(json)) {
+        json = [json];
+      }
+
       const keyPath = this.keyPath.split('.');
 
       // Convert shortcuts into array of key path
