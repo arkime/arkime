@@ -522,6 +522,26 @@ class Integration {
     res.send({ success: true, settings: result });
   }
 
+  // TODO ECR cont3xt_views
+  static async apiGetViews (req, res, next) {
+    res.send({ success: true, views: [] });
+  }
+
+  // TODO ECR
+  static async apiCreateView (req, res, next) {
+    res.send({ success: true });
+  }
+
+  // TODO ECR
+  static async apiUpdateView (req, res, next) {
+    res.send({ success: true });
+  }
+
+  // TODO ECR
+  static async apiDeleteView (req, res, next) {
+    res.send({ success: true });
+  }
+
   /**
    * Return all the settings and current values that a user can set about
    * Intergrations so a Setting UI can be built on the fly.

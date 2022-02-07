@@ -237,6 +237,7 @@ import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
 let timeout;
 
+// TODO ECR add general tab with integration views
 export default {
   name: 'Cont3xtSettings',
   components: {

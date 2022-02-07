@@ -135,6 +135,10 @@ app.put('/api/settings', [jsonParser], apiPutSettings);
 app.get('/api/integration/settings', Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser], Integration.apiPutSettings);
 app.get('/api/integration/stats', Integration.apiStats);
+app.get('/api/integration/views', Integration.apiGetViews);
+app.post('/api/integration/view', Integration.apiCreateView);
+app.put('/api/integration/view/:id', Integration.apiUpdateView);
+app.delete('/api/integration/view/:id', Integration.apiDeleteView);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 
