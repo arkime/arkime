@@ -150,7 +150,7 @@ class ShodanIntegration extends Integration {
         }
       });
 
-      response.data._count = response.data.data.length;
+      response.data._cont3xt = { count: response.data.data.length };
       return response.data;
     } catch (err) {
       if (err?.response?.status === 404) { return Integration.NoResult; }

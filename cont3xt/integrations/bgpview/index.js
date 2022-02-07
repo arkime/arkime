@@ -121,6 +121,7 @@ class BGPViewIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
+
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

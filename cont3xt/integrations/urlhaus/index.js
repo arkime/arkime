@@ -58,10 +58,9 @@ class URLHausIntegration extends Integration {
         return Integration.NoResult;
       }
 
+      result.data._cont3xt = { count: 0 };
       if (result.data.query_status === 'ok' && result.data.urls !== undefined) {
-        result.data._count = result.data.urls.length;
-      } else {
-        result.data._count = 0;
+        result.data._cont3xt.count = result.data.urls.length;
       }
       return result.data;
     } catch (err) {

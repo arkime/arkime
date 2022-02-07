@@ -110,7 +110,7 @@ class SpurIntegration extends Integration {
         }
       }
 
-      response.data._count = 1;
+      response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

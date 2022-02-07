@@ -166,7 +166,7 @@ class VirusTotalDomainIntegration extends Integration {
         response.data.undetected_urls = uus;
       }
 
-      response.data._count = 1;
+      response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
       console.log(this.name, domain, err);
@@ -299,7 +299,7 @@ class VirusTotalIPIntegration extends Integration {
         response.data.undetected_urls = uus;
       }
 
-      response.data._count = 1;
+      response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
       console.log(this.name, ip, err);
@@ -383,7 +383,7 @@ class VirusTotalHashIntegration extends Integration {
         }
       });
 
-      response.data._count = response.data.response_code === 0 ? 0 : 1;
+      response.data._cont3xt = { count: response.data.response_code === 0 ? 0 : 1 };
       return response.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

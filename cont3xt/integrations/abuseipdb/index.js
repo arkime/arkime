@@ -107,7 +107,7 @@ class AbuseIPDBIntegration extends Integration {
         }
       });
 
-      response.data.data._count = response.data.data.totalReports;
+      response.data.data._cont3xt = { count: response.data.data.totalReports };
       return response.data.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

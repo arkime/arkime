@@ -57,11 +57,11 @@ class CymruIntegration extends Integration {
       const parts = str.slice(1, str.length - 1).split(' ');
       const result = {
         lastSeen: parseInt(parts[0]),
-        _count: parseInt(parts[1])
+        _cont3xt: { count: parseInt(parts[1]) }
       };
 
-      if (result._count > 0) {
-        result._severity = 'high';
+      if (result._cont3xt.count > 0) {
+        result._cont3xt.severity = 'high';
       }
       return result;
     } catch (err) {

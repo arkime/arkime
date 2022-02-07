@@ -109,7 +109,7 @@ class URLScanIntegration extends Integration {
       });
 
       if (result.data.total === 0) { return; }
-      result.data._count = result.data.total;
+      result.data._cont3xt = { count: result.data.total };
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }

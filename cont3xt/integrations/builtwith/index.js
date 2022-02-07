@@ -88,7 +88,8 @@ class BuiltWithIntegration extends Integration {
           'User-Agent': this.userAgent()
         }
       });
-      result.data._count = result.data.groups?.length ?? 0;
+
+      result.data._cont3xt = { count: result.data.groups?.length ?? 0 };
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
