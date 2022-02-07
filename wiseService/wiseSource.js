@@ -307,19 +307,28 @@ class WISESource {
         const args = [];
         // Check each shortcut
         for (let k = 0; k < shortcuts.length; k++) {
-          let obj = json[i];
+          let objs = json[i];
           // Walk the shortcut path
-          for (let j = 0; obj && j < shortcuts[k].length; j++) {
-            obj = obj[shortcuts[k][j]];
+          for (let j = 0; objs && j < shortcuts[k].length; j++) {
+            objs = objs[shortcuts[k][j]];
           }
-          if (obj !== undefined && obj !== null && obj !== '') {
-            args.push(shortcutsValue[k].pos);
-            if (shortcutsValue[k].mod === 1) {
-              args.push(obj.toLowerCase());
-            } else if (shortcutsValue[k].mod === 2) {
-              args.push(obj.toUpperCase());
-            } else {
-              args.push(obj);
+
+          // Always pretend we have an array
+          if (!Array.isArray(objs)) {
+            objs = [objs];
+          }
+
+          for (let o = 0; o < objs.length; o++) {
+            const obj = objs[o];
+            if (obj !== undefined && obj !== null && obj !== '') {
+              args.push(shortcutsValue[k].pos);
+              if (shortcutsValue[k].mod === 1) {
+                args.push(obj.toLowerCase());
+              } else if (shortcutsValue[k].mod === 2) {
+                args.push(obj.toUpperCase());
+              } else {
+                args.push(obj);
+              }
             }
           }
         }
@@ -408,6 +417,9 @@ class WISESource {
     let l;
     let len = 0;
     for (let a = 1; a < arguments.length; a += 2) {
+      if (typeof (arguments[a]) === 'number') {
+        arguments[a] = arguments[a].toString();
+      }
       l = Buffer.byteLength(arguments[a]);
       if (l > 250) {
         arguments[a] = arguments[a].substring(0, 240);
