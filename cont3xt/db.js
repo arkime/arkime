@@ -402,9 +402,13 @@ class DbESImplementation {
 /******************************************************************************/
 class DbLMDBImplementation {
   store;
+  viewStore;
+  linkGroupStore;
 
   constructor (options) {
     this.store = ArkimeUtil.createLMDBStore(options.url, 'Db');
+    this.linkGroupStore = this.store.openDB('linkGroups');
+    this.viewStore = this.store.openDB('views');
   }
 
   /**
@@ -412,7 +416,7 @@ class DbLMDBImplementation {
    */
   async getMatchingLinkGroups (creator, roles) {
     const hits = [];
-    this.store.getRange({})
+    this.linkGroupStore.getRange({})
       .filter(({ key, value }) => {
         if (creator !== undefined && creator === value.creator) { return true; }
         if (roles !== undefined) {
@@ -439,19 +443,62 @@ class DbLMDBImplementation {
       // Maybe should be a UUID?
       id = cryptoLib.randomBytes(16).toString('hex');
     }
-    await this.store.put(id, linkGroup);
+    await this.linkGroupStore.put(id, linkGroup);
     return id;
   }
 
   async getLinkGroup (id) {
-    return await this.store.get(id);
+    return await this.linkGroupStore.get(id);
   }
 
   async deleteLinkGroup (id) {
-    return this.store.remove(id);
+    return this.linkGroupStore.remove(id);
   }
 
   // TODO lmdb for views
+  /**
+   * Get all the links that match the creator and set of roles
+   */
+  async getMatchingViews (creator, roles) {
+    const hits = [];
+    this.viewStore.getRange({})
+      .filter(({ key, value }) => {
+        if (creator !== undefined && creator === value.creator) { return true; }
+        if (roles !== undefined) {
+          if (value.editRoles && roles.some(x => value.editRoles.includes(x))) { return true; }
+          if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
+        }
+        return false;
+      }).forEach(({ key, value }) => {
+        value._id = key;
+        hits.push(value);
+      });
+
+    const views = [];
+    for (let i = 0; i < hits.length; i++) {
+      const view = new View(hits[i]);
+      views.push(view);
+    }
+
+    return views;
+  }
+
+  async putView (id, view) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.viewStore.put(id, view);
+    return id;
+  }
+
+  async getView (id) {
+    return await this.viewStore.get(id);
+  }
+
+  async deleteView (id) {
+    return this.viewStore.remove(id);
+  }
 }
 
 module.exports = Db;
