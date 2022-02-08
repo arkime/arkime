@@ -73,6 +73,35 @@ class Db {
   static async deleteLinkGroup (id) {
     return Db.implementation.deleteLinkGroup(id);
   }
+
+  /**
+   * Get all the views that match the creator and set of roles
+   */
+  static async getMatchingViews (creator, roles) {
+    return Db.implementation.getMatchingViews(creator, roles);
+  }
+
+  /**
+   * Update a single view
+   */
+  static async putView (id, view) {
+    if (view._id) { delete view._id; }
+    return Db.implementation.putView(id, view);
+  }
+
+  /**
+   * Get a single linkGroup
+   */
+  static async getView (id) {
+    return Db.implementation.getView(id);
+  }
+
+  /**
+   * Delete a single view
+   */
+  static async deleteView (id) {
+    return Db.implementation.deleteView(id);
+  }
 }
 
 /******************************************************************************/
@@ -117,10 +146,12 @@ class DbESImplementation {
     this.client = new Client(esOptions);
 
     // Create the cont3xt_links index
-    this.createIndex();
+    this.createLinksIndex();
+    // Create the cont3xt_views index
+    this.createViewsIndex();
   };
 
-  async createIndex () {
+  async createLinksIndex () {
     try {
       await this.client.indices.create({
         index: 'cont3xt_links',
@@ -140,7 +171,6 @@ class DbESImplementation {
       }
     }
 
-    // Update the cont3xt_links mapping
     await this.client.indices.putMapping({
       index: 'cont3xt_links',
       body: {
@@ -154,6 +184,40 @@ class DbESImplementation {
             }
           }
         ]
+      }
+    });
+  }
+
+  async createViewsIndex () {
+    try {
+      await this.client.indices.create({
+        index: 'cont3xt_views',
+        body: {
+          settings: {
+            number_of_shards: 1,
+            number_of_replicas: 0,
+            auto_expand_replicas: '0-2'
+          }
+        }
+      });
+    } catch (err) {
+      // If already exists ignore error
+      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(err);
+        process.exit(0);
+      }
+    }
+
+    await this.client.indices.putMapping({
+      index: 'cont3xt_views',
+      body: {
+        properties: {
+          name: { type: 'keyword' },
+          creator: { type: 'keyword' },
+          viewRoles: { type: 'keyword' },
+          editRoles: { type: 'keyword' },
+          integrations: { type: 'keyword', index: false }
+        }
       }
     });
   }
@@ -241,6 +305,97 @@ class DbESImplementation {
     }
     return null;
   }
+
+  async getMatchingViews (creator, roles) {
+    const query = {
+      size: 1000,
+      query: {
+        bool: {
+          should: []
+        }
+      }
+    };
+
+    if (creator) {
+      query.query.bool.should.push({
+        term: {
+          creator: creator
+        }
+      });
+    }
+
+    if (roles) {
+      query.query.bool.should.push({
+        terms: {
+          editRoles: roles
+        }
+      });
+      query.query.bool.should.push({
+        terms: {
+          viewRoles: roles
+        }
+      });
+    }
+
+    try {
+      const results = await this.client.search({
+        body: query,
+        index: 'cont3xt_views',
+        rest_total_hits_as_int: true
+      });
+
+      const hits = results.body.hits.hits;
+      const views = [];
+      for (let i = 0; i < hits.length; i++) {
+        const view = new View(hits[i]._source);
+        view._id = hits[i]._id;
+        views.push(view);
+      }
+
+      return views;
+    } catch (err) {
+      console.log('ERROR FETCHING VIEWS', err);
+      return [];
+    }
+  }
+
+  async putView (id, view) {
+    const results = await this.client.index({
+      id: id,
+      body: view,
+      refresh: true,
+      index: 'cont3xt_views'
+    });
+
+    return results.body._id;
+  }
+
+  async getView (id) {
+    const results = await this.client.get({
+      id: id,
+      index: 'cont3xt_views'
+    });
+
+    if (results?.body?._source) {
+      return results.body._source;
+    }
+
+    return null;
+  }
+
+  async deleteView (id) {
+    const results = await this.client.delete({
+      id: id,
+      refresh: true,
+      index: 'cont3xt_views'
+    });
+
+    if (results.body) {
+      return results.body;
+    }
+
+    return null;
+  }
 }
 /******************************************************************************/
 // LMDB Implementation of Users DB
@@ -295,6 +450,10 @@ class DbLMDBImplementation {
   async deleteLinkGroup (id) {
     return this.store.remove(id);
   }
+
+  // TODO lmdb for views
 }
 
 module.exports = Db;
+
+const View = require('./view');

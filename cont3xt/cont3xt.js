@@ -30,6 +30,7 @@ const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
+const View = require('./view');
 const Db = require('./db');
 const bp = require('body-parser');
 const jsonParser = bp.json();
@@ -135,10 +136,10 @@ app.put('/api/settings', [jsonParser], apiPutSettings);
 app.get('/api/integration/settings', Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser], Integration.apiPutSettings);
 app.get('/api/integration/stats', Integration.apiStats);
-app.get('/api/integration/views', Integration.apiGetViews);
-app.post('/api/integration/view', Integration.apiCreateView);
-app.put('/api/integration/view/:id', Integration.apiUpdateView);
-app.delete('/api/integration/view/:id', Integration.apiDeleteView);
+app.get('/api/integration/views', View.apiGet);
+app.post('/api/integration/view', [jsonParser], View.apiCreate);
+app.put('/api/integration/view/:id', [jsonParser], View.apiUpdate);
+app.delete('/api/integration/view/:id', [jsonParser], View.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 

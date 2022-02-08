@@ -187,8 +187,8 @@ export default {
    */
   updateIntegrationsView (view) {
     return new Promise((resolve, reject) => {
-      fetch(`api/integration/view/${view.id}`, {
-        method: 'POST',
+      fetch(`api/integration/view/${view._id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(view)
       }).then((response) => {

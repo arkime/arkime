@@ -34,7 +34,6 @@
           </h4> <!-- /header/toggle open -->
           <hr>
           <div class="d-flex justify-content-between">
-            <!-- TODO ECR overflow panel or truncate large names with tooltip? -->
             <!-- view selector -->
             <div class="d-inline">
               <b-dropdown
@@ -62,38 +61,59 @@
                     />
                   </b-input-group>
                 </div>
-                <b-dropdown-item
-                  class="small"
-                  :key="view.id"
-                  v-for="view in filteredViews"
-                  @click="selectView(view)">
-                  {{ view.name }}
-                  <b-button
-                    size="xs"
-                    variant="danger"
-                    class="pull-right ml-1"
-                    @click.stop.prevent="deleteView(view.id)"
-                    v-b-tooltip.hover.top="'Delete this view.'">
-                    <span class="fa fa-trash-o" />
-                  </b-button>
-                  <b-button
-                    size="xs"
-                    variant="warning"
-                    class="pull-right ml-1"
-                    @click.stop.prevent="editView(view)"
-                    v-b-tooltip.hover.top="'Edit this view.'">
-                    <span class="fa fa-edit" />
-                  </b-button>
-                </b-dropdown-item>
+                <template v-for="view in filteredViews">
+                  <b-tooltip
+                    noninteractive
+                    :target="view._id"
+                    placement="right"
+                    boundary="viewport"
+                    :key="view._id + '-tooltip'"
+                    v-if="view.name.length > 24">
+                    {{ view.name }}
+                  </b-tooltip>
+                  <b-dropdown-item
+                    class="small"
+                    :id="view._id"
+                    :key="view._id"
+                    @click="selectView(view)">
+                    <div class="d-flex justify-content-between">
+                      <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
+                        <span
+                          class="fa fa-share-alt mr-1 cursor-help"
+                          v-if="getUser && view.creator !== getUser.userId"
+                          v-b-tooltip.hover="`Shared with me by ${view.creator}`"
+                        />
+                        {{ view.name }}
+                      </div>
+                      <template v-if="view._editable">
+                        <b-button
+                          size="xs"
+                          variant="danger"
+                          class="pull-right ml-1"
+                          @click.stop.prevent="deleteView(view._id)"
+                          v-b-tooltip.hover.top="'Delete this view.'">
+                          <span class="fa fa-trash-o" />
+                        </b-button>
+                        <b-button
+                          size="xs"
+                          variant="warning"
+                          class="pull-right ml-1"
+                          @click.prevent="editView(view)"
+                          v-b-tooltip.hover.top="'Edit this view.'">
+                          <span class="fa fa-edit" />
+                        </b-button>
+                      </template>
+                    </div>
+                  </b-dropdown-item>
+                </template>
               </b-dropdown>
             </div> <!-- /view selector -->
-            <!-- TODO ECR position of this tooltip is annoying -->
             <b-button
               size="sm"
               @click="toggleViewForm"
               :variant="viewForm ? 'warning': 'success'"
-              v-b-tooltip.hover="'Save these integrations as a view'">
-              <span v-if="!viewForm" class="fa fa-save" />
+              v-b-tooltip.hover.right="'Save these integrations as a view'">
+              <span v-if="!viewForm" class="fa fa-plus-circle" />
               <span v-else class="fa fa-ban" />
             </b-button>
           </div>
@@ -158,7 +178,7 @@
               </b-dropdown>
               <b-dropdown
                 size="sm"
-                text="Who Can View"
+                text="Who Can Edit"
                 class="roles-dropdown mb-2">
                 <b-dropdown-form>
                   <b-form-checkbox-group
@@ -279,7 +299,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getIntegrations', 'getRoles']),
+    ...mapGetters(['getIntegrations', 'getRoles', 'getUser']),
     sidebarKeepOpen: {
       get () {
         return this.$store.state.sidebarKeepOpen;
@@ -306,16 +326,7 @@ export default {
   },
   watch: {
     viewSearch (searchTerm) {
-      if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.views));
-        return;
-      }
-
-      const query = searchTerm.toLowerCase();
-
-      this.filteredViews = this.views.filter((view) => {
-        return view.name.toString().toLowerCase().match(query)?.length > 0;
-      });
+      this.filterViews(searchTerm);
     }
   },
   created () {
@@ -361,30 +372,30 @@ export default {
       }
 
       UserService.saveIntegrationsView(view).then((response) => {
-        this.views.push(view);
-        this.filteredViews.push(view);
+        this.views.push(response.view);
+        this.filterViews(this.viewSearch);
         this.toggleViewForm();
       }).catch((error) => {
         this.viewFormError = error.text || error;
       });
     },
     editView (view) {
-      this.toggleViewForm();
+      if (!this.viewForm) { this.toggleViewForm(); }
       this.editMode = true;
       this.newView = view;
       this.selectedIntegrations = view.integrations;
     },
     updateView (view) {
-      UserService.updateView(view).then((response) => {
-        // TODO ECR update view in place
+      UserService.updateIntegrationsView(view).then((response) => {
+        this.getViews();
         this.toggleViewForm();
       }).catch((error) => {
         this.viewFormError = error.text || error;
       });
     },
     deleteView (id) {
-      UserService.deleteView(id).then((response) => {
-        // TODO ECR remove view from dropdown
+      UserService.deleteIntegrationsView(id).then((response) => {
+        this.getViews();
       }).catch((error) => {
         this.viewsError = error.text || error;
       });
@@ -402,15 +413,25 @@ export default {
         this.indeterminate = true;
       }
     },
-    // TODO ECR searchable dropdown for views
-    // TODO ECR display that a view is shared with me
     getViews () {
       UserService.getIntegrationViews().then((response) => {
         this.viewsError = '';
         this.views = response.views;
-        this.filteredViews = JSON.parse(JSON.stringify(response.views));
+        this.filterViews(this.viewSearch);
       }).catch((error) => {
         this.viewsError = error.text || error;
+      });
+    },
+    filterViews (searchTerm) {
+      if (!searchTerm) {
+        this.filteredViews = JSON.parse(JSON.stringify(this.views));
+        return;
+      }
+
+      const query = searchTerm.toLowerCase();
+
+      this.filteredViews = this.views.filter((view) => {
+        return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
     }
   }
@@ -418,7 +439,6 @@ export default {
 </script>
 
 <style>
-/* TODO ECR dark theme */
 /* margin for navbar and progress bar height */
 #integrations-sidebar {
   margin-top: 60px !important;
@@ -437,6 +457,12 @@ export default {
   background-color: #ececec;
 }
 
+/* darken sidebar btn */
+body.dark .sidebar-btn {
+  color: #EEE;
+  background-color: #555;
+}
+
 /* margin to flank content associated with sidebar
    transition to side it over when opening sidebar */
 .main-content,
@@ -453,5 +479,9 @@ export default {
 
 .view-dropdown .dropdown-item {
   padding: 0.1rem 0.5rem;
+}
+.view-dropdown .dropdown-menu {
+  width: 240px;
+  overflow: hidden;
 }
 </style>
