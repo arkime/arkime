@@ -7,18 +7,6 @@
       aria-orientation="vertical"
       class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
       <div class="nav flex-column nav-pills">
-        <a @click="openView('views')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'views'}">
-          <span class="fa fa-fw fa-eye mr-1" />
-          Views
-        </a>
-        <a @click="openView('integrations')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'integrations'}">
-          <span class="fa fa-fw fa-key mr-1" />
-          Integrations
-        </a>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
@@ -33,6 +21,27 @@
             v-b-tooltip.hover="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />
           </b-button>
+        </a>
+        <a @click="openView('views')"
+          class="nav-link cursor-pointer"
+          :class="{'active':visibleTab === 'views'}">
+          <span class="fa fa-fw fa-eye mr-1" />
+          Views
+          <b-button
+            size="xs"
+            class="float-right"
+            variant="secondary"
+            v-if="visibleTab === 'views'"
+            @click.stop.prevent="openViewForm"
+            v-b-tooltip.hover="'Create a new view'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
+        </a>
+        <a @click="openView('integrations')"
+          class="nav-link cursor-pointer"
+          :class="{'active':visibleTab === 'integrations'}">
+          <span class="fa fa-fw fa-key mr-1" />
+          Integrations
         </a>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
@@ -65,8 +74,7 @@
         <create-view-modal
           @update-views="getViews"
         />
-        <!-- views -->
-        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+        <div class="mr-3 w-100 d-flex justify-content-between align-items-center">
           <h1>
             Views
           </h1>
@@ -91,51 +99,74 @@
           </b-button>
         </div>
         <div class="d-flex flex-wrap">
+          <!-- no views -->
           <div
-            :key="view._id"
-            class="w-25 p-2"
-            v-for="(view, index) in filteredViews">
-            <b-card>
-              <template #header>
-                <div class="w-100 d-flex justify-content-between align-items-start">
-                  <b-button
-                    size="sm"
-                    variant="danger"
-                    @click="deleteView(view, index)"
-                    v-b-tooltip.hover="'Delete this view'">
-                    <span class="fa fa-trash" />
-                  </b-button>
-                  <b-alert
-                    variant="success"
-                    :show="view.success"
-                    class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                    <span class="fa fa-check mr-2" />
-                    Saved!
-                  </b-alert>
-                  <b-alert
-                    variant="danger"
-                    :show="view.error"
-                    class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                    <span class="fa fa-check mr-2" />
-                    Error!
-                  </b-alert>
-                  <b-button
-                    size="sm"
-                    variant="success"
-                    @click="saveView(view, index)"
-                    v-b-tooltip.hover="'Save this view'">
-                    <span class="fa fa-save" />
-                  </b-button>
-                </div>
-              </template>
-              <ViewForm
-                :view="view"
-                :view-index="index"
-                @update-view="updateView"
-              />
-            </b-card>
-          </div>
-        </div> <!-- /views -->
+            v-if="!views.length"
+            class="row lead mt-4">
+            <div class="col">
+              No Views are configured.
+              <b-button
+                variant="link"
+                v-b-modal.view-form>
+                Create one!
+              </b-button>
+            </div>
+          </div> <!-- /no views -->
+          <!-- no view results -->
+          <div class="row lead mt-4"
+            v-if="viewSearchTerm && !filteredViews.length">
+            <div class="col">
+              No Views match your search.
+            </div>
+          </div> <!-- /no view results -->
+          <!-- views -->
+          <template v-for="(view, index) in filteredViews">
+            <div
+              :key="view._id"
+              class="w-25 p-2"
+              v-if="view._editable">
+              <b-card>
+                <template #header>
+                  <div class="w-100 d-flex justify-content-between align-items-start">
+                    <b-button
+                      size="sm"
+                      variant="danger"
+                      @click="deleteView(view, index)"
+                      v-b-tooltip.hover="'Delete this view'">
+                      <span class="fa fa-trash" />
+                    </b-button>
+                    <b-alert
+                      variant="success"
+                      :show="view.success"
+                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                      <span class="fa fa-check mr-2" />
+                      Saved!
+                    </b-alert>
+                    <b-alert
+                      variant="danger"
+                      :show="view.error"
+                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                      <span class="fa fa-check mr-2" />
+                      Error!
+                    </b-alert>
+                    <b-button
+                      size="sm"
+                      variant="success"
+                      @click="saveView(view, index)"
+                      v-b-tooltip.hover="'Save this view'">
+                      <span class="fa fa-save" />
+                    </b-button>
+                  </div>
+                </template>
+                <ViewForm
+                  :view="view"
+                  :view-index="index"
+                  @update-view="updateView"
+                />
+              </b-card>
+            </div>
+          </template> <!-- /views -->
+        </div>
       </div> <!-- /view settings -->
 
       <!-- integrations settings -->
@@ -337,7 +368,7 @@ export default {
     return {
       msg: '',
       msgType: '',
-      visibleTab: 'integrations',
+      visibleTab: 'linkgroups',
       integrationSettings: {},
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
@@ -503,6 +534,9 @@ export default {
       }
     },
     /* VIEWS! -------------------------------- */
+    openViewForm () {
+      this.$bvModal.show('view-form');
+    },
     updateView ({ view, index }) {
       this.$set(this.filteredViews, index, view);
     },

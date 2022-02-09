@@ -12,8 +12,9 @@
       <b-form-input
         trim
         required
-        autofocus
+        v-focus="focus"
         v-model="localView.name"
+        @keydown.enter.stop.prevent
         :state="localView.name.length > 0"
         @change="$emit('update-view', { view: localView, index: viewIndex })"
       />
@@ -104,6 +105,7 @@
         <strong>Select All</strong>
       </b-form-checkbox>
       <b-form-checkbox-group
+        class="wrap-checkboxes"
         v-model="localView.integrations"
         @change="$emit('update-view', { view: localView, index: viewIndex })">
         <template
@@ -143,8 +145,11 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import Focus from '@/utils/Focus';
+
 export default {
   name: 'ViewForm',
+  directives: { Focus },
   props: {
     view: {
       type: Object,
@@ -152,6 +157,9 @@ export default {
     },
     viewIndex: {
       type: Number
+    },
+    focus: {
+      type: Boolean
     }
   },
   data () {
@@ -188,3 +196,13 @@ export default {
   }
 };
 </script>
+
+<style>
+.wrap-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+}
+.wrap-checkboxes .custom-checkbox {
+  flex-basis: 150px;
+}
+</style>

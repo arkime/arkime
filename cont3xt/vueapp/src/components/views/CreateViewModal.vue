@@ -12,6 +12,7 @@
     <!-- form -->
     <ViewForm
       :view="view"
+      :focus="focus"
       @update-view="update"
     />
     <!-- footer -->
@@ -55,8 +56,14 @@ export default {
   data () {
     return {
       error: '',
+      focus: false,
       view: defaultView
     };
+  },
+  mounted () {
+    this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
+      setTimeout(() => { this.focus = true; }, 200);
+    });
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -65,6 +72,7 @@ export default {
     },
     close () {
       this.error = '';
+      this.focus = false;
       this.view = defaultView;
       this.$bvModal.hide('view-form');
     },
