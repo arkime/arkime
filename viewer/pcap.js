@@ -793,6 +793,20 @@ Pcap.prototype.framerelay = function (buffer, obj, pos) {
   }
 };
 
+Pcap.prototype.sll = function (buffer, obj, pos) {
+  obj.ether = {}
+  obj.sll = {
+    length: buffer.length,
+    packet_type: buffer.readUInt16BE(0),
+    arphrd_type: buffer.readUInt16BE(2),
+    link_layer_length: buffer.readUInt16BE(4)
+  }
+
+  obj.sll.link_layer_address =  buffer.slice(6, 6 + obj.sll.link_layer_length).toString('hex', 0, obj.sll.link_layer_length);
+  
+  this.ethertype(buffer.slice(14), obj, pos + 14);
+};
+
 Pcap.prototype.pcap = function (buffer, obj) {
   if (this.bigEndian) {
     obj.pcap = {
@@ -833,7 +847,7 @@ Pcap.prototype.pcap = function (buffer, obj) {
     this.framerelay(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 113: // SLL
-    this.ip4(buffer.slice(32, obj.pcap.incl_len + 16), obj, 32);
+    this.sll(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
     break;
   case 127: // radiotap
     this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
