@@ -142,7 +142,7 @@ export default {
    */
   getIntegrationViews () {
     return new Promise((resolve, reject) => {
-      fetch('api/integration/views', {
+      fetch('api/views', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }).then((response) => {
@@ -164,7 +164,7 @@ export default {
    */
   saveIntegrationsView (view) {
     return new Promise((resolve, reject) => {
-      fetch('api/integration/view', {
+      fetch('api/view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(view)
@@ -187,7 +187,7 @@ export default {
    */
   updateIntegrationsView (view) {
     return new Promise((resolve, reject) => {
-      fetch(`api/integration/view/${view._id}`, {
+      fetch(`api/view/${view._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(view)
@@ -210,7 +210,7 @@ export default {
    */
   deleteIntegrationsView (id) {
     return new Promise((resolve, reject) => {
-      fetch(`api/integration/view/${id}`, {
+      fetch(`api/view/${id}`, {
         method: 'Delete',
         headers: { 'Content-Type': 'application/json' }
       }).then((response) => {

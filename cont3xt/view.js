@@ -22,9 +22,6 @@ class View {
     Object.assign(this, data);
   }
 
-  save () {
-  }
-
   /**
    * Return views a user can see
    */

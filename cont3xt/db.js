@@ -455,7 +455,6 @@ class DbLMDBImplementation {
     return this.linkGroupStore.remove(id);
   }
 
-  // TODO lmdb for views
   /**
    * Get all the links that match the creator and set of roles
    */

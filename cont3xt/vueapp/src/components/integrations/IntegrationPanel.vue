@@ -1,5 +1,10 @@
 <template>
   <span>
+    <!-- view create form -->
+    <create-view-modal
+      @update-views="getViews"
+    />
+
     <!-- open search panel on hover button -->
     <div
       class="sidebar-btn"
@@ -42,8 +47,8 @@
                 text="Integration Views">
                 <b-dropdown-item
                   class="small"
-                  v-if="!views.length"
-                  @click="toggleViewForm">
+                  v-b-modal.view-form
+                  v-if="!views.length">
                   No saved views.
                   <br>
                   Click to create one.
@@ -94,14 +99,6 @@
                           v-b-tooltip.hover.top="'Delete this view.'">
                           <span class="fa fa-trash-o" />
                         </b-button>
-                        <b-button
-                          size="xs"
-                          variant="warning"
-                          class="pull-right ml-1"
-                          @click.prevent="editView(view)"
-                          v-b-tooltip.hover.top="'Edit this view.'">
-                          <span class="fa fa-edit" />
-                        </b-button>
                       </template>
                     </div>
                   </b-dropdown-item>
@@ -110,11 +107,10 @@
             </div> <!-- /view selector -->
             <b-button
               size="sm"
-              @click="toggleViewForm"
-              :variant="viewForm ? 'warning': 'success'"
+              variant="success"
+              v-b-modal.view-form
               v-b-tooltip.hover.right="'Save these integrations as a view'">
-              <span v-if="!viewForm" class="fa fa-plus-circle" />
-              <span v-else class="fa fa-ban" />
+              <span class="fa fa-plus-circle" />
             </b-button>
           </div>
           <b-alert
@@ -123,114 +119,7 @@
             :show="!!viewsError">
             {{ viewsError }}
           </b-alert>
-          <hr>
-          <!-- create view form -->
-          <b-form v-if="viewForm">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text>
-                  View Name
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                v-model="newView.name"
-                :state="!!newView.length"
-              />
-            </b-input-group>
-            <small
-              class="text-danger"
-              v-if="viewFormError">
-              {{ viewFormError }}
-            </small>
-            <div class="d-flex justify-content-between mt-1">
-              <b-dropdown
-                size="sm"
-                text="Who Can View"
-                class="roles-dropdown mb-2">
-                <b-dropdown-form>
-                  <b-form-checkbox-group
-                    v-model="newView.viewRoles">
-                    <b-form-checkbox
-                      v-for="role in getRoles"
-                      :value="role.value"
-                      :key="role.value">
-                      {{ role.text }}
-                      <span
-                        v-if="role.userDefined"
-                        class="fa fa-user cursor-help ml-2"
-                        v-b-tooltip.hover="'User defined role'"
-                      />
-                    </b-form-checkbox>
-                    <template v-for="role in newView.viewRoles">
-                      <b-form-checkbox
-                        :key="role"
-                        :value="role"
-                        v-if="!getRoles.find(r => r.value === role)">
-                        {{ role }}
-                        <span
-                          class="fa fa-times-circle cursor-help ml-2"
-                          v-b-tooltip.hover="'This role no longer exists'"
-                        />
-                      </b-form-checkbox>
-                    </template>
-                  </b-form-checkbox-group>
-                </b-dropdown-form>
-              </b-dropdown>
-              <b-dropdown
-                size="sm"
-                text="Who Can Edit"
-                class="roles-dropdown mb-2">
-                <b-dropdown-form>
-                  <b-form-checkbox-group
-                    v-model="newView.editRoles">
-                    <b-form-checkbox
-                      v-for="role in getRoles"
-                      :value="role.value"
-                      :key="role.value">
-                      {{ role.text }}
-                      <span
-                        v-if="role.userDefined"
-                        class="fa fa-user cursor-help ml-2"
-                        v-b-tooltip.hover="'User defined role'"
-                      />
-                    </b-form-checkbox>
-                    <template v-for="role in newView.editRoles">
-                      <b-form-checkbox
-                        :key="role"
-                        :value="role"
-                        v-if="!getRoles.find(r => r.value === role)">
-                        {{ role }}
-                        <span
-                          class="fa fa-times-circle cursor-help ml-2"
-                          v-b-tooltip.hover="'This role no longer exists'"
-                        />
-                      </b-form-checkbox>
-                    </template>
-                  </b-form-checkbox-group>
-                </b-dropdown-form>
-              </b-dropdown>
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-              <b-button
-                size="sm"
-                variant="warning"
-                @click="toggleViewForm"
-                v-b-tooltip.hover="'Cancel'">
-                <span class="fa fa-ban" />
-              </b-button>
-              <span class="fa fa-question-circle fa-lg cursor-help"
-                v-b-tooltip.hover="'Uses the currently selected integrations below'"
-              />
-              <b-button
-                size="sm"
-                variant="success"
-                @click="saveView"
-                v-b-tooltip.hover="'Save'">
-                <span class="fa fa-save" />
-              </b-button>
-            </div>
-            <hr>
-          </b-form> <!-- /create view form -->
+          <br>
           <!-- select integrations -->
           <b-form>
             <b-form-checkbox
@@ -244,7 +133,7 @@
               stacked
               v-model="selectedIntegrations">
               <template
-                v-for="integration in sortedIntegrations">
+                v-for="integration in getSortedIntegrations">
                 <b-form-checkbox
                   :key="integration.key"
                   :value="integration.key"
@@ -271,16 +160,11 @@
 import { mapGetters } from 'vuex';
 
 import UserService from '@/components/services/UserService';
-
-const defaultView = {
-  name: '',
-  editRoles: [],
-  viewRoles: [],
-  integrations: []
-};
+import CreateViewModal from '@/components/views/CreateViewModal';
 
 export default {
   name: 'IntegrationPanel',
+  components: { CreateViewModal },
   props: {
     sidebarHover: Boolean
   },
@@ -288,18 +172,15 @@ export default {
     return {
       views: [],
       viewSearch: '',
-      viewForm: false,
       filteredViews: [],
       viewsError: false,
-      viewFormError: '',
       allSelected: false,
       indeterminate: false,
-      sidebarOpen: this.$store.state.sidebarKeepOpen,
-      newView: { ...defaultView, integrations: this.$store.state.selectedIntegrations }
+      sidebarOpen: this.$store.state.sidebarKeepOpen
     };
   },
   computed: {
-    ...mapGetters(['getIntegrations', 'getRoles', 'getUser']),
+    ...mapGetters(['getDoableIntegrations', 'getRoles', 'getUser', 'getSortedIntegrations']),
     sidebarKeepOpen: {
       get () {
         return this.$store.state.sidebarKeepOpen;
@@ -314,14 +195,6 @@ export default {
         return this.$store.state.selectedIntegrations;
       },
       set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
-    },
-    sortedIntegrations () {
-      const integrations = [];
-      for (const integration in this.$store.state.integrations) {
-        integrations.push({ ...this.$store.state.integrations[integration], key: integration });
-      }
-      integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
-      return integrations;
     }
   },
   watch: {
@@ -347,51 +220,10 @@ export default {
       this.sidebarOpen = this.sidebarKeepOpen;
     },
     toggleAll (checked) {
-      this.selectedIntegrations = checked ? Object.keys(this.getIntegrations) : [];
-    },
-    toggleViewForm () {
-      this.editMode = false;
-      this.viewForm = !this.viewForm;
-      this.viewFormError = '';
-      this.newView = { ...defaultView, integrations: this.selectedIntegrations };
+      this.selectedIntegrations = checked ? Object.keys(this.getDoableIntegrations) : [];
     },
     selectView (view) {
       this.selectedIntegrations = view.integrations;
-    },
-    saveView () {
-      if (!this.newView.name) {
-        this.viewFormError = 'Name required';
-        return;
-      }
-
-      const view = { ...this.newView, integrations: this.selectedIntegrations };
-
-      if (this.editMode) {
-        this.updateView(view);
-        return;
-      }
-
-      UserService.saveIntegrationsView(view).then((response) => {
-        this.views.push(response.view);
-        this.filterViews(this.viewSearch);
-        this.toggleViewForm();
-      }).catch((error) => {
-        this.viewFormError = error.text || error;
-      });
-    },
-    editView (view) {
-      if (!this.viewForm) { this.toggleViewForm(); }
-      this.editMode = true;
-      this.newView = view;
-      this.selectedIntegrations = view.integrations;
-    },
-    updateView (view) {
-      UserService.updateIntegrationsView(view).then((response) => {
-        this.getViews();
-        this.toggleViewForm();
-      }).catch((error) => {
-        this.viewFormError = error.text || error;
-      });
     },
     deleteView (id) {
       UserService.deleteIntegrationsView(id).then((response) => {
@@ -405,7 +237,7 @@ export default {
       if (list.length === 0) {
         this.allSelected = false;
         this.indeterminate = false;
-      } else if (list.length === Object.keys(this.getIntegrations).length) {
+      } else if (list.length === Object.keys(this.getDoableIntegrations).length) {
         this.allSelected = true;
         this.indeterminate = false;
       } else {

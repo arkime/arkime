@@ -170,6 +170,23 @@ const store = new Vuex.Store({
     getIntegrations (state) {
       return state.integrations;
     },
+    getDoableIntegrations (state) {
+      const doableIntegrations = {};
+      for (const key in state.integrations) {
+        if (state.integrations[key].doable) {
+          doableIntegrations[key] = state.integrations[key];
+        }
+      }
+      return doableIntegrations;
+    },
+    getSortedIntegrations (state, getters) {
+      const integrations = [];
+      for (const integration in getters.getDoableIntegrations) {
+        integrations.push({ ...state.integrations[integration], key: integration });
+      }
+      integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
+      return integrations;
+    },
     getIntegrationsError (state) {
       return state.integrationsError;
     },
