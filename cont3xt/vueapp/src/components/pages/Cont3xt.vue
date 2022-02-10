@@ -103,7 +103,7 @@
           v-if="searchTerm && initialized"
           class="w-50 d-flex justify-content-between">
           <b-input-group
-            size="sm"
+            size="xs"
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
@@ -111,16 +111,15 @@
               </b-input-group-text>
             </template>
             <b-form-input
-              type="number"
               debounce="400"
               :value="numDays"
-              style="width:60px"
+              style="width:35px"
               placeholder="Number of Days"
               @input="updateVars('numDays', $event)"
             />
           </b-input-group>
           <b-input-group
-            size="sm"
+            size="xs"
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
@@ -128,44 +127,43 @@
               </b-input-group-text>
             </template>
             <b-form-input
-              type="number"
               debounce="400"
               :value="numHours"
-              style="width:70px"
+              style="width:45px"
               placeholder="Number of Hours"
               @input="updateVars('numHours', $event)"
             />
           </b-input-group>
           <b-input-group
-            size="sm"
+            size="xs"
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
-                Start Date
+                Start
               </b-input-group-text>
             </template>
             <b-form-input
               type="text"
               debounce="400"
               :value="startDate"
-              style="width:165px"
+              style="width:152px"
               placeholder="Start Date"
               @input="updateVars('startDate', $event)"
             />
           </b-input-group>
           <b-input-group
-            size="sm"
+            size="xs"
             class="mr-2 mb-1">
             <template #prepend>
               <b-input-group-text>
-                Stop Date
+                Stop
               </b-input-group-text>
             </template>
             <b-form-input
               type="text"
               debounce="400"
               :value="stopDate"
-              style="width:165px"
+              style="width:152px"
               placeholder="Stop Date"
               @input="updateVars('stopDate', $event)"
             />

@@ -94,6 +94,23 @@ body {
   max-height: 200px;
 }
 
+/* xs input groups */
+.input-group-xs > .form-control,
+.input-group-xs > .custom-select,
+.input-group-xs > .input-group-prepend > .input-group-text,
+.input-group-xs > .input-group-append > .input-group-text,
+.input-group-xs > .input-group-prepend > .btn,
+.input-group-xs > .input-group-append > .btn {
+  line-height: 1;
+  padding: 0.25rem;
+  font-size: 0.825rem;
+  border-radius: 2px;
+}
+.input-group-xs > .custom-select,
+.input-group-xs > .form-control:not(textarea) {
+  height: calc(0.825em + 0.5rem + 4px);
+}
+
 /* INFO AREA --------------------------------- */
 /* displays large text for important information
  * note: must contain an inner div with the text
