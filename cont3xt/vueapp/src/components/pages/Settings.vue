@@ -7,12 +7,6 @@
       aria-orientation="vertical"
       class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
       <div class="nav flex-column nav-pills">
-        <a @click="openView('integrations')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'integrations'}">
-          <span class="fa fa-fw fa-key mr-1" />
-          Integrations
-        </a>
         <a @click="openView('linkgroups')"
           class="nav-link cursor-pointer mb-1"
           :class="{'active':visibleTab === 'linkgroups'}">
@@ -27,6 +21,27 @@
             v-b-tooltip.hover="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />
           </b-button>
+        </a>
+        <a @click="openView('views')"
+          class="nav-link cursor-pointer"
+          :class="{'active':visibleTab === 'views'}">
+          <span class="fa fa-fw fa-eye mr-1" />
+          Views
+          <b-button
+            size="xs"
+            class="float-right"
+            variant="secondary"
+            v-if="visibleTab === 'views'"
+            @click.stop.prevent="openViewForm"
+            v-b-tooltip.hover="'Create a new view'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
+        </a>
+        <a @click="openView('integrations')"
+          class="nav-link cursor-pointer"
+          :class="{'active':visibleTab === 'integrations'}">
+          <span class="fa fa-fw fa-key mr-1" />
+          Integrations
         </a>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
@@ -53,6 +68,107 @@
     </div> <!-- /navigation -->
 
     <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+      <!-- view settings -->
+      <div v-if="visibleTab === 'views'">
+        <!-- view create form -->
+        <create-view-modal
+          @update-views="getViews"
+        />
+        <div class="mr-3 w-100 d-flex justify-content-between align-items-center">
+          <h1>
+            Views
+          </h1>
+          <b-input-group class="ml-4 mr-2">
+            <template #prepend>
+              <b-input-group-text>
+                <span class="fa fa-search" />
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              autofocus
+              debounce="400"
+              v-model="viewSearchTerm"
+            />
+          </b-input-group>
+          <b-button
+            class="no-wrap"
+            v-b-modal.view-form
+            variant="outline-success">
+            <span class="fa fa-plus-circle mr-2" />
+            New View
+          </b-button>
+        </div>
+        <div class="d-flex flex-wrap">
+          <!-- no views -->
+          <div
+            v-if="!views.length"
+            class="row lead mt-4">
+            <div class="col">
+              No Views are configured.
+              <b-button
+                variant="link"
+                v-b-modal.view-form>
+                Create one!
+              </b-button>
+            </div>
+          </div> <!-- /no views -->
+          <!-- no view results -->
+          <div class="row lead mt-4"
+            v-if="viewSearchTerm && !filteredViews.length">
+            <div class="col">
+              No Views match your search.
+            </div>
+          </div> <!-- /no view results -->
+          <!-- views -->
+          <template v-for="(view, index) in filteredViews">
+            <div
+              :key="view._id"
+              class="w-25 p-2"
+              v-if="view._editable">
+              <b-card>
+                <template #header>
+                  <div class="w-100 d-flex justify-content-between align-items-start">
+                    <b-button
+                      size="sm"
+                      variant="danger"
+                      @click="deleteView(view, index)"
+                      v-b-tooltip.hover="'Delete this view'">
+                      <span class="fa fa-trash" />
+                    </b-button>
+                    <b-alert
+                      variant="success"
+                      :show="view.success"
+                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                      <span class="fa fa-check mr-2" />
+                      Saved!
+                    </b-alert>
+                    <b-alert
+                      variant="danger"
+                      :show="view.error"
+                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                      <span class="fa fa-check mr-2" />
+                      Error!
+                    </b-alert>
+                    <b-button
+                      size="sm"
+                      variant="success"
+                      @click="saveView(view, index)"
+                      v-b-tooltip.hover="'Save this view'">
+                      <span class="fa fa-save" />
+                    </b-button>
+                  </div>
+                </template>
+                <ViewForm
+                  :view="view"
+                  :view-index="index"
+                  @update-view="updateView"
+                />
+              </b-card>
+            </div>
+          </template> <!-- /views -->
+        </div>
+      </div> <!-- /view settings -->
+
       <!-- integrations settings -->
       <div v-if="visibleTab === 'integrations'">
         <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
@@ -230,8 +346,10 @@
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList';
+import ViewForm from '@/components/views/ViewForm';
 import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard';
+import CreateViewModal from '@/components/views/CreateViewModal';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
 
@@ -240,30 +358,38 @@ let timeout;
 export default {
   name: 'Cont3xtSettings',
   components: {
+    ViewForm,
     ReorderList,
     LinkGroupCard,
+    CreateViewModal,
     CreateLinkGroupModal
   },
   data () {
     return {
       msg: '',
       msgType: '',
-      visibleTab: 'integrations',
+      visibleTab: 'linkgroups',
       integrationSettings: {},
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
-      selectedLinkGroup: 0
+      selectedLinkGroup: 0,
+      views: [],
+      filteredViews: [],
+      viewSearchTerm: '',
+      viewForm: false
     };
   },
   created () {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'integrations' || tab === 'linkgroups') {
+      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups') {
         this.visibleTab = tab;
       }
     }
+
+    this.getViews();
 
     UserService.getIntegrationSettings().then((response) => {
       this.integrationSettings = response;
@@ -299,10 +425,14 @@ export default {
         }
         delete this.filteredIntegrationSettings[key];
       }
+    },
+    viewSearchTerm (searchTerm) {
+      this.filterViews(searchTerm);
     }
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    /* MISC! --------------------------------- */
     /* opens a specific settings tab */
     openView (tabName) {
       this.visibleTab = tabName;
@@ -310,9 +440,7 @@ export default {
         hash: tabName
       });
     },
-    openLinkGroupForm () {
-      this.$bvModal.show('link-group-form');
-    },
+    /* INTEGRATIONS! ------------------------- */
     /* toggles the visibility of the value of password fields */
     toggleVisiblePasswordField (field) {
       this.$set(field, 'showValue', !field.showValue);
@@ -362,6 +490,10 @@ export default {
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
     },
+    /* LINK GROUPS! -------------------------- */
+    openLinkGroupForm () {
+      this.$bvModal.show('link-group-form');
+    },
     // NOTE: need to toggle selectedLinkGroup so that the children that use it
     // (LinkGroupCard & LinkGroupForm) can update their data based on the value
     // For example: the selectedLinkGroup index doesn't change when an item in
@@ -401,7 +533,43 @@ export default {
         }, 100);
       }
     },
+    /* VIEWS! -------------------------------- */
+    openViewForm () {
+      this.$bvModal.show('view-form');
+    },
+    updateView ({ view, index }) {
+      this.$set(this.filteredViews, index, view);
+    },
+    saveView (view, index) {
+      UserService.updateIntegrationsView(view).then((response) => {
+        this.$set(view, 'success', true);
+      }).catch((error) => {
+        this.$set(view, 'error', true);
+        console.log('ERROR - saving view', error);
+      }).finally(() => {
+        setTimeout(() => {
+          delete view.error;
+          delete view.success;
+          this.$set(this.filteredViews, index, view);
+        }, 4000);
+      });
+    },
+    deleteView (view, index) {
+      UserService.deleteIntegrationsView(view._id).then((response) => {
+        this.getViews();
+      }).catch((error) => {
+        this.$set(view, 'error', true);
+        console.log('ERROR - saving view', error);
+      }).finally(() => {
+        setTimeout(() => {
+          delete view.error;
+          this.$set(this.filteredViews, index, view);
+        }, 4000);
+      });
+    },
+
     /* helpers ------------------------------------------------------------- */
+    /* MISC! --------------------------------- */
     showMessage ({ variant, message }) {
       this.msg = message;
       this.msgType = variant;
@@ -410,6 +578,7 @@ export default {
         this.msgType = '';
       }, 10000);
     },
+    /* INTEGRATIONS! ------------------------- */
     getIntegrationSettingValues () {
       const settings = {};
       for (const setting in this.integrationSettings) {
@@ -460,6 +629,27 @@ export default {
         data += '\n';
       }
       return data;
+    },
+    /* VIEWS! -------------------------------- */
+    getViews () {
+      UserService.getIntegrationViews().then((response) => {
+        this.views = response.views;
+        this.filterViews(this.viewSearch);
+      }).catch((error) => {
+        this.showMessage({ variant: 'danger', message: error.text || error });
+      });
+    },
+    filterViews (searchTerm) {
+      if (!searchTerm) {
+        this.filteredViews = JSON.parse(JSON.stringify(this.views));
+        return;
+      }
+
+      const query = searchTerm.toLowerCase();
+
+      this.filteredViews = this.views.filter((view) => {
+        return view.name.toString().toLowerCase().match(query)?.length > 0;
+      });
     }
   }
 };
@@ -490,7 +680,7 @@ export default {
 }
 
 .alert.alert-sm {
-  padding: 0.4rem 0.8rem;
+  padding: 0.2rem 0.8rem;
 }
 
 .integration-setting-img {

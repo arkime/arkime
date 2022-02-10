@@ -27,7 +27,8 @@ const store = new Vuex.Store({
     linkGroups: undefined,
     linkGroupsError: '',
     checkedLinks: {},
-    selectedIntegrations: undefined
+    selectedIntegrations: undefined,
+    sidebarKeepOpen: false
   },
   mutations: {
     SET_USER (state, data) {
@@ -139,6 +140,9 @@ const store = new Vuex.Store({
     },
     SET_SELECTED_INTEGRATIONS (state, data) {
       Vue.set(state, 'selectedIntegrations', data);
+    },
+    SET_SIDEBAR_KEEP_OPEN (state, data) {
+      state.sidebarKeepOpen = data;
     }
   },
   getters: {
@@ -166,6 +170,23 @@ const store = new Vuex.Store({
     getIntegrations (state) {
       return state.integrations;
     },
+    getDoableIntegrations (state) {
+      const doableIntegrations = {};
+      for (const key in state.integrations) {
+        if (state.integrations[key].doable) {
+          doableIntegrations[key] = state.integrations[key];
+        }
+      }
+      return doableIntegrations;
+    },
+    getSortedIntegrations (state, getters) {
+      const integrations = [];
+      for (const integration in getters.getDoableIntegrations) {
+        integrations.push({ ...state.integrations[integration], key: integration });
+      }
+      integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
+      return integrations;
+    },
     getIntegrationsError (state) {
       return state.integrationsError;
     },
@@ -183,11 +204,14 @@ const store = new Vuex.Store({
     },
     getCheckedLinks (state) {
       return state.checkedLinks;
+    },
+    getSidebarKeepOpen (state) {
+      return state.sidebarKeepOpen;
     }
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations'
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen'
     ]
   })]
 });

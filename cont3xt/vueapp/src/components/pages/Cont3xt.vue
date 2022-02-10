@@ -1,328 +1,289 @@
 <template>
   <div class="container-fluid">
 
-    <!-- search -->
-    <div class="fixed-top pl-2 pr-2 search-nav d-flex justify-content-between">
-      <b-input-group class="flex-grow-1 mr-2">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search" />
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          v-focus="true"
-          v-model="searchTerm"
-          @keydown.enter="search"
-          placeholder="Indicators"
-        />
-        <b-input-group-append>
-          <b-button
-            @click="skipCache = !skipCache"
-            :variant="skipCache ? 'warning': 'outline-warning'"
-            v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
-            <span class="fa fa-database fa-fw" />
-          </b-button>
-          <b-dropdown
-            class="integration-select"
-            v-b-tooltip.hover="'Select integrations to run against this search'">
-            <template #button-content>
-              <span class="fa fa-eye" />
-            </template>
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllIntegrations(true)">
-              Select All
-            </b-dropdown-item>
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllIntegrations(false)">
-              Unselect All
-            </b-dropdown-item>
-            <b-dropdown-divider />
-            <b-dropdown-form>
-              <b-form-checkbox-group
-                stacked
-                v-model="selectedIntegrations">
-                <template
-                  v-for="integration in sortedIntegrations">
-                  <b-form-checkbox
-                    :key="integration.key"
-                    :value="integration.key"
-                    v-if="integration.doable">
-                    {{ integration.key }}
-                  </b-form-checkbox>
-                </template>
-              </b-form-checkbox-group>
-            </b-dropdown-form>
-            <b-dropdown-divider />
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllIntegrations(true)">
-              Select All
-            </b-dropdown-item>
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllIntegrations(false)">
-              Unselect All
-            </b-dropdown-item>
-          </b-dropdown>
-          <b-button
-            @click="search"
-            variant="success">
-            Get Cont3xt
-          </b-button>
-        </b-input-group-append>
-      </b-input-group>
-      <div
-        v-b-tooltip.hover="'Download a report of this result.'">
-        <b-button
-          class="mr-2"
-          @click="generateReport"
-          variant="outline-secondary"
-          :class="{'disabled':!searchComplete}">
-          <span class="fa fa-file-text fa-fw" />
-        </b-button>
-      </div>
-      <b-button
-        @click="shareLink"
-        variant="outline-primary"
-        v-b-tooltip.hover="'Copy share link to clipboard'">
-        <span class="fa fa-share-alt fa-fw" />
-      </b-button>
-    </div> <!-- /search -->
+    <IntegrationPanel />
 
     <!-- page content -->
-    <div class="margin-for-search">
-      <!-- welcome -->
-      <div class="whole-page-info container"
-        v-if="!initialized && !error.length && !getIntegrationsError.length">
-        <div class="well center-area">
-          <h1 class="text-muted">
-            <span class="fa fa-fw fa-rocket fa-2x" />
-          </h1>
-          <h1 class="text-warning display-4">
-            Welcome to Cont3xt!
-          </h1>
-          <h4 v-if="!searchTerm"
-            class="text-success lead">
-            Search for IPs, domains, URLs, emails, phone numbers, or hashes.
-          </h4>
-          <h4 v-else
-            class="text-success lead">
-            <strong>Hit enter to issue your search!</strong>
-          </h4>
-        </div>
-      </div> <!-- /welcome -->
-
-      <!-- search error -->
-      <div
-        v-if="error.length"
-        class="mt-2 alert alert-warning">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
-        {{ error }}
-        <button
-          type="button"
-          @click="error = ''"
-          class="close cursor-pointer">
-          <span>&times;</span>
-        </button>
-      </div> <!-- /search error -->
-
-      <!-- integration error -->
-      <div
-        v-if="getIntegrationsError.length"
-        class="mt-2 alert alert-danger">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
-        Error fetching integrations. Viewing data for integrations will not work!
-        <br>
-        {{ getIntegrationsError }}
-      </div> <!-- /integration error -->
-
-      <!-- results -->
-      <div v-if="searchTerm"
-        class="row mt-2 results-container">
-        <!-- itype results summary -->
-        <div class="col-6 results-summary">
-          <cont3xt-domain
-            :data="results"
-            v-if="searchItype === 'domain'"
+    <div class="main-content"
+      :class="{'with-sidebar': getSidebarKeepOpen}">
+      <!-- search -->
+      <div class="fixed-top pl-2 pr-2 search-nav d-flex justify-content-between">
+        <b-input-group class="flex-grow-1 mr-2">
+          <template #prepend>
+            <b-input-group-text>
+              <span class="fa fa-search" />
+            </b-input-group-text>
+          </template>
+          <b-form-input
+            v-focus="true"
+            v-model="searchTerm"
+            @keydown.enter="search"
+            placeholder="Indicators"
           />
-          <cont3xt-ip
-            :data="results"
-            v-else-if="searchItype === 'ip'"
-          />
-          <cont3xt-url
-            :data="results"
-            :query="searchTerm"
-            v-else-if="searchItype === 'url'"
-          />
-          <cont3xt-email
-            :data="results"
-            :query="searchTerm"
-            v-else-if="searchItype === 'email'"
-          />
-          <cont3xt-hash
-            :data="results"
-            v-else-if="searchItype === 'hash'"
-          />
-          <cont3xt-phone
-            :data="results"
-            :query="searchTerm"
-            v-else-if="searchItype === 'phone'"
-          />
-          <cont3xt-text
-            :data="results"
-            :query="searchTerm"
-            v-else-if="searchItype === 'text'"
-          />
-          <div v-else-if="searchItype">
-            <h3 class="text-warning">
-              No display for {{ searchItype }}
-            </h3>
-            <pre class="text-info"><code>{{ results }}</code></pre>
-          </div>
-          <hr v-if="searchTerm && initialized">
-          <!-- link groups -->
-          <b-alert
-            variant="danger"
-            :show="!!getLinkGroupsError.length">
-            {{ getLinkGroupsError }}
-          </b-alert>
-          <b-form inline
-            v-if="searchTerm && initialized">
-            <b-input-group
-              size="sm"
-              class="mr-2 mb-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Days
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                type="number"
-                debounce="400"
-                :value="numDays"
-                style="width:60px"
-                placeholder="Number of Days"
-                @input="updateVars('numDays', $event)"
-              />
-            </b-input-group>
-            <b-input-group
-              size="sm"
-              class="mr-2 mb-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Hours
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                type="number"
-                debounce="400"
-                :value="numHours"
-                style="width:70px"
-                placeholder="Number of Hours"
-                @input="updateVars('numHours', $event)"
-              />
-            </b-input-group>
-            <b-input-group
-              size="sm"
-              class="mr-2 mb-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Start Date
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                type="text"
-                debounce="400"
-                :value="startDate"
-                style="width:165px"
-                placeholder="Start Date"
-                @input="updateVars('startDate', $event)"
-              />
-            </b-input-group>
-            <b-input-group
-              size="sm"
-              class="mr-2 mb-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Stop Date
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                type="text"
-                debounce="400"
-                :value="stopDate"
-                style="width:165px"
-                placeholder="Stop Date"
-                @input="updateVars('stopDate', $event)"
-              />
-            </b-input-group>
-          </b-form>
-          <!-- link groups -->
-          <div v-if="searchItype && initialized"
-            class="d-flex flex-wrap link-group-cards-wrapper">
-            <template v-for="(linkGroup, index) in getLinkGroups">
-              <reorder-list
-                :index="index"
-                class="w-50 p-2"
-                @update="updateList"
-                :key="linkGroup._id"
-                :list="getLinkGroups"
-                v-if="hasLinksWithItype(linkGroup)">
-                <template slot="handle">
-                  <span class="fa fa-bars d-inline link-group-card-handle" />
-                </template>
-                <template slot="default">
-                  <link-group-card
-                    :query="searchTerm"
-                    :num-days="numDays"
-                    :itype="searchItype"
-                    :num-hours="numHours"
-                    :stop-date="stopDate"
-                    :start-date="startDate"
-                    :link-group-index="index"
-                    v-if="getLinkGroups.length"
-                  />
-                </template>
-              </reorder-list>
-            </template>
-          </div> <!-- /link groups -->
-        </div> <!-- /itype results summary -->
-        <!-- integration results -->
+          <b-input-group-append>
+            <b-button
+              @click="skipCache = !skipCache"
+              :variant="skipCache ? 'warning': 'outline-warning'"
+              v-b-tooltip.hover="skipCache ? 'Ignorning cache (click to use cache)' : 'Using cache (click to ignore cache)'">
+              <span class="fa fa-database fa-fw" />
+            </b-button>
+            <b-button
+              @click="search"
+              variant="success">
+              Get Cont3xt
+            </b-button>
+          </b-input-group-append>
+        </b-input-group>
         <div
-          @scroll="handleScroll"
-          ref="resultsIntegration"
-          class="col-6 results-integration">
-          <b-overlay
-            no-center
-            rounded="sm"
-            blur="0.2rem"
-            opacity="0.9"
-            variant="transparent"
-            :show="getWaitRendering || getRendering">
-            <integration-card
-              @update-results="updateData"
-            />
-            <template #overlay>
-              <div class="overlay-loading">
-                <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                <p>Rendering data...</p>
-              </div>
-            </template>
-          </b-overlay>
+          v-b-tooltip.hover="'Download a report of this result.'">
           <b-button
-            size="sm"
-            @click="toTop"
-            title="Go to top"
-            class="to-top-btn"
-            variant="btn-link"
-            v-show="scrollPx > 100">
-            <span class="fa fa-lg fa-arrow-circle-up" />
+            class="mr-2"
+            @click="generateReport"
+            variant="outline-secondary"
+            :class="{'disabled':!searchComplete}">
+            <span class="fa fa-file-text fa-fw" />
           </b-button>
-        </div> <!-- /integration results -->
-      </div> <!-- /results -->
+        </div>
+        <b-button
+          @click="shareLink"
+          variant="outline-primary"
+          v-b-tooltip.hover="'Copy share link to clipboard'">
+          <span class="fa fa-share-alt fa-fw" />
+        </b-button>
+      </div> <!-- /search -->
 
+      <div class="margin-for-search">
+        <!-- welcome -->
+        <div class="whole-page-info container"
+          v-if="!initialized && !error.length && !getIntegrationsError.length">
+          <div class="well center-area">
+            <h1 class="text-muted">
+              <span class="fa fa-fw fa-rocket fa-2x" />
+            </h1>
+            <h1 class="text-warning display-4">
+              Welcome to Cont3xt!
+            </h1>
+            <h4 v-if="!searchTerm"
+              class="text-success lead">
+              Search for IPs, domains, URLs, emails, phone numbers, or hashes.
+            </h4>
+            <h4 v-else
+              class="text-success lead">
+              <strong>Hit enter to issue your search!</strong>
+            </h4>
+          </div>
+        </div> <!-- /welcome -->
+
+        <!-- search error -->
+        <div
+          v-if="error.length"
+          class="mt-2 alert alert-warning">
+          <span class="fa fa-exclamation-triangle" />&nbsp;
+          {{ error }}
+          <button
+            type="button"
+            @click="error = ''"
+            class="close cursor-pointer">
+            <span>&times;</span>
+          </button>
+        </div> <!-- /search error -->
+
+        <!-- integration error -->
+        <div
+          v-if="getIntegrationsError.length"
+          class="mt-2 alert alert-danger">
+          <span class="fa fa-exclamation-triangle" />&nbsp;
+          Error fetching integrations. Viewing data for integrations will not work!
+          <br>
+          {{ getIntegrationsError }}
+        </div> <!-- /integration error -->
+
+        <!-- results -->
+        <div v-if="searchTerm"
+          class="row mt-2 results-container">
+          <!-- itype results summary -->
+          <div class="col-6 results-summary">
+            <cont3xt-domain
+              :data="results"
+              v-if="searchItype === 'domain'"
+            />
+            <cont3xt-ip
+              :data="results"
+              v-else-if="searchItype === 'ip'"
+            />
+            <cont3xt-url
+              :data="results"
+              :query="searchTerm"
+              v-else-if="searchItype === 'url'"
+            />
+            <cont3xt-email
+              :data="results"
+              :query="searchTerm"
+              v-else-if="searchItype === 'email'"
+            />
+            <cont3xt-hash
+              :data="results"
+              v-else-if="searchItype === 'hash'"
+            />
+            <cont3xt-phone
+              :data="results"
+              :query="searchTerm"
+              v-else-if="searchItype === 'phone'"
+            />
+            <cont3xt-text
+              :data="results"
+              :query="searchTerm"
+              v-else-if="searchItype === 'text'"
+            />
+            <div v-else-if="searchItype">
+              <h3 class="text-warning">
+                No display for {{ searchItype }}
+              </h3>
+              <pre class="text-info"><code>{{ results }}</code></pre>
+            </div>
+            <hr v-if="searchTerm && initialized">
+            <!-- link groups -->
+            <b-alert
+              variant="danger"
+              :show="!!getLinkGroupsError.length">
+              {{ getLinkGroupsError }}
+            </b-alert>
+            <b-form inline
+              v-if="searchTerm && initialized">
+              <b-input-group
+                size="sm"
+                class="mr-2 mb-1">
+                <template #prepend>
+                  <b-input-group-text>
+                    Days
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  type="number"
+                  debounce="400"
+                  :value="numDays"
+                  style="width:60px"
+                  placeholder="Number of Days"
+                  @input="updateVars('numDays', $event)"
+                />
+              </b-input-group>
+              <b-input-group
+                size="sm"
+                class="mr-2 mb-1">
+                <template #prepend>
+                  <b-input-group-text>
+                    Hours
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  type="number"
+                  debounce="400"
+                  :value="numHours"
+                  style="width:70px"
+                  placeholder="Number of Hours"
+                  @input="updateVars('numHours', $event)"
+                />
+              </b-input-group>
+              <b-input-group
+                size="sm"
+                class="mr-2 mb-1">
+                <template #prepend>
+                  <b-input-group-text>
+                    Start Date
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  type="text"
+                  debounce="400"
+                  :value="startDate"
+                  style="width:165px"
+                  placeholder="Start Date"
+                  @input="updateVars('startDate', $event)"
+                />
+              </b-input-group>
+              <b-input-group
+                size="sm"
+                class="mr-2 mb-1">
+                <template #prepend>
+                  <b-input-group-text>
+                    Stop Date
+                  </b-input-group-text>
+                </template>
+                <b-form-input
+                  type="text"
+                  debounce="400"
+                  :value="stopDate"
+                  style="width:165px"
+                  placeholder="Stop Date"
+                  @input="updateVars('stopDate', $event)"
+                />
+              </b-input-group>
+            </b-form>
+            <!-- link groups -->
+            <div v-if="searchItype && initialized"
+              class="d-flex flex-wrap link-group-cards-wrapper">
+              <template v-for="(linkGroup, index) in getLinkGroups">
+                <reorder-list
+                  :index="index"
+                  class="w-50 p-2"
+                  @update="updateList"
+                  :key="linkGroup._id"
+                  :list="getLinkGroups"
+                  v-if="hasLinksWithItype(linkGroup)">
+                  <template slot="handle">
+                    <span class="fa fa-bars d-inline link-group-card-handle" />
+                  </template>
+                  <template slot="default">
+                    <link-group-card
+                      :query="searchTerm"
+                      :num-days="numDays"
+                      :itype="searchItype"
+                      :num-hours="numHours"
+                      :stop-date="stopDate"
+                      :start-date="startDate"
+                      :link-group-index="index"
+                      v-if="getLinkGroups.length"
+                    />
+                  </template>
+                </reorder-list>
+              </template>
+            </div> <!-- /link groups -->
+          </div> <!-- /itype results summary -->
+          <!-- integration results -->
+          <div
+            @scroll="handleScroll"
+            ref="resultsIntegration"
+            class="col-6 results-integration">
+            <b-overlay
+              no-center
+              rounded="sm"
+              blur="0.2rem"
+              opacity="0.9"
+              variant="transparent"
+              :show="getWaitRendering || getRendering">
+              <integration-card
+                @update-results="updateData"
+              />
+              <template #overlay>
+                <div class="overlay-loading">
+                  <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                  <p>Rendering data...</p>
+                </div>
+              </template>
+            </b-overlay>
+            <b-button
+              size="sm"
+              @click="toTop"
+              title="Go to top"
+              class="to-top-btn"
+              variant="btn-link"
+              v-show="scrollPx > 100">
+              <span class="fa fa-lg fa-arrow-circle-up" />
+            </b-button>
+          </div> <!-- /integration results -->
+        </div> <!-- /results -->
+
+      </div>
     </div> <!-- /page content -->
   </div>
 </template>
@@ -343,12 +304,14 @@ import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationCard from '@/components/integrations/IntegrationCard';
+import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 
 export default {
   name: 'Cont3xt',
   components: {
     Cont3xtIp,
     Cont3xtUrl,
+    ReorderList,
     Cont3xtHash,
     Cont3xtText,
     Cont3xtEmail,
@@ -356,7 +319,7 @@ export default {
     Cont3xtDomain,
     LinkGroupCard,
     IntegrationCard,
-    ReorderList
+    IntegrationPanel
   },
   directives: { Focus },
   data () {
@@ -379,7 +342,7 @@ export default {
     ...mapGetters([
       'getRendering', 'getWaitRendering', 'getIntegrationData',
       'getIntegrationsError', 'getLinkGroupsError', 'getLinkGroups',
-      'getIntegrations'
+      'getSidebarKeepOpen'
     ]),
     loading: {
       get () { return this.$store.state.loading; },
@@ -387,18 +350,6 @@ export default {
     },
     displayIntegration () {
       return this.$store.state.displayIntegration;
-    },
-    selectedIntegrations: {
-      get () { return this.$store.state.selectedIntegrations; },
-      set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
-    },
-    sortedIntegrations () {
-      const integrations = [];
-      for (const integration in this.$store.state.integrations) {
-        integrations.push({ ...this.$store.state.integrations[integration], key: integration });
-      }
-      integrations.sort((a, b) => { return a.key.localeCompare(b.key); });
-      return integrations;
     }
   },
   watch: {
@@ -574,9 +525,6 @@ export default {
       a.download = `${new Date().toISOString()}_${this.searchTerm}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
-    },
-    toggleAllIntegrations (select) {
-      this.selectedIntegrations = select ? Object.keys(this.getIntegrations) : [];
     },
     /* helpers ------------------------------------------------------------- */
     updateData ({ itype, source, value, data }) {
