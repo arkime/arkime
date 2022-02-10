@@ -299,14 +299,13 @@ body.dark .sidebar-btn {
    transition to side it over when opening sidebar */
 .main-content,
 .main-content .search-nav {
-  margin-left: 1.5rem;
-  margin-right: 1rem;
+  margin-left: 1rem;
   transition: 0.5s;
 }
 /* push over the content if there sidebar is open and not just hovering */
 .main-content.with-sidebar,
 .main-content.with-sidebar .search-nav {
-  margin-left: 262px;
+  margin-left: 252px;
 }
 
 .view-dropdown .dropdown-item {

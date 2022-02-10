@@ -7,21 +7,6 @@
       aria-orientation="vertical"
       class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
       <div class="nav flex-column nav-pills">
-        <a @click="openView('linkgroups')"
-          class="nav-link cursor-pointer mb-1"
-          :class="{'active':visibleTab === 'linkgroups'}">
-          <span class="fa fa-fw fa-link mr-1" />
-          Link Groups
-          <b-button
-            size="xs"
-            class="float-right"
-            variant="secondary"
-            v-if="visibleTab === 'linkgroups'"
-            @click.stop.prevent="openLinkGroupForm"
-            v-b-tooltip.hover="'Create a new link group'">
-            <span class="fa fa-fw fa-plus-circle" />
-          </b-button>
-        </a>
         <a @click="openView('views')"
           class="nav-link cursor-pointer"
           :class="{'active':visibleTab === 'views'}">
@@ -42,6 +27,21 @@
           :class="{'active':visibleTab === 'integrations'}">
           <span class="fa fa-fw fa-key mr-1" />
           Integrations
+        </a>
+        <a @click="openView('linkgroups')"
+          class="nav-link cursor-pointer mb-1"
+          :class="{'active':visibleTab === 'linkgroups'}">
+          <span class="fa fa-fw fa-link mr-1" />
+          Link Groups
+          <b-button
+            size="xs"
+            class="float-right"
+            variant="secondary"
+            v-if="visibleTab === 'linkgroups'"
+            @click.stop.prevent="openLinkGroupForm"
+            v-b-tooltip.hover="'Create a new link group'">
+            <span class="fa fa-fw fa-plus-circle" />
+          </b-button>
         </a>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
@@ -368,7 +368,7 @@ export default {
     return {
       msg: '',
       msgType: '',
-      visibleTab: 'linkgroups',
+      visibleTab: 'views',
       integrationSettings: {},
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},

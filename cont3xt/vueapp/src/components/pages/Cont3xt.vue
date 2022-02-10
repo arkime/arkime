@@ -52,7 +52,7 @@
         </b-button>
       </div> <!-- /search -->
 
-      <div class="margin-for-search">
+      <div class="margin-for-search cont3xt-content">
         <!-- welcome -->
         <div class="whole-page-info container"
           v-if="!initialized && !error.length && !getIntegrationsError.length">
@@ -98,11 +98,85 @@
           {{ getIntegrationsError }}
         </div> <!-- /integration error -->
 
+        <!-- link inputs -->
+        <b-form inline
+          v-if="searchTerm && initialized"
+          class="w-50 d-flex justify-content-between">
+          <b-input-group
+            size="sm"
+            class="mr-2 mb-1">
+            <template #prepend>
+              <b-input-group-text>
+                Days
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              type="number"
+              debounce="400"
+              :value="numDays"
+              style="width:60px"
+              placeholder="Number of Days"
+              @input="updateVars('numDays', $event)"
+            />
+          </b-input-group>
+          <b-input-group
+            size="sm"
+            class="mr-2 mb-1">
+            <template #prepend>
+              <b-input-group-text>
+                Hours
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              type="number"
+              debounce="400"
+              :value="numHours"
+              style="width:70px"
+              placeholder="Number of Hours"
+              @input="updateVars('numHours', $event)"
+            />
+          </b-input-group>
+          <b-input-group
+            size="sm"
+            class="mr-2 mb-1">
+            <template #prepend>
+              <b-input-group-text>
+                Start Date
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              type="text"
+              debounce="400"
+              :value="startDate"
+              style="width:165px"
+              placeholder="Start Date"
+              @input="updateVars('startDate', $event)"
+            />
+          </b-input-group>
+          <b-input-group
+            size="sm"
+            class="mr-2 mb-1">
+            <template #prepend>
+              <b-input-group-text>
+                Stop Date
+              </b-input-group-text>
+            </template>
+            <b-form-input
+              type="text"
+              debounce="400"
+              :value="stopDate"
+              style="width:165px"
+              placeholder="Stop Date"
+              @input="updateVars('stopDate', $event)"
+            />
+          </b-input-group>
+        </b-form> <!-- /link inputs -->
+
         <!-- results -->
-        <div v-if="searchTerm"
-          class="row mt-2 results-container">
+        <template v-if="searchTerm">
+          <div class="results-container results-summary float-left">
           <!-- itype results summary -->
-          <div class="col-6 results-summary">
+          <div>
             <cont3xt-domain
               :data="results"
               v-if="searchItype === 'domain'"
@@ -148,77 +222,6 @@
               :show="!!getLinkGroupsError.length">
               {{ getLinkGroupsError }}
             </b-alert>
-            <b-form inline
-              v-if="searchTerm && initialized">
-              <b-input-group
-                size="sm"
-                class="mr-2 mb-1">
-                <template #prepend>
-                  <b-input-group-text>
-                    Days
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  type="number"
-                  debounce="400"
-                  :value="numDays"
-                  style="width:60px"
-                  placeholder="Number of Days"
-                  @input="updateVars('numDays', $event)"
-                />
-              </b-input-group>
-              <b-input-group
-                size="sm"
-                class="mr-2 mb-1">
-                <template #prepend>
-                  <b-input-group-text>
-                    Hours
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  type="number"
-                  debounce="400"
-                  :value="numHours"
-                  style="width:70px"
-                  placeholder="Number of Hours"
-                  @input="updateVars('numHours', $event)"
-                />
-              </b-input-group>
-              <b-input-group
-                size="sm"
-                class="mr-2 mb-1">
-                <template #prepend>
-                  <b-input-group-text>
-                    Start Date
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  type="text"
-                  debounce="400"
-                  :value="startDate"
-                  style="width:165px"
-                  placeholder="Start Date"
-                  @input="updateVars('startDate', $event)"
-                />
-              </b-input-group>
-              <b-input-group
-                size="sm"
-                class="mr-2 mb-1">
-                <template #prepend>
-                  <b-input-group-text>
-                    Stop Date
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  type="text"
-                  debounce="400"
-                  :value="stopDate"
-                  style="width:165px"
-                  placeholder="Stop Date"
-                  @input="updateVars('stopDate', $event)"
-                />
-              </b-input-group>
-            </b-form>
             <!-- link groups -->
             <div v-if="searchItype && initialized"
               class="d-flex flex-wrap link-group-cards-wrapper">
@@ -248,12 +251,12 @@
                 </reorder-list>
               </template>
             </div> <!-- /link groups -->
-          </div> <!-- /itype results summary -->
+          </div></div> <!-- /itype results summary -->
           <!-- integration results -->
+          <div class="results-container results-integration pull-right">
           <div
             @scroll="handleScroll"
-            ref="resultsIntegration"
-            class="col-6 results-integration">
+            ref="resultsIntegration">
             <b-overlay
               no-center
               rounded="sm"
@@ -280,8 +283,8 @@
               v-show="scrollPx > 100">
               <span class="fa fa-lg fa-arrow-circle-up" />
             </b-button>
-          </div> <!-- /integration results -->
-        </div> <!-- /results -->
+          </div></div> <!-- /integration results -->
+        </template> <!-- /results -->
 
       </div>
     </div> <!-- /page content -->
@@ -555,21 +558,33 @@ body.dark .search-nav {
 }
 
 .margin-for-search {
-  margin-top: 136px;
+  margin-top: 126px;
+}
+.cont3xt-content {
+  margin-left: -7px;
+  margin-right: -7px;
 }
 
 /* side by side scrolling results containers */
 .results-container {
+  width: 50%;
   height: 100%;
   overflow: hidden;
+  display: inline-block;
 }
-.results-summary {
-  height: calc(100vh - 136px);
-  overflow: scroll;
+.results-container.results-integration {
+  margin-top: -35px;
 }
-.results-integration {
-  height: calc(100vh - 136px);
+.results-container.results-summary > div {
+  /* total height - margin for search - height of link inputs */
+  height: calc(100vh - 161px);
   overflow: scroll;
+  padding-right: 0.5rem;
+}
+.results-container.results-integration > div {
+  height: calc(100vh - 126px); /* total height - margin for search */
+  overflow: scroll;
+  padding-left: 0.5rem;
 }
 
 /* scroll to top btn for integration results */
