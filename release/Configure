@@ -98,11 +98,10 @@ else
 fi
 
 while [ -z "$ARKIME_PASSWORD" ]; do
-    echo -n "Password to encrypt S2S and other things [no-default] "
+    echo -n "Password to encrypt S2S and other things, don't use spaces [no-default] "
     read -r ARKIME_PASSWORD
 done
-if [ -z "$ARKIME_PASSWORD" ]; then echo "Must provide a password"; exit; fi
-
+ARKIME_PASSWORD=${ARKIME_PASSWORD//\//\\/}
 
 ################################################################################
 echo "Arkime - Creating configuration files"

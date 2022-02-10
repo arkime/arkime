@@ -24,16 +24,18 @@ class RedisSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { tagsSetting: true, typeSetting: true, formatSetting: 'csv' });
-    this.url = api.getConfig(section, 'url');
-    if (this.url === undefined) {
-      console.log(this.section, '- ERROR not loading since no url specified in config file');
-      return;
-    }
 
+    this.keyPath = api.getConfig(section, 'keyPath');
     this.column = +api.getConfig(section, 'column', 0);
     this.template = api.getConfig(section, 'template', undefined);
+    this.redisMethod = api.getConfig(section, 'redisMethod', 'get');
 
     this.client = ArkimeUtil.createRedisClient(api.getConfig(section, 'redisURL'), section);
+
+    if (this.client[this.redisMethod] === undefined) {
+      console.log(`${this.section} - Unknown redisMethod ${this.redisMethod}`);
+      return;
+    }
 
     if (this.type === 'domain') {
       this[this.typeFunc] = RedisSource.prototype.fetchDomain;
@@ -50,15 +52,36 @@ class RedisSource extends WISESource {
       key = this.template.replace('%key%', key).replace('%type%', this.type);
     }
 
-    this.client.get(key, (err, reply) => {
-      if (reply === null) {
+    this.client[this.redisMethod](key, (err, reply) => {
+      if (err) {
+        console.log(`${this.section} -`, err);
+      }
+
+      if (reply === undefined || reply === null) {
         return cb(null, undefined);
       }
 
-      this.parse(reply, (ignorekey, result) => {
-        const newresult = WISESource.combineResults([result, this.tagsResult]);
-        return cb(null, newresult);
-      }, () => {});
+      let found = false;
+      try {
+        this.parse(reply, (ignorekey, result) => {
+          found = true;
+          const newresult = WISESource.combineResults([result, this.tagsResult]);
+          return cb(null, newresult);
+        }, (err) => {
+          if (err) {
+            console.log(`${this.section} -`, err);
+            return cb(null, undefined);
+          }
+          if (!found) {
+            console.log(`${this.section} - The keyPath ${this.keyPath} wasn't found even though document was returned`, reply);
+            return cb(null, undefined);
+          }
+        });
+      } catch (err) {
+        if (err) {
+          console.log(`${this.section} -`, err);
+        }
+      }
     });
   };
 
@@ -80,12 +103,14 @@ exports.initSource = function (api) {
     description: 'Link to the redis data',
     link: 'https://arkime.com/wise#redis',
     fields: [
+      { name: 'redisURL', password: true, required: false, help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, or json', regex: '^(csv|tagger|json)$' },
-      { name: 'column', required: true, help: 'For csv formatted files, which column is the data' },
-      { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' }
+      { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
+      { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: 'json' },
+      { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' },
+      { name: 'redisMethod', required: false, help: 'The lowercase redis method to retrieve values, defaults to "get"' }
     ]
   });
 
