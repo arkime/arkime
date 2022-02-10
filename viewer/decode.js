@@ -23,14 +23,23 @@ const Stream = require('stream');
 const Readable = Stream.Readable;
 const Transform = Stream.Transform;
 const Writable = Stream.Writable;
-// eslint-disable-next-line node/no-deprecated-api
-const HTTPParser = process.version.startsWith('v12') ? process.binding('http_parser_llhttp').HTTPParser : process.binding('http_parser').HTTPParser;
 const zlib = require('zlib');
 const through = require('through2');
 const peek = require('peek-stream');
 const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
+
+let HTTPParser;
+if (process.version.startsWith('v16')) {
+  HTTPParser = require('_http_common').HTTPParser;
+} else if (process.version.startsWith('v12')) {
+  // eslint-disable-next-line node/no-deprecated-api
+  HTTPParser = process.binding('http_parser_llhttp').HTTPParser;
+} else {
+  // eslint-disable-next-line node/no-deprecated-api
+  HTTPParser = process.binding('http_parser').HTTPParser;
+}
 
 const internals = {
   registry: {},
