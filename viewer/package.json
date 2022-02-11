@@ -12,7 +12,7 @@
     "multer": "^1.2.0",
     "peek-stream": "^1.1.1",
     "pngjs": "^3.3.3",
-    "re2": "^1.15.8",
+    "re2": "^1.17.3",
     "save-svg-as-png": "^1.4.5",
     "serve-favicon": "^2.3.0",
     "through2": "^2.0.1"

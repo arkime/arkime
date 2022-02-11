@@ -25,7 +25,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-9 'make install'
+            - installing: scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
@@ -226,11 +226,11 @@ jobs:
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch"
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
-            - build-sanitize: (cd capture; scl enable devtoolset-9 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
+            - build-sanitize: (cd capture; scl enable devtoolset-9 rh-python36 "make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize")
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 'make install'
+            - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /data/moloch/lua
             - run-es: (chown -R elasticsearch /elasticsearch-7.10.2; cd /elasticsearch-7.10.2 ; su elasticsearch -c "ES_JAVA_OPTS='-Xms700m -Xmx700m' bin/elasticsearch" > /tmp/es &)
@@ -288,7 +288,7 @@ jobs:
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-9 'make install'
+            - installing: scl enable devtoolset-9 rh-python36 'make install'
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > /opt/arkime/NOTICE.txt
             - build-package: |
