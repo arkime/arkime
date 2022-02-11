@@ -100,11 +100,10 @@
         </div>
         <div class="d-flex flex-wrap">
           <!-- no views -->
-          <div
-            v-if="!views.length"
-            class="row lead mt-4">
+          <div class="row lead mt-4"
+            v-if="views && (!views.length || !views.filter(v => v._editable).length)">
             <div class="col">
-              No Views are configured.
+              No Views are configured or shared for you to edit.
               <b-button
                 variant="link"
                 v-b-modal.view-form>
@@ -114,7 +113,7 @@
           </div> <!-- /no views -->
           <!-- no view results -->
           <div class="row lead mt-4"
-            v-if="viewSearchTerm && !filteredViews.length">
+            v-else-if="viewSearchTerm && !filteredViews.length">
             <div class="col">
               No Views match your search.
             </div>
@@ -374,8 +373,8 @@ export default {
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       selectedLinkGroup: 0,
-      views: [],
-      filteredViews: [],
+      views: undefined,
+      filteredViews: undefined,
       viewSearchTerm: '',
       viewForm: false
     };
