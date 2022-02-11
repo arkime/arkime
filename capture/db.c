@@ -529,8 +529,8 @@ void moloch_db_save_session(MolochSession_t *session, int final)
 
     /* Rebuild field order, we keep a sort list of fields per thread */
     if (session->maxFields > dbInfo[thread].sortedFieldsIndexCnt) {
-        for (int i = 0; i < session->maxFields; i++) {
-            dbInfo[thread].sortedFieldsIndex[i] = i;
+        for (int f = 0; f < session->maxFields; f++) {
+            dbInfo[thread].sortedFieldsIndex[f] = f;
         }
         qsort(&dbInfo[thread].sortedFieldsIndex, session->maxFields, 2, moloch_db_field_sort);
         dbInfo[thread].sortedFieldsIndexCnt = session->maxFields;
@@ -2549,7 +2549,7 @@ LOCAL void *moloch_db_stats_thread(void *UNUSED(threadp))
 {
     uint64_t       lastTime[4] = {0, 0, 0, 0};
     struct timeval currentTime;
-    uint64_t       times[4] = {2, 5, 60, 600};
+    const uint64_t times[4] = {2, 5, 60, 600};
 
     while (1) {
         usleep(500000);
