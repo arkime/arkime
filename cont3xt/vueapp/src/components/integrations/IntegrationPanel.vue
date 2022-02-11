@@ -86,7 +86,7 @@
                         <span
                           class="fa fa-share-alt mr-1 cursor-help"
                           v-if="getUser && view.creator !== getUser.userId"
-                          v-b-tooltip.hover="`Shared with me by ${view.creator}`"
+                          v-b-tooltip.hover="`Shared with you by ${view.creator}`"
                         />
                         {{ view.name }}
                       </div>

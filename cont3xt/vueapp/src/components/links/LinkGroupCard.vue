@@ -5,6 +5,11 @@
     class="h-100 align-self-stretch">
     <template #header>
       <h6 class="mb-0 link-header">
+        <span
+          class="fa fa-share-alt mr-1 cursor-help"
+          v-if="getUser && linkGroup.creator !== getUser.userId"
+          v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
+        />
         {{ linkGroup.name }}
       </h6>
     </template>
