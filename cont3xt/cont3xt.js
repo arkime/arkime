@@ -408,15 +408,21 @@ async function main () {
     server = http.createServer(app);
   }
 
+  const userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
+  const cont3xtHost = getConfig('cont3xt', 'cont3xtHost', undefined);
+  if (userNameHeader !== 'anonymous' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
+    console.log('SECURITY WARNING - when userNameHeader is set, cont3xtHost should be localhost or use iptables');
+  }
+
   server
     .on('error', (e) => {
-      console.log("ERROR - couldn't listen on port", getConfig('cont3xt', 'port', 3218), 'is cont3xt already running?');
+      console.log("ERROR - couldn't listen on host %s port %d is cont3xt already running?", cont3xtHost, getConfig('cont3xt', 'port', 3218));
       process.exit(1);
     })
     .on('listening', (e) => {
-      console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
+      console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
     })
-    .listen(getConfig('cont3xt', 'port', 3218));
+    .listen(getConfig('cont3xt', 'port', 3218), cont3xtHost);
 }
 
 main();
