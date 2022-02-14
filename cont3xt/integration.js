@@ -48,7 +48,7 @@ class Integration {
     Integration.debug = options.debug ?? 0;
     Integration.cache = options.cache;
     Integration.getConfig = options.getConfig;
-    options.integrationsPath = options.integrationsPath ?? path.join(__dirname, '/integrations/');
+    options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
     glob(options.integrationsPath + '*/index.js', (err, files) => {
       files.forEach((file) => {
@@ -87,9 +87,9 @@ class Integration {
       return;
     }
 
-    integration.cacheable = integration.cacheable ?? true;
-    integration.noStats = integration.noStats ?? false;
-    integration.order = integration.order ?? 10000;
+    integration.cacheable ??= true;
+    integration.noStats ??= false;
+    integration.order ??= 10000;
 
     integration.stats = {
       total: 0,
