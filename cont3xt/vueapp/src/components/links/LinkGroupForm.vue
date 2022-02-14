@@ -1,5 +1,7 @@
 <template>
   <!-- form -->
+  <!-- TODO clicking items in form collapses the form because it's updating the link group and removing expanded prop
+  don't use expanded prop on links? use another object instead? -->
   <b-form v-if="lg">
     <!-- group name -->
     <b-input-group
@@ -107,10 +109,9 @@
         <span class="fa fa-bars d-inline link-handle" />
       </template>
       <template slot="default">
-        <b-card class="mb-2"
-          v-if="link.name != '----------'">
+        <b-card v-if="link.name != '----------'">
           <div class="d-flex justify-content-between align-items-center">
-            <div class="w-40 mr-4">
+            <div class="mr-4 flex-grow-1">
               <b-input-group
                 size="sm"
                 class="mb-2">
@@ -127,6 +128,7 @@
                 />
                 <template #append>
                   <color-picker
+                    :index="i"
                     :color="link.color"
                     :link-name="link.name"
                     @colorSelected="changeColor"
@@ -134,100 +136,83 @@
                 </template>
               </b-input-group>
             </div>
+            <div>
+              <LinkBtns
+                :index="i"
+                :link-group="lg"
+                @addLink="addLink"
+                @pushLink="pushLink"
+                @removeLink="removeLink"
+                @expandLink="expandLink"
+                @addSeparator="addSeparator"
+              />
+            </div>
+          </div>
+          <div v-show="link.expanded">
             <b-form-checkbox-group
               v-model="link.itypes"
               :options="itypeOptions"
               @change="$emit('update-link-group', lg)"
             />
-            <b-button
+            <b-input-group
               size="sm"
-              variant="danger"
-              @click="removeLink(i)"
-              v-b-tooltip.hover.left="'Remove this link'">
-              <span class="fa fa-times-circle" />
-            </b-button>
+              class="mb-2 mt-2">
+              <template #prepend>
+                <b-input-group-text>
+                  URL
+                </b-input-group-text>
+              </template>
+              <b-form-input
+                trim
+                v-model="link.url"
+                :state="link.url.length > 0"
+                @change="$emit('update-link-group', lg)"
+              />
+              <template #append>
+                <b-input-group-text
+                  class="cursor-help"
+                  v-b-tooltip.hover.html="linkTip">
+                  <span class="fa fa-info-circle" />
+                </b-input-group-text>
+              </template>
+            </b-input-group>
           </div>
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text>
-                URL
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              trim
-              v-model="link.url"
-              :state="link.url.length > 0"
-              @change="$emit('update-link-group', lg)"
-            />
-            <template #append>
-              <b-input-group-text
-                class="cursor-help"
-                v-b-tooltip.hover.html="linkTip">
-                <span class="fa fa-info-circle" />
-              </b-input-group-text>
-            </template>
-          </b-input-group>
         </b-card>
         <template v-else>
-          <hr class="link-separator">
-          <b-form-checkbox-group
-            class="text-center"
-            v-model="link.itypes"
-            :options="itypeOptions"
-            @change="$emit('update-link-group', lg)"
-          />
-          <b-button
-            size="sm"
-            variant="danger"
-            @click="removeLink(i)"
-            class="remove-separator"
-            v-b-tooltip.hover.left="'Remove this separator'">
-            <span class="fa fa-times-circle" />
-          </b-button>
+          <div class="d-flex justify-content-between align-items-center mr-2">
+            <div class="mr-4 flex-grow-1">
+              <hr class="link-separator"
+                :style="`border-color: ${link.color || '#777'}`"
+              >
+              <b-form-checkbox-group
+                v-model="link.itypes"
+                v-show="link.expanded"
+                :options="itypeOptions"
+                @change="$emit('update-link-group', lg)"
+                class="text-center link-separator-checkbox-group"
+              />
+            </div>
+            <div class="d-flex nowrap">
+              <color-picker
+                :index="i"
+                class="d-inline mr-4"
+                :link-name="link.name"
+                @colorSelected="changeColor"
+                :color="link.color || '#777'"
+              />
+              <LinkBtns
+                :index="i"
+                :link-group="lg"
+                @addLink="addLink"
+                @pushLink="pushLink"
+                @removeLink="removeLink"
+                @expandLink="expandLink"
+                @addSeparator="addSeparator"
+              />
+            </div>
+          </div>
         </template>
       </template>
-      <div class="d-flex">
-        <b-button
-          block
-          size="sm"
-          variant="danger"
-          class="mr-1 mt-0"
-          style="width:30px;"
-          @click="pushLink({ index: i, target: lg.links.length })"
-          v-b-tooltip.hover="'Push to the BOTTOM'">
-          <span class="fa fa-arrow-circle-down mr-2" />
-        </b-button>
-        <b-button
-          block
-          size="sm"
-          class="ml-1 mr-1 mt-0"
-          variant="secondary"
-          @click="addSeparator(i)">
-          <span class="fa fa-underline mr-2" />
-          Add a Separator
-        </b-button>
-        <b-button
-          block
-          size="sm"
-          variant="info"
-          class="mr-1 ml-1 mt-0"
-          @click="addLink(i)">
-          <span class="fa fa-link mr-2" />
-          Add Another Link
-        </b-button>
-        <b-button
-          block
-          size="sm"
-          class="ml-1 mt-0"
-          variant="warning"
-          style="width:30px;"
-          @click="pushLink({ index: i, target: 0 })"
-          v-b-tooltip.hover="'Push to the TOP'">
-          <span class="fa fa-arrow-circle-up mr-2" />
-        </b-button>
-      </div>
     </reorder-list> <!-- /group links -->
     <div
       class="mt-2"
@@ -246,15 +231,19 @@ import { mapGetters } from 'vuex';
 import ColorPicker from '@/utils/ColorPicker';
 import ReorderList from '@/utils/ReorderList';
 
+import LinkBtns from '@/components/links/LinkBtns';
+
 const defaultLink = {
   url: '',
   name: '',
-  itypes: []
+  itypes: [],
+  expanded: true
 };
 
 export default {
   name: 'CreateLinkGroup',
   components: {
+    LinkBtns,
     ColorPicker,
     ReorderList
   },
@@ -303,7 +292,7 @@ export default {
     addLink (index) {
       this.lg.links.splice(index + 1, 0, JSON.parse(JSON.stringify(defaultLink)));
     },
-    addSeparator (index) {
+    addSeparator (index) { // TODO this doesn't always work
       const link = JSON.parse(JSON.stringify(defaultLink));
       link.url = '----------';
       link.name = '----------';
@@ -320,14 +309,13 @@ export default {
       this.lg.links.splice(index, 1);
       this.$emit('update-link-group', this.lg);
     },
-    changeColor ({ linkName, color }) {
-      for (const link of this.lg.links) {
-        if (link.name === linkName) {
-          this.$set(link, 'color', color);
-          this.$emit('update-link-group', this.lg);
-          return;
-        }
-      }
+    expandLink (index) {
+      this.$set(this.lg.links[index], 'expanded', !this.lg.links[index].expanded);
+    },
+    changeColor ({ linkName, color, index }) {
+      const link = this.lg.links[index];
+      this.$set(link, 'color', color);
+      this.$emit('update-link-group', this.lg);
     },
     updateList ({ list }) {
       this.$set(this.lg, 'links', list);
@@ -353,9 +341,13 @@ export default {
   background: var(--secondary);
 }
 
-.remove-separator {
-  float: right;
-  display: inline;
-  margin-top: -42px;
+.link-separator {
+  border: 0;
+  margin-top: -12px;
+  margin-bottom: 0px;
+  border-top: 6px solid rgba(0, 0, 0, 0.7);
+}
+.link-separator-checkbox-group {
+  margin-bottom: -1.1rem;
 }
 </style>

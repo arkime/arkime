@@ -26,6 +26,7 @@ const store = new Vuex.Store({
     integrationData: {},
     linkGroups: undefined,
     linkGroupsError: '',
+    collapsedLinkGroups: {},
     checkedLinks: {},
     selectedIntegrations: undefined,
     sidebarKeepOpen: false
@@ -143,6 +144,9 @@ const store = new Vuex.Store({
     },
     SET_SIDEBAR_KEEP_OPEN (state, data) {
       state.sidebarKeepOpen = data;
+    },
+    SET_COLLAPSED_LINK_GROUPS (state, data) {
+      state.collapsedLinkGroups = data;
     }
   },
   getters: {
@@ -211,7 +215,8 @@ const store = new Vuex.Store({
   },
   plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen'
+      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen',
+      'collapsedLinkGroups'
     ]
   })]
 });

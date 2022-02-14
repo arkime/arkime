@@ -6,6 +6,11 @@
     <template #header>
       <h6 class="mb-0 link-header">
         <span
+          class="fa mr-1 cursor-pointer"
+          @click="toggleLinkGroup(linkGroup)"
+          :class="collapsedLinkGroups[linkGroup._id] ? 'fa-chevron-down' : 'fa-chevron-up'"
+        />
+        <span
           class="fa fa-share-alt mr-1 cursor-help"
           v-if="getUser && linkGroup.creator !== getUser.userId"
           v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
@@ -14,44 +19,49 @@
       </h6>
     </template>
     <b-card-body>
-      <template
-        v-for="(link, i) in linkGroup.links">
-        <!-- display link to click -->
-        <div class="link-display"
-          :key="link.url + i + 'click'"
-          v-if="itype && link.itypes.indexOf(itype) > -1 && link.name !== '----------'">
-          <b-form-checkbox
-            inline
-            class="link-checkbox"
-            @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
-            :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
-          />
-          <a target="_blank"
+      <div v-show="!collapsedLinkGroups[linkGroup._id]">
+        <template
+          v-for="(link, i) in linkGroup.links">
+          <!-- display link to click -->
+          <div class="link-display"
+            :key="link.url + i + 'click'"
+            v-if="itype && link.itypes.indexOf(itype) > -1 && link.name !== '----------' && (!hideLinks || (hideLinks && !hideLinks[i]))">
+            <b-form-checkbox
+              inline
+              class="link-checkbox"
+              @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
+              :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
+            />
+            <a target="_blank"
+              :title="link.name"
+              :href="getUrl(link.url)"
+              :style="link.color ? `color:${link.color}` : ''">
+              {{ link.name }}
+            </a>
+          </div> <!-- /display link to click -->
+          <!-- display link to view -->
+          <div
+            v-else-if="!itype && link.name !== '----------'"
             :title="link.name"
-            :href="getUrl(link.url)"
-            :style="link.color ? `color:${link.color}` : ''">
-            {{ link.name }}
-          </a>
-        </div> <!-- /display link to click -->
-        <!-- display link to view -->
-        <div
-          v-else-if="!itype && link.name !== '----------'"
-          :title="link.name"
-          :key="link.url + i + 'view'">
-          <strong class="text-warning">
-            {{ link.name }}
-          </strong>
-          <a href="javascript:void(0)"
-            :style="link.color ? `color:${link.color}` : ''">
-            {{ link.url }}
-          </a>
-        </div> <!-- /display link to view -->
-        <!-- separator -->
-        <hr v-else-if="link.name === '----------'"
-          :key="link.url + i + 'separator'" />
-      </template>
+            :key="link.url + i + 'view'">
+            <strong class="text-warning">
+              {{ link.name }}
+            </strong>
+            <a href="javascript:void(0)"
+              :style="link.color ? `color:${link.color}` : ''">
+              {{ link.url }}
+            </a>
+          </div> <!-- /display link to view -->
+          <!-- separator -->
+          <hr class="link-separator-display"
+            :key="link.url + i + 'separator'"
+            v-else-if="link.name === '----------'"
+            :style="`border-color: ${link.color || '#777'}`"
+          >
+        </template>
+      </div>
     </b-card-body>
-    <template #footer v-if="itype">
+    <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
       <div class="w-100 d-flex justify-content-between align-items-start">
         <b-form-checkbox
           role="checkbox"
@@ -180,10 +190,18 @@ export default {
     numHours: [Number, String], // the number of hours to apply to urls
     stopDate: String, // the stop date to apply to urls
     startDate: String, // the start date to apply to urls
-    linkGroupIndex: Number // the index of the link group to display in the array of link groups
+    linkGroupIndex: Number, // the index of the link group to display in the array of link groups
+    hideLinks: Object // which links to hide when a user is searching links in link groups
+  },
+  data () {
+    return {
+      collapsedLinkGroups: this.$store.state.collapsedLinkGroups
+    };
   },
   computed: {
-    ...mapGetters(['getUser', 'getCheckedLinks', 'getLinkGroups']),
+    ...mapGetters([
+      'getUser', 'getCheckedLinks', 'getLinkGroups', 'getCollapsedLinkGroups'
+    ]),
     linkGroup () {
       if (this.linkGroupIndex === undefined) { return {}; }
       return this.getLinkGroups.length ? this.getLinkGroups[this.linkGroupIndex] : {};
@@ -275,6 +293,10 @@ export default {
       }
 
       return count === linkGroup.links.length;
+    },
+    toggleLinkGroup (linkGroup) {
+      this.$set(this.collapsedLinkGroups, linkGroup._id, !this.collapsedLinkGroups[linkGroup._id]);
+      this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     }
   }
 };
@@ -302,5 +324,11 @@ export default {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.link-separator-display {
+  border-width: 2px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 </style>

@@ -2,12 +2,11 @@
   <div class="container-fluid">
 
     <IntegrationPanel />
-
     <!-- page content -->
     <div class="main-content"
       :class="{'with-sidebar': getSidebarKeepOpen}">
       <!-- search -->
-      <div class="fixed-top pl-2 pr-2 search-nav d-flex justify-content-between">
+      <div class="fixed-top search-nav d-flex justify-content-between">
         <b-input-group class="flex-grow-1 mr-2">
           <template #prepend>
             <b-input-group-text>
@@ -101,7 +100,7 @@
         <!-- link inputs -->
         <b-form inline
           v-if="searchTerm && initialized"
-          class="w-50 d-flex justify-content-between">
+          class="w-50 d-flex justify-content-between link-inputs">
           <b-input-group
             size="xs"
             class="mr-2 mb-1">
@@ -172,116 +171,136 @@
 
         <!-- results -->
         <template v-if="searchTerm">
-          <div class="results-container results-summary float-left">
           <!-- itype results summary -->
-          <div>
-            <cont3xt-domain
-              :data="results"
-              v-if="searchItype === 'domain'"
-            />
-            <cont3xt-ip
-              :data="results"
-              v-else-if="searchItype === 'ip'"
-            />
-            <cont3xt-url
-              :data="results"
-              :query="searchTerm"
-              v-else-if="searchItype === 'url'"
-            />
-            <cont3xt-email
-              :data="results"
-              :query="searchTerm"
-              v-else-if="searchItype === 'email'"
-            />
-            <cont3xt-hash
-              :data="results"
-              v-else-if="searchItype === 'hash'"
-            />
-            <cont3xt-phone
-              :data="results"
-              :query="searchTerm"
-              v-else-if="searchItype === 'phone'"
-            />
-            <cont3xt-text
-              :data="results"
-              :query="searchTerm"
-              v-else-if="searchItype === 'text'"
-            />
-            <div v-else-if="searchItype">
-              <h3 class="text-warning">
-                No display for {{ searchItype }}
-              </h3>
-              <pre class="text-info"><code>{{ results }}</code></pre>
+          <div class="results-container results-summary">
+            <div>
+              <cont3xt-domain
+                :data="results"
+                v-if="searchItype === 'domain'"
+              />
+              <cont3xt-ip
+                :data="results"
+                v-else-if="searchItype === 'ip'"
+              />
+              <cont3xt-url
+                :data="results"
+                :query="searchTerm"
+                v-else-if="searchItype === 'url'"
+              />
+              <cont3xt-email
+                :data="results"
+                :query="searchTerm"
+                v-else-if="searchItype === 'email'"
+              />
+              <cont3xt-hash
+                :data="results"
+                v-else-if="searchItype === 'hash'"
+              />
+              <cont3xt-phone
+                :data="results"
+                :query="searchTerm"
+                v-else-if="searchItype === 'phone'"
+              />
+              <cont3xt-text
+                :data="results"
+                :query="searchTerm"
+                v-else-if="searchItype === 'text'"
+              />
+              <div v-else-if="searchItype">
+                <h3 class="text-warning">
+                  No display for {{ searchItype }}
+                </h3>
+                <pre class="text-info"><code>{{ results }}</code></pre>
+              </div>
+              <hr v-if="searchTerm && initialized">
+              <!-- link groups error -->
+              <b-alert
+                variant="danger"
+                :show="!!getLinkGroupsError.length">
+                {{ getLinkGroupsError }}
+              </b-alert>
+              <!-- link search -->
+              <div v-if="searchItype && initialized">
+                <b-input-group size="sm">
+                  <template #prepend>
+                    <b-input-group-text>
+                      <span class="fa fa-search" />
+                    </b-input-group-text>
+                  </template>
+                  <b-form-input
+                    debounce="400"
+                    v-model="linkSearchTerm"
+                    placeholder="Search links below"
+                  />
+                </b-input-group> <!-- /link search -->
+                <!-- link groups -->
+                <!-- TODO wrap and fill vertical space!?!? but how!?!? -->
+                <!-- TODO don't show multiple hr's in a row -->
+                <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
+                  <template v-for="(linkGroup, index) in getLinkGroups">
+                    <reorder-list
+                      :index="index"
+                      class="w-50 p-2"
+                      @update="updateList"
+                      :key="linkGroup._id"
+                      :list="getLinkGroups"
+                      :class="`lg-${index}`"
+                      v-if="hasLinksWithItype(linkGroup)">
+                      <template slot="handle">
+                        <span class="fa fa-bars d-inline link-group-card-handle" />
+                      </template>
+                      <template slot="default">
+                        <link-group-card
+                          :query="searchTerm"
+                          :num-days="numDays"
+                          :itype="searchItype"
+                          :num-hours="numHours"
+                          :stop-date="stopDate"
+                          :start-date="startDate"
+                          :link-group-index="index"
+                          v-if="getLinkGroups.length"
+                          :hide-links="hideLinks[linkGroup._id]"
+                        />
+                      </template>
+                    </reorder-list>
+                  </template>
+                </div> <!-- /link groups -->
+              </div>
             </div>
-            <hr v-if="searchTerm && initialized">
-            <!-- link groups -->
-            <b-alert
-              variant="danger"
-              :show="!!getLinkGroupsError.length">
-              {{ getLinkGroupsError }}
-            </b-alert>
-            <!-- link groups -->
-            <div v-if="searchItype && initialized"
-              class="d-flex flex-wrap link-group-cards-wrapper">
-              <template v-for="(linkGroup, index) in getLinkGroups">
-                <reorder-list
-                  :index="index"
-                  class="w-50 p-2"
-                  @update="updateList"
-                  :key="linkGroup._id"
-                  :list="getLinkGroups"
-                  v-if="hasLinksWithItype(linkGroup)">
-                  <template slot="handle">
-                    <span class="fa fa-bars d-inline link-group-card-handle" />
-                  </template>
-                  <template slot="default">
-                    <link-group-card
-                      :query="searchTerm"
-                      :num-days="numDays"
-                      :itype="searchItype"
-                      :num-hours="numHours"
-                      :stop-date="stopDate"
-                      :start-date="startDate"
-                      :link-group-index="index"
-                      v-if="getLinkGroups.length"
-                    />
-                  </template>
-                </reorder-list>
-              </template>
-            </div> <!-- /link groups -->
-          </div></div> <!-- /itype results summary -->
+          </div> <!-- /itype results summary -->
           <!-- integration results -->
           <div class="results-container results-integration pull-right">
-          <div
-            @scroll="handleScroll"
-            ref="resultsIntegration">
-            <b-overlay
-              no-center
-              rounded="sm"
-              blur="0.2rem"
-              opacity="0.9"
-              variant="transparent"
-              :show="getWaitRendering || getRendering">
-              <integration-card
-                @update-results="updateData"
-              />
-              <template #overlay>
-                <div class="overlay-loading">
-                  <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                  <p>Rendering data...</p>
-                </div>
-              </template>
-            </b-overlay>
-            <b-button
-              size="sm"
-              @click="toTop"
-              title="Go to top"
-              class="to-top-btn"
-              variant="btn-link"
-              v-show="scrollPx > 100">
-              <span class="fa fa-lg fa-arrow-circle-up" />
-            </b-button>
-          </div></div> <!-- /integration results -->
+            <div
+              @scroll="handleScroll"
+              ref="resultsIntegration">
+              <b-overlay
+                no-center
+                rounded="sm"
+                blur="0.2rem"
+                opacity="0.9"
+                variant="transparent"
+                :show="getWaitRendering || getRendering">
+                <integration-card
+                  @update-results="updateData"
+                />
+                <template #overlay>
+                  <div class="overlay-loading">
+                    <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                    <p>Rendering data...</p>
+                  </div>
+                </template>
+              </b-overlay>
+              <b-button
+                size="sm"
+                @click="toTop"
+                title="Go to top"
+                class="to-top-btn"
+                variant="btn-link"
+                v-show="scrollPx > 100">
+                <span class="fa fa-lg fa-arrow-circle-up" />
+              </b-button>
+            </div>
+          </div> <!-- /integration results -->
         </template> <!-- /results -->
 
       </div>
@@ -336,7 +355,9 @@ export default {
       initialized: false,
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b ? window.atob(this.$route.query.b) : ''),
       skipCache: false,
-      searchComplete: false
+      searchComplete: false,
+      linkSearchTerm: '',
+      hideLinks: {}
     };
   },
   computed: {
@@ -369,6 +390,23 @@ export default {
         }
         this.$store.commit('SET_WAIT_RENDERING', false);
       }, 100);
+    },
+    linkSearchTerm (searchTerm) {
+      this.hideLinks = {};
+
+      if (!searchTerm) { return; }
+
+      const query = searchTerm.toLowerCase();
+
+      for (const group of this.getLinkGroups) {
+        this.hideLinks[group._id] = {};
+        for (let i = 0; i < group.links.length; i++) {
+          const match = group.links[i].name.toString().toLowerCase().match(query);
+          if (!match || match.length <= 0) {
+            this.hideLinks[group._id][i] = true;
+          }
+        }
+      }
     }
   },
   methods: {
@@ -547,9 +585,9 @@ export default {
 
 <style scoped>
 .search-nav {
-  margin-top: 60px !important;
-  padding-top: 16px;
+  padding: 16px 16px 0 16px;
   background-color: #FFF;
+  margin-top: 60px !important;
 }
 body.dark .search-nav {
   background-color: #222;
@@ -559,8 +597,14 @@ body.dark .search-nav {
   margin-top: 126px;
 }
 .cont3xt-content {
+  overflow: hidden;
   margin-left: -7px;
   margin-right: -7px;
+  height: calc(100vh - 126px); /* total height - margin for search */
+}
+
+.link-inputs {
+  padding-left: 10px;
 }
 
 /* side by side scrolling results containers */
@@ -571,17 +615,21 @@ body.dark .search-nav {
   display: inline-block;
 }
 .results-container.results-integration {
-  margin-top: -35px;
+  margin-top: -28px;
 }
 .results-container.results-summary > div {
   /* total height - margin for search - height of link inputs */
-  height: calc(100vh - 161px);
-  overflow: scroll;
+  height: calc(100vh - 153px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-left: 8px;
   padding-right: 0.5rem;
 }
 .results-container.results-integration > div {
   height: calc(100vh - 126px); /* total height - margin for search */
-  overflow: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
   padding-left: 0.5rem;
 }
 

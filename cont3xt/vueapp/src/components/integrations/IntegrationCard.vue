@@ -158,7 +158,8 @@ export default {
       const a = document.createElement('a');
       const file = new Blob([JSON.stringify(this.getIntegrationData.data, false, 2)], { type: 'application/json' });
       a.href = URL.createObjectURL(file);
-      const { source } = this.$store.state.displayIntegration;
+      let { source } = this.$store.state.displayIntegration;
+      source = source.replaceAll(' ', '_');
       a.download = `${new Date().toISOString()}_${source}_${this.getIntegrationData._query}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
