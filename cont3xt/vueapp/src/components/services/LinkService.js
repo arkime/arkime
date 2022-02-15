@@ -30,6 +30,10 @@ export default {
    * @returns {Promise} - The promise that either resovles the or rejects in error
    */
   createLinkGroup (linkGroup) {
+    for (const link of linkGroup.links) {
+      delete link.expanded; // clear link expanded prop, it's just for the UI
+    }
+
     return new Promise((resolve, reject) => {
       fetch('api/linkGroup', {
         method: 'PUT',
@@ -81,6 +85,10 @@ export default {
    */
   updateLinkGroup (linkGroup) {
     store.commit('SET_LINK_GROUPS_ERROR', '');
+
+    for (const link of linkGroup.links) {
+      delete link.expanded; // clear link expanded prop, it's just for the UI
+    }
 
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${linkGroup._id}`, {

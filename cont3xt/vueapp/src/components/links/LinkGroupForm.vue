@@ -1,7 +1,5 @@
 <template>
   <!-- form -->
-  <!-- TODO clicking items in form collapses the form because it's updating the link group and removing expanded prop
-  don't use expanded prop on links? use another object instead? -->
   <b-form v-if="lg">
     <!-- group name -->
     <b-input-group
@@ -292,11 +290,12 @@ export default {
     addLink (index) {
       this.lg.links.splice(index + 1, 0, JSON.parse(JSON.stringify(defaultLink)));
     },
-    addSeparator (index) { // TODO this doesn't always work
+    addSeparator (index) {
       const link = JSON.parse(JSON.stringify(defaultLink));
       link.url = '----------';
       link.name = '----------';
       this.lg.links.splice(index + 1, 0, link);
+      this.$emit('update-link-group', this.lg);
     },
     pushLink ({ index, target }) {
       // remove the link from the list

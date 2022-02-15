@@ -235,7 +235,6 @@
                 </b-input-group> <!-- /link search -->
                 <!-- link groups -->
                 <!-- TODO wrap and fill vertical space!?!? but how!?!? -->
-                <!-- TODO don't show multiple hr's in a row -->
                 <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
                   <template v-for="(linkGroup, index) in getLinkGroups">
                     <reorder-list

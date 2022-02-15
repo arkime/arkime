@@ -21,11 +21,11 @@
     <b-card-body>
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template
-          v-for="(link, i) in linkGroup.links">
+          v-for="(link, i) in filteredLinks">
           <!-- display link to click -->
           <div class="link-display"
             :key="link.url + i + 'click'"
-            v-if="itype && link.itypes.indexOf(itype) > -1 && link.name !== '----------' && (!hideLinks || (hideLinks && !hideLinks[i]))">
+            v-if="itype && link.name !== '----------'">
             <b-form-checkbox
               inline
               class="link-checkbox"
@@ -40,10 +40,9 @@
             </a>
           </div> <!-- /display link to click -->
           <!-- display link to view -->
-          <div
-            v-else-if="!itype && link.name !== '----------'"
-            :title="link.name"
-            :key="link.url + i + 'view'">
+          <div :title="link.name"
+            :key="link.url + i + 'view'"
+            v-else-if="!itype && link.name !== '----------'">
             <strong class="text-warning">
               {{ link.name }}
             </strong>
@@ -205,6 +204,31 @@ export default {
     linkGroup () {
       if (this.linkGroupIndex === undefined) { return {}; }
       return this.getLinkGroups.length ? this.getLinkGroups[this.linkGroupIndex] : {};
+    },
+    filteredLinks () {
+      const links = [];
+
+      for (let i = 0, len = this.linkGroup.links.length; i < len; i++) {
+        const link = this.linkGroup.links[i];
+        // first, does it match the itype of the indicator searched?
+        if (!this.itype || link.itypes.indexOf(this.itype) > -1) {
+          // then, is it visible if the user is searching for links that match
+          // AND it's not a separator (separators aren't filtered out of search)
+          if (link.url !== '----------' && (!this.hideLinks || !this.hideLinks[i])) {
+            links.push(link);
+          } else if (links.length > 0 && // don't show multiple separators in a row
+            link.url === '----------' &&
+            links[links.length - 1].url !== '----------') {
+            links.push(link);
+          }
+        }
+      }
+
+      if (links.length && links[links.length - 1].url === '----------') {
+        links.pop(); // don't end with a separator
+      }
+
+      return links;
     }
   },
   methods: {
