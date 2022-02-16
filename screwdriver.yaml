@@ -25,7 +25,7 @@ jobs:
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: scl enable devtoolset-9 rh-python36 'make install'
+            - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
