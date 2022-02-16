@@ -191,7 +191,8 @@ export default {
       const a = document.createElement('a');
       const file = new Blob([this.generateCSVString()], { type: 'text/csv' });
       a.href = URL.createObjectURL(file);
-      const { source } = this.$store.state.displayIntegration;
+      let { source } = this.$store.state.displayIntegration;
+      source = source.replaceAll(' ', '_');
       a.download = `${new Date().toISOString()}_${source}_${this.field.path.join('.')}_${this.getIntegrationData._query}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);

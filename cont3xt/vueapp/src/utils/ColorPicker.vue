@@ -40,6 +40,10 @@ export default {
     linkName: {
       type: String,
       required: true
+    },
+    index: {
+      type: Number,
+      required: true
     }
   },
   watch: {
@@ -69,7 +73,8 @@ export default {
       if (this.colorValue !== this.color) {
         this.$emit('colorSelected', {
           linkName: this.linkName,
-          color: this.colorValue
+          color: this.colorValue,
+          index: this.index
         });
       }
     },
