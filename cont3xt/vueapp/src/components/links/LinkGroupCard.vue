@@ -16,6 +16,10 @@
           v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
+        <small class="pull-right"
+          v-if="!itype && getUser && linkGroup.creator !== getUser.userId">
+          You can only view this Link Group
+        </small>
       </h6>
     </template>
     <b-card-body>
