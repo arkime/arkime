@@ -238,7 +238,6 @@
                   <template v-for="(linkGroup, index) in getLinkGroups">
                     <reorder-list
                       :index="index"
-                      :id="`lg-${index}`"
                       @update="updateList"
                       :key="linkGroup._id"
                       :list="getLinkGroups"
@@ -587,28 +586,47 @@ export default {
     },
     arrangeLinkGroups () {
       this.$nextTick(() => { // wait for render
-        const linkGroups = this.$store.state.linkGroups;
+        const lgElements = document.getElementsByClassName('link-group');
 
-        for (let i = 0, len = linkGroups.length; i < len; i++) {
+        for (let i = 0, len = lgElements.length; i < len; i++) {
           let delta = 0;
           const even = i % 2 === 0;
 
           if (i < 2) { continue; }
 
-          const target = document.getElementById(`lg-${i}`);
-          if (!target) { continue; }
+          const target = lgElements[i];
 
-          if (!even) {
-            const parent1 = document.getElementById(`lg-${i - 3}`);
-            const parent2 = document.getElementById(`lg-${i - 2}`);
-            if (parent1 && parent2 && parent1.clientHeight > parent2.clientHeight) {
-              delta = Math.abs(parent1.clientHeight - parent2.clientHeight);
+          if (!even) { // right side
+            let x = i;
+            let leftHeight = 0;
+            let rightHeight = 0;
+            while (x > -1) { // sum heights of upper sibling elements
+              if (lgElements[x - 3]) {
+                leftHeight += lgElements[x - 3].clientHeight;
+                rightHeight += lgElements[x - 2].clientHeight;
+              } else {
+                break;
+              }
+              x = x - 2;
             }
-          } else {
-            const parent1 = document.getElementById(`lg-${i - 2}`);
-            const parent2 = document.getElementById(`lg-${i - 1}`);
-            if (parent1 && parent2 && parent2.clientHeight > parent1.clientHeight) {
-              delta = Math.abs(parent2.clientHeight - parent1.clientHeight);
+            if (leftHeight > rightHeight) {
+              delta = Math.abs(leftHeight - rightHeight);
+            }
+          } else { // left side
+            let x = i;
+            let leftHeight = 0;
+            let rightHeight = 0;
+            while (x > -1) {
+              if (lgElements[x - 2]) { // sum heights of upper sibling elements
+                leftHeight += lgElements[x - 2].clientHeight;
+                rightHeight += lgElements[x - 1].clientHeight;
+              } else {
+                break;
+              }
+              x = x - 2;
+            }
+            if (rightHeight > leftHeight) {
+              delta = Math.abs(rightHeight - leftHeight);
             }
           }
 
