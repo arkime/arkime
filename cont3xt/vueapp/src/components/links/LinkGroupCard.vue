@@ -199,7 +199,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'getUser', 'getCheckedLinks', 'getLinkGroups', 'getCollapsedLinkGroups'
+      'getUser', 'getCheckedLinks', 'getLinkGroups'
     ]),
     linkGroup () {
       if (this.linkGroupIndex === undefined) { return {}; }

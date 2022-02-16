@@ -234,16 +234,15 @@
                   />
                 </b-input-group> <!-- /link search -->
                 <!-- link groups -->
-                <!-- TODO wrap and fill vertical space!?!? but how!?!? -->
                 <div class="d-flex flex-wrap align-items-start link-group-cards-wrapper">
                   <template v-for="(linkGroup, index) in getLinkGroups">
                     <reorder-list
                       :index="index"
-                      class="w-50 p-2"
+                      :id="`lg-${index}`"
                       @update="updateList"
                       :key="linkGroup._id"
                       :list="getLinkGroups"
-                      :class="`lg-${index}`"
+                      class="w-50 p-2 link-group"
                       v-if="hasLinksWithItype(linkGroup)">
                       <template slot="handle">
                         <span class="fa fa-bars d-inline link-group-card-handle" />
@@ -371,6 +370,9 @@ export default {
     },
     displayIntegration () {
       return this.$store.state.displayIntegration;
+    },
+    collapsedLinkGroups () {
+      return this.$store.state.collapsedLinkGroups;
     }
   },
   watch: {
@@ -393,18 +395,26 @@ export default {
     linkSearchTerm (searchTerm) {
       this.hideLinks = {};
 
-      if (!searchTerm) { return; }
+      if (searchTerm) {
+        const query = searchTerm.toLowerCase();
 
-      const query = searchTerm.toLowerCase();
-
-      for (const group of this.getLinkGroups) {
-        this.hideLinks[group._id] = {};
-        for (let i = 0; i < group.links.length; i++) {
-          const match = group.links[i].name.toString().toLowerCase().match(query);
-          if (!match || match.length <= 0) {
-            this.hideLinks[group._id][i] = true;
+        for (const group of this.getLinkGroups) {
+          this.hideLinks[group._id] = {};
+          for (let i = 0; i < group.links.length; i++) {
+            const match = group.links[i].name.toString().toLowerCase().match(query);
+            if (!match || match.length <= 0) {
+              this.hideLinks[group._id][i] = true;
+            }
           }
         }
+      }
+
+      this.arrangeLinkGroups();
+    },
+    collapsedLinkGroups: {
+      deep: true,
+      handler () {
+        this.arrangeLinkGroups();
       }
     }
   },
@@ -461,6 +471,7 @@ export default {
             // determine the search type and save the search term
             // based of the first itype seen
             this.searchItype = data.itype;
+            this.arrangeLinkGroups();
           }
 
           if (data.itype && data.name) { // add the data to the page per itype
@@ -573,6 +584,37 @@ export default {
           }
         }
       }
+    },
+    arrangeLinkGroups () {
+      this.$nextTick(() => { // wait for render
+        const linkGroups = this.$store.state.linkGroups;
+
+        for (let i = 0, len = linkGroups.length; i < len; i++) {
+          let delta = 0;
+          const even = i % 2 === 0;
+
+          if (i < 2) { continue; }
+
+          const target = document.getElementById(`lg-${i}`);
+          if (!target) { continue; }
+
+          if (!even) {
+            const parent1 = document.getElementById(`lg-${i - 3}`);
+            const parent2 = document.getElementById(`lg-${i - 2}`);
+            if (parent1 && parent2 && parent1.clientHeight > parent2.clientHeight) {
+              delta = Math.abs(parent1.clientHeight - parent2.clientHeight);
+            }
+          } else {
+            const parent1 = document.getElementById(`lg-${i - 2}`);
+            const parent2 = document.getElementById(`lg-${i - 1}`);
+            if (parent1 && parent2 && parent2.clientHeight > parent1.clientHeight) {
+              delta = Math.abs(parent2.clientHeight - parent1.clientHeight);
+            }
+          }
+
+          target.style = `margin-top: -${delta}px`;
+        }
+      });
     }
   },
   beforeDestroy () {
@@ -652,6 +694,10 @@ body.dark .search-nav {
   float: right;
   right: 1.5rem;
   position: relative;
+}
+
+.link-group {
+  transition: margin-top 0.5s ease-out;
 }
 </style>
 
