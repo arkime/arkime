@@ -149,6 +149,7 @@ sub showHelp($)
     print "\n";
     print "General Commands:\n";
     print "  info                         - Information about the database\n";
+    print "  repair                       - Try and repair a corrupted cluster schema\n";
     print "  init [<opts>]                - Clear ALL elasticsearch Arkime data and create schema\n";
     print "    --shards <shards>          - Number of shards for sessions, default number of nodes\n";
     print "    --replicas <num>           - Number of replicas for sessions, default 0\n";
@@ -5999,7 +6000,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|recreate-users|recreate-stats|recreate-dstats|recreate-fields|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -6992,6 +6993,87 @@ qq/ {
     die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
     esDelete("/$src", 1);
     print "Deleted $src\n";
+    exit 0;
+} elsif ($ARGV[1] =~ /^repair$/) {
+    $verbose = 3 if ($verbose < 3);
+
+    dbVersion(1);
+    if ($main::versionNumber != $VERSION) {
+        die "Must upgrade before trying to do a repair";
+    }
+
+    my $indicesa = esGet("/_cat/indices/${PREFIX}*?format=json", 1);
+    my %indices = map { $_->{index} => $_ } @{$indicesa};
+
+    foreach my $i ("sequence_v30", "files_v30") {
+        if (!defined $indices{"${PREFIX}$i"}) {
+            die "Couldn't find index ${PREFIX}$i, can not repair\n"
+        }
+    }
+
+    foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30") {
+        if (!defined $indices{"${PREFIX}$i"}) {
+            print "Couldn't find index ${PREFIX}$i, repair might fail\n"
+        }
+    }
+
+    waitFor("REPAIR", "Do you want to try and repair your install?");
+
+    print "Re-adding aliases\n";
+    esAlias("add", "sequence_v30", "sequence");
+    esAlias("add", "files_v30", "files");
+    esAlias("add", "stats_v30", "stats");
+    esAlias("add", "dstats_v30", "dstats");
+    esAlias("add", "fields_v30", "fields");
+    esAlias("add", "queries_v30", "queries");
+    esAlias("add", "hunts_v30", "hunts");
+    esAlias("add", "lookups_v30", "lookups");
+    esAlias("add", "users_v30", "users");
+
+    if (defined $indices{"${PREFIX}users_v30"}) {
+        usersUpdate();
+    } else {
+        usersCreate();
+    }
+
+    if (defined $indices{"${PREFIX}fields_v30"}) {
+        fieldsUpdate();
+    } else {
+        fieldsCreate();
+    }
+
+    if (defined $indices{"${PREFIX}hunts_v30"}) {
+        huntsUpdate();
+    } else {
+        huntsCreate();
+    }
+
+    if (defined $indices{"${PREFIX}stats_v30"}) {
+        statsUpdate();
+    } else {
+        statsCreate();
+    }
+
+    if (defined $indices{"${PREFIX}dstats_v30"}) {
+        dstatsUpdate();
+    } else {
+        dstatsCreate();
+    }
+
+    if (defined $indices{"${PREFIX}lookups_v30"}) {
+        lookupsUpdate();
+    } else {
+        lookupsCreate();
+    }
+
+    if (defined $indices{"${PREFIX}queries_v30"}) {
+        queriesUpdate();
+    } else {
+        queriesCreate();
+    }
+
+    print "You should also run ./db.pl update again\n";
+
     exit 0;
 }
 
