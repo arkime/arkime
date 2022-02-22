@@ -522,7 +522,7 @@ export default {
 
       // display operators (depending on field type)
       let token = tokens[tokens.length - 2];
-      let field = FieldService.getField(token, this.fields, true);
+      let field = FieldService.getField(token, true);
 
       if (field) { // add field to the history
         this.addFieldToHistory(field);
@@ -547,7 +547,7 @@ export default {
       const operatorToken = token;
 
       token = tokens[tokens.length - 3];
-      field = FieldService.getField(token, this.fields, true);
+      field = FieldService.getField(token, true);
 
       if (!field) {
         if (/^[!<=>]/.test(token)) {

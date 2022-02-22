@@ -2684,21 +2684,14 @@ export default {
       return this.columns.filter(column => !column.unsortable);
     },
     fields: function () {
-      return this.$store.state.fieldsArr;
+      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
     },
     fieldsMap: function () {
       const fieldsMap = JSON.parse(JSON.stringify(this.$store.state.fieldsMap));
       for (const key in customCols) {
         fieldsMap[key] = customCols[key];
       }
-      return fieldsMap;
-    },
-    fieldsPlusCustom: function () {
-      const fields = JSON.parse(JSON.stringify(this.$store.state.fieldsArr));
-      for (const key in customCols) {
-        fields.push(customCols[key]);
-      }
-      return fields;
+      return FieldService.addIpDstPortField(this.$store.state.fieldsMap);
     },
     molochClusters: function () {
       return this.$store.state.remoteclusters;
@@ -2836,7 +2829,7 @@ export default {
       this.timelineDataFilters = [];
       for (let i = 0, len = this.settings.timelineDataFilters.length; i < len; i++) {
         const filter = this.settings.timelineDataFilters[i];
-        const fieldOBJ = FieldService.getField(filter, this.integerFields);
+        const fieldOBJ = FieldService.getField(filter);
         if (fieldOBJ) {
           this.timelineDataFilters.push(fieldOBJ);
         }
@@ -2903,7 +2896,7 @@ export default {
       let index;
       for (index = 0; index < this.settings.timelineDataFilters.length; index++) {
         const filter = this.settings.timelineDataFilters[index];
-        const filterDbField = FieldService.getFieldProperty(filter, 'dbField', this.fields);
+        const filterDbField = FieldService.getFieldProperty(filter, 'dbField');
         if (filterDbField && filterDbField === field.dbField) {
           break;
         }
@@ -3744,17 +3737,17 @@ export default {
 
         // update the user settings for spigraph field & connections src/dst fields
         // NOTE: dbField is saved in settings, but show the field's friendlyName
-        const spigraphField = FieldService.getField(this.settings.spiGraph, this.fields);
+        const spigraphField = FieldService.getField(this.settings.spiGraph);
         if (spigraphField) {
           this.$set(this, 'spiGraphField', spigraphField);
           this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
         }
-        const connSrcField = FieldService.getField(this.settings.connSrcField, this.fields);
+        const connSrcField = FieldService.getField(this.settings.connSrcField);
         if (connSrcField) {
           this.$set(this, 'connSrcField', connSrcField);
           this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
         }
-        const connDstField = FieldService.getField(this.settings.connDstField, this.fields);
+        const connDstField = FieldService.getField(this.settings.connDstField);
         if (connDstField) {
           this.$set(this, 'connDstField', connDstField);
           this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
@@ -3820,7 +3813,7 @@ export default {
             const fieldID = split[0];
             const count = split[1];
 
-            const field = FieldService.getField(fieldID, this.fields);
+            const field = FieldService.getField(fieldID);
 
             if (field) {
               if (!config.fieldObjs) { config.fieldObjs = []; }
@@ -3875,9 +3868,9 @@ export default {
     setupColumns: function (colIdArray) {
       this.columns = [];
       for (let i = 0, len = colIdArray.length; i < len; ++i) {
-        const field = FieldService.getField(colIdArray[i], this.fieldsMap, true);
+        const field = FieldService.getField(colIdArray[i], true);
         if (field !== undefined) {
-          this.columns.push(FieldService.getField(colIdArray[i], this.fieldsMap, true));
+          this.columns.push(FieldService.getField(colIdArray[i], true));
         }
       }
     }

@@ -773,7 +773,7 @@ export default {
       set: function (newValue) {
         for (const sortArr of newValue) {
           // if sorting by a custom col, need to use sortBy property
-          const sortField = FieldService.getFieldProperty(sortArr[0], 'sortBy', this.fields);
+          const sortField = FieldService.getFieldProperty(sortArr[0], 'sortBy');
           if (sortField) { sortArr[0] = sortField; }
         }
         this.$store.commit('setSorts', newValue);
@@ -783,7 +783,7 @@ export default {
       return this.$store.state.user;
     },
     timelineDataFilters: function () {
-      return this.$store.state.user.settings.timelineDataFilters.map(i => FieldService.getField(i, this.fields));
+      return this.$store.state.user.settings.timelineDataFilters.map(i => FieldService.getField(i));
     },
     views: function () {
       return this.$store.state.views;
@@ -1173,7 +1173,7 @@ export default {
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
         for (const headerId of this.tableState.visibleHeaders) {
-          const field = FieldService.getField(headerId, this.fields);
+          const field = FieldService.getField(headerId);
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
       } else {
@@ -1232,14 +1232,15 @@ export default {
 
       for (let field of array) {
         if (typeof field !== 'object') {
-          field = FieldService.getField(field, this.fields);
+          field = FieldService.getField(field);
         }
 
         if (!field) { return -1; }
 
-        const fieldMatchesId = FieldService.getField(id, [field]);
-
-        if (fieldMatchesId) { return index; }
+        if (id === field.dbField || id === field.dbField2 ||
+          id === field.exp || id === field.fieldECS) {
+          return index;
+        }
 
         index++;
       }
@@ -1283,7 +1284,7 @@ export default {
       } else { // it's hidden
         reloadData = true; // requires a data reload
         // add it to the info fields list
-        const field = FieldService.getField(id, this.fields);
+        const field = FieldService.getField(id);
         if (field) { this.infoFields.push(field); }
       }
 
@@ -1616,7 +1617,7 @@ export default {
         for (const c in children) {
           // (replace fieldId with field object)
           if (typeof children[c] !== 'object') {
-            children[c] = FieldService.getField(children[c], this.fields);
+            children[c] = FieldService.getField(children[c]);
           }
         }
       }
@@ -1650,7 +1651,7 @@ export default {
       if (!this.colWidths) { this.colWidths = {}; }
 
       for (const headerId of this.tableState.visibleHeaders) {
-        const field = FieldService.getField(headerId, this.fields);
+        const field = FieldService.getField(headerId);
 
         if (field) {
           field.width = this.colWidths[headerId] || field.width || 100;
