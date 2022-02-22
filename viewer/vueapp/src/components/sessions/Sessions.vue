@@ -1101,7 +1101,7 @@ export default {
      * @return {number} number  The index of the visible header
      */
     isColVisible: function (id) {
-      return this.isVisible(id, this.tableState.visibleHeaders);
+      return this.tableState.visibleHeaders.indexOf(id);
     },
     /**
      * Toggles the visibility of a column given its id
