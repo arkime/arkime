@@ -23,6 +23,7 @@
     "iniparser": "https://github.com/awick/node-iniparser/tarball/master",
     "ioredis": "^4.23.0",
     "ipaddr.js": "^2.0.0",
+    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12",
     "lodash.template": "^4.5.0",
     "lru-cache": "^4.0.1",
     "memjs": "^1.3.0",
