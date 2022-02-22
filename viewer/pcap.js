@@ -78,8 +78,9 @@ Pcap.make = function (key, header) {
   const pcap = new Pcap(key);
   pcap.headBuffer = header;
 
-  const magic = this.headBuffer.readUInt32LE(0);
+  const magic = pcap.headBuffer.readUInt32LE(0);
   pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
+  pcap.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
 
   if (pcap.bigEndian) {
     pcap.linkType = pcap.headBuffer.readUInt32BE(20);

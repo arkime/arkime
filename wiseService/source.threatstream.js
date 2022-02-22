@@ -554,7 +554,7 @@ exports.initSource = function (api) {
     link: 'https://arkime.com/wise#threatstream',
     types: ['ip', 'domain', 'md5', 'email', 'url'],
     fields: [
-      { name: 'mode', required: true, help: 'Mode to work in zip, api, sqlite3', regex: '^(zip|api|sqlite3)' },
+      { name: 'mode', required: true, help: 'Mode to work in zip, api, sqlite3, sqlite3-copy', regex: '^(zip|api|sqlite3|sqlite3-copy)$' },
       { name: 'user', required: true, help: 'Threatstream user' },
       { name: 'key', password: true, required: true, help: 'Threatstream key' },
       { name: 'dbFile', required: false, help: 'Path to the ts.db file when using sqlite3 mode' }
