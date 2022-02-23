@@ -228,7 +228,9 @@ const store = new Vuex.Store({
         const field = value.fieldsMap[key];
         state.fieldsMap[field.exp] = field;
         state.fieldsMap[field.dbField] = field;
-        state.fieldsMap[field.dbField2] = field;
+        if (field.dbField2 !== undefined) {
+          state.fieldsMap[field.dbField2] = field;
+        }
         if (field.fieldECS !== undefined) {
           state.fieldsMap[field.fieldECS] = field;
         }
