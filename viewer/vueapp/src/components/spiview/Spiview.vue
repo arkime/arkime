@@ -468,7 +468,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => FieldService.getField(i, this.fields));
+      return filters.map(i => FieldService.getField(i));
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -976,7 +976,7 @@ export default {
         const split = param.split(':');
         const fieldID = split[0];
         const count = Math.max(split[1], 100); // min is 100
-        const field = FieldService.getField(fieldID, this.fields);
+        const field = FieldService.getField(fieldID);
 
         if (field) {
           category = this.setupCategory(this.categoryObjects, field);

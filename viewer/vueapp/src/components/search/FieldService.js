@@ -1,13 +1,8 @@
 import Vue from 'vue';
 
+import store from '../../store';
 import countries from './countries.json';
-
-let _fieldsMapCache;
-let _fieldsArrayCache;
-const queryInProgress = {
-  array: false,
-  promise: undefined
-};
+import customCols from '../sessions/customCols.json';
 
 const ipDstPortField = {
   category: 'ip',
@@ -36,54 +31,6 @@ export default {
     }
 
     return result;
-  },
-
-  /**
-   * Gets a field map from the server
-   * @param {bool} array        Whether to request an array or map
-   * @param {bool} addIpDstPort Whether to add the ip.dst:port field to the results
-                                (don't add it to the cache because some pages don't want it)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  get (array, addIpDstPort) {
-    if (queryInProgress && queryInProgress.array === array) {
-      return queryInProgress.promise;
-    }
-
-    queryInProgress.promise = new Promise((resolve, reject) => {
-      let cachedResult = false;
-      if (array && _fieldsArrayCache) {
-        cachedResult = _fieldsArrayCache;
-      } else if (!array && _fieldsMapCache) {
-        cachedResult = _fieldsMapCache;
-      }
-
-      if (cachedResult) { // if we have a cached result, return it
-        if (addIpDstPort) { cachedResult = this.addIpDstPortField(cachedResult); }
-        return resolve(cachedResult);
-      }
-
-      // there is no cached result, so we need to fetch the fields
-      Vue.axios.get(`api/fields${array ? '?array=true' : ''}`).then((response) => {
-        queryInProgress.promise = undefined;
-
-        if (array) {
-          _fieldsArrayCache = response.data;
-        } else {
-          _fieldsMapCache = response.data;
-        }
-
-        let result = response.data;
-        if (addIpDstPort) { result = this.addIpDstPortField(response.data); }
-        return resolve(result);
-      }).catch((error) => {
-        queryInProgress.promise = undefined;
-        return reject(error);
-      });
-    });
-
-    return queryInProgress.promise;
   },
 
   /**
@@ -130,30 +77,28 @@ export default {
 
   /**
    * Retrieves a field object
-   * Matches dbField, dbField2, fieldECS, rawField, exp, or aliases
+   * Matches dbField, dbField2, fieldECS, exp, or aliases (unless excluded)
    * @param {string} search - The value to search for
-   * @param {object|array} fields - A fields map or array
    * @param {boolean} ignoreAliases - Whether to ignore the alias list
    * @returns {object} The field or undefined
    */
-  getField (search, fields, ignoreAliases) {
+  getField (search, ignoreAliases) {
     if (!search) { return undefined; }
 
-    for (const k in fields) {
-      if (search === fields[k].exp ||
-          search === fields[k].dbField ||
-          search === fields[k].dbField2 ||
-          search === fields[k].fieldECS ||
-          search === fields[k].rawField) {
-        return fields[k];
-      }
-      if (!ignoreAliases && fields[k].aliases) {
-        for (const alias of fields[k].aliases) {
-          if (search === alias) {
-            return fields[k];
-          }
-        }
-      }
+    // search the fields map first
+    if (store.state.fieldsMap[search]) return store.state.fieldsMap[search];
+    // then search the custom fields
+    if (customCols[search]) return customCols[search];
+    // then search aliases if not excluded from search
+    if (!ignoreAliases && store.state.fieldsAliasMap[search]) {
+      return store.state.fieldsAliasMap[search];
+    }
+    // lastly, check the super special ip.dst:port field
+    if (search === ipDstPortField.exp ||
+      search === ipDstPortField.dbField ||
+      search === ipDstPortField.dbField2 ||
+      search === ipDstPortField.fieldECS) {
+      return ipDstPortField;
     }
 
     return undefined;
@@ -164,12 +109,11 @@ export default {
    * Matches dbField, dbField2, fieldECS, or rawField
    * @param {string} search - The value to search for
    * @param {string} prop - The field property value to return
-   * @param {object|array} fields - A fields map or array
    * @param {boolean} ignoreAliases - Whether to ignore the alias list
    * @returns {string} The field property value or undefined
    */
-  getFieldProperty (search, prop, fields, ignoreAliases) {
-    const field = this.getField(search, fields, ignoreAliases);
+  getFieldProperty (search, prop, ignoreAliases) {
+    const field = this.getField(search, ignoreAliases);
 
     if (field && field[prop]) { return field[prop]; }
 

@@ -279,7 +279,7 @@ export default {
       items: [],
       showDropdown: false,
       fieldTypeahead: 'node',
-      baseField: this.$route.query.exp || 'node',
+      baseField: this.$route.query.exp || this.$route.query.field || this.$store.state.user.settings.spiGraph || 'node',
       sortBy: this.$route.query.sort || 'graph',
       spiGraphType: this.$route.query.spiGraphType || 'default',
       multiviewer: this.$constants.MOLOCH_MULTIVIEWER
@@ -291,7 +291,7 @@ export default {
     },
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
-      return filters.map(i => FieldService.getField(i, this.fields));
+      return filters.map(i => FieldService.getField(i));
     },
     graphType: function () {
       return this.$store.state.graphType;
@@ -316,7 +316,7 @@ export default {
       };
     },
     fieldObj: function () {
-      return FieldService.getField(this.query.exp, this.fields);
+      return FieldService.getField(this.query.exp);
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
@@ -347,7 +347,7 @@ export default {
     }
   },
   mounted: function () {
-    const field = FieldService.getField(this.query.exp, this.fields, true);
+    const field = FieldService.getField(this.query.exp, true);
     if (field) {
       this.fieldTypeahead = field.friendlyName;
       this.baseField = field.exp;

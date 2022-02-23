@@ -473,7 +473,9 @@ exports.loadFields = function (data) {
 
     internals.fieldsMap[field._id] = source;
     internals.dbFieldsMap[source.dbField] = source;
-    internals.dbFieldsMap[source.dbField2] = source;
+    if (source.dbField2 !== undefined) {
+      internals.dbFieldsMap[source.dbField2] = source;
+    }
     if (source.fieldECS !== undefined) {
       internals.dbFieldsMap[source.fieldECS] = source;
       internals.fieldsMap[source.fieldECS] = source;

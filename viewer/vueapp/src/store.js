@@ -21,6 +21,7 @@ const store = new Vuex.Store({
     },
     fieldsArr: [],
     fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
+    fieldsAliasMap: {},
     fieldhistory: [],
     timeRange: 1,
     expression: undefined,
@@ -217,10 +218,26 @@ const store = new Vuex.Store({
       state.user = value.user;
       state.views = value.views;
       state.fieldsArr = value.fieldsArr;
-      state.fieldsMap = value.fieldsMap;
       state.remoteclusters = value.remoteclusters;
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
+
+      // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
+      // fieldsAliasMap has keys for field aliases
+      for (const key in value.fieldsMap) {
+        const field = value.fieldsMap[key];
+        state.fieldsMap[field.exp] = field;
+        state.fieldsMap[field.dbField] = field;
+        if (field.dbField2 !== undefined) {
+          state.fieldsMap[field.dbField2] = field;
+        }
+        if (field.fieldECS !== undefined) {
+          state.fieldsMap[field.fieldECS] = field;
+        }
+        (field.aliases || []).forEach((alias) => {
+          state.fieldsAliasMap[alias] = field;
+        });
+      }
     }
   }
 });

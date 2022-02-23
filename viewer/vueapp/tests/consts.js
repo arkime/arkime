@@ -519,4 +519,6 @@ export const fields = [{
 export const fieldsMap = {};
 for (const field of fields) {
   fieldsMap[field.exp] = field;
+  fieldsMap[field.dbField] = field;
+  fieldsMap[field.dbField2] = field;
 }
