@@ -513,5 +513,6 @@ Auth.initialize({
   userNameHeader: exports.get('userNameHeader'),
   requiredAuthHeader: exports.get('requiredAuthHeader'),
   requiredAuthHeaderVal: exports.get('requiredAuthHeaderVal'),
-  userAutoCreateTmpl: exports.get('userAutoCreateTmpl')
+  userAutoCreateTmpl: exports.get('userAutoCreateTmpl'),
+  userAuthIps: exports.get('userAuthIps')
 });
