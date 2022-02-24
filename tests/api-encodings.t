@@ -30,7 +30,7 @@ sub doTest {
         $cmd .= " -o simpleShortHeader=$shortheader";
     }
     #diag "$cmd\n";
-    system("$cmd &");
+    system("$cmd");
 
   ###### socks-http-pass.pcap - run
     $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag";
