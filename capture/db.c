@@ -2591,7 +2591,7 @@ void moloch_db_init()
         } else if (elasticsearchBasicAuth) {
             static char auth[1024];
             if (strchr(elasticsearchBasicAuth, ':') != NULL) {
-                gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, -1);
+                gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, strlen(elasticsearchBasicAuth));
                 snprintf(auth, sizeof(auth), "Authorization: Basic %s", b64);
                 g_free(b64);
             } else {
