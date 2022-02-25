@@ -1,7 +1,7 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
 
 ES Versions:
-  * Moloch >= 3.0.0  supports ES >= 7.10.0
+  * Moloch >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0
   * Moloch >= 2.2.0  supports ES >= 6.8.0 or >= 7.1.0
   * Moloch >= 2.0.0  supports ES >= 6.7.0 or >= 7.1.0
@@ -11,6 +11,7 @@ ES Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Moloch >= 3.4.0 requires NodeJS 16.x
   * Moloch >= 3.0.0 requires NodeJS 14.x
   * Moloch >= 2.4.0 requires NodeJS 12.x
   * Moloch >= 2.0.0 requires NodeJS 10.x
@@ -22,7 +23,22 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.3.2 2022/02/xx
+3.4.0 2022/02/xx
+  - release - node 16.14.0
+  - release - Configure script deals with / in password better
+  - BREAKING - in header auth mode userAuthIps allows only localhost by default
+  - wise - fix issues with redis source
+  - wise - threatstream in sqlite3 mode opens in readonly now
+  - wise - support -o section.var=value command line option
+  - wise - improve json parsing to handle non arrays when expecting an array
+  - wise - didn't always encoding number fields correctly
+  - db.pl - added a repair command that will fix some common issues
+  - viewer - reading packets from S3 failed
+  - viewer - increase speed when searching match fields
+  - viewer/wise - new userAuthIps setting that has which ips auth requests can
+                  come from. header mode - default localhost, other - default all ips
+  - capture - switch from deflate to gzip posting to ES, lower min gzip size to 860
+  - capture - ietf quic improvements
 
 3.3.1 2022/01/26
   - viewer - fix displaying large packets or xored packets not always working

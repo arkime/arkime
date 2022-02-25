@@ -1,0 +1,110 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1230
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2607:f8b0:4005:80e::2003",
+               "mac" : [
+                  "00:10:db:ff:10:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 443
+            },
+            "dstOui" : [
+               "Juniper Networks"
+            ],
+            "dstOuiCnt" : 1,
+            "fileId" : [],
+            "firstPacket" : 1645739312034,
+            "http" : {
+               "host" : [
+                  "ssl.gstatic.com"
+               ],
+               "hostCnt" : 1
+            },
+            "ipProtocol" : 17,
+            "lastPacket" : 1645739312034,
+            "length" : 0,
+            "network" : {
+               "bytes" : 1292,
+               "community_id" : "1:d2rGNvXfXw913qgIRkILZdmLVQM=",
+               "packets" : 1
+            },
+            "node" : "test",
+            "packetLen" : [
+               1308
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "quic",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS10310 Oath Holdings Inc.",
+                  "number" : 10310,
+                  "organization" : {
+                     "name" : "Oath Holdings Inc."
+                  }
+               },
+               "bytes" : 1292,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "2001:4998:ef5e:35::1044",
+               "mac" : [
+                  "f8:0f:6f:a1:9b:1c"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53730
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "c20000000108296b",
+            "tls" : {
+               "ja3" : [
+                  "994befbc7d0879ee9be4b570e03a5284"
+               ],
+               "ja3Cnt" : 1,
+               "ja3string" : [
+                  "771,4865-4866-4867,45-16-0-42-43-17513-13-27-57-10-51-41,29-23-24,"
+               ],
+               "ja3stringCnt" : 1
+            },
+            "totDataBytes" : 1230
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-220224"
+            }
+         }
+      }
+   ]
+}
+

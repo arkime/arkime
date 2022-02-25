@@ -21,6 +21,7 @@
 const crypto = require('crypto');
 const passport = require('passport');
 const DigestStrategy = require('passport-http').DigestStrategy;
+const iptrie = require('iptrie');
 
 class Auth {
   static httpRealm;
@@ -49,6 +50,25 @@ class Auth {
     Auth.requiredAuthHeader = options.requiredAuthHeader;
     Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
+    Auth.userAuthIps4 = new iptrie.IPTrie();
+    Auth.userAuthIps6 = new iptrie.IPTrie();
+
+    if (options.userAuthIps) {
+      for (const cidr in options.userAuthIps.split(',')) {
+        const parts = cidr.split('/');
+        if (parts[0].includes(':')) {
+          Auth.userAuthIps6.add(parts[0], +(parts[1] ?? 128), 1);
+        } else {
+          Auth.userAuthIps4.add(parts[0], +(parts[1] ?? 32), 1);
+        }
+      }
+    } else if (Auth.mode === 'header') {
+      Auth.userAuthIps4.add('127.0.0.0', 8, 1);
+      Auth.userAuthIps6.add('::1', 128, 1);
+    } else {
+      Auth.userAuthIps4.add('0.0.0.0', 0, 1);
+      Auth.userAuthIps6.add('::', 0, 1);
+    }
 
     if (Auth.mode === 'digest') {
       passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
@@ -90,6 +110,24 @@ class Auth {
       Auth.authFunc = Auth.regressionTestsAuth;
       break;
     }
+  }
+
+  static checkIps (req, res) {
+    if (req.ip.includes(':')) {
+      if (!Auth.userAuthIps6.find(req.ip)) {
+        res.status(403);
+        res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        return 1;
+      }
+    } else {
+      if (!Auth.userAuthIps4.find(req.ip)) {
+        res.status(403);
+        res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        return 1;
+      }
+    }
+
+    return 0;
   }
 
   static anonymousAuth (req, res, next) {
@@ -176,6 +214,10 @@ class Auth {
   }
 
   static digestAuth (req, res, next) {
+    if (Auth.checkIps(req, res)) {
+      return;
+    }
+
     if (Auth.basePath !== '/') {
       req.url = req.url.replace('/', Auth.basePath);
     }
@@ -193,6 +235,10 @@ class Auth {
   }
 
   static headerAuth (req, res, next) {
+    if (Auth.checkIps(req, res)) {
+      return;
+    }
+
     if (req.headers[Auth.userNameHeader] === undefined) {
       if (Auth.debug > 0) {
         console.log(`AUTH: looking for header ${Auth.userNameHeader} in the headers`, req.headers);

@@ -697,8 +697,8 @@ export default {
       this.fieldHistoryConnectionsDst = response.fieldHistoryConnectionsDst.fields || [];
     });
     this.setupFields();
-    this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName', this.fields);
-    this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName', this.fields);
+    this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName');
+    this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName');
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', closePopupsOnEsc);
@@ -934,10 +934,10 @@ export default {
       }
 
       if (!this.$route.query.srcField) {
-        this.query.srcField = FieldService.getFieldProperty(this.user.settings.connSrcField, 'dbField', this.fields);
+        this.query.srcField = FieldService.getFieldProperty(this.user.settings.connSrcField, 'dbField');
       }
       if (!this.$route.query.dstField) {
-        this.query.dstField = FieldService.getFieldProperty(this.user.settings.connDstField, 'dbField', this.fields);
+        this.query.dstField = FieldService.getFieldProperty(this.user.settings.connDstField, 'dbField');
       }
 
       // send the requested fields with the query
@@ -1334,11 +1334,11 @@ export default {
     },
     showNodePopup: function (dataNode) {
       if (dataNode.type === 2) {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField', this.fields);
-        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp', this.fields);
+        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
       } else {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField', this.fields);
-        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp', this.fields);
+        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
       }
 
       closePopups();
@@ -1450,10 +1450,10 @@ export default {
       $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField', this.fields);
-      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField', this.fields);
-      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp', this.fields);
-      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp', this.fields);
+      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
 
       closePopups();
       if (!popupVue) {

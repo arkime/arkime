@@ -22,6 +22,7 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 
 jest.mock('../src/components/users/UserService');
+jest.mock('../src/components/search/FieldService');
 
 const store = {
   state: {
@@ -29,6 +30,7 @@ const store = {
     focusSearch: false,
     shiftKeyHold: false,
     views: {},
+    fieldsMap,
     fieldsArr: fields,
     fieldhistory: []
   },
@@ -59,6 +61,14 @@ beforeEach(() => {
       ]);
     });
     return { promise, source };
+  });
+
+  FieldService.getField = jest.fn((search) => {
+    if (!search) { return undefined; }
+
+    if (store.state.fieldsMap[search]) return store.state.fieldsMap[search];
+
+    return undefined;
   });
 });
 

@@ -1320,9 +1320,8 @@
 </template>
 
 <script>
-import FieldService from '../search/FieldService';
-
 let timeout;
+
 const info = {
   ip: { operator: '==, !=', type: 'ip' },
   lotermfield: { operator: '==, !=', type: 'lower case string' },
@@ -1337,7 +1336,6 @@ export default {
   data: function () {
     return {
       error: '',
-      fields: [],
       searchFields: '',
       showDBFields: true,
       filteredFields: [],
@@ -1346,6 +1344,11 @@ export default {
         desc: true
       }
     };
+  },
+  computed: {
+    fields () {
+      return this.fixFields(this.$store.state.fieldsArr);
+    }
   },
   watch: {
     searchFields: function (newVal, oldVal) {
@@ -1361,7 +1364,6 @@ export default {
     const hash = this.$route.hash;
     if (hash) { this.scrollFix(hash); }
 
-    this.loadFields();
     this.debounceGetFilteredFields();
   },
   methods: {
@@ -1403,14 +1405,6 @@ export default {
       return info[field.type].type;
     },
     /* helper functions ------------------------------------------ */
-    loadFields: function () {
-      FieldService.get(true)
-        .then((response) => {
-          this.fields = this.fixFields(response);
-        }, (error) => {
-          this.error = error;
-        });
-    },
     fixFields: function (fields) {
       fields.forEach((item) => {
         if (item.regex) {

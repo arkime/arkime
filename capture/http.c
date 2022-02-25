@@ -798,7 +798,7 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
     }
 
     // Do we need to compress item
-    if (server->compress && data && data_len > 1000) {
+    if (server->compress && data && data_len > 860) {
         char            *buf = moloch_http_get_buffer(data_len);
         int              ret;
 
@@ -809,7 +809,7 @@ gboolean moloch_http_schedule(void *serverV, const char *method, const char *key
         z_strm.next_out   = (unsigned char *)buf;
         ret = deflate(&z_strm, Z_FINISH);
         if (ret == Z_STREAM_END) {
-            request->headerList = curl_slist_append(request->headerList, "Content-Encoding: deflate");
+            request->headerList = curl_slist_append(request->headerList, "Content-Encoding: gzip");
             MOLOCH_SIZE_FREE(buffer, data);
             data_len = data_len - z_strm.avail_out;
             data     = buf;
@@ -1063,7 +1063,7 @@ void moloch_http_init()
     z_strm.zalloc = Z_NULL;
     z_strm.zfree  = Z_NULL;
     z_strm.opaque = Z_NULL;
-    deflateInit(&z_strm, Z_DEFAULT_COMPRESSION);
+    deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
 
     curl_global_init(CURL_GLOBAL_SSL);
 

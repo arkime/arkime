@@ -9,7 +9,6 @@ import { render, waitFor, fireEvent } from '@testing-library/vue';
 import Settings from '../src/components/settings/Settings.vue';
 import UserService from '../src/components/users/UserService';
 import ConfigService from '../src/components/utils/ConfigService';
-import FieldService from '../src/components/search/FieldService';
 import SettingsService from '../src/components/settings/SettingsService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import HasRole from '../../../common/vueapp/HasRole.vue';
@@ -139,8 +138,6 @@ UserService.getState = jest.fn().mockResolvedValue({
 ConfigService.getMolochClusters = jest.fn().mockResolvedValue({
   test2: { name: 'Test2', url: 'http://localhost:8124' }
 });
-// field services
-FieldService.get = jest.fn().mockResolvedValue(fields);
 
 test('settings - self', async () => {
   const {
