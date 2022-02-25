@@ -1345,11 +1345,6 @@ export default {
       }
     };
   },
-  computed: {
-    fields () {
-      return this.fixFields(this.$store.state.fieldsArr);
-    }
-  },
   watch: {
     searchFields: function (newVal, oldVal) {
       this.debounceGetFilteredFields();
@@ -1358,6 +1353,9 @@ export default {
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    fields () {
+      return this.fixFields(this.$store.state.fieldsArr);
     }
   },
   created: function () {

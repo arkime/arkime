@@ -24,7 +24,6 @@ const store = {
 };
 
 test('help page field list', async () => {
-  // FieldService.get = jest.fn().mockResolvedValue(fields);
   const $route = { path: 'http://localhost:8123/arkime/help#fields' };
 
   const { getByText, queryByText } = render(Help, {
