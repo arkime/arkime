@@ -425,8 +425,7 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
-    int tlen = 0;
-    BSB_IMPORT_u08(bsb, tlen);
+    int tlen = quic_get_number(&bsb);
     BSB_IMPORT_skip(bsb, tlen);
 
     // Length
@@ -551,6 +550,10 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
 
     BSB_INIT(bsb, out, outLen);
 
+    int     clen = 0;
+    uint8_t cbuf[8000];
+
+    // Loop thru all the frames. The crypto frames can be out of order. Worst. Protocol. Every.
     while (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) > 1) {
         uint8_t type = 0;
         BSB_IMPORT_u08(bsb, type);
@@ -559,13 +562,24 @@ LOCAL void quic_ietf_udp_classify(MolochSession_t *session, const unsigned char 
 
         if (type == 6) { // CRYPTO
             moloch_session_add_protocol(session, "quic");
-            quic_get_number(&bsb); // offset, ALW fix
+            int offset = quic_get_number(&bsb);
             int length = quic_get_number(&bsb);
-            if (process_client_hello_data)
-                process_client_hello_data(session, BSB_WORK_PTR(bsb), MIN(BSB_REMAINING(bsb), length));
+
+            if (offset + length < (int)sizeof(cbuf) && BSB_REMAINING(bsb) >= length) {
+                memcpy(cbuf + offset, BSB_WORK_PTR(bsb), length);
+                clen += length;
+            }
+
+            BSB_IMPORT_skip(bsb, length);
+
             continue;
         }
-        return; // UNKNOWN
+        break;
+    }
+
+    // Now actually decode the client hello
+    if (clen > 0 && process_client_hello_data) {
+        process_client_hello_data(session, cbuf, clen);
     }
 }
 /******************************************************************************/
