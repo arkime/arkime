@@ -1,0 +1,48 @@
+FROM ubuntu:20.04 as build
+
+MAINTAINER Benoit Perroud <benoit@sqooba.io>
+
+RUN \
+  export DEBIAN_FRONTEND=noninteractive && \
+  apt update && \
+  apt install -y lsb-release ruby-dev make python3-pip git libtest-differences-perl sudo wget apt-utils tzdata curl && \
+  (cd /tmp && wget https://packages.ntop.org/apt-stable/20.04/all/apt-ntop-stable.deb && dpkg -i apt-ntop-stable.deb) && \
+  apt update && \
+  apt install -y pfring && \
+  gem install --no-document fpm && \
+  pip3 install awscli && \
+  curl -sL https://deb.nodesource.com/setup_14.x | sudo bash - ; \
+  apt update && apt install -y nodejs
+
+COPY . /src
+WORKDIR /src
+
+RUN \
+  ./easybutton-build.sh --daq --pfring --kafka && \
+  echo "build ok" && \
+  make install && \
+  mkdir -p /opt/arkime/raw
+
+
+
+FROM ubuntu:20.04 as run
+
+RUN mkdir -p /opt
+
+COPY --from=build /opt/arkime /opt/arkime
+
+RUN \
+  apt update && apt install -y wget libwww-perl libjson-perl ethtool libyaml-0-2 libsasl2-2 libmagic1 --no-install-recommends && \
+  rm -rf /var/lib/apt/lists/* && \
+  wget --quiet https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`uname -s`-`uname -m` -O /usr/local/bin/envsubst && chmod +x /usr/local/bin/envsubst
+
+# "install" librdkafka
+COPY --from=build /usr/local/lib/librdkafka* /usr/local/lib/
+COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
+
+COPY build/entrypoint.sh /entrypoint.sh
+COPY build/config.ini.envsubst /opt/arkime/etc/config.ini.envsubst
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+# touilleio/arkime:v3-ubuntu2004

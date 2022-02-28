@@ -146,10 +146,15 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
         LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
     }
 
-    if (config.debug)
-        LOG("Part-Response: %d %s %d", code, file->outputFileName, len);
+    if (config.debug > 1)
+        LOG("Part-Response: %d %s partNumber=%s, uploadId=%s, %d", code, file->outputFileName,
+        file->partNumber, file->uploadId, len);
 
-    file->partNumberResponses++;
+    file->partNumberResponses++; // Race condition??
+
+    if (config.debug > 2)
+        LOG("CompleteMultipartUpload conditions: doClose=%B, partNumber=%d, partNumberResponses=%d", file->doClose,
+        file->partNumber, file->partNumberResponses);
 
     if (file->doClose && file->partNumber == file->partNumberResponses) {
         char qs[1000];
@@ -160,7 +165,7 @@ void writer_s3_part_cb (int code, unsigned char *data, int len, gpointer uw)
         BSB_INIT(bsb, buf, 1000000);
         BSB_EXPORT_cstr(bsb, "<CompleteMultipartUpload>\n");
         int i;
-        for (i = 1; i < file->partNumber; i++) {
+        for (i = 1; i < file->partNumber; i++) { // <=? off by one issue?
             BSB_EXPORT_sprintf(bsb, "<Part><PartNumber>%d</PartNumber><ETag>%s</ETag></Part>\n", i, file->partNumbers[i]);
             g_free(file->partNumbers[i]);
         }
@@ -380,7 +385,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
             (s3Token?";x-amz-security-token":""),
             (specifyStorageClass?";x-amz-storage-class":""),
             bodyHash);
-    //LOG("canonicalRequest: %s", canonicalRequest);
+    if (config.debug >= 2)
+        LOG("canonicalRequest: %s", canonicalRequest);
 
     g_checksum_reset(checksum);
     g_checksum_update(checksum, (guchar*)canonicalRequest, -1);
@@ -396,7 +402,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
              datetime,
              s3Region,
              g_checksum_get_string(checksum));
-    //LOG("stringToSign: %s", stringToSign);
+    if (config.debug >= 2)
+        LOG("stringToSign: %s", stringToSign);
 
     char kSecret[1000];
     snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
@@ -435,7 +442,8 @@ void writer_s3_request(char *method, char *path, char *qs, unsigned char *data, 
     g_strlcpy(signature, g_hmac_get_string(hmac), sizeof(signature));
     g_hmac_unref(hmac);
 
-    //LOG("signature: %s", signature);
+    if (config.debug >= 2)
+      LOG("signature: %s", signature);
 
     snprintf(fullpath, sizeof(fullpath), "%s?%s", objectkey, qs);
 

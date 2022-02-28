@@ -1,0 +1,14 @@
+version: "3"
+services:
+
+  arkime-centos7:
+    image: touilleio/arkime:v3-centos7
+    build:
+      dockerfile: build/Dockerfile-centos7
+      context: ..
+
+  arkime-ubuntu2004:
+    image: touilleio/arkime:v3-ubuntu2004
+    build:
+      dockerfile: build/Dockerfile-ubuntu2004
+      context: ..

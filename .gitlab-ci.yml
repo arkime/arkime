@@ -1,0 +1,11 @@
+
+stages:
+  - build
+
+build in docker:
+  stage: build
+  allow_failure: false
+  script:
+    - docker-compose build
+  tags:
+    - build

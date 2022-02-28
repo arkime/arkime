@@ -1,0 +1,430 @@
+# Latest settings documentation: https://arkime.com/settings
+#
+# Arkime uses a tiered system for configuration variables.  This allows Arkime
+# to share one config file for many machines.  The ordering of sections in this
+# file doesn't matter.
+#
+# Order of config variables:
+# 1st) [optional] The section titled with the node name is used first.
+# 2nd) [optional] If a node has a nodeClass variable, the section titled with
+#      the nodeClass name is used next.  Sessions will be tagged with
+#      class:<node class name> which may be useful if watching different networks.
+# 3rd) The section titled "default" is used last.
+
+[default]
+# Comma seperated list of elasticsearch host:port combinations.  If not using a
+# Elasticsearch load balancer, a different elasticsearch node in the cluster can be specified
+# for each Arkime node to help spread load on high volume clusters.  For user/password
+# use http://user:pass@host:port
+elasticsearch=${ARKIME_ELASTICSEARCH:=http://elasticsearch:9200}
+
+# How often to create a new elasticsearch index. hourly,hourly6,daily,weekly,monthly
+# Changing the value will cause previous sessions to be unreachable
+rotateIndex=${ARKIME_ROTATE_INDEX:=daily}
+
+# Cert file to use, comment out to use http instead
+# certFile=/opt/arkime/etc/arkime.cert
+
+# File with trusted roots/certs. WARNING! this replaces default roots
+# Useful with self signed certs and can be set per node.
+# caTrustFile=/opt/arkime/etc/roots.cert
+
+# Private key file to use, comment out to use http instead
+# keyFile=/opt/arkime/etc/arkime.key
+
+# Password Hash and S2S secret - Must be in default section. Since elasticsearch
+# is wide open by default, we encrypt the stored password hashes with this
+# so a malicous person can't insert a working new account.  It is also used
+# for secure S2S communication. Comment out for no user authentication.
+# Changing the value will make all previously stored passwords no longer work.
+# Make this RANDOM, you never need to type in
+passwordSecret = ${ARKIME_PASSWORD:=passwordSecret}
+
+# Use a different password for S2S communication then passwordSecret.
+# Must be in default section.  Make this RANDOM, you never need to type in
+#serverSecret=
+
+# HTTP Digest Realm - Must be in default section.  Changing the value
+# will make all previously stored passwords no longer work
+httpRealm = Moloch
+
+# The base path for Arkime web access.  Must end with a / or bad things will happen
+# Default: "/"
+# webBasePath = /arkime/
+
+# Semicolon ';' seperated list of interfaces to listen on for traffic
+interface=${ARKIME_INTERFACE}
+
+# The bpf filter of traffic to ignore
+#bpf=not port 9200
+
+# The yara file name
+#yara=
+
+# Host to connect to for wiseService
+#wiseHost=127.0.0.1
+
+# Log viewer access requests to a different log file
+#accessLogFile = /opt/arkime/logs/access.log
+
+# Control the log format for access requests. This uses URI % encoding.
+#accessLogFormat = :date :username %1b[1m:method%1b[0m %1b[33m:url%1b[0m :status :res[content-length] bytes :response-time ms
+
+# The directory to save raw pcap files to
+pcapDir = ${ARKIME_PCAPDIR:=/opt/arkime/raw}
+
+# The max raw pcap file size in gigabytes, with a max value of 36G.
+# The disk should have room for at least 10*maxFileSizeG
+maxFileSizeG = ${ARKIME_MAX_FILE_SIZE_G:=12}
+
+# The max time in minutes between rotating pcap files.  Default is 0, which means
+# only rotate based on current file size and the maxFileSizeG variable
+maxFileTimeM = ${ARKIME_MAX_FILE_TIME_M:=0}
+
+# TCP timeout value.  Arkime writes a session record after this many seconds
+# of inactivity.
+tcpTimeout = ${ARKIME_TCP_TIMEOUT:=600}
+
+# Arkime writes a session record after this many seconds, no matter if
+# active or inactive
+tcpSaveTimeout = ${ARKIME_TCP_SAVE_TIMEOUT:=720}
+
+# UDP timeout value.  Arkime assumes the UDP session is ended after this
+# many seconds of inactivity.
+udpTimeout = ${ARKIME_UDP_TIMEOUT:=30}
+
+# ICMP timeout value.  Arkime assumes the ICMP session is ended after this
+# many seconds of inactivity.
+icmpTimeout = ${ARKIME_ICMP_TIMEOUT:=10}
+
+# An aproximiate maximum number of active sessions Arkime/libnids will try
+# and monitor
+maxStreams = ${ARKIME_MAX_STREAMS:=1000000}
+
+# Arkime writes a session record after this many packets
+maxPackets = ${ARKIME_MAX_PACKETS:=10000}
+
+# Delete pcap files when free space is lower then this in gigabytes OR it can be
+# expressed as a percentage (ex: 5%).  This does NOT delete the session records in
+# the database. It is recommended this value is between 5% and 10% of the disk.
+# Database deletes are done by the db.pl expire script
+freeSpaceG = ${ARKIME_FREE_SPACE_G:=5%}
+
+# The port to listen on, by default 8005
+viewPort = ${ARKIME_VIEW_PORT:=8005}
+
+# The host/ip to listen on, by default 0.0.0.0 which is ALL
+#viewHost = localhost
+
+# By default the viewer process is https://hostname:<viewPort> for each node.
+#viewUrl = https://HOSTNAME:8005
+
+# A MaxMind account is now required, Arkime checks several install locations, or
+# will work without Geo files installed. See https://arkime.com/faq#maxmind
+#geoLite2Country = /var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;/opt/arkime/etc/GeoLite2-Country.mmdb
+#geoLite2ASN = /var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;/opt/arkime/etc/GeoLite2-ASN.mmdb
+
+# Path of the rir assignments file
+#  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+rirFile = /opt/arkime/etc/ipv4-address-space.csv
+
+# Path of the OUI file from whareshark
+#  https://raw.githubusercontent.com/wireshark/wireshark/master/manuf
+ouiFile = /opt/arkime/etc/oui.txt
+
+# Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state. 
+# See https://arkime.com/rulesformat
+rulesFiles=${ARKIME_RULE_FILES}
+
+# User to drop privileges to. The pcapDir must be writable by this user or group below
+dropUser=nobody
+
+# Group to drop privileges to. The pcapDir must be writable by this group or user above
+dropGroup=daemon
+
+# Semicolon ';' seperated list of tags which once capture sets for a session causes the
+# remaining pcap from being saved for the session.  It is likely that the initial packets
+# WILL be saved for the session since tags usually aren't set until after several packets
+# Each tag can optionally be followed by a :<num> which specifies how many total packets to save
+#dontSaveTags=
+
+# Header to use for determining the username to check in the database for instead of
+# using http digest.  Use this if apache or something else is doing the auth.
+# Set viewHost to localhost or use iptables
+# Might need something like this in the httpd.conf
+# RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
+# RequestHeader set ARKIME_USER %{ENV_RU}e
+#userNameHeader=arkime_user
+
+#
+# Headers to use to determine if user from `userNameHeader` is
+# authorized to use the system, and if so create a new user
+# in the Arkime user database.  This implementation expects that
+# the users LDAP/AD groups (or similar) are populated into an
+# HTTP header by the Apache (or similar) referenced above.
+# The JSON in userAutoCreateTmpl is used to insert the new
+# user into the arkime database (if not already present)
+# and additional HTTP headers can be sourced from the request
+# to populate various fields.
+#
+# The example below pulls verifies that an HTTP header called `UserGroup`
+# is present, and contains the value "ARKIME_ACCESS".  If this authorization
+# check passes, the user database is inspected for the user in `userNameHeader`
+# and if it is not present it is created.  The system uses the
+# `arkime_user` and `http_auth_mail` headers from the
+# request and uses them to populate `userId` and `userName`
+# fields for the new user record.
+#
+# Once the user record is created, this functionaity
+# neither updates nor deletes the data, though if the user is no longer
+# reported to be in the group, access is denied regardless of the status
+# in the arkime database.
+#
+#requiredAuthHeader="UserGroup"
+#requiredAuthHeaderVal="ARKIME_ACCESS"
+#userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
+
+# Should we parse extra smtp traffic info
+parseSMTP=${ARKIME_PARSE_SMTP:=true}
+
+# Should we parse extra smb traffic info
+parseSMB=${ARKIME_PARSE_SMB:=true}
+
+# Should we parse HTTP QS Values
+parseQSValue=${ARKIME_PARSE_QS_VALUE:=false}
+
+# Should we calculate sha256 for bodies
+supportSha256=${ARKIME_SUPPORT_SHA256:=false}
+
+# Only index HTTP request bodies less than this number of bytes */
+maxReqBody=${ARKIME_MAX_REQ_BODY:=64}
+
+# Only store request bodies that Utf-8?
+config.reqBodyOnlyUtf8 = true
+
+# Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
+smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
+
+# Semicolon ';' seperated list of directories to load parsers from
+parsersDir=/opt/arkime/parsers
+
+# Semicolon ';' seperated list of directories to load plugins from
+pluginsDir=/opt/arkime/plugins
+
+# Semicolon ';' seperated list of plugins to load and the order to load in
+# plugins=tagger.so; netflow.so
+plugins=${ARKIME_PLUGINS}
+
+# Plugins to load as root, usually just readers
+#rootPlugins=reader-pfring; reader-daq.so
+rootPlugins=${ARKIME_ROOT_PLUGINS}
+
+# Semicolon ';' seperated list of viewer plugins to load and the order to load in
+# viewerPlugins=wise.js
+
+# NetFlowPlugin
+# Input device id, 0 by default
+#netflowSNMPInput=1
+# Outout device id, 0 by default
+#netflowSNMPOutput=2
+# Netflow version 1,5,7 supported, 7 by default
+#netflowVersion=1
+# Semicolon ';' seperated list of netflow destinations
+#netflowDestinations=localhost:9993
+
+# Specify the max number of indices we calculate spidata for.
+# ES will blow up if we allow the spiData to search too many indices.
+spiDataMaxIndices=4
+
+# Uncomment the following to allow direct uploads.  This is experimental
+#uploadCommand=/opt/arkime/bin/capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
+
+# Title Template
+# _cluster_ = ES cluster name
+# _userId_  = logged in User Id
+# _userName_ = logged in User Name
+# _page_ = internal page name
+# _expression_ = current search expression if set, otherwise blank
+# _-expression_ = " - " + current search expression if set, otherwise blank, prior spaces removed
+# _view_ = current view if set, otherwise blank
+# _-view_ = " - " + current view if set, otherwise blank, prior spaces removed
+#titleTemplate=_cluster_ - _page_ _-view_ _-expression_
+
+# Number of threads processing packets
+packetThreads=${ARKIME_PACKET_THREADS:=2}
+
+# HSTS Header
+# If set to true, adds a Strict-Transport-Security response header with a max age of a year
+# and includes subdomains (the app must be served over https)
+#hstsHeader=true
+
+# Business Hours
+# If set, displays a colored background on the sessions timeline graph during business hours
+# Values are set in hours from midnight UTC (default is off)
+#businessDayStart=9
+#businessDayEnd=17
+
+# Business Days
+# Comma separated list of days
+# If set, displays the business hours on only the days provided here
+# Business hours must be set for these to be of use
+# Values are the days of the week as numbers, the week starts at Sunday = 0 and ends on Saturday = 6
+# (default is Monday - Friday 1,2,3,4,5)
+#businessDays=1,2,3,4,5
+
+# ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
+# in order and can replace values set in this file or previous files.
+#includes=
+
+# ADVANCED - How is pcap written to disk
+#  simple          = use O_DIRECT if available, writes in pcapWriteSize chunks,
+#                    a file per packet thread.
+#  simple-nodirect = don't use O_DIRECT.  Required for zfs and others
+pcapWriteMethod=${ARKIME_PCAP_WRITE_METHOD:=simple}
+
+# ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs
+# stripe size.  Defaults to 256k
+pcapWriteSize = ${ARKIME_PCAP_WRITE_SIZE:=262143}
+
+# ADVANCED - Number of bytes to bulk index at a time
+dbBulkSize = ${ARKIME_DB_BULK_SIZE:=300000}
+
+# ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
+# of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
+compressES = ${ARKIME_COMPRESS_ES:=false}
+
+# ADVANCED - Max number of connections to elastic search
+maxESConns = ${ARKIME_MAX_ES_CONNS:=30}
+
+# ADVANCED - Max number of es requests outstanding in q
+maxESRequests = ${ARKIME_MAX_ES_REQUESTS:=500}
+
+# ADVANCED - Number of packets to ask libnids/libpcap to read per poll/spin
+# Increasing may hurt stats and ES performance
+# Decreasing may cause more dropped packets
+packetsPerPoll = ${ARKIME_PACKETS_PER_POLL:=50000}
+
+# ADVANCED - Arkime will try to compensate for SYN packet drops by swapping
+# the source and destination addresses when a SYN-acK packet was captured first.
+# Probably useful to set it false, when running Arkime in wild due to SYN floods.
+antiSynDrop = ${ARKIME_ANTI_SYN_DROP:=true}
+
+# DEBUG - Write to stdout info every X packets.
+# Set to -1 to never log status
+logEveryXPackets = ${ARKIME_LOG_EVERY_PACKETS:=100000}
+
+# DEBUG - Write to stdout unknown protocols
+logUnknownProtocols = ${ARKIME_LOG_UNKNOWN_PROTOCOLS:=false}
+
+# DEBUG - Write to stdout elastic search requests
+logESRequests = ${ARKIME_LOG_ES_REQUESTS:=true}
+
+# DEBUG - Write to stdout file creation information
+logFileCreation = ${ARKIME_LOG_FILE_CREATION:=true}
+
+
+### High Performance settings
+# https://arkime.com/settings#high-performance-settings
+magicMode=${ARKIME_MAGIC_MODE:=basic}
+pcapReadMethod=${ARKIME_PCAP_READ_METHOD:=tpacketv3}
+tpacketv3NumThreads=${ARKIME_TPACKETV3_NUM_THREADS:=2}
+# pcapWriteMethod=simple
+# pcapWriteSize = 2560000
+# packetThreads=5
+# maxPacketsInQueue = 200000
+
+### Low Bandwidth settings
+# packetThreads=1
+# pcapWriteSize = 65536
+
+# More configuation via environment variables
+enablePacketLen = ${ARKIME_ENABLE_PACKET_LEN:=false}
+kafkaBootstrapServers = ${ARKIME_KAFKA_BOOTSTRAP_SERVER}
+snapLen = ${ARKIME_SNAP_LEN:=16384}
+parseCookieValue = ${ARKIME_PARSE_COOKIE_VALUE:=false}
+parseHTTPHeaderRequestAll = ${ARKIME_PARSE_HTTP_HEADER_REQUEST_ALL:=false}
+parseHTTPHeaderResponseAll = ${ARKIME_PARSE_HTTP_HEADER_RESPONSE_ALL:=false}
+isLocalViewRegExp = ${ARKIME_LOCAL_VIEW_REGEXP}
+simpleMaxQ = ${ARKIME_SIMPLE_MAX_Q:=2000}
+debug = ${ARKIME_DEBUG:=0}
+
+##############################################################################
+# Classes of nodes
+# Can override most default values, and create a tag call node:<classname>
+[class1]
+freeSpaceG = 10%
+
+##############################################################################
+# Nodes
+# Usually just use the hostname before the first dot as the node name
+# Can override most default values
+
+[node1]
+nodeClass = class1
+# Might use a different elasticsearch node
+elasticsearch=elasticsearchhost1
+
+# Uncomment if this node should process the cron queries and packet search jobs, only ONE node should process cron queries and packet search jobs
+# cronQueries = true
+
+[node2]
+nodeClass = class2
+# Might use a different elasticsearch node
+elasticsearch=elasticsearchhost2
+# Uses a different interface
+interface = eth4
+
+##############################################################################
+# override-ips is a special section that overrides the MaxMind databases for
+# the fields set, but fields not set will still use MaxMind (example if you set
+# tags but not country it will use MaxMind for the country)
+# Spaces and capitalization is very important.
+# IP Can be a single IP or a CIDR
+# Up to 10 tags can be added
+#
+# ip=tag:TAGNAME1;tag:TAGNAME2;country:3LetterUpperCaseCountry;asn:ASN STRING
+#[override-ips]
+#10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is an ASN
+
+##############################################################################
+# It is possible to define in the config file extra http/email headers
+# to index.  They are accessed using the expression http.<fieldname> and
+# email.<fieldname> with optional .cnt expressions
+#
+# Possible config atributes for all headers
+#   type:<string> (string|integer|ip)  = data type                (default string)
+#  count:<boolean>                     = index count of items     (default false)
+#  unique:<boolean>                    = only record unique items (default true)
+
+# headers-http-request is used to configure request headers to index
+[headers-http-request]
+referer=type:string;count:true;unique:true
+authorization=type:string;count:true
+content-type=type:string;count:true
+origin=type:string
+
+# headers-http-response is used to configure http response headers to index
+[headers-http-response]
+location=type:string
+server=type:string
+content-type=type:string;count:true
+
+# headers-email is used to configure email headers to index
+[headers-email]
+x-priority=type:integer
+authorization=type:string
+
+
+##############################################################################
+# If you have multiple clusters and you want the ability to send sessions
+# from one cluster to another either manually or with the cron feature fill out
+# this section
+
+#[moloch-clusters]
+#forensics=url:https://viewer1.host.domain:8005;passwordSecret:password4arkime;name:Forensics Cluster
+#shortname2=url:http://viewer2.host.domain:8123;passwordSecret:password4arkime;name:Testing Cluster
+
+
+
+# WARNING: This is an ini file with sections, most likely you don't want to put a setting here.
+#          New settings usually go near the top in the [default] section, or in [nodename] sections.
