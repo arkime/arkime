@@ -65,8 +65,8 @@ if (esClientKey) {
 
 const esAPIKey = Config.get('elasticsearchAPIKey');
 const esBasicAuth = Config.get('elasticsearchBasicAuth');
-let authHeader;
 
+let authHeader;
 if (esAPIKey) {
   authHeader = `ApiKey ${esAPIKey}`;
 } else if (esBasicAuth) {
@@ -77,6 +77,24 @@ if (esAPIKey) {
   }
 }
 
+// ============================================================================
+// Optional tee stuff
+const elasticsearchTee = Config.getFull('tee', 'elasticsearch');
+const esAPIKeyTee = Config.getFull('tee', 'elasticsearchAPIKey');
+const esBasicAuthTee = Config.getFull('tee', 'elasticsearchBasicAuth');
+
+let authHeaderTee;
+if (esAPIKeyTee) {
+  authHeaderTee = `ApiKey ${esAPIKeyTee}`;
+} else if (esBasicAuthTee) {
+  if (!esBasicAuthTee.includes(':')) {
+    authHeaderTee = `Basic ${esBasicAuthTee}`;
+  } else {
+    authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee, 'base64').toString()}`;
+  }
+}
+
+// ============================================================================
 // GET calls we can match exactly
 const getExact = {
   '/': 1,
@@ -180,9 +198,9 @@ function saveBody (req, res, next) {
 
 // Proxy
 
-function doProxy (req, res, cb) {
+function doProxyFull (config, req, res) {
   let result = '';
-  const esUrl = elasticsearch + req.url;
+  const esUrl = config.elasticsearch + req.url;
   console.log(`URL ${req.method} ${esUrl}`);
   const url = new URL(esUrl);
   const options = { method: req.method };
@@ -195,9 +213,9 @@ function doProxy (req, res, cb) {
     client = http;
   }
 
-  if (authHeader) {
+  if (config.authHeader) {
     options.headers = {
-      Authorization: authHeader
+      Authorization: config.authHeader
     };
   }
 
@@ -226,6 +244,16 @@ function doProxy (req, res, cb) {
     preq.end(req.body);
   } else {
     preq.end('');
+  }
+}
+
+function doProxy (req, res) {
+  doProxyFull({ elasticsearch: elasticsearch, authHeader: authHeader }, req, res);
+  if (elasticsearchTee) {
+    doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee }, req, {
+      setHeader: () => {},
+      send: () => {}
+    });
   }
 }
 
