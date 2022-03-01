@@ -186,7 +186,6 @@ ascii2prefix2(int family, char *string, prefix_t *prefix)
     char           *cp;
     struct in_addr  sin;
     struct in6_addr sin6;
-    int             result;
     /*
      * not thread safe 
      */
@@ -222,13 +221,13 @@ ascii2prefix2(int family, char *string, prefix_t *prefix)
     }
 
     if (family == AF_INET) {
-        if ((result = my_inet_pton(AF_INET, string, &sin)) <= 0)
+        if (my_inet_pton(AF_INET, string, &sin) <= 0)
 	{
             return (NULL);
 	}
         return (New_Prefix2(AF_INET, &sin, bitlen, prefix));
     } else if (family == AF_INET6) {
-        if ((result = inet_pton (AF_INET6, string, &sin6)) <= 0)
+        if (inet_pton (AF_INET6, string, &sin6) <= 0)
             return (NULL);
 	return (New_Prefix2(AF_INET6, &sin6, bitlen, prefix));
     } else
