@@ -6995,8 +6995,6 @@ qq/ {
     print "Deleted $src\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^repair$/) {
-    $verbose = 3 if ($verbose < 3);
-
     dbVersion(1);
     if ($main::versionNumber != $VERSION) {
         die "Must upgrade before trying to do a repair";
@@ -7007,17 +7005,35 @@ qq/ {
 
     foreach my $i ("sequence_v30", "files_v30") {
         if (!defined $indices{"${PREFIX}$i"}) {
-            die "Couldn't find index ${PREFIX}$i, can not repair\n"
+            die "--> Couldn't find index ${PREFIX}$i, can not repair\n"
         }
     }
 
     foreach my $i ("stats_v30", "dstats_v30", "fields_v30", "queries_v30", "hunts_v30", "lookups_v30", "users_v30") {
         if (!defined $indices{"${PREFIX}$i"}) {
-            print "Couldn't find index ${PREFIX}$i, repair might fail\n"
+            print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
+        }
+    }
+
+    foreach my $i ("stats", "dstats", "fields") {
+        if (defined $indices{"${PREFIX}$i"}) {
+            print "--> Will delete the index ${PREFIX}$i and recreate as alias\n"
+        }
+    }
+
+    foreach my $i ("queries", "hunts", "lookups", "users") {
+        if (defined $indices{"${PREFIX}$i"}) {
+            print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
     }
 
     waitFor("REPAIR", "Do you want to try and repair your install?");
+    $verbose = 3 if ($verbose < 3);
+
+    print "Deleting any indices that should be aliases\n";
+    foreach my $i ("stats", "dstats", "fields", "queries", "hunts", "lookups", "users") {
+        esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
+    }
 
     print "Re-adding aliases\n";
     esAlias("add", "sequence_v30", "sequence");
@@ -7072,7 +7088,9 @@ qq/ {
         queriesCreate();
     }
 
-    print "You should also run ./db.pl update again\n";
+    print "\n";
+    print "* You should also run ./db.pl update again\n";
+    print "* If having fields issues make sure you restart 1 capture after running repair to see if it fixes\n";
 
     exit 0;
 }
