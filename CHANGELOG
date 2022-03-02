@@ -39,6 +39,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
                   come from. header mode - default localhost, other - default all ips
   - capture - switch from deflate to gzip posting to ES, lower min gzip size to 860
   - capture - ietf quic improvements
+  - esproxy - can now create a [tee] section that will duplicate all ES calls,
+              but ignore results
 
 3.3.1 2022/01/26
   - viewer - fix displaying large packets or xored packets not always working

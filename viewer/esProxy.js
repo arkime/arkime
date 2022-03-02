@@ -79,9 +79,9 @@ if (esAPIKey) {
 
 // ============================================================================
 // Optional tee stuff
-const elasticsearchTee = Config.getFull('tee', 'elasticsearch');
-const esAPIKeyTee = Config.getFull('tee', 'elasticsearchAPIKey');
-const esBasicAuthTee = Config.getFull('tee', 'elasticsearchBasicAuth');
+const elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
+const esAPIKeyTee = Config.sectionGet('tee', 'elasticsearchAPIKey');
+const esBasicAuthTee = Config.sectionGet('tee', 'elasticsearchBasicAuth');
 
 let authHeaderTee;
 if (esAPIKeyTee) {
