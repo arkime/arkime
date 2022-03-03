@@ -6,15 +6,13 @@ use MolochTest;
 use JSON;
 use strict;
 
-diag "ALW1";
 esPost("/cont3xt_links/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 my $token = getCont3xtTokenCookie();
 
 my $json;
 
-diag "ALW2";
-$json = cont3xtGet('/api/linkGroup', 1);
+$json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
 # update link group requires token
@@ -92,8 +90,7 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-diag "ALW3";
-$json = cont3xtGet('/api/linkGroup', 1);
+$json = cont3xtGet('/api/linkGroup');
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["superAdmin"],"links":[{"url":"http://www.foo.com","itypes":["ip", "domain"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
@@ -110,8 +107,7 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-diag "ALW4";
-$json = cont3xtGet('/api/linkGroup', 1);
+$json = cont3xtGet('/api/linkGroup');
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
@@ -123,9 +119,8 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 $json = cont3xtDeleteToken("/api/linkGroup/$id", "{}", $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-diag "ALW5";
-$json = cont3xtGet('/api/linkGroup', 1);
+$json = cont3xtGet('/api/linkGroup');
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
-#$json = cont3xtGet('/api/roles', 1);
+#$json = cont3xtGet('/api/roles');
 #eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
