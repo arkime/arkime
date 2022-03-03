@@ -6,12 +6,14 @@ use MolochTest;
 use JSON;
 use strict;
 
+diag "ALW1";
 esPost("/cont3xt_links/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
 
 my $token = getCont3xtTokenCookie();
 
 my $json;
 
+diag "ALW2";
 $json = cont3xtGet('/api/linkGroup', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
@@ -90,6 +92,7 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
+diag "ALW3";
 $json = cont3xtGet('/api/linkGroup', 1);
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
@@ -107,6 +110,7 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
+diag "ALW4";
 $json = cont3xtGet('/api/linkGroup', 1);
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
@@ -119,6 +123,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 $json = cont3xtDeleteToken("/api/linkGroup/$id", "{}", $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
+diag "ALW5";
 $json = cont3xtGet('/api/linkGroup', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
