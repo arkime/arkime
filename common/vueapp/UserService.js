@@ -15,6 +15,9 @@ export default {
       }).then((response) => {
         return response.json();
       }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
         return resolve(response);
       }).catch((error) => {
         reject(error);
@@ -35,11 +38,10 @@ export default {
       }).then((response) => {
         return response.json();
       }).then((response) => {
-        if (response.success) {
-          return resolve(response);
-        } else {
+        if (!response.success) {
           return reject(response);
         }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
@@ -59,11 +61,10 @@ export default {
       }).then((response) => {
         return response.json();
       }).then((response) => {
-        if (response.success) {
-          return resolve(response);
-        } else {
+        if (!response.success) {
           return reject(response);
         }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
@@ -83,11 +84,10 @@ export default {
       }).then((response) => {
         return response.json();
       }).then((response) => {
-        if (response.success) {
-          return resolve(response);
-        } else {
+        if (!response.success) {
           return reject(response);
         }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
