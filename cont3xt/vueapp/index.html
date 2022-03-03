@@ -4,11 +4,12 @@
     <base href="{{ path }}">
     <meta charset="utf-8">
     <meta name="referrer" content="no-referrer">
+    <meta property="csp-nonce" content="{{ nonce }}">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="{{ nonce }}">
     <title>Cont3xt</title>
   </head>
-  <script>
+  <script nonce="{{ nonce }}">
     const WEB_PATH = '{{ path }}';
   </script>
   <body>

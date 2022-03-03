@@ -2,6 +2,7 @@ import dr from 'defang-refang';
 
 import Observable from '@/utils/Observable';
 import store from '@/store';
+import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
 
 export default {
   /**
@@ -60,7 +61,7 @@ export default {
 
       fetch('api/integration/search', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ query: searchTerm, skipCache, doIntegrations })
       }).then((response) => {
         if (!response.ok) { // test for bad response code (only on first chunk)
@@ -145,7 +146,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch(`api/integration/${itype}/${source}/search`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ query: value })
       }).then((response) => {
         if (!response.ok) { // test for bad response code

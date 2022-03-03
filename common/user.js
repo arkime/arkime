@@ -361,7 +361,7 @@ class User {
    */
   static apiCreateUser (req, res) {
     if (!req.body || !req.body.userId || !req.body.userName) {
-      return res.serverError(403, 'Missing/Empty required fields');
+      return res.status(403).send({ success: false, text: 'Missing/Empty required fields' });
     }
 
     let userIdTest = req.body.userId;
@@ -369,19 +369,19 @@ class User {
       userIdTest = userIdTest.slice(5);
       req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
     } else if (!req.body.password) {
-      return res.serverError(403, 'Missing/Empty required fields');
+      return res.status(403).send({ success: false, text: 'Missing/Empty required fields' });
     }
 
     if (userIdTest.match(/[^@\w.-]/)) {
-      return res.serverError(403, 'User ID must be word characters');
+      return res.status(403).send({ success: false, text: 'User ID must be word characters' });
     }
 
     if (req.body.userId === '_moloch_shared') {
-      return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
+      return res.status(403).send({ success: false, text: 'User ID cannot be the same as the shared moloch user' });
     }
 
     if (req.body.roles && !Array.isArray(req.body.roles)) {
-      return res.serverError(403, 'Roles field must be an array');
+      return res.status(403).send({ success: false, text: 'Roles field must be an array' });
     }
 
     if (req.body.roles === undefined) {
@@ -389,13 +389,13 @@ class User {
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
+      return res.status(403).send({ success: false, text: 'Can not create superAdmin unless you are superAdmin' });
     }
 
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
-        return res.serverError(403, 'User already exists');
+        return res.status(403).send({ success: false, text: 'User already exists' });
       }
 
       const nuser = {
@@ -430,7 +430,7 @@ class User {
           }));
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
-          return res.serverError(403, err);
+          return res.status(403).send({ success: false, text: err });
         }
       });
     });
@@ -447,19 +447,15 @@ class User {
   static async apiDeleteUser (req, res) {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
-      return res.serverError(403, 'Can not delete yourself');
+      return res.status(403).send({ success: false, text: 'Can not delete yourself' });
     }
 
     try {
       await User.deleteUser(userId);
-      res.send(JSON.stringify({
-        success: true, text: 'User deleted successfully'
-      }));
+      res.send({ success: true, text: 'User deleted successfully' });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
-      res.send(JSON.stringify({
-        success: false, text: 'User not deleted'
-      }));
+      res.send({ success: false, text: 'User not deleted' });
     }
   };
 
@@ -475,11 +471,11 @@ class User {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
-      return res.serverError(403, 'Missing userId');
+      return res.status(403).send({ success: false, text: 'Missing userId' });
     }
 
     if (userId === '_moloch_shared') {
-      return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+      return res.status(403).send({ success: false, text: '_moloch_shared is a shared user. This users settings cannot be updated' });
     }
 
     if (req.body.roles === undefined) {
@@ -487,13 +483,13 @@ class User {
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
+      return res.status(403).send({ success: false, text: 'Can not enable superAdmin unless you are superAdmin' });
     }
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
-        return res.serverError(403, 'User not found');
+        return res.status(403).send({ success: false, text: 'User not found' });
       }
 
       user.enabled = req.body.enabled === true;
@@ -509,7 +505,7 @@ class User {
       if (req.body.userName !== undefined) {
         if (req.body.userName.match(/^\s*$/)) {
           console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
-          return res.serverError(403, 'Username can not be empty');
+          return res.status(403).send({ success: false, text: 'Username can not be empty' });
         } else {
           user.userName = req.body.userName;
         }
@@ -534,7 +530,7 @@ class User {
 
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
-          return res.serverError(500, 'Error updating user:' + err);
+          return res.status(500).send({ success: false, text: 'Error updating user:' + err });
         }
 
         return res.send(JSON.stringify({
@@ -645,7 +641,7 @@ class User {
     return async (req, res, next) => {
       if (!req.user.hasAllRole(role)) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
-        return res.serverError(403, 'You do not have permission to access this resource');
+        return res.status(403).send({ success: false, text: 'You do not have permission to access this resource' });
       }
       next();
     };
@@ -667,7 +663,7 @@ class User {
         if ((!req.user[permission] && !inversePermissions[permission]) ||
           (req.user[permission] && inversePermissions[permission])) {
           console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
-          return res.serverError(403, 'You do not have permission to access this resource');
+          return res.status(403).send({ success: false, text: 'You do not have permission to access this resource' });
         }
       }
       next();

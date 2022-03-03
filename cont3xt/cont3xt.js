@@ -38,6 +38,8 @@ const jsonParser = bp.json();
 const crypto = require('crypto');
 const logger = require('morgan');
 const favicon = require('serve-favicon');
+const helmet = require('helmet');
+const uuid = require('uuidv4').default;
 const dayMs = 60000 * 60 * 24;
 
 const internals = {
@@ -46,6 +48,79 @@ const internals = {
   insecure: false,
   regressionTests: false
 };
+
+// ----------------------------------------------------------------------------
+// Security
+// ----------------------------------------------------------------------------
+app.use(helmet.frameguard({ action: 'deny' })); // disallow iframing
+app.use(helmet.hidePoweredBy()); // hide powered by Express header
+app.use(helmet.xssFilter()); // disables browsers' buggy cross-site scripting filte
+app.use(helmet.noSniff()); // mitigates MIME type sniffing
+
+function setupHSTS () {
+  if (getConfig('cont3xt', 'hstsHeader', false)) {
+    app.use(helmet.hsts({
+      maxAge: 31536000,
+      includeSubDomains: true
+    }));
+  }
+}
+
+// calculate nonce
+app.use((req, res, next) => {
+  res.locals.nonce = Buffer.from(uuid()).toString('base64');
+  next();
+});
+
+// define csp headers
+const cspHeader = helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' for vue inline styles
+    // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+    objectSrc: ["'none'"],
+    imgSrc: ["'self'", 'data:']
+  }
+});
+
+function setCookie (req, res, next) {
+  const cookieOptions = {
+    path: getConfig('cont3xt', 'webBasePath', '/'),
+    sameSite: 'Strict',
+    overwrite: true
+  };
+
+  if (getConfig('cont3xt', 'hstsHeader', false)) { cookieOptions.secure = true; }
+
+  res.cookie( // send cookie for basic, non admin functions
+    'CONT3XT-COOKIE',
+    Auth.obj2auth({
+      date: Date.now(),
+      pid: process.pid,
+      userId: req.user.userId
+    }),
+    cookieOptions
+  );
+
+  return next();
+}
+
+function checkCookieToken (req, res, next) {
+  if (!req.headers['x-cont3xt-cookie']) {
+    return res.status(500).send({ success: false, text: 'Missing token' });
+  }
+
+  const cookie = req.headers['x-cont3xt-cookie'];
+  req.token = Auth.auth2obj(cookie);
+  const diff = Math.abs(Date.now() - req.token.date);
+  if (diff > 2400000 || req.token.userId !== req.user.userId) {
+    console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
+    return res.status(500).send({ success: false, text: 'Timeout - Please try reloading page and repeating the action' });
+  }
+
+  return next();
+}
 
 // ----------------------------------------------------------------------------
 // Logging
@@ -117,30 +192,30 @@ app.use(async (req, res, next) => {
 });
 
 app.get('/api/linkGroup', LinkGroup.apiGet);
-app.put('/api/linkGroup', [jsonParser], LinkGroup.apiCreate);
-app.put('/api/linkGroup/:id', [jsonParser], LinkGroup.apiUpdate);
-app.delete('/api/linkGroup/:id', [jsonParser], LinkGroup.apiDelete);
+app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
+app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiUpdate);
+app.delete('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiDelete);
 
-app.get('/api/roles', User.apiRoles);
+app.get('/api/roles', [checkCookieToken], User.apiRoles);
 app.get('/api/user', User.apiGetUser);
-app.post('/api/users', [jsonParser, User.checkRole('usersAdmin')], User.apiGetUsers);
-app.post('/api/user', [jsonParser, User.checkRole('usersAdmin')], User.apiCreateUser);
-app.delete('/api/user/:id', [jsonParser, User.checkRole('usersAdmin')], User.apiDeleteUser);
-app.post('/api/user/:id', [jsonParser, User.checkRole('usersAdmin')], User.apiUpdateUser);
+app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
+app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
+app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
+app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 
 app.get('/api/integration', Integration.apiList);
 app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
 app.get('/api/settings', apiGetSettings);
-app.put('/api/settings', [jsonParser], apiPutSettings);
-app.get('/api/integration/settings', Integration.apiGetSettings);
-app.put('/api/integration/settings', [jsonParser], Integration.apiPutSettings);
-app.get('/api/integration/stats', Integration.apiStats);
+app.put('/api/settings', [jsonParser, checkCookieToken], apiPutSettings);
+app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
+app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
+app.get('/api/integration/stats', [setCookie], Integration.apiStats);
 
-app.get('/api/views', View.apiGet);
-app.post('/api/view', [jsonParser], View.apiCreate);
-app.put('/api/view/:id', [jsonParser], View.apiUpdate);
-app.delete('/api/view/:id', [jsonParser], View.apiDelete);
+app.get('/api/views', [setCookie], View.apiGet);
+app.post('/api/view', [jsonParser, checkCookieToken], View.apiCreate);
+app.put('/api/view/:id', [jsonParser, checkCookieToken], View.apiUpdate);
+app.delete('/api/view/:id', [jsonParser, checkCookieToken], View.apiDelete);
 
 app.get('/api/health', (req, res) => { res.send({ success: true }); });
 
@@ -222,7 +297,7 @@ app.use('/app.js.map', express.static(
   { fallthrough: false }
 ), missingResource);
 // vue index page
-app.use((req, res, next) => {
+app.use(cspHeader, setCookie, (req, res, next) => {
   if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
@@ -232,6 +307,7 @@ app.use((req, res, next) => {
   });
 
   const appContext = {
+    nonce: res.locals.nonce,
     path: getConfig('cont3xt', 'webBasePath', '/')
   };
 
@@ -313,7 +389,6 @@ function getConfig (section, sectionKey, d) {
 // ----------------------------------------------------------------------------
 // Initialize stuff
 // ----------------------------------------------------------------------------
-//
 function setupAuth () {
   let userNameHeader = getConfig('cont3xt', 'userNameHeader', 'anonymous');
   let mode;
@@ -397,6 +472,7 @@ async function main () {
     process.exit();
   }
   setupAuth();
+  setupHSTS();
 
   let server;
   if (getConfig('cont3xt', 'keyFile') && getConfig('cont3xt', 'certFile')) {

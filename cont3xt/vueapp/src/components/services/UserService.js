@@ -1,4 +1,5 @@
 import store from '@/store';
+import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
 
 export default {
   /**
@@ -49,7 +50,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch('api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(settings)
       }).then((response) => {
         return response.json();
@@ -69,7 +70,9 @@ export default {
    */
   getRoles () {
     return new Promise((resolve, reject) => {
-      fetch('api/roles').then((response) => {
+      fetch('api/roles', {
+        headers: setReqHeaders()
+      }).then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
         }
@@ -122,7 +125,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch('api/integration/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(settings)
       }).then((response) => {
         return response.json();
@@ -166,7 +169,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch('api/view', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(view)
       }).then((response) => {
         return response.json();
@@ -189,7 +192,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch(`api/view/${view._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(view)
       }).then((response) => {
         return response.json();
@@ -211,8 +214,8 @@ export default {
   deleteIntegrationsView (id) {
     return new Promise((resolve, reject) => {
       fetch(`api/view/${id}`, {
-        method: 'Delete',
-        headers: { 'Content-Type': 'application/json' }
+        method: 'DELETE',
+        headers: setReqHeaders()
       }).then((response) => {
         return response.json();
       }).then((response) => {
