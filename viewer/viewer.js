@@ -2421,7 +2421,7 @@ async function main () {
     setInterval(internals.processCronQueries, 60 * 1000);
     setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
-  } else {
+  } else if (!Config.get('multiES', false)) {
     const info = await Db.getQueriesNode();
     if (info.node === undefined) {
       console.log('WARNING - No cronQueries=true found, cron/hunts might be broken');
