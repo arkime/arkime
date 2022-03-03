@@ -12,7 +12,7 @@ my $token = getCont3xtTokenCookie();
 
 my $json;
 
-$json = cont3xtGet('/api/linkGroup');
+$json = cont3xtGet('/api/linkGroup', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
 # update link group requires token
@@ -90,7 +90,7 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup');
+$json = cont3xtGet('/api/linkGroup', 1);
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable": true, "viewRoles":["superAdmin"],"links":[{"url":"http://www.foo.com","itypes":["ip", "domain"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
@@ -107,7 +107,7 @@ $json = cont3xtPutToken("/api/linkGroup/$id", to_json({
 }), $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup');
+$json = cont3xtGet('/api/linkGroup', 1);
 my $id = $json->{linkGroups}->[0]->{_id};
 delete $json->{linkGroups}->[0]->{_id};
 eq_or_diff($json, from_json('{"linkGroups":[{"creator":"anonymous","_editable":true,"_viewable":true,"viewRoles":["cont3xtUser"],"links":[{"url":"http://www.foobar.com","itypes":["ip", "hash"],"name":"foo1"}],"name":"Links1","editRoles":["superAdmin"]}],"success":true}'));
@@ -119,7 +119,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 $json = cont3xtDeleteToken("/api/linkGroup/$id", "{}", $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
-$json = cont3xtGet('/api/linkGroup');
+$json = cont3xtGet('/api/linkGroup', 1);
 eq_or_diff($json, from_json('{"success": true, "linkGroups": []}'));
 
 #$json = cont3xtGet('/api/roles', 1);
