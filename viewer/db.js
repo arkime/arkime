@@ -1969,3 +1969,24 @@ exports.getTemplate = async (templateName) => {
 exports.putTemplate = async (templateName, body) => {
   return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body: body });
 };
+
+exports.setQueriesNode = async (node) => {
+  internals.client7.indices.putMapping({
+    index: fixIndex('queries'),
+    body: { _meta: { node: node, updateTime: Date.now() } }
+  })
+};
+
+exports.getQueriesNode = async () => {
+  const { body: doc } = await internals.client7.indices.getMapping({
+    index: fixIndex('queries')
+  });
+
+  // Since queries is an alias we dont't know the real index name here
+  const meta = doc[Object.keys(doc)[0]].mappings._meta;
+
+  return {
+    node: meta?.node,
+    updateTime: meta?.updateTime
+  }
+};
