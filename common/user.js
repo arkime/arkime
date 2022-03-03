@@ -21,7 +21,6 @@ const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
-const { serverError } = require('./middleware');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -366,7 +365,7 @@ class User {
    */
   static apiCreateUser (req, res) {
     if (!req.body || !req.body.userId || !req.body.userName) {
-      return serverError(res, 403, 'Missing/Empty required fields');
+      return res.serverError(403, 'Missing/Empty required fields');
     }
 
     let userIdTest = req.body.userId;
@@ -374,19 +373,19 @@ class User {
       userIdTest = userIdTest.slice(5);
       req.body.password = cryptoLib.randomBytes(48); // Reset role password to random
     } else if (!req.body.password) {
-      return serverError(res, 403, 'Missing/Empty required fields');
+      return res.serverError(403, 'Missing/Empty required fields');
     }
 
     if (userIdTest.match(/[^@\w.-]/)) {
-      return serverError(res, 403, 'User ID must be word characters');
+      return res.serverError(403, 'User ID must be word characters');
     }
 
     if (req.body.userId === '_moloch_shared') {
-      return serverError(res, 403, 'User ID cannot be the same as the shared user');
+      return res.serverError(403, 'User ID cannot be the same as the shared user');
     }
 
     if (req.body.roles && !Array.isArray(req.body.roles)) {
-      return serverError(res, 403, 'Roles field must be an array');
+      return res.serverError(403, 'Roles field must be an array');
     }
 
     if (req.body.roles === undefined) {
@@ -394,13 +393,13 @@ class User {
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return serverError(res, 403, 'Can not create superAdmin unless you are superAdmin');
+      return res.serverError(403, 'Can not create superAdmin unless you are superAdmin');
     }
 
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
-        return serverError(res, 403, 'User already exists');
+        return res.serverError(403, 'User already exists');
       }
 
       const nuser = {
@@ -435,7 +434,7 @@ class User {
           }));
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
-          return serverError(res, 403, err);
+          return res.serverError(403, err);
         }
       });
     });
@@ -452,7 +451,7 @@ class User {
   static async apiDeleteUser (req, res) {
     const userId = req.body.userId || req.params.id;
     if (userId === req.user.userId) {
-      return serverError(res, 403, 'Can not delete yourself');
+      return res.serverError(403, 'Can not delete yourself');
     }
 
     try {
@@ -476,11 +475,11 @@ class User {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
-      return serverError(res, 403, 'Missing userId');
+      return res.serverError(403, 'Missing userId');
     }
 
     if (userId === '_moloch_shared') {
-      return serverError(res, 403, "_moloch_shared is a shared user. This user's settings cannot be updated");
+      return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
     if (req.body.roles === undefined) {
@@ -488,13 +487,13 @@ class User {
     }
 
     if (req.body.roles.includes('superAdmin') && !req.user.hasRole('superAdmin')) {
-      return serverError(res, 403, 'Can not enable superAdmin unless you are superAdmin');
+      return res.serverError(403, 'Can not enable superAdmin unless you are superAdmin');
     }
 
     User.getUser(userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user);
-        return serverError(res, 403, 'User not found');
+        return res.serverError(403, 'User not found');
       }
 
       user.enabled = req.body.enabled === true;
@@ -510,7 +509,7 @@ class User {
       if (req.body.userName !== undefined) {
         if (req.body.userName.match(/^\s*$/)) {
           console.log(`ERROR - ${req.method} /api/user/${userId} empty username`, util.inspect(req.body));
-          return serverError(res, 403, 'Username can not be empty');
+          return res.serverError(403, 'Username can not be empty');
         } else {
           user.userName = req.body.userName;
         }
@@ -535,7 +534,7 @@ class User {
 
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50), user, info);
-          return serverError(res, 500, 'Error updating user:' + err);
+          return res.serverError(500, 'Error updating user:' + err);
         }
 
         return res.send(JSON.stringify({
@@ -646,7 +645,7 @@ class User {
     return async (req, res, next) => {
       if (!req.user.hasAllRole(role)) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
-        return serverError(res, 403, 'You do not have permission to access this resource');
+        return res.serverError(403, 'You do not have permission to access this resource');
       }
       next();
     };
@@ -668,7 +667,7 @@ class User {
         if ((!req.user[permission] && !inversePermissions[permission]) ||
           (req.user[permission] && inversePermissions[permission])) {
           console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
-          return serverError(res, 403, 'You do not have permission to access this resource');
+          return res.serverError(403, 'You do not have permission to access this resource');
         }
       }
       next();

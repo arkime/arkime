@@ -181,6 +181,23 @@ class ArkimeUtil {
       return parseInt(time);
     }
   }
+
+  /**
+   * Sends an error from the server by:
+   * 1. setting the http content-type header to json
+   * 2. setting the response status code (403 default)
+   * 3. sending a false success with message text (default "Server Error!")
+   * @param {Number} [resStatus=403] - The response status code (optional)
+   * @param {String} [text="Server Error!"] - The response text (optional)
+   * @returns {Object} res - The Express.js response object
+   */
+  static serverError (resStatus, text) {
+    this.status(resStatus || 403);
+    this.setHeader('Content-Type', 'application/json');
+    return this.send(
+      { success: false, text: text || 'Server Error!' }
+    );
+  }
 }
 
 module.exports = ArkimeUtil;

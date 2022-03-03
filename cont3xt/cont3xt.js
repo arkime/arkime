@@ -28,6 +28,7 @@ const version = require('../viewer/version');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
+const ArkimeUtil = require('../common/ArkimeUtil');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const View = require('./view');
@@ -134,6 +135,11 @@ logger.token('username', (req, res) => {
 // ----------------------------------------------------------------------------
 // Middleware
 // ----------------------------------------------------------------------------
+app.use((req, res, next) => {
+  res.serverError = ArkimeUtil.serverError;
+  return next();
+});
+
 // missing resource error handler for static file endpoints
 function missingResource (err, req, res, next) {
   res.status(404);
