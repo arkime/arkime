@@ -1974,7 +1974,7 @@ exports.setQueriesNode = async (node) => {
   internals.client7.indices.putMapping({
     index: fixIndex('queries'),
     body: { _meta: { node: node, updateTime: Date.now() } }
-  })
+  });
 };
 
 exports.getQueriesNode = async () => {
@@ -1988,5 +1988,5 @@ exports.getQueriesNode = async () => {
   return {
     node: meta?.node,
     updateTime: meta?.updateTime
-  }
+  };
 };
