@@ -339,6 +339,7 @@ class User {
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
       res.send({
+        success: true,
         recordsTotal: total,
         recordsFiltered: users.total,
         data: users.users
@@ -346,7 +347,10 @@ class User {
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send({
-        recordsTotal: 0, recordsFiltered: 0, data: []
+        success: true,
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        data: []
       });
     });
   };
@@ -377,7 +381,7 @@ class User {
     }
 
     if (req.body.userId === '_moloch_shared') {
-      return res.serverError(403, 'User ID cannot be the same as the shared moloch user');
+      return res.serverError(403, 'User ID cannot be the same as the shared user');
     }
 
     if (req.body.roles && !Array.isArray(req.body.roles)) {
@@ -452,14 +456,10 @@ class User {
 
     try {
       await User.deleteUser(userId);
-      res.send(JSON.stringify({
-        success: true, text: 'User deleted successfully'
-      }));
+      res.send({ success: true, text: 'User deleted successfully' });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/user/${userId}`, util.inspect(err, false, 50));
-      res.send(JSON.stringify({
-        success: false, text: 'User not deleted'
-      }));
+      res.send({ success: false, text: 'User not deleted' });
     }
   };
 
@@ -479,7 +479,7 @@ class User {
     }
 
     if (userId === '_moloch_shared') {
-      return res.serverError(403, '_moloch_shared is a shared user. This users settings cannot be updated');
+      return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
     if (req.body.roles === undefined) {

@@ -3,7 +3,7 @@ use Exporter;
 use strict;
 use Test::More;
 @MolochTest::ISA = qw(Exporter);
-@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken viewerPut cont3xtGet cont3xtPut cont3xtDelete);
+@MolochTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPut parliamentDelete parliamentDeleteToken waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -340,6 +340,20 @@ sub getTokenCookie2 {
     return $1;
 }
 ################################################################################
+sub getCont3xtTokenCookie {
+my ($userId) = @_;
+
+    my $setCookie;
+    if ($userId) {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:3218/makeToken?molochRegressionUser=$userId")->{"_headers"}->{"set-cookie"};
+    } else {
+        $setCookie = $MolochTest::userAgent->get("http://$MolochTest::host:3218/makeToken")->{"_headers"}->{"set-cookie"};
+    }
+
+    $setCookie =~ /CONT3XT-COOKIE=([^;]*)/;
+    return $1;
+}
+################################################################################
 sub parliamentGet {
 my ($url, $debug) = @_;
     my $response = $MolochTest::userAgent->get("http://$MolochTest::host:8008$url");
@@ -406,9 +420,25 @@ my ($url, $content, $debug) = @_;
     return ($json);
 }
 ################################################################################
+sub cont3xtPutToken {
+my ($url, $content, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::PUT("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
 sub cont3xtDelete {
 my ($url, $content, $debug) = @_;
     my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8"));
+    diag $url, " response:", $response->content if ($debug);
+    my $json = from_json($response->content);
+    return ($json);
+}
+################################################################################
+sub cont3xtDeleteToken {
+my ($url, $content, $token, $debug) = @_;
+    my $response = $MolochTest::userAgent->request(HTTP::Request::Common::DELETE("http://$MolochTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     my $json = from_json($response->content);
     return ($json);

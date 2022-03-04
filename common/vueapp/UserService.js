@@ -1,4 +1,4 @@
-import axios from 'axios';
+import setReqHeaders from './setReqHeaders';
 
 export default {
   /**
@@ -8,14 +8,17 @@ export default {
    */
   searchUsers (query) {
     return new Promise((resolve, reject) => {
-      const options = {
-        data: query,
+      fetch('api/users', {
         method: 'POST',
-        url: 'api/users'
-      };
-
-      axios(options).then((response) => {
-        resolve(response);
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(query)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
@@ -28,8 +31,17 @@ export default {
    */
   updateUser (user) {
     return new Promise((resolve, reject) => {
-      axios.post(`api/user/${user.id}`, user).then((response) => {
-        resolve(response);
+      fetch(`api/user/${user.id}`, {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(user)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
@@ -42,8 +54,17 @@ export default {
    */
   deleteUser (user) {
     return new Promise((resolve, reject) => {
-      axios.delete(`api/user/${user.id}`, user).then((response) => {
-        resolve(response);
+      fetch(`api/user/${user.id}`, {
+        method: 'DELETE',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(user)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });
@@ -56,8 +77,17 @@ export default {
    */
   createUser (user) {
     return new Promise((resolve, reject) => {
-      axios.post('api/user', user).then((response) => {
-        resolve(response);
+      fetch('api/user', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(user)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (!response.success) {
+          return reject(response);
+        }
+        return resolve(response);
       }).catch((error) => {
         reject(error);
       });

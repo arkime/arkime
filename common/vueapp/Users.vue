@@ -701,7 +701,7 @@ export default {
       const user = row.item;
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.userId, false);
-        this.showMessage({ variant: 'success', message: response.data.text });
+        this.showMessage({ variant: 'success', message: response.text });
         this.reloadUsers();
 
         // update the current user if they were changed
@@ -715,7 +715,7 @@ export default {
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {
         this.users.splice(index, 1);
-        this.showMessage({ variant: 'success', message: response.data.text });
+        this.showMessage({ variant: 'success', message: response.text });
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
@@ -777,7 +777,7 @@ export default {
         this.reloadUsers();
         this.$emit('update-roles');
         this.$bvModal.hide('create-user-modal');
-        this.showMessage({ variant: 'success', message: response.data.text });
+        this.showMessage({ variant: 'success', message: response.text });
       }).catch((error) => {
         this.createError = error.text;
       });
@@ -803,10 +803,10 @@ export default {
       UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
-        this.recordsTotal = response.data.recordsTotal;
-        this.users = JSON.parse(JSON.stringify(response.data.data));
+        this.recordsTotal = response.recordsTotal;
+        this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
-        this.dbUserList = JSON.parse(JSON.stringify(response.data.data));
+        this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
         this.error = error.text;
@@ -824,10 +824,10 @@ export default {
       UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
-        const userData = JSON.parse(JSON.stringify(response.data.data));
-        this.recordsTotal = response.data.recordsTotal;
+        const userData = JSON.parse(JSON.stringify(response.data));
+        this.recordsTotal = response.recordsTotal;
         // don't modify original list - used for comparing
-        this.dbUserList = response.data.data;
+        this.dbUserList = response.data;
 
         // Dont update users that have edits. Update dbUserList first to compare against
         // This will keep returned db sorting order regardless if sorted fields are shown on edited fields

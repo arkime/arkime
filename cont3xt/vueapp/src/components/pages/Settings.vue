@@ -540,11 +540,13 @@ export default {
       this.$set(this.filteredViews, index, view);
     },
     saveView (view, index) {
+      delete view.error;
+      delete view.success;
+
       UserService.updateIntegrationsView(view).then((response) => {
         this.$set(view, 'success', true);
       }).catch((error) => {
         this.$set(view, 'error', true);
-        console.log('ERROR - saving view', error);
       }).finally(() => {
         setTimeout(() => {
           delete view.error;
@@ -558,7 +560,6 @@ export default {
         this.getViews();
       }).catch((error) => {
         this.$set(view, 'error', true);
-        console.log('ERROR - saving view', error);
       }).finally(() => {
         setTimeout(() => {
           delete view.error;

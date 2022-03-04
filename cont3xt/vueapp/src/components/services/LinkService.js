@@ -1,4 +1,5 @@
 import store from '@/store';
+import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
 
 export default {
   /**
@@ -37,7 +38,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch('api/linkGroup', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(linkGroup)
       }).then((response) => {
         return response.json();
@@ -63,7 +64,8 @@ export default {
 
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: setReqHeaders()
       }).then((response) => {
         return response.json();
       }).then((response) => {
@@ -93,7 +95,7 @@ export default {
     return new Promise((resolve, reject) => {
       fetch(`api/linkGroup/${linkGroup._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(linkGroup)
       }).then((response) => {
         return response.json();
