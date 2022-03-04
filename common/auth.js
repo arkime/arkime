@@ -83,6 +83,7 @@ class Auth {
             if (!user) { console.log('User', userid, "doesn't exist"); return done(null, false); }
             if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
+            user.setLastUsed();
             return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
           });
         },
