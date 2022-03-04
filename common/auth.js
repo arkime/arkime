@@ -50,24 +50,22 @@ class Auth {
     Auth.requiredAuthHeader = options.requiredAuthHeader;
     Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
-    Auth.userAuthIps4 = new iptrie.IPTrie();
-    Auth.userAuthIps6 = new iptrie.IPTrie();
+    Auth.userAuthIps = new iptrie.IPTrie();
 
     if (options.userAuthIps) {
       for (const cidr in options.userAuthIps.split(',')) {
         const parts = cidr.split('/');
         if (parts[0].includes(':')) {
-          Auth.userAuthIps6.add(parts[0], +(parts[1] ?? 128), 1);
+          Auth.userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
         } else {
-          Auth.userAuthIps4.add(parts[0], +(parts[1] ?? 32), 1);
+          Auth.userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
         }
       }
     } else if (Auth.mode === 'header') {
-      Auth.userAuthIps4.add('127.0.0.0', 8, 1);
-      Auth.userAuthIps6.add('::1', 128, 1);
+      Auth.userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
+      Auth.userAuthIps.add('::1', 128, 1);
     } else {
-      Auth.userAuthIps4.add('0.0.0.0', 0, 1);
-      Auth.userAuthIps6.add('::', 0, 1);
+      Auth.userAuthIps.add('::', 0, 1);
     }
 
     if (Auth.mode === 'digest') {
@@ -83,6 +81,7 @@ class Auth {
             if (!user.enabled) { console.log('User', userid, 'not enabled'); return done('Not enabled'); }
 
             await user.expandRoles();
+            user.setLastUsed();
             return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
           });
         },
@@ -114,13 +113,13 @@ class Auth {
 
   static checkIps (req, res) {
     if (req.ip.includes(':')) {
-      if (!Auth.userAuthIps6.find(req.ip)) {
+      if (!Auth.userAuthIps.find(req.ip)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
         return 1;
       }
     } else {
-      if (!Auth.userAuthIps4.find(req.ip)) {
+      if (!Auth.userAuthIps.find(`::ffff:${req.ip}`)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
         return 1;

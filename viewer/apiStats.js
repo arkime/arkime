@@ -921,7 +921,7 @@ module.exports = (Config, Db, internals, ViewerUtils) => {
       addSetting('arkime.disk.watermarks', '3 Percent or Byte Values',
         'Disk Watermark Low,High,Flood',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html',
-        '^(|null|\\d+(%|b|kb|mb|gb|tb|pb),\\d+(%|b|kb|mb|gb|tb|pb),\\d+(%|b|kb|mb|gb|tb|pb))$',
+        '^(|null|\\d*\\.?\\d+(%|b|kb|mb|gb|tb|pb),\\d*\\.?\\d+(%|b|kb|mb|gb|tb|pb),\\d*\\.?\\d+(%|b|kb|mb|gb|tb|pb))$',
         getValue('cluster.routing.allocation.disk.watermark.low') + ',' +
         getValue('cluster.routing.allocation.disk.watermark.high') + ',' +
         getValue('cluster.routing.allocation.disk.watermark.flood_stage')

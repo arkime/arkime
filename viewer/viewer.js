@@ -2190,6 +2190,7 @@ function processCronQuery (cq, options, query, endTime, cb) {
 }
 
 internals.processCronQueries = () => {
+  Db.setQueriesNode(Config.nodeName());
   if (internals.cronRunning) {
     console.log('processQueries already running', qlworking);
     return;
@@ -2421,6 +2422,13 @@ async function main () {
     setInterval(internals.processCronQueries, 60 * 1000);
     setTimeout(internals.processCronQueries, 1000);
     setInterval(huntAPIs.processHuntJobs, 10000);
+  } else if (!Config.get('multiES', false)) {
+    const info = await Db.getQueriesNode();
+    if (info.node === undefined) {
+      console.log('WARNING - No cronQueries=true found, cron/hunts might be broken');
+    } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
+      console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
+    }
   }
 
   let server;
