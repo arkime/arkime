@@ -8,19 +8,20 @@ use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
 my $token = getTokenCookie();
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch'";
 
 # script exits successfully
-my $result = system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin");
+my $result = system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser admin admin admin --admin");
 eq_or_diff($result, "0", "script exited successfully");
 
 # create a user with each flag
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test1 test1 test1");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test2 test2 test2 --apionly");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test3 test3 test3 --email");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test4 test4 test4 --expression 'ip.src == 10.0.0.1'");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test5 test5 test5 --remove");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test6 test6 test6 --webauth");
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test7 test7 test7 --packetSearch");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test1 test1 test1");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test2 test2 test2 --apionly");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test3 test3 test3 --email");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test4 test4 test4 --expression 'ip.src == 10.0.0.1'");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test5 test5 test5 --remove");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test6 test6 test6 --webauth");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --packetSearch");
 
 # fetch the users
 my $users = viewerPost("/api/users", "");
@@ -42,13 +43,13 @@ ok(exists $response->{passStore}, "Users has password");
 
 # --createOnly flag should not overwrite the user if it already exists
 my $user7 = $users->{data}->[7];
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test7 test7 test7 --createOnly --email --remove --expression 'ip.src == 10.0.0.2'");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --createOnly --email --remove --expression 'ip.src == 10.0.0.2'");
 $users = viewerPost("/api/users", "");
 eq_or_diff($users->{data}->[7], $user7, "Create only doesn't overwrite user");
 
 # can update a user
 my $user1 = $users->{data}->[1];
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n testuser test1 test1 test1 --email");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test1 test1 test1 --email");
 $users = viewerPost("/api/users", "");
 ok($users->{data}->[1]->{emailSearch}, "Can update exiting user");
 
@@ -76,7 +77,7 @@ eq_or_diff($response, $mresponse);
 delete $response->{passStore};
 eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
 
-system("cd ../viewer ; node addUser.js -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n test3 authtest2 authtest2 authtest2");
 $response = viewerGet("/regressionTests/getUser/authtest2");
 
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'authtest2');
