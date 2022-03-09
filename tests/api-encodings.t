@@ -10,6 +10,7 @@ my $json;
 
 my $prefix = int(rand()*100000);
 my $token = getTokenCookie();
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch'";
 
 sub doTest {
     my ($encryption, $gzip, $shortheader) = @_;
@@ -19,7 +20,7 @@ sub doTest {
     my $btag = "bdat-$prefix-$encryption-$gzip-$shortheader";
 
   ###### wireshark-bdat.pcap - run
-    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag";
+    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -33,7 +34,7 @@ sub doTest {
     system("$cmd");
 
   ###### socks-http-pass.pcap - run
-    $cmd = "../capture/capture -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag";
+    $cmd = "../capture/capture $es -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
