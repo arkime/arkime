@@ -23,7 +23,7 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.4.0 2022/02/xx
+3.4.0 2022/03/09
   - release - node 16.14.0, libpcap 1.10.1
   - release - Configure script deals with / in password better
   - BREAKING - in header auth mode userAuthIps allows only localhost by default
@@ -35,12 +35,16 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - db.pl - added a repair command that will fix some common issues
   - viewer - reading packets from S3 failed
   - viewer - increase speed when searching match fields
+  - viewer - fixed lastUsed when in digest auth
   - viewer/wise - new userAuthIps setting that has which ips auth requests can
                   come from. header mode - default localhost, other - default all ips
+  - viewer - record which node is cron node and warn if not found
+  - viewer - allow floating point numbers for disk watermarks
   - capture - switch from deflate to gzip posting to ES, lower min gzip size to 860
   - capture - ietf quic improvements
   - esproxy - can now create a [tee] section that will duplicate all ES calls,
               but ignore results
+  - tests - Add --elasticsearch option which is actually used correctly
 
 3.3.1 2022/01/26
   - viewer - fix displaying large packets or xored packets not always working
