@@ -1,0 +1,7 @@
+if (session.snmp)
+  div.sessionDetailMeta.bold SNMP
+  dl.sessionDetailMeta
+    +arrayList(session.snmp, "version", "Version", "snmp.version")
+    +arrayList(session.snmp, "community", "Community", "snmp.community")
+    +arrayList(session.snmp, "error", "Error Codes", "snmp.error")
+    +arrayList(session.snmp, "variable", "Variables", "snmp.variable")

@@ -961,6 +961,9 @@ void  moloch_parsers_classifier_register_port_internal(const char *name, void *u
 void  moloch_print_hex_string(const unsigned char* data, unsigned int length);
 char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
 
+#define CLASSIFY_TCP(name, offset, bytes, cb) moloch_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
+#define CLASSIFY_UDP(name, offset, bytes, cb) moloch_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
+
 /******************************************************************************/
 /*
  * http.c
