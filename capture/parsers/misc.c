@@ -109,27 +109,6 @@ LOCAL void ntp_classify(MolochSession_t *session, const unsigned char *data, int
     moloch_session_add_protocol(session, "ntp");
 }
 /******************************************************************************/
-LOCAL void snmp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    uint32_t apc, atag, alen;
-    BSB bsb;
-
-    BSB_INIT(bsb, data, len);
-    unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
-
-    if (!value || atag != 16 || alen < 16)
-        return;
-
-    BSB_INIT(bsb, value, alen);
-
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
-
-    if (!value || atag != 2 || alen != 1 || value[0] > 3)
-        return;
-
-    moloch_session_add_protocol(session, "snmp");
-}
-/******************************************************************************/
 LOCAL void syslog_classify(MolochSession_t *session, const unsigned char *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     int i;
@@ -158,7 +137,6 @@ LOCAL void stun_classify(MolochSession_t *session, const unsigned char *data, in
         moloch_session_add_protocol(session, "stun");
         return;
     }
-
 }
 /******************************************************************************/
 LOCAL void stun_rsp_classify(MolochSession_t *session, const unsigned char *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -364,9 +342,6 @@ LOCAL void netflow_classify(MolochSession_t *session, const unsigned char *data,
 }
 /******************************************************************************/
 
-#define CLASSIFY_TCP(name, offset, bytes, cb) moloch_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
-#define CLASSIFY_UDP(name, offset, bytes, cb) moloch_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
-
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     moloch_parsers_classifier_register_tcp(_name, _uw, _offset, (unsigned char*)_str, _len, _func); \
     moloch_parsers_classifier_register_udp(_name, _uw, _offset, (unsigned char*)_str, _len, _func);
@@ -434,8 +409,6 @@ void moloch_parser_init()
     CLASSIFY_UDP("ntp", 0, "\xd9", ntp_classify);
     CLASSIFY_UDP("ntp", 0, "\xdb", ntp_classify);
     CLASSIFY_UDP("ntp", 0, "\xe3", ntp_classify);
-
-    CLASSIFY_UDP("snmp", 0, "\x30", snmp_classify);
 
     SIMPLE_CLASSIFY_UDP("bjnp", "BJNP");
 
