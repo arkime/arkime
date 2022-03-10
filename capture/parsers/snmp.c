@@ -21,6 +21,10 @@ LOCAL  int                   versionField;
 LOCAL  int                   communityField;
 LOCAL  int                   errorField;
 LOCAL  int                   variableField;
+LOCAL  int                   typeField;
+
+LOCAL  char                 *types[8] = {"GetRequest", "GetNextRequest", "GetResponse", "SetRequest", "Trap", "GetBulkRequest", "InformRequest", "SNMPv2-Trap"};
+LOCAL  int                   lens[8];
 
 /******************************************************************************/
 LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned char *data, int len, int UNUSED(which))
@@ -48,7 +52,7 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     version = value[0] + 1;
     moloch_field_int_add(versionField, session, version);
 
-    if (version != 2)
+    if (version > 2)
         return 0;
 
     // Community
@@ -60,6 +64,10 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     moloch_field_string_add(communityField, session, (char *)value, alen, TRUE);
 
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &dataType, &alen);
+
+    if (value && dataType < 8) {
+        moloch_field_string_add(typeField, session, types[dataType], lens[dataType], TRUE);
+    }
 
     if (dataType > 2 || !apc || !value || !alen)
         return 0;
@@ -90,27 +98,29 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
         return 0;
 
     // Variable-Bindings
-    // ALW TODO - I think need a loop here
-    char oid[100];
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
     if (!value || apc != 1)
         return 0;
 
     BSB_INIT(bsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    while (BSB_REMAINING(bsb) && !BSB_IS_ERROR(bsb)) {
+        value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (!value || apc != 1)
-        return 0;
+        if (!value || apc != 1)
+            return 0;
 
-    BSB_INIT(bsb, value, alen);
-    value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+        BSB obsb;
+        char oid[100];
+        BSB_INIT(obsb, value, alen);
+        value = moloch_parsers_asn_get_tlv(&obsb, &apc, &atag, &alen);
 
-    if (!value || apc != 0)
-        return 0;
+        if (!value || apc != 0)
+            return 0;
 
-    moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
-    moloch_field_string_add(variableField, session, (char *)oid, -1, TRUE);
+        moloch_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);
+        moloch_field_string_add(variableField, session, (char *)oid, -1, TRUE);
+    }
 
     return 0;
 }
@@ -139,6 +149,9 @@ LOCAL void snmp_classify(MolochSession_t *session, const unsigned char *data, in
 /******************************************************************************/
 void moloch_parser_init()
 {
+    for (int i = 0; i < 8; i++) {
+        lens[i] = strlen(types[i]);
+    }
     CLASSIFY_UDP("snmp", 0, "\x30", snmp_classify);
 
     versionField = moloch_field_define("snmp", "integer",
@@ -162,6 +175,12 @@ void moloch_parser_init()
     variableField = moloch_field_define("snmp", "termfield",
         "snmp.variable", "Variable", "snmp.variable",
         "SNMP Variable",
+        MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
+        (char *)NULL);
+
+    typeField = moloch_field_define("snmp", "termfield",
+        "snmp.type", "Type", "snmp.type",
+        "SNMP Type",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_CNT,
         (char *)NULL);
 }
