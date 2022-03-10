@@ -1,7 +1,5 @@
 /******************************************************************************/
-/* cont3xt.js  -- The main cont3xt app
- *
- * Copyright Yahoo Inc.
+/* Copyright Yahoo Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this Software except in compliance with the License.
