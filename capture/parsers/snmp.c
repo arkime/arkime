@@ -42,7 +42,6 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
 
     BSB_INIT(bsb, value, alen);
 
-
     // Version
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
@@ -52,8 +51,9 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
     version = value[0] + 1;
     moloch_field_int_add(versionField, session, version);
 
+    // Only try and decode version 1 & 2
     if (version > 2)
-        return 0;
+        return MOLOCH_PARSER_UNREGISTER;
 
     // Community
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
@@ -67,13 +67,19 @@ LOCAL int snmp_parser(MolochSession_t *session, void *UNUSED(uw), const unsigned
 
     if (value && dataType < 8) {
         moloch_field_string_add(typeField, session, types[dataType], lens[dataType], TRUE);
+    } else {
+        // This is probably not a SNMP stream after all
+        return MOLOCH_PARSER_UNREGISTER;
     }
 
-    if (dataType > 2 || !apc || !value || !alen)
+    if (!apc || !value || !alen)
+        return 0;
+
+    // Trap & GetBulkRequest have different formats
+    if (dataType == 4 || dataType == 5)
         return 0;
 
     BSB_INIT(bsb, value, alen);
-
 
     // Request Id
     value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
@@ -129,6 +135,14 @@ LOCAL void snmp_classify(MolochSession_t *session, const unsigned char *data, in
 {
     uint32_t apc, atag, alen;
     BSB bsb;
+
+    if (len < 12)
+        return;
+
+    if (session->port1 != 161 && session->port1 != 162 && session->port1 != 8161 &&
+        session->port2 != 161 && session->port2 != 162 && session->port2 != 8161) {
+        return;
+    }
 
     BSB_INIT(bsb, data, len);
     unsigned char *value = moloch_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
