@@ -66,8 +66,8 @@ rules:
         - 10.44.100.0/24
         - 2001:06f8::/32
       port.dst:
-        - 443
-        - 5353
+        - 400-500
+        - 5353-5354
       protocols.cnt: 1
     ops:
       "protocols": "iprulztest"

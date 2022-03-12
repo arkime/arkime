@@ -194,6 +194,11 @@ typedef enum {
     MOLOCH_FIELD_TYPE_FLOAT_GHASH
 } MolochFieldType;
 
+#define MOLOCH_FIELD_TYPE_IS_INT(t) (t >= MOLOCH_FIELD_TYPE_INT && t <= MOLOCH_FIELD_TYPE_INT_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_STR(t) (t >= MOLOCH_FIELD_TYPE_STR && t <= MOLOCH_FIELD_TYPE_STR_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_IP(t)  (t >= MOLOCH_FIELD_TYPE_IP && t <= MOLOCH_FIELD_TYPE_IP_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_FLOAT(t)  (t >= MOLOCH_FIELD_TYPE_FLOAT && t <= MOLOCH_FIELD_TYPE_FLOAT_GHASH)
+
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
 #define MOLOCH_FIELD_FLAG_LINKED_SESSIONS    0x0001
