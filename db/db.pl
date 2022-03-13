@@ -5189,67 +5189,69 @@ sub historyUpdate
 {
     my $mapping = '
 {
-  "history": {
-    "_source": {"enabled": "true"},
-    "dynamic": "strict",
-    "properties": {
-      "uiPage": {
-        "type": "keyword"
-      },
-      "userId": {
-        "type": "keyword"
-      },
-      "method": {
-        "type": "keyword"
-      },
-      "api": {
-        "type": "keyword"
-      },
-      "expression": {
-        "type": "keyword"
-      },
-      "view": {
-        "type": "object",
-        "dynamic": "true"
-      },
-      "timestamp": {
-        "type": "date",
-        "format": "epoch_second"
-      },
-      "range": {
-        "type": "integer"
-      },
-      "query": {
-        "type": "keyword"
-      },
-      "queryTime": {
-        "type": "integer"
-      },
-      "recordsReturned": {
-        "type": "integer"
-      },
-      "recordsFiltered": {
-        "type": "long"
-      },
-      "recordsTotal": {
-        "type": "long"
-      },
-      "body": {
-        "type": "object",
-        "dynamic": "true",
-        "enabled": "false"
-      },
-      "forcedExpression": {
-        "type": "keyword"
-      },
-      "esQuery": {
-        "type": "text",
-        "index": "false"
-      },
-      "esQueryIndices": {
-        "type": "text",
-        "index": "false"
-      }
+  "_source": {"enabled": "true"},
+  "dynamic": "strict",
+  "properties": {
+    "uiPage": {
+      "type": "keyword"
+    },
+    "userId": {
+      "type": "keyword"
+    },
+    "method": {
+      "type": "keyword"
+    },
+    "api": {
+      "type": "keyword"
+    },
+    "expression": {
+      "type": "keyword"
+    },
+    "view": {
+      "type": "object",
+      "dynamic": "true"
+    },
+    "timestamp": {
+      "type": "date",
+      "format": "epoch_second"
+    },
+    "range": {
+      "type": "integer"
+    },
+    "query": {
+      "type": "keyword"
+    },
+    "queryTime": {
+      "type": "integer"
+    },
+    "recordsReturned": {
+      "type": "integer"
+    },
+    "recordsFiltered": {
+      "type": "long"
+    },
+    "recordsTotal": {
+      "type": "long"
+    },
+    "body": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
+    "forcedExpression": {
+      "type": "keyword"
+    },
+    "esQuery": {
+      "type": "text",
+      "index": "false"
+    },
+    "esQueryIndices": {
+      "type": "text",
+      "index": "false"
+    },
+    "fake": {
+      "type": "text",
+      "index": "false"
     }
   }
 }';
@@ -5273,7 +5275,7 @@ if ($DOILM) {
 }/;
 
 logmsg "Creating history template\n" if ($verbose > 0);
-esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s&pretty&include_type_name=true", $template);
+esPut("/_template/${PREFIX}history_v1_template?master_timeout=${ESTIMEOUT}s&pretty", $template);
 
 my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
 
@@ -5281,7 +5283,7 @@ if ($UPGRADEALLSESSIONS) {
     logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
-        esPut("/$i/history/_mapping?master_timeout=${ESTIMEOUT}s&include_type_name=true", $mapping, 1);
+        esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
     }
     logmsg "\n" if (scalar(keys %{$indices}) != 0);
 }
