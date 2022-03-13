@@ -1,0 +1,370 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 41
+            },
+            "destination" : {
+               "bytes" : 93,
+               "ip" : "10.144.246.161",
+               "mac" : [
+                  "00:0e:83:16:f5:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 161
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3031020101040b5b",
+            "fileId" : [],
+            "firstPacket" : 1222366202157,
+            "ipProtocol" : 17,
+            "lastPacket" : 1222366202159,
+            "length" : 1,
+            "network" : {
+               "bytes" : 176,
+               "community_id" : "1:19JH6XlC94lkwKduyakUMYKuSko=",
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               99,
+               109
+            ],
+            "packetPos" : [
+               24,
+               123
+            ],
+            "protocol" : [
+               "snmp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 51
+            },
+            "snmp" : {
+               "community" : [
+                  "[R0_C@cti!]"
+               ],
+               "communityCnt" : 1,
+               "type" : [
+                  "GetNextRequest",
+                  "GetResponse"
+               ],
+               "typeCnt" : 2,
+               "variable" : [
+                  "1",
+                  "40.8802.1.1.1.1.1.1.0"
+               ],
+               "variableCnt" : 2,
+               "version" : [
+                  2
+               ],
+               "versionCnt" : 1
+            },
+            "source" : {
+               "bytes" : 83,
+               "ip" : "10.144.246.184",
+               "mac" : [
+                  "00:1d:60:b3:0a:dd"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 33938
+            },
+            "srcOui" : [
+               "ASUSTek COMPUTER INC."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "3027020101040b5b",
+            "totDataBytes" : 92
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-080925"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 48
+            },
+            "destination" : {
+               "bytes" : 94,
+               "ip" : "10.144.246.161",
+               "mac" : [
+                  "00:0e:83:16:f5:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 161
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3032020101040b5b",
+            "fileId" : [],
+            "firstPacket" : 1222366202193,
+            "ipProtocol" : 17,
+            "lastPacket" : 1222366202195,
+            "length" : 1,
+            "network" : {
+               "bytes" : 184,
+               "community_id" : "1:/t0Lle0+ZbpAqnF3QljBwwpf4xc=",
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               106,
+               110
+            ],
+            "packetPos" : [
+               232,
+               338
+            ],
+            "protocol" : [
+               "snmp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 52
+            },
+            "snmp" : {
+               "community" : [
+                  "[R0_C@cti!]"
+               ],
+               "communityCnt" : 1,
+               "type" : [
+                  "GetRequest",
+                  "GetResponse"
+               ],
+               "typeCnt" : 2,
+               "variable" : [
+                  "1.3.6.1.2.1.1.3.0"
+               ],
+               "variableCnt" : 1,
+               "version" : [
+                  2
+               ],
+               "versionCnt" : 1
+            },
+            "source" : {
+               "bytes" : 90,
+               "ip" : "10.144.246.184",
+               "mac" : [
+                  "00:1d:60:b3:0a:dd"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 43824
+            },
+            "srcOui" : [
+               "ASUSTek COMPUTER INC."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "302e020101040b5b",
+            "totDataBytes" : 100
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-080925"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 51
+            },
+            "destination" : {
+               "bytes" : 98,
+               "ip" : "10.144.246.161",
+               "mac" : [
+                  "00:0e:83:16:f5:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 161
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3036020101040b5b",
+            "fileId" : [],
+            "firstPacket" : 1222366202225,
+            "ipProtocol" : 17,
+            "lastPacket" : 1222366202226,
+            "length" : 1,
+            "network" : {
+               "bytes" : 191,
+               "community_id" : "1:09iN3jMfHQAyNOvgXoShHqPx8t0=",
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               109,
+               114
+            ],
+            "packetPos" : [
+               448,
+               557
+            ],
+            "protocol" : [
+               "snmp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 56
+            },
+            "snmp" : {
+               "community" : [
+                  "[R0_C@cti!]"
+               ],
+               "communityCnt" : 1,
+               "type" : [
+                  "GetRequest",
+                  "GetResponse"
+               ],
+               "typeCnt" : 2,
+               "variable" : [
+                  "1.3.6.1.2.1.31.1.1.1.10.1"
+               ],
+               "variableCnt" : 1,
+               "version" : [
+                  2
+               ],
+               "versionCnt" : 1
+            },
+            "source" : {
+               "bytes" : 93,
+               "ip" : "10.144.246.184",
+               "mac" : [
+                  "00:1d:60:b3:0a:dd"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 40807
+            },
+            "srcOui" : [
+               "ASUSTek COMPUTER INC."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "3031020101040b5b",
+            "totDataBytes" : 107
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-080925"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 51
+            },
+            "destination" : {
+               "bytes" : 98,
+               "ip" : "10.144.246.161",
+               "mac" : [
+                  "00:0e:83:16:f5:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 161
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3036020101040b5b",
+            "fileId" : [],
+            "firstPacket" : 1222366202254,
+            "ipProtocol" : 17,
+            "lastPacket" : 1222366202255,
+            "length" : 1,
+            "network" : {
+               "bytes" : 191,
+               "community_id" : "1:dXLjMYrWlQTLmOpwCz0YyjD9mKU=",
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               109,
+               114
+            ],
+            "packetPos" : [
+               671,
+               780
+            ],
+            "protocol" : [
+               "snmp",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 56
+            },
+            "snmp" : {
+               "community" : [
+                  "[R0_C@cti!]"
+               ],
+               "communityCnt" : 1,
+               "type" : [
+                  "GetRequest",
+                  "GetResponse"
+               ],
+               "typeCnt" : 2,
+               "variable" : [
+                  "1.3.6.1.2.1.31.1.1.1.6.1"
+               ],
+               "variableCnt" : 1,
+               "version" : [
+                  2
+               ],
+               "versionCnt" : 1
+            },
+            "source" : {
+               "bytes" : 93,
+               "ip" : "10.144.246.184",
+               "mac" : [
+                  "00:1d:60:b3:0a:dd"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 54059
+            },
+            "srcOui" : [
+               "ASUSTek COMPUTER INC."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "3031020101040b5b",
+            "totDataBytes" : 107
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-080925"
+            }
+         }
+      }
+   ]
+}
+

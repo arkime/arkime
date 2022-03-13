@@ -115,6 +115,7 @@ getExact[`/${prefix}sequence/_stats`] = 1;
 getExact[`/${prefix}dstats/_stats`] = 1;
 getExact[`/${prefix}files/_stats`] = 1;
 getExact[`/${prefix}fields/_search`] = 1;
+getExact[`/${prefix}queries/_mapping`] = 1;
 
 // POST calls we can match exactly
 const postExact = {

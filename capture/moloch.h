@@ -194,6 +194,11 @@ typedef enum {
     MOLOCH_FIELD_TYPE_FLOAT_GHASH
 } MolochFieldType;
 
+#define MOLOCH_FIELD_TYPE_IS_INT(t) (t >= MOLOCH_FIELD_TYPE_INT && t <= MOLOCH_FIELD_TYPE_INT_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_STR(t) (t >= MOLOCH_FIELD_TYPE_STR && t <= MOLOCH_FIELD_TYPE_STR_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_IP(t)  (t >= MOLOCH_FIELD_TYPE_IP && t <= MOLOCH_FIELD_TYPE_IP_GHASH)
+#define MOLOCH_FIELD_TYPE_IS_FLOAT(t)  (t >= MOLOCH_FIELD_TYPE_FLOAT && t <= MOLOCH_FIELD_TYPE_FLOAT_GHASH)
+
 /* These are ones you should set */
 /* Field should be set on all linked sessions */
 #define MOLOCH_FIELD_FLAG_LINKED_SESSIONS    0x0001
@@ -960,6 +965,9 @@ void  moloch_parsers_classifier_register_port_internal(const char *name, void *u
 
 void  moloch_print_hex_string(const unsigned char* data, unsigned int length);
 char *moloch_sprint_hex_string(char *buf, const unsigned char* data, unsigned int length);
+
+#define CLASSIFY_TCP(name, offset, bytes, cb) moloch_parsers_classifier_register_tcp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
+#define CLASSIFY_UDP(name, offset, bytes, cb) moloch_parsers_classifier_register_udp(name, name, offset, (unsigned char*)bytes, sizeof(bytes)-1, cb);
 
 /******************************************************************************/
 /*
