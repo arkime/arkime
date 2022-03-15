@@ -108,10 +108,10 @@ export default {
         { id: 'packetQueue', name: 'Packet Q', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.packetQueue); } },
         { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.diskQueue); } },
         { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.esQueue); } },
-        { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaPackets); } },
+        { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPackets', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaPacketsPerSec); } },
         { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytes', width: 80, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
-        { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessions', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaSessions); } },
-        { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDropped); } },
+        { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessions', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaSessionsPerSec); } },
+        { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDropped', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDroppedPerSec); } },
         // all the rest of the available stats
         { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBits(item.deltaBitsPerSec); } },
         { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaWrittenBytesPerSec); } },
