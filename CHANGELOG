@@ -28,7 +28,7 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
   - capture - rules can have numeric ranges
   - db.pl - stop using history type name
   - esproxy - added queries/_mapping to GET allow list
-
+  - viewer - Packets/s, Sessions/s, Dropped/s weren't accurate (thanks mcgillowen)
 
 3.4.0 2022/03/09
   - release - node 16.14.0, libpcap 1.10.1
