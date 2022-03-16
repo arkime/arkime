@@ -5248,10 +5248,6 @@ sub historyUpdate
     "esQueryIndices": {
       "type": "text",
       "index": "false"
-    },
-    "fake": {
-      "type": "text",
-      "index": "false"
     }
   }
 }';
