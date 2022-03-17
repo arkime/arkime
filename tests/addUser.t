@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 25;
+use Test::More tests => 28;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -22,12 +22,13 @@ system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testus
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test5 test5 test5 --remove");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test6 test6 test6 --webauth");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --packetSearch");
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test8 test8 test8 --roles 'parliamentUser' ");
 
 # fetch the users
 my $users = viewerPost("/api/users", "");
 
 # validate the flags
-eq_or_diff($users->{recordsTotal}, 8, "Should have 8 users");
+eq_or_diff($users->{recordsTotal}, 9, "Should have 9 users");
 eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
 eq_or_diff($users->{data}->[1]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
 ok(!$users->{data}->[2]->{webEnabled}, "API only");
@@ -36,6 +37,7 @@ eq_or_diff($users->{data}->[4]->{expression}, "ip.src == 10.0.0.1");
 ok($users->{data}->[5]->{removeEnabled}, "Remove");
 ok($users->{data}->[6]->{headerAuthEnabled}, "Web auth");
 ok($users->{data}->[7]->{packetSearch}, "Packet search");
+eq_or_diff($users->{data}->[8]->{roles}, from_json('["parliamentUser"]'));
 
 # user should have password
 my $response = viewerGet("/regressionTests/getUser/test1");
@@ -97,6 +99,12 @@ $MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'authte
 $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
 is ($response->code, 200);
 
+# No arkimeUser role
+$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'test8', 'test8' );
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->content, "Need arkimeUser role assigned");
+is ($response->code, 200);
+
 
 # cleanup
 viewerDeleteToken("/api/user/admin", $token);
@@ -107,6 +115,7 @@ viewerDeleteToken("/api/user/test4", $token);
 viewerDeleteToken("/api/user/test5", $token);
 viewerDeleteToken("/api/user/test6", $token);
 viewerDeleteToken("/api/user/test7", $token);
+viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
 
