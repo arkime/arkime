@@ -258,11 +258,21 @@ function isConfigWeb (req, res, next) {
 }
 
 // ----------------------------------------------------------------------------
-function checkAdmin (req, res, next) {
+function isWiseAdmin (req, res, next) {
   if (req.user.hasRole('wiseAdmin')) {
     return next();
   } else {
-    console.log(`${req.userId} is not an admin`);
+    console.log(`${req.userId} is not wiseAdmin`);
+    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
+  }
+}
+
+// ----------------------------------------------------------------------------
+function isWiseUser (req, res, next) {
+  if (req.user.hasRole('wiseUser')) {
+    return next();
+  } else {
+    console.log(`${req.userId} is not wiseUser`);
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
@@ -1102,7 +1112,7 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
  * @param {string} :source - The source to get the raw data for
  * @returns {object} All the views
  */
-app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
+app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1128,7 +1138,7 @@ app.get('/source/:source/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson
  * @param {string} :source - The source to put the raw data for
  * @returns {object} All the views
  */
-app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser], (req, res) => {
+app.put('/source/:source/put', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
   const source = internals.sources[req.params.source];
   if (!source) {
     return res.send({ success: false, text: `Source ${req.params.source} not found` });
@@ -1165,7 +1175,7 @@ app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
  * @name "/config/get"
  * @returns {object}
  */
-app.get('/config/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req, res) => {
+app.get('/config/get', [isConfigWeb, Auth.doAuth, isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
   const config = Object.keys(internals.config)
     .sort()
     .filter(key => internals.configDefs[key.split(':')[0]])
@@ -1198,7 +1208,7 @@ app.get('/config/get', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson], (req,
  *
  * @name "/config/save"
  */
-app.put('/config/save', [isConfigWeb, Auth.doAuth, ArkimeUtil.noCacheJson, checkAdmin, jsonParser, checkConfigCode], (req, res) => {
+app.put('/config/save', [isConfigWeb, Auth.doAuth, isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser, checkConfigCode], (req, res) => {
   if (req.body.config === undefined) {
     return res.send({ success: false, text: 'Missing config' });
   }

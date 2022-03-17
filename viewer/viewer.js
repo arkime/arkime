@@ -282,6 +282,14 @@ if (Config.get('passwordSecret')) {
     // Browser auth
     return Auth.digestAuth(req, res, next);
   });
+
+  // check for arkimeUser
+  app.use((req, res, next) => {
+    if (!req.user.hasRole('arkimeUser')) {
+      return res.send('Need arkimeUser role assigned');
+    }
+    next();
+  });
 } else if (Config.get('regressionTests', false)) {
   console.log('WARNING - The setting "regressionTests" is set to true, do NOT use in production, for testing only');
   internals.noPasswordSecret = true;
