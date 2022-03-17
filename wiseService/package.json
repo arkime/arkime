@@ -6,8 +6,7 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
-    "core-js": "^3.6.5",
-    "iptrie": "http://github.com/awick/node-iptrie/tarball/nodev12"
+    "core-js": "^3.6.5"
   },
   "scripts": {
     "bundle": "cd ../ && npm run wise:bundle",
