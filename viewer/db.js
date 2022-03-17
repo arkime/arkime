@@ -214,7 +214,7 @@ exports.initialize = async (info, cb) => {
         process.exit();
       }
     } else {
-      if (data.version.number.match(/^([0-6]|7\.[0-9]\.|8)/)) {
+      if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
         console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
         process.exit();
       }
