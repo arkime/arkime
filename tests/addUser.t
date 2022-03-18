@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 28;
+use Test::More tests => 35;
 use Test::Differences;
 use Data::Dumper;
 use MolochTest;
@@ -15,6 +15,7 @@ my $result = system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.
 eq_or_diff($result, "0", "script exited successfully");
 
 # create a user with each flag
+system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser role:role role:role role:role --roles 'superAdmin' ");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test1 test1 test1");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test2 test2 test2 --apionly");
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test3 test3 test3 --email");
@@ -28,32 +29,33 @@ system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testus
 my $users = viewerPost("/api/users", "");
 
 # validate the flags
-eq_or_diff($users->{recordsTotal}, 9, "Should have 9 users");
+eq_or_diff($users->{recordsTotal}, 10, "Should have 10 users");
 eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
-eq_or_diff($users->{data}->[1]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
-ok(!$users->{data}->[2]->{webEnabled}, "API only");
-ok($users->{data}->[3]->{emailSearch}, "Email Search");
-eq_or_diff($users->{data}->[4]->{expression}, "ip.src == 10.0.0.1");
-ok($users->{data}->[5]->{removeEnabled}, "Remove");
-ok($users->{data}->[6]->{headerAuthEnabled}, "Web auth");
-ok($users->{data}->[7]->{packetSearch}, "Packet search");
-eq_or_diff($users->{data}->[8]->{roles}, from_json('["parliamentUser"]'));
+is($users->{data}->[1]->{userId}, 'role:role');
+eq_or_diff($users->{data}->[2]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
+ok(!$users->{data}->[3]->{webEnabled}, "API only");
+ok($users->{data}->[4]->{emailSearch}, "Email Search");
+eq_or_diff($users->{data}->[5]->{expression}, "ip.src == 10.0.0.1");
+ok($users->{data}->[6]->{removeEnabled}, "Remove");
+ok($users->{data}->[7]->{headerAuthEnabled}, "Web auth");
+ok($users->{data}->[8]->{packetSearch}, "Packet search");
+eq_or_diff($users->{data}->[9]->{roles}, from_json('["parliamentUser"]'));
 
 # user should have password
 my $response = viewerGet("/regressionTests/getUser/test1");
 ok(exists $response->{passStore}, "Users has password");
 
 # --createOnly flag should not overwrite the user if it already exists
-my $user7 = $users->{data}->[7];
+my $user8 = $users->{data}->[8];
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test7 test7 test7 --createOnly --email --remove --expression 'ip.src == 10.0.0.2'");
 $users = viewerPost("/api/users", "");
-eq_or_diff($users->{data}->[7], $user7, "Create only doesn't overwrite user");
+eq_or_diff($users->{data}->[8], $user8, "Create only doesn't overwrite user");
 
 # can update a user
-my $user1 = $users->{data}->[1];
+my $user1 = $users->{data}->[2];
 system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser test1 test1 test1 --email");
 $users = viewerPost("/api/users", "");
-ok($users->{data}->[1]->{emailSearch}, "Can update exiting user");
+ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
 
 
 #### Auth Header tests
@@ -105,8 +107,23 @@ $response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
 is ($response->content, "Need arkimeUser role assigned");
 is ($response->code, 200);
 
+# No role auth
+$MolochTest::userAgent->credentials( "$MolochTest::host:8126", 'Moloch', 'role:role', 'role:role' );
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/");
+is ($response->code, 403);
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8126/", ':arkime_user' => 'role:role');
+is ($response->code, 401);
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
+$response = $MolochTest::userAgent->get("http://$MolochTest::host:8123/?molochRegressionUser=role:role");
+is ($response->code, 401);
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
 
 # cleanup
+viewerDeleteToken("/api/user/role:role", $token);
 viewerDeleteToken("/api/user/admin", $token);
 viewerDeleteToken("/api/user/test1", $token);
 viewerDeleteToken("/api/user/test2", $token);

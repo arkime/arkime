@@ -592,7 +592,7 @@ class User {
 
       // See if role actually exists
       const role = await User.getUserCache(r);
-      if (!role) { continue; }
+      if (!role || !role.enabled) { continue; }
       allRoles.add(r);
 
       // schedule any sub roles
