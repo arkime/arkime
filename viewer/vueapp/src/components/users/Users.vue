@@ -26,8 +26,7 @@ export default {
   },
   data () {
     return {
-      userRoles: [],
-      tmpRolesSupport: this.$constants.MOLOCH_TMP_ROLES_SUPPORT
+      userRoles: []
     };
   },
   computed: {
@@ -41,9 +40,7 @@ export default {
     }
   },
   created () {
-    if (this.tmpRolesSupport) {
-      this.getRoles();
-    }
+    this.getRoles();
   },
   methods: {
     getRoles () {

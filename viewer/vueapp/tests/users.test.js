@@ -11,17 +11,13 @@ import UserService from '../src/components/users/UserService';
 import HasRole from '../../../common/vueapp/HasRole.vue';
 import '../src/filters.js';
 import '../../../common/vueapp/vueFilters';
-const { userWithSettings } = require('./consts');
+const { userWithSettings, roles } = require('./consts');
 
 global.$ = global.jQuery = $;
 
 console.info = jest.fn(); // don't display console.info messages
 
 Vue.use(BootstrapVue);
-
-Vue.prototype.$constants = {
-  MOLOCH_TMP_ROLES_SUPPORT: false
-};
 
 Vue.directive('has-role', HasRole);
 
@@ -40,6 +36,7 @@ const $route = { query: { length: 10 } };
 
 test('users page no users', async () => {
   UserService.searchUsers = jest.fn().mockResolvedValue({ data: { data: [] } });
+  UserService.getRoles = jest.fn().mockResolvedValue(roles);
 
   const {
     getByText, getAllByText

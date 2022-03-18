@@ -30,6 +30,19 @@ export const users = [{
   roles: []
 }];
 
+export const roles = [
+  { text: 'arkimeAdmin', value: 'arkimeAdmin', userDefined: false },
+  { text: 'arkimeUser', value: 'arkimeUser', userDefined: false },
+  { text: 'cont3xtAdmin', value: 'cont3xtAdmin', userDefined: false },
+  { text: 'cont3xtUser', value: 'cont3xtUser', userDefined: false },
+  { text: 'parliamentAdmin', value: 'parliamentAdmin', userDefined: false },
+  { text: 'parliamentUser', value: 'parliamentUser', userDefined: false },
+  { text: 'superAdmin', value: 'superAdmin', userDefined: false },
+  { text: 'usersAdmin', value: 'usersAdmin', userDefined: false },
+  { text: 'wiseAdmin', value: 'wiseAdmin', userDefined: false },
+  { text: 'wiseUser', value: 'wiseUser', userDefined: false }
+];
+
 export const userSettings = {
   timezone: 'gmt',
   ms: false,

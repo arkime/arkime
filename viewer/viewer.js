@@ -2075,8 +2075,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     anonymousMode: !!internals.noPasswordSecret && !Config.get('regressionTests', false),
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
-    businessDays: Config.get('businessDays', '1,2,3,4,5'),
-    tmpRolesSupport: Config.get('tmpRolesSupport', false)
+    businessDays: Config.get('businessDays', '1,2,3,4,5')
   };
 
   // Create a fresh Vue app instance
