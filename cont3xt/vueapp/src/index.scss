@@ -104,3 +104,13 @@ body:not(.dark) .card {
 .card-body {
   padding: 0.5rem;
 }
+
+/* condense the table more! */
+.table-sm > thead > tr > th,
+.table-sm > tbody > tr > th,
+.table-sm > tfoot > tr > th,
+.table-sm > thead > tr > td,
+.table-sm > tbody > tr > td,
+.table-sm > tfoot > tr > td {
+  padding: 0.1rem 0.5rem;
+}

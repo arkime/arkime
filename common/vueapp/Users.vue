@@ -85,6 +85,7 @@
         :items="users"
         :fields="fields"
         :sort-desc.sync="desc"
+        class="small-table-font"
         :sort-by.sync="sortField"
         @sort-changed="sortChanged"
         :empty-text="searchTerm ? 'No users match your search' : 'No users'">
@@ -339,7 +340,7 @@
             <b-form-input
               autofocus
               autocomplete="userid"
-              v-model="newUser.userId"
+              v-model.lazy="newUser.userId"
               placeholder="Unique user ID"
               :state="this.newUser.userId.length > 0"
             />
@@ -354,7 +355,7 @@
             </template>
             <b-form-input
               autocomplete="username"
-              v-model="newUser.userName"
+              v-model.lazy="newUser.userName"
               placeholder="Readable user name"
               :state="this.newUser.userName.length > 0"
             />
@@ -373,7 +374,7 @@
           <b-form-input
             autocomplete="expression"
             placeholder="node == test"
-            v-model="newUser.expression"
+            v-model.lazy="newUser.expression"
           />
         </b-input-group>
         <div class="row">
@@ -391,7 +392,7 @@
               <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
               <select
                 class="form-control"
-                v-model="newUser.timeLimit">
+                v-model.lazy="newUser.timeLimit">
                 <option value="1">1 hour</option>
                 <option value="6">6 hours</option>
                 <option value="24">24 hours</option>
@@ -448,9 +449,9 @@
           <b-form-input
             type="password"
             :state="validatePassword"
-            v-model="newUser.password"
             placeholder="New password"
             autocomplete="new-password"
+            v-model.lazy="newUser.password"
           />
         </b-input-group>
         <b-form-checkbox inline
@@ -612,6 +613,9 @@ export default {
   },
   watch: {
     searchTerm () {
+      this.loadUsers();
+    },
+    currentPage (newPage) {
       this.loadUsers();
     }
   },
@@ -845,7 +849,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 /* center cell content vertically */
 .btn-toggle-user {
   margin-top: 2px;
@@ -859,5 +863,9 @@ export default {
 /* make the roles dropdown text smaller */
 .roles-dropdown > button {
   font-size: 0.8rem;
+}
+
+.small-table-font {
+  font-size: 0.9rem;
 }
 </style>
