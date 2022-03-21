@@ -2065,7 +2065,7 @@ router.post('/testAlert', isAdmin, (req, res, next) => {
 });
 
 function setupAuth () {
-  if (!parliament.settings.general.userNameHeader) { return; }
+  if (!parliament?.settings?.general?.userNameHeader) { return; }
 
   parliament.authMode = parliament.settings.general.userNameHeader === 'digest' ? 'digest' : 'header';
 
