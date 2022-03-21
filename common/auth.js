@@ -116,12 +116,14 @@ class Auth {
       if (!Auth.userAuthIps.find(req.ip)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        console.log('Blocked by ip', req.ip, req.url);
         return 1;
       }
     } else {
       if (!Auth.userAuthIps.find(`::ffff:${req.ip}`)) {
         res.status(403);
         res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        console.log('Blocked by ip', req.ip, req.url);
         return 1;
       }
     }

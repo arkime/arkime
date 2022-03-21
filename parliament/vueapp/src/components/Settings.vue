@@ -270,6 +270,82 @@
                 issues that have not been seen again after the specified time.
               </p>
             </div> <!-- /remove acknowledged issues after -->
+            <!-- userNameHeader -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    User Name Header
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="userNameHeader"
+                  @input="debounceInput"
+                  v-model="settings.general.userNameHeader"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                Controls how authentication is done, leave blank to use the single Parliament password, use <strong>digest</strong> to use digest authentication, use the userNameHeader to use header auth.
+              </p>
+            </div> <!-- /User Name Header-->
+            <!-- usersElasticsearch -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Users Elasticsearch URL
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="usersElasticsearch"
+                  @input="debounceInput"
+                  v-model="settings.general.usersElasticsearch"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                The URL for the users Elasticsearch instance. By default http://localhost:9200 if not set
+              </p>
+            </div> <!-- /usersElasticsearch-->
+            <!-- usersPrefix -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Users Prefix
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="usersPrefix"
+                  @input="debounceInput"
+                  v-model="settings.general.usersPrefix"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                The prefix for the users Elasticsearch index. By default arkime_ if not set
+              </p>
+            </div> <!-- /usersPrefix-->
+            <!-- passwordSecret -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Password Secret
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="passwordSecret"
+                  @input="debounceInput"
+                  v-model="settings.general.passwordSecret"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                The secret used to encrypt the md5 of the users information.
+              </p>
+            </div> <!-- /passwordSecret-->
           </div>
         </div>
         <!-- /general -->

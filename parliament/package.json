@@ -12,6 +12,7 @@
   "scripts": {
     "bundle": "cd ../ && npm run parliament:bundle",
     "bundle:min": "cd ../ && npm run parliament:build",
+    "dev": "cd ../ && npm run parliament:dev",
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
