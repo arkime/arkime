@@ -47,7 +47,9 @@ const internals = {
   configFile: `${version.config_prefix}/etc/cont3xt.ini`,
   debug: 0,
   insecure: false,
-  regressionTests: false
+  regressionTests: false,
+  options: {},
+  debugged: {}
 };
 
 // ----------------------------------------------------------------------------
@@ -344,6 +346,15 @@ function processArgs (argv) {
     if (argv[i] === '-c') {
       i++;
       internals.configFile = argv[i];
+    } else if (process.argv[i] === '-o') {
+      i++;
+      const equal = process.argv[i].indexOf('=');
+      if (equal === -1) {
+        console.log('Missing equal sign in', process.argv[i]);
+        process.exit(1);
+      }
+
+      internals.options[process.argv[i].slice(0, equal)] = process.argv[i].slice(equal + 1);
     } else if (argv[i] === '--insecure') {
       internals.insecure = true;
     } else if (argv[i] === '--debug') {
@@ -354,9 +365,10 @@ function processArgs (argv) {
       console.log('cont3xt.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  -c                    config file');
-      console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --insecure            Disable cert verification');
+      console.log('  -c <file>                   Where to fetch the config file from');
+      console.log('  -o <section>.<key>=<value>  Override the config file');
+      console.log('  --debug                     Increase debug level, multiple are supported');
+      console.log('  --insecure                  Disable cert verification');
 
       process.exit(0);
     }
@@ -386,10 +398,15 @@ User.prototype.setCont3xtKeys = function (v) {
 };
 
 function getConfig (section, sectionKey, d) {
-  if (!internals.config[section]) {
-    return d;
+  const key = `${section}.${sectionKey}`;
+  const value = internals.options[key] ?? internals.config[section]?.[sectionKey] ?? d;
+
+  if (internals.debug > 0 && internals.debugged[key] === undefined) {
+    console.log(`CONFIG - ${key} is ${value}`);
+    internals.debugged[key] = 1;
   }
-  return internals.config[section][sectionKey] ?? d;
+
+  return value;
 }
 
 // ----------------------------------------------------------------------------

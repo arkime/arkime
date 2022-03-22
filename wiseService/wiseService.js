@@ -140,10 +140,12 @@ function processArgs (argv) {
       console.log('wiseService.js [<options>]');
       console.log('');
       console.log('Options:');
-      console.log('  --debug               Increase debug level, multiple are supported');
-      console.log('  --webconfig           Allow the config to be edited from web page');
-      console.log('  --workers <b>         Number of worker processes to create');
-      console.log('  --insecure            Disable cert verification');
+      console.log('  -c <file|url>               Where to fetch the config file from');
+      console.log('  -o <section>.<key>=<value>  Override the config file');
+      console.log('  --debug                     Increase debug level, multiple are supported');
+      console.log('  --webconfig                 Allow the config to be edited from web page');
+      console.log('  --workers <b>               Number of worker processes to create');
+      console.log('  --insecure                  Disable cert verification');
 
       process.exit(0);
     }
