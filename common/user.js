@@ -767,7 +767,7 @@ function filterUsers (users, filter) {
   const results = [];
   const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
   for (let i = 0; i < users.length; i++) {
-    if (users[i].userId.match(re) || users[i].userName.match(re)) {
+    if (users[i].userId.match(re) || users[i].userName.match(re) || users[i].roles.match(re)) {
       results.push(users[i]);
     }
   }
@@ -852,7 +852,8 @@ class UserESImplementation {
     if (query.filter) {
       esQuery.query.bool.should = [
         { wildcard: { userName: '*' + query.filter + '*' } },
-        { wildcard: { userId: '*' + query.filter + '*' } }
+        { wildcard: { userId: '*' + query.filter + '*' } },
+        { wildcard: { roles: '*' + query.filter + '*' } }
       ];
     }
 
