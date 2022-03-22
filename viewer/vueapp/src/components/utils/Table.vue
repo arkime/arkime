@@ -412,13 +412,13 @@ export default {
           if (column.doStats) {
             let totalValue = 0;
             for (const item of this.data) {
-              if (!item.[column.id] && !item[column.sort]) {
+              if (!item[column.id] && !item[column.sort]) {
                 continue;
               }
-              totalValue += parseInt(item[column.id || column.sort]);
+              totalValue += parseInt(item[column.sort || column.id]);
             }
-            this.totalValues[column.id] = totalValue;
-            this.averageValues[column.id] = totalValue / this.data.length;
+            this.totalValues[column.sort || column.id] = totalValue;
+            this.averageValues[column.sort || column.id] = totalValue / this.data.length;
           }
         }
       }
@@ -620,7 +620,7 @@ export default {
       // if it's not a computed field or there's no data return empty immediately
       if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
-      let value = this.totalValues[column.id];
+      let value = this.totalValues[column.sort || column.id];
       // need to recalculate the value if this column has been zeroed
       if (this.zeroMap[column.id] !== undefined) {
         // subtract all zeroed values for this column
@@ -630,7 +630,7 @@ export default {
       }
 
       const mock = {};
-      mock[column.id] = value;
+      mock[column.sort || column.id] = value;
 
       if (column.avgTotFunction) {
         return column.avgTotFunction(mock);
@@ -645,7 +645,7 @@ export default {
       if (!column.doStats || !this.data || !this.data.length) { return ' '; }
 
       let sum = 0;
-      let value = this.averageValues[column.id];
+      let value = this.averageValues[column.sort || column.id];
       // need to recalculate the value if this column has been zeroed
       if (this.zeroMap[column.id] !== undefined) {
         for (let v = 0; v < this.data.length; v++) {
@@ -658,7 +658,7 @@ export default {
       }
 
       const mock = {};
-      mock[column.id] = value;
+      mock[column.sort || column.id] = value;
 
       if (column.avgTotFunction) {
         return column.avgTotFunction(mock);
