@@ -7,12 +7,16 @@ const store = new Vuex.Store({
   state: {
     hasAuth: false,
     loggedIn: false,
+    commonAuth: false,
     refreshInterval: 15000,
     dashboardOnly: false
   },
   mutations: {
     setLoggedIn (state, value) {
       state.loggedIn = value;
+    },
+    setCommonAuth (state, value) {
+      state.commonAuth = value;
     },
     setHasAuth (state, value) {
       state.hasAuth = value;

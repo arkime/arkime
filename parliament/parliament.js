@@ -14,12 +14,14 @@ const bp = require('body-parser');
 const logger = require('morgan');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const cryptoLib = require('crypto');
 const glob = require('glob');
 const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuidv4').default;
 const upgrade = require('./upgrade');
 const path = require('path');
+const chalk = require('chalk');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -47,7 +49,13 @@ const settingsDefault = {
     removeIssuesAfter: 60,
     removeAcknowledgedAfter: 15
   },
+  commonAuth: {},
   notifiers: {}
+};
+
+const internals = {
+  notifierTypes: {},
+  authSetupCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 10)
 };
 
 const parliamentReadError = `\nYou must fix this before you can run Parliament.
@@ -93,6 +101,7 @@ const invalidTokens = {};
 
     case '--pass':
       bcrypt.hash(appArgs[i + 1], saltrounds, setPasswordHash);
+      app.set('hasPass', true);
       i++;
       break;
 
@@ -177,12 +186,21 @@ try { // get the parliament file or error out if it's unreadable
   } else if (parliament.password) {
     // if the password is not supplied when starting the server,
     // use any existing password in the parliament json file
+    app.set('hasPass', true);
     app.set('password', parliament.password);
   }
 } catch (err) {
   console.log(`Error reading ${app.get('file') || 'your parliament file'}:\n\n`, err.stack);
   console.log(parliamentReadError);
   process.exit(1);
+}
+
+// optional config code for setting up auth
+if (!app.get('dashboardOnly') && !app.get('hasPass')) {
+  // if we're not in dashboardOnly mode and we don't have a password
+  console.log(chalk.cyan(
+    `${chalk.bgCyan.black('IMPORTANT')} - Auth setup pin code is: ${internals.authSetupCode}`
+  ));
 }
 
 // construct the issues file name
@@ -261,10 +279,6 @@ app.use('/parliament/api', router);
 router.use(bp.json());
 router.use(bp.urlencoded({ extended: true }));
 
-const internals = {
-  notifierTypes: {}
-};
-
 // Load notifier plugins for Parliament alerting
 function loadNotifiers () {
   const api = {
@@ -342,6 +356,27 @@ function verifyToken (req, res, next) {
       next();
     }
   });
+}
+
+function checkAuthUpdate (req, res, next) {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (app.get('password') || parliament.authMode) {
+    return isAdmin(req, res, next);
+  }
+
+  if (req.body !== undefined && req.body.authSetupCode !== undefined && req.body.authSetupCode === internals.authSetupCode) {
+    return next();
+  } else {
+    console.log(chalk.cyan(
+      `${chalk.bgCyan.black('IMPORTANT')} - Incorrect auth setup code used! Code is: ${internals.authSetupCode}`
+    ));
+    return res.status(403).send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
+  }
 }
 
 function isUser (req, res, next) {
@@ -1142,14 +1177,44 @@ router.get('/auth', (req, res, next) => {
 router.get('/auth/loggedin', isUser, (req, res, next) => {
   return res.json({
     loggedin: true,
-    hideLogout: parliament.authMode !== undefined,
-    isUser: parliament.authMode === undefined ? true : req.user.hasRole('parliamentUser'),
-    isAdmin: parliament.authMode === undefined ? true : req.user.hasRole('parliamentAdmin')
+    commonAuth: !!parliament.authMode,
+    isUser: !parliament.authMode ? true : req.user.hasRole('parliamentUser'),
+    isAdmin: !parliament.authMode ? true : req.user.hasRole('parliamentAdmin')
   });
 });
 
+// Update (or create) common auth settings for the parliament
+router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
+  if (app.get('dashboardOnly')) {
+    const error = new Error('Your Parliament is in dasboard only mode. You cannot setup auth.');
+    error.httpStatusCode = 403;
+    return next(error);
+  }
+
+  if (!req.body.commonAuth) {
+    const error = new Error('Missing auth settings');
+    error.httpStatusCode = 422;
+    return next(error);
+  }
+
+  for (const s in req.body.commonAuth) {
+    let setting = req.body.commonAuth[s];
+    if (setting === '') {
+      setting = undefined;
+    }
+    if (!parliament.settings.commonAuth) {
+      parliament.settings.commonAuth = {};
+    }
+    parliament.settings.commonAuth[s] = setting;
+  }
+
+  const successObj = { success: true, text: 'Successfully updated your common auth settings.' };
+  const errorText = 'Unable to update your common auth settings.';
+  writeParliament(req, res, next, successObj, errorText);
+});
+
 // Update (or create) a password for the parliament
-router.put('/auth/update', (req, res, next) => {
+router.put('/auth/update', [checkAuthUpdate], (req, res, next) => {
   if (app.get('dashboardOnly')) {
     const error = new Error('Your Parliament is in dasboard only mode. You cannot create a password.');
     error.httpStatusCode = 403;
@@ -1221,6 +1286,10 @@ router.get('/settings', isAdmin, (req, res, next) => {
     settings.general = settingsDefault.general;
   }
 
+  if (!settings.commonAuth) {
+    settings.commonAuth = {};
+  }
+
   return res.json(settings);
 });
 
@@ -1229,7 +1298,8 @@ router.put('/settings', isAdmin, (req, res, next) => {
   // save general settings
   for (const s in req.body.settings.general) {
     let setting = req.body.settings.general[s];
-    if (s !== 'hostname' && s !== 'includeUrl' && s !== 'userNameHeader' && s !== 'usersElasticsearch' && s !== 'usersPrefix' && s !== 'passwordSecret') {
+
+    if (s !== 'hostname' && s !== 'includeUrl') {
       if (isNaN(setting)) {
         const error = new Error(`${s} must be a number.`);
         error.httpStatusCode = 422;
@@ -1238,6 +1308,7 @@ router.put('/settings', isAdmin, (req, res, next) => {
         setting = parseInt(setting);
       }
     }
+
     parliament.settings.general[s] = setting;
   }
 
@@ -2065,23 +2136,25 @@ router.post('/testAlert', isAdmin, (req, res, next) => {
 });
 
 function setupAuth () {
-  if (!parliament?.settings?.general?.userNameHeader) { return; }
+  parliament.authMode = false;
 
-  parliament.authMode = parliament.settings.general.userNameHeader === 'digest' ? 'digest' : 'header';
+  if (!parliament?.settings?.commonAuth?.userNameHeader) { return; }
+
+  parliament.authMode = parliament.settings.commonAuth.userNameHeader === 'digest' ? 'digest' : 'header';
 
   Auth.initialize({
     debug: app.get('debug'),
     mode: parliament.authMode,
-    userNameHeader: parliament.authMode === 'digest' ? undefined : parliament.settings.general.userNameHeader,
-    passwordSecret: parliament.settings.general.passwordSecret ?? 'password',
+    userNameHeader: parliament.authMode === 'digest' ? undefined : parliament.settings.commonAuth.userNameHeader,
+    passwordSecret: parliament.settings.commonAuth.passwordSecret ?? 'password',
     userAuthIps: undefined,
     basePath: '/parliament/api/'
   });
 
   User.initialize({
     insecure: internals.insecure,
-    node: parliament.settings.general.usersElasticsearch ?? 'http://localhost:9200',
-    prefix: parliament.settings.general.usersPrefix
+    node: parliament.settings.commonAuth.usersElasticsearch ?? 'http://localhost:9200',
+    prefix: parliament.settings.commonAuth.usersPrefix
   });
 }
 

@@ -94,43 +94,45 @@
           </div>
         </span> <!-- /refresh interval select -->
         <!-- password input -->
-        <form>
-          <input type="text"
-            name="username"
-            value="..."
-            autocomplete="username"
-            class="d-none"
-          />
-          <input class="form-control ml-1"
-            tabindex="2"
-            type="password"
-            v-model="password"
-            v-focus-input="focusPassInput"
-            placeholder="password please"
-            autocomplete="password"
-            :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
-          />
-        </form> <!-- /password input -->
-        <!-- login button -->
-        <button type="button"
-          class="btn btn-outline-success cursor-pointer ml-1"
-          @click="login"
-          tabindex="3"
-          v-if="!loggedIn && hasAuth && !dashboardOnly">
-          <span class="fa fa-unlock">
-          </span>&nbsp;
-          Login
-        </button> <!-- /login button -->
-        <!-- logout btn -->
-        <button type="button"
-          class="btn btn-outline-danger cursor-pointer ml-1"
-          @click="logout"
-          tabindex="4"
-          v-if="loggedIn">
-          <span class="fa fa-lock">
-          </span>&nbsp;
-          Logout
-        </button> <!-- /logout btn -->
+        <template v-if="!commonAuth">
+          <form>
+            <input type="text"
+              name="username"
+              value="..."
+              autocomplete="username"
+              class="d-none"
+            />
+            <input class="form-control ml-1"
+              tabindex="2"
+              type="password"
+              v-model="password"
+              v-focus-input="focusPassInput"
+              placeholder="password please"
+              autocomplete="password"
+              :class="{'hide-login':!showLoginInput,'show-login':showLoginInput}"
+            />
+          </form> <!-- /password input -->
+          <!-- login button -->
+          <button type="button"
+            class="btn btn-outline-success cursor-pointer ml-1"
+            @click="login"
+            tabindex="3"
+            v-if="!loggedIn && hasAuth && !dashboardOnly">
+            <span class="fa fa-unlock">
+            </span>&nbsp;
+            Login
+          </button> <!-- /login button -->
+          <!-- logout btn -->
+          <button type="button"
+            class="btn btn-outline-danger cursor-pointer ml-1"
+            @click="logout"
+            tabindex="4"
+            v-if="loggedIn">
+            <span class="fa fa-lock">
+            </span>&nbsp;
+            Logout
+          </button> <!-- /logout btn -->
+        </template>
       </div>
     </nav> <!-- /parliament nav -->
 
@@ -164,6 +166,9 @@ export default {
     },
     loggedIn: function () {
       return this.$store.state.loggedIn;
+    },
+    commonAuth: function () {
+      return this.$store.state.commonAuth;
     },
     dashboardOnly: function () {
       return this.$store.state.dashboardOnly;

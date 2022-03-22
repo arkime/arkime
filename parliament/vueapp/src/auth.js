@@ -4,26 +4,22 @@ import store from '@/store';
 export default {
   login: function (password) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post('api/auth', { password: password })
-        .then((response) => {
-          this.saveToken(response.data.token);
-          resolve(response.data);
-        })
-        .catch((error) => {
-          this.saveToken('');
-          reject(error.response.data);
-        });
+      Vue.axios.post('api/auth', { password: password }).then((response) => {
+        this.saveToken(response.data.token);
+        resolve(response.data);
+      }).catch((error) => {
+        this.saveToken('');
+        reject(error.response.data);
+      });
     });
   },
 
   logout: function () {
-    Vue.axios.post('api/logout')
-      .then((response) => {
-        this.saveToken('');
-      })
-      .catch((error) => {
-        this.saveToken('');
-      });
+    Vue.axios.post('api/logout').then((response) => {
+      this.saveToken('');
+    }).catch((error) => {
+      this.saveToken('');
+    });
   },
 
   saveToken: function (token) {
@@ -36,41 +32,48 @@ export default {
   },
 
   isLoggedIn: function () {
-    Vue.axios.get('api/auth/loggedin')
-      .then((response) => {
-        store.commit('setLoggedIn', response.data.loggedin);
-      })
-      .catch((error) => {
-        store.commit('setLoggedIn', false);
-      });
+    Vue.axios.get('api/auth/loggedin').then((response) => {
+      store.commit('setLoggedIn', response.data.loggedin);
+      store.commit('setCommonAuth', response.data.commonAuth);
+    }).catch((error) => {
+      store.commit('setLoggedIn', false);
+    });
   },
 
   hasAuth: function () {
-    Vue.axios.get('api/auth')
-      .then((response) => {
-        store.commit('setHasAuth', response.data.hasAuth);
-        store.commit('setDashboardOnly', response.data.dashboardOnly);
-      })
-      .catch((error) => {
-        store.commit('setHasAuth', false);
-        store.commit('setDashboardOnly', false);
-      });
+    Vue.axios.get('api/auth').then((response) => {
+      store.commit('setHasAuth', response.data.hasAuth);
+      store.commit('setDashboardOnly', response.data.dashboardOnly);
+    }).catch((error) => {
+      store.commit('setHasAuth', false);
+      store.commit('setDashboardOnly', false);
+    });
   },
 
-  updatePassword: function (currentPassword, newPassword) {
+  updatePassword: function (currentPassword, newPassword, authSetupCode) {
     return new Promise((resolve, reject) => {
       Vue.axios.put('api/auth/update', {
-        newPassword: newPassword,
-        currentPassword: currentPassword
-      })
-        .then((response) => {
-          store.commit('setHasAuth', true);
-          this.saveToken(response.data.token);
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
+        newPassword,
+        authSetupCode,
+        currentPassword
+      }).then((response) => {
+        store.commit('setHasAuth', true);
+        this.saveToken(response.data.token);
+        resolve(response.data);
+      }).catch((error) => {
+        reject(error.response.data);
+      });
+    });
+  },
+
+  updateCommonAuth: function (data) {
+    return new Promise((resolve, reject) => {
+      Vue.axios.put('api/auth/commonAuth', data).then((response) => {
+        store.commit('setCommonAuth', true);
+        return resolve(response.data);
+      }).catch((error) => {
+        return reject(error.response.data);
+      });
     });
   }
 };
