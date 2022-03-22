@@ -45,7 +45,7 @@
             <a class="nav-link cursor-pointer"
               @click="openView('general')"
               :class="{'active':visibleTab === 'general'}"
-              v-if="commonAuth || (hasAuth && loggedIn)">
+              v-if="hasAuth && loggedIn">
               <span class="fa fa-fw fa-cog">
               </span>&nbsp;
               General
@@ -68,7 +68,7 @@
             <a class="nav-link cursor-pointer"
               @click="openView('notifiers')"
               :class="{'active':visibleTab === 'notifiers'}"
-              v-if="commonAuth || (hasAuth && loggedIn)">
+              v-if="hasAuth && loggedIn">
               <span class="fa fa-fw fa-bell">
               </span>&nbsp;
               Notifiers
@@ -881,7 +881,7 @@ export default {
       // default tab
       visibleTab: 'general',
       // page data
-      settings: { commonAuth: {} },
+      settings: { general: {}, commonAuth: {} },
       // settings error
       settingsError: '',
       // password settings
@@ -934,6 +934,8 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     openView: function (tabName) {
+      if (this.visibleTab === tabName) { return; }
+
       this.visibleTab = tabName;
       this.$router.push({
         hash: tabName
