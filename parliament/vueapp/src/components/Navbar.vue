@@ -33,7 +33,7 @@
           </router-link>
         </li>
         <li class="nav-item mr-2"
-          v-if="(hasAuth && loggedIn) || (!hasAuth && !dashboardOnly)">
+          v-if="(hasAuth && loggedIn && isAdmin) || (!hasAuth && !dashboardOnly)">
           <router-link to="settings"
             active-class="active"
             class="nav-link">
@@ -161,6 +161,9 @@ export default {
   },
   computed: {
     // auth vars
+    isAdmin: function () {
+      return this.$store.state.isAdmin;
+    },
     hasAuth: function () {
       return this.$store.state.hasAuth;
     },

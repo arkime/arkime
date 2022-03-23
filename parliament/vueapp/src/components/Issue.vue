@@ -2,7 +2,8 @@
 
   <div class="alert alert-sm"
     :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
-    <issue-actions v-if="loggedIn"
+    <issue-actions
+      v-if="isUser && loggedIn"
       class="issue-btns"
       :issue="issue"
       :groupId="groupId"
@@ -40,11 +41,16 @@ export default {
       type: Number,
       required: true
     },
-    index: { // TODO
+    index: {
       type: Number,
       required: true
     },
     loggedIn: Boolean
+  },
+  computed: {
+    isUser () {
+      return this.$store.state.isUser;
+    }
   },
   methods: {
     issueDateTooltip: function (issue) {

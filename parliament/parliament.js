@@ -388,7 +388,7 @@ function isUser (req, res, next) {
     res.status(403).json({
       tokenError: true,
       success: false,
-      text: 'Permission Denied: Not an user'
+      text: 'Permission Denied: Not a user'
     });
   });
 }

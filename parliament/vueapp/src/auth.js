@@ -33,10 +33,15 @@ export default {
 
   isLoggedIn: function () {
     Vue.axios.get('api/auth/loggedin').then((response) => {
+      store.commit('setIsUser', response.data.isUser);
+      store.commit('setIsAdmin', response.data.isAdmin);
       store.commit('setLoggedIn', response.data.loggedin);
       store.commit('setCommonAuth', response.data.commonAuth);
     }).catch((error) => {
+      store.commit('setIsUser', false);
+      store.commit('setIsAdmin', false);
       store.commit('setLoggedIn', false);
+      store.commit('setCommonAuth', false);
     });
   },
 

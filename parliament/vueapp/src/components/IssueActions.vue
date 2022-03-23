@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div v-if="isUser">
     <!-- (un)ignore until dropdown -->
     <b-dropdown right
       size="sm"
@@ -88,6 +88,11 @@ export default {
       default: function () {
         return this.issue.clusterId;
       }
+    }
+  },
+  computed: {
+    isUser: function () {
+      return this.$store.state.isUser;
     }
   },
   methods: {
