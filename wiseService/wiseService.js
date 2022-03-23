@@ -71,7 +71,7 @@ const internals = {
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to elasticsearch. Default http://localhost:9200' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'an Elastisearch API key for users DB access', password: true },
         { name: 'userAuthIps', required: false, help: 'comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, usually empty' },
+        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
       ]
     },
@@ -246,7 +246,7 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: es,
-    prefix: getConfig('wiseService', 'usersPrefix', ''),
+    prefix: getConfig('wiseService', 'usersPrefix'),
     apiKey: getConfig('wiseService', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('wiseService', 'usersElasticsearchBasicAuth')
   });

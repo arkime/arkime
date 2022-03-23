@@ -461,7 +461,7 @@ function setupAuth () {
     clientKey: getConfig('cont3xt', 'esClientKey'),
     clientCert: getConfig('cont3xt', 'esClientCert'),
     clientKeyPass: getConfig('cont3xt', 'esClientKeyPass'),
-    prefix: getConfig('cont3xt', 'usersPrefix', ''),
+    prefix: getConfig('cont3xt', 'usersPrefix'),
     apiKey: getConfig('cont3xt', 'usersElasticsearchAPIKey'),
     basicAuth: getConfig('cont3xt', 'usersElasticsearchBasicAuth')
   });

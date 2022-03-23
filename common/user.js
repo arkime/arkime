@@ -782,7 +782,9 @@ class UserESImplementation {
   client;
 
   constructor (options) {
-    if (options.prefix === undefined || options.prefix === '') {
+    if (options.prefix === undefined) {
+      this.prefix = 'arkime_';
+    } else if (options.prefix === '') {
       this.prefix = '';
     } else if (options.prefix.endsWith('_')) {
       this.prefix = options.prefix;
