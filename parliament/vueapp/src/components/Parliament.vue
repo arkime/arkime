@@ -46,7 +46,8 @@
       <div v-if="loggedIn"
         class="col-md-4">
         <!-- edit mode toggle -->
-        <span @click="toggleEditMode"
+        <span v-if="isUser"
+          @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x pull-right cursor-pointer mt-1 pl-2"
           :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
           title="Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)"
@@ -650,7 +651,7 @@
                 </div> <!-- /edit cluster form -->
               </div>
               <!-- edit cluster buttons -->
-              <div v-if="(loggedIn && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (loggedIn && editMode)"
+              <div v-if="isUser && ((loggedIn && cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited) || (loggedIn && editMode))"
                 class="card-footer small">
                 <a v-if="cluster.activeIssues && cluster.activeIssues.length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
@@ -766,6 +767,9 @@ export default {
     };
   },
   computed: {
+    isUser: function () {
+      return this.$store.state.isUser;
+    },
     loggedIn: function () {
       return this.$store.state.loggedIn;
     },
