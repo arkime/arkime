@@ -159,6 +159,7 @@ if (app.get('regressionTests')) {
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
+  internals.authSetupCode = '0000000000';
 }
 
 // parliament object!

@@ -1,4 +1,4 @@
-use Test::More tests => 37;
+use Test::More tests => 38;
 use Cwd;
 use URI::Escape;
 use MolochTest;
@@ -14,26 +14,30 @@ my $version = 3;
 
 # Get parliament, empty
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [], "version": ' . $version . '}'));
+eq_or_diff($result, from_json('{"authMode": false, "groups": [], "version": ' . $version . '}'));
 
+# requires auth setup code
+$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test"}');
+eq_or_diff($result, from_json('{"success":false,"text":"Not authorized, check log file"}'));
 
 # Set first password
-$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test"}');
+$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test", "authSetupCode": "0000000000"}');
+my $token = $result->{token};
 ok(exists $result->{token});
 delete $result->{token};
 eq_or_diff($result, from_json('{"success":true,"text":"Here\'s your new token!"}'));
 
 # Try and change without current password
-$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2"}');
+$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2", "token": "' . $token . '"}');
 eq_or_diff($result, from_json('{"success":false,"text":"You must provide your current password"}'));
 
 # Try and change wrong current password
-$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2", "currentPassword": "wrong"}');
+$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2", "currentPassword": "wrong", "token": "' . $token . '"}');
 eq_or_diff($result, from_json('{"success":false,"text":"Authentication failed."}'));
 
 # Change password right
-$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2", "currentPassword": "test"}');
-my $token = $result->{token};
+$result = parliamentPut("/parliament/api/auth/update", '{"newPassword": "test2", "currentPassword": "test", "token": "' . $token . '"}');
+$token = $result->{token};
 ok(exists $result->{token});
 delete $result->{token};
 eq_or_diff($result, from_json('{"success":true,"text":"Here\'s your new token!"}'));
@@ -57,7 +61,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new gr
 
 # Get parliament no token
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
+eq_or_diff($result, from_json('{"authMode": false, "groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
 
 # Get settings no token
 $result = parliamentGet("/parliament/api/settings");
@@ -84,7 +88,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new gr
 
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "description for 2", "id": 1, "title": "the second title"}], "version": ' . $version .'}'));
+eq_or_diff($result, from_json('{"authMode": false, "groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "description for 2", "id": 1, "title": "the second title"}], "version": ' . $version .'}'));
 
 
 # Update second group no token
@@ -101,7 +105,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully updated the 
 
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id": 1, "title": "UP the second title"}], "version": ' . $version .'}'));
+eq_or_diff($result, from_json('{"authMode": false, "groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "UP description for 2", "id": 1, "title": "UP the second title"}], "version": ' . $version .'}'));
 
 # Delete second group no token
 $result = parliamentDelete("/parliament/api/groups/1");
@@ -117,7 +121,7 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully removed the 
 
 # Get parliament after delete
 $result = parliamentGet("/parliament/api/parliament");
-eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
+eq_or_diff($result, from_json('{"authMode": false, "groups": [{"clusters": [], "id": 0, "title": "the title"}], "version": ' . $version .'}'));
 
 # Add cluster requires url
 $result = parliamentPost("/parliament/api/groups/0/clusters", '{"token": "' . $token . '", "title": "cluster 1"}');
