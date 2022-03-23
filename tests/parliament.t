@@ -42,7 +42,6 @@ ok(exists $result->{token});
 delete $result->{token};
 eq_or_diff($result, from_json('{"success":true,"text":"Here\'s your new token!"}'));
 
-
 # Create group no title no token
 $result = parliamentPost("/parliament/api/groups", '{}');
 eq_or_diff($result, from_json('{"tokenError":true,"success":false,"text":"Permission Denied: No token provided."}'));
@@ -89,7 +88,6 @@ eq_or_diff($result, from_json('{"success":true,"text":"Successfully added new gr
 # Get parliament
 $result = parliamentGet("/parliament/api/parliament");
 eq_or_diff($result, from_json('{"authMode": false, "groups": [{"clusters": [], "id": 0, "title": "the title"}, {"clusters": [], "description": "description for 2", "id": 1, "title": "the second title"}], "version": ' . $version .'}'));
-
 
 # Update second group no token
 $result = parliamentPut("/parliament/api/groups/1", '{"title": "UP the second title", "description": "UP description for 2"}');
