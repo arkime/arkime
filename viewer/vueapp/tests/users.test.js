@@ -46,8 +46,8 @@ test('users page no users', async () => {
   });
 
   await waitFor(() => { // displays table but no users
-    getAllByText('User ID');
-    getByText('No users');
+    getAllByText('ID');
+    getByText('No users or roles');
   });
 });
 

@@ -88,7 +88,7 @@
         class="small-table-font"
         :sort-by.sync="sortField"
         @sort-changed="sortChanged"
-        :empty-text="searchTerm ? 'No users match your search' : 'No users'">
+        :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
 
         <!-- column headers -->
         <template v-slot:head()="data">
@@ -97,7 +97,7 @@
             <span
               v-if="data.field.key === 'roles'"
               class="fa fa-info-circle fa-lg cursor-help ml-2"
-              v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
             <div class="pull-right"
               v-if="data.field.key === 'action'">
@@ -279,7 +279,7 @@
               class="mt-2">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)'">
+                  v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
                   Forced Expression
                 </b-input-group-text>
               </template>
@@ -293,7 +293,7 @@
               class="mt-2 w-25">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover="'Restrict the maximum time window of a user\'s query'">
+                  v-b-tooltip.hover="'Restrict the maximum time window of a query'">
                   Query Time Limit
                 </b-input-group-text>
               </template>
@@ -334,14 +334,15 @@
             class="col-md-6 mt-2">
             <template #prepend>
               <b-input-group-text>
-                User ID<sup>*</sup>
+                {{ createMode === 'user' ? 'User' : 'Role' }}
+                ID<sup>*</sup>
               </b-input-group-text>
             </template>
             <b-form-input
               autofocus
               autocomplete="userid"
               v-model.lazy="newUser.userId"
-              placeholder="Unique user ID"
+              placeholder="Unique ID"
               :state="this.newUser.userId.length > 0"
             />
           </b-input-group>
@@ -350,13 +351,14 @@
             class="col-md-6 mt-2">
             <template #prepend>
               <b-input-group-text>
-                User Name<sup>*</sup>
+                {{ createMode === 'user' ? 'User' : 'Role' }}
+                Name<sup>*</sup>
               </b-input-group-text>
             </template>
             <b-form-input
               autocomplete="username"
               v-model.lazy="newUser.userName"
-              placeholder="Readable user name"
+              placeholder="Readable name"
               :state="this.newUser.userName.length > 0"
             />
           </b-input-group>
@@ -367,7 +369,7 @@
           <template #prepend>
             <b-input-group-text
               class="cursor-help"
-              v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs)'">
+              v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
               Forced Expression
             </b-input-group-text>
           </template>
@@ -385,7 +387,7 @@
               <template #prepend>
                 <b-input-group-text
                   class="cursor-help"
-                  v-b-tooltip.hover="'Restrict the maximum time window of a user\'s query'">
+                  v-b-tooltip.hover="'Restrict the maximum time window of a query'">
                   Query Time Limit
                 </b-input-group-text>
               </template>
@@ -413,7 +415,7 @@
             <b-dropdown
               size="sm"
               class="mb-2"
-              text="User's Roles">
+              text="Roles">
               <b-dropdown-form>
                 <b-form-checkbox-group
                   v-model="newUser.roles">
@@ -433,7 +435,7 @@
             </b-dropdown>
             <span
               class="fa fa-info-circle fa-lg cursor-help ml-2"
-              v-b-tooltip.hover="'These roles are applied to this user across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
           </div>
         </div>
@@ -597,13 +599,13 @@ export default {
       newUser: defaultNewUser,
       fields: [
         { label: '', key: 'toggle', sortable: false },
-        { label: 'User ID', key: 'userId', sortable: true, required: true, help: 'The id used for login, can not be changed once created', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'User Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly name for user', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned to this user', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time this user used Arkime', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
       ]
     };
@@ -753,12 +755,12 @@ export default {
       this.validatePassword = undefined;
 
       if (!this.newUser.userId) {
-        this.createError = 'User ID can not be empty';
+        this.createError = 'ID can not be empty';
         return;
       }
 
       if (!this.newUser.userName) {
-        this.createError = 'User Name can not be empty';
+        this.createError = 'Name can not be empty';
         return;
       }
 
