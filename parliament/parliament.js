@@ -1198,6 +1198,13 @@ router.put('/auth/commonauth', [checkAuthUpdate], (req, res, next) => {
     return next(error);
   }
 
+  // Go thru the secret fields and if the save still has ******** that means the user didn't change, so save what we have
+  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
+    if (req.body.commonAuth[s] === '********') {
+      req.body.commonAuth[s] = parliament.settings.commonAuth[s];
+    }
+  }
+
   for (const s in req.body.commonAuth) {
     let setting = req.body.commonAuth[s];
     if (setting === '') {
@@ -1289,6 +1296,13 @@ router.get('/settings', isAdmin, (req, res, next) => {
 
   if (!settings.commonAuth) {
     settings.commonAuth = {};
+  }
+
+  // Hide the secrets
+  for (const s of ['passwordSecret', 'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']) {
+    if (settings.commonAuth[s] !== undefined) {
+      settings.commonAuth[s] = '********';
+    }
   }
 
   return res.json(settings);
@@ -2155,7 +2169,9 @@ function setupAuth () {
   User.initialize({
     insecure: internals.insecure,
     node: parliament.settings.commonAuth.usersElasticsearch ?? 'http://localhost:9200',
-    prefix: parliament.settings.commonAuth.usersPrefix
+    prefix: parliament.settings.commonAuth.usersPrefix,
+    apiKey: parliament.settings.commonAuth.usersElasticsearchAPIKey,
+    basicAuth: parliament.settings.commonAuth.usersElasticsearchBasicAuth
   });
 }
 
