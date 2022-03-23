@@ -219,17 +219,16 @@ export default {
           return;
         }
 
-        AuthService.login(this.password)
-          .then((response) => {
-            this.error = '';
-            this.password = '';
-            this.showLoginInput = false;
-          })
-          .catch((error) => {
-            this.password = '';
-            this.focusPassInput = true;
-            this.error = error.text || 'Unable to login';
-          });
+        AuthService.login(this.password).then((response) => {
+          this.error = '';
+          this.password = '';
+          this.showLoginInput = false;
+          AuthService.isLoggedIn();
+        }).catch((error) => {
+          this.password = '';
+          this.focusPassInput = true;
+          this.error = error.text || 'Unable to login';
+        });
       } else {
         this.showLoginInput = true;
         this.focusPassInput = true;
