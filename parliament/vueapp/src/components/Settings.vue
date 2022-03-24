@@ -380,6 +380,42 @@
                 The prefix for the users Elasticsearch index. By default arkime_ if not set
               </p>
             </div> <!-- /usersPrefix-->
+            <!-- usersElasticsearchAPIKey -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Elasticsearch API Key
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="usersElasticsearchAPIKey"
+                  v-model="settings.commonAuth.usersElasticsearchAPIKey"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                If using an APIKey for elasticsearch.
+              </p>
+            </div> <!-- /usersElasticsearchAPIKey-->
+            <!-- usersElasticsearchBasicAuth -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-prepend">
+                  <span class="input-group-text">
+                    Elasticsearch Basic Auth
+                  </span>
+                </span>
+                <input type="string"
+                  class="form-control"
+                  id="usersElasticsearchBasicAuth"
+                  v-model="settings.commonAuth.usersElasticsearchBasicAuth"
+                />
+              </div>
+              <p class="form-text small text-muted">
+                If using BasicAuth for elasticsearch.
+              </p>
+            </div> <!-- /usersElasticsearchBasicAuth-->
             <!-- passwordSecret -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
