@@ -1785,7 +1785,7 @@ LOCAL void moloch_db_get_sequence_number_cb(int UNUSED(code), unsigned char *dat
 /******************************************************************************/
 void moloch_db_get_sequence_number(char *name, MolochSeqNum_cb func, gpointer uw)
 {
-    char                key[100];
+    char                key[200];
     int                 key_len;
     MolochSeqRequest_t *r = MOLOCH_TYPE_ALLOC(MolochSeqRequest_t);
     char               *json = moloch_http_get_buffer(MOLOCH_HTTP_BUFFER_SIZE);
@@ -1803,7 +1803,7 @@ uint32_t moloch_db_get_sequence_number_sync(char *name)
 {
 
     while (1) {
-        char key[100];
+        char key[200];
         int key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
 
         size_t data_len;
@@ -1902,7 +1902,7 @@ char *moloch_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
 {
     static GRegex     *numRegex;
     static GRegex     *numHexRegex;
-    char               key[100];
+    char               key[200];
     int                key_len;
     uint32_t           num;
     char               filename[1024];
