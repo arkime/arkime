@@ -285,14 +285,15 @@ my ($cmd) = @_;
         }
 
         print ("Loading tagger\n");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH host host.tagger1.json hosttaggertest1");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH md5 md5.tagger1.json md5taggertest1");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH ip ip.tagger2.json iptaggertest2");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH host host.tagger2.json hosttaggertest2");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
-        system("../capture/plugins/taggerUpload.pl $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
+        print("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1\n");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger1.json hosttaggertest1");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger1.json md5taggertest1");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger2.json iptaggertest2");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger2.json hosttaggertest2");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
+        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
     }
 
     if ($cmd ne "--viewernostart") {
@@ -407,7 +408,7 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--elasticsearch") {
         shift @ARGV;
-        $ELASTICSEARCH = $ENV{ELASTICSEARCH} = $ARGV[0];
+        $MolochTest::elasticsearch = $ELASTICSEARCH = $ENV{ELASTICSEARCH} = $ARGV[0];
         shift @ARGV;
     } elsif ($ARGV[0] eq "--c8") {
         $main::c8 = 1;
@@ -417,7 +418,11 @@ while (scalar (@ARGV) > 0) {
         system("rm -rf ../parliament/coverage");
         shift @ARGV;
     } elsif ($ARGV[0] eq "--insecure") {
-        $INSECURE = "--insecure";
+        $MolochTest::userAgent->ssl_opts(
+            SSL_verify_mode => 0,
+            verify_hostname=> 0
+        );
+        $ENV{INSECURE} = $INSECURE = "--insecure";
         shift @ARGV;
     } elsif ($ARGV[0] eq "--valgrind") {
         $main::valgrind = 1;

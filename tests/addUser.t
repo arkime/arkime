@@ -8,7 +8,7 @@ use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
 my $token = getTokenCookie();
-my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch'";
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' -o 'usersElasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 
 # script exits successfully
 my $result = system("cd ../viewer ; node addUser.js $es -c ../tests/config.test.ini -n testuser admin admin admin --admin");

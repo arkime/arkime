@@ -93,7 +93,7 @@ class AlienVaultSource extends WISESource {
     }
 
     // Get the new revision
-    WISESource.request('https://reputation.alienvault.com/' + this.key + '/reputation.rev', '/tmp/alienvault.rev', (statusCode) => {
+    WISESource.request('https://reputation.alienvault.com/reputation.rev', '/tmp/alienvault.rev', (statusCode) => {
       // If statusCode isn't success or not changed then try again if not already
       if (statusCode !== 200 && statusCode !== 304) {
         if (!this.retry) {
@@ -112,7 +112,7 @@ class AlienVaultSource extends WISESource {
         }
 
         // Fetch new data file
-        WISESource.request('https://reputation.alienvault.com/' + this.key + '/reputation.data', '/tmp/alienvault.data', (subStatusCode) => {
+        WISESource.request('https://reputation.alienvault.com/reputation.data', '/tmp/alienvault.data', (subStatusCode) => {
           if (subStatusCode === 200) {
             this.loaded = true;
             this.parseFile();
