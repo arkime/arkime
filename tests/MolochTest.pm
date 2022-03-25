@@ -16,6 +16,12 @@ $MolochTest::userAgent = LWP::UserAgent->new(timeout => 120);
 $MolochTest::host = "127.0.0.1";
 $MolochTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 
+if ($ENV{INSECURE} eq "--insecure") {
+    $MolochTest::userAgent->ssl_opts(
+        SSL_verify_mode => 0,
+        verify_hostname=> 0
+    )
+}
 
 ################################################################################
 sub viewerGet {
@@ -206,7 +212,7 @@ sub esGet {
 my ($url) = @_;
 
     my $response = $MolochTest::userAgent->get("$MolochTest::elasticsearch$url");
-    #print $url, " response:", $response->content;
+    #print "$MolochTest::elasticsearch$url", " response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
 }
@@ -216,6 +222,7 @@ my ($url, $content) = @_;
 
     my $response = $MolochTest::userAgent->post("$MolochTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     #diag $url, " response:", $response->content;
+    #print "$MolochTest::elasticsearch$url content:", $content,"\n response:", $response->content;
     my $json = from_json($response->content);
     return ($json);
 }

@@ -8,6 +8,12 @@ use LWP::UserAgent;
 use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 
+my $INSECURE = 0;
+if ($ARGV[0] eq "--insecure") {
+    $INSECURE = 1;
+    shift @ARGV;
+}
+
 my $host = $ARGV[0];
 
 if ($host !~ /(http:|https)/) {
@@ -18,7 +24,7 @@ sub showHelp($)
 {
     my ($str) = @_;
     print $str,"\n";
-    die "$0 ESHOST:ESPORT (ip|host|md5|email|uri) filename tag1 [tag2..tagN]";
+    die "$0 [--insecure] ESHOST:ESPORT (ip|host|md5|email|uri) filename tag1 [tag2..tagN]";
 }
 
 showHelp("Missing arguments") if (@ARGV < 4);
@@ -27,6 +33,14 @@ showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
 showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 
 my $userAgent = LWP::UserAgent->new(timeout => 20);
+
+if ($INSECURE) {
+    $userAgent->ssl_opts(
+        SSL_verify_mode => 0,
+        verify_hostname=> 0
+    )
+}
+
 my $response = $userAgent->request(HTTP::Request::Common::PUT("$host/tagger",
                                "Content-Type" => "application/json;charset=UTF-8",
                                 Content => '{"mappings": { "properties":{"tags":{"type":"keyword","index": false}, "type": {"type":"keyword","index": false}, "data": {"type":"keyword","index": false}, "md5": {"type":"keyword","index": false}}}}'));

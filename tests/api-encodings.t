@@ -10,7 +10,7 @@ my $json;
 
 my $prefix = int(rand()*100000);
 my $token = getTokenCookie();
-my $es = "-o 'elasticsearch=$MolochTest::elasticsearch'";
+my $es = "-o 'elasticsearch=$MolochTest::elasticsearch' $ENV{INSECURE}";
 
 sub doTest {
     my ($encryption, $gzip, $shortheader) = @_;
