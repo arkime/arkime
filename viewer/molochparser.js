@@ -335,6 +335,23 @@ function getIpInfoList (yy, needPort) {
   return ors.sort((a, b) => { return a.exp.localeCompare(b.exp); });
 }
 
+function getRegexInfoList (yy, info) {
+  const regex = new RegExp(info.regex);
+  const ors = [];
+  const completed = [];
+  for (const f in yy.fieldsMap) {
+    if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
+      if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
+        continue;
+      }
+      ors.push(yy.fieldsMap[f]);
+      completed[yy.fieldsMap[f].dbField] = 1;
+    }
+  }
+
+  return ors.sort((a, b) => { return a.exp.localeCompare(b.exp); });
+}
+
 /* Do all the magic around ip field parsing.
  * Supports many formats such as
  * ip
@@ -639,12 +656,25 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
     case 'textfield':
     case 'uptermfield':
     case 'uptextfield':
-      terms[info.dbField] = {
-        index: `${yy.prefix}lookups`,
-        id: shortcut._id,
-        path: 'string'
-      };
-      obj.bool[operation].push({ terms });
+      if (info.regex) {
+        const infos = getRegexInfoList(yy, info);
+        for (const i of infos) {
+          const terms = {};
+          terms[i.dbField] = {
+            index: `${yy.prefix}lookups`,
+            id: shortcut._id,
+            path: 'string'
+          };
+          obj.bool[operation].push({ terms });
+        }
+      } else {
+        terms[info.dbField] = {
+          index: `${yy.prefix}lookups`,
+          id: shortcut._id,
+          path: 'string'
+        };
+        obj.bool[operation].push({ terms });
+      }
       break;
     default:
       throw 'Unsupported field type: ' + type;
@@ -663,18 +693,11 @@ function formatNormalQuery (yy, field, op, value) {
   const info = getFieldInfo(yy, field);
 
   if (info.regex) {
-    const regex = new RegExp(info.regex);
+    const infos = getRegexInfoList(yy, info);
     obj = [];
     const completed = [];
-    for (const f in yy.fieldsMap) {
-      if (f.match(regex) && !completed[yy.fieldsMap[f].dbField]) {
-        if (yy.fieldsMap[f].requiredRight && yy[yy.fieldsMap[f].requiredRight] !== true) {
-          continue;
-        }
-        /* If a not equal op then format as if an equal and do the not below */
-        obj.push(formatQuery(yy, f, (op === 'ne' ? 'eq' : op), value));
-        completed[yy.fieldsMap[f].dbField] = 1;
-      }
+    for (const i of infos) {
+      obj.push(formatQuery(yy, i.exp, (op === 'ne' ? 'eq' : op), value));
     }
 
     if (op === 'ne') {
