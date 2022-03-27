@@ -642,7 +642,7 @@ void moloch_parser_init()
         (char *)NULL);
 
     moloch_field_define("smb", "lotextfield",
-        "host.smb", "Hostname Tokens", "smb.hostTokens",
+        "host.smb.tokens", "Hostname Tokens", "smb.hostTokens",
         "SMB Host Tokens",
         MOLOCH_FIELD_TYPE_STR_HASH,  MOLOCH_FIELD_FLAG_FAKE,
         "aliases", "[\"smb.host.tokens\"]",
