@@ -505,8 +505,15 @@ exports.loadFields = function (data) {
 /// ///////////////////////////////////////////////////////////////////////////////
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
-let mode = 'digest';
-if (exports.get('regressionTests')) {
+
+let mode = 'anonymousWithDB';
+if (exports.get('passwordSecret')) {
+  if (exports.get('userNameHeader')) {
+    mode = 'header';
+  } else {
+    mode = 'digest';
+  }
+} else if (exports.get('regressionTests')) {
   mode = 'regressionTests';
 }
 
