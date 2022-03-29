@@ -34,11 +34,11 @@
           v-model="perPage"
           @change="perPageChange"
           :options="[
-            { value: 5, text: '5 per page'},
             { value: 10, text: '10 per page'},
             { value: 20, text: '20 per page'},
             { value: 50, text: '50 per page'},
             { value: 100, text: '100 per page'}
+            { value: 200, text: '200 per page'}
           ]"
         />
       </div>
@@ -589,7 +589,7 @@ export default {
       dbUserList: undefined,
       changed: {},
       recordsTotal: 0,
-      perPage: 50,
+      perPage: 100,
       currentPage: 1,
       sortField: 'userId',
       desc: false,
