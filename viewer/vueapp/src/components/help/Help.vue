@@ -1172,16 +1172,73 @@
 
       <hr>
 
-      <h3 id="users" v-has-role="{user:user,roles:'arkimeAdmin'}">
+      <h3 id="users" v-has-role="{user:user,roles:'usersAdmin'}">
         <span class="fa fa-fw fa-users"></span>&nbsp;
         Users
       </h3>
-      <p v-has-role="{user:user,roles:'arkimeAdmin'}">
-        The Users page, is where user options are configured and added to the system. Multiple options for role based access control (RBAC) may be leveraged.
-        These options include: The User ID, The Name of the user, a Forced expression (only allows a user to see data related to the specified expression/query), an Account enabled toggle, an Admin toggle,
-        if the user is allowed access to the web interface, if the user is allowed access to http based Authorization Headers, if the user may search captured email data, if the user may remove data from the system (scrub).
-        This page also allows for the deletion of a previously created user. Clicking on the Settings link will jump to that specific user's <a href="help#settings" class="no-decoration">Settings</a> page, where an admin can view and configure settings for each user.
-      </p>
+      <span v-has-role="{user:user,roles:'arkimeAdmin'}">
+        <p>
+          The Users page is where you can add, modify, and delete both Users and Roles for the entire Arkime ecosystem.
+
+          Arkime has builtin Roles that control how different subsystems are accessed.
+          You can also create user defined Roles that are used to share different items.
+          Basic inheritance is supported for role, so if you create a 'team' role and assign it the cont3xtUser role,
+          any user assigned the new 'team' role will also have the 'cont3xtUser' role assigned.
+        </p>
+
+        System Roles:
+        <dl class="dl-horizontal dl-horizontal-wide">
+          <dt>superAdmin</dt>
+          <dd>Has all system roles assigned. Can only be assigned by another superAdmin.</dd>
+          <dt>usersAdmin</dt>
+          <dd>Can use the Users page to add/modify/delete users</dd>
+          <dt>arkimeAdmin</dt>
+          <dd>Can perform arkime configuration, automatically a arkimeUser also.</dd>
+          <dt>arkimeUser</dt>
+          <dd>Can use the Arkime viewer application</dd>
+          <dt>cont3xtAdmin</dt>
+          <dd>Can perform cont3xt configuration, automatically a cont3xtUser also.</dd>
+          <dt>contx3tUser</dt>
+          <dd>Can use the Cont3xt application</dd>
+          <dt>parliamentAdmin</dt>
+          <dd>Can perform parliament configuration, automatically a parliamentUser also.</dd>
+          <dt>parliamentUser</dt>
+          <dd>Can dismiss parliament issues and notifications. Unlike other roles parliament doesn't require a role to be set to use as a dashboard</dd>
+          <dt>wiseAdmin</dt>
+          <dd>Can perform wise configuration, automatically a wiseUser also.</dd>
+          <dt>wiseUser</dt>
+          <dd>Can use the WISE UI to do queries and viewer stats</dd>
+        </dl>
+
+        <p>
+        As each user is added you'll need to assign and sometimes change the default permissions
+        </p>
+
+        <dl class="dl-horizontal dl-horizontal-wide">
+          <dt>Enabled</dt>
+          <dd>Can this user/role actually be used</dd>
+          <dt>Web Interface</dt>
+          <dd>Can this user use the web interface, or only API calls</dd>
+          <dt>Web Auth Header</dt>
+          <dd>Can this user be authenticated by the Web Auth Header setting, or only digest</dd>
+          <dt>Disable Arkime Email Search</dt>
+          <dd>Should the user be able to use the email.* search criteria, they will see email field when openning a session</dd>
+          <dt>Disable Arkime Data Removal</dt>
+          <dd>Should the user be able to remove data, such as tags</dd>
+          <dt>Disable Arkime Hunting</dt>
+          <dd>Should the user be able to create new Arkime Hunts</dd>
+          <dt>Hide Arkime stats Page</dt>
+          <dd>Should the user be able to view the Arkime Stats tabs</dd>
+          <dt>Hide Arkime PCAP</dt>
+          <dd>When opening a session, should the user see the PCAP section</dd>
+          <dt>Disable Arkime PCAP Download</dt>
+          <dd>Should the user be able to download PCAP files</dd>
+          <dt>Forced Expression</dt>
+          <dd>This Arkime Expression will be added to all queries the does</dd>
+          <dt>Query Time Limit</dt>
+          <dd>How far back can the user do queries for</dd>
+        </dl>
+      </span>
 
       <hr v-has-role="{user:user,roles:'arkimeAdmin'}">
 
