@@ -40,7 +40,7 @@ const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
-const ArkimeUtil = require('../common/ArkimeUtil');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
