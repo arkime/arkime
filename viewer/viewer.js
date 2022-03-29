@@ -748,24 +748,6 @@ function getSettingUserCache (req, res, next) {
   });
 }
 
-// sets req.regressionTests to true if we're in regressionTests mode
-function setRegressionTests (req, res, next) {
-  if (Config.get('regressionTests', false)) {
-    req.regressionTests = true;
-  }
-
-  next();
-}
-
-// sets req.noPasswordSecret to true if internals.noPasswordSecret is set
-function setNoPasswordSecret (req, res, next) {
-  if (internals.noPasswordSecret) {
-    req.noPasswordSecret = true;
-  }
-
-  next();
-}
-
 // view middleware ------------------------------------------------------------
 // * remove the string, 'shared:', that is added to shared views with the same
 //   name as a user's personal view in the endpoint '/user/views'
@@ -1269,7 +1251,7 @@ app.post( // get users endpoint
 
 app.post( // update user password endpoint
   ['/api/user/password', '/user/password/change'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), setRegressionTests, setNoPasswordSecret, ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   User.apiUpdateUserPassword
 );
 

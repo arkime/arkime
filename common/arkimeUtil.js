@@ -18,6 +18,7 @@
 
 const Redis = require('ioredis');
 const memjs = require('memjs');
+const Auth = require('./auth');
 
 class ArkimeUtil {
   static debug = 0;
@@ -205,8 +206,7 @@ class ArkimeUtil {
     let userId;
 
     if (req.query.userId === undefined || req.query.userId === req.user.userId) {
-      // TODO what do you think about doing it this way?
-      if (req.regressionTests) {
+      if (Auth.regressionTests) {
         req.settingUser = req.user;
         return next();
       }
@@ -221,7 +221,7 @@ class ArkimeUtil {
 
     User.getUser(userId, function (err, user) {
       if (err || !user) {
-        if (req.noPasswordSecret) { // TODO and here too?
+        if (!Auth.passwordSecret) {
           req.settingUser = JSON.parse(JSON.stringify(req.user));
           delete req.settingUser.found;
         } else {

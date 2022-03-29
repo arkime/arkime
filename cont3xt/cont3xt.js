@@ -199,15 +199,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// sets req.regressionTests to true if were in regressionTests mode
-function setRegressionTests (req, res, next) {
-  if (internals.regressionTests) {
-    req.regressionTests = true;
-  }
-
-  next();
-}
-
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken], LinkGroup.apiUpdate);
@@ -217,7 +208,7 @@ app.get('/api/roles', [checkCookieToken], User.apiRoles);
 app.get('/api/user', User.apiGetUser);
 app.post('/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
-app.post('/api/user/password', [jsonParser, checkCookieToken, setRegressionTests, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
+app.post('/api/user/password', [jsonParser, checkCookieToken, ArkimeUtil.getSettingUserDb], User.apiUpdateUserPassword);
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 

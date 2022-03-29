@@ -51,6 +51,7 @@ class Auth {
     Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.userAuthIps = new iptrie.IPTrie();
+    Auth.regressionTests = false;
 
     if (options.userAuthIps) {
       for (const cidr in options.userAuthIps.split(',')) {
@@ -107,6 +108,7 @@ class Auth {
       break;
     case 'regressionTests':
       Auth.authFunc = Auth.regressionTestsAuth;
+      Auth.regressionTests = true;
       break;
     }
   }
