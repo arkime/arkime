@@ -20,7 +20,6 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
-const ArkimeUtil = require('../common/arkimeUtil');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -542,6 +541,41 @@ class User {
           text: `User ${userId} updated successfully`
         }));
       });
+    });
+  };
+
+  /**
+   * POST - /api/user/password
+   *
+   * Update user password.
+   * @name /user/password
+   * @returns {boolean} success - Whether the update password operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static apiUpdateUserPassword (req, res) {
+    if (!req.body.newPassword || req.body.newPassword.length < 3) {
+      return res.serverError(403, 'New password needs to be at least 3 characters');
+    }
+
+    if (!req.user.hasRole('usersAdmin') && (Auth.store2ha1(req.user.passStore) !==
+      Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword)) ||
+      req.token.userId !== req.user.userId)) {
+      return res.serverError(403, 'New password mismatch');
+    }
+
+    const user = req.settingUser;
+    user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
+
+    User.setUser(user.userId, user, (err, info) => {
+      if (err) {
+        console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
+        return res.serverError(500, 'Password update failed');
+      }
+
+      return res.send(JSON.stringify({
+        success: true,
+        text: 'Changed password successfully'
+      }));
     });
   };
 
@@ -1174,3 +1208,4 @@ class UserRedisImplementation {
 module.exports = User;
 
 const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');

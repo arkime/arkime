@@ -64,6 +64,12 @@
             </template>
           </reorder-list>
         </template>
+        <a class="nav-link cursor-pointer"
+          @click="openView('password')"
+          :class="{'active':visibleTab === 'password'}">
+          <span class="fa fa-fw fa-lock mr-1" />
+          Password
+        </a>
       </div>
     </div> <!-- /navigation -->
 
@@ -326,6 +332,57 @@
           </div>
         </div> <!-- /no link groups -->
       </div> <!-- /link group settings -->
+
+      <!-- password settings -->
+      <div v-if="visibleTab === 'password'">
+        <h1>
+          Change Password
+        </h1>
+
+        <form class="row">
+          <div class="col-9 mt-4">
+            <!-- current password -->
+            <b-input-group
+              class="mt-2"
+              prepend="Current Password">
+              <b-form-input
+                type="password"
+                v-model="currentPassword"
+                @keydown.enter="changePassword"
+                placeholder="Enter your current password"
+              />
+            </b-input-group>
+            <!-- new password -->
+            <b-input-group
+              class="mt-2"
+              prepend="New Password">
+              <b-form-input
+                type="password"
+                v-model="newPassword"
+                @keydown.enter="changePassword"
+                placeholder="Enter a new password"
+              />
+            </b-input-group>
+            <!-- confirm new password -->
+            <b-input-group
+              class="mt-2"
+              prepend="Current Password">
+              <b-form-input
+                type="password"
+                v-model="confirmNewPassword"
+                @keydown.enter="changePassword"
+                placeholder="Enter your new password"
+              />
+            </b-input-group>
+            <!-- change password button -->
+            <button type="button"
+              class="btn btn-success mt-2"
+              @click="changePassword">
+              Change Password
+            </button>
+          </div>
+        </form>
+      </div> <!-- /password settings -->
     </div>
 
     <!-- messages -->
@@ -368,22 +425,30 @@ export default {
       msg: '',
       msgType: '',
       visibleTab: 'views',
+      // integrations
       integrationSettings: {},
       integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      // link groups
       selectedLinkGroup: 0,
+      // views
       views: undefined,
       filteredViews: undefined,
       viewSearchTerm: '',
-      viewForm: false
+      viewForm: false,
+      // password
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
     };
   },
   created () {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups') {
+      if (tab === 'views' || tab === 'integrations' || tab === 'linkgroups' ||
+        tab === 'password') {
         this.visibleTab = tab;
       }
     }
@@ -565,6 +630,59 @@ export default {
           delete view.error;
           this.$set(this.filteredViews, index, view);
         }, 4000);
+      });
+    },
+    /* PASSWORD! ----------------------------- */
+    changePassword () {
+      this.msg = '';
+
+      if (!this.currentPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: 'You must enter your current password'
+        });
+        return;
+      }
+
+      if (!this.newPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: 'You must enter a new password'
+        });
+        return;
+      }
+
+      if (!this.confirmNewPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: 'You must confirm your new password'
+        });
+        return;
+      }
+
+      if (this.newPassword !== this.confirmNewPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: "Your passwords don't match"
+        });
+        return;
+      }
+
+      const data = {
+        newPassword: this.newPassword,
+        currentPassword: this.currentPassword
+      };
+
+      // TODO pass in userId to change another user's password (if usersAdmin)
+      UserService.changePassword(data).then((response) => {
+        this.newPassword = null;
+        this.currentPassword = null;
+        this.confirmNewPassword = null;
+        // display success message to user
+        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+      }).catch((error) => {
+        // display error message to user
+        this.showMessage({ variant: 'danger', message: error.text || error });
       });
     },
 

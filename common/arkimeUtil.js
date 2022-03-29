@@ -198,6 +198,45 @@ class ArkimeUtil {
       { success: false, text: text || 'Server Error!' }
     );
   }
+
+  // express middleware to set req.settingUser to who to work on, depending if admin or not
+  // This returns fresh from db
+  static getSettingUserDb (req, res, next) {
+    let userId;
+
+    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+      // TODO what do you think about doing it this way?
+      if (req.regressionTests) {
+        req.settingUser = req.user;
+        return next();
+      }
+
+      userId = req.user.userId;
+    } else if (!req.user.hasRole('usersAdmin')) {
+      // user is trying to get another user's settings without admin privilege
+      return res.serverError(403, 'Need admin privileges');
+    } else {
+      userId = req.query.userId;
+    }
+
+    User.getUser(userId, function (err, user) {
+      if (err || !user) {
+        if (req.noPasswordSecret) { // TODO and here too?
+          req.settingUser = JSON.parse(JSON.stringify(req.user));
+          delete req.settingUser.found;
+        } else {
+          return res.serverError(403, 'Unknown user');
+        }
+
+        return next();
+      }
+
+      req.settingUser = user;
+      return next();
+    });
+  }
 }
 
 module.exports = ArkimeUtil;
+
+const User = require('./user');

@@ -226,5 +226,30 @@ export default {
         }
       });
     });
+  },
+
+  /**
+   * Deletes a view
+   * Changes current user's password
+   * @param {object} data - The data to send to the server
+   *                        { userId, currentPassword, newPassword }
+   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   */
+  changePassword (data) {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/password', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(data)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      });
+    });
   }
 };

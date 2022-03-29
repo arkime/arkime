@@ -40,7 +40,7 @@ const path = require('path');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
-const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeUtil = require('../common/ArkimeUtil');
 
 if (typeof express !== 'function') {
   console.log("ERROR - Need to run 'npm update' in viewer directory");
@@ -748,38 +748,22 @@ function getSettingUserCache (req, res, next) {
   });
 }
 
-// express middleware to set req.settingUser to who to work on, depending if admin or not
-// This returns fresh from db
-function getSettingUserDb (req, res, next) {
-  let userId;
-
-  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
-    if (Config.get('regressionTests', false)) {
-      req.settingUser = req.user;
-      return next();
-    }
-
-    userId = req.user.userId;
-  } else if (!req.user.hasRole('usersAdmin')) {
-    // user is trying to get another user's settings without admin privilege
-    return res.serverError(403, 'Need admin privileges');
-  } else {
-    userId = req.query.userId;
+// sets req.regressionTests to true if we're in regressionTests mode
+function setRegressionTests (req, res, next) {
+  if (Config.get('regressionTests', false)) {
+    req.regressionTests = true;
   }
 
-  User.getUser(userId, function (err, user) {
-    if (err || !user) {
-      if (internals.noPasswordSecret) {
-        req.settingUser = JSON.parse(JSON.stringify(req.user));
-        delete req.settingUser.found;
-      } else {
-        return res.serverError(403, 'Unknown user');
-      }
-      return next();
-    }
-    req.settingUser = user;
-    return next();
-  });
+  next();
+}
+
+// sets req.noPasswordSecret to true if internals.noPasswordSecret is set
+function setNoPasswordSecret (req, res, next) {
+  if (internals.noPasswordSecret) {
+    req.noPasswordSecret = true;
+  }
+
+  next();
 }
 
 // view middleware ------------------------------------------------------------
@@ -1285,19 +1269,19 @@ app.post( // get users endpoint
 
 app.post( // update user password endpoint
   ['/api/user/password', '/user/password/change'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
-  userAPIs.updateUserPassword
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), setRegressionTests, setNoPasswordSecret, ArkimeUtil.getSettingUserDb],
+  User.apiUpdateUserPassword
 );
 
 app.get( // user settings endpoint
   ['/api/user/settings', '/user/settings'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, ArkimeUtil.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],
   userAPIs.getUserSettings
 );
 
 app.post( // udpate user settings endpoint
   ['/api/user/settings', '/user/settings/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSettings
 );
 
@@ -1309,30 +1293,30 @@ app.get( // user views endpoint
 
 app.post( // create user view endpoint
   ['/api/user/view', '/user/views/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.createUserView
 );
 
 app.deletepost( // delete user view endpoint
   ['/api/user/view/:name', '/user/views/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.deleteUserView
 );
 
 app.post( // (un)share a user view endpoint
   ['/api/user/view/:name/toggleshare', '/user/views/toggleShare'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.userViewToggleShare
 );
 
 app.put( // update user view endpoint
   ['/api/user/view/:key', '/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
 app.post( // update user view endpoint for backwards compatibility with API 0.x-2.x
   ['/user/views/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, sanitizeViewName],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, sanitizeViewName],
   userAPIs.updateUserView
 );
 
@@ -1344,24 +1328,24 @@ app.get( // user cron queries endpoint
 
 app.post( // create user cron query
   ['/api/user/cron', '/user/cron/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserCron
 );
 
 app.delete( // delete user cron endpoint
   ['/api/user/cron/:key', '/user/cron/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.deleteUserCron
 );
 app.post( // delete user cron endpoint for backwards compatibility with API 0.x-2.x
   '/user/cron/delete',
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.deleteUserCron
 );
 
 app.post( // update user cron endpoint
   ['/api/user/cron/:key', '/user/cron/update'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb, checkCronAccess],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb, checkCronAccess],
   userAPIs.updateUserCron
 );
 
@@ -1373,19 +1357,19 @@ app.get( // user custom columns endpoint
 
 app.post( // create user custom columns endpoint
   ['/api/user/column', '/user/columns/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserColumns
 );
 
 app.put( // update user custom column endpoint
   ['/api/user/column/:name', '/user/columns/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserColumns
 );
 
 app.deletepost( // delete user custom column endpoint (DELETE and POST)
   ['/api/user/column/:name', '/user/columns/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.deleteUserColumns
 );
 
@@ -1397,19 +1381,19 @@ app.get( // user spiview fields endpoint
 
 app.post( // create spiview fields endpoint
   ['/api/user/spiview', '/user/spiview/fields/create'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.createUserSpiviewFields
 );
 
 app.put( // update user spiview fields endpoint
   ['/api/user/spiview/:name', '/user/spiview/fields/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.updateUserSpiviewFields
 );
 
 app.deletepost( // delete user spiview fields endpoint (DELETE and POST)
   ['/api/user/spiview/:name', '/user/spiview/fields/delete'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   userAPIs.deleteUserSpiviewFields
 );
 
@@ -1464,19 +1448,19 @@ app.get( // notifiers endpoint
 
 app.post( // create notifier endpoint
   ['/api/notifier', '/notifiers'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.createNotifier
 );
 
 app.put( // update notifier endpoint
   ['/api/notifier/:name', '/notifiers/:name'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.updateNotifier
 );
 
 app.delete( // delete notifier endpoint
   ['/api/notifier/:name', '/notifiers/:name'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, User.checkRole('arkimeAdmin'), checkCookieToken],
   notifierAPIs.deleteNotifier
 );
 
@@ -1907,19 +1891,19 @@ app.get( // get shortcuts endpoint
 
 app.post( // create shortcut endpoint
   ['/api/shortcut', '/lookups'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut'), checkCookieToken],
   shortcutAPIs.createShortcut
 );
 
 app.put( // update shortcut endpoint
   ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   shortcutAPIs.updateShortcut
 );
 
 app.delete( // delete shortcut endpoint
   ['/api/shortcut/:id', '/lookups/:id'],
-  [ArkimeUtil.noCacheJson, getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, ArkimeUtil.getSettingUserDb, logAction('shortcut/:id'), checkCookieToken],
   shortcutAPIs.deleteShortcut
 );
 
