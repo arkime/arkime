@@ -422,6 +422,7 @@ export default {
   },
   data () {
     return {
+      // page vars
       msg: '',
       msgType: '',
       visibleTab: 'views',
@@ -499,6 +500,7 @@ export default {
     /* MISC! --------------------------------- */
     /* opens a specific settings tab */
     openView (tabName) {
+      if (this.visibleTab === tabName) { return; }
       this.visibleTab = tabName;
       this.$router.push({
         hash: tabName
@@ -673,7 +675,6 @@ export default {
         currentPassword: this.currentPassword
       };
 
-      // TODO pass in userId to change another user's password (if usersAdmin)
       UserService.changePassword(data).then((response) => {
         this.newPassword = null;
         this.currentPassword = null;

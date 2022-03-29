@@ -229,10 +229,9 @@ export default {
   },
 
   /**
-   * Deletes a view
    * Changes current user's password
    * @param {object} data - The data to send to the server
-   *                        { userId, currentPassword, newPassword }
+   *                        { currentPassword, newPassword }
    * @returns {Promise} - The promise that either resovles the request or rejects in error
    */
   changePassword (data) {

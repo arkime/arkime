@@ -115,5 +115,35 @@ export default {
       }
     }
     return true;
+  },
+
+  /**
+   * Changes current user's password
+   * @param {object} data       The data to send to the server
+   *                            { newPassword }
+   * @param {string} userId     The unique identifier for a user
+   *                            (only required if not the current user)
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  changePassword (data, userId) {
+    return new Promise((resolve, reject) => {
+      let url = 'api/user/password';
+      if (userId) { url += `?userId=${userId}`; }
+
+      fetch(url, {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(data)
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      });
+    });
   }
 };
