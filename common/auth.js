@@ -33,6 +33,7 @@ class Auth {
   static requiredAuthHeader;
   static requiredAuthHeaderVal;
   static userAutoCreateTmpl;
+  static regressionTests;
 
   static initialize (options) {
     Auth.debug = options.debug ?? 0;

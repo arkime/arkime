@@ -505,10 +505,14 @@ exports.loadFields = function (data) {
 /// ///////////////////////////////////////////////////////////////////////////////
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
+let mode = 'digest';
+if (exports.get('regressionTests')) {
+  mode = 'regressionTests';
+}
 
 Auth.initialize({
+  mode,
   debug: exports.debug,
-  mode: 'digest',
   basePath: exports.basePath(),
   realm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),
