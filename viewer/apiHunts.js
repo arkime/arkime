@@ -85,7 +85,7 @@ module.exports = (Config, Db, internals, notifierAPIs, sessionAPIs, ViewerUtils)
         processSessionIdCb(null);
       }, (err, session) => {
         if (err) {
-          return cb(null, false);
+          return; /* cb(null, false); */
         }
 
         const len = packets.length;
