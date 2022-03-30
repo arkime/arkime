@@ -33,8 +33,13 @@ class Auth {
   static requiredAuthHeader;
   static requiredAuthHeaderVal;
   static userAutoCreateTmpl;
+  static regressionTests;
 
   static initialize (options) {
+    if (options.debug > 1) {
+      console.log('Auth.initialize', options);
+    }
+
     Auth.debug = options.debug ?? 0;
     Auth.mode = options.mode ?? 'anonymous';
     Auth.basePath = options.basePath ?? '/';
@@ -51,6 +56,7 @@ class Auth {
     Auth.requiredAuthHeaderVal = options.requiredAuthHeaderVal;
     Auth.userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.userAuthIps = new iptrie.IPTrie();
+    Auth.regressionTests = false;
 
     if (options.userAuthIps) {
       for (const cidr in options.userAuthIps.split(',')) {
@@ -68,7 +74,8 @@ class Auth {
       Auth.userAuthIps.add('::', 0, 1);
     }
 
-    if (Auth.mode === 'digest') {
+    // Initialize passport in both digest and header mode since header mode will fallback to digest
+    if (Auth.mode === 'digest' || Auth.mode === 'header') {
       passport.use(new DigestStrategy({ qop: 'auth', realm: Auth.httpRealm },
         function (userid, done) {
           if (userid.startsWith('role:')) {
@@ -107,6 +114,7 @@ class Auth {
       break;
     case 'regressionTests':
       Auth.authFunc = Auth.regressionTestsAuth;
+      Auth.regressionTests = true;
       break;
     }
   }

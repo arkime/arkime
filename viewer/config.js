@@ -506,9 +506,20 @@ exports.loadFields = function (data) {
 // Initialize Auth
 /// ///////////////////////////////////////////////////////////////////////////////
 
+let mode = 'anonymousWithDB';
+if (exports.get('passwordSecret')) {
+  if (exports.get('userNameHeader')) {
+    mode = 'header';
+  } else {
+    mode = 'digest';
+  }
+} else if (exports.get('regressionTests')) {
+  mode = 'regressionTests';
+}
+
 Auth.initialize({
+  mode,
   debug: exports.debug,
-  mode: 'digest',
   basePath: exports.basePath(),
   realm: exports.get('httpRealm', 'Moloch'),
   passwordSecret: exports.getFull('default', 'passwordSecret', 'password'),

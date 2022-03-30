@@ -154,10 +154,10 @@
             <b-button
               size="sm"
               variant="primary"
-              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               @click="openSettings(data.item.userId)"
+              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               v-if="parentApp === 'Arkime' && !data.item.userId.startsWith('role:')"
-              v-b-tooltip.hover="`Settings for ${data.item.userId}`">
+              v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
             </b-button>
             <b-button
@@ -316,6 +316,47 @@
                 <option value=undefined>All (careful)</option>
               </select>
             </b-input-group>
+
+            <!-- display change password if not a role and
+                 we're in cont3xt or arkime
+                 (assumes user is a usersAdmin since only usersAdmin can see this page) -->
+            <form class="row"
+              v-if="!data.item.userId.startsWith('role:') && (parentApp === 'Cont3xt' || parentApp === 'Arkime')">
+              <div class="col-9 mt-4">
+                <!-- new password -->
+                <b-input-group
+                  size="sm"
+                  class="mt-2"
+                  prepend="New Password">
+                  <b-form-input
+                    type="password"
+                    v-model="newPassword"
+                    @keydown.enter="changePassword"
+                    placeholder="Enter a new password"
+                  />
+                </b-input-group>
+                <!-- confirm new password -->
+                <b-input-group
+                  size="sm"
+                  class="mt-2"
+                  prepend="Confirm Password">
+                  <b-form-input
+                    type="password"
+                    v-model="confirmNewPassword"
+                    @keydown.enter="changePassword"
+                    placeholder="Confirm the new password"
+                  />
+                </b-input-group>
+                <!-- change password button -->
+                <b-button
+                  size="sm"
+                  class="mt-2"
+                  variant="success"
+                  @click="changePassword(data.item.userId)">
+                  Change Password
+                </b-button>
+              </div>
+            </form>
           </div>
         </template> <!-- /detail row -->
       </b-table>
@@ -607,7 +648,10 @@ export default {
         { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
-      ]
+      ],
+      // password
+      newPassword: '',
+      confirmNewPassword: ''
     };
   },
   created () {
@@ -786,6 +830,47 @@ export default {
         this.showMessage({ variant: 'success', message: response.text });
       }).catch((error) => {
         this.createError = error.text;
+      });
+    },
+    changePassword (userId) {
+      this.msg = '';
+
+      if (!this.newPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: 'You must enter a new password'
+        });
+        return;
+      }
+
+      if (!this.confirmNewPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: 'You must confirm your new password'
+        });
+        return;
+      }
+
+      if (this.newPassword !== this.confirmNewPassword) {
+        this.showMessage({
+          variant: 'danger',
+          message: "Your passwords don't match"
+        });
+        return;
+      }
+
+      const data = {
+        newPassword: this.newPassword
+      };
+
+      UserService.changePassword(data, userId).then((response) => {
+        this.newPassword = null;
+        this.confirmNewPassword = null;
+        // display success message to user
+        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+      }).catch((error) => {
+        // display error message to user
+        this.showMessage({ variant: 'danger', message: error.text || error });
       });
     },
     /* helper functions ---------------------------------------------------- */
