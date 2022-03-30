@@ -1251,7 +1251,7 @@ app.post( // get users endpoint
 
 app.post( // update user password endpoint
   ['/api/user/password', '/user/password/change'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkRole('usersAdmin'), ArkimeUtil.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), ArkimeUtil.getSettingUserDb],
   User.apiUpdateUserPassword
 );
 
