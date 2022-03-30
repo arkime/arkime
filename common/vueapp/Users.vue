@@ -318,10 +318,10 @@
             </b-input-group>
 
             <!-- display change password if not a role and
-                 we're in the cont3xt app and a context admin
-                 or we're in the arkime app and an arkime admin  -->
+                 we're in cont3xt or arkime
+                 (assumes user is a usersAdmin since only usersAdmin can see this page) -->
             <form class="row"
-              v-if="!data.item.userId.startsWith('role:') && ((currentUser.roles.includes('cont3xtAdmin') && parentApp === 'Cont3xt') || (currentUser.roles.includes('arkimeAdmin') && parentApp === 'Arkime'))">
+              v-if="!data.item.userId.startsWith('role:') && (parentApp === 'Cont3xt' || parentApp === 'Arkime')">
               <div class="col-9 mt-4">
                 <!-- new password -->
                 <b-input-group
