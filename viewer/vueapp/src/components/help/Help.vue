@@ -21,6 +21,10 @@
         </span>&nbsp;
         Search Bar
       </a>
+      <a href="help#timebounding"
+        class="nav-link nested">
+        Time Bounding
+      </a>
       <a href="help#stringSearch"
         class="nav-link nested">
         String
@@ -121,7 +125,7 @@
     </div> <!-- End of navbar -->
 
     <!-- Page content -->
-    <div class="mt-5 ml-4 mr-4 navbar-offset">
+    <div class="mt-2 ml-4 mr-4 navbar-offset">
 
       <h3 id="about">
         <span class="fa fa-question-circle"></span>&nbsp;
@@ -172,33 +176,38 @@
         Most fields also support a shorthand OR query using square brackets
         using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
       </p>
-      <p id="timebounding">
-        All queries are bounded by a start and stop time.
-        The bounded start and stop times can be set either by selecting a choice from a quick relative drop down or by entering exact time sections.
-        Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
-        Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
-      </p>
-      <p>
-        Since every session has a first packet, last packet, and database timestamp, Arkime offers
-        a choice on how to select the sessions:
-      </p>
-      <dl class="dl-horizontal">
-        <dt>First Packet</dt>
-        <dd>The timestamp of the first packet received for the session.</dd>
-        <dt>Last Packet</dt>
-        <dd>The timestamp of the last packet received for the session.</dd>
-        <dt>Bounded</dt>
-        <dd>Both the first and last packet timestamps for the session must be inside the time window.</dd>
-        <dt>Session Overlaps</dt>
-        <dd>The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
-        <dt>Database</dt>
-        <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
-      </dl>
-      <p>
-        The Interval drop down allows you to control how much time each column/point in the graph represents.
-        The auto setting will change the bucket sized based on the time range selected.
-      </p>
-      <br>
+      <div class="ml-4">
+        <h6 id="timebounding">
+          <span class="fa fa-search"></span>&nbsp;
+          Time Bounding
+        </h6>
+        <p>
+          All queries are bounded by a start and stop time.
+          The bounded start and stop times can be set either by selecting a choice from a quick relative drop down or by entering exact time sections.
+          Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
+          Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
+        </p>
+        <p>
+          Since every session has a first packet, last packet, and database timestamp, Arkime offers
+          a choice on how to select the sessions:
+        </p>
+        <dl class="dl-horizontal">
+          <dt>First Packet</dt>
+          <dd>The timestamp of the first packet received for the session.</dd>
+          <dt>Last Packet</dt>
+          <dd>The timestamp of the last packet received for the session.</dd>
+          <dt>Bounded</dt>
+          <dd>Both the first and last packet timestamps for the session must be inside the time window.</dd>
+          <dt>Session Overlaps</dt>
+          <dd>The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.</dd>
+          <dt>Database</dt>
+          <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
+        </dl>
+        <p>
+          The Interval drop down allows you to control how much time each column/point in the graph represents.
+          The auto setting will change the bucket sized based on the time range selected.
+        </p>
+      </div>
       <div class="ml-4">
         <h6 id="stringSearch">
           <span class="fa fa-search"></span>&nbsp;
