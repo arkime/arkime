@@ -303,7 +303,7 @@ ${Config.arkimeWebURL()}hunt
 
         session = session.fields;
 
-        const huntRemotePath = `${session.node}/hunt/${huntId}/remote/${sessionId}`;
+        const huntRemotePath = `api/hunt/${session.node}/${huntId}/remote/${sessionId}`;
 
         if (Config.debug > 1) {
           console.log('HUNT - remote', huntRemotePath);
@@ -431,7 +431,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             updateHuntStats(hunt, huntId, session, searchedSessions, cb);
           });
         }, () => { // Check Remotely
-          const huntRemotePath = `${node}/hunt/${huntId}/remote/${sessionId}`;
+          const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
 
           if (Config.debug > 1) {
             console.log('HUNT - failed remote', huntRemotePath);
@@ -1204,7 +1204,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         if (!res.headersSent) { res.send({ matched: matched }); }
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/${req.params.nodeName}/hunt/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/${req.params.nodeName}/${req.params.huntId}/remote/${req.params.sessionId}`, util.inspect(err, false, 50));
       if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
   };
