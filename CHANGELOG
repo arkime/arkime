@@ -23,8 +23,15 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 
-3.4.2 2022/04/xx
+3.4.2 2022/03/31
   - release - node 16.14.2
+  - viewer - Packets/s, Sessions/s, Dropped/s didn't have correct total/average
+  - viewer - host = $shortcut should work now
+  - capture - support longer node names (thanks mcgillowen)
+  - capture - host.smb.tokens wasn't defined correctly
+  - wise - alienvault no longer uses key
+  - tagger - support --insecure option
+  - tests - support --insecure with tests
 
 3.4.1 2022/03/16
   - release - node 16.14.1
