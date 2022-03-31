@@ -572,6 +572,25 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
+      // autocomplete variables
+      if (/^(\$)/.test(lastToken)) {
+        this.loadingValues = true;
+        let url = 'api/shortcuts?fieldFormat=true&map=true';
+        if (field && field.type) {
+          url += `&fieldType=${field.type}`;
+        }
+        this.$http.get(url).then((response) => {
+          this.loadingValues = false;
+          const escapedToken = lastToken.replace('$', '\\$');
+          this.results = this.findMatch(escapedToken, response.data);
+        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = error.text || error;
+        });
+
+        return;
+      }
+
       // Don't try and autocomplete these fields
       if (field.noFacet || field.regex || field.type.match(/textfield/)) { return; }
 
@@ -620,25 +639,6 @@ export default {
           // if theres a closing brace, remove it from the token for querying
           lastToken = lastToken.substring(0, lastToken.length - 1);
         }
-      }
-
-      // autocomplete variables
-      if (/^(\$)/.test(lastToken)) {
-        this.loadingValues = true;
-        let url = 'api/shortcuts?fieldFormat=true&map=true';
-        if (field && field.type) {
-          url += `&fieldType=${field.type}`;
-        }
-        this.$http.get(url).then((response) => {
-          this.loadingValues = false;
-          const escapedToken = lastToken.replace('$', '\\$');
-          this.results = this.findMatch(escapedToken, response.data);
-        }).catch((error) => {
-          this.loadingValues = false;
-          this.loadingError = error.text || error;
-        });
-
-        return;
       }
 
       // autocomplete other values after 2 chars

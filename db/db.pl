@@ -144,7 +144,7 @@ sub showHelp($)
     print "  --insecure                   - Disable certificate verification for https calls\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
-    print "  --esuser <user>[:<password>] - ES User and Password";
+    print "  --esuser <user>[:<password>] - ES User and Password\n";
     print "  --esapikey <key>             - Same key as elasticsearchAPIKey in your Arkime config file\n";
     print "\n";
     print "General Commands:\n";
