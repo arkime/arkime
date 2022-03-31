@@ -172,9 +172,13 @@
         Most fields also support a shorthand OR query using square brackets
         using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
       </p>
+      <p id="timebounding">
+        All queries are bounded by a start and stop time.
+        The bounded start and stop times can be set either by selecting a choice from a quick relative drop down or by entering exact time sections.
+        Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
+        Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
+      </p>
       <p>
-        All queries are bounded by a start and stop time. The bounded start and stop times can be
-        set either by selecting a choice from a quick relative drop down or by entering exact time sections.
         Since every session has a first packet, last packet, and database timestamp, Arkime offers
         a choice on how to select the sessions:
       </p>
@@ -190,6 +194,10 @@
         <dt>Database</dt>
         <dd>The timestamp the session was written to the database.  This can be up to several minutes AFTER the last packet was received.</dd>
       </dl>
+      <p>
+        The Interval drop down allows you to control how much time each column/point in the graph represents.
+        The auto setting will change the bucket sized based on the time range selected.
+      </p>
       <br>
       <div class="ml-4">
         <h6 id="stringSearch">
@@ -266,9 +274,12 @@
           and not equals. For example: <code>starttime == "2004/07/31 05:33:41"</code>.
           They also support lists for a simple OR query. For example:
           <code>stoptime == ["2004/07/31 05:33:41","2004/07/31 06:33:41"]</code>.
-          However, it's much easier to use the
+          However, usually it's much easier to use the
           <a href="help#timebounding" class="no-decoration">time bounding</a>
           controls under the search bar.
+          <strong>IMPORTANT</strong>, using starttime or stoptime does <strong>NOT</strong>
+          change the overall <a href="help#timebounding" class="no-decoration">time bounding</a>
+          of the query.
           Finally, relative dates and optional snapping are supported using the
           Splunk syntax:
         </p>
@@ -363,15 +374,6 @@
           The magnifying glass ( <span class="fa fa-search"></span> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
           While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
           See the <a href="help#search" class="no-decoration">search section</a> for more in depth information.
-        </p>
-        <h6 id="timebounding">
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
-          Time Bounding
-        </h6>
-        <p>
-          The controls under the search bar contain the time bounding selections. The first element sets relative timing (such as last hour, last day, etc).
-          The Start box allows a start time/date to be selected. The End box allows an end time/date to be selected.
-          The bounding box is used to select where time bounding is applied (last packet, bounded, Session Overlaps, Database)
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
