@@ -114,10 +114,10 @@ export default {
 
   /**
    * Gets session packets
-   * @param {string} id         The unique id of the session
-   * @param {string} node       The node that the session belongs to
+   * @param {string} id       The unique id of the session
+   * @param {string} node     The node that the session belongs to
    * @param {string} cluster  The Elasticsearch cluster that the session belongs to
-   * @param {Object} params     The params to send with the request
+   * @param {Object} params   The params to send with the request
    * @returns {Object} { promise, source } An object including a promise object
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
@@ -133,7 +133,7 @@ export default {
           cluster: cluster
         },
         cancelToken: source.token,
-        url: `${node}/session/${id}/packets`
+        url: `api/session/${node}/${id}/packets`
       };
 
       Vue.axios(options)

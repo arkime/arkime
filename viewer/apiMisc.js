@@ -205,8 +205,8 @@ module.exports = (Config, Db, internals, sessionAPIs, userAPIs, ViewerUtils) => 
     }`
     };
     actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'api/reversedns?ip=%TEXT%', actionType: 'fetch' };
-    actions.bodyHashMd5 = { category: 'md5', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
-    actions.bodyHashSha256 = { category: 'sha256', url: '%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+    actions.bodyHashMd5 = { category: 'md5', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
+    actions.bodyHashSha256 = { category: 'sha256', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 
     for (const key in internals.rightClicks) {
       const rc = internals.rightClicks[key];
