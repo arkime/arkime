@@ -1692,7 +1692,7 @@ internals.configSchemes.ini = {
   },
   save: function (config, cb) {
     function encode (str) {
-      return str.replace(/[\n\r]/g, '\\n');
+      return typeof (str) === 'string' ? str.replace(/[\n\r]/g, '\\n') : str;
     }
     let output = '';
     Object.keys(config).forEach((section) => {
