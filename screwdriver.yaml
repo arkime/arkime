@@ -7,9 +7,9 @@ shared:
         screwdriver.cd/ram: HIGH
 
     environment:
-        MOLOCH_COPY_BRANCH: "origin/cont3xt6"
-        MOLOCH_FILE_NAME: "cont3xt"
-        ARKIME_FILE_NAME: "cont3xt"
+        MOLOCH_COPY_BRANCH: "origin/main"
+        MOLOCH_FILE_NAME: "master"
+        ARKIME_FILE_NAME: "main"
         GIT_SHALLOW_CLONE: false
         ASAN_OPTIONS: "fast_unwind_on_malloc=0"
         RELEASE_ITERATION: 1
@@ -19,21 +19,21 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
             - npm -g config set user root; npm -g config set cache-min 9999999
-            - installing: INSTALL_BUNDLE=bundle scl enable devtoolset-9 rh-python36 'make install'
+            - installing: scl enable devtoolset-9 rh-python36 'make install'
             - linting: npm run lint
             - cp -r capture/plugins/lua/samples /opt/arkime/lua
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1 | tr "-" "_" `
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /opt/arkime'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  scl enable devtoolset-9 rh-python36 'aws s3 cp arkime*.x86_64.rpm s3://arkime-files/arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
-                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket arkime-files --key arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3 cp arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
@@ -46,8 +46,8 @@ jobs:
 
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  scl enable devtoolset-9 rh-python36 'aws s3 cp moloch*.x86_64.rpm s3://arkime-files/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
-                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket arkime-files --key moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3 cp moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -57,7 +57,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-8:3.3.2-1
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
             - test-capture: (cd tests ; ./tests.pl)
@@ -70,8 +70,8 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1 | tr "-" "_"`
                 fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*.x86_64.rpm s3://arkime-files/arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm --acl public-read
+                  aws s3 cp --quiet arkime*.x86_64.rpm s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                 fi
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
@@ -84,8 +84,8 @@ jobs:
 
                 fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*.x86_64.rpm s3://arkime-files/moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
+                  aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}.centos8.x86_64.rpm --acl public-read
                 fi
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -95,7 +95,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-18:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
@@ -109,8 +109,8 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://arkime-files/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
 
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
@@ -119,8 +119,8 @@ jobs:
                 rm -f arkime*amd64.deb
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://arkime-files/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
 
             - build-moloch-package: |
@@ -134,8 +134,8 @@ jobs:
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*amd64.deb s3://arkime-files/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
                 fi
 
         secrets:
@@ -146,7 +146,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-20:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
@@ -160,8 +160,8 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://arkime-files/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
                 fi
 
             - build-sanitize: (cd capture; make SANITIZE_FLAGS='-DMOLOCH_USE_MALLOC -fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize)
@@ -171,8 +171,8 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://arkime-files/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key sanitize/arkime-${ARKIME_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
                 fi
 
             - build-moloch-package: |
@@ -186,8 +186,8 @@ jobs:
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*amd64.deb s3://arkime-files/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu20_amd64.deb --acl public-read
                 fi
 
         secrets:
@@ -198,7 +198,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-arch:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH
@@ -210,8 +210,8 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara /opt/arkime
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*x86_64.pkg.tar.zst s3://arkime-files/arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.zst --acl public-read
-                  aws s3api put-object-acl --bucket arkime-files --key arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.zst --acl public-read
+                  aws s3 cp --quiet arkime*x86_64.pkg.tar.zst s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.zst --acl public-read
+                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_arch.x86_64.pkg.tar.zst --acl public-read
                 fi
 
         secrets:
@@ -222,7 +222,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall --dir /data/moloch"
             - yum -y install libasan-static devtoolset-9-libasan-devel libasan4 devtoolset-9-libubsan-devel libubsan which
@@ -245,15 +245,15 @@ jobs:
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /data/moloch/viewer/version.js | head -n 1 | tr "-" "_"`
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d libasan-static -d libubsan1 -d libasan5 -d perl-LWP-Protocol-https /data/moloch'
                 if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  scl enable devtoolset-9 rh-python36 'aws s3 cp --quiet moloch*.x86_64.rpm s3://arkime-files/sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
-                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket arkime-files --key sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3 cp --quiet moloch*.x86_64.rpm s3://files.molo.ch/sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
+                  scl enable devtoolset-9 rh-python36 'aws s3api put-object-acl --bucket files.molo.ch --key sanitize/moloch-${MOLOCH_FILE_NAME}.centos7.x86_64.rpm --acl public-read'
                 fi
         secrets:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
     slack:
-        requires: [centos-7, centos-7-sanitize]
+        requires: [centos-7, centos-7-sanitize, centos-8, ubuntu-18, ubuntu-20]
         image: andywick/arkime-build-7:3.0.1-2
         annotations:
             beta.screwdriver.cd/cpu: LOW
@@ -283,7 +283,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-7:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --pfring --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
@@ -294,7 +294,7 @@ jobs:
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1 | tr "-" "_" `
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /opt/arkime'
-                scl enable devtoolset-9 rh-python36 'aws s3 cp arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://arkime-files/builds/centos-7/ --acl public-read'
+                scl enable devtoolset-9 rh-python36 'aws s3 cp arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-7/ --acl public-read'
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
@@ -304,7 +304,7 @@ jobs:
                 mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
                 scl enable rh-ruby23 'fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https /data/moloch'
-                scl enable devtoolset-9 rh-python36 'aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://arkime-files/builds/centos-7/ --acl public-read'
+                scl enable devtoolset-9 rh-python36 'aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-7/ --acl public-read'
             - ls -l *.rpm
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -314,7 +314,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-8:3.3.2-1
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
@@ -325,7 +325,7 @@ jobs:
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1 | tr "-" "_"`
                 fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https /opt/arkime
-                aws s3 cp arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://arkime-files/builds/centos-8/ --acl public-read
+                aws s3 cp arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-8/ --acl public-read
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
                 mv /opt/arkime /data/moloch
@@ -336,7 +336,7 @@ jobs:
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https /data/moloch
-                aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://arkime-files/builds/centos-8/ --acl public-read
+                aws s3 cp moloch-${ARKIME_VERSION}-${RELEASE_ITERATION}.x86_64.rpm s3://files.molo.ch/builds/centos-8/ --acl public-read
             - ls -l *.rpm
 
         secrets:
@@ -347,7 +347,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-18:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
@@ -359,7 +359,7 @@ jobs:
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
-                aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://arkime-files/builds/ubuntu-18.04/ --acl public-read
+                aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
 
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
@@ -371,7 +371,7 @@ jobs:
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://arkime-files/builds/ubuntu-18.04/ --acl public-read
+                aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-18.04/ --acl public-read
             - ls -l *.deb
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -381,7 +381,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-20:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --rminstall
@@ -393,7 +393,7 @@ jobs:
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
-                aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://arkime-files/builds/ubuntu-20.04/ --acl public-read
+                aws s3 cp arkime_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-20.04/ --acl public-read
 
             - build-moloch-package: |
                 rm -rf /data/moloch; mkdir -p /data
@@ -405,7 +405,7 @@ jobs:
                 /bin/cp -f viewer/version.js /data/moloch/viewer/
 
                 fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --url "https://moloch.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://arkime-files/builds/ubuntu-20.04/ --acl public-read
+                aws s3 cp moloch_${ARKIME_VERSION}-${RELEASE_ITERATION}_amd64.deb s3://files.molo.ch/builds/ubuntu-20.04/ --acl public-read
             - ls -l *.deb
         secrets:
             - AWS_ACCESS_KEY_ID
@@ -415,7 +415,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-arch:3.0.1-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/arkime-files/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
             - build: ./easybutton-build.sh --rminstall
             - test-capture: (cd tests ; ./tests.pl)
             - export PATH=/opt/arkime/bin:$PATH:$PWD/node_modules/.bin
@@ -425,7 +425,7 @@ jobs:
             - build-package: |
                 export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/viewer/version.js | head -n 1`
                 /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $RELEASE_ITERATION --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara /opt/arkime
-                aws s3 cp --quiet arkime*x86_64.pkg.tar.zst s3://arkime-files/builds/arch/arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}_arch.x86_64.pkg.tar.zst --acl public-read
+                aws s3 cp --quiet arkime*x86_64.pkg.tar.zst s3://files.molo.ch/builds/arch/arkime-${ARKIME_VERSION}-${RELEASE_ITERATION}_arch.x86_64.pkg.tar.zst --acl public-read
             - ls -l *.zst
 
         secrets:
